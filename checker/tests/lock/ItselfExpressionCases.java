@@ -8,9 +8,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.*;
 
 class ItselfExpressionCases {
-    Object somelock;
+    final Object somelock = new Object();
 
-    private @GuardedBy({"itself"}) MyClass m;
+    final private @GuardedBy({"itself"}) MyClass m = new MyClass();
     @Pure
     private @GuardedBy({"itself"}) MyClass getm() {
         return m;
@@ -28,7 +28,7 @@ class ItselfExpressionCases {
         return getm().field;
     }
 
-    public void arrayTest(Object @GuardedBy("itself") [] a1) {
+    public void arrayTest(final Object @GuardedBy("itself") [] a1) {
         //:: error: (contracts.precondition.not.satisfied.field)
         Object a = a1[0];
         synchronized(a1) {
@@ -51,7 +51,7 @@ class ItselfExpressionCases {
         }
     }
 
-    public void testCheckPreconditions(@GuardedBy("itself") MyClass o, @GuardSatisfied Object gs, @GuardSatisfied MyClass gsMyClass) {
+    public void testCheckPreconditions(final @GuardedBy("itself") MyClass o, @GuardSatisfied Object gs, @GuardSatisfied MyClass gsMyClass) {
         //:: error: (contracts.precondition.not.satisfied)
         getm().field = new Object();
         synchronized(getm()) {

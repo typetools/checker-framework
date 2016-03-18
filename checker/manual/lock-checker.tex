@@ -66,16 +66,6 @@ computation.
 And, there are other concurrency errors that cannot, or
 should not, be solved with locks.
 
-\section{Assumptions\label{lock-assumptions}}
-
-The Lock Checker assumes that if an expression \emph{expr} is used to acquire a lock, then
-\emph{expr} must evaluate to the same value, starting from when
-\emph{expr} is used to acquire a lock until \emph{expr} is used to
-release the lock.
-An expression is used to acquire a lock if it is the receiver at a
-call site of a \<synchronized> method, is the expression in a
-\<synchronized> block, or is the argument to a \<lock> method.
-
 \section{Lock annotations\label{lock-annotations}}
 
 This section describes the lock annotations you can write on types and methods.
@@ -396,6 +386,15 @@ the \<@GuardedBy> type hierarchy, including \<@GuardedBy(\{\})>.
   or receiver annotated with \code{@GuardSatisfied}.  This is because
   the Lock Checker cannot guarantee that the guard will be satisfied
   throughout the body of a method if that method may release a lock.
+
+\item[No side effects on lock expressions]
+  If expression \emph{expr} is used to acquire a lock, then
+  \emph{expr} must evaluate to the same value, starting from when
+  \emph{expr} is used to acquire a lock until \emph{expr} is used to
+  release the lock.
+  An expression is used to acquire a lock if it is the receiver at a
+  call site of a \<synchronized> method, is the expression in a
+  \<synchronized> block, or is the argument to a \<lock> method.
 
 \item[Locks are released after possible side effects]
 % These are standard dataflow analysis rules, but are worth

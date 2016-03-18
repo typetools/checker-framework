@@ -10,7 +10,8 @@ public class NestedSynchronizedBlocks {
     @GuardedBy("lock3") MyClass m3;
     @GuardedBy("lock4") MyClass m4;
 
-    Object lock1, lock2, lock3, lock4;
+    final Object lock1 = new Object(), lock2 = new Object(),
+                 lock3 = new Object(), lock4 = new Object();
 
     void foo() {
         synchronized(lock1) {

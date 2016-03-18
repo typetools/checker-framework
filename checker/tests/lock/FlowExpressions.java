@@ -6,7 +6,7 @@ class FlowExpressions {
         public Object field;
     }
 
-    private @GuardedBy({"itself"}) MyClass m;
+    final private @GuardedBy({"itself"}) MyClass m = new MyClass();
     //private @GuardedBy({"nonexistentfield"}) MyClass m2;
     @Pure
     private @GuardedBy({"itself"}) MyClass getm() { return m; }
@@ -26,7 +26,7 @@ class FlowExpressions {
         }
 
         {
-            Object itself = new Object(); // Test the flow expression parser's ability to find an object named 'itself'
+            final Object itself = new Object(); // Test the flow expression parser's ability to find an object named 'itself'
             //:: error: (contracts.precondition.not.satisfied.field)
             m.field = new Object();
             //:: error: (contracts.precondition.not.satisfied)

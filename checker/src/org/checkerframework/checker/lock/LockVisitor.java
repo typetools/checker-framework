@@ -17,6 +17,8 @@ import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.qual.Deterministic;
+import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -44,6 +46,7 @@ import java.util.regex.Pattern;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -60,14 +63,16 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 
 /**
  * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual chapter.
  *
  * @checker_framework.manual #lock-checker Lock Checker
  */
-
-// TODO: Enforce that lock expressions are final or effectively final.
 
 public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
@@ -646,7 +651,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // TODO: make a type declaration annotation for this rather than looking for Lock.class explicitly.
         TypeMirror lockInterfaceTypeMirror = TypesUtils.typeFromClass(types, processingEnvironment.getElementUtils(), Lock.class);
 
-        TypeMirror expressionType = types.erasure(atypeFactory.getAnnotatedType(node.getExpression()).getUnderlyingType());
+        ExpressionTree synchronizedExpression = node.getExpression();
+
+        ensureExpressionIsFinal(synchronizedExpression);
+
+        TypeMirror expressionType = types.erasure(atypeFactory.getAnnotatedType(synchronizedExpression).getUnderlyingType());
 
         if (types.isSubtype(expressionType, lockInterfaceTypeMirror)) {
             checker.report(Result.failure(
@@ -667,6 +676,74 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         return super.visitSynchronized(node, p);
+    }
+
+    /***
+     * Ensures that each variable accessed in an expression is final and
+     * that each called method in the expression is @Deterministic.
+     * Issues an error otherwise. Recursively performs this check on method arguments.
+     * Only intended to be used on the expression of a synchronized block.
+     *
+     * Example: given the expression var1.field1.method1(var2.method2()).field2,
+     * var1, var2, field1 and field2 are enforced to be final, and
+     * method1 and method2 are enforced to be @Deterministic.
+     *
+     * @param tree the expression tree of a synchronized block.
+     */
+    private void ensureExpressionIsFinal(ExpressionTree tree) {
+        // This functionality could be implemented using a visitor instead,
+        // however with this design, it is easier to be certain that an error
+        // will always be issued if a tree kind is not recognized.
+        // Only the most common tree kinds for synchronized expressions are supported.
+
+        while (true) {
+            tree = TreeUtils.skipParens(tree);
+
+            switch(tree.getKind()) {
+                case MEMBER_SELECT:
+                    JCFieldAccess fieldAccess = (JCFieldAccess) tree;
+                    if (!isSymbolFinalOrUnmodifiable(fieldAccess.sym)) {
+                        checker.report(Result.failure("synchronized.expression.not.final"), tree);
+                        return;
+                    }
+                    tree = fieldAccess.selected;
+                    break;
+                case IDENTIFIER:
+                    if (!isSymbolFinalOrUnmodifiable(((JCIdent) tree).sym)) {
+                        checker.report(Result.failure("synchronized.expression.not.final"), tree);
+                    }
+                    return;
+                case METHOD_INVOCATION:
+                    Element elem = TreeUtils.elementFromUse(tree);
+                    if (atypeFactory.getDeclAnnotationNoAliases(elem, Deterministic.class) == null &&
+                        atypeFactory.getDeclAnnotationNoAliases(elem, Pure.class) == null) {
+                        checker.report(Result.failure("synchronized.expression.not.final"), tree);
+                        return;
+                    }
+
+                    for (ExpressionTree argTree : ((MethodInvocationTree) tree).getArguments()) {
+                        ensureExpressionIsFinal(argTree);
+                    }
+
+                    tree = ((JCMethodInvocation) tree).meth;
+                    break;
+                default:
+                    checker.report(Result.failure("synchronized.expression.not.final"), tree);
+                    return;
+            }
+        }
+    }
+
+    /***
+     * Returns true if the given Symbol is final. Package, class and
+     * method symbols are unmodifiable and therefore considered final.
+     */
+    private boolean isSymbolFinalOrUnmodifiable(Symbol sym) {
+        ElementKind ek = sym.getKind();
+        return ek == ElementKind.PACKAGE ||
+               ek == ElementKind.CLASS ||
+               ek == ElementKind.METHOD ||
+               sym.getModifiers().contains(Modifier.FINAL);
     }
 
     @Override

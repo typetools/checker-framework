@@ -1,7 +1,7 @@
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class Simple {
-   Object lock1, lock2;
+   final Object lock1 = new Object(), lock2 = new Object();
 
    void testMethodCall(@GuardedBy("lock1") Simple this) {
        //:: error: (contracts.precondition.not.satisfied.field)
@@ -13,13 +13,13 @@ public class Simple {
        //:: error: (contracts.precondition.not.satisfied.field)
        synchronized(this.lock2) {}
        
-       @GuardedBy("myClass.field") MyClass myClass = new MyClass();
+       final @GuardedBy("myClass.field") MyClass myClass = new MyClass();
        //:: error: (contracts.precondition.not.satisfied.field)
        synchronized(myClass.field){}
        synchronized(myClass){}
    }
 
-class MyClass{
-  Object field;
-}
+  class MyClass{
+      final Object field = new Object();
+  }
 }

@@ -320,9 +320,6 @@ void testTreeTypes() {
     unguardedFoo.method2(); // A simple method call to a guarded object is not considered a dereference (only field accesses are considered dereferences).
     //:: error: (contracts.precondition.not.satisfied)
     foo.method2(); // Same as above, but the guard must be satisfied if the receiver is @GuardSatisfied.
-    // TODO: Make the synchronized expression count as a dereference even if it is not a MemberSelectTree --- :: error: (contracts.precondition.not.satisfied.field)
-    synchronized(foo){ // attempt to use guarded object as a lock - this counts as a dereference of foo
-    }
     //:: error: (contracts.precondition.not.satisfied.field)
     switch(foo.field.hashCode()){ // attempt to use guarded object in a switch statement
     }
@@ -567,7 +564,7 @@ public void testMethodAnnotations() {
   void method(@GuardSatisfied TestTreeKinds this) {
   }
 
-  void testOtherClassReceiverGuardedByItself(@GuardedBy("itself") OtherClass o) {
+  void testOtherClassReceiverGuardedByItself(final @GuardedBy("itself") OtherClass o) {
      //:: error: (contracts.precondition.not.satisfied)
      o.foo();
      synchronized(o) {
@@ -580,7 +577,7 @@ public void testMethodAnnotations() {
    }
 
   void testExplicitLockSynchronized() {
-     ReentrantLock lock = new ReentrantLock();
+     final ReentrantLock lock = new ReentrantLock();
      //:: error: (explicit.lock.synchronized)
      synchronized(lock){
      }

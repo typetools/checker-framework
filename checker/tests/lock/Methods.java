@@ -2,7 +2,7 @@ import org.checkerframework.checker.lock.qual.*;
 
 public class Methods {
 
-    Object lock;
+    final Object lock = new Object();
 
     @Holding("lock")
     void lockedByLock() { }

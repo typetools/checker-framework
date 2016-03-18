@@ -179,7 +179,7 @@ public class GuardSatisfiedTest {
        return this;
    }
 
-   Object lock1, lock2;
+   final Object lock1 = new Object(), lock2 = new Object();
 
    void testAssignment(@GuardSatisfied Object o) {
        @GuardedBy({"lock1", "lock2"}) Object p = new Object();;

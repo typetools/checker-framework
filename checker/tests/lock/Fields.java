@@ -12,7 +12,7 @@ public class Fields {
     }
 
     @GuardedBy("lockingObject") MyClass locked;
-    Object lockingObject;
+    final Object lockingObject = new Object();
 
     synchronized void wrongLock1() {
         // locking over wrong lock
@@ -72,8 +72,8 @@ public class Fields {
 
     void test() {
         // synchronized over the right object
-        Fields a = new Fields();
-        Fields b = new Fields();
+        final Fields a = new Fields();
+        final Fields b = new Fields();
 
         synchronized(this) {
             lockedByThis.field = new Object();

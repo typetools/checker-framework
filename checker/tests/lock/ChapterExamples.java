@@ -4,6 +4,7 @@
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
@@ -268,7 +269,7 @@ void myMethod7(){
 }
 
 
-  Object lock; // Initialized in the constructor
+  final Object lock; // Initialized in the constructor
 
   @GuardedBy("lock") MyClass x = new MyClass();
   @GuardedBy("lock") MyClass y = x; // OK, because dereferences of y will require "lock" to be held.
@@ -324,7 +325,7 @@ void myMethod7(){
        o1 = (@GuardedBy({}) MyClass) o2; // A cast can be used if the user knows it is safe to do so. However the @SuppressWarnings must be added.
     }
 
-    static Object myLock = new Object();
+    final static Object myLock = new Object();
 
  @GuardedBy("ChapterExamples.myLock") MyClass myMethod3() { return new MyClass(); }
 
@@ -781,4 +782,41 @@ void innerClassTest() {
   //:: error: (class.declaration.guardedby.annotation.invalid)
   @GuardedByBottom class MyClass6 {}
 
+  class C1 {
+      final C1 field = new C1(); // Infinite loop. This code is not meant to be executed, only type checked.
+      C1 field2;
+      @Deterministic C1 getFieldDeterministic() { return field; }
+      @Pure C1 getFieldPure(Object param1, Object param2) { return field; }
+      C1 getField() { return field; }
+  }
+
+  final C1 c1 = new C1();
+
+  void testSynchronizedExpressionIsFinal(boolean b) {
+      Object o = new Object();
+
+      synchronized(c1) {
+      }
+      //:: error: (synchronized.expression.not.final)
+      synchronized(o) {
+      }
+
+      // Test a tree that is not supported by LockVisitor.ensureExpressionIsFinal
+      //:: error: (synchronized.expression.not.final)
+      synchronized(c1.getFieldPure(b ? c1 : o, c1)) {
+
+      }
+
+      synchronized(c1.field.field.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field) {
+      }
+
+      // The following negative test cases are the same as the one above but with one modification in each.
+
+      //:: error: (synchronized.expression.not.final)
+      synchronized(c1.field.field2.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field) {
+      }
+      //:: error: (synchronized.expression.not.final)
+      synchronized(c1.field.field.field.getFieldPure(c1.field, c1.getField().getFieldPure(c1, c1.field)).field) {
+      }
+  }
 }
