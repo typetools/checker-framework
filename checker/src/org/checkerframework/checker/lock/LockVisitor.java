@@ -63,10 +63,6 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 
 /**
  * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual chapter.
@@ -653,7 +649,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
         ExpressionTree synchronizedExpression = node.getExpression();
 
-        ensureExpressionIsFinal(synchronizedExpression);
+        ensureExpressionIsEffectivelyFinal(synchronizedExpression);
 
         TypeMirror expressionType = types.erasure(atypeFactory.getAnnotatedType(synchronizedExpression).getUnderlyingType());
 
@@ -679,18 +675,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /***
-     * Ensures that each variable accessed in an expression is final and
+     * Ensures that each variable accessed in an expression is final or effectively final and
      * that each called method in the expression is @Deterministic.
      * Issues an error otherwise. Recursively performs this check on method arguments.
      * Only intended to be used on the expression of a synchronized block.
      *
      * Example: given the expression var1.field1.method1(var2.method2()).field2,
-     * var1, var2, field1 and field2 are enforced to be final, and
+     * var1, var2, field1 and field2 are enforced to be final or effectively final, and
      * method1 and method2 are enforced to be @Deterministic.
      *
      * @param tree the expression tree of a synchronized block.
      */
-    private void ensureExpressionIsFinal(ExpressionTree tree) {
+    private void ensureExpressionIsEffectivelyFinal(ExpressionTree tree) {
         // This functionality could be implemented using a visitor instead,
         // however with this design, it is easier to be certain that an error
         // will always be issued if a tree kind is not recognized.
@@ -701,15 +697,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
             switch(tree.getKind()) {
                 case MEMBER_SELECT:
-                    JCFieldAccess fieldAccess = (JCFieldAccess) tree;
-                    if (!isSymbolFinalOrUnmodifiable(fieldAccess.sym)) {
+                    if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
                         checker.report(Result.failure("synchronized.expression.not.final"), tree);
                         return;
                     }
-                    tree = fieldAccess.selected;
+                    tree = ((MemberSelectTree) tree).getExpression();
                     break;
                 case IDENTIFIER:
-                    if (!isSymbolFinalOrUnmodifiable(((JCIdent) tree).sym)) {
+                    if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
                         checker.report(Result.failure("synchronized.expression.not.final"), tree);
                     }
                     return;
@@ -721,11 +716,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         return;
                     }
 
-                    for (ExpressionTree argTree : ((MethodInvocationTree) tree).getArguments()) {
-                        ensureExpressionIsFinal(argTree);
+                    MethodInvocationTree methodInvocationTree = (MethodInvocationTree) tree;
+
+                    for (ExpressionTree argTree : methodInvocationTree.getArguments()) {
+                        ensureExpressionIsEffectivelyFinal(argTree);
                     }
 
-                    tree = ((JCMethodInvocation) tree).meth;
+                    tree = methodInvocationTree.getMethodSelect();
                     break;
                 default:
                     checker.report(Result.failure("synchronized.expression.not.final"), tree);
@@ -735,15 +732,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /***
-     * Returns true if the given Symbol is final. Package, class and
-     * method symbols are unmodifiable and therefore considered final.
+     * Returns true if the symbol for the given tree is final or effectively final.
+     * Package, class and method symbols are unmodifiable and therefore considered final.
      */
-    private boolean isSymbolFinalOrUnmodifiable(Symbol sym) {
-        ElementKind ek = sym.getKind();
+    private boolean isTreeSymbolEffectivelyFinalOrUnmodifiable(Tree tree) {
+        Element elem = InternalUtils.symbol(tree);
+        ElementKind ek = elem.getKind();
         return ek == ElementKind.PACKAGE ||
                ek == ElementKind.CLASS ||
                ek == ElementKind.METHOD ||
-               sym.getModifiers().contains(Modifier.FINAL);
+               ElementUtils.isEffectivelyFinal(elem);
     }
 
     @Override

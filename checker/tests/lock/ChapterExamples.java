@@ -793,17 +793,26 @@ void innerClassTest() {
   final C1 c1 = new C1();
 
   void testSynchronizedExpressionIsFinal(boolean b) {
-      Object o = new Object();
-
       synchronized(c1) {
       }
+
+      Object o1 = new Object(); // o1 is effectively final - it is never reassigned
+      Object o2 = new Object(); // o2 is reassigned later - it is not effectively final
+      synchronized(o1) {
+      }
       //:: error: (synchronized.expression.not.final)
-      synchronized(o) {
+      synchronized(o2) {
+      }
+
+      o2 = new Object(); // Reassignment that makes o2 not have been effectively final earlier.
+
+      // Tests that package names are considered final.
+      synchronized(java.lang.String.class) {
       }
 
       // Test a tree that is not supported by LockVisitor.ensureExpressionIsFinal
       //:: error: (synchronized.expression.not.final)
-      synchronized(c1.getFieldPure(b ? c1 : o, c1)) {
+      synchronized(c1.getFieldPure(b ? c1 : o1, c1)) {
 
       }
 
