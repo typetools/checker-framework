@@ -2987,7 +2987,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 NewClassTree newClass = (NewClassTree) parentTree;
                 int indexOfLambda = newClass.getArguments().indexOf(lambdaTree);
                 Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> con = this.constructorFromUse(newClass);
-                AnnotatedTypeMirror constructorParam = AnnotatedTypes.unwrapVarargs(con.first.getParameterTypes(), indexOfLambda);
+                AnnotatedTypeMirror constructorParam = AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.first, indexOfLambda);
                 assertFunctionalInterface(javacTypes, (Type) constructorParam.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) constructorParam;
 
@@ -2995,7 +2995,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 MethodInvocationTree method = (MethodInvocationTree) parentTree;
                 int index = method.getArguments().indexOf(lambdaTree);
                 Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> exe = this.methodFromUse(method);
-                AnnotatedTypeMirror param = AnnotatedTypes.unwrapVarargs(exe.first.getParameterTypes(), index);
+                AnnotatedTypeMirror param = AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.first, index);
                 assertFunctionalInterface(javacTypes, (Type)param.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) param;
 
