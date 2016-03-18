@@ -1507,8 +1507,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        commonAssignmentCheck(node.getVariable(), node.getExpression(),
-                "compound.assignment.type.incompatible");
+        // If node is the tree represnting the compounds assignment s += expr,
+        // Then this method should check whether s + expr can be assigned to s,
+        // but the "s + expr" tree does not exist.  So instead, check that
+        // s += expr can be assigned to s.
+        commonAssignmentCheck(node.getVariable(), node, "compound.assignment.type.incompatible");
         return super.visitCompoundAssignment(node, p);
     }
 
