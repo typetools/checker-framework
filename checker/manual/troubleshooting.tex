@@ -240,7 +240,8 @@ correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
 
-If you are building from source, you might need to rebuild the Annotation
+If you are building from source  (Section~\ref{build-source}),
+you might need to rebuild the Annotation
 File Utilities before recompiling or using the Checker Framework.
 
 
@@ -821,6 +822,7 @@ an IDE such as Eclipse.
 
 \end{enumerate}
 
+
 \subsection{Build the Checker Framework Manual (this document)\label{building-manual}}
 
 \begin{enumerate}
@@ -834,6 +836,17 @@ instructions.
 \item
 Run \code{make} in the \code{checker/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
+
+
+\subsection{Build the Checker Framework Manual (this document)\label{building-manual}}
+
+If you have forked any of the projects rather than just creating a clone,
+then we recommend that you enable Travis-CI continuous integration builds,
+so that you learn quickly of any errors that creep into your fork.
+
+Run the
+\href{https://docs.travis-ci.com/user/getting-started/#To-get-started-with-Travis-CI%3A}{Travis-CI getting started directions},
+though note that the \<.travis.yml> files already exist.
 
 
 \section{Publications\label{publications}\label{learning-more}}

@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 /**
  * Wild is equivalent to the wildcard operator.
  *
- * {@code @Wild MyClass <==> MyClass《?》}
+ * {@code @Wild MyClass <==> MyClass&laquo;?&raquo;}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
