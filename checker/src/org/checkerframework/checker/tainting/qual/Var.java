@@ -26,12 +26,12 @@ import java.lang.annotation.*;
  * <pre>
  *
  * {@code
- *  class A《aParam》 {
+ *  class A&laquo;aParam&raquo; {
  *
  *  }
- *  class B《bParam》 {
- *    A《aParam=bParam》 a;
- *    A《aParam=? extends bParam》 b;
+ *  class B&laquo;bParam&raquo; {
+ *    A&laquo;aParam=bParam&raquo; a;
+ *    A&laquo;aParam=? extends bParam&raquo; b;
  *  }
  *
  * }

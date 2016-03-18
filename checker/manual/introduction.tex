@@ -141,7 +141,7 @@ code stays completely backward-compatible:  your code compiles with any
 Java compiler, it runs on any JVM, and your coworkers don't have to use the
 enhanced type system if they don't want to.  You can check only part of
 your program.  Type inference tools exist to help you annotate your
-code.
+code; see \chapterpageref{type-inference}.
 
 
 A type system designer uses the Checker Framework to define type qualifiers
@@ -920,9 +920,12 @@ code contains documentation; you will find that you spend most of your time
 understanding the code, and very little time actually writing annotations
 or running the checker.
 
-Start by annotating just part of your program.  Be systematic, such as
+Start by annotating just part of your program.  Be systematic; we recommend
 annotating an entire class at a time (not just some of the methods)
-so that you don't lose track of your work.
+so that you don't lose track of your work or redo work.  For example,
+working class-by-class avoids confusion about whether an unannotated type
+means you determined that the default is desirable, or it means you didn't
+yet examine that type.
 You may find it helpful to start annotating the leaves of the call tree ---
 that is,
 start with methods/classes/packages that have few dependencies on other
