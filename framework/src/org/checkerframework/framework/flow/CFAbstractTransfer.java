@@ -752,14 +752,21 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         V rhsValue = in.getValueOfSubNode(rhs);
         Receiver expr = FlowExpressions.internalReprOf(
                 analysis.getTypeFactory(), lhs);
-        if (inferSignatures && expr instanceof FieldAccess &&
+        if (inferSignatures &&
                 !analysis.checker.shouldSuppressWarnings(n.getTree(), null) &&
                 !analysis.checker.shouldSuppressWarnings(
                         InternalUtils.symbol(lhs.getTree()), null)) {
-            // Updates inferred field type
-            WholeProgramInferenceScenes.updateInferredFieldType(
-                    lhs, rhs, analysis.getContainingClass(n.getTree()),
-                    analysis.getTypeFactory());
+            if (expr instanceof FieldAccess) {
+                // Updates inferred field type
+                WholeProgramInferenceScenes.updateInferredFieldType(
+                        lhs, rhs, analysis.getContainingClass(n.getTree()),
+                        analysis.getTypeFactory());
+            } else if (lhs instanceof LocalVariableNode &&
+                    ((LocalVariableNode)lhs).getElement().getKind() == ElementKind.PARAMETER) {
+                WholeProgramInferenceScenes.updateInferredParameterType(
+                        (LocalVariableNode)lhs, rhs, analysis.getContainingClass(n.getTree()),
+                        analysis.getContainingMethod(n.getTree()), analysis.getTypeFactory());
+            }
         }
 
         processCommonAssignment(in, lhs, rhs, info, rhsValue);

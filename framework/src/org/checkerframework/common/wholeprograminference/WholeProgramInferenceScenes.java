@@ -24,16 +24,17 @@ import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
+import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.InvisibleQualifier;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -64,15 +65,16 @@ import annotations.util.JVMNames;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Attribute.Array;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeAnnotationPosition;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.TypeAnnotationPosition;
 
 /**
  * WholeProgramInferenceScenes represents a set of annotations that are inferred
@@ -320,6 +322,63 @@ public class WholeProgramInferenceScenes {
     }
 
     /**
+     * Updates the parameter type represented by lhs of the method methodTree
+     * in the Scene of the receiverTree's enclosing class.
+     * <p>
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for that
+     *     parameter, then the type of the respective value passed as argument
+     *     in the method call methodInvNode will be added to the parameter in
+     *     the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for that
+     *     parameter, then its new type will be the LUB between the previous
+     *     type and the type of the respective value passed as argument in the
+     *     method call.</li>
+     *   </ul>
+     * <p>
+     * @param lhs the node representing the parameter.
+     * @param rhs the node being assigned to the parameter.
+     * @param classTree the tree of the class that contains the parameter.
+     * @param methodTree the tree of the method that contains the parameter.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the parameter type.
+     */
+    public static void updateInferredParameterType(
+            LocalVariableNode lhs, Node rhs, ClassTree classTree,
+            MethodTree methodTree, AnnotatedTypeFactory atf) {
+        ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
+        if (classSymbol == null) return; // TODO: Handle anonymous classes.
+
+        String className = classSymbol.flatname.toString();
+        String jaifPath = getJaifPath(className);
+        AClass clazz = getAClass(className, jaifPath);
+        String methodName = JVMNames.getJVMMethodName(methodTree);
+        AMethod method = clazz.methods.vivify(methodName);
+
+        List<? extends VariableTree> params = methodTree.getParameters();
+        // Look-up parameter by name:
+        for (int i = 0; i < params.size(); i++) {
+            VariableTree vt = params.get(i);
+            if (vt.getName().toString().equals(lhs.getName())) {
+                Tree treeNode = rhs.getTree();
+                if (treeNode == null) {
+                    // TODO: Handle variable-length list as parameter.
+                    // An ArrayCreationNode with a null tree is created when the
+                    // parameter is a variable-length list. We are ignoring it for now.
+                    continue;
+                }
+                AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
+                AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
+                AField param = method.parameters.vivify(i);
+                updateAnnotationSetInScene(
+                        param.type, atf, jaifPath, argATM, paramATM,
+                        TypeUseLocation.PARAMETER);
+                break;
+            }
+        }
+    }
+
+    /**
      * Updates the type of the field lhs in the Scene of the class with
      * tree classTree. If the field has a declaration annotation with the
      * {@link IgnoreInWholeProgramInference} meta-annotation, no type annotation
@@ -550,13 +609,13 @@ public class WholeProgramInferenceScenes {
                 for (Class<? extends AnnotatedTypeMirror> c : classes) {
                     if (c.isInstance(atm)) return true;
                 }
-    
+
                 Class<?>[] names = implicitFor.typeNames();
                 for (Class<?> c : names) {
                     TypeMirror underlyingtype = atm.getUnderlyingType();
                     while (underlyingtype instanceof javax.lang.model.type.ArrayType) {
-                            underlyingtype = ((javax.lang.model.type.ArrayType)underlyingtype).
-                                    getComponentType();
+                        underlyingtype = ((javax.lang.model.type.ArrayType)underlyingtype).
+                                getComponentType();
                     }
                     if (c.getCanonicalName().equals(
                             atm.getUnderlyingType().toString())) {
@@ -627,31 +686,31 @@ public class WholeProgramInferenceScenes {
         }
     }
 
-   /**
-    * Updates an {@link annotations.el.ATypeElement} to have the annotations of an
-    * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} passed
-    * as argument. Annotations in the original set that should be ignored
-    * (see {@link #shouldIgnore}) are not added to the resulting set.
-    * This method also checks if the AnnotatedTypeMirror has explicit
-    * annotations in source code, and if that is the case no annotations are
-    * added for that location.
-    * <p>
-    * This method removes from the ATypeElement all annotations supported by atf
-    * before inserting new ones. It is assumed that every time this method is
-    * called, the AnnotatedTypeMirror has a better type estimate for the
-    * ATypeElement. Therefore, it is not a problem to remove all annotations
-    * before inserting  the new annotations.
-    *
-    * @param newATM the AnnotatedTypeMirror whose annotations will be added to
-    * the ATypeElement.
-    * @param curATM used to check if the element which will be updated has
-    * explicit annotations in source code.
-    * @param atf the annotated type factory of a given type system, whose
-    * type hierarchy will be used.
-    * @param typeToUpdate the ATypeElement which will be updated.
-    * @param idx used to write annotations on compound types of an ATypeElement.
-    * @param defLoc the location where the annotation will be added.
-    */
+    /**
+     * Updates an {@link annotations.el.ATypeElement} to have the annotations of an
+     * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} passed
+     * as argument. Annotations in the original set that should be ignored
+     * (see {@link #shouldIgnore}) are not added to the resulting set.
+     * This method also checks if the AnnotatedTypeMirror has explicit
+     * annotations in source code, and if that is the case no annotations are
+     * added for that location.
+     * <p>
+     * This method removes from the ATypeElement all annotations supported by atf
+     * before inserting new ones. It is assumed that every time this method is
+     * called, the AnnotatedTypeMirror has a better type estimate for the
+     * ATypeElement. Therefore, it is not a problem to remove all annotations
+     * before inserting  the new annotations.
+     *
+     * @param newATM the AnnotatedTypeMirror whose annotations will be added to
+     * the ATypeElement.
+     * @param curATM used to check if the element which will be updated has
+     * explicit annotations in source code.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used.
+     * @param typeToUpdate the ATypeElement which will be updated.
+     * @param idx used to write annotations on compound types of an ATypeElement.
+     * @param defLoc the location where the annotation will be added.
+     */
     private static void updateTypeElementFromATM(AnnotatedTypeMirror newATM,
             AnnotatedTypeMirror curATM, AnnotatedTypeFactory atf,
             ATypeElement typeToUpdate, int idx, TypeUseLocation defLoc) {
@@ -868,9 +927,16 @@ public class WholeProgramInferenceScenes {
      */
     // TODO: These methods below could be moved somewhere else.
     private static ClassSymbol getEnclosingClassSymbol(
-            ClassTree classTree, FieldAccessNode field) {
-        Node receiverNode = field.getReceiver();
-        if (receiverNode instanceof ImplicitThisLiteralNode
+            ClassTree classTree, Node field) {
+        Node receiverNode = null;
+        if (field instanceof FieldAccessNode) {
+            receiverNode = ((FieldAccessNode)field).getReceiver();
+        } else if (field instanceof LocalVariableNode) {
+            receiverNode = ((LocalVariableNode)field).getReceiver();
+        } else {
+            ErrorReporter.errorAbort("Unexpected type: " + field.getClass());
+        }
+        if ((receiverNode == null || receiverNode instanceof ImplicitThisLiteralNode)
                 && classTree != null) {
             return (ClassSymbol) InternalUtils.symbol(classTree);
         }
