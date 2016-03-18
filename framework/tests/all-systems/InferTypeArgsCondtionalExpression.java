@@ -1,6 +1,6 @@
-// Use to cause crash similar to the one reported in #579
+// Used to cause crash similar to the one reported in #579
 // https://github.com/typetools/checker-framework/issues/579
-// Issue 579 tests case is in checker/tests/nullness/java8/Issue579.java
+// Issue 579 test case is in checker/tests/nullness/java8/Issue579.java
 // A similar test case appears in checker/tests/nullness/InferTypeArgsCondtionalExpression.java
 
 class InferTypeArgsCondtionalExpression{
