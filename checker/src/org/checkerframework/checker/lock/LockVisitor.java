@@ -828,14 +828,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /***
-     * Checks preconditions for an expression that is known to be an implicit toString() call.
+     * Checks precondition for {@code tree} that is known to be the receiver of an implicit toString() call.
      * The receiver of toString() is defined in the annotated JDK to be @GuardSatisfied.
      * Therefore if the expression is guarded by a set of locks, the locks must be held prior
      * to this implicit call to toString().
      *
      * Only call this method from visitBinary and visitCompoundAssignment.
      *
-     * @param tree the Tree corresponding to the expression that is known to be an implicit toString() call.
+     * @param tree the Tree corresponding to the expression that is known to be the receiver
+     * of an implicit toString() call.
      */
     // TODO: If and when the de-sugared .toString() tree is accessible from BaseTypeVisitor,
     // the toString() method call should be visited instead of doing this. This would result
