@@ -120,11 +120,11 @@ public @Interned class InternedClass {
     }
 
     // java.lang.Class is interned
-    @SuppressWarnings("unchecked")
     public static void arrayOfClass() throws Exception {
         Class<?> c = String.class;
         Class[] parameterTypes = new Class[1];
         parameterTypes[0] = String.class;
+        @SuppressWarnings("unchecked")
         java.lang.reflect.Constructor<?> ctor = c.getConstructor(parameterTypes);
     }
 
