@@ -18,6 +18,7 @@ class Issue570<T> implements Comparator<T> {
 
     @Override
     public Comparator<T> thenComparing(Comparator<? super T> other) {
+        //:: error: (argument.type.incompatible) :: warning: (known.nonnull)
         return new Issue570<>(real == null ? other : real.thenComparing(other));
     }
 }
