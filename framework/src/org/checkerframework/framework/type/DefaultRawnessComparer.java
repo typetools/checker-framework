@@ -131,6 +131,11 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
     }
 
     @Override
+    public Boolean visitNull_Typevar(AnnotatedNullType subtype, AnnotatedTypeVariable supertype, VisitHistory visited) {
+        return visitTypevarSupertype(subtype, supertype, visited);
+    }
+
+    @Override
     public Boolean visitArray_Declared(AnnotatedArrayType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
         return arePrimaryAnnotationsEqual(subtype, supertype);
     }
@@ -167,6 +172,11 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
 
     @Override
     public Boolean visitTypevar_Declared(AnnotatedTypeVariable subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
+        return visitTypeVarSubtype(subtype, supertype, visited);
+    }
+
+    @Override
+    public Boolean visitTypevar_Null(AnnotatedTypeVariable subtype, AnnotatedNullType supertype, VisitHistory visited) {
         return visitTypeVarSubtype(subtype, supertype, visited);
     }
 
