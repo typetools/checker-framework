@@ -644,21 +644,35 @@ void innerClassTest() {
   // (and not @GuardedByUnknown, which is the LUB of @GuardedBy({}) (the type of the
   // string literal "a") and @GuardedBy("lock") (the type of param))
   void StringConcat(@GuardedBy("lock") MyClass param) {
-      String s1a = "a" + "a";
-      //:: error: (contracts.precondition.not.satisfied.field)
-      String s1b = "a" + param;
-      //:: error: (contracts.precondition.not.satisfied.field)
-      String s1c = param + "a";
-      //:: error: (contracts.precondition.not.satisfied)
-      String s1d = param.toString();
+      {
+          String s1a = "a" + "a";
+          //:: error: (contracts.precondition.not.satisfied.field)
+          String s1b = "a" + param;
+          //:: error: (contracts.precondition.not.satisfied.field)
+          String s1c = param + "a";
+          //:: error: (contracts.precondition.not.satisfied)
+          String s1d = param.toString();
 
-      String s2 = "a";
-      //:: error: (contracts.precondition.not.satisfied.field)
-      s2 += param;
+          String s2 = "a";
+          //:: error: (contracts.precondition.not.satisfied.field)
+          s2 += param;
 
-      String s3 = "a";
-      //:: error: (contracts.precondition.not.satisfied.field)
-      String s4 = s3 += param; // Tests that the result of a string concatenation has type @GuardedBy({}).
+          String s3 = "a";
+          //:: error: (contracts.precondition.not.satisfied.field)
+          String s4 = s3 += param; // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
+      }
+      synchronized(lock) {
+          String s1a = "a" + "a";
+          String s1b = "a" + param;
+          String s1c = param + "a";
+          String s1d = param.toString();
+
+          String s2 = "a";
+          s2 += param;
+
+          String s3 = "a";
+          String s4 = s3 += param; // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
+      }
   }
 
   public void assignmentOfGSWithNoIndex(@GuardSatisfied Object a, @GuardSatisfied Object b) {
