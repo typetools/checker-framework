@@ -53,7 +53,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -338,22 +340,6 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     return;
                 }
             }
-        } else if (errorKey.equals("compound.assignment.type.incompatible") &&
-            TypesUtils.isString(varType.getUnderlyingType()) &&
-            valueType.hasAnnotation(GuardSatisfied.class)) {
-            // TODO: Find a cleaner, non-abstraction-breaking way to know whether a string compound assignment is being visited,
-            // i.e. one that does not check the value of errorKey.
-
-            // This covers the case when the RHS in the string compound assignment
-            // has type @GuardSatisfied(...) (the LHS has type @GuardedBy({}) since it is a String).
-            // Such a string compound assignment is always legal.
-            // This is the case when a @GS parameter is not de-sugared, e.g.:
-            //     void StringCompoundAssignment(@GuardSatisfied MyClass param) {
-            //         String s = "a";
-            //         s += param;
-            //     }
-
-            return;
         }
 
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignment);
@@ -807,5 +793,57 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         return super.visitClass(node, p);
+    }
+
+    @Override
+    public Void visitBinary(BinaryTree node, Void p) {
+        if (node.getKind() == Tree.Kind.PLUS) {
+            Tree leftTree = node.getLeftOperand();
+            Tree rightTree = node.getRightOperand();
+
+            boolean lhsIsString = TypesUtils.isString(InternalUtils.typeOf(leftTree));
+            boolean rhsIsString = TypesUtils.isString(InternalUtils.typeOf(rightTree));
+            if (!lhsIsString && rhsIsString) {
+                checkPreconditionsForImplicitToStringCall(leftTree);
+            } else if (lhsIsString && !rhsIsString) {
+                checkPreconditionsForImplicitToStringCall(rightTree);
+            }
+        }
+
+        return super.visitBinary(node, p);
+    }
+
+    @Override
+    public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+        if (node.getKind() == Tree.Kind.PLUS_ASSIGNMENT) {
+            ExpressionTree rightTree = node.getExpression();
+
+            if (TypesUtils.isString(InternalUtils.typeOf(node.getVariable())) &&
+                !TypesUtils.isString(InternalUtils.typeOf(rightTree))) {
+                checkPreconditionsForImplicitToStringCall(rightTree);
+            }
+        }
+
+        return super.visitCompoundAssignment(node, p);
+    }
+
+    /***
+     * Checks preconditions for an expression that is known to be an implicit toString() call.
+     * The receiver of toString() is defined in the annotated JDK to be @GuardSatisfied.
+     * Therefore if the expression is guarded by a set of locks, the locks must be held prior
+     * to this implicit call to toString().
+     *
+     * Only call this method from visitBinary and visitCompoundAssignment.
+     *
+     * @param tree the Tree corresponding to the expression that is known to be an implicit toString() call.
+     */
+    // TODO: If and when the de-sugared .toString() tree is accessible from BaseTypeVisitor,
+    // the toString() method call should be visited instead of doing this. This would result
+    // in contracts.precondition.not.satisfied errors being issued instead of
+    // contracts.precondition.not.satisfied.field, so it would be clear that
+    // the error refers to an implicit method call, not a dereference (field access).
+    private void checkPreconditionsForImplicitToStringCall(Tree tree) {
+        checkPreconditions(tree,
+                generatePreconditionsBasedOnGuards(atypeFactory.getAnnotatedType(tree)));
     }
 }
