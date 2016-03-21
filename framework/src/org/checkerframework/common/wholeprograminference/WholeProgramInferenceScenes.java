@@ -38,6 +38,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -136,6 +137,12 @@ public class WholeProgramInferenceScenes {
     private static Map<TypeUseLocation, Set<String>> annosToIgnore = new HashMap<>();
 
     /**
+     * Indicates whether the whole-inference analysis is being performed for the
+     * Nullness type system.
+     */
+    private static boolean isNullnessChecker = false;
+
+    /**
      * Set representing Scenes that were modified since the last time all
      * Scenes were written into .jaif files. Each String element of this set
      * is a path to the .jaif file of the corresponding Scene in the set. It
@@ -154,6 +161,10 @@ public class WholeProgramInferenceScenes {
     private static String getJaifPath(String className) {
         String jaifPath = JAIF_FILES_PATH + className + ".jaif";
         return jaifPath;
+    }
+
+    public static void setIsNullnessChecker(boolean isNullness) {
+        isNullnessChecker = isNullness;
     }
 
     /**
@@ -483,6 +494,11 @@ public class WholeProgramInferenceScenes {
             AnnotatedTypeFactory atf, String jaifPath,
             AnnotatedTypeMirror rhsATM, AnnotatedTypeMirror lhsATM,
             TypeUseLocation defLoc) {
+        if (rhsATM instanceof AnnotatedNullType && !isNullnessChecker) {
+            // Design decision: Do not perform inference when the RHS of the
+            // assignment is the null literal, except for the NullnessChecker.
+            return;
+        }
         AnnotatedTypeMirror atmFromJaif = AnnotatedTypeMirror.createType(
                 rhsATM.getUnderlyingType(), atf, false);
         typeElementToATM(atmFromJaif, type, atf);
@@ -562,11 +578,6 @@ public class WholeProgramInferenceScenes {
     private static boolean shouldIgnore(AnnotationMirror am,
             TypeUseLocation location, AnnotatedTypeFactory atf,
             AnnotatedTypeMirror atm) {
-        AnnotationMirror bottomAnno = atf.getQualifierHierarchy().getBottomAnnotation(am);
-        if (AnnotationUtils.annotationName(bottomAnno) == AnnotationUtils.annotationName(am)) {
-            // Ignore annotation if it is the bottom type.
-            return true;
-        }
         Element elt = am.getAnnotationType().asElement();
         // Checks if am is an implementation detail (a type qualifier used
         // internally by the type system and not meant to be seen by the user.)

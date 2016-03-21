@@ -110,6 +110,7 @@ public class ExpectedErrors {
     void expectsSibling1(@Sibling1 int t) {}
     void expectsSibling2(@Sibling2 int t) {}
     void expectsBottom(@WholeProgramInferenceBottom int t) {}
+    void expectsBottom(@WholeProgramInferenceBottom String t) {}
     void expectsTop(@Top int t) {}
     void expectsParent(@Parent int t) {}
     static @Sibling1 int getSibling1() {
@@ -189,16 +190,17 @@ public class ExpectedErrors {
         public static int i2;
     }
 
-    class TopBottomTest {
+    class NullTest {
         // The default type for fields is @DefaultType.
-        private int privateField;
-        public int publicField;
+        private String privateField;
+        public String publicField;
 
         // The types of both fields are not refined to @WholeProgramInferenceBottom,
-        // as whole-program inference never refines to the bottom type.
+        // as whole-program inference never performs refinement in the presence
+        // of the null literal.
         void assignFieldsToBottom() {
-            privateField = getBottom();
-            publicField = getBottom();
+            privateField = null;
+            publicField = null;
         }
 
         // Testing the refinement above.

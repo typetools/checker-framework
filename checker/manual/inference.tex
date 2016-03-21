@@ -208,10 +208,8 @@ or \<Option> annotation with
 inference will not produce any inference results for fields annotated with
 \<@Inject> or \<@Option>.
 
-Whole-program inference never refines a type to the bottom type of a type
-hierarchy, because doing so usually indicates that there were not enough
-uses to yield a good inference result.
-
+Whole-program inference, for a type-checker other than the Nullness Checker,
+ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
 
 \subsubsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
 

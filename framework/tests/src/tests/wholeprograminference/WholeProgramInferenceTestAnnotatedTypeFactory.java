@@ -39,9 +39,7 @@ import tests.wholeprograminference.qual.Top;
  * 
  * @author pbsf
  */
-public class WholeProgramInferenceTestAnnotatedTypeFactory
-        extends
-            BaseAnnotatedTypeFactory {
+public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final AnnotationMirror PARENT = new AnnotationBuilder(
             processingEnv, Parent.class).build();

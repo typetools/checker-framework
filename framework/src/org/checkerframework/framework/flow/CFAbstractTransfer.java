@@ -126,6 +126,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         if (inferSignatures) {
             checkInvalidOptionsInferSignatures(
                     new String[]{"useDefaultsForUncheckedCode"});
+            WholeProgramInferenceScenes.setIsNullnessChecker(
+                    "NullnessTransfer".equals(this.getClass().getSimpleName()));
         }
     }
         
