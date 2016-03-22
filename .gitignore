@@ -41,7 +41,6 @@ checker/examples/**/*.class
 
 # manual files
 bib
-doc
 *.synctex.gz
 manual.aux
 manual.blg
