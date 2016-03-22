@@ -1021,7 +1021,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * instead.
      */
     @Override
-    public final void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    protected final void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         annotateImplicit(tree, type, this.useFlow);
     }
 
