@@ -1106,7 +1106,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(this, tree);
-        
+
         // treat Raw as generic!
         // TODO: This doesn't handle recursive type parameter
         // e.g. class Pair<Y extends List<Y>> { ... }

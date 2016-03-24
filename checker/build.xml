@@ -798,6 +798,7 @@
             <param name="param" value="tests.NullnessReflectionTest"/>
         </antcall>
     </target>
+
     <target name="nullness-rawtypes-tests" depends="jar,build-tests"
             description="Run tests for the Nullness Checker on raw types">
         <antcall target="-run-tests">
