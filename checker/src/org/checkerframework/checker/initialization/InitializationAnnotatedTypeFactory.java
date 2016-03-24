@@ -321,8 +321,6 @@ public abstract class InitializationAnnotatedTypeFactory<
         return true;
     }
 
-    protected boolean HACK_DONT_CALL_POST_AS_MEMBER = false;
-
     /**
      * {@inheritDoc}
      *
@@ -337,14 +335,32 @@ public abstract class InitializationAnnotatedTypeFactory<
             AnnotatedTypeMirror owner, Element element) {
         super.postAsMemberOf(type, owner, element);
 
-        if (!HACK_DONT_CALL_POST_AS_MEMBER) {
-            if (element.getKind().isField()) {
-                Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
-                AnnotatedTypeMirror fieldAnnotations = getAnnotatedType(element);
-                computeFieldAccessType(type, declaredFieldAnnotations, owner,
-                        fieldAnnotations, element);
-            }
+        if (element.getKind().isField()) {
+            Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
+            AnnotatedTypeMirror fieldAnnotations = getAnnotatedType(element);
+            computeFieldAccessType(type, declaredFieldAnnotations, owner, fieldAnnotations, element);
         }
+    }
+
+    /**
+     * Controls which hierarchies' qualifiers are changed based on the
+     * receiver type and the declared annotations for a field.
+     * (committed-only).
+     * @see #computeFieldAccessType
+     * @see #getAnnotatedTypeLhs(Tree)
+     */
+    private boolean computingAnnotatedTypeMirrorOfLHS = false;
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
+        boolean oldOnlyComputeFieldCommittedHeirachry = computingAnnotatedTypeMirrorOfLHS;
+        computingAnnotatedTypeMirrorOfLHS = true;
+
+        AnnotatedTypeMirror result = super.getAnnotatedTypeLhs(lhsTree);
+
+        computingAnnotatedTypeMirrorOfLHS = oldOnlyComputeFieldCommittedHeirachry;
+
+        return result;
     }
 
     @Override
@@ -575,8 +591,27 @@ public abstract class InitializationAnnotatedTypeFactory<
                     .asType();
             boolean isInitializedForFrame = isInitializedForFrame(receiverType, fieldDeclarationType);
             if (isInitializedForFrame) {
+                // receiver is initialized for this frame.
+                // change the type of the field to @UnknownInitialization so that
+                // anything can be assigned to this field.
                 type.replaceAnnotation(qualHierarchy.getTopAnnotation(UNCLASSIFIED));
+
+            } else if(computingAnnotatedTypeMirrorOfLHS) {
+                // receiver is not initialized for this frame and the type of a lhs is being computed
+                // so replace all annotations with top expect for the field invariant annotation hierarchy
+                // (Nullness, for example)
+                AnnotationMirror childTypeSystemAnnotation = type.getAnnotationInHierarchy(getFieldInvariantAnnotation());
+                Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+                set.addAll(type.getAnnotations());
+                for (AnnotationMirror anno : set) {
+                    if (!AnnotationUtils.areSame(childTypeSystemAnnotation, anno)) {
+                        type.removeAnnotation(anno);
+                        type.addAnnotation(qualHierarchy.getTopAnnotation(anno));
+                    }
+                }
             } else {
+                // receiver is not initialized for this frame and the type being computed is not a LHS
+                // so replace all annotations with the top annotation for that hierarchy
                 type.clearAnnotations();
                 type.addAnnotations(qualHierarchy.getTopAnnotations());
             }

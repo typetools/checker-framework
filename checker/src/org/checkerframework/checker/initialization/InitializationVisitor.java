@@ -18,13 +18,10 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -40,7 +37,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -130,58 +126,6 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                     checker.report(Result.failure(err, varTree), varTree);
                     return; // prevent issuing another errow about subtyping
                 }
-                // for field access on the current object, make sure that we don't
-                // allow invalid assignments. that is, even though reading this.f in a
-                // constructor yields @Nullable (or similar for other typesystems),
-                // it is not allowed to write @Nullable to a @NonNull field.
-                // This is done by first getting the type as usual (var), and then
-                // again not using the postAsMember method (which takes care of
-                // transforming the type of o.f for a free receiver to @Nullable)
-                // (var2). Then, we take the child annotation from var2 and use it
-                // for var.
-                AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(lhs);
-
-                boolean oldHackDCPAM = atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER;
-                atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = true;
-
-                //TODO: turning off caching to get correct results is masking
-                // a larger problem with caching fields.
-                // checker/tests/nullness/Issue345.java and
-                // checker/tests/nullness/AssignmentDuringInitialization.java
-                // fail when caching is turned on here.  (There maybe other
-                // test cases that fail, too.)
-                // See Issue #601
-                boolean oldShouldReadCache = atypeFactory.shouldReadCache;
-                atypeFactory.shouldReadCache = false;
-                boolean oldShouldCache = atypeFactory.shouldCache;
-                atypeFactory.shouldCache = false;
-
-                AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
-
-                atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = oldHackDCPAM;
-                atypeFactory.shouldReadCache = oldShouldReadCache;
-                atypeFactory.shouldCache = oldShouldCache;
-
-
-                final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
-
-                // AnnotatedTypeMerger.merge requires that the first two arguments have the
-                // same TypeKind.
-                if (var.getKind() != var2.getKind() &&
-                        var2.getKind() == TypeKind.DECLARED) {
-                    switch (var.getKind()) {
-                    case WILDCARD:
-                        var = ((AnnotatedWildcardType) var).getExtendsBound();
-                        break;
-                    default:
-                        ErrorReporter.errorAbort("Unexpected comparison between " + var + " and " + var2);
-                    }
-                }
-                AnnotatedTypeMerger.merge(var2, var, invariantAnno);
-
-                checkAssignability(var, varTree);
-                commonAssignmentCheck(var, valueExp, errorKey, false);
-                return;
             }
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
