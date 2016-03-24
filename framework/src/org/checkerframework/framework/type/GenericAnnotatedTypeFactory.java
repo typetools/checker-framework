@@ -935,7 +935,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns the type of a left-hand side of an assignment.
      *
      * The default implementation returns the type without considering
-     * dataflow type refinement.  Subclass calculate override this method
+     * dataflow type refinement.  Subclass can override this method
      * and add additional logic for computing the type of a LHS.
      *
      * @param lhsTree left-hand side of an assignment
@@ -949,17 +949,21 @@ public abstract class GenericAnnotatedTypeFactory<
         // Don't cache the result because getAnnotatedType(lhsTree) could
         // be called and would expect a different result.
         shouldCache = false;
-        if (lhsTree instanceof VariableTree) {
+        switch (lhsTree.getKind()) {
+        case VARIABLE:
+        case IDENTIFIER:
+        case MEMBER_SELECT:
+        case ARRAY_ACCESS:
             res = getAnnotatedType(lhsTree);
-        } else if (lhsTree instanceof AssignmentTree) {
-            res = getAnnotatedType(((AssignmentTree) lhsTree).getVariable());
-        } else if (lhsTree instanceof CompoundAssignmentTree) {
-            res = getAnnotatedType(((CompoundAssignmentTree) lhsTree).getVariable());
-        } else if (TreeUtils.isExpressionTree(lhsTree)) {
-            res = getAnnotatedType(lhsTree);
-        } else {
-            ErrorReporter.errorAbort("GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs.\n"
-                                     + "lhsTree: "+lhsTree+"\nTree.Kind: "+lhsTree.getKind());
+            break;
+        default:
+            if (TreeUtils.isTypeTree(lhsTree)) {
+                // lhsTree is a type tree at the pseudo assignment of a returned expression to declared return type.
+                res = getAnnotatedType(lhsTree);
+            } else {
+                ErrorReporter.errorAbort("GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
+                                         + "lhsTree: " + lhsTree + " Tree.Kind: " + lhsTree.getKind());
+            }
         }
         useFlow = oldUseFlow;
         shouldCache = oldShouldCache;
