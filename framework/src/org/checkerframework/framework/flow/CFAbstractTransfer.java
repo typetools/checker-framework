@@ -18,7 +18,6 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.AbstractNodeVisitor;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
-import org.checkerframework.dataflow.cfg.node.AssignmentContext;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.CaseNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -147,20 +146,23 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         Pair<Tree, AnnotatedTypeMirror> preCtxt = factory.getVisitorState().getAssignmentContext();
         analysis.setCurrentTree(tree);
         // is there an assignment context node available?
-        AssignmentContext assignmentContext = node.getAssignmentContext();
-        if (node != null && assignmentContext != null) {
+        if (node != null && node.getAssignmentContext() != null) {
             // get the declared type of the assignment context by looking up the
             // assignment context tree's type in the factory while flow is
             // disabled.
-            Tree contextTree = assignmentContext.getContextTree();
+            Tree contextTree = node.getAssignmentContext().getContextTree();
             AnnotatedTypeMirror assCtxt = null;
             if (contextTree != null) {
                 assCtxt = factory.getAnnotatedTypeLhs(contextTree);
-            } else if ( assignmentContext.getElementForType() != null) {
-                // if contextTree is null, use the element to get the type
-                assCtxt = factory.getAnnotatedType(assignmentContext.getElementForType());
+            } else {
+                Element assCtxtElement = node.getAssignmentContext().getElementForType();
+                if (assCtxtElement != null) {
+                    // if contextTree is null, use the element to get the type
+                    assCtxt = factory.getAnnotatedType(assCtxtElement);
+                }
             }
-            if (assCtxt != null) {
+
+            if(assCtxt != null) {
                 if (assCtxt instanceof AnnotatedExecutableType) {
                     // For a MethodReturnContext, we get the full type of the
                     // method, but we only want the return type.
@@ -168,7 +170,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                             .getReturnType();
                 }
                 factory.getVisitorState().setAssignmentContext(
-                        Pair.of(assignmentContext.getContextTree(),
+                        Pair.of(node.getAssignmentContext().getContextTree(),
                                 assCtxt));
             }
         }
