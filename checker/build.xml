@@ -805,7 +805,7 @@
             <param name="param" value="tests.NullnessRawTypesTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.NullnessRawTypesNoCachingTest"/>
+            <param name="param" value="tests.NullnessIgnoreRawTypesTest"/>
         </antcall>
     </target>
 

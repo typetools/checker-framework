@@ -7,21 +7,21 @@ import java.io.File;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Tests for the Nullness Checker on raw types with caching turned off.
+ * Tests for the Nullness Checker on raw types using the ignoreRawTypeArguments option
  */
-public class NullnessRawTypesNoCachingTest extends CheckerFrameworkTest {
+public class NullnessIgnoreRawTypesTest extends CheckerFrameworkTest {
 
-    public NullnessRawTypesNoCachingTest(File testFile) {
+    public NullnessIgnoreRawTypesTest(File testFile) {
         super(testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext",
-              "-AatfDoNotCache" ,"-AatfDoNotReadCache");
+                "-AignoreRawTypeArguments");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"nullness-rawtypes-nocaching"};
+        return new String[]{"nullness-rawtypes-ignore"};
     }
 
 }

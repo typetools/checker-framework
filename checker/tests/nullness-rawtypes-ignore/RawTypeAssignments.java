@@ -8,15 +8,12 @@ import java.util.Map;
 public class RawTypeAssignments {
     Map rawMap = new HashMap();
     Map<String, List<String>> notRawMapDiamondRec = new HashMap<>();
-    //:: error: (assignment.type.incompatible)
     Map<String, List<String>> notRawMapRawHashMapRec = new HashMap();
 
     Map<String, CharSequence> notRawMapDiamond = new HashMap<>();
-    //:: error: (assignment.type.incompatible)
     Map<String, CharSequence> notRawMapRawHashMap = new HashMap();
 
     Map<Object, Object> notRawMapDiamondObjectObject = new HashMap<>();
-    //:: error: (assignment.type.incompatible)
     Map<Object, Object> notRawMapDiamondObjectObjectRaw = new HashMap();
 
     RecursiveGeneric rawRecursiveGeneric = new RecursiveGeneric();
