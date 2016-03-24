@@ -332,12 +332,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
 
         this.shouldCache = !checker.hasOption("atfDoNotCache");
-        int cacheSize = shouldCache ? getCacheSize() : 0;
-        this.treeCache = CollectionUtils.createLRUCache(cacheSize);
-        this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
-        this.elementCache = CollectionUtils.createLRUCache(cacheSize);
-        this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
-
+        if (shouldCache) {
+            int cacheSize = getCacheSize();
+            this.treeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.elementCache = CollectionUtils.createLRUCache(cacheSize);
+            this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
+        } else {
+            this.treeCache = null;
+            this.fromTreeCache = null;
+            this.elementCache = null;
+            this.elementToTreeCache = null;
+        }
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
     }
