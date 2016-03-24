@@ -345,7 +345,6 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * Controls which hierarchies' qualifiers are changed based on the
      * receiver type and the declared annotations for a field.
-     * (committed-only).
      * @see #computeFieldAccessType
      * @see #getAnnotatedTypeLhs(Tree)
      */
@@ -353,13 +352,10 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     @Override
     public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
-        boolean oldOnlyComputeFieldCommittedHeirachry = computingAnnotatedTypeMirrorOfLHS;
+        boolean oldComputingAnnotatedTypeMirrorOfLHS = computingAnnotatedTypeMirrorOfLHS;
         computingAnnotatedTypeMirrorOfLHS = true;
-
         AnnotatedTypeMirror result = super.getAnnotatedTypeLhs(lhsTree);
-
-        computingAnnotatedTypeMirrorOfLHS = oldOnlyComputeFieldCommittedHeirachry;
-
+        computingAnnotatedTypeMirrorOfLHS = oldComputingAnnotatedTypeMirrorOfLHS;
         return result;
     }
 
@@ -539,7 +535,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             return false;
 
         Name when = AnnotationUtils.getElementValueClassName(unused, "when",
-                false);
+                                                             false);
         for (AnnotationMirror anno : receiverAnnos) {
             Name annoName = ((TypeElement) anno.getAnnotationType().asElement())
                     .getQualifiedName();
@@ -560,8 +556,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /**
      * Determine the type of a field access (implicit or explicit) based on the
-     * receiver type and the declared annotations for the field
-     * (committed-only).
+     * receiver type and the declared annotations for the field.
      *
      * @param type
      *            Type of the field access expression.
@@ -591,27 +586,25 @@ public abstract class InitializationAnnotatedTypeFactory<
                     .asType();
             boolean isInitializedForFrame = isInitializedForFrame(receiverType, fieldDeclarationType);
             if (isInitializedForFrame) {
-                // receiver is initialized for this frame.
-                // change the type of the field to @UnknownInitialization so that
+                // The receiver is initialized for this frame.
+                // Change the type of the field to @UnknownInitialization so that
                 // anything can be assigned to this field.
                 type.replaceAnnotation(qualHierarchy.getTopAnnotation(UNCLASSIFIED));
 
             } else if(computingAnnotatedTypeMirrorOfLHS) {
-                // receiver is not initialized for this frame and the type of a lhs is being computed
-                // so replace all annotations with top expect for the field invariant annotation hierarchy
-                // (Nullness, for example)
-                AnnotationMirror childTypeSystemAnnotation = type.getAnnotationInHierarchy(getFieldInvariantAnnotation());
+                // The receiver is not initialized for this frame, and the type of a lhs is being computed.
+                // Only replace initialization annotations.
                 Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
                 set.addAll(type.getAnnotations());
                 for (AnnotationMirror anno : set) {
-                    if (!AnnotationUtils.areSame(childTypeSystemAnnotation, anno)) {
+                    if (isInitializationAnnotation(anno)) {
                         type.removeAnnotation(anno);
                         type.addAnnotation(qualHierarchy.getTopAnnotation(anno));
                     }
                 }
             } else {
-                // receiver is not initialized for this frame and the type being computed is not a LHS
-                // so replace all annotations with the top annotation for that hierarchy
+                // The receiver is not initialized for this frame and the type being computed is not a LHS.
+                // Replace all annotations with the top annotation for that hierarchy.
                 type.clearAnnotations();
                 type.addAnnotations(qualHierarchy.getTopAnnotations());
             }
