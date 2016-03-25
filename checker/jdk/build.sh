@@ -2,25 +2,28 @@
 
 # Builds jdk8.jar for Checker Framework, using multiple compilation
 # phases to work around processor bugs.
+#
+# If a phase successfully processes all files, it calls the finish function
+# to create jdk8.jar from ct.sym, and the script exits with status 0.
+# Otherwise, the next phase processes only the subset of files for which
+# processing has so far failed.
 
-# After an initial bootstrap build ("phase 0") with processors off,
-# Phase 1 tries to process all annotated source files together.  Each
-# subsequent phase processes only the subset of files for which
-# processing has so far failed; if there are no such files left after
-# a phase is completed, the finish function (see below) is called, and
-# the script exits with status 0.  Phase 2 does the same as Phase 1 with
-# the remaining files, in case the annotated class files from the
-# previous phase somehow provide additional information that allows the
-# processors to succeed.  Phase 3 processes each remaining file
-# individually; Phase 4 does so as well, but running only one processor
-# at a time, merging annotations at the end using Annotation File
-# Utilities.  Finally, in finish(): ct.sym is exploded; annotations are
-# extracted from each annotated classfile and inserted into the
-# classfile's counterpart in the ct.sym class directory; and the
-# resulting classfiles are repackaged as jdk8.jar.
+# Phase 0: an initial bootstrap build with processors off
+#
+# Phase 1 tries to process all annotated source files together.
+#
+# Phase 2 does the same as Phase 1 with the remaining files, in case the
+# annotated class files from the previous phase somehow provide additional
+# information that allows the processors to succeed.
+#
+# Phase 3 processes each remaining file individually.
+#
+# Phase 4 does so as well, but running only one processor at a time,
+# merging annotations at the end using Annotation File Utilities.
 
+
+# Debugging
 PRESERVE=1  # option to preserve intermediate files
-RET=0       # exit code initialization
 
 # parameters derived from environment
 # TOOLSJAR and CTSYM derived from JAVA_HOME, rest from CHECKERFRAMEWORK
@@ -44,10 +47,18 @@ JFLAGS="-source 8 -target 8 -encoding ascii -cp ${CP} \
 PROCESSORS="interning,igj,javari,nullness,signature"
 PFLAGS="-Aignorejdkastub -AuseDefaultsForUncheckedCode=source -AprintErrorStack -Awarns"
 
+RET=0       # exit code initialization
+
 set -o pipefail
 
-# if all source files successfully compiled, extract annotations from
-# classfiles and insert them into ct.sym, repackaged as jdk8.jar
+# This is called only when all source files successfully compiled.
+# It does the following:
+#  * explodes ct.sym
+#  * for each annotated classfile:
+#     * extracts its annotations
+#     * inserts the annotations into the classfile's counterpart
+#       in the ct.sym class directory
+#  * repackages the resulting classfiles as jdk8.jar.
 finish() {
     echo "building JAR"
     rm -rf ${WORKDIR}/sym
@@ -117,8 +128,9 @@ ${LT_JAVAC} -g -d ${BOOTDIR} ${JFLAGS} ${SRC} | tee -a ${WORKDIR}/LOG0
 [ $? -eq 0 ] || exit $?
 
 echo "phase 1: process all source files together" | tee ${WORKDIR}/LOG1
-[ ! -r ${CF_DIST} ] && echo making directory ${CF_DIST} && mkdir ${CF_DIST}
-[ ! -r ${CF_DIST}/javac.jar ] && echo copying javac JAR && \
+# The first command could be replaced by "cd ${CHECKERFRAMEWORK} && ant
+# dist-nobuildjdk", but that would take longer and produce much more output.
+[ ! -r ${CF_DIST}/javac.jar ] && echo copying javac JAR && mkdir -p ${CF_DIST} && \
         cp ${JSR308}/jsr308-langtools/dist/lib/javac.jar ${CF_DIST}
 [ ! -r ${CF_DIST}/jdk8.jar ] && echo creating bootstrap JDK 8 JAR && \
         cd ${BOOTDIR} && jar cf ${WORKDIR}/jdk8.jar * && \
