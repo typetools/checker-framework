@@ -78,8 +78,30 @@ public abstract class InitializationAnnotatedTypeFactory<
         Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
     extends GenericAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
-    /** Annotation constants */
-    protected final AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED, UNCLASSIFIED;
+    /**
+     * UnknownInitialization or Raw
+     */
+    protected final AnnotationMirror UNCLASSIFIED;
+
+    /**
+     * Initialized or NonRaw
+     */
+    protected final AnnotationMirror COMMITTED;
+
+    /**
+     * UnderInitialization or null
+     */
+    protected final AnnotationMirror FREE;
+
+    /**
+     * NotOnlyInitialized or null
+     */
+    protected final AnnotationMirror NOT_ONLY_COMMITTED;
+
+    /**
+     * FBCBottom or NonRaw
+     */
+    protected final AnnotationMirror FBCBOTTOM;
 
     /**
      * Should the initialization type system be FBC? If not, the rawness type
@@ -589,19 +611,12 @@ public abstract class InitializationAnnotatedTypeFactory<
                 // The receiver is initialized for this frame.
                 // Change the type of the field to @UnknownInitialization so that
                 // anything can be assigned to this field.
-                type.replaceAnnotation(qualHierarchy.getTopAnnotation(UNCLASSIFIED));
+                type.replaceAnnotation(UNCLASSIFIED);
 
             } else if(computingAnnotatedTypeMirrorOfLHS) {
                 // The receiver is not initialized for this frame, and the type of a lhs is being computed.
-                // Only replace initialization annotations.
-                Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
-                set.addAll(type.getAnnotations());
-                for (AnnotationMirror anno : set) {
-                    if (isInitializationAnnotation(anno)) {
-                        type.removeAnnotation(anno);
-                        type.addAnnotation(qualHierarchy.getTopAnnotation(anno));
-                    }
-                }
+                // Only replace initialization annotation.
+                type.replaceAnnotation(UNCLASSIFIED);
             } else {
                 // The receiver is not initialized for this frame and the type being computed is not a LHS.
                 // Replace all annotations with the top annotation for that hierarchy.

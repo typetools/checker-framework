@@ -947,7 +947,7 @@ public abstract class GenericAnnotatedTypeFactory<
         boolean oldShouldCache = shouldCache;
         useFlow = false;
         // Don't cache the result because getAnnotatedType(lhsTree) could
-        // be called and would expect a different result.
+        // be called from elsewhere and would expect expect flow-sensitive type refinements.
         shouldCache = false;
         switch (lhsTree.getKind()) {
         case VARIABLE:
