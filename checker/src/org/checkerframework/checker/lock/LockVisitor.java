@@ -841,59 +841,64 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         annotationTreeList.add(tree);
         List<AnnotationMirror> amList = InternalUtils.annotationsFromTypeAnnotationTrees(annotationTreeList);
 
-        // Adapted from generatePreconditionsBasedOnGuards
-
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
-
                 if (AnnotationUtils.areSameByClass(annotationMirror, checkerGuardedByClass)) {
-                    if (AnnotationUtils.hasElementValue(annotationMirror, "value")) {
-                        List<String> guardedByValue = AnnotationUtils.getElementValueArray(annotationMirror, "value", String.class, false);
-
-                        if (!guardedByValue.isEmpty()) {
-                            FlowExpressionContext flowExprContext = null;
-                            TreePath path = getCurrentPath();
-                            MethodTree enclMethod = TreeUtils.enclosingMethod(path);
-                            if (enclMethod != null) {
-                                flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclMethod, path, checker.getContext());
-                            } else {
-                                ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-                                flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclosingClass, path, checker.getContext());
-                            }
-
-                            TreePath pathForLocalVariableRetrieval = getPathForLocalVariableRetrieval(path);
-
-                            if (pathForLocalVariableRetrieval == null) {
-                                break;
-                            }
-
-                            // Adapted from BaseTypeVisitor.checkPreconditions
-
-                            if (flowExprContext == null) {
-                                break;
-                            }
-
-                            for (String lockExpression : guardedByValue) {
-                                try {
-                                    // Ignore the return value. This method is only called because it
-                                    // in turn calls ensureExpressionIsEffectivelyFinal.
-                                    // See the Javadoc for and the comments inside parseExpressionString
-                                    // for details on handling of the "itself" expression.
-                                    parseExpressionString(lockExpression, flowExprContext,
-                                            pathForLocalVariableRetrieval, null, tree);
-                                } catch (FlowExpressionParseException e) {
-                                    checker.report(e.getResult(), tree);
-                                }
-                            }
-                        }
-                    }
-
+                    checkLockExpressionInGuardedByAnnotation(tree, annotationMirror);
                     break;
                 }
             }
         }
 
         return super.visitAnnotation(tree, p);
+    }
+
+    /**
+     * Check that the lock expression in a GuardedBy annotation is a valid flow expression
+     * and is effectively final
+     * @param tree AnnotationTree used for context and error reporting
+     * @param guardedByAnnotation GuardedBy AnnotationMirror
+     */
+    private void checkLockExpressionInGuardedByAnnotation(AnnotationTree tree, AnnotationMirror guardedByAnnotation) {
+            List<String> guardedByValue = AnnotationUtils.getElementValueArray(guardedByAnnotation, "value", String.class, true);
+        if(guardedByValue.isEmpty()){
+            // getting the FlowExpressionContext could be costly,
+            // so don't do it if there isn't a lock expression to check
+            return;
+        }
+
+        TreePath path = getCurrentPath();
+        MethodTree enclMethod = TreeUtils.enclosingMethod(path);
+        FlowExpressionContext flowExprContext;
+        if (enclMethod != null) {
+            flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclMethod, path, checker.getContext());
+        } else {
+            ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+            flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclosingClass, path, checker.getContext());
+        }
+
+        TreePath pathForLocalVariableRetrieval = getPathForLocalVariableRetrieval(path);
+
+        if (pathForLocalVariableRetrieval == null) {
+            return;
+        }
+
+        // Adapted from BaseTypeVisitor.checkPreconditions
+
+        if (flowExprContext == null) {
+            return;
+        }
+
+        for (String lockExpression : guardedByValue) {
+            try {
+                // Attempt to parse the lock expression.
+                // This will also issue errors if the lock expressions are not final
+                parseExpressionString(lockExpression, flowExprContext,
+                                      pathForLocalVariableRetrieval, null, tree);
+            } catch (FlowExpressionParseException e) {
+                checker.report(e.getResult(), tree);
+            }
+        }
     }
 
     /***
