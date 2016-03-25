@@ -1252,7 +1252,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>
      *
      * An example of an adaptation follows.  Suppose, I have a declaration:
-     * class MyClass&lt;E extends Listlt;E&gt;&gt;
+     * class MyClass&lt;E extends List&lt;E&gt;&gt;
      * And an instantiation:
      * new MyClass&lt;@NonNull String&gt;()
      *
