@@ -222,8 +222,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
 
                 // case 2:
-                if (fieldsAreAlwaysModifiableForNonSideEffectFreeMethods() ||
-                    !fieldAccess.isUnmodifiableByOtherCode()) {
+                if (!fieldAccess.isUnmodifiableByOtherCode()) {
                     continue; // remove information completely
                 }
 
@@ -242,53 +241,6 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         Receiver methodCall = FlowExpressions.internalReprOf(
                 analysis.getTypeFactory(), n);
         replaceValue(methodCall, val);
-    }
-
-    /***
-     * For most type systems, a type qualifier on an unmodifiable field is itself unmodifiable.
-     * For example, given:
-     * {@code @}NonNull Object myField = new Object();
-     * myField is always {@code @}NonNull and cannot be changed to {@code @}Nullable.
-     *
-     * However for some type systems this is not true. For example:
-     * final ReentrantLock lockField = new ReentrantLock();
-     * {@code @}MayReleaseLocks void methodThatMayReleaseLocks() { ... }
-     * void foo() {
-     *     lock.lock(); // lock is now {@code @}LockHeld
-     *     methodThatMayReleaseLocks(); // lock is now {@code @}LockPossiblyHeld
-     * }
-     *
-     * Also:
-     *
-     * final Object lock = new Object();
-     * void foo() {
-     *     synchronized(lock) {
-     *         // lock is now {@code @}LockHeld
-     *         ...
-     *     }
-     *
-     *     // lock is now {@code @}LockPossiblyHeld.
-     * }
-     *
-     * Generally speaking, this is due to the fact that an object being final does
-     * not mean its fields cannot be modified, and a method call on that object
-     * could therefore cause a field to be modified.
-     *
-     * With monitor (intrinsic) locks, the situation is slightly different: a final
-     * object used as a monitor lock can be modified in the sense that the object's
-     * monitor can be acquired or released by the Java runtime, even if that datum
-     * is not directly writable by the programmer. It so happens that the {@code @}LockPossiblyHeld
-     * and {@code @}LockHeld annotations track that datum.
-     *
-     * This method returns true if for the current checker, the field indicated by
-     * {@code fieldAccess} is truly unmodifiable by other code.
-     *
-     * @return whether the field indicated by fieldAccess is unmodifiable for the current checker.
-     */
-    // TODO: Does this need to be overridden for any checkers besides the Lock Checker,
-    // i.e. are any checkers currently producing false negatives in this respect?
-    protected boolean fieldsAreAlwaysModifiableForNonSideEffectFreeMethods() {
-        return false;
     }
 
     /**
