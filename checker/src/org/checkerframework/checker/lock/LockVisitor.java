@@ -5,6 +5,8 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
 
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
+import org.checkerframework.checker.lock.qual.EnsuresLockHeld;
+import org.checkerframework.checker.lock.qual.EnsuresLockHeldIf;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
@@ -13,12 +15,19 @@ import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
+import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -52,6 +61,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
@@ -65,6 +75,7 @@ import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 
 /**
  * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual chapter.
@@ -485,25 +496,84 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+        ExecutableElement methodElement = TreeUtils.elementFromUse(node);
 
-        SideEffectAnnotation seaOfInvokedMethod = atypeFactory.methodSideEffectAnnotation(TreeUtils.elementFromUse(node), false);
+        SideEffectAnnotation seaOfInvokedMethod = atypeFactory.methodSideEffectAnnotation(methodElement, false);
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(atypeFactory.getPath(node));
 
-        ExecutableElement methodElement = null;
+        ExecutableElement enclosingMethodElement = null;
         if (enclosingMethod != null) {
-            methodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
+            enclosingMethodElement = TreeUtils.elementFromDeclaration(enclosingMethod);
         }
 
-        SideEffectAnnotation seaOfContainingMethod = atypeFactory.methodSideEffectAnnotation(methodElement, false);
+        SideEffectAnnotation seaOfContainingMethod = atypeFactory.methodSideEffectAnnotation(enclosingMethodElement, false);
 
         if (seaOfInvokedMethod.isWeakerThan(seaOfContainingMethod)) {
             checker.report(Result.failure(
                     "method.guarantee.violated",
                     seaOfContainingMethod.getNameOfSideEffectAnnotation(),
+                    enclosingMethodElement.toString(),
                     methodElement.toString(),
-                    TreeUtils.elementFromUse(node).toString(),
                     seaOfInvokedMethod.getNameOfSideEffectAnnotation()), node);
+        }
+
+        if (methodElement != null) {
+            // Handle releasing of explicit locks. Verify that the lock expression is effectively final.
+
+            // TODO: make a type declaration annotation for this rather than looking for the Lock.unlock() method explicitly.
+            ProcessingEnvironment processingEnvironment = checker.getProcessingEnvironment();
+
+            javax.lang.model.util.Types types = processingEnvironment.getTypeUtils();
+
+            TypeMirror lockInterfaceTypeMirror = TypesUtils.typeFromClass(types, processingEnvironment.getElementUtils(), Lock.class);
+
+            AnnotatedTypeMirror recvType = atypeFactory.getReceiverType(node);
+
+            if (recvType != null &&
+                types.isSubtype(types.erasure(recvType.getUnderlyingType()), lockInterfaceTypeMirror) &&
+                methodElement.getSimpleName().contentEquals("unlock")) {
+                ExpressionTree lockExpression = TreeUtils.getReceiverTree(node);
+                // if lockExpression == null: implicit this, or class name receivers, are null. But they are also final. So nothing to be checked for them.
+
+                if (lockExpression != null) {
+                    ensureExpressionIsEffectivelyFinal(lockExpression);
+                }
+            }
+
+            // Handle acquiring of explicit locks. Verify that the lock expression is effectively final.
+
+            // If the method causes expression "this" or "#1" to be locked, verify that those expressions are effectively final.
+            // TODO: generalize to any expression. This is currently designed only to support methods in ReentrantLock
+            // and ReentrantReadWriteLock (which use the "this" expression), as well as Thread.holdsLock (which uses
+            // the "#1" expression).
+
+            AnnotationMirror ensuresLockHeldAnno = atypeFactory.getDeclAnnotation(methodElement, EnsuresLockHeld.class);
+            List<String> expressions = new ArrayList<String>();
+
+            if (ensuresLockHeldAnno != null) {
+                expressions.addAll(AnnotationUtils.getElementValueArray(ensuresLockHeldAnno, "value", String.class, false));
+            }
+
+            AnnotationMirror ensuresLockHeldIfAnno = atypeFactory.getDeclAnnotation(methodElement, EnsuresLockHeldIf.class);
+
+            if (ensuresLockHeldIfAnno != null) {
+                expressions.addAll(AnnotationUtils.getElementValueArray(ensuresLockHeldIfAnno, "expression", String.class, false));
+            }
+
+            for (String expr : expressions) {
+                ExpressionTree lockExpression = null;
+                if (expr.equals("this")) {
+                    lockExpression = TreeUtils.getReceiverTree(node);
+                    // if lockExpression == null: implicit this, or class name receivers, are null. But they are also final. So nothing to be checked for them.
+                } else if (expr.equals("#1")) {
+                    lockExpression = node.getArguments().get(0);
+                }
+
+                if (lockExpression != null) {
+                    ensureExpressionIsEffectivelyFinal(lockExpression);
+                }
+            }
         }
 
         // Check that matching @GuardSatisfied(index) on a method's formal receiver/parameters matches
@@ -672,11 +742,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      *
      * @param tree the expression tree of a synchronized block.
      */
-    private void ensureExpressionIsEffectivelyFinal(ExpressionTree tree) {
+    private void ensureExpressionIsEffectivelyFinal(final ExpressionTree lockExpressionTree) {
         // This functionality could be implemented using a visitor instead,
         // however with this design, it is easier to be certain that an error
         // will always be issued if a tree kind is not recognized.
         // Only the most common tree kinds for synchronized expressions are supported.
+
+        // Traverse the expression using 'tree', as 'lockExpressionTree' is used for error reporting.
+        ExpressionTree tree = lockExpressionTree;
 
         while (true) {
             tree = TreeUtils.skipParens(tree);
@@ -684,21 +757,21 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             switch(tree.getKind()) {
                 case MEMBER_SELECT:
                     if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
-                        checker.report(Result.failure("synchronized.expression.not.final"), tree);
+                        checker.report(Result.failure("lock.expression.not.final", lockExpressionTree), tree);
                         return;
                     }
                     tree = ((MemberSelectTree) tree).getExpression();
                     break;
                 case IDENTIFIER:
                     if (!isTreeSymbolEffectivelyFinalOrUnmodifiable(tree)) {
-                        checker.report(Result.failure("synchronized.expression.not.final"), tree);
+                        checker.report(Result.failure("lock.expression.not.final", lockExpressionTree), tree);
                     }
                     return;
                 case METHOD_INVOCATION:
                     Element elem = TreeUtils.elementFromUse(tree);
                     if (atypeFactory.getDeclAnnotationNoAliases(elem, Deterministic.class) == null &&
                         atypeFactory.getDeclAnnotationNoAliases(elem, Pure.class) == null) {
-                        checker.report(Result.failure("synchronized.expression.not.final"), tree);
+                        checker.report(Result.failure("lock.expression.not.final", lockExpressionTree), tree);
                         return;
                     }
 
@@ -711,9 +784,177 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     tree = methodInvocationTree.getMethodSelect();
                     break;
                 default:
-                    checker.report(Result.failure("synchronized.expression.not.final"), tree);
+                    checker.report(Result.failure("lock.expression.not.final", lockExpressionTree), tree);
                     return;
             }
+        }
+    }
+
+    private void ensureExpressionIsEffectivelyFinal(final Receiver lockExpr, String expressionForErrorReporting, Tree treeForErrorReporting) {
+        // Keep the 'lockExpr' parameter intact for debugging purposes, and traverse the overall expression using 'expr' instead.
+        Receiver expr = lockExpr;
+
+        while (true) {
+            if (expr instanceof FieldAccess) {
+                FieldAccess fieldAccess = (FieldAccess) expr;
+                Receiver recv = fieldAccess.getReceiver();
+
+                // Do NOT call fieldAccess.isUnmodifiableByOtherCode if the receiver is a method call, since it also checks if the receiver
+                // is unmodifiable and does so incorrectly in that case. The present
+                // method will determine whether or not a method call receiver is effectively final
+                // (see the "if (expr instanceof MethodCall)" block below).
+                if (!(fieldAccess.isUnmodifiableByOtherCode() ||
+                     (fieldAccess.isFinal() && recv instanceof MethodCall))) {
+                    checker.report(Result.failure("lock.expression.not.final", expressionForErrorReporting), treeForErrorReporting);
+                    return;
+                }
+                expr = recv;
+            } else if (expr instanceof LocalVariable) {
+                if (!ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement())) {
+                    checker.report(Result.failure("lock.expression.not.final", expressionForErrorReporting), treeForErrorReporting);
+                }
+                return;
+            } else if (expr instanceof MethodCall) {
+                MethodCall methodCall = (MethodCall) expr;
+                for(Receiver param : methodCall.getParameters()) {
+                    ensureExpressionIsEffectivelyFinal(param, expressionForErrorReporting, treeForErrorReporting);
+                }
+                if (!PurityUtils.isDeterministic(atypeFactory, methodCall.getElement())) {
+                    checker.report(Result.failure("lock.expression.not.final", expressionForErrorReporting), treeForErrorReporting);
+                }
+                expr = methodCall.getReceiver();
+            } else if (expr instanceof ThisReference || // The current object is always final.
+                       expr instanceof ClassName) { // Class names are always final.
+                // Neither ThisReference nor ClassName instances have a receiver,
+                // so exit the loop.
+                return;
+            } else { // type of 'expr' is not supported in @GuardedBy(...) lock expressions
+                checker.report(Result.failure("lock.expression.not.final", expressionForErrorReporting), treeForErrorReporting);
+                return;
+            }
+        }
+    }
+
+    @Override
+    public Void visitAnnotation(AnnotationTree tree, Void p) {
+        ArrayList<AnnotationTree> annotationTreeList = new ArrayList<AnnotationTree>(1);
+        annotationTreeList.add(tree);
+        List<AnnotationMirror> amList = InternalUtils.annotationsFromTypeAnnotationTrees(annotationTreeList);
+
+        // Adapted from generatePreconditionsBasedOnGuards
+
+        if (amList != null) {
+            for (AnnotationMirror annotationMirror : amList) {
+
+                if (AnnotationUtils.areSameByClass(annotationMirror, checkerGuardedByClass)) {
+                    if (AnnotationUtils.hasElementValue(annotationMirror, "value")) {
+                        List<String> guardedByValue = AnnotationUtils.getElementValueArray(annotationMirror, "value", String.class, false);
+
+                        if (!guardedByValue.isEmpty()) {
+                            FlowExpressionContext flowExprContext = null;
+                            TreePath path = getCurrentPath();
+                            MethodTree enclMethod = TreeUtils.enclosingMethod(path);
+                            if (enclMethod != null) {
+                                flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclMethod, path, checker.getContext());
+                            } else {
+                                ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+                                flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclosingClass, path, checker.getContext());
+                            }
+
+                            TreePath pathForLocalVariableRetrieval = getPathForLocalVariableRetrieval(path);
+
+                            if (pathForLocalVariableRetrieval == null) {
+                                break;
+                            }
+
+                            // Adapted from BaseTypeVisitor.checkPreconditions
+
+                            if (flowExprContext == null) {
+                                break;
+                            }
+
+                            for (String lockExpression : guardedByValue) {
+                                try {
+                                    // Ignore the return value. This method is only called because it
+                                    // in turn calls ensureExpressionIsEffectivelyFinal.
+                                    // See the Javadoc for and the comments inside parseExpressionString
+                                    // for details on handling of the "itself" expression.
+                                    parseExpressionString(lockExpression, flowExprContext,
+                                            pathForLocalVariableRetrieval, null, tree);
+                                } catch (FlowExpressionParseException e) {
+                                    checker.report(e.getResult(), tree);
+                                }
+                            }
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        return super.visitAnnotation(tree, p);
+    }
+
+    /***
+     * The flow expression parser requires a path for retrieving the scope that will be used
+     * to resolve local variables. One would expect that simply providing the
+     * path to an AnnotationTree would work, since the compiler (as called by the
+     * org.checkerframework.javacutil.Resolver class) could walk up the path from the AnnotationTree
+     * to determine the scope. Unfortunately this is not how the compiler works. One must provide
+     * the path at the right level (not so deep that it results in a symbol not being found, but not so high up
+     * that it is out of the scope at hand). This is a problem when trying to retrieve local
+     * variables, since one could silently miss a local variable in scope and accidentally retrieve
+     * a field with the same name. This method returns the correct path for this purpose,
+     * given a path to an AnnotationTree.
+     *
+     * Note: this is definitely necessary for local variable retrieval. It has not been tested whether
+     * this is strictly necessary for fields or other identifiers.
+     *
+     * Only call this method from visitAnnotation.
+     *
+     * @param path the TreePath whose leaf is an AnnotationTree.
+     * @return a TreePath that can be passed to methods in the Resolver class to locate local variables.
+     */
+    private TreePath getPathForLocalVariableRetrieval(TreePath path) {
+        assert path.getLeaf() instanceof AnnotationTree;
+
+        // TODO: handle annotations in trees of kind NEW_CLASS (and add test coverage for this scenario).
+        // Currently an annotation in such a tree, such as "new @GuardedBy("foo") Object()",
+        // results in a constructor.invocation.invalid error. This must be fixed first.
+
+        path = path.getParentPath();
+
+        if (path == null) {
+            return null;
+        }
+
+        // A MODIFIERS tree would be available at this level, but it is not directly handled.
+        // Instead, its VARIABLE or METHOD parent tree (one level higher) is handled.
+
+        path = path.getParentPath();
+
+        if (path == null) {
+            return null;
+        }
+
+        Tree tree = path.getLeaf();
+        Tree.Kind kind = tree.getKind();
+
+        switch(kind) {
+            case VARIABLE:
+            case TYPE_CAST:
+            case INSTANCE_OF:
+            case METHOD:
+            case NEW_ARRAY:
+            case TYPE_PARAMETER:
+            // TODO: visitAnnotation does not currently visit annotations on wildcard bounds.
+            // Address this for the Lock Checker somehow and enable these, as well as the corresponding test cases in ChapterExamples.java
+            //case EXTENDS_WILDCARD:
+            //case SUPER_WILDCARD:
+                return path;
+            default:
+                return null;
         }
     }
 
@@ -745,14 +986,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     /***
      * If expression is "itself", and the flow expression parser cannot find a variable,
-     * class, etc. named "itself", a flow expression receiver for {@code node} is returned.
+     * class, etc. named "itself", a flow expression receiver for {@code node} is returned,
+     * unless {@code node} is null, in which case null is returned.
+     * Also checks that the flow expression is effectively final and issues an error if it is not.
      * <p>
      * Returns the result of the super implementation otherwise.
      */
     @Override
     protected FlowExpressions.Receiver parseExpressionString(String expression,
             FlowExpressionContext flowExprContext,
-            Node node) throws FlowExpressionParseException {
+            TreePath path,
+            Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
+        FlowExpressions.Receiver expr = null;
         expression = expression.trim();
 
         /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
@@ -760,19 +1005,33 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         Matcher itselfMatcher = itselfPattern.matcher(expression);
 
         if (itselfMatcher.matches()) {
-            FlowExpressions.Receiver expr = FlowExpressionParseUtil.parseAllowingItself(expression, flowExprContext, getCurrentPath());
+            expr = FlowExpressionParseUtil.parseAllowingItself(expression, flowExprContext, path);
 
             if (expr == null) {
                 // No variable, class, etc. named "itself" could be found.
                 // Hence "itself" is interpreted to actually mean itself.
+
+                if (node == null) {
+                    // node is definitely null if this method was called by LockVisitor.visitAnnotation.
+                    // In this case, we skip the check to ensure that the "itself" expression is
+                    // effectively final at the site of the @GuardedBy("itself") annotation.
+
+                    // TODO: If there is a good way to check that a @GuardedBy("itself") expression
+                    // is effectively final at a declaration site, implement that.
+
+                    return null;
+                }
+
                 expr = FlowExpressions.internalReprOf(atypeFactory,
                         node);
             }
-
-            return expr;
+        } else {
+            expr = super.parseExpressionString(expression, flowExprContext, path, node, treeForErrorReporting);
         }
 
-        return super.parseExpressionString(expression, flowExprContext, node);
+        ensureExpressionIsEffectivelyFinal(expr, expression, treeForErrorReporting);
+
+        return expr;
     }
 
     /***

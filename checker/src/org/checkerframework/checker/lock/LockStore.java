@@ -77,8 +77,8 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             fieldValues.put(fieldAcc, value);
-        } else if (r instanceof FlowExpressions.PureMethodCall) {
-            FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) r;
+        } else if (r instanceof FlowExpressions.MethodCall) {
+            FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
             methodValues.put(method, value);
         } else if (r instanceof FlowExpressions.ArrayAccess) {
             FlowExpressions.ArrayAccess arrayAccess = (ArrayAccess) r;
@@ -144,11 +144,22 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         ExecutableElement method = n.getTarget().getMethod();
         if (!isSideEffectFree(atypeFactory, method)) {
             // Necessary because a method could unlock a lock that is a local variable, e.g.:
-            // ReentrantLock lock = new ReentrantLock();
-            // lock.lock();
-            // unlockMyLock(lock);
+            // void foo() {
+            //     ReentrantLock lock = new ReentrantLock();
+            //     lock.lock();
+            //     unlockMyLock(lock);
+            // }
             localVariableValues.clear();
+            // TODO: This is too conservative. Clear only the values for the local variables that could be affected.
         }
+    }
+
+    /***
+     * Fields are always modifiable as far as the Lock Checker is concerned, even if they are final.
+     */
+    @Override
+    protected boolean fieldsAreAlwaysModifiableForNonSideEffectFreeMethods() {
+        return true;
     }
 
     boolean hasLockHeld(CFValue value) {
@@ -197,8 +208,8 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
                 if (newValue != null) {
                     fieldValues.put(fieldAcc, newValue);
                 }
-            } else if (r instanceof FlowExpressions.PureMethodCall) {
-                FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) r;
+            } else if (r instanceof FlowExpressions.MethodCall) {
+                FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
                 CFValue oldValue = methodValues.get(method);
                 CFValue newValue = value.mostSpecific(oldValue, null);
                 if (newValue != null) {

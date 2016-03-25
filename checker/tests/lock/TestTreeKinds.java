@@ -18,8 +18,8 @@ public class TestTreeKinds {
     m.field = new Object(); // In constructor/initializer, it's OK not to hold the lock on 'this', but other locks must be respected.
   }
 
-  ReentrantLock lock = new ReentrantLock();
-  ReentrantLock lock2 = new ReentrantLock();
+  final ReentrantLock lock = new ReentrantLock();
+  final ReentrantLock lock2 = new ReentrantLock();
 
   @GuardedBy("lock")
   MyClass foo = new MyClass();
@@ -293,7 +293,7 @@ void testEnumType() {
                              // automatically cast to the @GuardedBy annotation of the LHS
 }
 
-Object intrinsicLock;
+final Object intrinsicLock = new Object();
 
 void testThreadHoldsLock(@GuardedBy("intrinsicLock") MyClass m) {
     if (Thread.holdsLock(intrinsicLock)){
@@ -450,7 +450,7 @@ void testTreeTypes() {
 
 @MayReleaseLocks
 public void testLocals() {
-  ReentrantLock localLock = new ReentrantLock();
+  final ReentrantLock localLock = new ReentrantLock();
 
   @GuardedBy("localLock")
   MyClass guardedByLocalLock = new MyClass();

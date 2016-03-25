@@ -6,10 +6,10 @@ public @GuardedBy({})  class Constructors {
 
     static class MyClass { public Object field; }
 
-    MyClass unlocked;
+    final MyClass unlocked = new MyClass();
     @GuardedBy("this") MyClass guardedThis = new MyClass();
     @GuardedBy("unlocked") MyClass guardedOther = new MyClass();
-    static MyClass unlockedStatic;
+    final static MyClass unlockedStatic = new MyClass();
     @GuardedBy("unlockedStatic") MyClass nonstaticGuardedByStatic = new MyClass();
     static @GuardedBy("unlocked") MyClass staticGuardedByNonStatic = new MyClass();
     static @GuardedBy("unlockedStatic") MyClass staticGuardedByStatic = new MyClass();

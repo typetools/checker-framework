@@ -23,7 +23,7 @@ public class BasicTest {
     void myAnnotatedMethod2() {
     }
 
-    @GuardedBy({}) ReentrantLock lockField = new ReentrantLock();
+    final @GuardedBy({}) ReentrantLock lockField = new ReentrantLock();
     @GuardedBy("lockField") MyClass m;
 
     @GuardedBy({}) MyClass o1 = new MyClass(), p1;
@@ -62,7 +62,7 @@ public class BasicTest {
         myAnnotatedMethod(o3);
 
         // Now test that an unannotated method behaves as if it's annotated with @MayReleaseLocks
-        @GuardedBy({}) ReentrantLock lock = new ReentrantLock();
+        final @GuardedBy({}) ReentrantLock lock = new ReentrantLock();
         @GuardedBy("lock") MyClass q = new MyClass();
         lock.lock();
         myAnnotatedMethod2();

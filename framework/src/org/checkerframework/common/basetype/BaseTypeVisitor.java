@@ -965,7 +965,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkPreconditions(methodInvocationTree, contractsUtils.getPreconditions(invokedMethodElement));
     }
-    
+
     /**
      * Checks that all the given {@code preconditions} hold true immediately prior to
      * the method invocation or variable access at {@code tree}.
@@ -1014,7 +1014,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
 
             try {
-                FlowExpressions.Receiver expr = parseExpressionString(expression, flowExprContext, node);
+                FlowExpressions.Receiver expr = parseExpressionString(expression, flowExprContext,
+                        getCurrentPath(), node, treeForErrorReporting);
 
                 CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(node);
 
@@ -1102,10 +1103,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param expression the flow expression string to be parsed.
      * @param flowExprContext the flow expression context with respect to which the expression string is to be evaluated.
      * @param node the Node immediately prior to which the preconditions checked by the calling method must hold true.
-     * Used by overriding implementations. 
+     * Used by overriding implementations. Allowed to be null.
+     * @param path the TreePath from which to obtain the scope relative to which local variables are parsed.
+     * @param treeForErrorReporting the Tree used to report parsing errors via checker.report.
+     * Used by overriding implementations.
      */
     protected FlowExpressions.Receiver parseExpressionString(String expression,
-            FlowExpressionContext flowExprContext, Node node) throws FlowExpressionParseException {
+            FlowExpressionContext flowExprContext,
+            TreePath path, Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
         expression = expression.trim();
 
         Pattern selfPattern = Pattern.compile("^(this)$");
@@ -1114,7 +1119,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             expression = flowExprContext.receiver.toString().trim(); // it is possible that s == "this" after this call
         }
 
-        return FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath());
+        return FlowExpressionParseUtil.parse(expression, flowExprContext, path);
     }
 
     /**

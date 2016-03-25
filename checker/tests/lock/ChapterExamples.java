@@ -126,7 +126,7 @@ class ChapterExamples {
          return this;
      }
 
-     Object myLock;
+     final Object myLock = new Object();
      void testCallToMethod(@GuardedBy("myLock") MyClass this) {
          //:: error: (contracts.precondition.not.satisfied)
          this.method(); // method()'s receiver is annotated as @GuardSatisfied
@@ -294,8 +294,8 @@ void myMethod7(){
      }
   }
 
-    MyClass a = new MyClass();
-    MyClass b = new MyClass();
+    final MyClass a = new MyClass();
+    final MyClass b = new MyClass();
     @GuardedBy("a") MyClass x5 = new MyClass();
     @GuardedBy({"a", "b"}) MyClass y5 = new MyClass();
     void myMethod2() {
@@ -325,9 +325,9 @@ void myMethod7(){
        o1 = (@GuardedBy({}) MyClass) o2; // A cast can be used if the user knows it is safe to do so. However the @SuppressWarnings must be added.
     }
 
-    final static Object myLock = new Object();
+  final static Object myLock = new Object();
 
- @GuardedBy("ChapterExamples.myLock") MyClass myMethod3() { return new MyClass(); }
+  @GuardedBy("ChapterExamples.myLock") MyClass myMethod3() { return new MyClass(); }
 
   // reassignments without holding the lock are OK.
   @GuardedBy("ChapterExamples.myLock") MyClass x2 = myMethod3();
@@ -410,8 +410,8 @@ void myMethod6(){
   }
 
 private @GuardedBy({}) MyClass myField;
-private ReentrantLock myLock2; // Initialized in the constructor
-private @GuardedBy("myLock2") MyClass x3; // Initialized in the constructor
+private final ReentrantLock myLock2 = new ReentrantLock();
+private @GuardedBy("myLock2") MyClass x3;
 
 // This method does not use locks or synchronization but cannot
 // be annotated as @SideEffectFree since it alters myField.
@@ -543,7 +543,7 @@ void boxingUnboxing() {
 
 
 
-ReentrantLock lock1, lock2;
+final ReentrantLock lock1 = new ReentrantLock(), lock2 = new ReentrantLock();
 @GuardedBy("lock1") MyClass filename;
 @GuardedBy("lock2") MyClass extension;
 
@@ -704,8 +704,8 @@ void innerClassTest() {
 	   */
 
         @GuardedByUnknown MyClass m;
-        ReentrantLock lock1 = new ReentrantLock();
-        ReentrantLock lock2 = new ReentrantLock();
+        final ReentrantLock lock1 = new ReentrantLock();
+        final ReentrantLock lock2 = new ReentrantLock();
 
         void method1() {
             @GuardedBy("lock1") MyClass local = new MyClass();
@@ -815,11 +815,13 @@ void innerClassTest() {
       C1 field2;
       @Deterministic C1 getFieldDeterministic() { return field; }
       @Pure C1 getFieldPure(Object param1, Object param2) { return field; }
+      @Pure C1 getFieldPure2() { return field; }
       C1 getField() { return field; }
   }
 
   final C1 c1 = new C1();
 
+  // Analogous to testExplicitLockExpressionIsFinal and testGuardedByExpressionIsFinal, but for monitor locks acquired in synchronized blocks.
   void testSynchronizedExpressionIsFinal(boolean b) {
       synchronized(c1) {
       }
@@ -828,7 +830,7 @@ void innerClassTest() {
       Object o2 = new Object(); // o2 is reassigned later - it is not effectively final
       synchronized(o1) {
       }
-      //:: error: (synchronized.expression.not.final)
+      //:: error: (lock.expression.not.final)
       synchronized(o2) {
       }
 
@@ -838,8 +840,8 @@ void innerClassTest() {
       synchronized(java.lang.String.class) {
       }
 
-      // Test a tree that is not supported by LockVisitor.ensureExpressionIsFinal
-      //:: error: (synchronized.expression.not.final)
+      // Test a tree that is not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
+      //:: error: (lock.expression.not.final)
       synchronized(c1.getFieldPure(b ? c1 : o1, c1)) {
 
       }
@@ -849,11 +851,168 @@ void innerClassTest() {
 
       // The following negative test cases are the same as the one above but with one modification in each.
 
-      //:: error: (synchronized.expression.not.final)
+      //:: error: (lock.expression.not.final)
       synchronized(c1.field.field2.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field) {
       }
-      //:: error: (synchronized.expression.not.final)
+      //:: error: (lock.expression.not.final)
       synchronized(c1.field.field.field.getFieldPure(c1.field, c1.getField().getFieldPure(c1, c1.field)).field) {
       }
   }
+
+  class C2 extends ReentrantLock {
+      final C2 field = new C2(); // Infinite loop. This code is not meant to be executed, only type checked.
+      C2 field2;
+      @Deterministic C2 getFieldDeterministic() { return field; }
+      @Pure C2 getFieldPure(Object param1, Object param2) { return field; }
+      C2 getField() { return field; }
+  }
+
+  final C2 c2 = new C2();
+
+  // Analogous to testSynchronizedExpressionIsFinal and testGuardedByExpressionIsFinal, but for explicit locks.
+  @MayReleaseLocks
+  void testExplicitLockExpressionIsFinal(boolean b) {
+      c2.lock();
+
+      ReentrantLock rl1 = new ReentrantLock(); // rl1 is effectively final - it is never reassigned
+      ReentrantLock rl2 = new ReentrantLock(); // rl2 is reassigned later - it is not effectively final
+      rl1.lock();
+      rl1.unlock();
+      // TODO: The two method.invocation.invalid errors below are due to the fact
+      // that unlock() called above is a non-side-effect-free method
+      // and is due to this line in LockStore.updateForMethodCall:
+      // localVariableValues.clear();
+      // Fix LockStore.updateForMethodCall so it is less conservative and remove
+      // the expected error.
+      //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
+      rl2.lock();
+      //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
+      rl2.unlock();
+
+      rl2 = new ReentrantLock(); // Reassignment that makes rl2 not have been effectively final earlier.
+
+      // Test a tree that is not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
+      //:: error: (lock.expression.not.final)
+      c2.getFieldPure(b ? c2 : rl1, c2).lock();
+      //:: error: (lock.expression.not.final)
+      c2.getFieldPure(b ? c2 : rl1, c2).unlock();
+
+      c2.field.field.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
+      c2.field.field.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
+
+      // The following negative test cases are the same as the one above but with one modification in each.
+
+      //:: error: (lock.expression.not.final)
+      c2.field.field2.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
+      //:: error: (lock.expression.not.final)
+      c2.field.field2.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
+
+      //:: error: (lock.expression.not.final)
+      c2.field.field.field.getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field)).field.lock();
+      //:: error: (lock.expression.not.final)
+      c2.field.field.field.getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field)).field.unlock();
+  }
+
+  // Analogous to testSynchronizedExpressionIsFinal and testExplicitLockExpressionIsFinal, but for expressions in @GuardedBy annotations.
+  void testGuardedByExpressionIsFinal() {
+      @GuardedBy("c1") Object guarded1;
+
+      final Object o1 = new Object();
+      Object o2 = new Object();
+      @GuardedBy("o1") Object guarded2 = new Object();
+      //:: error: (lock.expression.not.final)
+      @GuardedBy("o2") Object guarded3 = new Object();
+
+      // Test expressions that are not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
+      // TODO: Fix the flow expression parser so that it supports package names
+      //:: error: (flowexpr.parse.error)
+      @GuardedBy("java.lang.String.class") Object guarded4;
+      //:: error: (flowexpr.parse.error)
+      @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)") Object guarded5;
+
+      // TODO: Fix the flow expression parser so it can handle
+      // @GuardedBy("c1.field.field.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field") Object guarded6;
+      // Currently it fails because the dotPattern incorrectly splits the "getFieldPure(...).field" field access into:
+      // "getFieldPure(c1"
+      // and
+      // "field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field"
+      // However, as soon as one fixes the flow expression parser to parse a longer expression, one must consider
+      // whether the CFAbstractStore can (or should) store data for the resulting flow expression.
+
+      @GuardedBy("c1.field.field.field.getFieldPure2().getFieldDeterministic().field") Object guarded6;
+
+      // The following negative test cases are the same as the one above but with one modification in each.
+
+      //:: error: (lock.expression.not.final)
+      @GuardedBy("c1.field.field2.field.getFieldPure2().getFieldDeterministic().field") Object guarded7;
+      //:: error: (lock.expression.not.final)
+      @GuardedBy("c1.field.field.field.getField().getFieldDeterministic().field") Object guarded8;
+
+      // Additional test cases to test that method parameters (in this case the parameters to getFieldPure) are parsed.
+      @GuardedBy("c1.field.field.field.getFieldPure(c1, c1).getFieldDeterministic().field") Object guarded9;
+      @GuardedBy("c1.field.field.field.getFieldPure(c1, o1).getFieldDeterministic().field") Object guarded10;
+      //:: error: (lock.expression.not.final)
+      @GuardedBy("c1.field.field.field.getFieldPure(c1, o2).getFieldDeterministic().field") Object guarded11;
+
+      // Test that @GuardedBy annotations on various tree kinds inside a method are visited
+
+      Object guarded12 = (@GuardedBy("o1") Object) guarded2;
+      //:: error: (lock.expression.not.final)
+      Object guarded13 = (@GuardedBy("o2") Object) guarded3;
+
+      Object guarded14[] = new @GuardedBy("o1") MyClass[3];
+      //:: error: (lock.expression.not.final)
+      Object guarded15[] = new @GuardedBy("o2") MyClass[3];
+
+      // Tests that the location of the @GB annotation inside a VariableTree does not matter (i.e. it does not need to be the leftmost subtree).
+      Object guarded16 @GuardedBy("o1") [];
+      //:: error: (lock.expression.not.final)
+      Object guarded17 @GuardedBy("o2") [];
+
+      boolean b = c1 instanceof @GuardedBy("o1") Object;
+      //:: error: (lock.expression.not.final)
+      b = c1 instanceof @GuardedBy("o2") Object;
+
+      // Additional tests just outside of this method below:
+  }
+
+  // Test that @GuardedBy annotations on various tree kinds outside a method are visited
+
+  // Test that @GuardedBy annotations on method return types are visited. No need to test method receivers and parameters
+  // as they are covered by tests above that visit VariableTree.
+
+  final Object finalField = new Object();
+  Object nonFinalField = new Object();
+
+  @GuardedBy("finalField") Object testGuardedByExprIsFinal1() {
+      return null;
+  }
+
+  //:: error: (lock.expression.not.final)
+  @GuardedBy("nonFinalField") Object testGuardedByExprIsFinal2() {
+      return null;
+  }
+
+  <T extends @GuardedBy("finalField") Object> T myMethodThatReturnsT_1(T t) {
+      return t;
+  }
+
+  //:: error: (lock.expression.not.final)
+  <T extends @GuardedBy("nonFinalField") Object> T myMethodThatReturnsT_2(T t) {
+      return t;
+  }
+
+  class MyParameterizedClass1<T extends @GuardedByUnknown Object> {};
+
+  // TODO: BaseTypeVisitor.visitAnnotation does not currently visit annotations on wildcard bounds.
+  // Address this for the Lock Checker somehow and enable the warnings below:
+
+  MyParameterizedClass1<? super @GuardedBy("finalField") Object> m1;
+  // TODO: Enable :: error: (lock.expression.not.final)
+  MyParameterizedClass1<? super @GuardedBy("nonFinalField") Object> m2;
+
+  MyParameterizedClass1<? extends @GuardedBy("finalField") Object> m3;
+  // TODO: Enable :: error: (lock.expression.not.final)
+  MyParameterizedClass1<? extends @GuardedBy("nonFinalField") Object> m4;
+
 }

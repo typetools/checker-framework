@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.PureMethodCall;
+import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
@@ -386,7 +386,7 @@ public class FlowExpressionParseUtil {
                         MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, formalType);
                         List<Receiver> p = new ArrayList<>();
                         p.add(actual);
-                        Receiver boxedParam = new PureMethodCall(formalType, valueOfMethod, new ClassName(formalType), p);
+                        Receiver boxedParam = new MethodCall(formalType, valueOfMethod, new ClassName(formalType), p);
                         parameters.set(i, boxedParam);
                     }
                 }
@@ -395,7 +395,7 @@ public class FlowExpressionParseUtil {
             }
             // check that the method is pure (this is no longer required)
             assert methodElement != null;
-            /*if (!PurityUtils.isDeterministic(context.atypeFactory,
+            /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
                     methodElement)) {
                 throw new FlowExpressionParseException(Result.failure(
                         "flowexpr.method.not.deterministic",
@@ -405,14 +405,14 @@ public class FlowExpressionParseUtil {
                 Element classElem = methodElement.getEnclosingElement();
                 Receiver staticClassReceiver = new ClassName(
                         ElementUtils.getType(classElem));
-                return new PureMethodCall(ElementUtils.getType(methodElement),
+                return new MethodCall(ElementUtils.getType(methodElement),
                         methodElement, staticClassReceiver, parameters);
             } else {
                 TypeMirror methodType = InternalUtils
                         .substituteMethodReturnType(
                                 ElementUtils.getType(methodElement),
                                 context.receiver.getType());
-                return new PureMethodCall(methodType, methodElement,
+                return new MethodCall(methodType, methodElement,
                         context.receiver, parameters);
             }
         } else if (dotMatcher.matches() && allowDot) {
@@ -689,6 +689,22 @@ public class FlowExpressionParseUtil {
             MethodTree node, TreePath currentPath, BaseContext checkerContext) {
         Tree classTree = TreeUtils.enclosingClass(currentPath);
         return buildFlowExprContextForDeclaration(node, classTree, checkerContext);
+    }
+
+    /**
+     * @return A {@link FlowExpressionContext} for the class {@code classTree} as
+     *         seen at the class declaration.
+     */
+    public static FlowExpressionContext buildFlowExprContextForDeclaration(
+            ClassTree classTree, TreePath currentPath, BaseContext checkerContext) {
+        Node receiver = new ImplicitThisLiteralNode(
+                InternalUtils.typeOf(classTree));
+        Receiver internalReceiver = FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(),
+                receiver);
+        List<Receiver> internalArguments = new ArrayList<>();
+        FlowExpressionContext flowExprContext = new FlowExpressionContext(
+                internalReceiver, internalArguments, checkerContext);
+        return flowExprContext;
     }
 
     /**

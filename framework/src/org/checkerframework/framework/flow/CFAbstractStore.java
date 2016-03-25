@@ -8,7 +8,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.PureMethodCall;
+import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
@@ -78,10 +78,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected Map<FlowExpressions.ArrayAccess, V> arrayValues;
 
     /**
-     * Information collected about pure method calls, using the internal
-     * representation {@link PureMethodCall}.
+     * Information collected about method calls, using the internal
+     * representation {@link MethodCall}.
      */
-    protected Map<FlowExpressions.PureMethodCall, V> methodValues;
+    protected Map<FlowExpressions.MethodCall, V> methodValues;
 
     protected Map<FlowExpressions.ClassName, V> classValues;
 
@@ -222,7 +222,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
 
                 // case 2:
-                if (!fieldAccess.isUnmodifiableByOtherCode()) {
+                if (fieldsAreAlwaysModifiableForNonSideEffectFreeMethods() ||
+                    !fieldAccess.isUnmodifiableByOtherCode()) {
                     continue; // remove information completely
                 }
 
@@ -241,6 +242,53 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         Receiver methodCall = FlowExpressions.internalReprOf(
                 analysis.getTypeFactory(), n);
         replaceValue(methodCall, val);
+    }
+
+    /***
+     * For most type systems, a type qualifier on an unmodifiable field is itself unmodifiable.
+     * For example, given:
+     * {@code @}NonNull Object myField = new Object();
+     * myField is always {@code @}NonNull and cannot be changed to {@code @}Nullable.
+     *
+     * However for some type systems this is not true. For example:
+     * final ReentrantLock lockField = new ReentrantLock();
+     * {@code @}MayReleaseLocks void methodThatMayReleaseLocks() { ... }
+     * void foo() {
+     *     lock.lock(); // lock is now {@code @}LockHeld
+     *     methodThatMayReleaseLocks(); // lock is now {@code @}LockPossiblyHeld
+     * }
+     *
+     * Also:
+     *
+     * final Object lock = new Object();
+     * void foo() {
+     *     synchronized(lock) {
+     *         // lock is now {@code @}LockHeld
+     *         ...
+     *     }
+     *
+     *     // lock is now {@code @}LockPossiblyHeld.
+     * }
+     *
+     * Generally speaking, this is due to the fact that an object being final does
+     * not mean its fields cannot be modified, and a method call on that object
+     * could therefore cause a field to be modified.
+     *
+     * With monitor (intrinsic) locks, the situation is slightly different: a final
+     * object used as a monitor lock can be modified in the sense that the object's
+     * monitor can be acquired or released by the Java runtime, even if that datum
+     * is not directly writable by the programmer. It so happens that the {@code @}LockPossiblyHeld
+     * and {@code @}LockHeld annotations track that datum.
+     *
+     * This method returns true if for the current checker, the field indicated by
+     * {@code fieldAccess} is truly unmodifiable by other code.
+     *
+     * @return whether the field indicated by fieldAccess is unmodifiable for the current checker.
+     */
+    // TODO: Does this need to be overridden for any checkers besides the Lock Checker,
+    // i.e. are any checkers currently producing false negatives in this respect?
+    protected boolean fieldsAreAlwaysModifiableForNonSideEffectFreeMethods() {
+        return false;
     }
 
     /**
@@ -270,7 +318,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (r instanceof FlowExpressions.FieldAccess
                 || r instanceof FlowExpressions.ThisReference
                 || r instanceof FlowExpressions.LocalVariable
-                || r instanceof FlowExpressions.PureMethodCall
+                || r instanceof FlowExpressions.MethodCall
                 || r instanceof FlowExpressions.ArrayAccess) {
             return !r.containsUnknown();
         }
@@ -322,8 +370,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     fieldValues.put(fieldAcc, newValue);
                 }
             }
-        } else if (r instanceof FlowExpressions.PureMethodCall) {
-            FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) r;
+        } else if (r instanceof FlowExpressions.MethodCall) {
+            FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
             // Don't store any information if concurrent semantics are enabled.
             if (sequentialSemantics) {
                 V oldValue = methodValues.get(method);
@@ -443,8 +491,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             fieldValues.remove(fieldAcc);
-        } else if (r instanceof FlowExpressions.PureMethodCall) {
-            PureMethodCall method = (PureMethodCall) r;
+        } else if (r instanceof FlowExpressions.MethodCall) {
+            MethodCall method = (MethodCall) r;
             methodValues.remove(method);
         } else if (r instanceof FlowExpressions.ArrayAccess) {
             ArrayAccess a = (ArrayAccess) r;
@@ -470,8 +518,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (expr instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
             return fieldValues.get(fieldAcc);
-        } else if (expr instanceof FlowExpressions.PureMethodCall) {
-            FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) expr;
+        } else if (expr instanceof FlowExpressions.MethodCall) {
+            FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) expr;
             return methodValues.get(method);
         } else if (expr instanceof FlowExpressions.ArrayAccess) {
             FlowExpressions.ArrayAccess a = (FlowExpressions.ArrayAccess) expr;
@@ -770,10 +818,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
         arrayValues = newArrayValues;
 
-        Map<FlowExpressions.PureMethodCall, V> newMethodValues = new HashMap<>();
-        for (Entry<FlowExpressions.PureMethodCall, V> e : methodValues
+        Map<FlowExpressions.MethodCall, V> newMethodValues = new HashMap<>();
+        for (Entry<FlowExpressions.MethodCall, V> e : methodValues
                 .entrySet()) {
-            FlowExpressions.PureMethodCall otherMethodAccess = e.getKey();
+            FlowExpressions.MethodCall otherMethodAccess = e.getKey();
             // case 3:
             if (otherMethodAccess.containsSyntacticEqualReceiver(var)
                     || otherMethodAccess.containsSyntacticEqualParameter(var)) {
@@ -892,11 +940,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
             }
         }
-        for (Entry<PureMethodCall, V> e : other.methodValues.entrySet()) {
+        for (Entry<MethodCall, V> e : other.methodValues.entrySet()) {
             // information about methods that are only part of one store, but
             // not the other are discarded, as one store implicitly contains
             // 'top' for that field.
-            FlowExpressions.PureMethodCall el = e.getKey();
+            FlowExpressions.MethodCall el = e.getKey();
             if (methodValues.containsKey(el)) {
                 V otherVal = e.getValue();
                 V thisVal = methodValues.get(el);
@@ -952,8 +1000,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 return false;
             }
         }
-        for (Entry<PureMethodCall, V> e : other.methodValues.entrySet()) {
-            FlowExpressions.PureMethodCall key = e.getKey();
+        for (Entry<MethodCall, V> e : other.methodValues.entrySet()) {
+            FlowExpressions.MethodCall key = e.getKey();
             if (!methodValues.containsKey(key)
                     || !methodValues.get(key).equals(e.getValue())) {
                 return false;
@@ -1039,7 +1087,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
                     + "\\n");
         }
-        for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
+        for (Entry<MethodCall, V> entry : methodValues.entrySet()) {
             result.append("  " + entry.getKey().toString().replace("\"", "\\\"")
                     + " > " + entry.getValue() + "\\n");
         }
