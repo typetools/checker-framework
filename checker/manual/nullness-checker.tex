@@ -451,7 +451,8 @@ to unsoundly allow non-null array components.
 
 When you perform a run-time check for nullness, such as \<if (x != null)
 ...>, then the Nullness Checker refines the type of \<x> to
-\<@NonNull> within the scope of the test.  For more details, see
+\<@NonNull>.  The refinement lasts until the end of the scope of the test
+or until \<x> may be side-effected.  For more details, see
 Section~\ref{type-refinement}.
 
 
