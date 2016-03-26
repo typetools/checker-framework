@@ -469,12 +469,16 @@ receivers.  Here are a few examples:
 \end{smaller}
 %END LATEX
 
-You can also write the annotations within comments, as in
+You only need to write annotations on method signatures and fields.
+Annotations within method bodies are inferred for you; for more details,
+see  Section~\ref{type-refinement}.
+
+You may write the annotations within comments, as in
 \code{List</*@NonNull*/ String>}.  The Checker Framework compiler, which is
 distributed with the Checker Framework, will still process
 the annotations.
-However, your code will remain compilable by people who are not using the
-Checker Framework compiler.  For more details, see
+However, your code will remain compilable by people who are not yet using
+Java 8.  For more details, see
 Section~\ref{annotations-in-comments}.
 
 
