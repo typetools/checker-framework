@@ -363,7 +363,7 @@ checker as an annotation processor directly.
 \end{alltt}
 
 \item Use Maven properties to hold the locations of the
-  annotated JDK and, if using Java 7, the type annotations compiler.  Both were declared as Maven dependencies above.
+  annotated JDK and (if using Java 7 and/or annotations in comments), the type annotations compiler.  Both were declared as Maven dependencies above.
 To set the value of these properties automatically, use the Maven Dependency plugin.
 
 First, create the properties in the \code{properties} section of the POM:
@@ -373,8 +373,8 @@ First, create the properties in the \code{properties} section of the POM:
     <!-- These properties will be set by the Maven Dependency plugin -->
     <!-- Change to jdk7 if using Java 7 -->
     <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
-    <!-- The type annotations compiler is required if using Java 7. -->
-    <!-- Uncomment the following line if using Java 7. -->
+    <!-- Use the type annotations compiler if using Java 7 or annotations
+    in comments. -->
     <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
 </properties>
 \end{alltt}
@@ -422,7 +422,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
             <compilerArgs>
                 <!-- location of the annotated JDK, which comes from a Maven dependency -->
                 <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-                <!-- Uncomment the following line if using Java 7. -->
+                <!-- Uncomment the following line if using Java 7 or annotations in comments. -->
                 <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
             </compilerArgs>
         </configuration>
