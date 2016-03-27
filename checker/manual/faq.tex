@@ -54,6 +54,8 @@ the answers, or other questions to include here.
 \\ \ref{faq-varargs-syntax-meaning}: What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?
 \\ \ref{faq-type-qualifier-on-class-declaration}: What is the meaning of a type qualifier at a class declaration?
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
+\\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
+fully-qualified type name?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?
@@ -757,6 +759,28 @@ applied to a field or a method.  To reduce confusion and increase
 expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
 \<@Holding> annotation for one of these meanings, rather than overloading
 \<@GuardedBy> with two distinct meanings.
+
+
+\subsection{How do I annotate a fully-qualified type name?\label{faq-annotate-fully-qualified-name}}
+
+If you write a fully-qualified type name in your program, then the Java
+language requires you to write a type annotation on the simple name part,
+such as
+\begin{Verbatim}
+  entity.hibernate. @Nullable User x;
+\end{Verbatim}
+
+If you try to write the type annotation before the entire fully-qualified
+name, such as 
+\begin{Verbatim}
+  @Nullable entity.hibernate.User x;  // illegal Java syntax
+\end{Verbatim}
+\noindent
+then you will get an error like one of the following:
+\begin{Verbatim}
+error: scoping construct for static nested type cannot be annotated
+error: scoping construct cannot be annotated with type-use annotation
+\end{Verbatim}
 
 
 \section{Semantics of type annotations\label{faq-semantics-section}}

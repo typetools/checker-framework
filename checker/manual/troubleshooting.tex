@@ -263,16 +263,19 @@ FileNotFoundException and prints out the directory name with ``\<+>''
 replaced by blanks.
 
 \item
-If you get an error
+If you get an error like the following
 
 \begin{Verbatim}
 error: scoping construct for static nested type cannot be annotated
+error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 \noindent
 \begin{sloppypar}
 then you have probably written something like \<@Nullable java.util.List>.
-The correct syntax is \<java.util.@Nullable List>.  But, it's usually
+The correct Java syntax to write an annotation on a fully-qualified type
+name is to put the annotation on the simple name part, as in
+\<java.util.@Nullable List>.  But, it's usually
 better to add \<import java.util.List> to your source file, so that you can
 just write \<@Nullable List>.  Likewise, you must write \<Outer.@Nullable
 StaticNestedClass> rather than \<@Nullable Outer.StaticNestedClass>.
