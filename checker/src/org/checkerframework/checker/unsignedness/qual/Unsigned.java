@@ -5,8 +5,10 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Unsigned is a type qualifier which indicates that a value 
- * is to be interpreted as unsigned, and requires special care.
+ * The value is to be interpreted as unsigned.
+ * That is, if the most significant bit in the bitwise representation is
+ * set, then the bits should be interpreted as a large positive number
+ * rather than as a negative number.
  *
  * @checker_framework.manual #unsignedness-checker Unsignedness Checker
  */
