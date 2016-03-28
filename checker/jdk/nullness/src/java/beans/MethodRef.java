@@ -31,6 +31,8 @@ import java.lang.reflect.Method;
 
 import static sun.reflect.misc.ReflectUtil.isPackageAccessible;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
+
 final class MethodRef {
     private @Nullable String signature;
     private @Nullable SoftReference<Method> methodRef;
