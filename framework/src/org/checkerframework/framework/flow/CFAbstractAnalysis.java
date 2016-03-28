@@ -190,6 +190,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
             if (a.getSuperBound() != null) {
                 makeTop(a.getSuperBound(), tops);
             }
+
         }
 
         if (kind != TypeKind.WILDCARD) {
