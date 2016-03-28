@@ -23,6 +23,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -336,8 +337,11 @@ public final class TreeUtils {
                 (node instanceof NewArrayTree) ||
                 (node instanceof NewClassTree) ||
                 (node instanceof ReturnTree) ||
-                (node instanceof VariableTree))
+                (node instanceof VariableTree)) {
             return node;
+        } else if (node instanceof ConditionalExpressionTree) {
+            return getAssignmentContext(path);
+        }
         return null;
     }
 
