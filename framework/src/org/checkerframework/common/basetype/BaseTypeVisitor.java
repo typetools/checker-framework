@@ -219,7 +219,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Constructs an instance of the appropriate type factory for the
      * implemented type system.
-     *
+     *eof
      * The default implementation uses the checker naming convention to create
      * the appropriate type factory.  If no factory is found, it returns
      * {@link BaseAnnotatedTypeFactory}.  It reflectively invokes the
@@ -3106,7 +3106,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             }
             break;
         default:
-            type = atypeFactory.getAnnotatedType(tree);
+        	type = atypeFactory.getDefaultedAnnotatedType(tree);
         }
         return validateType(tree, type);
     }
