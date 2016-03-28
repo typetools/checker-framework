@@ -8,9 +8,9 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Signed is a type qualifier which indicates that a value should
- * be interpreted using two's complement encoding, and should function
- * normally in Java.
+ * The value is to be interpreted as unsigned.
+ * That is, if the most significant bit in the bitwise representation is
+ * set, then the bits should be interpreted as a negative number.
  *
  * @checker_framework.manual #unsignedness-checker Unsignedness Checker
  */

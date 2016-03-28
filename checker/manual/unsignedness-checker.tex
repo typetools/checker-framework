@@ -9,16 +9,29 @@ as division on an unsigned value.
 
 The Unsignedness Checker uses type annotations to indicate the signedness that the programmer intends an expression to have.
 
+\begin{figure}
+\includeimage{unsignedness}{3.5cm}
+\caption{The type qualifier hierarchy of the Unsignedness annotations.
+Qualifiers in gray are used internally by the type system but should never be written by a programmer.}
+\label{fig-unsignedness-hierarchy}
+\end{figure}
+
 These are the qualifiers in the Unsignedness type system:
 
 \begin{description}
 
 \item[\refqualclass{checker/unsignedness/qual}{Unsigned}]
-    indicates that the programmer intends the annotated value to be interpreted as unsigned.
+    indicates that the programmer intends the annotated value to be
+    interpreted as unsigned.
+    That is, if the most significant bit in the bitwise representation is
+    set, then the bits should be interpreted as a large positive value.
 
 \item[\refqualclass{checker/unsignedness/qual}{Signed}]
-    indicates that the programmer intends the annotated value to be interpreted
-    as signed.  This is the default annotation.
+    indicates that the programmer intends the annotated value to be
+    interpreted as signed.
+    That is, if the most significant bit in the bitwise representation is
+    set, then the bits should be interpreted as a negative value.
+    This is the default annotation.
 
 \item[\refqualclass{checker/unsignedness/qual}{Constant}]
     indicates that a value is a compile-time constant and could be
@@ -32,12 +45,13 @@ These are the qualifiers in the Unsignedness type system:
 
 \end{description}
 
-\begin{figure}
-\includeimage{unsignedness}{3.5cm}
-\caption{The type qualifier hierarchy of the Unsignedness annotations.
-Qualifiers in gray are used internally by the type system but should never be written by a programmer.}
-\label{fig-unsignedness-hierarchy}
-\end{figure}
+Unsignedness is primarily about how the bits of the representation are
+interpreted, not about the values that it can represent.  An unsigned value
+is always positive, but just because a variable's value is positive does
+not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
+compared to, or used in arithmetic operations with, a signed value, then
+$v$ should have signed type.
+
 
 \subsection{Default Qualifiers\label{unsignedness-checker-annotations-default-qualifiers}}
 
