@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import sun.reflect.misc.ReflectUtil;
 
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
@@ -338,7 +339,8 @@ public class PropertyDescriptor extends FeatureDescriptor {
     /**
      * Overridden to ensure that a super class doesn't take precedent
      */
-    void setClass0(Class<?> clz) {
+    // Wildcard commented out for Java 7 compiler; not needed for Java 8.
+    void setClass0(Class/*<?>*/ clz) {
         if (getClass0() != null && clz.isAssignableFrom(getClass0())) {
             // don't replace a subclass with a superclass
             return;
