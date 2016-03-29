@@ -73,12 +73,12 @@ public class TestTreeKinds {
 
   MyClass fooArray5[] @GuardedBy("lock") [] = new MyClass[3][3];
 
-  /* TODO Reenable this after the Lock Checker is changed to handle primitives.
+  /* TODO Reenable this after @GuardedByName annotation is implemented that can guard primitives.
   // Test that we can Guard primitives, not just objects
-  @GuardedBy("lock")
+  @GuardedByName("lock")
   int primitive = 1;
 
-  @GuardedBy("lock")
+  @GuardedByName("lock")
   boolean primitiveBoolean;*/
 
   class myClass {
@@ -135,10 +135,10 @@ public class TestTreeKinds {
   @GuardedBy("lock")
   myEnumType myEnum;
 
-/* TODO Reenable this after the Lock Checker is changed to handle primitives.
+/* TODO Reenable this after @GuardedByName annotation is implemented that can guard primitives.
 public void testOperationsWithPrimitives() {
-    int i = 0;
-    boolean b;
+    @GuardedByName("lock") int i = 0;
+    @GuardedByName("lock") boolean b;
 
     // TODO reenable this error: (contracts.precondition.not.satisfied.field)
     i = i >>> primitive;
