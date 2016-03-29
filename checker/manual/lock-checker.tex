@@ -435,7 +435,7 @@ type-checking rules.
 
 \begin{Verbatim}
 class MyClass {
-  ReentrantLock lock; // Initialized in the constructor
+  final ReentrantLock lock; // Initialized in the constructor
 
   @GuardedBy("lock") Object x = new Object();
   @GuardedBy("lock") Object y = x; // OK, since dereferences of y will require "lock" to be held.
@@ -471,7 +471,7 @@ variable name the value was originally assigned to falls out of scope.
 
 \begin{Verbatim}
 class MyClass {
-  private @GuardedBy("itself") Object x = new Object();
+  private final @GuardedBy("itself") Object x = new Object();
   void method(){
     x.toString(); // ILLEGAL because x is not known to be held.
     synchronized(x) {
@@ -487,7 +487,7 @@ class MyClass {
 class MyOtherClass {
   void method() {
     MyClass m = new MyClass();
-    @GuardedBy("itself") Object o = m.get_x();
+    final @GuardedBy("itself") Object o = m.get_x();
     o.toString(); // ILLEGAL because o is not known to be held.
     synchronized(o) {
       o.toString(); // OK: o is known to be held.
@@ -509,8 +509,8 @@ hierarchy.
 
 \begin{Verbatim}
 class MyClass {
-    Object lockA = new Object();
-    Object lockB = new Object();
+    final Object lockA = new Object();
+    final Object lockB = new Object();
     @GuardedBy("lockA") Object x = new Object();
     @GuardedBy({"lockA", "lockB"}) Object y = new Object();
     void myMethod() {
@@ -584,7 +584,7 @@ higher-level lock constructs such as a Monitor, as in this simplified example:
 \begin{Verbatim}
 public class Monitor {
 
-    private ReentrantLock lock; // Initialized in the constructor
+    private final ReentrantLock lock; // Initialized in the constructor
 
     ...
 
@@ -607,7 +607,7 @@ than \code{@LockingFree}, and \code{@MayReleaseLocks} provides no guarantees.
 
 \begin{verbatim}
 private Object myField;
-private ReentrantLock lock; // Initialized in the constructor
+private final ReentrantLock lock; // Initialized in the constructor
 private @GuardedBy("lock") Object x; // Initialized in the constructor
 
 [...]
@@ -629,15 +629,12 @@ void myUnlockingMethod() {
   lock.unlock();
 }
 
-// This method uses 'lock' but does not cause the held count
-// on the current thread of 'lock' to ever fall below the count
-// when the method was entered.
 @ReleasesNoLocks
-void myLockingUnlockingMethod() {
+void myLockingMethod() {
   lock.lock();
-  lock.unlock();
 }
 
+@MayReleaseLocks
 void clientMethod() {
   if (lock.tryLock()) {
     x.toString(); // OK: the lock is held
@@ -647,11 +644,11 @@ void clientMethod() {
     x.toString(); // OK: the lock is still known to be held since mySideEffectFreeMethod
                   // is side-effect-free
     myUnlockingMethod();
-    x.toString(); // ILLEGAL: myLockingMethod may have released a lock
+    x.toString(); // ILLEGAL: myUnlockingMethod may have released a lock
   }
   if (lock.tryLock()) {
     x.toString(); // OK: the lock is held
-    myLockingUnlockingMethod();
+    myLockingMethod();
     x.toString(); // OK: the lock is held
   }
   if (lock.isHeldByCurrentThread()) {
@@ -693,7 +690,7 @@ locks or synchronization.
 Given these annotations on \<append>, the following code type-checks:
 
 \begin{verbatim}
-ReentrantLock lock1, lock2;
+final ReentrantLock lock1, lock2; // Initialized in the constructor
 @GuardedBy("lock1") StringBuffer filename;
 @GuardedBy("lock2") StringBuffer extension;
 ...
