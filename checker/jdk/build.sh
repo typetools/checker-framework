@@ -39,16 +39,18 @@ LT_JAVAC="${JSR308}/jsr308-langtools/dist/bin/javac"
 CF_BIN="${CHECKERFRAMEWORK}/checker/build"
 CF_DIST="${CHECKERFRAMEWORK}/checker/dist"
 CF_JAR="${CF_DIST}/checker.jar"
-CF_JAVAC="java -jar ${CF_JAR}"
+CF_JAVAC="java -jar ${CF_JAR} -Xbootclasspath/p:${BOOTDIR}"
 CTSYM="${JAVA_HOME}/lib/ct.sym"
 CP="${BINDIR}:${BOOTDIR}:${LT_BIN}:${TOOLSJAR}:${CF_BIN}:${CF_JAR}"
-JFLAGS="-source 8 -target 8 -encoding ascii -cp ${CP} \
-        -XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000"
+JFLAGS="-XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 \
+        -source 8 -target 8 -encoding ascii -cp ${CP}"
 PROCESSORS="interning,igj,javari,nullness,signature"
 PFLAGS="-Aignorejdkastub -AuseDefaultsForUncheckedCode=source -AprintErrorStack -Awarns"
 
 RET=0       # exit code initialization
+PID=$$      # script process id
 
+trap "exit 0" SIGHUP
 set -o pipefail
 
 # This is called only when all source files successfully compiled.
@@ -79,7 +81,7 @@ finish() {
                 CLS="$D/`basename $g .jaif`.class"
                 if [ -r "${CLS}" ] ; then
                     echo "insert-annotations $CLS $g"
-                    CLASSPATH=${CP} insert-annotations "$CLS" "$g"
+                    insert-annotations "$CLS" "$g"
                 else
                     echo ${CLS}: not found
                 fi
@@ -95,7 +97,10 @@ finish() {
     # recreate jar
     jar cf ${WORKDIR}/jdk8.jar *
     cd ${WORKDIR}
+    cp jdk8.jar ${CF_DIST}
     [ ${PRESERVE} -ne 0 ] || rm -rf sym
+    echo "success!"
+    kill -HUP ${PID}
 }
 
 cd ${SRCDIR}
@@ -124,27 +129,32 @@ if [ ! -z "${NAF}" ] ; then
 fi
 
 echo "phase 0: build bootstrap JDK" | tee ${WORKDIR}/LOG0
+echo "${LT_JAVAC} -g -d ${BOOTDIR} ${JFLAGS} [$(pwd)]" | tee -a ${WORKDIR}/LOG0
 ${LT_JAVAC} -g -d ${BOOTDIR} ${JFLAGS} ${SRC} | tee -a ${WORKDIR}/LOG0
-[ $? -eq 0 ] || exit $?
+RET=$?
+[ ${RET} -eq 0 ] || exit ${RET}
+grep -q 'not found' ${WORKDIR}/LOG0
+RET=$?
+[ ${RET} -ne 0 ] || exit ${RET}
+(cd ${BOOTDIR} && jar cf ../jdk8.jar *)
 
 echo "phase 1: process all source files together" | tee ${WORKDIR}/LOG1
 # The first command could be replaced by "cd ${CHECKERFRAMEWORK} && ant
 # dist-nobuildjdk", but that would take longer and produce much more output.
-[ ! -r ${CF_DIST}/javac.jar ] && echo copying javac JAR && mkdir -p ${CF_DIST} && \
+[ ! -r ${CF_DIST}/javac.jar ] && echo copying javac JAR && \
+        mkdir -p ${CF_DIST} && \
         cp ${JSR308}/jsr308-langtools/dist/lib/javac.jar ${CF_DIST}
 [ ! -r ${CF_DIST}/jdk8.jar ] && echo creating bootstrap JDK 8 JAR && \
         cd ${BOOTDIR} && jar cf ${WORKDIR}/jdk8.jar * && \
         cp ${WORKDIR}/jdk8.jar ${CF_DIST}
 
 ${CF_JAVAC} -g -d ${BINDIR} ${JFLAGS} -processor ${PROCESSORS} ${PFLAGS} \
-    ${AGENDA} 2>&1 | tee -a ${WORKDIR}/LOG1
-[ $? -eq 0 ] && echo "success!" && exit 0
+        ${AGENDA} 2>&1 | tee -a ${WORKDIR}/LOG1
 
 # hack: scrape log file to find which source files crashed
 # TODO: check for corresponding class files instead
 AGENDA=`grep 'Compilation unit: ' ${WORKDIR}/LOG1 | awk '{print$3}' | sort -u`
-[ -z "${AGENDA}" ] && finish && echo "success!" && exit 0 | \
-        tee -a ${WORKDIR}/LOG1
+[ -z "${AGENDA}" ] && finish | tee -a ${WORKDIR}/LOG1
 
 # retry failures with all phase 1 class files available in the classpath
 echo "phase 2: retry failures" | tee ${WORKDIR}/LOG2
@@ -152,8 +162,7 @@ ${CF_JAVAC} -g -d ${BINDIR} ${JFLAGS} -processor ${PROCESSORS} ${PFLAGS} \
          ${AGENDA} 2>&1 | tee -a ${WORKDIR}/LOG2
 
 AGENDA=`grep 'Compilation unit: ' ${WORKDIR}/LOG2 | awk '{print$3}' | sort -u`
-[ -z "${AGENDA}" ] && finish && echo "success!" && exit 0 | \
-        tee -a ${WORKDIR}/LOG2
+[ -z "${AGENDA}" ] && finish | tee -a ${WORKDIR}/LOG2
 
 # retry remaining failures individually with all processors on
 echo "phase 3: retry failures individually" | tee ${WORKDIR}/LOG3
@@ -163,8 +172,7 @@ for f in ${AGENDA} ; do
 done
 
 AGENDA=`grep 'Compilation unit: ' ${WORKDIR}/LOG3 | awk '{print$3}' | sort -u`
-[ -z "${AGENDA}" ] && finish && echo "success!" && exit 0 | \
-        tee -a ${WORKDIR}/LOG3
+[ -z "${AGENDA}" ] && finish | tee -a ${WORKDIR}/LOG3
 
 # retry remaining failures individually with each processor, one at a time;
 # extract annotations from resulting class files;
@@ -172,6 +180,8 @@ AGENDA=`grep 'Compilation unit: ' ${WORKDIR}/LOG3 | awk '{print$3}' | sort -u`
 echo "phase 4: retry failures individually with one processor at a time" \
         | tee ${WORKDIR}/LOG4
 mkdir -p jaifs
+RET=0
+
 for f in ${AGENDA} ; do
     BASE="`dirname $f`/`basename $f .java`"
     CLS="${BASE}.class"
@@ -203,15 +213,14 @@ for f in ${AGENDA} ; do
     if [ ${RET} -eq 0 -a -r ${CLS} ] ; then
         for g in jaifs/*/*.jaif ; do
             echo inserting into: $c
-            CLASSPATH=${CP} insert-annotations "${CLS}" "$g" | \
-                    tee -a ${WORKDIR}/LOG4
+            insert-annotations "${CLS}" "$g" | tee -a ${WORKDIR}/LOG4
             RET=$?
             rm -f "$g"
         done
     fi
     [ ${RET} -ne 0 ] && echo "${CLS}: insertion failed" && exit ${RET}
 done
-[ ${PRESERVE} -eq 0 ] && rm -rf jaifs
 
-finish && echo "success!" && exit 0
+[ ${PRESERVE} -eq 0 ] && rm -rf jaifs
+finish | tee -a ${WORKDIR}/LOG4
 
