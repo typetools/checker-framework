@@ -33,12 +33,11 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
 
     @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignement) {
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
         atypeFactory.keyForCanonicalizeValues(varType, valueType, getCurrentPath());
 
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignement);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
     /**
