@@ -1,3 +1,4 @@
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
@@ -15,11 +16,10 @@ public class GuardSatisfiedTest {
    }
 
    // Test defaulting of parameters - they must default to @GuardedBy({}), not @GuardSatisfied
-   void testDefaulting(Object o) {
-       @GuardSatisfied Object p = new Object();
+   void testDefaulting(Object mustDefaultToGuardedByNothing, @GuardSatisfied Object p) {
        //:: error: (assignment.type.incompatible)
-       o = p; // Must assign in this direction to test the defaulting because assigning a RHS of @GuardedBy({}) to a LHS @GuardSatisfied is legal.
-       @GuardedBy({}) Object q = o;
+       mustDefaultToGuardedByNothing = p; // Must assign in this direction to test the defaulting because assigning a RHS of @GuardedBy({}) to a LHS @GuardSatisfied is legal.
+       @GuardedBy({}) Object q = mustDefaultToGuardedByNothing;
    }
 
    void testMethodCall(@GuardSatisfied GuardSatisfiedTest this, @GuardedBy("lock1") Object o, @GuardedBy("lock2") Object p, @GuardSatisfied Object q) {
@@ -192,6 +192,58 @@ public class GuardSatisfiedTest {
                o = p;
            }
        }
+   }
+
+   // Test disallowed @GuardSatisfied locations.
+   // Whenever a disallowed location can be located within a method return type,
+   // receiver or parameter, test it there, because it's important to check
+   // that those are not mistakenly allowed, since annotations
+   // on method return types, receivers and parameters are allowed.
+   // By definition, fields and non-parameter local variables cannot be
+   // in one of these locations on a method declaration, but other
+   // locations can be.
+
+   //:: error: (guardsatisfied.location.disallowed)
+   @GuardSatisfied Object field;
+   //:: error: (guardsatisfied.location.disallowed)
+   void testGuardSatisfiedOnArrayElementAndLocalVariable(@GuardSatisfied Object[] array) {
+       //:: error: (guardsatisfied.location.disallowed)
+       @GuardSatisfied Object local;
+   }
+
+   //:: error: (guardsatisfied.location.disallowed)
+   <T extends @GuardSatisfied Object> T testGuardSatisfiedOnBound(T t) {
+       return t;
+   }
+
+   class MyParameterizedClass1<T extends @GuardedByUnknown Object> {
+       void testGuardSatisfiedOnReceiverOfParameterizedClass(@GuardSatisfied MyParameterizedClass1<T> this) {
+       }
+   };
+
+   // TODO: Enable :: error: (guardsatisfied.location.disallowed)
+   void testGuardSatisfiedOnWildCardExtendsBound(MyParameterizedClass1<? extends @GuardSatisfied Object> l) {
+   }
+
+   // TODO: Enable :: error: (guardsatisfied.location.disallowed)
+   void testGuardSatisfiedOnWildCardSuperBound(MyParameterizedClass1<? super @GuardSatisfied Object> l) {
+   }
+
+   @GuardSatisfied(1) Object testGuardSatisfiedOnParameters(@GuardSatisfied GuardSatisfiedTest this, Object @GuardSatisfied [] array,
+           @GuardSatisfied Object param, @GuardSatisfied(1) Object param2) {
+       return param2;
+   }
+
+   void testGuardSatisfiedOnArray1( Object @GuardSatisfied [][][] array) {
+   }
+   //:: error: (guardsatisfied.location.disallowed)
+   void testGuardSatisfiedOnArray2( @GuardSatisfied Object [][][] array) {
+   }
+   //:: error: (guardsatisfied.location.disallowed)
+   void testGuardSatisfiedOnArray3( Object [] @GuardSatisfied [][] array) {
+   }
+   //:: error: (guardsatisfied.location.disallowed)
+   void testGuardSatisfiedOnArray4( Object [][] @GuardSatisfied [] array) {
    }
 }
 

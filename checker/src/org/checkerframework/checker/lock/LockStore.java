@@ -143,6 +143,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         super.updateForMethodCall(n, atypeFactory, val);
         ExecutableElement method = n.getTarget().getMethod();
         if (!isSideEffectFree(atypeFactory, method)) {
+            // Fields are always modifiable as far as the Lock Checker is concerned, even if they are final.
+            fieldValues.clear();
+
             // Necessary because a method could unlock a lock that is a local variable, e.g.:
             // void foo() {
             //     ReentrantLock lock = new ReentrantLock();
@@ -152,14 +155,6 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             localVariableValues.clear();
             // TODO: This is too conservative. Clear only the values for the local variables that could be affected.
         }
-    }
-
-    /***
-     * Fields are always modifiable as far as the Lock Checker is concerned, even if they are final.
-     */
-    @Override
-    protected boolean fieldsAreAlwaysModifiableForNonSideEffectFreeMethods() {
-        return true;
     }
 
     boolean hasLockHeld(CFValue value) {

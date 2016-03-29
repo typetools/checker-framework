@@ -623,7 +623,8 @@ void innerClassTest() {
     }
 
   private static final Object NULL_KEY = new Object();
-  @SuppressWarnings("cast.unsafe")
+  // A guardsatisfied.location.disallowed error is issued for the cast.
+  @SuppressWarnings({"cast.unsafe", "guardsatisfied.location.disallowed"})
   private static @GuardSatisfied(1) Object maskNull(@GuardSatisfied(1) Object key) {
       return (key == null ? (@GuardSatisfied(1) Object) NULL_KEY : key);
   }
@@ -802,10 +803,10 @@ void innerClassTest() {
 
   //:: error: (class.declaration.guardedby.annotation.invalid)
   @GuardedByUnknown class MyClass2 {}
-  //:: error: (class.declaration.guardedby.annotation.invalid)
+  //:: error: (class.declaration.guardedby.annotation.invalid) :: error: (lock.expression.possibly.not.final)
   @GuardedBy("lock") class MyClass3 {}
   @GuardedBy({}) class MyClass4 {}
-  //:: error: (class.declaration.guardedby.annotation.invalid)
+  //:: error: (class.declaration.guardedby.annotation.invalid) :: error: (guardsatisfied.location.disallowed)
   @GuardSatisfied class MyClass5 {}
   //:: error: (class.declaration.guardedby.annotation.invalid)
   @GuardedByBottom class MyClass6 {}
@@ -841,7 +842,7 @@ void innerClassTest() {
       }
 
       // Test a tree that is not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
-      //:: error: (lock.expression.not.final)
+      //:: error: (lock.expression.possibly.not.final)
       synchronized(c1.getFieldPure(b ? c1 : o1, c1)) {
 
       }
@@ -892,9 +893,9 @@ void innerClassTest() {
       rl2 = new ReentrantLock(); // Reassignment that makes rl2 not have been effectively final earlier.
 
       // Test a tree that is not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
-      //:: error: (lock.expression.not.final)
+      //:: error: (lock.expression.possibly.not.final)
       c2.getFieldPure(b ? c2 : rl1, c2).lock();
-      //:: error: (lock.expression.not.final)
+      //:: error: (lock.expression.possibly.not.final)
       c2.getFieldPure(b ? c2 : rl1, c2).unlock();
 
       c2.field.field.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
@@ -969,6 +970,16 @@ void innerClassTest() {
       //:: error: (lock.expression.not.final)
       Object guarded17 @GuardedBy("o2") [];
 
+      @GuardedBy("o1") Object guarded18[];
+      //:: error: (lock.expression.not.final)
+      @GuardedBy("o2") Object guarded19[];
+
+      // TODO: BaseTypeVisitor.visitAnnotation does not currently visit annotations on type arguments.
+      // Address this for the Lock Checker somehow and enable the warnings below:
+      MyParameterizedClass1<@GuardedBy("o1") Object> m1;
+      // TODO: Enable :: error: (lock.expression.not.final)
+      MyParameterizedClass1<@GuardedBy("o2") Object> m2;
+
       boolean b = c1 instanceof @GuardedBy("o1") Object;
       //:: error: (lock.expression.not.final)
       b = c1 instanceof @GuardedBy("o2") Object;
@@ -1015,4 +1026,32 @@ void innerClassTest() {
   // TODO: Enable :: error: (lock.expression.not.final)
   MyParameterizedClass1<? extends @GuardedBy("nonFinalField") Object> m4;
 
+  class MyClassContainingALock {
+      final ReentrantLock finalLock = new ReentrantLock();
+      ReentrantLock nonFinalLock = new ReentrantLock();
+      Object field;
+  }
+
+  void testItselfFinalLock() {
+      final @GuardedBy("itself.finalLock") MyClassContainingALock m = new MyClassContainingALock();
+      //:: error: (contracts.precondition.not.satisfied.field)
+      m.field = new Object();
+      // Ignore this error: it is expected that an error will be issued for dereferencing 'm' in order to take the 'm.finalLock' lock.
+      // Typically, the Lock Checker does not support an object being guarded by one of its fields, but this is sometimes done in user code
+      // with a ReentrantLock field guarding its containing object. This unfortunately makes it a bit difficult for users since they have
+      // to add a @SuppressWarnings for this call while still making sure that warnings for other dereferences are not suppressed.
+      //:: error: (contracts.precondition.not.satisfied.field)
+      m.finalLock.lock();
+      m.field = new Object();
+  }
+
+  void testItselfNonFinalLock() {
+      final @GuardedBy("itself.nonFinalLock") MyClassContainingALock m = new MyClassContainingALock();
+      //:: error: (lock.expression.not.final)
+      m.field = new Object();
+      //:: error: (lock.expression.not.final)
+      m.nonFinalLock.lock();
+      //:: error: (lock.expression.not.final)
+      m.field = new Object();
+  }
 }

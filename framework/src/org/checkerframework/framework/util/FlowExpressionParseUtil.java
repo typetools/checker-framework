@@ -203,7 +203,7 @@ public class FlowExpressionParseUtil {
             return new ValueLiteral(types.getDeclaredType(stringTypeElem),
                     s.substring(1, s.length() - 1));
         } else if (selfMatcher.matches() && allowSelf) {
-            // this literal, even after the call above to set s = context.receiver.toString();
+            // "this" literal, even after the call above to set s = context.receiver.toString();
             if (context.receiver == null || context.receiver.containsUnknown()) {
                 return new ThisReference(context.receiver == null ? null : context.receiver.getType());
             }
@@ -302,7 +302,7 @@ public class FlowExpressionParseUtil {
                     return new ClassName(classType);
                 } catch (Throwable t2) {
 
-                    if (allowItself && !recursiveCall && itselfMatcher.matches()) {
+                    if (allowItself && itselfMatcher.matches()) {
                         return null; // Don't throw an exception if 'itself' does not match an identifier.
                         // The callee knows that it passed in 'itself' and will handle the null return value.
                         // DO however throw an exception below if the call is recursive and 'itself' matches,
@@ -422,6 +422,12 @@ public class FlowExpressionParseUtil {
             // Parse the receiver first.
             Receiver receiver = parse(receiverString, context, path, allowItself, true);
 
+            if (allowItself && receiver == null) {
+                // "itself.<someexpression>", where "itself" is not a variable name. Let the caller handle it.
+
+                return null;
+            }
+
             if (receiver instanceof FlowExpressions.ClassName && remainingString.equals("class")) {
                 return receiver;
             }
@@ -429,7 +435,7 @@ public class FlowExpressionParseUtil {
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
             return parse(remainingString, newContext, path, false, true, false,
-                    true, true, false, false, false, allowItself, true);
+                    true, true, false, false, false, false /*"itself" can only be in the receiver, not in the remaining string*/, true);
         } else if (parenthesesMatcher.matches()) {
             String expressionString = parenthesesMatcher.group(1);
             // Do not modify the value of recursiveCall, since a parenthesis match is essentially a match to a no-op and should not semantically affect the parsing.

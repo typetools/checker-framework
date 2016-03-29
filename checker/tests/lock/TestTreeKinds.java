@@ -588,9 +588,9 @@ public void testMethodAnnotations() {
       @GuardedBy("lock") int a = 0;
       //:: error: (primitive.type.guardedby)
       @GuardedBy int b = 0;
-      //:: error: (primitive.type.guardedby)
+      //:: error: (primitive.type.guardedby) :: error: (guardsatisfied.location.disallowed)
       @GuardSatisfied int c = 0;
-      //:: error: (primitive.type.guardedby)
+      //:: error: (primitive.type.guardedby) :: error: (guardsatisfied.location.disallowed)
       @GuardSatisfied(1) int d = 0;
       int e = 0;
       //:: error: (primitive.type.guardedby)
@@ -613,10 +613,5 @@ public void testMethodAnnotations() {
       boolean b8 = o2 instanceof @GuardedBy("lock") Object;
   }
 
-  // TODO: Once @TargetLocations are enforced, @GuardSatisfied on all three of these locations should issue warnings:
-  @GuardSatisfied Object field;
-  void testGuardSatisfiedOnArrayElementAndLocalVariable(@GuardSatisfied Object[] array) {
-      @GuardSatisfied Object local;
-  }
 
 }
