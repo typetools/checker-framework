@@ -95,7 +95,8 @@ This section describes the lock annotations you can write on types and methods.
   \<@GuardedBy(\{\})>, which means the value is always allowed to be
   dereferenced, is the default type qualifier that is used for all locations
   where the programmer does not
-  write an explicit locking type qualifier (except CLIMB-to-top locations, see Section~\ref{climb-to-top}).
+  write an explicit locking type qualifier (except all CLIMB-to-top locations
+  other than upper bounds and exception parameters --- see Section~\ref{climb-to-top}).
   (Section~\ref{lock-checker-default-qualifier} discusses this choice.)
   It is also the conservative
   default type qualifier for method parameters in unannotated libraries
@@ -130,7 +131,8 @@ This section describes the lock annotations you can write on types and methods.
 \includeimage{lock-guardedby}{3cm}
 \caption{The subtyping relationship of the Lock Checker's qualifiers.
 \code{@GuardedBy(\{\})} is the default type qualifier for unannotated
-types (except CLIMB-to-top locations, see Section~\ref{climb-to-top}).
+types (except all CLIMB-to-top locations other than upper bounds and exception
+parameters --- see Section~\ref{climb-to-top}).
 }
 \label{fig-lock-guardedby-hierarchy}
 \end{figure}
