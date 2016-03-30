@@ -113,7 +113,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   </li>
   <li><strong>Review the changelogs and documentation</strong><br/>
       Ensure that the changelogs and documentation for the Checker Framework, Type Annotations Compiler and
-      AFU are complete by running release_build in a mode that reviews the documentation only:
+      AFU are complete.  First follow the instructions at <a href="#content_guidelines">content guidelines</a>.  Then,
+      run release_build in a mode that reviews the documentation only:
       <code>python release_build.py all --review-manual</code><br/><br/>
       <strong>Note:</strong> This step can be performed in advance of the release day. It is recommended
       that this be done the work morning after Feature Freeze.
@@ -477,9 +478,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
 	  <li>
 	    Examine the version control logs since the last release tag to ensure they are reflected in the changelogs when appropriate.
         This can be done from the command-line with:<br/>
-	    <code>cd $CHECKERFRAMEWORK && git log --name-status checker-framework-1.9.10..</code><br/>
-	    <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status 3.6.24..</code><br/>
-	    <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r jsr308-1.9.10:</code><br/>
+	    <code>cd $CHECKERFRAMEWORK && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
+	    <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
+	    <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r `hg log -r "." --template "{latesttag}\n"`:</code><br/>
         or by opening the following commit queries for <a href="https://bitbucket.org/typetools/jsr308-langtools/commits/all">jsr308-langtools</a>,
         the <a href="https://github.com/typetools/annotation-tools/commits/master">Annotation File Utilities</a> and the
             <a href="https://github.com/typetools/checker-framework/commits/master">Checker Framework</a>.
