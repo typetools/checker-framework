@@ -32,7 +32,6 @@ class ChapterExamples {
         }
     }
 
-
     private abstract class Values<V> extends AbstractCollection<V> {
         public <T> T[] toArray(T[] a) {
             Collection<V> c = new ArrayList<V>(size());
@@ -42,52 +41,27 @@ class ChapterExamples {
         }
     }
 
-
-
-    // Keep these as test cases!
+    // @GuardedByBottom, which represents the 'null' literal, is the default lower bound,
+    // so null can be returned in the following two methods:
     <T> T method1(T t, boolean b) {
-        //(return.type.incompatible)
         return b ? null : t;
-//  error: [return.type.incompatible] incompatible types in return.
-//        return b ? null : t;
-//                 ^
-//  found   : T[ extends @Initialized @Nullable Object super @Initialized @Nullable Void]
-//  required: T[ extends @Initialized @Nullable Object super @Initialized @NonNull Void]
     }
 
     <T> T method2(T t, boolean b) {
-        //(return.type.incompatible)
         return null;
-//  error: [return.type.incompatible] incompatible types in return.
-//        return null;
-//               ^
-//  found   : @FBCBottom @Nullable  null
-//  required: T[ extends @Initialized @Nullable Object super @Initialized @NonNull Void]
     }
 
-    //  The following code type checks (as expected):
     void bar(@NonNull Object nn1, boolean b) {
         @NonNull Object nn2 = method1(nn1, b);
         @NonNull Object nn3 = method2(nn1, b);
     }
 
-    //  The following code type checks (as expected):
     void bar2(@GuardedByBottom Object bottomParam, boolean b) {
         @GuardedByUnknown Object refinedToBottom1 = method1(bottomParam, b);
         @GuardedByUnknown Object refinedToBottom2 = method2(bottomParam, b);
         @GuardedByBottom Object bottom1 = method1(bottomParam, b);
         @GuardedByBottom Object bottom2 = method2(bottomParam, b);
     }
-
-   //MyClass2<@NonNull Object> m;
-
-   /*
-
-    boolean b1;
-    T ooo;
-    T t1 = foo(ooo, b1);
-    T t2 = foo(ooo, b1);
-   }*/
 
     private static boolean eq(@GuardSatisfied Object o1, @GuardSatisfied Object o2) {
         return (o1 == null ? o2 == null : o1.equals(o2));
