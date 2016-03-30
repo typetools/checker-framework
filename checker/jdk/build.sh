@@ -136,7 +136,6 @@ RET=$?
 grep -q 'not found' ${WORKDIR}/LOG0
 RET=$?
 [ ${RET} -ne 0 ] || exit ${RET}
-(cd ${BOOTDIR} && jar cf ../jdk8.jar *)
 
 echo "phase 1: process all source files together" | tee ${WORKDIR}/LOG1
 # The first command could be replaced by "cd ${CHECKERFRAMEWORK} && ant
