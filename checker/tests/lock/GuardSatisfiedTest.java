@@ -219,6 +219,11 @@ public class GuardSatisfiedTest {
    class MyParameterizedClass1<T extends @GuardedByUnknown Object> {
        void testGuardSatisfiedOnReceiverOfParameterizedClass(@GuardSatisfied MyParameterizedClass1<T> this) {
        }
+       void testGuardSatisfiedOnArrayOfParameterizedType(MyParameterizedClass1<T> @GuardSatisfied[] array) {
+       }
+       //:: error: (guardsatisfied.location.disallowed)
+       void testGuardSatisfiedOnArrayComponentOfParameterizedType(@GuardSatisfied MyParameterizedClass1<T>[] array) {
+       }
    };
 
    // TODO: Enable :: error: (guardsatisfied.location.disallowed)

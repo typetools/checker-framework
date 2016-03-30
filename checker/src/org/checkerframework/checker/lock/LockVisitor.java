@@ -929,7 +929,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     /**
      * Issues an error if a GuardSatisfied annotation is found in a location other than a method return type, receiver or parameter.
-     * @param annotationTree AnnotationTree used for error reporting and
+     * @param annotationTree AnnotationTree used for error reporting and to help determine that an array parameter has no GuardSatisfied
+     * annotations except on the array type.
      */
     // TODO: Remove this method once @TargetLocations are enforced.
     private void issueErrorIfGuardSatisfiedAnnotationInUnsupportedLocation(AnnotationTree annotationTree) {
@@ -946,31 +947,20 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 VariableTree varTree = (VariableTree) tree;
                 Tree varTypeTree = varTree.getType();
                 if (varTypeTree != null) {
-                    Tree.Kind varTypeTreeKind = varTypeTree.getKind();
-                    if (varTypeTreeKind == Tree.Kind.PARAMETERIZED_TYPE) {
-                        varTypeTree = ((ParameterizedTypeTree) varTypeTree).getType();
-                        varTypeTreeKind = varTypeTree.getKind();
-                    }
-                    if (varTypeTreeKind == Tree.Kind.ANNOTATED_TYPE) {
-                        AnnotatedTypeTree annotatedTypeTree = (AnnotatedTypeTree) varTypeTree;
+                    TreePath parentPath = path.getParentPath();
+                    if (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.METHOD) {
+                        Tree.Kind varTypeTreeKind = varTypeTree.getKind();
+                        if (varTypeTreeKind == Tree.Kind.ANNOTATED_TYPE) {
+                            AnnotatedTypeTree annotatedTypeTree = (AnnotatedTypeTree) varTypeTree;
 
-                        if (annotatedTypeTree.getUnderlyingType().getKind() != Tree.Kind.ARRAY_TYPE ||
-                            annotatedTypeTree.getAnnotations().contains(annotationTree)) {
-                            TreePath parentPath = path.getParentPath();
-                            if (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.METHOD) {
+                            if (annotatedTypeTree.getUnderlyingType().getKind() != Tree.Kind.ARRAY_TYPE ||
+                                annotatedTypeTree.getAnnotations().contains(annotationTree)) {
                                 // Method parameter
                                 return;
                             }
-                        }
-                    } else if (varTypeTreeKind == Tree.Kind.IDENTIFIER) {
-                        TreePath parentPath = path.getParentPath();
-                        if (parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.METHOD) {
-                            MethodTree methodTree = (MethodTree) parentPath.getLeaf();
-                            if (methodTree.getReceiverParameter() == varTree ||
-                                methodTree.getParameters().contains(varTree)) {
-                                // Method receiver or parameter
-                                return;
-                            }
+                        } else if (varTypeTreeKind != Tree.Kind.ARRAY_TYPE) {
+                            // Method parameter or receiver
+                            return;
                         }
                     }
                 }
