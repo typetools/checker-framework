@@ -6,11 +6,10 @@ import org.checkerframework.dataflow.cfg.CFGDOTVisualizer;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
@@ -23,7 +22,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 /*>>>
@@ -175,27 +173,14 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     /**
      * Adds top as the annotation on all locations of a given type.
      */
-    private void makeTop(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> tops) {
-        TypeKind kind = type.getKind();
-        if (kind == TypeKind.ARRAY) {
-            AnnotatedArrayType a = (AnnotatedArrayType) type;
-            makeTop(a.getComponentType(), tops);
-        } else if (kind == TypeKind.TYPEVAR) {
-            //just set the primary to top, this will override the upper/lower bounds
-
-        } else if (kind == TypeKind.WILDCARD) {
-            AnnotatedWildcardType a = (AnnotatedWildcardType) type;
-            a.addAnnotations(tops);
-            makeTop(a.getExtendsBound(), tops);
-            if (a.getSuperBound() != null) {
-                makeTop(a.getSuperBound(), tops);
+    private void makeTop(AnnotatedTypeMirror type, final Set<? extends AnnotationMirror> tops) {
+        new AnnotatedTypeScanner<AnnotatedTypeMirror, Void>() {
+            @Override
+            protected AnnotatedTypeMirror scan(AnnotatedTypeMirror type, Void aVoid) {
+                type.addAnnotations(tops);
+                return super.scan(type, aVoid);
             }
-        }
-
-        if (kind != TypeKind.WILDCARD) {
-            // don't set top annotations, because [] is top
-            type.addAnnotations(tops);
-        }
+        }.visit(type, null);
     }
 
     /**
