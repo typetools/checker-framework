@@ -311,9 +311,9 @@ If you use the \href{http://maven.apache.org/}{Maven} tool,
 then you can enable Checker Framework checkers by following the
 instructions below.
 
-See the directory \code{examples/GradleExamples/} for examples of Gradle
-build files that run a checker.  You can use these examples to verify that
-Gradle is correctly downloading the Checker Framework from
+See the directory \code{examples/MavenExample/} for examples of the use of
+Maven build files that run a checker.  These examples can be used to verify that
+Maven is correctly downloading the Checker Framework from
 \href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
   Central} and executing it.
 
@@ -444,9 +444,9 @@ Now, building with Maven should run the checkers during compilation.
 Notice that using this approach, no external setup is necessary,
 so your Maven build should be reproducible on any server.
 
-If you want to allow Maven to compile your code without running the checkers, you may
-want to move the declarations above to within a Maven profile, so that the checkers
-would only run if the profile was enabled.
+If you want to allow Maven to compile your code without running the
+checkers, you may want to move the declarations above to within a Maven
+profile, so that the checkers run only if the profile was enabled.
 
 \end{enumerate}
 
@@ -459,6 +459,12 @@ then you can run a checker by following the instructions below.
 These instructions can be used with Java 7 or Java 8.  If using Java 7, then
 type annotations should be placed in comments as explained in
 Section~\ref{annotations-in-comments}.
+
+See the directory \code{examples/GradleExamples/} for examples of Gradle
+build files that run a checker.  You can use these examples to verify that
+Gradle is correctly downloading the Checker Framework from
+\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
+  Central} and executing it.
 
 \begin{enumerate}
 
