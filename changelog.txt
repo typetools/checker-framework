@@ -1,5 +1,15 @@
 ---------------------------------------------------------------------------
 
+Version 1.9.13, 1 April 2016
+
+Documentation:
+ * Clarified Maven documentation about use of annotations in comments.
+ * Added FAQ about annotating fully-qualified type names.
+
+Closed issues:  438, 579, 607, 624, 631.
+
+---------------------------------------------------------------------------
+
 Version 1.9.12, 1 March 2016
 
 The Checker Framework distribution contains annotated versions

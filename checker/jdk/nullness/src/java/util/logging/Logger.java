@@ -40,6 +40,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 // import sun.reflect.CallerSensitive;
 import sun.reflect.Reflection;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
@@ -197,29 +198,29 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 public class Logger {
     private static final Handler emptyHandlers[] = new Handler[0];
     private static final int offValue = Level.OFF.intValue();
-    private LogManager manager;
-    private String name;
+    private @Nullable LogManager manager;
+    private @Nullable String name;
     private final CopyOnWriteArrayList<Handler> handlers =
         new CopyOnWriteArrayList<>();
     //private String resourceBundleName;
     private volatile boolean useParentHandlers = true;
-    private volatile Filter filter;
+    private volatile @Nullable Filter filter;
     private boolean anonymous;
 
-    private ResourceBundle catalog;     // Cached resource bundle
-    private String catalogName;         // name associated with catalog
-    private Locale catalogLocale;       // locale associated with catalog
+    private @Nullable ResourceBundle catalog;     // Cached resource bundle
+    private @Nullable String catalogName;         // name associated with catalog
+    private @Nullable Locale catalogLocale;       // locale associated with catalog
 
     // The fields relating to parent-child relationships and levels
     // are managed under a separate lock, the treeLock.
     private static Object treeLock = new Object();
     // We keep weak references from parents to children, but strong
     // references from children to parents.
-    private volatile Logger parent;    // our nearest parent.
-    private ArrayList<LogManager.LoggerWeakRef> kids;   // WeakReferences to loggers that have us as parent
-    private volatile Level levelObject;
+    private volatile @Nullable Logger parent;    // our nearest parent.
+    private @Nullable ArrayList<LogManager.LoggerWeakRef> kids;   // WeakReferences to loggers that have us as parent
+    private volatile @Nullable Level levelObject;
     private volatile int levelValue;  // current effective level value
-    private WeakReference<ClassLoader> callersClassLoaderRef;
+    private @Nullable WeakReference<ClassLoader> callersClassLoaderRef;
 
     /**
      * GLOBAL_LOGGER_NAME is a name for the global logger.
@@ -277,13 +278,13 @@ public class Logger {
      * @throws MissingResourceException if the resourceBundleName is non-null and
      *             no corresponding resource can be found.
      */
-    protected Logger(String name, String resourceBundleName) { throw new RuntimeException(); }
+    protected Logger(@Nullable String name, @Nullable String resourceBundleName) { throw new RuntimeException(); }
 
-    Logger(String name, String resourceBundleName, Class<?> caller) { throw new RuntimeException(); }
+    Logger(@Nullable String name, @Nullable String resourceBundleName, @Nullable Class<?> caller) { throw new RuntimeException(); }
 
-    private void setCallersClassLoaderRef(Class<?> caller) { throw new RuntimeException(); }
+    private void setCallersClassLoaderRef(@Nullable Class<?> caller) { throw new RuntimeException(); }
 
-    private ClassLoader getCallersClassLoader() { throw new RuntimeException(); }
+    private @Nullable ClassLoader getCallersClassLoader() { throw new RuntimeException(); }
 
     // This constructor is used only to create the global Logger.
     // It is needed to break a cyclic dependence between the LogManager
@@ -309,7 +310,7 @@ public class Logger {
         private static boolean getBooleanProperty(final String key) { throw new RuntimeException(); }
     }
 
-    private static Logger demandLogger(String name, String resourceBundleName, Class<?> caller) { throw new RuntimeException(); }
+    private static Logger demandLogger(String name, @Nullable String resourceBundleName, Class<?> caller) { throw new RuntimeException(); }
 
     /**
      * Find or create a logger for a named subsystem.  If a logger has
@@ -388,7 +389,7 @@ public class Logger {
     // Synchronization is not required here. All synchronization for
     // adding a new Logger object is handled by LogManager.addLogger().
     // @CallerSensitive
-    public static Logger getLogger(String name, String resourceBundleName) { throw new RuntimeException(); }
+    public static Logger getLogger(String name, @Nullable String resourceBundleName) { throw new RuntimeException(); }
 
     // package-private
     // Add a platform logger to the system context.
@@ -445,7 +446,7 @@ public class Logger {
     // Synchronization is not required here. All synchronization for
     // adding a new anonymous Logger object is handled by doSetParent().
     // @CallerSensitive
-    public static Logger getAnonymousLogger(String resourceBundleName) { throw new RuntimeException(); }
+    public static Logger getAnonymousLogger(@Nullable String resourceBundleName) { throw new RuntimeException(); }
 
     /**
      * Retrieve the localization resource bundle for this
@@ -455,7 +456,7 @@ public class Logger {
      *
      * @return localization bundle (may be null)
      */
-    public ResourceBundle getResourceBundle() { throw new RuntimeException(); }
+    public @Nullable ResourceBundle getResourceBundle() { throw new RuntimeException(); }
 
     /**
      * Retrieve the localization resource bundle name for this
@@ -464,7 +465,7 @@ public class Logger {
      *
      * @return localization bundle name (may be null)
      */
-    public String getResourceBundleName() { throw new RuntimeException(); }
+    public @Nullable String getResourceBundleName() { throw new RuntimeException(); }
 
     /**
      * Set a filter to control output on this Logger.
@@ -477,14 +478,14 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setFilter(Filter newFilter) throws SecurityException { throw new RuntimeException(); }
+    public void setFilter(@Nullable Filter newFilter) throws SecurityException { throw new RuntimeException(); }
 
     /**
      * Get the current filter for this Logger.
      *
      * @return  a filter object (may be null)
      */
-    public Filter getFilter() { throw new RuntimeException(); }
+    public @Nullable Filter getFilter() { throw new RuntimeException(); }
 
     /**
      * Log a LogRecord.
@@ -517,7 +518,7 @@ public class Logger {
      * @param   level   One of the message level identifiers, e.g., SEVERE
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void log(Level level, String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void log(Level level, @Nullable String msg) { throw new RuntimeException(); }
 
     /**
      * Log a message, which is only to be constructed if the logging level
@@ -532,7 +533,7 @@ public class Logger {
      * @param   msgSupplier   A function, which when called, produces the
      *                        desired log message
      */
-//    @SideEffectFree public void log(Level level, Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void log(Level level, Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a message, with one object parameter.
@@ -545,7 +546,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   param1  parameter to the message
      */
-    @SideEffectFree public void log(Level level, String msg, Object param1) { throw new RuntimeException(); }
+    @SideEffectFree public void log(Level level, @Nullable String msg, @Nullable Object param1) { throw new RuntimeException(); }
 
     /**
      * Log a message, with an array of object arguments.
@@ -558,7 +559,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   params  array of parameters to the message
      */
-    @SideEffectFree public void log(Level level, String msg, Object params[]) { throw new RuntimeException(); }
+    @SideEffectFree public void log(Level level, @Nullable String msg, @Nullable Object params @Nullable []) { throw new RuntimeException(); }
 
     /**
      * Log a message, with associated Throwable information.
@@ -576,7 +577,7 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   thrown  Throwable associated with log message.
      */
-    @SideEffectFree public void log(Level level, String msg, Throwable thrown) { throw new RuntimeException(); }
+    @SideEffectFree public void log(Level level, @Nullable String msg, @Nullable Throwable thrown) { throw new RuntimeException(); }
 
     /**
      * Log a lazily constructed message, with associated Throwable information.
@@ -597,7 +598,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void log(Level level, Throwable thrown, Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void log(Level level, @Nullable Throwable thrown, Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     //================================================================
     // Start of convenience methods WITH className and methodName
@@ -616,7 +617,7 @@ public class Logger {
      * @param   sourceMethod   name of method that issued the logging request
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void logp(Level level, String sourceClass, String sourceMethod, String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod, @Nullable String msg) { throw new RuntimeException(); }
 
     /**
      * Log a lazily constructed message, specifying source class and method,
@@ -634,8 +635,8 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void logp(Level level, String sourceClass, String sourceMethod,
-//                     Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+//                     Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a message, specifying source class and method,
@@ -651,8 +652,8 @@ public class Logger {
      * @param   msg      The string message (or a key in the message catalog)
      * @param   param1    Parameter to the log message.
      */
-    @SideEffectFree public void logp(Level level, String sourceClass, String sourceMethod,
-                     String msg, Object param1) { throw new RuntimeException(); }
+    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                     @Nullable String msg, @Nullable Object param1) { throw new RuntimeException(); }
 
     /**
      * Log a message, specifying source class and method,
@@ -668,8 +669,8 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   params  Array of parameters to the message
      */
-    @SideEffectFree public void logp(Level level, String sourceClass, String sourceMethod,
-                     String msg, Object params[]) { throw new RuntimeException(); }
+    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                     @Nullable String msg, @Nullable Object params @Nullable []) { throw new RuntimeException(); }
 
     /**
      * Log a message, specifying source class and method,
@@ -690,8 +691,8 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   thrown  Throwable associated with log message.
      */
-    @SideEffectFree public void logp(Level level, String sourceClass, String sourceMethod,
-                     String msg, Throwable thrown) { throw new RuntimeException(); }
+    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                     @Nullable String msg, @Nullable Throwable thrown) { throw new RuntimeException(); }
 
     /**
      * Log a lazily constructed message, specifying source class and method,
@@ -715,8 +716,8 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void logp(Level level, String sourceClass, String sourceMethod,
-//                     Throwable thrown, Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void logp(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+//                     @Nullable Throwable thrown, Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
 
     //=========================================================================
@@ -726,7 +727,7 @@ public class Logger {
     // Private support method for logging for "logrb" methods.
     // We fill in the logger name, resource bundle name, and
     // resource bundle and then call "void log(LogRecord)".
-    @SideEffectFree private void doLog(LogRecord lr, String rbname) { throw new RuntimeException(); }
+    @SideEffectFree private void doLog(LogRecord lr, @Nullable String rbname) { throw new RuntimeException(); }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name
@@ -747,8 +748,8 @@ public class Logger {
      *                         can be null
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void logrb(Level level, String sourceClass, String sourceMethod,
-                      String bundleName, String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                      @Nullable String bundleName, @Nullable String msg) { throw new RuntimeException(); }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name,
@@ -770,8 +771,8 @@ public class Logger {
      * @param   msg      The string message (or a key in the message catalog)
      * @param   param1    Parameter to the log message.
      */
-    @SideEffectFree public void logrb(Level level, String sourceClass, String sourceMethod,
-                      String bundleName, String msg, Object param1) { throw new RuntimeException(); }
+    @SideEffectFree public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                      @Nullable String bundleName, @Nullable String msg, @Nullable Object param1) { throw new RuntimeException(); }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name,
@@ -793,8 +794,8 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   params  Array of parameters to the message
      */
-    @SideEffectFree public void logrb(Level level, String sourceClass, String sourceMethod,
-                      String bundleName, String msg, Object params[]) { throw new RuntimeException(); }
+    @SideEffectFree public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                      @Nullable String bundleName, @Nullable String msg, @Nullable Object params @Nullable []) { throw new RuntimeException(); }
 
     /**
      * Log a message, specifying source class, method, and resource bundle name,
@@ -821,8 +822,8 @@ public class Logger {
      * @param   msg     The string message (or a key in the message catalog)
      * @param   thrown  Throwable associated with log message.
      */
-    @SideEffectFree public void logrb(Level level, String sourceClass, String sourceMethod,
-                      String bundleName, String msg, Throwable thrown) { throw new RuntimeException(); }
+    @SideEffectFree public void logrb(Level level, @Nullable String sourceClass, @Nullable String sourceMethod,
+                      @Nullable String bundleName, @Nullable String msg, @Nullable Throwable thrown) { throw new RuntimeException(); }
 
 
     //======================================================================
@@ -839,7 +840,7 @@ public class Logger {
      * @param   sourceClass    name of class that issued the logging request
      * @param   sourceMethod   name of method that is being entered
      */
-    @SideEffectFree public void entering(String sourceClass, String sourceMethod) { throw new RuntimeException(); }
+    @SideEffectFree public void entering(@Nullable String sourceClass, @Nullable String sourceMethod) { throw new RuntimeException(); }
 
     /**
      * Log a method entry, with one parameter.
@@ -853,7 +854,7 @@ public class Logger {
      * @param   sourceMethod   name of method that is being entered
      * @param   param1         parameter to the method being entered
      */
-    @SideEffectFree public void entering(String sourceClass, String sourceMethod, Object param1) { throw new RuntimeException(); }
+    @SideEffectFree public void entering(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Object param1) { throw new RuntimeException(); }
 
     /**
      * Log a method entry, with an array of parameters.
@@ -868,7 +869,7 @@ public class Logger {
      * @param   sourceMethod   name of method that is being entered
      * @param   params         array of parameters to the method being entered
      */
-    @SideEffectFree public void entering(String sourceClass, String sourceMethod, Object params[]) { throw new RuntimeException(); }
+    @SideEffectFree public void entering(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Object params @Nullable []) { throw new RuntimeException(); }
 
     /**
      * Log a method return.
@@ -880,7 +881,7 @@ public class Logger {
      * @param   sourceClass    name of class that issued the logging request
      * @param   sourceMethod   name of the method
      */
-    @SideEffectFree public void exiting(String sourceClass, String sourceMethod) { throw new RuntimeException(); }
+    @SideEffectFree public void exiting(@Nullable String sourceClass, @Nullable String sourceMethod) { throw new RuntimeException(); }
 
 
     /**
@@ -895,7 +896,7 @@ public class Logger {
      * @param   sourceMethod   name of the method
      * @param   result  Object that is being returned
      */
-    @SideEffectFree public void exiting(String sourceClass, String sourceMethod, Object result) { throw new RuntimeException(); }
+    @SideEffectFree public void exiting(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Object result) { throw new RuntimeException(); }
 
     /**
      * Log throwing an exception.
@@ -918,7 +919,7 @@ public class Logger {
      * @param   sourceMethod  name of the method.
      * @param   thrown  The Throwable that is being thrown.
      */
-    @SideEffectFree public void throwing(String sourceClass, String sourceMethod, Throwable thrown) { throw new RuntimeException(); }
+    @SideEffectFree public void throwing(@Nullable String sourceClass, @Nullable String sourceMethod, @Nullable Throwable thrown) { throw new RuntimeException(); }
 
     //=======================================================================
     // Start of simple convenience methods using level names as method names
@@ -933,7 +934,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void severe(String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void severe(@Nullable String msg) { throw new RuntimeException(); }
 
     /**
      * Log a WARNING message.
@@ -944,7 +945,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void warning(String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void warning(@Nullable String msg) { throw new RuntimeException(); }
 
     /**
      * Log an INFO message.
@@ -955,7 +956,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void info(String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void info(@Nullable String msg) { throw new RuntimeException(); }
 
     /**
      * Log a CONFIG message.
@@ -966,7 +967,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void config(String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void config(@Nullable String msg) { throw new RuntimeException(); }
 
     /**
      * Log a FINE message.
@@ -977,7 +978,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void fine(String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void fine(@Nullable String msg) { throw new RuntimeException(); }
 
     /**
      * Log a FINER message.
@@ -988,7 +989,7 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void finer(String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void finer(@Nullable String msg) { throw new RuntimeException(); }
 
     /**
      * Log a FINEST message.
@@ -999,11 +1000,11 @@ public class Logger {
      * <p>
      * @param   msg     The string message (or a key in the message catalog)
      */
-    @SideEffectFree public void finest(String msg) { throw new RuntimeException(); }
+    @SideEffectFree public void finest(@Nullable String msg) { throw new RuntimeException(); }
 
     //=======================================================================
     // Start of simple convenience methods using level names as method names
-    // and use Supplier<String>
+    // and use Supplier<? extends @Nullable String>
     //=======================================================================
 
     /**
@@ -1019,7 +1020,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void severe(Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void severe(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a WARNING message, which is only to be constructed if the logging
@@ -1034,7 +1035,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void warning(Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void warning(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a INFO message, which is only to be constructed if the logging
@@ -1049,7 +1050,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void info(Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void info(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a CONFIG message, which is only to be constructed if the logging
@@ -1064,7 +1065,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void config(Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void config(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a FINE message, which is only to be constructed if the logging
@@ -1079,7 +1080,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void fine(Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void fine(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a FINER message, which is only to be constructed if the logging
@@ -1094,7 +1095,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void finer(Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void finer(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     /**
      * Log a FINEST message, which is only to be constructed if the logging
@@ -1109,7 +1110,7 @@ public class Logger {
      *                        desired log message
      * @since   1.8
      */
-//    @SideEffectFree public void finest(Supplier<String> msgSupplier) { throw new RuntimeException(); }
+//    @SideEffectFree public void finest(Supplier<? extends @Nullable String> msgSupplier) { throw new RuntimeException(); }
 
     //================================================================
     // End of convenience methods
@@ -1129,7 +1130,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void setLevel(Level newLevel) throws SecurityException { throw new RuntimeException(); }
+    public void setLevel(@Nullable Level newLevel) throws SecurityException { throw new RuntimeException(); }
 
     /**
      * Get the log Level that has been specified for this Logger.
@@ -1138,7 +1139,7 @@ public class Logger {
      *
      * @return  this Logger's level
      */
-    public Level getLevel() { throw new RuntimeException(); }
+    public @Nullable Level getLevel() { throw new RuntimeException(); }
 
     /**
      * Check if a message of the given level would actually be logged
@@ -1154,7 +1155,7 @@ public class Logger {
      * Get the name for this logger.
      * @return logger name.  Will be null for anonymous Loggers.
      */
-    public String getName() { throw new RuntimeException(); }
+    public @Nullable String getName() { throw new RuntimeException(); }
 
     /**
      * Add a log Handler to receive logging messages.
@@ -1178,7 +1179,7 @@ public class Logger {
      * @exception  SecurityException  if a security manager exists and if
      *             the caller does not have LoggingPermission("control").
      */
-    public void removeHandler(Handler handler) throws SecurityException { throw new RuntimeException(); }
+    public void removeHandler(@Nullable Handler handler) throws SecurityException { throw new RuntimeException(); }
 
     /**
      * Get the Handlers associated with this logger.
@@ -1223,7 +1224,7 @@ public class Logger {
      * @param userCallersClassLoader if true search using the caller's ClassLoader
      * @return ResourceBundle specified by name or null if not found
      */
-    private synchronized ResourceBundle findResourceBundle(String name,
+    private synchronized @Nullable ResourceBundle findResourceBundle(@Nullable String name,
                                                            boolean useCallersClassLoader) { throw new RuntimeException(); }
 
     // Private utility method to initialize our one entry
@@ -1232,8 +1233,8 @@ public class Logger {
     // that a suitable ResourceBundle exists before setting the
     // resourceBundleName field.
     // Synchronized to prevent races in setting the fields.
-    private synchronized void setupResourceInfo(String name,
-                                                Class<?> callersClass) { throw new RuntimeException(); }
+    private synchronized void setupResourceInfo(@Nullable String name,
+                                                @Nullable Class<?> callersClass) { throw new RuntimeException(); }
 
     /**
      * Return the parent for this Logger.
@@ -1248,7 +1249,7 @@ public class Logger {
      *
      * @return nearest existing parent Logger
      */
-    public Logger getParent() { throw new RuntimeException(); }
+    public @Nullable Logger getParent() { throw new RuntimeException(); }
 
     /**
      * Set the parent for this Logger.  This method is used by

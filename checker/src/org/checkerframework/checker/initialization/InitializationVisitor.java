@@ -180,7 +180,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                 AnnotatedTypeMerger.merge(var2, var, invariantAnno);
 
                 checkAssignability(var, varTree);
-                commonAssignmentCheck(var, valueExp, errorKey, false);
+                commonAssignmentCheck(var, valueExp, errorKey);
                 return;
             }
         }
