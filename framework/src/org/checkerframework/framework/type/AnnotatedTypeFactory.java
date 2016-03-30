@@ -2965,7 +2965,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             com.sun.tools.javac.code.Types javacTypes) {
 
         Tree parentTree = TreePath.getPath(this.root, lambdaTree).getParentPath().getLeaf();
+        if (parentTree.getKind() == Tree.Kind.PARENTHESIZED) {
+        }
         switch (parentTree.getKind()) {
+            case PARENTHESIZED:
+                return getFunctionalInterfaceType(parentTree, javacTypes);
             case TYPE_CAST:
                 TypeCastTree cast = (TypeCastTree) parentTree;
                 assertFunctionalInterface(javacTypes, (Type) trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);
