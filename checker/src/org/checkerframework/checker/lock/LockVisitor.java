@@ -931,7 +931,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * @param annotationTree AnnotationTree used for error reporting and to help determine that an array parameter has no GuardSatisfied
      * annotations except on the array type.
      */
-    // TODO: Remove this method once @TargetLocations are enforced.
+    // TODO: Remove this method once @TargetLocations are enforced (i.e. once
+    // issue https://github.com/typetools/checker-framework/issues/515 is closed).
     private void issueErrorIfGuardSatisfiedAnnotationInUnsupportedLocation(AnnotationTree annotationTree) {
         TreePath currentPath = getCurrentPath();
         TreePath path = getPathForLocalVariableRetrieval(currentPath);
