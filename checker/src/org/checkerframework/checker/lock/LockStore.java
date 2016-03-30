@@ -163,7 +163,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         if (type != null) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(LOCKPOSSIBLYHELD);
             if (anno != null) {
-                return anno.equals(LOCKHELD);
+                return AnnotationUtils.areSame(anno, LOCKHELD);
             }
         }
 
@@ -176,7 +176,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         if (type != null) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(LOCKPOSSIBLYHELD);
             if (anno != null) {
-                return anno.equals(LOCKPOSSIBLYHELD);
+                return AnnotationUtils.areSame(anno, LOCKPOSSIBLYHELD);
             }
         }
 

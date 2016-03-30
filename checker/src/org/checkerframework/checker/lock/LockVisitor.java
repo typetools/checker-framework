@@ -72,7 +72,6 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -236,7 +235,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         Set<? extends AnnotationMirror> tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
         Set<AnnotationMirror> annotationSet = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : tops) {
-            if (anno.equals(GUARDEDBYUNKNOWN)) {
+            if (AnnotationUtils.areSame(anno, GUARDEDBYUNKNOWN)) {
                 annotationSet.add(GUARDEDBY);
             } else {
                 annotationSet.add(anno);
