@@ -174,13 +174,20 @@ public class QualifierDefaults {
     public String toString() {
         // displays the checked and unchecked code defaults
         StringBuilder sb = new StringBuilder();
-        sb.append("Checked Code Defaults: ");
+        sb.append("Checked code defaults: ");
         sb.append(System.lineSeparator());
         sb.append(PluginUtil.join(System.lineSeparator(), checkedCodeDefaults));
         sb.append(System.lineSeparator());
-        sb.append("Unchecked Code Defaults: ");
+        sb.append("Unchecked code defaults: ");
         sb.append(System.lineSeparator());
         sb.append(PluginUtil.join(System.lineSeparator(), uncheckedCodeDefaults));
+        sb.append(System.lineSeparator());
+        sb.append("useUncheckedCodeDefaultsSource: ");
+        sb.append(useUncheckedCodeDefaultsSource);
+        sb.append(System.lineSeparator());
+        sb.append("useUncheckedCodeDefaultsBytecode: ");
+        sb.append(useUncheckedCodeDefaultsBytecode);
+        sb.append(System.lineSeparator());
         return sb.toString();
     }
 
