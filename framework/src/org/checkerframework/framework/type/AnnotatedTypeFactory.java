@@ -2968,6 +2968,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         switch (parentTree.getKind()) {
             case PARENTHESIZED:
                 return getFunctionalInterfaceType(parentTree, javacTypes);
+
             case TYPE_CAST:
                 TypeCastTree cast = (TypeCastTree) parentTree;
                 assertFunctionalInterface(javacTypes, (Type) trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);
