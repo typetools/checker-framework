@@ -278,8 +278,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignment) {
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
         Kind valueTreeKind = valueTree.getKind();
 
@@ -355,7 +354,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
         }
 
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignment);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
     @Override

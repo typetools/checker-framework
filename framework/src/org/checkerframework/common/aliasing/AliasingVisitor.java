@@ -182,10 +182,8 @@ public class AliasingVisitor extends
 
     @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignement) {
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey,
-                isLocalVariableAssignement);
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
 
         // If we are visiting a pseudo-assignment, visitorLeafKind is either
         // Kind.NEW_CLASS or Kind.METHOD_INVOCATION.

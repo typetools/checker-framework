@@ -979,6 +979,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (elt.getKind() == ElementKind.PACKAGE)
             return toAnnotatedType(elt.asType(), false);
         AnnotatedTypeMirror type;
+
+        // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
+        // so get explicit annotations from the tree. (This bug has been fixed in Java 9.)
         Tree decl = declarationFromElement(elt);
 
         if (decl == null && typesFromStubFiles != null && typesFromStubFiles.containsKey(elt)) {
@@ -1249,7 +1252,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>
      *
      * An example of an adaptation follows.  Suppose, I have a declaration:
-     * class MyClass&lt;E extends Listlt;E&gt;&gt;
+     * class MyClass&lt;E extends List&lt;E&gt;&gt;
      * And an instantiation:
      * new MyClass&lt;@NonNull String&gt;()
      *

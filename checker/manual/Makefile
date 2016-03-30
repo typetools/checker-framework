@@ -39,14 +39,11 @@ external-tools.tex \
 faq.tex \
 troubleshooting.tex
 
-all: doc manual.pdf manual.html
+all: manual.pdf manual.html
 
 .PHONY: figures-all
 figures-all:
 	${MAKE} -C figures all
-
-doc:
-	ln -sf ../doc doc
 
 manual.pdf: bib-update figures-all check-labels
 	pdflatex manual.tex
@@ -97,7 +94,7 @@ endif
 
 # Leaves manual.html, and .svg files that it references.
 clean:
-	@\rm -f doc *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc
+	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc
 
 very_clean: clean
 	@\rm manual.html CFLogo.png

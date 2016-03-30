@@ -889,7 +889,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         boolean valid = validateTypeOf(node.getVariable());
         if (valid) {
             commonAssignmentCheck(var, iteratedType, node.getExpression(),
-                    "enhancedfor.type.incompatible", true);
+                    "enhancedfor.type.incompatible");
         }
         return super.visitEnhancedForLoop(node, p);
     }
@@ -1234,8 +1234,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 passedAsArray.getComponentType(),
                 receiverAsVector.getTypeArguments().get(0),
                 node.getArguments().get(0),
-                "vector.copyinto.type.incompatible",
-                false);
+                "vector.copyinto.type.incompatible");
     }
 
     /**
@@ -1292,7 +1291,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (ret.getKind() != TypeKind.VOID) {
                 visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
                 commonAssignmentCheck(ret, (ExpressionTree) node.getBody(),
-                        "return.type.incompatible", false);
+                        "return.type.incompatible");
             }
         }
 
@@ -1300,7 +1299,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         for (int i = 0; i < overridden.getParameterTypes().size(); ++i) {
             AnnotatedTypeMirror overridingParm = atypeFactory.getAnnotatedType(node.getParameters().get(i));
             commonAssignmentCheck(overridingParm, overridden.getParameterTypes().get(i), node.getParameters().get(i),
-                    "lambda.param.type.incompatible", false);
+                    "lambda.param.type.incompatible");
         }
 
         // TODO: Post conditions?
@@ -1349,7 +1348,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 visitorState.setAssignmentContext(Pair.of((Tree) node, ret));
 
                 commonAssignmentCheck(ret, node.getExpression(),
-                        "return.type.incompatible", false);
+                        "return.type.incompatible");
             }
             return super.visitReturn(node, p);
         } finally {
@@ -1436,18 +1435,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 if (expected.getKind() != TypeKind.ARRAY) {
                     // Expected is not an array -> direct comparison.
                     commonAssignmentCheck(expected, actual, at.getExpression(),
-                            "annotation.type.incompatible", false);
+                            "annotation.type.incompatible");
                 } else {
                     if (actual.getKind() == TypeKind.ARRAY) {
                         // Both actual and expected are arrays.
                         commonAssignmentCheck(expected, actual, at.getExpression(),
-                                "annotation.type.incompatible", false);
+                                "annotation.type.incompatible");
                     } else {
                         // The declaration is an array type, but just a single
                         // element is given.
                         commonAssignmentCheck(((AnnotatedArrayType) expected).getComponentType(),
                                 actual, at.getExpression(),
-                                "annotation.type.incompatible", false);
+                                "annotation.type.incompatible");
                     }
                 }
             } finally {
@@ -1466,23 +1465,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
         AnnotatedTypeMirror cond = atypeFactory.getAnnotatedType(node);
-        Pair<Tree, AnnotatedTypeMirror> ctx = visitorState.getAssignmentContext();
-        Tree assignmentContext = ctx == null ? null : ctx.first;
-        boolean isLocalVariableAssignment = false;
-        if (assignmentContext != null) {
-            if (assignmentContext instanceof VariableTree) {
-                isLocalVariableAssignment = assignmentContext instanceof IdentifierTree
-                        && !TreeUtils.isFieldAccess(assignmentContext);
-            }
-            if (assignmentContext instanceof VariableTree) {
-                isLocalVariableAssignment = TreeUtils
-                        .enclosingMethod(getCurrentPath()) != null;
-            }
-        }
         this.commonAssignmentCheck(cond, node.getTrueExpression(),
-                "conditional.type.incompatible", isLocalVariableAssignment);
+                "conditional.type.incompatible");
         this.commonAssignmentCheck(cond, node.getFalseExpression(),
-                "conditional.type.incompatible", isLocalVariableAssignment);
+                "conditional.type.incompatible");
         return super.visitConditionalExpression(node, p);
     }
 
@@ -1851,18 +1837,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         checkAssignability(var, varTree);
 
-        boolean isLocalVariableAssignment = false;
-        if (varTree instanceof AssignmentTree) {
-            Tree rhs = ((AssignmentTree) varTree).getVariable();
-            isLocalVariableAssignment = rhs instanceof IdentifierTree
-                    && !TreeUtils.isFieldAccess(rhs);
-        }
-        if (varTree instanceof VariableTree) {
-            isLocalVariableAssignment = TreeUtils.enclosingMethod(getCurrentPath()) != null;
-        }
-
-        commonAssignmentCheck(var, valueExp, errorKey,
-                isLocalVariableAssignment);
+        commonAssignmentCheck(var, valueExp, errorKey);
     }
 
     /**
@@ -1874,13 +1849,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
-     * @param isLocalVariableAssignment
-     *            Are we dealing with an assignment and is the lhs a local
-     *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignment) {
+            ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
         if (shouldSkipUses(valueExp))
             return;
         if (varType.getKind() == TypeKind.ARRAY
@@ -1896,8 +1867,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
         AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
         assert valueType != null : "null type for expression: " + valueExp;
-        commonAssignmentCheck(varType, valueType, valueExp, errorKey,
-                isLocalVariableAssignment);
+        commonAssignmentCheck(varType, valueType, valueExp, errorKey);
     }
 
     /**
@@ -1910,13 +1880,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param valueTree the location to use when reporting the error message
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
-     * @param isLocalVariableAssignment
-     *            Are we dealing with an assignment and is the lhs a local
-     *            variable?
      */
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignment) {
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
         String valueTypeString = valueType.toString();
         String varTypeString = varType.toString();
@@ -1982,7 +1948,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // Also in AbstractFlow.
         for (ExpressionTree init : initializers)
             commonAssignmentCheck(type, init,
-                    "array.initializer.type.incompatible", false);
+                    "array.initializer.type.incompatible");
     }
 
     /**
@@ -2037,11 +2003,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // I hope this is less confusing for users.
                 commonAssignmentCheck(paramUpperBound,
                         typeArg, toptree,
-                        "type.argument.type.incompatible", false);
+                        "type.argument.type.incompatible");
             } else {
                 commonAssignmentCheck(paramUpperBound, typeArg,
                         typeargTrees.get(typeargs.indexOf(typeArg)),
-                        "type.argument.type.incompatible", false);
+                        "type.argument.type.incompatible");
             }
 
             if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
@@ -2255,7 +2221,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             for (int i = 0; i < requiredArgs.size(); ++i) {
                 visitorState.setAssignmentContext(Pair.<Tree, AnnotatedTypeMirror>of((Tree) null, (AnnotatedTypeMirror) requiredArgs.get(i)));
                 commonAssignmentCheck(requiredArgs.get(i), passedArgs.get(i),
-                        "argument.type.incompatible", false);
+                        "argument.type.incompatible");
                 // Also descend into the argument within the correct assignment
                 // context.
                 scan(passedArgs.get(i), null);
