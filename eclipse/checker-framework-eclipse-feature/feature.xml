@@ -384,10 +384,6 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
       <import plugin="org.eclipse.jdt.ui"/>
       <import plugin="org.eclipse.ui.ide"/>
       <import plugin="org.junit"/>
-      <import plugin="org.eclipse.pde.build" version="3.7.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.pde.core" version="3.7.1" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.pde.launching" version="3.6.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.pde.ui" version="3.6.100" match="greaterOrEqual"/>
    </requires>
 
    <plugin
