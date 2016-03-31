@@ -6,8 +6,6 @@ import org.checkerframework.framework.qual.*;
 
 import javax.lang.model.type.TypeKind;
 
-import com.sun.source.tree.Tree;
-
 /**
  * UnsignednessBottom is the bottom qualifier in the Unsigned Type
  * System, and is only assigned to a value in error.
@@ -17,7 +15,7 @@ import com.sun.source.tree.Tree;
 @Target({ElementType.TYPE_USE})
 @SubtypeOf( { Constant.class } )
 @ImplicitFor(
-    trees = { Tree.Kind.NULL_LITERAL },
+    literals = { LiteralKind.NULL },
     types = { TypeKind.NULL }
     )
 public @interface UnsignednessBottom { }
