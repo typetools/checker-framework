@@ -167,9 +167,9 @@ public final class RegexUtil {
    */
   @SuppressWarnings({"regex", "deterministic"}) // RegexUtil; for purity, catches an exception
   /*@Pure*/
-  // No @EnsuresQualifierIf annotation because this method is special-cased
+  // @EnsuresQualifierIf annotation is extraneous because this method is special-cased
   // in RegexTransfer.
-  // /*@EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)*/
+  /*@EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)*/
   public static boolean isRegex(String s, int groups) {
     Pattern p;
     try {
@@ -318,8 +318,13 @@ public final class RegexUtil {
    */
   /*@SideEffectFree*/
   private static String regexErrorMessage(String s, int expectedGroups, int actualGroups) {
-    return "regex \"" + s + "\" has " + actualGroups + " groups, but "
-      + expectedGroups + " groups are needed.";
+    return "regex \""
+        + s
+        + "\" has "
+        + actualGroups
+        + " groups, but "
+        + expectedGroups
+        + " groups are needed.";
   }
 
   /**
