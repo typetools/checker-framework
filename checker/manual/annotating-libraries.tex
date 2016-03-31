@@ -143,6 +143,10 @@ please share them so that they
 can be distributed with the Checker Framework.
 Sharing your annotations is useful even if the library is only partially
 annotated.
+However, as noted in Section~\ref{get-started-with-legacy-code}, it is
+best to annotate an entire class at a time.
+You may find type inference tools (\chapterpageref{type-inference-to-annotate}) helpful
+when getting started, but you should always examine their results.
 %% This text does not feel so relevant.
 % You can determine the correct annotations for a library either
 % automatically by running an inference tool, or manually by reading the
@@ -199,6 +203,9 @@ defaults and type-checking warnings are issued.
 may be passed to the \<-processor> command-line argument:  the
 fully-qualified class name for the checker, or a shorthand for built-in
 checkers (see Section~\ref{shorthand-for-checkers}).
+Writing \<@AnnotatedFor> on a class doesn't necessarily mean that you wrote
+any annotations, but that the user examined the source code and verified
+that all appropriate annotations are present.
 
 \begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
@@ -739,11 +746,11 @@ read whether the library's annotations are parsed.
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
 % LocalWords:  IGJ's jdk Astubs skipUses astub AskipUses toArray IGJ JDK6
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
-% LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java
+% LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java pre
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
-%%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs
+%%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1
-%%  LocalWords:  TypeSystem2 TypeSystem3
+%%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode

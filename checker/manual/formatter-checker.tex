@@ -321,7 +321,7 @@ Format String Checker guarantees the following additional properties:
 \item Every format argument's type satisfies its conversion category's restrictions.
 \end{enumerate}
 
-\item If the format arguments are passed to the format method as array,
+\item If the format arguments are passed to the format method as an array,
 a warning is issued by the Format String Checker.
         \label{formatter-array-warning}
 \end{enumerate}
@@ -585,7 +585,7 @@ try {
     System.exit(2);
 }
 // fs is now known to be of type: @Format({GENERAL, INT}) String
-System.out.printf(format,"hello",1337);
+System.out.printf(format, "hello", 1337);
 \end{Verbatim}
 
 \noindent A potential disadvantage of using the \code{FormatUtil} class is that your code becomes

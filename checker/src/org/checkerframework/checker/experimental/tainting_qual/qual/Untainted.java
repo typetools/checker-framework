@@ -1,17 +1,15 @@
 package org.checkerframework.checker.experimental.tainting_qual.qual;
 
-import static com.sun.source.tree.Tree.Kind.NULL_LITERAL;
-import static com.sun.source.tree.Tree.Kind.STRING_LITERAL;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Denotes a reference that is untainted, i.e. can be trusted.
@@ -19,7 +17,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @SubtypeOf(Tainted.class)
-@ImplicitFor(trees = { STRING_LITERAL, NULL_LITERAL })
+@ImplicitFor(literals = { LiteralKind.STRING, LiteralKind.NULL })
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @DefaultFor({ TypeUseLocation.LOWER_BOUND })
 @Retention(RetentionPolicy.RUNTIME)

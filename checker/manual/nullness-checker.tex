@@ -451,7 +451,8 @@ to unsoundly allow non-null array components.
 
 When you perform a run-time check for nullness, such as \<if (x != null)
 ...>, then the Nullness Checker refines the type of \<x> to
-\<@NonNull> within the scope of the test.  For more details, see
+\<@NonNull>.  The refinement lasts until the end of the scope of the test
+or until \<x> may be side-effected.  For more details, see
 Section~\ref{type-refinement}.
 
 
@@ -512,7 +513,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   If your code uses the Nullable default, use one of these tools:
 \begin{itemize}
 \item
-  \href{http://julia.scienze.univr.it/}{Julia analyzer},
+  \href{http://www.juliasoft.com/}{Julia analyzer},
 \item
   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
@@ -929,10 +930,11 @@ null dereference, while at the same time limiting false reports.  Also,
 note FindBugs's non-standard meaning for \<@Nullable>
 (Section~\ref{findbugs-nullable}).
 
-Because some of the names are the same (\<NonNull>, \<Nullable>), you can
-import at most one of the annotations with
-conflicting names; the other(s) must be written out fully rather than
-imported.
+Java permits you to import at most one annotation of a given name.  For
+example, if you use both \<android.annotation.NonNull> and
+\<lombok.NonNull> in your source code, then you must write at least one of
+them in fully-qualified form, as \<@android.annotation.NonNull> rather than
+as \<@NonNull>.
 
 Note that some older tools interpret array and varargs declarations
 inconsistently with the Java specification.  For example, they might

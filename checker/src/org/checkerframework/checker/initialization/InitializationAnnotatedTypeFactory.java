@@ -26,6 +26,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -33,7 +34,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -94,7 +95,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
         this.useFbc = useFbc;
 
-        Set<Class<? extends Annotation>> tempInitAnnos = new HashSet<>();
+        Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>();
 
         if (useFbc) {
             COMMITTED = AnnotationUtils.fromClass(elements, Initialized.class);
@@ -794,9 +795,8 @@ public abstract class InitializationAnnotatedTypeFactory<
             } else if (types.isSubtype(b, a)) {
                 return a;
             }
-            assert false : "not fully implemented yet";
-            return TypesUtils.typeFromClass(processingEnv.getTypeUtils(),
-                    processingEnv.getElementUtils(), Object.class);
+
+            return InternalUtils.leastUpperBound(processingEnv, a, b);
         }
 
         @Override

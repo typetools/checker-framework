@@ -11,11 +11,6 @@ import java.lang.annotation.Target;
 
 import javax.lang.model.type.TypeKind;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-
 /**
  * A meta-annotation that specifies the trees and types for which the framework
  * should automatically add that qualifier. These types and trees can be
@@ -37,28 +32,16 @@ import com.sun.source.tree.Tree.Kind;
 public @interface ImplicitFor {
 
     /**
-     * @return {@link Kind}s of trees for which an annotation should be
+     * @return {@link LiteralKind}s for which an annotation should be
      *         implicitly added
      */
-    Tree.Kind[] trees() default {};
-
-    /**
-     * @return {@link Class}es of trees for which an annotation should be
-     *         implicitly added
-     */
-    Class<? extends Tree>[] treeClasses() default {};
+    LiteralKind[] literals() default {};
 
     /**
      * @return {@link TypeKind}s of types for which an annotation should be
      *         implicitly added
      */
     TypeKind[] types() default {};
-
-    /**
-     * @return {@link Class}es (subtypes of {@link AnnotatedTypeMirror}) of types
-     *         for which an annotation should be implicitly added
-     */
-    Class<? extends AnnotatedTypeMirror>[] typeClasses() default {};
 
     /**
      * @return {@link Class}es (in the actual program) for which an annotation
@@ -70,7 +53,9 @@ public @interface ImplicitFor {
 
     /**
      * @return Regular expressions of string literals, the types of which
-     *         an annotation should be implicitly added
+     *         an annotation should be implicitly added.
+     *         If multiple patterns match, then the string literal is given the
+     *         greatest lower bound of all the matches.
      */
     String[] stringPatterns() default {};
 

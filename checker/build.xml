@@ -611,6 +611,8 @@
 
         <antcall target="nullness-extra-tests-nobuildjdk"/>
 
+	<antcall target="command-line-tests"/>
+
         <antcall target="example-tests-nobuildjdk"/>
 
         <antcall target="check-tutorial"/>
@@ -622,6 +624,14 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.NestedAggregateCheckerTest"/>
         </antcall>
+    </target>
+
+    <target name="command-line-tests" depends="jar,build-tests"
+            description="Run tests that need a special command line">
+        <exec executable="make" failonerror="${halt.on.test.failure}">
+            <env key="JAVAC" value="${basedir}/bin/javac"/>
+            <arg line="-C tests/command-line/"/>
+        </exec>
     </target>
 
     <target name="compilermsg-tests" depends="jar,build-tests"
@@ -1309,7 +1319,7 @@
 
       <property name="afu.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="afu.exist" file="${afu.jar}" />
-      <fail unless="afu.exist" message="Could not find annotation-file-utilities.jar: ${afu.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#build-source" />
+      <fail unless="afu.exist" message="Could not find annotation-file-utilities.jar: ${afu.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#build-source" />
 
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>

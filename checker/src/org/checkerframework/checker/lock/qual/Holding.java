@@ -31,7 +31,7 @@ public @interface Holding {
      * The Java expressions that need to be {@link LockHeld}.
      *
      * @see <a
-     *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
+     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
      *      of Java expressions</a>
      */
     String[] value();

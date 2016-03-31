@@ -24,7 +24,9 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.DependentTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -40,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -52,7 +55,6 @@ import javax.lang.model.util.Elements;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -98,7 +100,7 @@ public class NullnessAnnotatedTypeFactory
         POLYNULL = AnnotationUtils.fromClass(elements, PolyNull.class);
         MONOTONIC_NONNULL = AnnotationUtils.fromClass(elements, MonotonicNonNull.class);
 
-        Set<Class<? extends Annotation>> tempNullnessAnnos = new HashSet<>();
+        Set<Class<? extends Annotation>> tempNullnessAnnos = new LinkedHashSet<>();
         tempNullnessAnnos.add(NonNull.class);
         tempNullnessAnnos.add(MonotonicNonNull.class);
         tempNullnessAnnos.add(Nullable.class);
@@ -172,14 +174,14 @@ public class NullnessAnnotatedTypeFactory
         // if useFbc is true, then it is the NullnessChecker
         if (ckr.useFbc) {
             return Collections.unmodifiableSet(
-                    new HashSet<Class<? extends Annotation>>(
+                    new LinkedHashSet<Class<? extends Annotation>>(
                             Arrays.asList(Nullable.class, MonotonicNonNull.class, NonNull.class, UnderInitialization.class,
                                     Initialized.class, UnknownInitialization.class, FBCBottom.class, PolyNull.class, PolyAll.class)));
         }
         // otherwise, it is the NullnessRawnessChecker
         else {
             return Collections.unmodifiableSet(
-                    new HashSet<Class<? extends Annotation>>(
+                    new LinkedHashSet<Class<? extends Annotation>>(
                             Arrays.asList(Nullable.class, MonotonicNonNull.class, NonNull.class, NonRaw.class, Raw.class,
                                     // PolyRaw.class, //TODO: support PolyRaw in the future
                                     PolyNull.class, PolyAll.class)));
@@ -199,29 +201,33 @@ public class NullnessAnnotatedTypeFactory
         dependentTypes.handle(tree, type);
     }
 
-
-    @Override
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree varTree,
-            ExpressionTree valueTree) {
-        AnnotatedTypeMirror result = super.getDefaultedAnnotatedType(varTree, valueTree);
-        return handlePolyNull(result, valueTree);
-    }
-
     /**
-     * Replaces {@link PolyNull} with {@link Nullable} to be more permissive
-     * (because {@code type} is usually a left-hand side) if the org.checkerframework.dataflow
-     * analysis has determined that this is allowed soundly.
+     * For types of left-hand side of an assignment, this method replaces {@link PolyNull} or
+     * {@link PolyAll} with {@link Nullable} if the org.checkerframework.dataflow analysis
+     * has determined that this is allowed soundly.
+     * For example:
+     *
+     * <pre> @PolyNull String foo(@PolyNull String param) {
+     *    if (param == null) {
+     *        //  @PolyNull is really @Nullable, so change
+     *        // the type of param to @Nullable.
+     *        param = null;
+     *    }
+     *    return param;
+     * }
+     * </pre>
+     *
+     * @param lhsType  Type to replace whose polymorphic qualifier will be replaced
+     * @param context Tree used to get dataflow value
      */
-    protected AnnotatedTypeMirror handlePolyNull(AnnotatedTypeMirror type,
-            Tree context) {
-        if (type.hasAnnotation(PolyNull.class)
-                || type.hasAnnotation(PolyAll.class)) {
+    protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
+        if (lhsType.hasAnnotation(PolyNull.class)
+                || lhsType.hasAnnotation(PolyAll.class)) {
             NullnessValue inferred = getInferredValueFor(context);
             if (inferred != null && inferred.isPolyNullNull) {
-                type.replaceAnnotation(NULLABLE);
+                lhsType.replaceAnnotation(NULLABLE);
             }
         }
-        return type;
     }
 
     // handle dependent types
@@ -239,8 +245,7 @@ public class NullnessAnnotatedTypeFactory
     public List<VariableTree> getUninitializedInvariantFields(
             NullnessStore store, TreePath path, boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
-        List<VariableTree> candidates = super.getUninitializedInvariantFields(
-                store, path, isStatic, receiverAnnotations);
+        List<VariableTree> candidates = super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
         List<VariableTree> result = new ArrayList<>();
         for (VariableTree c : candidates) {
             AnnotatedTypeMirror type = getAnnotatedType(c);
@@ -285,7 +290,9 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
-        return handlePolyNull(super.getMethodReturnType(m, r), r);
+        AnnotatedTypeMirror result = super.getMethodReturnType(m, r);
+        replacePolyQualifier(result, r);
+        return result;
     }
 
     protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
@@ -303,17 +310,26 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
+        ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
+        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
+        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
-                super.createTypeAnnotator(),
-                new NullnessTypeAnnotator(this)
+                new PropagationTypeAnnotator(this),
+                implicitsTypeAnnotator,
+                new NullnessTypeAnnotator(this),
+                new CommitmentTypeAnnotator(this)
         );
     }
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, NONNULL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, NONNULL);
+
         return new ListTreeAnnotator( // DebugListTreeAnnotator(new Tree.Kind[] {Tree.Kind.CONDITIONAL_EXPRESSION},
                 new NullnessPropagationAnnotator(this),
-                new ImplicitsTreeAnnotator(this),
+                implicitsTreeAnnotator,
                 new NullnessTreeAnnotator(this),
                 new CommitmentTreeAnnotator(this)
         );

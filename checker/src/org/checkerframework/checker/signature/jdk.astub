@@ -8,6 +8,7 @@ class Class<T> implements Serializable, GenericDeclaration, Type, AnnotatedEleme
     @ClassGetName String getName();
     @ClassGetName String name;
     @ClassGetName String getName0();
+    @ClassGetSimpleName String getSimpleName();
     @FullyQualifiedName String getCanonicalName();
 }
 
@@ -67,7 +68,7 @@ package java.lang.instrument;
 
 class ClassFileTransformer {
   byte[] transform(ClassLoader loader,
-		   @FieldDescriptor String className,
+		   @InternalForm String className,
 		   Class<?> classBeingRedefined,
 		   ProtectionDomain protectionDomain,
 		   byte[] classfileBuffer);

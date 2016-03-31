@@ -175,7 +175,7 @@ public abstract class GenericAnnotatedTypeFactory<
 
         this.poly = createQualifierPolymorphism();
 
-        this.buildIndexTypes();
+        this.parseStubFiles();
     }
 
     /**
@@ -904,7 +904,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * which should have the "default" meaning, without flow inference.
      * TODO: describe and generalize
      */
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree, ExpressionTree valueTree) {
+    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
         AnnotatedTypeMirror res = null;
         if (tree instanceof VariableTree) {
             res = fromMember(tree);

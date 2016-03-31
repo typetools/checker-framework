@@ -197,7 +197,7 @@ import com.sun.tools.javac.util.Log;
     ///
 
     // Additional stub files to use
-    // org.checkerframework.framework.type.AnnotatedTypeFactory.buildIndexTypes()
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "stubs",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
@@ -243,7 +243,7 @@ import com.sun.tools.javac.util.Log;
     /// Stub and JDK libraries
 
     // Ignore the standard jdk.astub file; primarily for testing or debugging.
-    // org.checkerframework.framework.type.AnnotatedTypeFactory.buildIndexTypes()
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "ignorejdkastub",
 
     // Whether to check that the annotated JDK is correctly provided
@@ -276,6 +276,15 @@ import com.sun.tools.javac.util.Log;
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
+
+    // Set the cache size for caches in AnnotatedTypeFactory
+    "atfCacheSize",
+
+    // Sets AnnotatedTypeFactory shouldReadCache to false
+    "atfDoNotReadCache",
+
+    // Sets AnnotatedTypeFactory shouldCache to false
+    "atfDoNotCache"
 
 })
 public abstract class SourceChecker
