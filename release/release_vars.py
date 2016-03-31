@@ -225,15 +225,14 @@ if EDITOR is None:
     EDITOR = 'emacs'
 
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']
-PATH = PATH + ":/usr/bin:/projects/uns/F11/bin/:/projects/uns/F11/bin/"
+PATH = PATH + ":/usr/bin:"
 PATH = PATH + ":" + PLUME_LIB + "/bin:/homes/gws/mernst/bin/share"
-PATH = PATH + ":/homes/gws/mernst/bin/Linux-x86_64/:/uns/bin:."
+PATH = PATH + ":/homes/gws/mernst/.local/bin/:."
 os.environ['PATH'] = PATH
 
 # Tools that must be on your PATH (besides common *nix ones like grep)
-TOOLS = ['hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', 'git', 'validate', EDITOR]
-# Note: validate is a program provided by wdg-html-validator, it is located in
-# /homes/gws/mernst/bin/Linux-x86_64 at the time of this writing
+# (html5validator is located in /homes/gws/mernst/.local/bin/.)
+TOOLS = ['hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', 'git', 'html5validator', EDITOR]
 
 # Script option constants
 LT_OPT = "langtools"
