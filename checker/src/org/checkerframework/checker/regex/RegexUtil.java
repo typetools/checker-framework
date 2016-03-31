@@ -1,8 +1,9 @@
+// This class should be kept in sync with plume.RegexUtil.
+
 package org.checkerframework.checker.regex;
 
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
-import org.checkerframework.framework.qual.EnsuresQualifiersIf;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -12,8 +13,6 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.regex.qual.*;
 import org.checkerframework.dataflow.qual.*;
 */
-
-// This class should be kept in sync with plume.RegexUtil .
 
 /**
  * Utility methods for regular expressions, most notably for testing whether
@@ -33,10 +32,15 @@ import org.checkerframework.dataflow.qual.*;
  * To eliminate this dependency, you can simply copy this class into your
  * own project.
  */
-// The PurityChecker cannot show for most methods in this class that
+// The Purity Checker cannot show for most methods in this class that
 // they are pure, even though they are.
 @SuppressWarnings("purity")
-public class RegexUtil {
+public final class RegexUtil {
+
+  /** This class is a collection of methods; it does not represent anything. */
+  private RegexUtil() {
+    throw new Error("do not instantiate");
+  }
 
   /**
    * A checked version of {@link PatternSyntaxException}.
@@ -73,6 +77,7 @@ public class RegexUtil {
 
     private static final long serialVersionUID = 6266881831979001480L;
 
+    /** The PatternSyntaxException that this is a wrapper around. */
     private final PatternSyntaxException pse;
 
     /**
@@ -126,6 +131,7 @@ public class RegexUtil {
      * @return The full detail message
      */
     @Override
+    @Pure
     public String getMessage() {
       return pse.getMessage();
     }
@@ -140,19 +146,14 @@ public class RegexUtil {
     }
   }
 
-  private RegexUtil() {
-    throw new AssertionError("Class RegexUtil shouldn't be instantiated");
-  }
-
   /**
    * Returns true if the argument is a syntactically valid regular
    * expression.
    * @param s string to check for being a regular expression
    * @return true iff s is a regular expression
    */
-  /*@Pure*/
-  @EnsuresQualifiersIf({
-          @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)})
+  @Pure
+  @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
   public static boolean isRegex(String s) {
     return isRegex(s, 0);
   }
@@ -164,12 +165,11 @@ public class RegexUtil {
    * @param groups number of groups expected
    * @return true iff s is a regular expression with groups groups
    */
-  /*>>>
-  @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@Pure*/
+  @SuppressWarnings({"regex","deterministic"})    // RegexUtil; for purity, catches an exception
+  @Pure
   // No @EnsuresQualifierIf annotation because this method is special-cased
   // in RegexTransfer.
+  // @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
   public static boolean isRegex(String s, int groups) {
     Pattern p;
     try {
@@ -186,12 +186,9 @@ public class RegexUtil {
    * @param c char to check for being a regular expression
    * @return true iff c is a regular expression
    */
-  /*>>>
-  @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@Pure*/
-  @EnsuresQualifiersIf({
-          @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)})
+  @SuppressWarnings({"regex", "purity.not.deterministic.call"})    // RegexUtil; temp value used in pure method is equal up to equals but not up to ==
+  @Pure
+  @EnsuresQualifierIf(result=true, expression="#1", qualifier=Regex.class)
   public static boolean isRegex(final char c) {
     return isRegex(Character.toString(c));
   }
@@ -203,11 +200,9 @@ public class RegexUtil {
    * @param s string to check for being a regular expression
    * @return null, or a string describing why the argument is not a regex.
    */
-  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@SideEffectFree*/
-  public static /*@Nullable*/ String regexError(String s) {
+  @SideEffectFree
+  public static @Nullable String regexError(String s) {
     return regexError(s, 0);
   }
 
@@ -219,11 +214,9 @@ public class RegexUtil {
    * @param groups number of groups expected
    * @return null, or a string describing why the argument is not a regex.
    */
-  /*>>>
-  @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@SideEffectFree*/
-  public static /*@Nullable*/ String regexError(String s, int groups) {
+  @SuppressWarnings({"regex","not.sef"})    // RegexUtil;
+  @SideEffectFree
+  public static @Nullable String regexError(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
@@ -243,11 +236,9 @@ public class RegexUtil {
    * @param s string to check for being a regular expression
    * @return null, or a PatternSyntaxException describing why the argument is not a regex.
    */
-  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@SideEffectFree*/
-  public static /*@Nullable*/ PatternSyntaxException regexException(String s) {
+  @SideEffectFree
+  public static @Nullable PatternSyntaxException regexException(String s) {
     return regexException(s, 0);
   }
 
@@ -259,11 +250,9 @@ public class RegexUtil {
    * @param groups number of groups expected
    * @return null, or a PatternSyntaxException describing why the argument is not a regex.
    */
-  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@SideEffectFree*/
-  public static /*@Nullable*/ PatternSyntaxException regexException(String s, int groups) {
+  @SideEffectFree
+  public static @Nullable PatternSyntaxException regexException(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
@@ -279,37 +268,32 @@ public class RegexUtil {
   /**
    * Returns the argument as a {@code @Regex String} if it is a regex,
    * otherwise throws an error. The purpose of this method is to suppress Regex
-   * Checker warnings. Once the Regex Checker supports flow-sensitivity, it
-   * should be very rarely needed.
+   * Checker warnings. It should be very rarely needed.
    * @param s string to check for being a regular expression
    * @return its argument
    * @throws Error if argument is not a regex
    */
-  /*@SideEffectFree*/
+  @SideEffectFree
   // The return type annotation is a conservative bound.
-  public static /*@Regex*/
-  String asRegex(String s) {
+  public static @Regex String asRegex(String s) {
     return asRegex(s, 0);
   }
 
   /**
    * Returns the argument as a {@code @Regex(groups) String} if it is a regex
    * with at least the given number of groups, otherwise throws an error. The
-   * purpose of this method is to suppress Regex Checker warnings. Once the
-   * Regex Checker supports flow-sensitivity, it should be very rarely needed.
+   * purpose of this method is to suppress Regex Checker warnings. It should
+   * be very rarely needed.
    * @param s string to check for being a regular expression
    * @param groups number of groups expected
    * @return its argument
    * @throws Error if argument is not a regex
    */
-  /*>>>
   @SuppressWarnings("regex")    // RegexUtil
-  */
-  /*@SideEffectFree*/
+  @SideEffectFree
   // The return type annotation is irrelevant; it is special-cased by
   // RegexAnnotatedTypeFactory.
-  public static /*@Regex*/
-  String asRegex(String s, int groups) {
+  public static @Regex String asRegex(String s, int groups) {
     try {
       Pattern p = Pattern.compile(s);
       int actualGroups = getGroupCount(p);
@@ -329,9 +313,10 @@ public class RegexUtil {
    * @return an error message for s when expectedGroups groups are needed, but s
    * only has actualGroups groups
    */
+  @SideEffectFree
   private static String regexErrorMessage(String s, int expectedGroups, int actualGroups) {
-    return "regex \"" + s + "\" has " + actualGroups + " groups, but " +
-        expectedGroups + " groups are needed.";
+    return "regex \"" + s + "\" has " + actualGroups + " groups, but "
+      + expectedGroups + " groups are needed.";
   }
 
   /**
@@ -339,7 +324,8 @@ public class RegexUtil {
    * @param p pattern whose groups to count
    * @return the count of groups in the argument
    */
-  /*@Pure*/
+  @SuppressWarnings("purity")     // does not depend on object identity
+  @Pure
   private static int getGroupCount(Pattern p) {
     return p.matcher("").groupCount();
   }
