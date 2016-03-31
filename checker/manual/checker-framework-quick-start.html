@@ -1,10 +1,8 @@
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<!DOCTYPE html>
+<html>
 <head>
   <title>Checker Framework quick start guide</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 <body>
@@ -58,7 +56,7 @@ You write a type annotation right before a use of a type (on the same
 line), <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#writing-annotations">as in</a>:
 <pre>
   @NonNull String s;
-  List<@Positive Integer> l;
+  List&lt;@Positive Integer&gt; l;
   class Folder&lt;F extends @Existing File&gt; { ... }
 </pre>
 </li>
@@ -79,8 +77,8 @@ annotates.  For example, to indicate that a method has no side effects:
 </ul>
 
 <p>
-You only need to write annotations on method signatures and fields.
-Annotations within method bodies are <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#type-refinement">inferred for you automatically</a>.
+For the most part, you only need to write annotations on method signatures and fields.
+Most annotations within method bodies are <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#type-refinement">inferred for you automatically</a>.
 Furthermore, each checker applies certain defaults to further reduce your
 annotation burden; for example, using the
 <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#nullness-checker">Nullness

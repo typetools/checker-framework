@@ -1252,7 +1252,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>
      *
      * An example of an adaptation follows.  Suppose, I have a declaration:
-     * class MyClass&lt;E extends Listlt;E&gt;&gt;
+     * class MyClass&lt;E extends List&lt;E&gt;&gt;
      * And an instantiation:
      * new MyClass&lt;@NonNull String&gt;()
      *
@@ -2966,6 +2966,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Tree parentTree = TreePath.getPath(this.root, lambdaTree).getParentPath().getLeaf();
         switch (parentTree.getKind()) {
+            case PARENTHESIZED:
+                return getFunctionalInterfaceType(parentTree, javacTypes);
+
             case TYPE_CAST:
                 TypeCastTree cast = (TypeCastTree) parentTree;
                 assertFunctionalInterface(javacTypes, (Type) trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);
