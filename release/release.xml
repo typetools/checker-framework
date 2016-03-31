@@ -386,18 +386,15 @@
         <!-- All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
              At the moment we only have these for the checker artifact so for now we can create dummies with
              READMEs in them and pass those to Central.  This is the recommended way of handling this
-             situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
+             situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
+
+             The checker artifact source/javadoc jars contain all the resources needed for checker-qual and
+             checker-compat-qual, so those jars are re-used for these other artifacts. -->
 
         <fail unless="maven.plugin.dir" message="maven.plugin.dir property is not set!"  />
         <fail unless="dest.dir"         message="dest.dir property is not set!" />
 
         <property name="maven.release.dir" value="${maven.plugin.dir}/release"/>
-
-        <jar destfile="${dest.dir}/checker-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-qual"/>
-        <jar destfile="${dest.dir}/checker-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-qual"/>
-
-        <jar destfile="${dest.dir}/checker-compat-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
-        <jar destfile="${dest.dir}/checker-compat-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
 
         <jar destfile="${dest.dir}/compiler-source.jar"  basedir="${maven.release.dir}" includes="README-compiler"/>
         <jar destfile="${dest.dir}/compiler-javadoc.jar" basedir="${maven.release.dir}" includes="README-compiler"/>
