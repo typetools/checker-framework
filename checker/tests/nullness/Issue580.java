@@ -1,3 +1,5 @@
+// @skip-test
+
 // Test case for issue #580: https://github.com/typetools/checker-framework/issues/580
 
 import java.lang.RuntimeException;
