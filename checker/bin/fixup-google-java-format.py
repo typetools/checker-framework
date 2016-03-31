@@ -20,6 +20,8 @@ declarationAnnotations = {
     "/*@SideEffectFree*/",
 }
 
+debug = False
+
 abuttingannoRegex = re.compile(r"(/\*@[A-Za-z0-9_]+\*/)(\[\]|/\*@[A-Za-z0-9_]+\*/)")
 trailingannoRegex = re.compile(r"^(.*?)[ \t]*(/\*@[A-Za-z0-9_]+\*/)$")
 whitespaceRegex = re.compile(r"^([ \t]*).*$")
@@ -31,16 +33,16 @@ def insert_after_whitespace(insertion, s):
     return s[0:m.end(1)] + insertion + s[m.end(1):]
     
 
-prev = ""                       # previous line
 for fname in sys.argv[1:]:
     outfname = fname + '.out'
 
     with open(fname,'r') as infile:
         with open(outfname ,'w') as outfile:
+            prev = ""           # previous line
             for line in infile:
                 m = re.search(abuttingannoRegex, line)
                 while m:
-                    print "found abutting", line
+                    if debug: print "found abutting", line
                     line = line[0:m.end(1)] + " " + line[m.start(2):]
                     m = re.search(abuttingannoRegex, line)
                 m = re.search(trailingannoRegex, prev)
@@ -48,15 +50,15 @@ for fname in sys.argv[1:]:
                     anno = m.group(2)
                     if anno in declarationAnnotations:
                         break
-                    print "prev was:", prev
+                    if debug: print "prev was:", prev
                     prev = prev[0:m.end(1)] + prev[m.end(2):]
-                    print "prev is :", prev
+                    if debug: print "prev is :", prev
                     if re.search(emptylineRegex, prev):
                         prev = ""
-                        print "prev is':", prev
-                    print "line was:", line
+                        if debug: print "prev is':", prev
+                    if debug: print "line was:", line
                     line = insert_after_whitespace(m.group(2) + " ", line)
-                    print "line is :", line
+                    if debug: print "line is :", line
                     m = re.search(trailingannoRegex, prev)
                 outfile.write(prev)
                 prev = line
