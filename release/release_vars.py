@@ -86,9 +86,9 @@ INTERM_JSR308_REPO = os.path.join(INTERM_REPO_ROOT, "jsr308-langtools")
 INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 
 # The central repositories for Checker Framework related projects
-LIVE_CHECKER_REPO = "https://github.com/typetools/checker-framework"
 LIVE_JSR308_REPO = "https://bitbucket.org/typetools/jsr308-langtools"
-LIVE_ANNO_REPO = "https://github.com/typetools/annotation-tools"
+LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
+LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
 LIVE_PLUME_LIB = "https://github.com/mernst/plume-lib"
 LIVE_PLUME_BIB = "https://github.com/mernst/plume-bib"
 
