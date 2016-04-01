@@ -101,18 +101,10 @@ def pad_to(original_str, filler, size):
     missing = size - len(original_str)
     return original_str + duplicate(filler, missing)
 
-def read_auto(argv):
+def read_command_line_option(argv, argument):
     for index in range(1, len(argv)):
-        if argv[index] == "--auto":
+        if argv[index] == argument:
             return True
-
-    return False
-
-def read_review_manual(argv):
-    for index in range(1, len(argv)):
-        if argv[index] == "--review-manual":
-            return True
-
     return False
 
 #=========================================================================================
@@ -562,7 +554,7 @@ def check_repos(repos, fail_on_error, is_intermediate_repo_list):
                 if fail_on_error:
                     raise Exception('repo %s is not cleaned and updated!' % repo)
                 else:
-                    if not prompt_yn('%s is not clean and up to date! Continue?' % repo):
+                    if not prompt_yn('%s is not clean and up to date! Continue (answering \'n\' will exit the script)?' % repo):
                         raise Exception('%s is not clean and up to date! Halting!' % repo)
 
 def get_tag_line(lines, revision, tag_prefixes):
@@ -722,6 +714,10 @@ def ensure_group_access(path):
     # But, the point is to set group writeability of any *new* files.
     execute('chmod -f -R g+rw %s' % path, halt_if_fail=False)
 
+# Give the user access to the specified path
+def ensure_user_access(path):
+    execute('chmod -f -R u+rwx %s' % path, halt_if_fail=True)
+
 def set_umask():
     # umask g+rw
     os.umask(os.umask(0) & 0b001111)
@@ -781,7 +777,7 @@ def is_no(prompt_results):
 
 def prompt_to_delete(path):
     if os.path.exists(path):
-        result = prompt_w_suggestion("Delete the following file:\n %s [Yes|No]" % path, "no", "^(Yes|yes|No|no)$")
+        result = prompt_w_suggestion("Delete the following file:\n %s [Yes|No]" % path, "yes", "^(Yes|yes|No|no)$")
         if result == "Yes" or result == "yes":
             delete_path(path)
 

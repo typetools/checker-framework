@@ -110,6 +110,7 @@
         <property name="checker.tutorial"    value="${checker}/../tutorial"                  />
         <property name="checker.release"     value="${checker}/../release"                   />
         <property name="checkerWebPage"      value="${checker.manual}/checker-framework-webpage.html" />
+        <property name="checkerQuickStartPage" value="${checker.manual}/checker-framework-quick-start.html" />
         <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
         <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
         <property name="checker.release.poms" value="${maven.plugin}/release/"               />
@@ -147,6 +148,13 @@
         <update file="${checkerWebPage}"
                 start="${afu.date.0}" end="${afu.date.1}"
                 with="${afu.release.date}"/>
+
+        <replaceregexp file="${checkerQuickStartPage}" byline="true"
+                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+
+        <update file="${checkerQuickStartPage}"
+                start="${checkers.zip.ver.0}" end="${checkers.zip.ver.1}"
+                with="checker-framework-${release.ver}.zip"/>
 
         <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>

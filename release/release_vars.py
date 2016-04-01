@@ -227,6 +227,7 @@ if EDITOR is None:
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']
 PATH = PATH + ":/usr/bin:"
 PATH = PATH + ":" + PLUME_LIB + "/bin:/homes/gws/mernst/bin/share"
+# See comment below about html5validator.
 PATH = PATH + ":/homes/gws/mernst/.local/bin/:."
 os.environ['PATH'] = PATH
 
