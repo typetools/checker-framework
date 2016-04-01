@@ -23,6 +23,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -308,10 +309,11 @@ public final class TreeUtils {
 
     /**
      * Returns the tree with the assignment context for the treePath
-     * leaf node.
+     * leaf node.  (Does not handle pseudo-assignment of an argument to
+     * a parameter or a receiver expression to a receiver.)
      *
-     * The assignment context for the treepath is the most enclosing
-     * tree of type:
+     * The assignment context for the {@code treePath} is the leaf of its parent,
+     * if the leaf is one of the following trees:
      * <ul>
      *   <li>AssignmentTree </li>
      *   <li>CompoundAssignmentTree </li>
@@ -321,6 +323,10 @@ public final class TreeUtils {
      *   <li>ReturnTree</li>
      *   <li>VariableTree</li>
      * </ul>
+     *
+     * If the leaf is a ConditionalExpressionTree, then recur on the leaf.
+     *
+     * Otherwise, null is returned.
      *
      * @return  the assignment context as described.
      */
@@ -336,8 +342,11 @@ public final class TreeUtils {
                 (node instanceof NewArrayTree) ||
                 (node instanceof NewClassTree) ||
                 (node instanceof ReturnTree) ||
-                (node instanceof VariableTree))
+                (node instanceof VariableTree)) {
             return node;
+        } else if (node instanceof ConditionalExpressionTree) {
+            return getAssignmentContext(path);
+        }
         return null;
     }
 

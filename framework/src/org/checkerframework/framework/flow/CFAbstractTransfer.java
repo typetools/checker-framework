@@ -150,13 +150,19 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             // get the declared type of the assignment context by looking up the
             // assignment context tree's type in the factory while flow is
             // disabled.
-            // Note: Since we use getAnnotatedType(Element), flow is not used in
-            // any case, so we would not have to disable it.
-            boolean oldFlow = factory.getUseFlow();
-            factory.setUseFlow(false);
-            Element element = node.getAssignmentContext().getElementForType();
-            if (element != null) {
-                AnnotatedTypeMirror assCtxt = factory.getAnnotatedType(element);
+            Tree contextTree = node.getAssignmentContext().getContextTree();
+            AnnotatedTypeMirror assCtxt = null;
+            if (contextTree != null) {
+                assCtxt = factory.getAnnotatedTypeLhs(contextTree);
+            } else {
+                Element assCtxtElement = node.getAssignmentContext().getElementForType();
+                if (assCtxtElement != null) {
+                    // if contextTree is null, use the element to get the type
+                    assCtxt = factory.getAnnotatedType(assCtxtElement);
+                }
+            }
+
+            if (assCtxt != null) {
                 if (assCtxt instanceof AnnotatedExecutableType) {
                     // For a MethodReturnContext, we get the full type of the
                     // method, but we only want the return type.
@@ -167,7 +173,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                         Pair.of(node.getAssignmentContext().getContextTree(),
                                 assCtxt));
             }
-            factory.setUseFlow(oldFlow);
         }
         AnnotatedTypeMirror at = factory.getAnnotatedType(tree);
         analysis.setCurrentTree(preTree);
