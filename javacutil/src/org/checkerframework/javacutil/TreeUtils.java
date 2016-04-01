@@ -313,7 +313,7 @@ public final class TreeUtils {
      * a parameter or a receiver expression to a receiver.)
      *
      * The assignment context for the {@code treePath} is the leaf of its parent,
-     * if the leaf is on of the following trees:
+     * if the leaf is one of the following trees:
      * <ul>
      *   <li>AssignmentTree </li>
      *   <li>CompoundAssignmentTree </li>
