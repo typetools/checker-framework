@@ -340,8 +340,8 @@ def main(argv):
             " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
             " * Click \"close\" at the top\n" +
             " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
-            " * Click on the Refresh button near the top of the page until the closing\n" +
-            "   operation is reported to have completed succesfully.\n" +
+            " * Click the Refresh button near the top of the page until the bottom pane has:\n" +
+            "   \"Activity   Last operation completed successfully\".\n" +
             " * Copy the URL of the closed artifacts for use in the next step\n"
             "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
         )
@@ -447,7 +447,8 @@ def main(argv):
                "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and " +
                "locate the orgcheckerframework repository and click on it.\n" +
                "Then, in the view for the orgcheckerframework staging repository at the bottom of the page, click on the Content tab. " +
-               "Expand the subdirectories until you find the one called checker-framework-plugin. Right-click on it, and choose delete.\n"
+               "Expand subdirectories to find org/checkerframework/checkerframework-maven-plugin. Right-click on it, and choose delete.\n" +
+               "If you have a permissions problem, try logging out and back in.\n" +
                "Finally, click on the Release button at the top of the page.  For the description, write " +
                "Checker Framework release " + new_checker_version + "\n\n")
 
