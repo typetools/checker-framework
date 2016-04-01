@@ -374,14 +374,14 @@ def hg_push_or_fail(repo_root):
         cmd = 'git -C %s push --tags' % repo_root
         result = os.system(cmd)
         if not result == 0:
-            raise Exception("Could not push tags to: " + repo_root + "; result=" + str(result) + " for command: `" + cmd + "` in " + os.path.getcwd())
+            raise Exception("Could not push tags to: " + repo_root + "; result=" + str(result) + " for command: `" + cmd + "` in " + os.getcwd())
     if is_git(repo_root):
         cmd = 'git -C %s push' % repo_root
     else:
         cmd = 'hg -R %s push' % repo_root
     result = os.system(cmd)
     if not result == 0:
-        raise Exception("Could not push to: " + repo_root + "; result=" + str(result) + " for command: " + cmd + "` in " + os.path.getcwd())
+        raise Exception("Could not push to: " + repo_root + "; result=" + str(result) + " for command: " + cmd + "` in " + os.getcwd())
 
 def hg_push(repo_root):
     if is_git(repo_root):
