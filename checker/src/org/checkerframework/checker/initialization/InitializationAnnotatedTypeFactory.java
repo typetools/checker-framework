@@ -79,27 +79,27 @@ public abstract class InitializationAnnotatedTypeFactory<
     extends GenericAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
     /**
-     * UnknownInitialization or Raw
+     * {@link UnknownInitialization} or {@link Raw}
      */
     protected final AnnotationMirror UNCLASSIFIED;
 
     /**
-     * Initialized or NonRaw
+     * {@link Initialized or {@link NonRaw}
      */
     protected final AnnotationMirror COMMITTED;
 
     /**
-     * UnderInitialization or null
+     *{@link  UnderInitialization} or null
      */
     protected final AnnotationMirror FREE;
 
     /**
-     * NotOnlyInitialized or null
+     * {@link NotOnlyInitialized} or null
      */
     protected final AnnotationMirror NOT_ONLY_COMMITTED;
 
     /**
-     * FBCBottom or NonRaw
+     * {@link FBCBottom} or {@link NonRaw}
      */
     protected final AnnotationMirror FBCBOTTOM;
 
@@ -609,13 +609,13 @@ public abstract class InitializationAnnotatedTypeFactory<
             boolean isInitializedForFrame = isInitializedForFrame(receiverType, fieldDeclarationType);
             if (isInitializedForFrame) {
                 // The receiver is initialized for this frame.
-                // Change the type of the field to @UnknownInitialization so that
+                // Change the type of the field to @UnknownInitialization or @Raw so that
                 // anything can be assigned to this field.
                 type.replaceAnnotation(UNCLASSIFIED);
-
-            } else if(computingAnnotatedTypeMirrorOfLHS) {
-                // The receiver is not initialized for this frame, and the type of a lhs is being computed.
-                // Only replace initialization annotation.
+            } else if (computingAnnotatedTypeMirrorOfLHS) {
+                // The receiver is not initialized for this frame, but the type of a lhs is being computed.
+                // Change the type of the field to @UnknownInitialization or @Raw so that
+                // anything can be assigned to this field.
                 type.replaceAnnotation(UNCLASSIFIED);
             } else {
                 // The receiver is not initialized for this frame and the type being computed is not a LHS.
