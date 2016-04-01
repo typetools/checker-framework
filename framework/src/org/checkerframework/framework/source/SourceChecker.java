@@ -1680,12 +1680,6 @@ public abstract class SourceChecker
     // TODO I would like to rename getLintOption to hasLintOption
     @Override
     public final boolean hasOption(String name) {
-
-        // Always ignore errors from raw type arguments.
-        // See https://github.com/typetools/checker-framework/issues/635
-        if (name.equals("ignoreRawTypeArguments")) {
-            return true;
-        }
         return getOptions().containsKey(name);
     }
 

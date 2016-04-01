@@ -539,7 +539,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected TypeHierarchy createTypeHierarchy() {
         return new DefaultTypeHierarchy(checker, getQualifierHierarchy(),
-                                        checker.hasOption("ignoreRawTypeArguments"),
+                                        checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                                         checker.hasOption("invariantArrays"));
     }
 

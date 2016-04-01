@@ -35,7 +35,6 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -847,7 +846,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new IGJTypeHierarchy(checker, getQualifierHierarchy(),
-                                    checker.hasOption("ignoreRawTypeArguments"),
+                                    checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                                     checker.hasOption("invariantArrays"));
     }
 
