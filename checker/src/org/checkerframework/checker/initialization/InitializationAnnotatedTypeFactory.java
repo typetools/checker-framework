@@ -84,7 +84,7 @@ public abstract class InitializationAnnotatedTypeFactory<
     protected final AnnotationMirror UNCLASSIFIED;
 
     /**
-     * {@link Initialized or {@link NonRaw}
+     * {@link Initialized} or {@link NonRaw}
      */
     protected final AnnotationMirror COMMITTED;
 
