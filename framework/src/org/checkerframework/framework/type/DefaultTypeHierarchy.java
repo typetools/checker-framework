@@ -645,11 +645,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public Boolean visitPrimitive_Wildcard(AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, VisitHistory visitHistory) {
         //this can occur when passing a primitive to a method on a raw type (see test checker/tests/nullness/RawAndPrimitive.java)
         //this can also occur because we don't box primitives when we should and don't capture convert
-        if (supertype.isTypeArgHack()) {
-            return isPrimarySubtype(subtype, supertype.getSuperBound());
-        } else {
-            return isPrimarySubtype(subtype, supertype.getSuperBound());
-        }
+        return isPrimarySubtype(subtype, supertype.getSuperBound());
     }
 
     //------------------------------------------------------------------------

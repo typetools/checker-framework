@@ -1113,6 +1113,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // treat Raw as generic!
         // TODO: This doesn't handle recursive type parameter
         // e.g. class Pair<Y extends List<Y>> { ... }
+        // Type argument inference for raw types can be improved. See Issue 635.
+        // https://github.com/typetools/checker-framework/issues/635
         if (result.getKind() == TypeKind.DECLARED) {
             AnnotatedDeclaredType dt = (AnnotatedDeclaredType) result;
             if (dt.wasRaw()) {
