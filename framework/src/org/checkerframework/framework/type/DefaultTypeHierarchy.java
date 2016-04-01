@@ -19,9 +19,6 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
-import static org.checkerframework.framework.util.AnnotatedTypes.isDeclarationOfJavaLangEnum;
-import static org.checkerframework.framework.util.AnnotatedTypes.isEnum;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -34,6 +31,9 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+
+import static org.checkerframework.framework.util.AnnotatedTypes.isDeclarationOfJavaLangEnum;
+import static org.checkerframework.framework.util.AnnotatedTypes.isEnum;
 
 /**
  * Default implementation of TypeHierarchy that implements the JLS specification with minor
@@ -645,17 +645,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public Boolean visitPrimitive_Wildcard(AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, VisitHistory visitHistory) {
         //this can occur when passing a primitive to a method on a raw type (see test checker/tests/nullness/RawAndPrimitive.java)
         //this can also occur because we don't box primitives when we should and don't capture convert
-        if (supertype.isTypeArgHack()) {
-            if (ignoreRawTypes) {
-                return true;
-
-            } else {
-                return isPrimarySubtype(subtype, supertype.getSuperBound());
-            }
-
-        } else {
-            return isPrimarySubtype(subtype, supertype.getSuperBound());
-        }
+        return isPrimarySubtype(subtype, supertype.getSuperBound());
     }
 
     //------------------------------------------------------------------------

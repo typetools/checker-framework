@@ -539,7 +539,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected TypeHierarchy createTypeHierarchy() {
         return new DefaultTypeHierarchy(checker, getQualifierHierarchy(),
-                                        checker.hasOption("ignoreRawTypeArguments"),
+                                        checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                                         checker.hasOption("invariantArrays"));
     }
 
@@ -1113,32 +1113,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // treat Raw as generic!
         // TODO: This doesn't handle recursive type parameter
         // e.g. class Pair<Y extends List<Y>> { ... }
+        // Type argument inference for raw types can be improved. See Issue 635.
+        // https://github.com/typetools/checker-framework/issues/635
         if (result.getKind() == TypeKind.DECLARED) {
-            AnnotatedDeclaredType dt = (AnnotatedDeclaredType)result;
+            AnnotatedDeclaredType dt = (AnnotatedDeclaredType) result;
             if (dt.wasRaw()) {
-                List<AnnotatedTypeMirror> typeArgs;
-                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-                if (ctx != null) {
-                    if (ctx.second.getKind() == TypeKind.DECLARED &&
-                            types.isSameType(types.erasure(ctx.second.actualType), types.erasure(dt.actualType))) {
-                        typeArgs = ((AnnotatedDeclaredType) ctx.second).getTypeArguments();
-                    } else {
-                        // TODO: we want a way to go from the raw type to an instantiation of the raw type
-                        // that is compatible with the context.
-                        typeArgs = null;
-                    }
-                } else {
-                    // TODO: the context is null, use uninstantiated wildcards instead.
-                    typeArgs = new ArrayList<AnnotatedTypeMirror>();
-                    AnnotatedDeclaredType declaration = fromElement((TypeElement)dt.getUnderlyingType().asElement());
-                    for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
-                        AnnotatedWildcardType wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam);
-                        typeArgs.add(wct);
-                    }
+                List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
+                AnnotatedDeclaredType declaration = fromElement((TypeElement) dt.getUnderlyingType().asElement());
+                for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
+                    AnnotatedWildcardType wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam);
+                    typeArgs.add(wct);
                 }
                 dt.setTypeArguments(typeArgs);
             }
         }
+
         annotateInheritedFromClass(result);
         if (shouldCache)
             fromTreeCache.put(tree, result.deepCopy());
