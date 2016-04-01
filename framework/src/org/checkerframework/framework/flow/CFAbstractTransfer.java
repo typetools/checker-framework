@@ -162,7 +162,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 }
             }
 
-            if(assCtxt != null) {
+            if (assCtxt != null) {
                 if (assCtxt instanceof AnnotatedExecutableType) {
                     // For a MethodReturnContext, we get the full type of the
                     // method, but we only want the return type.
