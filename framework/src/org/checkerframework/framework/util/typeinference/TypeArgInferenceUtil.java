@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util.typeinference;
 
-import com.sun.source.tree.LambdaExpressionTree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -35,6 +34,7 @@ import javax.lang.model.util.Types;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -217,12 +217,7 @@ public class TypeArgInferenceUtil {
         } else if (assignmentContext instanceof VariableTree) {
             if (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>) {
                 final GenericAnnotatedTypeFactory<?,?,?,?> gatf = ((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory);
-                boolean oldFlow = gatf.getUseFlow();
-                gatf.setUseFlow(false);
-                final AnnotatedTypeMirror type = gatf.getAnnotatedType(assignmentContext);
-                gatf.setUseFlow(oldFlow);
-                return type;
-
+                return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
             } else {
                 return atypeFactory.getAnnotatedType(assignmentContext);
             }

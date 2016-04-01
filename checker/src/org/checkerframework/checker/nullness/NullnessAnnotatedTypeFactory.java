@@ -295,19 +295,6 @@ public class NullnessAnnotatedTypeFactory
         return result;
     }
 
-    protected AnnotatedTypeMirror getDeclaredAndDefaultedAnnotatedType(Tree tree) {
-        HACK_DONT_CALL_POST_AS_MEMBER = true;
-        boolean oldShouldCache = shouldCache;
-        shouldCache = false;
-
-        AnnotatedTypeMirror type = getAnnotatedType(tree);
-
-        shouldCache = oldShouldCache;
-        HACK_DONT_CALL_POST_AS_MEMBER = false;
-
-        return type;
-    }
-
     @Override
     protected TypeAnnotator createTypeAnnotator() {
         ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
