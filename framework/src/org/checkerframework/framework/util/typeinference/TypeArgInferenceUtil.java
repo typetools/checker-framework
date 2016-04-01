@@ -215,18 +215,62 @@ public class TypeArgInferenceUtil {
             }
 
         } else if (assignmentContext instanceof VariableTree) {
-            if (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>) {
-                final GenericAnnotatedTypeFactory<?,?,?,?> gatf = ((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory);
-                return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
-            } else {
-                return atypeFactory.getAnnotatedType(assignmentContext);
-            }
+            return assignedToVariable(atypeFactory, assignmentContext);
 
         }
 
         ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
         return null; // dead code
     }
+    /**
+     * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
+     * Rational:
+     *
+     * For example:
+     * <pre>{@code
+     * <S> S bar () {...}
+     *
+     * <T> T foo(T p) {
+     *     T local = bar();
+     *     return local;
+     *   }
+     * }</pre>
+     * During type argument inference of {@code bar}, the assignment context is  {@code local}.
+     * If the local variable default is used, then the type of assignment context type is
+     * {@code @Nullable T} and the type argument inferred for {@code bar()} is {@code @Nullable T}.  And an
+     * incompatible types in return error is issued.
+     * <p>
+     * If instead, the local variable default is not applied, then the assignment context type
+     * is {@code T} (with lower bound {@code @NonNull Void} and upper bound {@code @Nullable Object}) and the type
+     * argument inferred for {@code bar()} is {@code T}.  During dataflow, the type of {@code local} is refined to
+     * {@code T} and the return is legal.
+     * <p>
+     * If the assignment context type was a declared type, for example:
+     * <pre>{@code
+     * <S> S bar () {...}
+     * Object foo() {
+     *     Object local = bar();
+     *     return local;
+     * }
+     * }</pre>
+     *
+     * The local variable default must be used or else the assignment context type is missing an annotation.
+     * So, an incompatible types in return error is issued in the above code.  We could improve type argument
+     * inference in this case and by using the lower bound of {@code S}  instead of the local variable default.
+     *
+     * @param atypeFactory AnnotatedTypeFactory
+     * @param assignmentContext VariableTree
+     * @return AnnotatedTypeMirror of Assignment context
+     */
+    public static AnnotatedTypeMirror assignedToVariable(AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
+        if (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>) {
+            final GenericAnnotatedTypeFactory<?,?,?,?> gatf = ((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory);
+            return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
+        } else {
+            return atypeFactory.getAnnotatedType(assignmentContext);
+        }
+    }
+
 
     /**
      * @return true if the type contains a use of a type variable from methodType
