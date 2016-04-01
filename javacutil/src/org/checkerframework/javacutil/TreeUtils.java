@@ -309,10 +309,11 @@ public final class TreeUtils {
 
     /**
      * Returns the tree with the assignment context for the treePath
-     * leaf node.
+     * leaf node.  (Does not handle pseudo-assignment of an argument to
+     * a parameter or a receiver expression to a receiver.)
      *
-     * The assignment context for the treepath is the most enclosing
-     * tree of type:
+     * The assignment context for the {@code treePath} is the leaf of its parent,
+     * if the leaf is on of the following trees:
      * <ul>
      *   <li>AssignmentTree </li>
      *   <li>CompoundAssignmentTree </li>
@@ -322,6 +323,10 @@ public final class TreeUtils {
      *   <li>ReturnTree</li>
      *   <li>VariableTree</li>
      * </ul>
+     *
+     * If the leaf is a ConditionalExpressionTree, then recur on the leaf.
+     *
+     * Otherwise, null is returned.
      *
      * @return  the assignment context as described.
      */
