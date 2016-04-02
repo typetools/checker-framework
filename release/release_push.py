@@ -26,7 +26,7 @@ def copy_release_dir(path_to_dev, path_to_live, release_version):
     dest_location = os.path.join(path_to_live, release_version)
 
     if os.path.exists(dest_location):
-        prompt_to_delete(dest_location)
+        delete_path(dest_location)
 
     if os.path.exists(dest_location):
         raise Exception("Destination location exists: " + dest_location)
@@ -363,12 +363,12 @@ def main(argv):
     print_step("Push Step 5. Push dev current release website to live website") # SEMIAUTO
     # This step could be performed without asking for user input but I think we should err on the side of caution.
     if not test_mode:
-        continue_or_exit("Copy release to the live website?")
-        print "Copying to live site"
-        copy_releases_to_live_site(new_checker_version, new_afu_version)
-        copy_htaccess()
-        ensure_group_access_to_releases()
-        update_release_symlinks(new_checker_version, new_afu_version)
+        if auto or prompt_yes_no("Copy release to the live website?"):
+            print "Copying to live site"
+            copy_releases_to_live_site(new_checker_version, new_afu_version)
+            copy_htaccess()
+            ensure_group_access_to_releases()
+            update_release_symlinks(new_checker_version, new_afu_version)
     else:
         print  "Test mode: Skipping copy to live site!"
 
