@@ -7,6 +7,9 @@ export SHELLOPTS
 
 ./.travis-build-without-test.sh
 
+## Code style
+ant check-style
+
 ## Documentation
 ant javadoc-private
 # Skip the manual because it cannot be compiled on Ubuntu 12.04.
