@@ -88,15 +88,17 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             CHECKER_SOURCE, CHECKER_JAVADOC,
                             pgp_user, pgp_passphrase)
 
+    # checker.jar is a superset of checker-qual.jar, so use the same source/javadoc jars
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
+    # checker.jar is a superset of checker-compat-qual.jar, so use the same source/javadoc jars
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
                             CHECKER_COMPAT_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-javadoc.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVAC_BINARY_RELEASE_POM, JAVAC_BINARY,
