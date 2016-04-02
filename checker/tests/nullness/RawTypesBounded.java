@@ -10,7 +10,7 @@ class RawTypes {
     }
     Generic rawField = new Generic();
 
-    void use(){
+    void use() {
         Generic rawLocal = new Generic<String>();
         Generic<?> generic1 = rawReturn();
         Generic<?> generic2 = rawField;
@@ -30,7 +30,7 @@ class TestBounded {
         BoundedGeneric<?> generic3 = rawLocal;
     }
 
-    void useBoundedWildCard(){
+    void useBoundedWildCard() {
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
         //:: warning: [unchecked] unchecked conversion
         BoundedGeneric<? extends Object> generic1 = rawReturn();
@@ -40,7 +40,7 @@ class TestBounded {
         BoundedGeneric<? extends Object> generic3 = rawLocal;
     }
 
-    void useBoundedWildCard2(){
+    void useBoundedWildCard2() {
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
         //:: warning: [unchecked] unchecked conversion
         BoundedGeneric<? extends CharSequence> generic1 = rawReturn();
@@ -50,7 +50,7 @@ class TestBounded {
         BoundedGeneric<? extends CharSequence> generic3 = rawLocal;
     }
 
-    void useTypeArg(){
+    void useTypeArg() {
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
         //:: warning: [unchecked] unchecked conversion
         BoundedGeneric<String> generic1 = rawReturn();
@@ -60,7 +60,7 @@ class TestBounded {
         BoundedGeneric<String> generic3 = rawLocal;
     }
 
-    void useAnnotatedTypeArg(){
+    void useAnnotatedTypeArg() {
         BoundedGeneric rawLocal = new BoundedGeneric<String>();
         //:: warning: [unchecked] unchecked conversion
         BoundedGeneric<@Nullable String> generic1 = rawReturn();
