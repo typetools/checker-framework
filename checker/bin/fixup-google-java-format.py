@@ -31,7 +31,7 @@ def insert_after_whitespace(insertion, s):
     """Return s, with insertion inserted after its leading whitespace."""
     m = re.match(whitespaceRegex, s)
     return s[0:m.end(1)] + insertion + s[m.end(1):]
-    
+
 
 for fname in sys.argv[1:]:
     outfname = fname + '.out'
@@ -63,5 +63,5 @@ for fname in sys.argv[1:]:
                 outfile.write(prev)
                 prev = line
             outfile.write(prev)
-    
+
     os.rename(outfname, fname)
