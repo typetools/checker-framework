@@ -32,7 +32,7 @@ ant javadoc-private
 (cd checker && ant example-tests-nobuildjdk)
 (cd checker && ant check-tutorial)
 # If too many checker tests are run, the tests crash, so run one.
-(cd checker && ant nullness-base-tests)
+(cd checker && ant nullness-base-tests regex-qual-tests)
 ## end of test that Travis doesn't crash on
 
 #Fails on Travis
