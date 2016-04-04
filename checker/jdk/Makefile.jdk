@@ -18,8 +18,6 @@ RTJAR ?= $(JAVA_HOME)/jre/lib/rt.jar
 ANNOTATION_TOOLS ?= ../../../../annotation-tools
 AFU_SCRIPTS ?= $(ANNOTATION_TOOLS)/annotation-file-utilities/scripts
 
-JDK_PKGS_EXPR = [^/]+/\(java\|javax\|org\)/.+
-
 all: clean classes
 # Separate make command because BUILD_CLASSES needs to be recomputed.
 	$(MAKE) jaifs annotated
@@ -32,8 +30,8 @@ build: classes
 
 ############## Validate annotated jdk against missing methods ##############
 
-SOURCES = $(shell find src -regex '$(JDK_PKGS_EXPR)' -name '*.java')
-# CLASSES = $(shell find src -regex '$(JDK_PKGS_EXPR)' -name '*.class')
+SOURCES = $(shell find src/java src/javax src/org -name '*.java')
+# CLASSES = $(shell find src/java src/javax src/org -name '*.class')
 DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 
 .PHONY: classes
@@ -64,7 +62,7 @@ validate: classes $(DIFFS)
 # does not exist.  So long as the variables are not used on such a make
 # invocation, this doesn't cause a problem, but it is irritating (and a bit
 # sloppy).
-BUILD_CLASSES = $(shell find build -regex '$(JDK_PKGS_EXPR)' -name '*.class')
+BUILD_CLASSES = $(shell find build/java build/javax build/org -name '*.class')
 JAIFS = $(patsubst build/%.class,build/%.jaif, $(BUILD_CLASSES))
 ANNOTATED = $(patsubst build/%.class,annotated/%.class, $(BUILD_CLASSES))
 
