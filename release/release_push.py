@@ -26,7 +26,7 @@ def copy_release_dir(path_to_dev, path_to_live, release_version):
     dest_location = os.path.join(path_to_live, release_version)
 
     if os.path.exists(dest_location):
-        prompt_to_delete(dest_location)
+        delete_path(dest_location)
 
     if os.path.exists(dest_location):
         raise Exception("Destination location exists: " + dest_location)
@@ -88,15 +88,17 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             CHECKER_SOURCE, CHECKER_JAVADOC,
                             pgp_user, pgp_passphrase)
 
+    # checker.jar is a superset of checker-qual.jar, so use the same source/javadoc jars
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
+    # checker.jar is a superset of checker-compat-qual.jar, so use the same source/javadoc jars
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
                             CHECKER_COMPAT_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-javadoc.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVAC_BINARY_RELEASE_POM, JAVAC_BINARY,
@@ -340,8 +342,8 @@ def main(argv):
             " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
             " * Click \"close\" at the top\n" +
             " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
-            " * Click on the Refresh button near the top of the page until the closing\n" +
-            "   operation is reported to have completed succesfully.\n" +
+            " * Click the Refresh button near the top of the page until the bottom pane has:\n" +
+            "   \"Activity   Last operation completed successfully\".\n" +
             " * Copy the URL of the closed artifacts for use in the next step\n"
             "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
         )
@@ -361,12 +363,12 @@ def main(argv):
     print_step("Push Step 5. Push dev current release website to live website") # SEMIAUTO
     # This step could be performed without asking for user input but I think we should err on the side of caution.
     if not test_mode:
-        continue_or_exit("Copy release to the live website?")
-        print "Copying to live site"
-        copy_releases_to_live_site(new_checker_version, new_afu_version)
-        copy_htaccess()
-        ensure_group_access_to_releases()
-        update_release_symlinks(new_checker_version, new_afu_version)
+        if auto or prompt_yes_no("Copy release to the live website?"):
+            print "Copying to live site"
+            copy_releases_to_live_site(new_checker_version, new_afu_version)
+            copy_htaccess()
+            ensure_group_access_to_releases()
+            update_release_symlinks(new_checker_version, new_afu_version)
     else:
         print  "Test mode: Skipping copy to live site!"
 
@@ -447,7 +449,8 @@ def main(argv):
                "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and " +
                "locate the orgcheckerframework repository and click on it.\n" +
                "Then, in the view for the orgcheckerframework staging repository at the bottom of the page, click on the Content tab. " +
-               "Expand the subdirectories until you find the one called checker-framework-plugin. Right-click on it, and choose delete.\n"
+               "Expand subdirectories to find org/checkerframework/checkerframework-maven-plugin. Right-click on it, and choose delete.\n" +
+               "If you have a permissions problem, try logging out and back in.\n" +
                "Finally, click on the Release button at the top of the page.  For the description, write " +
                "Checker Framework release " + new_checker_version + "\n\n")
 
