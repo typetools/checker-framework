@@ -829,14 +829,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determines the annotated type of an element using
-     * {@link #fromElement(Element)}.
+     * Returns an AnnotatedTypeMirror representing the qualified type of {@code elt}.
      *
      * @param elt the element
-     * @return the annotated type of {@code elt}
-     * @throws IllegalArgumentException if {@code elt} is null
+     * @return the qualified type of {@code elt}
      *
-     * @see #fromElement(Element)
      */
     public AnnotatedTypeMirror getAnnotatedType(Element elt) {
         if (elt == null) {
@@ -863,10 +860,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an AnnotatedTypeMirror representing the qualified type for {@code tree}.
+     * Returns an AnnotatedTypeMirror representing the qualified type of {@code tree}.
      *
      * @param tree the AST node
-     * @return the annotated type of {@code tree}
+     * @return the qualified type of {@code tree}
      */
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
         if (tree == null) {
@@ -952,10 +949,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // **********************************************************************
 
     /**
-     * Determines the annotated type of an element.
+     * Creates an AnnotatedTypeMirror for {@code elt} that includes:
+     * annotations explicitly written on the element and annotations from stub files
      *
      * @param elt the element
-     * @return the annotated type of the element
+     * @return AnnotatedTypeMirror of the element with explicity and stub file annotations
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
         if (shouldCache && elementCache.containsKey(elt)) {
@@ -967,6 +965,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
         // so get explicit annotations from the tree. (This bug has been fixed in Java 9.)
+        // Also, since annotations computed by the AnnotatedTypeFactory are stored in the element,
+        // the annotations have to be retrived from the tree so that only explicit annotations are returned.
         Tree decl = declarationFromElement(elt);
 
         if (decl == null && typesFromStubFiles != null && typesFromStubFiles.containsKey(elt)) {
