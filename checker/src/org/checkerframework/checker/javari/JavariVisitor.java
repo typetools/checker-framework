@@ -45,7 +45,7 @@ public class JavariVisitor extends BaseTypeVisitor<JavariAnnotatedTypeFactory> {
      */
     @Override
     public Void visitClass(ClassTree node, Void p) {
-        if (atypeFactory.fromClass(node).hasEffectiveAnnotation(atypeFactory.POLYREAD))
+        if (atypeFactory.getAnnotatedType(node).hasEffectiveAnnotation(atypeFactory.POLYREAD))
                 /* TODO: what was this meant to do?
             && !atypeFactory.getSelfType(node).hasEffectiveAnnotation(atypeFactory.POLYREAD)*/
             checker.report(Result.failure("polyread.type"), node);

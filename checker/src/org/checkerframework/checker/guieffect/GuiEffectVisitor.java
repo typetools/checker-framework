@@ -134,7 +134,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                     node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT);
             if (node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
                 ExpressionTree src = ((MemberSelectTree)node.getMethodSelect()).getExpression();
-                srcType = atypeFactory.fromExpression(src);
+                srcType = atypeFactory.getAnnotatedType(src);
             } else {
                 // Tree.Kind.IDENTIFIER, e.g. a direct call like "super()"
                 srcType = visitorState.getMethodReceiver();
