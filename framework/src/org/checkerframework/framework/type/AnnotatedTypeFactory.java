@@ -863,29 +863,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determines the annotated type of an AST node.
-     *
-     * <p>
-     *
-     * The type is determined as follows:
-     * <ul>
-     *  <li>if {@code tree} is a class declaration, determine its type via
-     *    {@link #fromClass}</li>
-     *  <li>if {@code tree} is a method or variable declaration, determine its
-     *    type via {@link #fromMember(Tree)}</li>
-     *  <li>if {@code tree} is an {@link ExpressionTree}, determine its type
-     *    via {@link #fromExpression(ExpressionTree)}</li>
-     *  <li>otherwise, throw an {@link UnsupportedOperationException}</li>
-     * </ul>
+     * Returns an AnnotatedTypeMirror representing the qualified type for {@code tree}.
      *
      * @param tree the AST node
      * @return the annotated type of {@code tree}
-     *
-     * @see #fromClass(ClassTree)
-     * @see #fromMember(Tree)
-     * @see #fromExpression(ExpressionTree)
      */
-    // I wish I could make this method protected
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
         if (tree == null) {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
