@@ -1905,7 +1905,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (newClassTree.getClassBody() != null) {
             // If newClassTree creates an anonymous class, then annotations in this location:
-            // new @HERE Class(){}
+            // new @HERE Class() {}
             // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
             List<? extends AnnotationTree> annos = newClassTree.getClassBody().getModifiers().getAnnotations();
             // replace the annotation because a different annotation could have been
