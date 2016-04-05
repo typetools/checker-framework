@@ -1,10 +1,10 @@
-// Test case for Issue 648
-// https://github.com/typetools/checker-framework/issues/648
+// Test case for Issue 653
+// https://github.com/typetools/checker-framework/issues/653
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.PolyAll;
 
-class Issue648 {
+class Issue653 {
 
   public static /*@PolyAll*/ String[] concat(
       /*@PolyAll*/ String /*@Nullable*/ [] a, /*@PolyAll*/ String /*@Nullable*/ [] b) {
