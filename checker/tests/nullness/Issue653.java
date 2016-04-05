@@ -1,6 +1,8 @@
 // Test case for Issue 653
 // https://github.com/typetools/checker-framework/issues/653
 
+// @skip-test Commented out until the bug is fixed
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.qual.PolyAll;
 
