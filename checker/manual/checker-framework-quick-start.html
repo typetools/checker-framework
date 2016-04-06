@@ -14,7 +14,7 @@ pluggable type-checking.  More resources are given at the end.
 </p>
 
 <p>
-A pluggable type-checker, or &ldquo;checker&rdquo; for short, prevents certain run-time errors.  For example, it can prove that your code never suffers a 
+A pluggable type-checker, or &ldquo;checker&rdquo; for short, prevents certain run-time errors.  For example, it can prove that your code never suffers a
 NullPointerException.  Choose which checker you want to run from the <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#introduction">list
 of checkers</a>.
 </p>
@@ -22,7 +22,7 @@ of checkers</a>.
 <p>
 To <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#installation">install the Checker Framework</a>, download and unzip
 the Checker Framework distribution:
-<a href="current/checker-framework-1.9.12.zip"><!-- checker-framework-zip-version -->checker-framework-1.9.12.zip<!-- /checker-framework-zip-version --></a>.<br/>
+<a href="current/checker-framework-1.9.13.zip"><!-- checker-framework-zip-version -->checker-framework-1.9.13.zip<!-- /checker-framework-zip-version --></a>.<br/>
 </p>
 
 <p>
@@ -77,8 +77,8 @@ annotates.  For example, to indicate that a method has no side effects:
 </ul>
 
 <p>
-You only need to write annotations on method signatures and fields.
-Annotations within method bodies are <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#type-refinement">inferred for you automatically</a>.
+For the most part, you only need to write annotations on method signatures and fields.
+Most annotations within method bodies are <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#type-refinement">inferred for you automatically</a>.
 Furthermore, each checker applies certain defaults to further reduce your
 annotation burden; for example, using the
 <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#nullness-checker">Nullness
@@ -95,6 +95,7 @@ To learn more, you can read:
 <ul>
   <li><a href="http://types.cs.washington.edu/checker-framework/tutorial/">Checker Framework tutorial</a>
   </li>
+  <li><a href="https://github.com/glts/safer-spring-petclinic/wiki">Nullness Checker tutorial</a></li>
   <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#faq">Checker Framework frequently asked questions (FAQs)</a>
   </li>
   <li><a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">Checker Framework manual</a>

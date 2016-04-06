@@ -86,9 +86,9 @@ INTERM_JSR308_REPO = os.path.join(INTERM_REPO_ROOT, "jsr308-langtools")
 INTERM_ANNO_REPO = os.path.join(INTERM_REPO_ROOT, "annotation-tools")
 
 # The central repositories for Checker Framework related projects
-LIVE_CHECKER_REPO = "https://github.com/typetools/checker-framework"
 LIVE_JSR308_REPO = "https://bitbucket.org/typetools/jsr308-langtools"
-LIVE_ANNO_REPO = "https://github.com/typetools/annotation-tools"
+LIVE_ANNO_REPO = "git@github.com:typetools/annotation-tools.git"
+LIVE_CHECKER_REPO = "git@github.com:typetools/checker-framework.git"
 LIVE_PLUME_LIB = "https://github.com/mernst/plume-lib"
 LIVE_PLUME_BIB = "https://github.com/mernst/plume-bib"
 
@@ -225,15 +225,13 @@ if EDITOR is None:
     EDITOR = 'emacs'
 
 PATH = os.environ['JAVA_HOME'] + "/bin:/scratch/secs-jenkins/tools/hevea-1.10/bin/:" + os.environ['PATH']
-PATH = PATH + ":/usr/bin:/projects/uns/F11/bin/:/projects/uns/F11/bin/"
+PATH = PATH + ":/usr/bin:"
 PATH = PATH + ":" + PLUME_LIB + "/bin:/homes/gws/mernst/bin/share"
-PATH = PATH + ":/homes/gws/mernst/bin/Linux-x86_64/:/uns/bin:."
+PATH = PATH + ":/homes/gws/mernst/.local/bin/:." # for html5validator
 os.environ['PATH'] = PATH
 
 # Tools that must be on your PATH (besides common *nix ones like grep)
-TOOLS = ['hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', 'git', 'validate', EDITOR]
-# Note: validate is a program provided by wdg-html-validator, it is located in
-# /homes/gws/mernst/bin/Linux-x86_64 at the time of this writing
+TOOLS = ['hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', 'git', 'html5validator', EDITOR]
 
 # Script option constants
 LT_OPT = "langtools"

@@ -1,6 +1,5 @@
-// @skip-test
-
 // Test case for issue #572: https://github.com/typetools/checker-framework/issues/572
+// @below-java8-jdk-skip-test
 
 import java.util.function.BiFunction;
 
@@ -13,6 +12,7 @@ class ParenthesizedLambda {
   }
 
   public <A, B> A konst(@NonNull A a, @Nullable B b) {
+    //:: error: (argument.type.incompatible)
     return biApply(((first,second) -> first), a, b);
   }
 }
