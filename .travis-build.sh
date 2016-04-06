@@ -19,10 +19,12 @@ ant javadoc-private
 # The JDK was built above; there is no need to rebuild it again.
 # Don't use "-d" to debug ant, because that results in a log so long
 # that Travis truncates the log and terminates the job.
-# Comment this out since it causes a crash.
+## Alternative 1 (desired alternative):
 # ant tests-nobuildjdk
-
-## test that Travis doesn't crash on
+# (cd checker && ant check-compilermsgs check-purity)
+## Alternative 2 (because alternative 1 currently crashes);
+## just run tests that Travis doesn't crash on.
+## Eventually, we will remove this alternative from the file.
 # Run framework tests.
 (cd framework && ant all-tests-nojtreg-nobuild)
 # Subset of all-tests
@@ -33,10 +35,7 @@ ant javadoc-private
 (cd checker && ant check-tutorial)
 # If too many checker tests are run, the tests crash, so run one.
 (cd checker && ant nullness-base-tests regex-qual-tests)
-## end of test that Travis doesn't crash on
-
-#Fails on Travis
-#(cd checker && ant check-compilermsgs check-purity)
+## end of alternatives.
 
 # It's cheaper to run the demos test here than to trigger the
 # checker-framework-demos job, which has to build the whole Checker Framework.
