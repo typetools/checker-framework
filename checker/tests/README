@@ -34,7 +34,7 @@ org.checkerframework.checker.nullness.NullnessChecker.
   cd $CHECKERFRAMEWORK/checker/tests/nullness
   (cd $CHECKERFRAMEWORK && ant -e build) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
 
-or
+or (to build distribution files but not the JDK)
 
   cd $CHECKERFRAMEWORK/checker/tests/nullness
   (cd $CHECKERFRAMEWORK && ant -e dist-nobuildjdk) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor org.checkerframework.checker.nullness.NullnessChecker -implicit:class AssertNonNullTest.java
