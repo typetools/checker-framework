@@ -83,7 +83,7 @@ public class LockAnnotatedTypeFactory
         // ignore the @LockingFree annotation.
         addAliasedDeclAnnotation(LockingFree.class,
                 SideEffectFree.class,
-                AnnotationUtils.fromClass(elements, SideEffectFree.class));
+                SIDEEFFECTFREE);
 
         // This alias is only true for the Lock Checker. All other checkers must
         // ignore the @ReleasesNoLocks annotation.  Note that ReleasesNoLocks is
@@ -91,7 +91,7 @@ public class LockAnnotatedTypeFactory
         // so there is additional handling of this annotation in the Lock Checker.
         addAliasedDeclAnnotation(ReleasesNoLocks.class,
                 SideEffectFree.class,
-                AnnotationUtils.fromClass(elements, SideEffectFree.class));
+                SIDEEFFECTFREE);
 
         postInit();
     }
@@ -415,63 +415,92 @@ public class LockAnnotatedTypeFactory
             AnnotatedTypeMirror receiverType) {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super.methodFromUse(tree, methodElt, receiverType);
 
-        if (tree.getKind() == Kind.METHOD_INVOCATION) {
-            // If a method's formal return type is annotated with @GuardSatisfied(index),
-            // look for the first instance of @GuardSatisfied(index) in the method definition's receiver type or
-            // formal parameters, retrieve the corresponding type of the actual parameter / receiver at the call site
-            // (e.g. @GuardedBy("someLock") and replace the return type at the call site with this type.
+        if (tree.getKind() != Kind.METHOD_INVOCATION) {
+            return mfuPair;
+        }
 
-            MethodInvocationTree methodInvocationTree = (MethodInvocationTree) tree;
-            AnnotatedExecutableType invokedMethod = mfuPair.first;
+        // If a method's formal return type is annotated with @GuardSatisfied(index),
+        // look for the first instance of @GuardSatisfied(index) in the method definition's receiver type or
+        // formal parameters, retrieve the corresponding type of the actual parameter / receiver at the call site
+        // (e.g. @GuardedBy("someLock") and replace the return type at the call site with this type.
 
-            if (invokedMethod.getElement().getKind() != ElementKind.CONSTRUCTOR) {
-                AnnotatedTypeMirror methodDefinitionReturn = invokedMethod.getReturnType();
+        AnnotatedExecutableType invokedMethod = mfuPair.first;
 
-                if (methodDefinitionReturn != null && methodDefinitionReturn.hasAnnotation(GuardSatisfied.class)) {
-                    int returnGuardSatisfiedIndex = getGuardSatisfiedIndex(methodDefinitionReturn);
+        if (invokedMethod.getElement().getKind() == ElementKind.CONSTRUCTOR) {
+            return mfuPair;
+        }
 
-                    // @GuardSatisfied with no index defaults to index -1. Ignore instances of @GuardSatisfied with no index.
-                    // If a method is defined with a return type of @GuardSatisfied with no index, an error is reported by LockVisitor.visitMethod.
-                    if (returnGuardSatisfiedIndex != -1) {
+        AnnotatedTypeMirror methodDefinitionReturn = invokedMethod.getReturnType();
 
-                        // Find the receiver or first parameter whose @GS index matches that of the return type.
-                        // Ensuring that the type annotations on distinct @GS parameters with the same index match at the call site is handled in LockVisitor.visitMethodInvocation
+        if (methodDefinitionReturn == null || !methodDefinitionReturn.hasAnnotation(GuardSatisfied.class)) {
+            return mfuPair;
+        }
 
-                        ExecutableElement invokedMethodElement = invokedMethod.getElement();
-                        if (!ElementUtils.isStatic(invokedMethodElement)) {
-                            AnnotatedTypeMirror methodDefinitionReceiver = invokedMethod.getReceiverType();
-                            if (methodDefinitionReceiver != null && methodDefinitionReceiver.hasAnnotation(GuardSatisfied.class)) {
-                                int receiverGuardSatisfiedIndex = getGuardSatisfiedIndex(methodDefinitionReceiver);
+        int returnGuardSatisfiedIndex = getGuardSatisfiedIndex(methodDefinitionReturn);
 
-                                if (receiverGuardSatisfiedIndex == returnGuardSatisfiedIndex) {
-                                    mfuPair.first.getReturnType().replaceAnnotation(receiverType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN));
-                                    return mfuPair;
-                                }
-                            }
-                        }
+        // @GuardSatisfied with no index defaults to index -1. Ignore instances of @GuardSatisfied with no index.
+        // If a method is defined with a return type of @GuardSatisfied with no index, an error is reported by LockVisitor.visitMethod.
 
-                        List<AnnotatedTypeMirror> requiredArgs = AnnotatedTypes.expandVarArgs(this, invokedMethod, methodInvocationTree.getArguments());
+        if (returnGuardSatisfiedIndex == -1) {
+            return mfuPair;
+        }
 
-                        for (int i = 0; i < requiredArgs.size(); i++) {
-                            AnnotatedTypeMirror arg = requiredArgs.get(i);
+        // Find the receiver or first parameter whose @GS index matches that of the return type.
+        // Ensuring that the type annotations on distinct @GS parameters with the same index
+        // match at the call site is handled in LockVisitor.visitMethodInvocation
 
-                            if (arg.hasAnnotation(GuardSatisfied.class)) {
-                                int paramGuardSatisfiedIndex = getGuardSatisfiedIndex(arg);
+        if (!ElementUtils.isStatic(invokedMethod.getElement()) &&
+            replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(methodDefinitionReturn,
+                    invokedMethod.getReceiverType() /* the method definition receiver*/,
+                    returnGuardSatisfiedIndex,
+                    receiverType.getAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
+            return mfuPair;
+        }
 
-                                if (paramGuardSatisfiedIndex == returnGuardSatisfiedIndex) {
-                                    ExpressionTree argument = methodInvocationTree.getArguments().get(i);
-                                    mfuPair.first.getReturnType().replaceAnnotation(
-                                        getAnnotatedType(argument).getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN));
-                                    return mfuPair;
-                                }
-                            }
-                        }
-                    }
-                }
+        List<? extends ExpressionTree> methodInvocationTreeArguments = ((MethodInvocationTree) tree).getArguments();
+        List<AnnotatedTypeMirror> requiredArgs = AnnotatedTypes.expandVarArgs(this,
+                invokedMethod, methodInvocationTreeArguments);
+
+        for (int i = 0; i < requiredArgs.size(); i++) {
+            if (replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(methodDefinitionReturn,
+                    requiredArgs.get(i),
+                    returnGuardSatisfiedIndex,
+                    getAnnotatedType(methodInvocationTreeArguments.get(i)).getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN))) {
+                return mfuPair;
             }
         }
 
         return mfuPair;
+    }
+
+    /**
+     * If {@code atm} is not null and contains a {@code @GuardSatisfied} annotation, and if the index of this
+     * {@code @GuardSatisfied} annotation matches {@code matchingGuardSatisfiedIndex}, then
+     * {@code methodReturnAtm} will have its annotation in the {@code @GuardedBy} hierarchy replaced
+     * with that in {@code atmWithAnnotationInGuardedByHierarchy}.
+     *
+     * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will potentially have
+     * its annotation in the {@code @GuardedBy} hierarchy replaced.
+     * @param atm an AnnotatedTypeMirror that may contain a {@code @GuardSatisfied} annotation. May be null.
+     * @param matchingGuardSatisfiedIndex the {@GuardSatisfied} index that the {@code @GuardSatisfied} annotation
+     * in {@code atm} must have in order for the replacement to occur.
+     * @param annotationInGuardedByHierarchy if the replacement occurs, the annotation in the {@code @GuardedBy}
+     *  hierarchy in this parameter will be used for the replacement.
+     * @return true if the replacement occurred, false otherwise.
+     */
+    private boolean replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(
+            AnnotatedTypeMirror methodReturnAtm,
+            AnnotatedTypeMirror atm,
+            int matchingGuardSatisfiedIndex,
+            AnnotationMirror annotationInGuardedByHierarchy) {
+        if (atm == null || !atm.hasAnnotation(GuardSatisfied.class) ||
+            getGuardSatisfiedIndex(atm) != matchingGuardSatisfiedIndex) {
+            return false;
+        }
+
+        methodReturnAtm.replaceAnnotation(annotationInGuardedByHierarchy);
+
+        return true;
     }
 
     @Override

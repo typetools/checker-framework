@@ -4,12 +4,9 @@ package org.checkerframework.checker.lock;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
-import org.checkerframework.checker.lock.qual.LockHeld;
-import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -17,7 +14,6 @@ import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.AnnotationUtils;
 
 /*
  * The Lock Store behaves like CFAbstractStore but requires the ability
@@ -34,12 +30,11 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
       * 'this' is considered to be held inside a constructor.
       */
     protected boolean inConstructorOrInitializer = false;
-
-    protected final AnnotationMirror LOCKHELD = AnnotationUtils.fromClass(analysis.getTypeFactory().getElementUtils(), LockHeld.class);
-    protected final AnnotationMirror LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(analysis.getTypeFactory().getElementUtils(), LockPossiblyHeld.class);
+    private LockAnnotatedTypeFactory atypeFactory;
 
     public LockStore(LockAnalysis analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
+        this.atypeFactory = (LockAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
     /** Copy constructor. */
@@ -47,6 +42,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
             CFAbstractStore<CFValue, LockStore> other) {
         super(other);
         inConstructorOrInitializer = ((LockStore)other).inConstructorOrInitializer;
+        this.atypeFactory = ((LockStore)other).atypeFactory;
     }
 
     @Override
@@ -55,6 +51,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
         // Least upper bound of a boolean
         newStore.inConstructorOrInitializer = this.inConstructorOrInitializer && other.inConstructorOrInitializer;
+        newStore.atypeFactory = this.atypeFactory;
 
         return newStore;
     }
@@ -64,7 +61,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
      * This is only done for @LockPossiblyHeld. This is not sound for other type qualifiers.
      */
     public void insertLockPossiblyHeld(FlowExpressions.Receiver r) {
-        CFValue value = analysis.createSingleAnnotationValue(LOCKPOSSIBLYHELD, r.getType());
+        CFValue value = analysis.createSingleAnnotationValue(atypeFactory.LOCKPOSSIBLYHELD, r.getType());
         assert value != null;
 
         if (r.containsUnknown()) {
@@ -104,13 +101,15 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     public /*@Nullable*/ CFValue getValue(FlowExpressions.Receiver expr) {
 
         if (inConstructorOrInitializer) {
+            // 'this' is automatically considered as being held in a constructor or initializer.
+            // The class name, however, is not.
             if (expr instanceof FlowExpressions.ThisReference) {
-                initializeThisValue(LOCKHELD, expr.getType());
+                initializeThisValue(atypeFactory.LOCKHELD, expr.getType());
             } else if (expr instanceof FlowExpressions.FieldAccess) {
                 FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
-                if (!fieldAcc.isStatic() && // Static fields are not automatically considered synchronized within a constructor or initializer
+                if (!fieldAcc.isStatic() &&
                     fieldAcc.getReceiver() instanceof FlowExpressions.ThisReference) {
-                    insertValue(fieldAcc.getReceiver(), LOCKHELD);
+                    insertValue(fieldAcc.getReceiver(), atypeFactory.LOCKHELD);
                 }
             }
         }
@@ -134,7 +133,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         LockAnnotatedTypeFactory lockAnnotatedTypeFactory = (LockAnnotatedTypeFactory) atypeFactory;
         return ((LockChecker) lockAnnotatedTypeFactory.getContext()).hasOption("assumeSideEffectFree") ||
                 lockAnnotatedTypeFactory.methodSideEffectAnnotation(method, false) == SideEffectAnnotation.RELEASESNOLOCKS ||
-               super.isSideEffectFree(atypeFactory, method);
+                super.isSideEffectFree(atypeFactory, method);
     }
 
     @Override
@@ -158,29 +157,21 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     boolean hasLockHeld(CFValue value) {
-        assert value != null;
         AnnotatedTypeMirror type = value.getType();
-        if (type != null) {
-            AnnotationMirror anno = type.getAnnotationInHierarchy(LOCKPOSSIBLYHELD);
-            if (anno != null) {
-                return AnnotationUtils.areSame(anno, LOCKHELD);
-            }
+        if (type == null) {
+            return false;
         }
 
-        return false;
+        return type.hasAnnotation(atypeFactory.LOCKHELD);
     }
 
     boolean hasLockPossiblyHeld(CFValue value) {
-        assert value != null;
         AnnotatedTypeMirror type = value.getType();
-        if (type != null) {
-            AnnotationMirror anno = type.getAnnotationInHierarchy(LOCKPOSSIBLYHELD);
-            if (anno != null) {
-                return AnnotationUtils.areSame(anno, LOCKPOSSIBLYHELD);
-            }
+        if (type == null) {
+            return false;
         }
 
-        return false;
+        return type.hasAnnotation(atypeFactory.LOCKPOSSIBLYHELD);
     }
 
     @Override

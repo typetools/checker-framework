@@ -115,10 +115,17 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
     }
 
-    // Note that the user can always forcefully turn on concurrent semantics via -AconcurrentSemantics.
-    public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis, boolean useConcurrentSemantics) {
+    /**
+     * Constructor that allows forcing concurrent semantics to be on for this instance of CFAbstractTransfer.
+     *
+     * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on.
+     * If false, concurrent semantics are turned off by default, but the user can
+     * still turn them on via -AconcurrentSemantics.
+     * If true, the user cannot turn off concurrent semantics.
+     */
+    public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis, boolean forceConcurrentSemantics) {
         this.analysis = analysis;
-        this.sequentialSemantics = !(useConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
+        this.sequentialSemantics = !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
     }
 
     public boolean usesSequentialSemantics() {

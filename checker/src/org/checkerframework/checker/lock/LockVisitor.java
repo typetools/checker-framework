@@ -10,7 +10,6 @@ import org.checkerframework.checker.lock.qual.EnsuresLockHeldIf;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
-import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -88,16 +87,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
     private final Class<? extends Annotation> checkerGuardSatisfiedClass = GuardSatisfied.class;
 
-    /** Annotation constants */
-    protected final AnnotationMirror GUARDEDBY, GUARDEDBYUNKNOWN, GUARDSATISFIED, GUARDEDBYBOTTOM;
+    private static final Pattern itselfReceiverPattern = Pattern.compile("^itself(\\.(.*))?$");
 
     public LockVisitor(BaseTypeChecker checker) {
         super(checker);
-
-        GUARDEDBYUNKNOWN = AnnotationUtils.fromClass(elements, GuardedByUnknown.class);
-        GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
-        GUARDSATISFIED = AnnotationUtils.fromClass(elements, GuardSatisfied.class);
-        GUARDEDBYBOTTOM = AnnotationUtils.fromClass(elements, GuardedByBottom.class);
 
         checkForAnnotatedJdk();
     }
@@ -112,10 +105,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         if ((TypesUtils.isBoxedPrimitive(tm) ||
              TypesUtils.isPrimitive(tm) ||
              TypesUtils.isString(tm)) &&
-            (atm.hasExplicitAnnotationRelaxed(GUARDSATISFIED) ||
-             atm.hasExplicitAnnotationRelaxed(GUARDEDBY) ||
-             atm.hasExplicitAnnotation(GUARDEDBYUNKNOWN) ||
-             atm.hasExplicitAnnotation(GUARDEDBYBOTTOM))){
+            (atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDSATISFIED) ||
+             atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDEDBY) ||
+             atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYUNKNOWN) ||
+             atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYBOTTOM))){
             checker.report(Result.failure("primitive.type.guardedby"), node);
         }
         return super.visitVariable(node, p);
@@ -126,7 +119,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return new LockAnnotatedTypeFactory(checker);
     }
 
-    /***
+    /**
      * Issues an error if a method (explicitly or implicitly) annotated with @MayReleaseLocks has a formal parameter
      * or receiver (explicitly or implicitly) annotated with @GuardSatisfied. Also issues an error if a synchronized
      * method has a @LockingFree, @SideEffectFree or @Pure annotation.
@@ -184,7 +177,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitMethod(node, p);
     }
 
-    /***
+    /**
      * When visiting a method call, if the receiver formal parameter has type @GuardSatisfied
      * and the receiver actual parameter has type @GuardedBy(...), this method verifies that
      * the guard is satisfied, and it returns true, indicating that the receiver subtype check should be skipped.
@@ -201,13 +194,13 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             AnnotatedTypeMirror methodDefinitionReceiver,
             AnnotatedTypeMirror methodCallReceiver) {
 
-        AnnotationMirror primaryGb = methodCallReceiver.getAnnotationInHierarchy(GUARDEDBYUNKNOWN);
-        AnnotationMirror effectiveGb = methodCallReceiver.getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN);
+        AnnotationMirror primaryGb = methodCallReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
+        AnnotationMirror effectiveGb = methodCallReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
 
         // If the receiver actual parameter has type @GuardSatisfied, skip the subtype check.
         // Consider only a @GuardSatisfied primary annotation - hence use primaryGb instead of effectiveGb.
         if (primaryGb != null && AnnotationUtils.areSameByClass(primaryGb, checkerGuardSatisfiedClass)){
-            AnnotationMirror primaryGbOnMethodDefinition = methodDefinitionReceiver.getAnnotationInHierarchy(GUARDEDBYUNKNOWN);
+            AnnotationMirror primaryGbOnMethodDefinition = methodDefinitionReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
             if (primaryGbOnMethodDefinition != null && AnnotationUtils.areSameByClass(primaryGbOnMethodDefinition, checkerGuardSatisfiedClass)) {
                 return true;
             }
@@ -235,8 +228,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         Set<? extends AnnotationMirror> tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
         Set<AnnotationMirror> annotationSet = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror anno : tops) {
-            if (AnnotationUtils.areSame(anno, GUARDEDBYUNKNOWN)) {
-                annotationSet.add(GUARDEDBY);
+            if (AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBYUNKNOWN)) {
+                annotationSet.add(atypeFactory.GUARDEDBY);
             } else {
                 annotationSet.add(anno);
             }
@@ -244,7 +237,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return annotationSet;
     }
 
-    /***
+    /**
      * Given an AnnotatedTypeMirror containing a @GuardedBy annotation, returns the set of lock expression preconditions
      * specified in the @GuardedBy annotation.
      * Returns an empty set if no such expressions are found.
@@ -264,8 +257,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         List<String> guardedByValue = AnnotationUtils.getElementValueArray(annotationMirror, "value", String.class, false);
 
                         for (String lockExpression : guardedByValue) {
-
-                            preconditions.add(Pair.of(lockExpression, LockHeld.class.toString().substring(10 /* "interface " */)));
+                            preconditions.add(Pair.of(lockExpression, LockHeld.class.getCanonicalName()));
                         }
                     }
                 }
@@ -346,7 +338,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 // Special case: replace the @GuardSatisfied primary annotation on the LHS with @GuardedBy({}) and see if it type checks.
 
                 AnnotatedTypeMirror varType2 = varType.deepCopy(); // TODO: Would shallowCopy be sufficient?
-                varType2.replaceAnnotation(GUARDEDBY);
+                varType2.replaceAnnotation(atypeFactory.GUARDEDBY);
                 if (atypeFactory.getTypeHierarchy().isSubtype(valueType, varType2)) {
                     return;
                 }
@@ -437,7 +429,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private void checkFieldOrArrayAccess(ExpressionTree accessTree, Tree treeToReportErrorAt, Node expressionNode) {
         AnnotatedTypeMirror atmOfReceiver = atypeFactory.getReceiverType(accessTree);
         if (treeToReportErrorAt != null && atmOfReceiver != null) {
-            AnnotationMirror gb = atmOfReceiver.getEffectiveAnnotationInHierarchy(GUARDEDBYUNKNOWN);
+            AnnotationMirror gb = atmOfReceiver.getEffectiveAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN);
             if (gb == null) {
                 ErrorReporter.errorAbort("LockVisitor.checkFieldOrArrayAccess: gb cannot be null");
             }
@@ -449,12 +441,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 // Can always dereference if type is @GuardSatisfied
             } else {
                 // Can never dereference for any other types in the @GuardedBy hierarchy
-                String annotationName = gb.toString();
-                annotationName = annotationName.substring(annotationName.lastIndexOf('.') + 1 /* +1 to skip the last . as well */);
                 checker.report(Result.failure(
                         "cannot.dereference",
                         accessTree.toString(),
-                        "annotation @" + annotationName), accessTree);
+                        AnnotationUtils.annotationSimpleName(gb)),accessTree);
             }
         }
     }
@@ -467,24 +457,25 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitArrayAccess(tree, p);
     }
 
-    /***
+    /**
      * Skips the call to super and returns true.
+     * <p>
+     *
+     * {@code GuardedBy({})} is the default type on class declarations, which is a subtype of the top annotation {@code @GuardedByUnknown}.
+     * However, it is valid to declare an instance of a class with any annotation from the {@code @GuardedBy} hierarchy.
+     * Hence, this method returns true for annotations in the {@code @GuardedBy} hierarchy.
+     * <p>
+     *
+     * Also returns true for annotations in the {@code @LockPossiblyHeld} hierarchy since the default for that hierarchy is the top type and
+     * annotations from that hierarchy cannot be explicitly written in code.
      */
     @Override
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType, Tree tree) {
-
-        // @GuardedBy({}) is the default type on class declarations, which is a subtype of the top annotation @GuardedByUnknown.
-        // However, it is valid to declare an instance of a class with any annotation from the @GuardedBy hierarchy.
-        // Hence, this method returns true for annotations in the @GuardedBy hierarchy.
-
-        // Also returns true for annotations in the @LockPossiblyHeld hierarchy since the default for that hierarchy is the top type and
-        // annotations from that hierarchy cannot be explicitly written in code.
-
         return true;
     }
 
-    /***
+    /**
      * When visiting a method invocation, issue an error if the side effect annotation
      * on the called method causes the side effect guarantee of the enclosing method
      * to be violated. For example, a method annotated with @ReleasesNoLocks may not
@@ -609,9 +600,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // Combine all of the actual parameters into one list of AnnotationMirrors
 
         ArrayList<AnnotationMirror> passedArgAnnotations = new ArrayList<AnnotationMirror>(guardSatisfiedIndex.length);
-        passedArgAnnotations.add(methodCallReceiver == null ? null : methodCallReceiver.getAnnotationInHierarchy(GUARDEDBYUNKNOWN));
+        passedArgAnnotations.add(methodCallReceiver == null ? null : methodCallReceiver.getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
         for (ExpressionTree tree : node.getArguments()) {
-            passedArgAnnotations.add(atypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(GUARDEDBYUNKNOWN));
+            passedArgAnnotations.add(atypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(atypeFactory.GUARDEDBYUNKNOWN));
         }
 
         // Perform the validity check and issue an error if not valid.
@@ -665,7 +656,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitMethodInvocation(node, p);
     }
 
-    /***
+    /**
      * Issues an error if the receiver of an unlock() call is not effectively final.
      *
      * @param node the MethodInvocationTree for any method call
@@ -697,7 +688,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
     }
 
-    /***
+    /**
      * When visiting a synchronized block, issue an error if the expression
      * has a type that implements the java.util.concurrent.locks.Lock interface.
      * This prevents explicit locks from being accidentally used as built-in (monitor) locks.
@@ -748,7 +739,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitSynchronized(node, p);
     }
 
-    /***
+    /**
      * Ensures that each variable accessed in an expression is final or effectively final and
      * that each called method in the expression is @Deterministic.
      * Issues an error otherwise. Recursively performs this check on method arguments.
@@ -969,7 +960,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         checker.report(Result.failure("guardsatisfied.location.disallowed"), annotationTree);
     }
 
-    /***
+    /**
      * The flow expression parser requires a path for retrieving the scope that will be used
      * to resolve local variables. One would expect that simply providing the
      * path to an AnnotationTree would work, since the compiler (as called by the
@@ -1033,7 +1024,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
     }
 
-    /***
+    /**
      * Returns true if the symbol for the given tree is final or effectively final.
      * Package, class and method symbols are unmodifiable and therefore considered final.
      */
@@ -1059,7 +1050,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitIdentifier(tree, p);
     }
 
-    /***
+    /**
      * If expression is "itself", and the flow expression parser cannot find a variable,
      * class, etc. named "itself", a flow expression receiver for {@code node} is returned,
      * unless {@code node} is null, in which case null is returned.
@@ -1075,11 +1066,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         FlowExpressions.Receiver expr = null;
         expression = expression.trim();
 
-        /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
-        Pattern itselfPattern = Pattern.compile("^itself(\\.(.*))?$");
-        Matcher itselfMatcher = itselfPattern.matcher(expression);
+        Matcher itselfReceiverMatcher = itselfReceiverPattern.matcher(expression);
 
-        if (itselfMatcher.matches()) {
+        if (itselfReceiverMatcher.matches()) {
             expr = FlowExpressionParseUtil.parseAllowingItself(expression, flowExprContext, path);
 
             if (expr == null) {
@@ -1094,7 +1083,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     return null;
                 }
 
-                String remainingExpression = itselfMatcher.group(2);
+                String remainingExpression = itselfReceiverMatcher.group(2);
 
                 if (remainingExpression == null || remainingExpression.isEmpty()) {
                     expr = FlowExpressions.internalReprOf(atypeFactory,
@@ -1122,7 +1111,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return expr;
     }
 
-    /***
+    /**
      * Disallows annotations from the @GuardedBy hierarchy on class declarations (other than @GuardedBy({}).
      */
     @Override
@@ -1130,11 +1119,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         List<AnnotationMirror> annos = InternalUtils.annotationsFromTypeAnnotationTrees(node.getModifiers().getAnnotations());
 
         for (AnnotationMirror anno : annos) {
-            if (!AnnotationUtils.areSame(anno, GUARDEDBY) &&
-                (AnnotationUtils.areSameIgnoringValues(anno, GUARDEDBYUNKNOWN) ||
-                 AnnotationUtils.areSameIgnoringValues(anno, GUARDEDBY) ||
-                 AnnotationUtils.areSameIgnoringValues(anno, GUARDSATISFIED) ||
-                 AnnotationUtils.areSameIgnoringValues(anno, GUARDEDBYBOTTOM))) {
+            if (!AnnotationUtils.areSame(anno, atypeFactory.GUARDEDBY) &&
+                (AnnotationUtils.areSameIgnoringValues(anno, atypeFactory.GUARDEDBYUNKNOWN) ||
+                 AnnotationUtils.areSameIgnoringValues(anno, atypeFactory.GUARDEDBY) ||
+                 AnnotationUtils.areSameIgnoringValues(anno, atypeFactory.GUARDSATISFIED) ||
+                 AnnotationUtils.areSameIgnoringValues(anno, atypeFactory.GUARDEDBYBOTTOM))) {
                 checker.report(Result.failure("class.declaration.guardedby.annotation.invalid"), node);
             }
         }
@@ -1174,7 +1163,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         return super.visitCompoundAssignment(node, p);
     }
 
-    /***
+    /**
      * Checks precondition for {@code tree} that is known to be the receiver of an implicit toString() call.
      * The receiver of toString() is defined in the annotated JDK to be @GuardSatisfied.
      * Therefore if the expression is guarded by a set of locks, the locks must be held prior

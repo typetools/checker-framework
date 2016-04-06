@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.analysis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -635,14 +636,23 @@ public class FlowExpressions {
             return false;
         }
 
+        /**
+         * @return the method call receiver (for inspection only - do not modify).
+         */
         public Receiver getReceiver() {
             return receiver;
         }
 
+        /**
+         * @return the method call parameters (for inspection only - do not modify any of the parameters).
+         */
         public List<Receiver> getParameters() {
-            return parameters;
+            return Collections.unmodifiableList(parameters);
         }
 
+        /**
+         * @return the Element for the method call.
+         */
         public Element getElement() {
             return method;
         }

@@ -666,7 +666,7 @@
     </target>
 
     <target name="lock-safedefaults-tests" depends="jar,build-tests"
-            description="Run tests for the Lock Checker using -AuseSafeDefaultsForUnannotatedSourceCode">
+            description="Run tests for the Lock Checker with unchecked code defaults turned on for source code">
         <antcall target="-run-tests">
             <param name="param" value="tests.LockSafeDefaultsTest"/>
         </antcall>

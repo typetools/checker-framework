@@ -156,7 +156,7 @@ public class AnnotationUtils {
     // **********************************************************************
 
     /**
-     * @return the fully-qualified name of an annotation as a Name
+     * @return the fully-qualified name of an annotation as a String
      */
     public static final /*@Interned*/ String annotationName(AnnotationMirror annotation) {
         if (annotationMirrorNames.containsKey(annotation))
@@ -167,6 +167,14 @@ public class AnnotationUtils {
         /*@Interned*/ String name = elm.getQualifiedName().toString().intern();
         annotationMirrorNames.put(annotation, name);
         return name;
+    }
+
+    /**
+     * @return the simple name of an annotation as a String
+     */
+    public static String annotationSimpleName(AnnotationMirror annotation) {
+        String annotationName = annotationName(annotation);
+        return annotationName.substring(annotationName.lastIndexOf('.') + 1 /* +1 to skip the last . as well */);
     }
 
     /**

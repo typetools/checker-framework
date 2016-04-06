@@ -73,14 +73,6 @@ public class TestTreeKinds {
 
   MyClass fooArray5[] @GuardedBy("lock") [] = new MyClass[3][3];
 
-  /* TODO Reenable this after @GuardedByName annotation is implemented that can guard primitives.
-  // Test that we can Guard primitives, not just objects
-  @GuardedByName("lock")
-  int primitive = 1;
-
-  @GuardedByName("lock")
-  boolean primitiveBoolean;*/
-
   class myClass {
     int i = 0;
   }
@@ -134,158 +126,6 @@ public class TestTreeKinds {
 
   @GuardedBy("lock")
   myEnumType myEnum;
-
-/* TODO Reenable this after @GuardedByName annotation is implemented that can guard primitives.
-public void testOperationsWithPrimitives() {
-    @GuardedByName("lock") int i = 0;
-    @GuardedByName("lock") boolean b;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = i >>> primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = primitive >>> i;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i >>>= primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    primitive >>>= i;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i %= primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = 4 % primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = primitive % 4;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    primitive++;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    primitive--;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    ++primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    --primitive;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    if (primitive != 5){ }
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = primitive >> i;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = primitive << i;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = i >> primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = i << primitive;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i <<= primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i >>= primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    primitive <<= i;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    primitive >>= i;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    assert(primitiveBoolean);
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = primitive >= i;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = primitive <= i;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = primitive > i;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = primitive < i;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = i >= primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = i <= primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = i > primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = i < primitive;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i += primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i -= primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i *= primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i /= primitive;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = 4 + primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = 4 - primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = 4 * primitive;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = 4 / primitive;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = primitive + 4;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = primitive - 4;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = primitive * 4;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = primitive / 4;
-
-
-
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    if (primitiveBoolean){}
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = ~primitive;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = primitiveBoolean || false;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = primitiveBoolean | false;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = primitiveBoolean ^ true;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b &= primitiveBoolean;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b |= primitiveBoolean;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b ^= primitiveBoolean;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = !primitiveBoolean;
-
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    i = primitive;
-
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = true && primitiveBoolean;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = true & primitiveBoolean;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = false || primitiveBoolean;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = false | primitiveBoolean;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = false ^ primitiveBoolean;
-
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = primitiveBoolean && true;
-    // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-    b = primitiveBoolean & true;
-}*/
 
 void testEnumType() {
     //:: error: (assignment.type.incompatible)
@@ -507,10 +347,11 @@ public void testMethodAnnotations() {
     foo.field.toString();
   }
 
-  // TODO: An error is raised here because a non-side-effect-free method is called above,
+  // An error is raised here because non-side-effect-free method unlockTheLock() is called above,
   // and is due to this line in LockStore.updateForMethodCall:
   // localVariableValues.clear();
-  // Fix LockStore.updateForMethodCall so it is less conservative and remove
+  // which clears the value of 'r' in the store to its CLIMB-to-top default of @GuardedByUnknown.
+  // TODO: Fix LockStore.updateForMethodCall so it is less conservative and remove
   // the expected error.
   //:: error: (method.invocation.invalid)
   if (r.nextBoolean()) {
@@ -525,10 +366,12 @@ public void testMethodAnnotations() {
     foo.field.toString();
   }
 
-  // TODO: An error is raised here because a non-side-effect-free method is called above,
+  // An error is raised here because the non-side-effect-free methods unlockTheLock() and nonSideEffectFreeMethod() are called above
+  // (for the method.invocation.invalid error not to be issued, neither of those two methods can be called above),
   // and is due to this line in LockStore.updateForMethodCall:
   // localVariableValues.clear();
-  // Fix LockStore.updateForMethodCall so it is less conservative and remove
+  // which clears the value of 'r' in the store to its CLIMB-to-top default of @GuardedByUnknown.
+  // TODO: Fix LockStore.updateForMethodCall so it is less conservative and remove
   // the expected error.
   //:: error: (method.invocation.invalid)
   if (r.nextBoolean()) {

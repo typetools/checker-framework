@@ -189,6 +189,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
+    protected static final Pattern selfPattern = Pattern.compile("^(this)$");
+
     /**
      * @param checker
      *            the type-checker associated with this visitor (for callbacks to
@@ -942,28 +944,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // check precondition annotations
-        checkMethodInvocationPreconditions(node, invokedMethodElement);
+        checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
 
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
         scan(node.getMethodSelect(), p);
         return null; // super.visitMethodInvocation(node, p);
-    }
-
-    /**
-     * Checks all the preconditions of the method invocation {@code tree} with
-     * element {@code invokedMethodElement}.
-     *
-     * @param methodInvocationTree the MethodInvocationTree to check preconditions for.
-     * @param invokedMethodElement the ExecutableElement to retrieve the method preconditions from.
-     */
-    protected void checkMethodInvocationPreconditions(MethodInvocationTree methodInvocationTree,
-            ExecutableElement invokedMethodElement) {
-        if (invokedMethodElement == null) {
-            return;
-        }
-
-        checkPreconditions(methodInvocationTree, contractsUtils.getPreconditions(invokedMethodElement));
     }
 
     /**
@@ -986,7 +972,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Checks that all the given {@code preconditions} hold true immediately prior to
      * the method invocation or variable access at {@code node}.  Errors are reported
-     * with respect to {@code tree}, which does not need to correspond to {@code node}.
+     * with respect to {@code treeForErrorReporting}, which does not need to correspond to {@code node}.
      *
      * @param treeForErrorReporting the Tree used to report the error via checker.report.
      * @param node the Node immediately prior to which the preconditions must hold true.
@@ -1001,6 +987,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         FlowExpressionContext flowExprContext = getFlowExpressionContextFromNode(node);
 
         if (flowExprContext == null) {
+            checker.report(Result.failure("flowexpr.parse.context.not.determined",
+                    node), treeForErrorReporting);
             return;
         }
 
@@ -1061,10 +1049,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         else if (node instanceof LocalVariableNode) {
             // Adapted from org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitVariable
 
-            ClassTree enclosingClass = TreeUtils
-                    .enclosingClass(getCurrentPath());
-            TypeElement classElem = TreeUtils
-                    .elementFromDeclaration(enclosingClass);
+            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+            TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
             Node receiver = new ImplicitThisLiteralNode(classElem.asType());
 
             Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
@@ -1113,10 +1099,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             TreePath path, Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
         expression = expression.trim();
 
-        Pattern selfPattern = Pattern.compile("^(this)$");
         Matcher selfMatcher = selfPattern.matcher(expression);
         if (selfMatcher.matches()) {
-            expression = flowExprContext.receiver.toString().trim(); // it is possible that s == "this" after this call
+            // It is possible that expression == "this" after this call.
+            expression = flowExprContext.receiver.toString().trim();
         }
 
         return FlowExpressionParseUtil.parse(expression, flowExprContext, path);

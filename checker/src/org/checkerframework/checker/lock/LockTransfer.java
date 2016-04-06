@@ -2,11 +2,9 @@ package org.checkerframework.checker.lock;
 
 import java.util.List;
 
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -14,12 +12,6 @@ import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.checker.lock.qual.GuardSatisfied;
-import org.checkerframework.checker.lock.qual.GuardedBy;
-import org.checkerframework.checker.lock.qual.GuardedByBottom;
-import org.checkerframework.checker.lock.qual.GuardedByUnknown;
-import org.checkerframework.checker.lock.qual.LockHeld;
-import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
@@ -44,9 +36,7 @@ public class LockTransfer extends
     /** Type-specific version of super.analysis. */
     protected LockAnalysis analysis;
     protected LockChecker checker;
-
-    /** Annotations of the lock type system. */
-    protected final AnnotationMirror GUARDEDBY, GUARDSATISFIED, GUARDEDBYUNKNOWN, GUARDEDBYBOTTOM, LOCKHELD, LOCKPOSSIBLYHELD;
+    private LockAnnotatedTypeFactory atypeFactory;
 
     public LockTransfer(LockAnalysis analysis, LockChecker checker) {
         // Always run the Lock Checker with -AconcurrentSemantics turned on.
@@ -55,19 +45,7 @@ public class LockTransfer extends
         // LockTransfer.analysis shadows CFAbstractTransfer.analysis,
         this.analysis = analysis;
         this.checker = checker;
-
-        GUARDEDBY = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), GuardedBy.class);
-        GUARDSATISFIED = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), GuardSatisfied.class);
-        GUARDEDBYUNKNOWN = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), GuardedByUnknown.class);
-        GUARDEDBYBOTTOM = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), GuardedByBottom.class);
-        LOCKHELD = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), LockHeld.class);
-        LOCKPOSSIBLYHELD = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), LockPossiblyHeld.class);
+        this.atypeFactory = (LockAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
     /**
@@ -75,8 +53,8 @@ public class LockTransfer extends
      */
     protected void makeLockHeld(LockStore store, Node node) {
         Receiver internalRepr = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), node);
-        store.insertValue(internalRepr, LOCKHELD);
+                atypeFactory, node);
+        store.insertValue(internalRepr, atypeFactory.LOCKHELD);
     }
 
     /**
@@ -84,7 +62,7 @@ public class LockTransfer extends
      */
     protected void makeLockPossiblyHeld(LockStore store, Node node) {
         Receiver internalRepr = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), node);
+                atypeFactory, node);
 
         // insertValue cannot change an annotation to a less
         // specific type (e.g. LockHeld to LockPossiblyHeld),
@@ -161,9 +139,9 @@ public class LockTransfer extends
                 TypeMirror classType = InternalUtils.typeOf(classTree);
 
                 if (methodElement.getModifiers().contains(Modifier.STATIC)) {
-                    store.insertValue(new FlowExpressions.ClassName(classType), LOCKHELD);
+                    store.insertValue(new FlowExpressions.ClassName(classType), atypeFactory.LOCKHELD);
                 } else {
-                    store.insertThisValue(LOCKHELD, classType);
+                    store.insertThisValue(atypeFactory.LOCKHELD, classType);
                 }
             } else if (methodElement.getKind() == ElementKind.CONSTRUCTOR) {
                 store.setInConstructorOrInitializer();

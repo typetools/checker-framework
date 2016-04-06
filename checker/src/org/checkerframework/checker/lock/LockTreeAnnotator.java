@@ -1,13 +1,8 @@
 package org.checkerframework.checker.lock;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
-
-import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 import com.sun.source.tree.BinaryTree;
@@ -16,14 +11,8 @@ import com.sun.source.tree.Tree.Kind;
 
 public class LockTreeAnnotator extends TreeAnnotator {
 
-    /** Annotation constants */
-    protected final AnnotationMirror GUARDEDBY;
-
     public LockTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
-
-        Elements elements = atypeFactory.getElementUtils();
-        GUARDEDBY = AnnotationUtils.fromClass(elements, GuardedBy.class);
     }
 
     @Override
@@ -40,7 +29,7 @@ public class LockTreeAnnotator extends TreeAnnotator {
             TypesUtils.isString(type.getUnderlyingType())) {
             // A boolean or String is always @GuardedBy({}). LockVisitor determines whether
             // the LHS and RHS of this operation can be legally dereferenced.
-            type.replaceAnnotation(GUARDEDBY);
+            type.replaceAnnotation(((LockAnnotatedTypeFactory) atypeFactory).GUARDEDBY);
 
             return null;
         }
@@ -71,7 +60,7 @@ public class LockTreeAnnotator extends TreeAnnotator {
     public Void visitCompoundAssignment(CompoundAssignmentTree node,
             AnnotatedTypeMirror type) {
         if (TypesUtils.isString(type.getUnderlyingType())) {
-            type.replaceAnnotation(GUARDEDBY);
+            type.replaceAnnotation(((LockAnnotatedTypeFactory) atypeFactory).GUARDEDBY);
         }
 
         return super.visitCompoundAssignment(node, type);

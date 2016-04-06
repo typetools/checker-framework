@@ -2555,6 +2555,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the actual annotation mirror used to annotate this element,
      * whose name equals the passed annotation class, if one exists, or null otherwise.
      *
+     * @see #getDeclAnnotationNoAliases
+     *
      * @param elt the element to retrieve the declaration annotation from
      * @param anno annotation class
      * @return the annotation mirror for anno
@@ -2570,6 +2572,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the actual annotation mirror used to annotate this element,
      * whose name equals the passed annotation class, if one exists, or null otherwise.
      * Does not check for aliases of the annotation class.
+     * <p>
+     *
+     * Call this method from a checker that needs to alias annotations for one purpose
+     * and not for another. For example, in the Lock Checker, {@code @LockingFree} and
+     * {@code @ReleasesNoLocks} are both aliases of {@code @SideEffectFree} since they are
+     * all considered side-effect-free with regard to the set of locks held before
+     * and after the method call. However, a {@code synchronized} block is permitted inside
+     * a {@code @ReleasesNoLocks} method but not inside a {@code @LockingFree} or
+     * {@code @SideEffectFree} method.
+     *
+     * @see #getDeclAnnotation
      *
      * @param elt the element to retrieve the declaration annotation from
      * @param anno annotation class
@@ -2580,7 +2593,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         String annoName = anno.getCanonicalName().intern();
         return getDeclAnnotation(elt, annoName, false);
     }
-    
+
     /**
      * Returns true if the element appears in a stub file
      * (Currently only works for methods, constructors, and fields)
