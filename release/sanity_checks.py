@@ -52,8 +52,7 @@ def javac_sanity_check(checker_framework_website, release_version):
     with zipfile.ZipFile(javac_sanity_zip, "r") as z:
         z.extractall(javac_sanity_dir)
 
-    cmd = "chmod -R u+rwx " + deploy_dir
-    execute(cmd)
+    ensure_user_access(deploy_dir)
 
     sanity_javac = os.path.join(deploy_dir, "checker", "bin", "javac")
     nullness_output = os.path.join(deploy_dir, "output.log")
@@ -89,39 +88,35 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     execute("mkdir -p " + maven_sanity_dir)
 
     path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
-    print("This script must delete your Maven Checker Framework artifacts.\n" +
+    print("This script will now delete your Maven Checker Framework artifacts.\n" +
           "See README-maintainers.html#Maven-Plugin dependencies.  These artifacts " +
           "will need to be re-downloaded the next time you need them.  This will be " +
           "done automatically by Maven next time you use the plugin.")
-    continue_check = prompt_w_suggestion("Delete your Checker Framework artifacts?", "yes")
 
-    if is_no(continue_check):
-        print "Please run the Maven tutorial manually using the Maven plugin at repo %s" % (MAVEN_DEV_REPO)
-    else:
-        if os.path.isdir(path_to_artifacts):
-            delete_path(path_to_artifacts)
-
-        maven_example_dir = os.path.join(maven_sanity_dir, "MavenExample")
-        output_log = os.path.join(maven_example_dir, "output.log")
-
-        ant_release_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "release.xml")
-        get_example_dir_cmd = "ant -f %s update-and-copy-maven-example -Dchecker=%s -Dversion=%s -Ddest.dir=%s" % (ant_release_script, checker_dir, release_version, maven_sanity_dir)
-
-        execute(get_example_dir_cmd)
-
-        maven_example_pom = os.path.join(maven_example_dir, "pom.xml")
-        add_repo_information(maven_example_pom, repo_url)
-
-        print "TODO: The Maven example is only tested with Java 8."
-
-        os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
-        execute_write_to_file("mvn compile", output_log, False, maven_example_dir)
-        os.environ['JAVA_HOME'] = os.environ['JAVA_7_HOME']
-        check_results("Maven sanity check", output_log, [
-            "MavenExample.java:[26,29] error: [assignment.type.incompatible] incompatible types in assignment."
-        ])
-
+    if os.path.isdir(path_to_artifacts):
         delete_path(path_to_artifacts)
+
+    maven_example_dir = os.path.join(maven_sanity_dir, "MavenExample")
+    output_log = os.path.join(maven_example_dir, "output.log")
+
+    ant_release_script = os.path.join(CHECKER_FRAMEWORK_RELEASE, "release.xml")
+    get_example_dir_cmd = "ant -f %s update-and-copy-maven-example -Dchecker=%s -Dversion=%s -Ddest.dir=%s" % (ant_release_script, checker_dir, release_version, maven_sanity_dir)
+
+    execute(get_example_dir_cmd)
+
+    maven_example_pom = os.path.join(maven_example_dir, "pom.xml")
+    add_repo_information(maven_example_pom, repo_url)
+
+    print "TODO: The Maven example is only tested with Java 8."
+
+    os.environ['JAVA_HOME'] = os.environ['JAVA_8_HOME']
+    execute_write_to_file("mvn compile", output_log, False, maven_example_dir)
+    os.environ['JAVA_HOME'] = os.environ['JAVA_7_HOME']
+    check_results("Maven sanity check", output_log, [
+        "MavenExample.java:[26,29] error: [assignment.type.incompatible] incompatible types in assignment."
+    ])
+
+    delete_path(path_to_artifacts)
 
 def check_results(title, output_log, expected_errors):
     found_errors = are_in_file(output_log, expected_errors)

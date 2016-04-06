@@ -13,11 +13,9 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 from release_vars  import *
 from release_utils import *
 
-debug = 0
-antdebug = ""
-# For debugging
-debug = 1
-ant_debug = "-debug"
+# Turned on by the --debug command-line option.
+debug = False
+ant_debug = ""
 
 
 def print_usage():
@@ -25,6 +23,7 @@ def print_usage():
     print "Usage:    python release_build.py [projects] [options]"
     print_projects(True, 1, 4)
     print "\n  --auto  accepts or chooses the default for all prompts"
+    print "\n  --debug  turns on debugging mode which produces verbose output"
     print "\n  --review-manual  review the documentation changes only; don't perform a full build"
 
 def delete_and_clone_repos(auto):
@@ -48,7 +47,7 @@ The following repositories will be deleted then re-cloned from their origins:
     message += "Delete and re-clone?"
 
     if not auto:
-        if not prompt_yes_no(message):
+        if not prompt_yes_no(message, True):
             print "WARNING: Continuing without refreshing repositories.\n"
             return
 
@@ -270,8 +269,8 @@ def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
 
 def main(argv):
     # MANUAL Indicates a manual step
-    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully-automated when --auto is used.
-    # AUTO Indicates the step is fully-automated.
+    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully automated when --auto is used.
+    # AUTO Indicates the step is fully automated.
 
     delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
@@ -282,9 +281,15 @@ def main(argv):
     # Check for a --auto
     # If --auto then no prompt and just build a full release
     # Otherwise provide all prompts
+    auto = read_command_line_option(argv, "--auto")
+    global debug
+    global ant_debug
+    debug = read_command_line_option(argv, "--debug")
+    if debug:
+        ant_debug = "-debug"
 
-    auto = read_auto(argv)
-    review_documentation = read_review_manual(argv) # Indicates whether to review documentation changes only and not perform a build.
+    # Indicates whether to review documentation changes only and not perform a build.
+    review_documentation = read_command_line_option(argv, "--review-manual")
     add_project_dependencies(projects_to_release)
 
     afu_date = get_afu_date(projects_to_release[AFU_OPT])
@@ -421,7 +426,7 @@ def main(argv):
 
     print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # AUTO
 
-    if auto or prompt_yes_no("Proceed with copy of live site to dev site?"):
+    if auto or prompt_yes_no("Proceed with copy of live site to dev site?", True):
         # ************************************************************************************************
         # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
         # and its work cannot be undone.  If, for example, this command were modified to accidentally make

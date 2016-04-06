@@ -19,14 +19,14 @@ from sanity_checks import *
 def check_release_version(previous_release, new_release):
     if compare_version_numbers(previous_release, new_release) >= 0:
         raise Exception("Previous release version (" + previous_release + ") should be less than " +
-                        "the new release version(" + new_release + ")")
+                        "the new release version (" + new_release + ")")
 
 def copy_release_dir(path_to_dev, path_to_live, release_version):
     source_location = os.path.join(path_to_dev, release_version)
     dest_location = os.path.join(path_to_live, release_version)
 
     if os.path.exists(dest_location):
-        prompt_to_delete(dest_location)
+        delete_path(dest_location)
 
     if os.path.exists(dest_location):
         raise Exception("Destination location exists: " + dest_location)
@@ -88,15 +88,17 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             CHECKER_SOURCE, CHECKER_JAVADOC,
                             pgp_user, pgp_passphrase)
 
+    # checker.jar is a superset of checker-qual.jar, so use the same source/javadoc jars
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-qual-javadoc.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
+    # checker.jar is a superset of checker-compat-qual.jar, so use the same source/javadoc jars
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
                             CHECKER_COMPAT_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-source.jar"),
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, "checker-compat-qual-javadoc.jar"),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, JAVAC_BINARY_RELEASE_POM, JAVAC_BINARY,
@@ -134,10 +136,10 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
 def is_file_empty(filename):
     return os.path.getsize(filename) == 0
 
-def run_link_checker(site, output):
+def run_link_checker(site, output, additional_param=""):
     delete_if_exists(output)
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
-    cmd = ["sh", check_links_script, site]
+    cmd = ["sh", check_links_script, additional_param, site]
     env = {"PLUME_BIN": "%s/bin" % PLUME_LIB}
 
     out_file = open(output, 'w+')
@@ -156,10 +158,13 @@ def run_link_checker(site, output):
 
     return output
 
-def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_mode):
+def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_mode, checker_version_of_broken_link_to_suppress=""):
     jsr308Check = run_link_checker(jsr308_website, TMP_DIR + "/jsr308." + suffix + ".check")
     afuCheck = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
-    checkerCheck = run_link_checker(checker_website, TMP_DIR + "/checker-framework." + suffix + ".check")
+    additional_param = ""
+    if checker_version_of_broken_link_to_suppress != "":
+        additional_param = "--suppress-broken 404:http://types.cs.washington.edu/checker-framework/current/checker-framework-" + checker_version_of_broken_link_to_suppress + ".zip"
+    checkerCheck = run_link_checker(checker_website, TMP_DIR + "/checker-framework." + suffix + ".check", additional_param)
 
     is_jsr308Check_empty = is_file_empty(jsr308Check)
     is_afuCheck_empty = is_file_empty(afuCheck)
@@ -192,35 +197,31 @@ def continue_or_exit(msg):
     if continue_script == "no" or continue_script == "No":
         raise Exception("User elected NOT to continue at prompt: " + msg)
 
-def read_args(argv):
-    test = True
-    if len(argv) == 2:
-        if argv[1] == "release":
-            test = False
-        else:
-            print_usage()
-    else:
-        if len(argv) > 2:
+def validate_args(argv):
+    if len(argv) > 3:
+        print_usage()
+        raise Exception("Invalid arguments. " + ",".join(argv))
+    for i in range(1, len(argv)):
+        if argv[i] != "release" and argv[i] != "--auto":
             print_usage()
             raise Exception("Invalid arguments. " + ",".join(argv))
 
-    return test
-
 def print_usage():
-    print ("Usage: python release_build.py [release]\n" +
-           "The only argument this script takes is \"release\".  If this argument is " +
+    print ("Usage: python release_build.py [release] [--auto]\n" +
+           "If the \"release\" argument is " +
            "NOT specified then the script will execute all steps that checking and prompting " +
            "steps but will NOT actually perform a release.  This is for testing the script.")
 
 def main(argv):
     # MANUAL Indicates a manual step
-    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully-automated when --auto is used.
-    # AUTO Indicates the step is fully-automated.
+    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully automated when --auto is used.
+    # AUTO Indicates the step is fully automated.
 
     set_umask()
 
-    auto = read_auto(argv)
-    test_mode = read_args(argv)
+    validate_args(argv)
+    auto = read_command_line_option(argv, "--auto")
+    test_mode = not read_command_line_option(argv, "release")
 
     msg = ("You have chosen test_mode.  \nThis means that this script will execute all build steps that " +
            "do not have side-effects.  That is, this is a test run of the script.  All checks and user prompts "  +
@@ -286,7 +287,7 @@ def main(argv):
     print_step("Push Step 2: Check links on development site") # SEMIAUTO
 
     if auto or prompt_yes_no("Run link checker on DEV site?", True):
-        check_all_links(dev_jsr308_website, dev_afu_website, dev_checker_website, "dev", test_mode)
+        check_all_links(dev_jsr308_website, dev_afu_website, dev_checker_website, "dev", test_mode, new_checker_version)
 
     # Runs sanity tests on the development release. Later, we will run a smaller set of sanity
     # tests on the live release to ensure no errors occurred when promoting the release.
@@ -296,7 +297,7 @@ def main(argv):
     print_step("Push Step 3: Run development sanity tests") # SEMIAUTO
     if auto or prompt_yes_no("Perform this step?", True):
 
-        print_step(" 3a: Run javac sanity test on development release.")
+        print_step("3a: Run javac sanity test on development release.")
         if auto or prompt_yes_no("Run javac sanity test on development release?", True):
             javac_sanity_check(dev_checker_website, new_checker_version)
 
@@ -329,7 +330,7 @@ def main(argv):
     print_step("Push Step 4: Stage Maven artifacts in Central") # SEMIAUTO
 
     print_step("4a: Stage the artifacts at Maven central.")
-    if auto or prompt_yes_no("Stage Maven artifacts in Maven Central?"):
+    if (auto and not test_mode) or prompt_yes_no("Stage Maven artifacts in Maven Central?", not test_mode):
         stage_maven_artifacts_in_maven_central(new_checker_version)
 
         print_step("4b: Close staged artifacts at Maven central.")
@@ -341,8 +342,8 @@ def main(argv):
             " * Scroll to the end in the top pane, click on orgcheckerframework-XXXX\n" +
             " * Click \"close\" at the top\n" +
             " * For the close message, enter:  Checker Framework release " + new_checker_version + "\n" +
-            " * Click on the Refresh button near the top of the page until the closing\n" +
-            "   operation is reported to have completed succesfully.\n" +
+            " * Click the Refresh button near the top of the page until the bottom pane has:\n" +
+            "   \"Activity   Last operation completed successfully\".\n" +
             " * Copy the URL of the closed artifacts for use in the next step\n"
             "(You can also see the instructions at: " + SONATYPE_CLOSING_DIRECTIONS_URL + ")\n"
         )
@@ -362,12 +363,12 @@ def main(argv):
     print_step("Push Step 5. Push dev current release website to live website") # SEMIAUTO
     # This step could be performed without asking for user input but I think we should err on the side of caution.
     if not test_mode:
-        continue_or_exit("Copy release to the live website?")
-        print "Copying to live site"
-        copy_releases_to_live_site(new_checker_version, new_afu_version)
-        copy_htaccess()
-        ensure_group_access_to_releases()
-        update_release_symlinks(new_checker_version, new_afu_version)
+        if auto or prompt_yes_no("Copy release to the live website?"):
+            print "Copying to live site"
+            copy_releases_to_live_site(new_checker_version, new_afu_version)
+            copy_htaccess()
+            ensure_group_access_to_releases()
+            update_release_symlinks(new_checker_version, new_afu_version)
     else:
         print  "Test mode: Skipping copy to live site!"
 
@@ -375,25 +376,31 @@ def main(argv):
     # can run the Nullness Checker. If this step fails, you should backout the release.
 
     print_step("Push Step 6: Run javac sanity tests on the live release.") # SEMIAUTO
-    if auto or prompt_yes_no("Run javac sanity test on live release?", True):
-        javac_sanity_check(live_checker_website, new_checker_version)
-        if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
-            execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
-        execute("sh ../../checker-framework/release/test-checker-framework.sh " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
-        # Ensure that the jsr308-langtools javac works with the system-wide java launcher
-        if not os.path.isdir(SANITY_TEST_JSR308_LANGTOOLS_DIR):
-            execute("mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR)
-        execute("wget http://types.cs.washington.edu/jsr308/current/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
-        execute("unzip -uq jsr308-langtools-" + new_checker_version +".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
-        execute("env -i bash --noprofile jsr308-langtools-" + new_checker_version + "/dist/bin/javac -version", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+    if not test_mode:
+        if auto or prompt_yes_no("Run javac sanity test on live release?", True):
+            javac_sanity_check(live_checker_website, new_checker_version)
+            if not os.path.isdir(SANITY_TEST_CHECKER_FRAMEWORK_DIR):
+                execute("mkdir -p " + SANITY_TEST_CHECKER_FRAMEWORK_DIR)
+            execute("sh ../../checker-framework/release/test-checker-framework.sh " + new_checker_version, True, False, SANITY_TEST_CHECKER_FRAMEWORK_DIR)
+            # Ensure that the jsr308-langtools javac works with the system-wide java launcher
+            if not os.path.isdir(SANITY_TEST_JSR308_LANGTOOLS_DIR):
+                execute("mkdir -p " + SANITY_TEST_JSR308_LANGTOOLS_DIR)
+            execute("wget http://types.cs.washington.edu/jsr308/current/jsr308-langtools-" + new_checker_version + ".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+            execute("unzip -uq jsr308-langtools-" + new_checker_version +".zip", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+            execute("env -i bash --noprofile jsr308-langtools-" + new_checker_version + "/dist/bin/javac -version", True, False, SANITY_TEST_JSR308_LANGTOOLS_DIR)
+    else:
+        print  "Test mode: Skipping javac sanity tests on the live release."
 
     # You must manually deploy the Eclipse plugin. Follow the instructions at the prompt.
 
     print_step("Push Step 7: Deploy the Eclipse Plugin to the live site.") # MANUAL
-    continue_or_exit("Follow the instruction under 'Releasing the Plugin' in checker-framework/eclipse/README-developers.html to " +
-                     "deploy the Eclipse plugin to the live website.  Please install the plugin from the new " +
-                     "live repository and run it on a file in which you expect a type error.  If you run into errors, " +
-                     "back out the release!\n")
+    if not test_mode:
+        continue_or_exit("Follow the instruction under 'Releasing the Plugin' in checker-framework/eclipse/README-developers.html to " +
+                         "deploy the Eclipse plugin to the live website.  Please install the plugin from the new " +
+                         "live repository and run it on a file in which you expect a type error.  If you run into errors, " +
+                         "back out the release!\n")
+    else:
+        print  "Test mode: Skipping deployment of the Eclipse Plugin to the live site."
 
     # Runs the link the checker on all websites at:
     # http://types.cs.washington.edu/
@@ -407,8 +414,11 @@ def main(argv):
     # release and may be broken.
 
     print_step("Push Step 8. Check live site links") # SEMIAUTO
-    if auto or prompt_yes_no("Run link checker on LIVE site?", True):
-        check_all_links(live_jsr308_website, live_afu_website, live_checker_website, "live", test_mode)
+    if not test_mode:
+        if auto or prompt_yes_no("Run link checker on LIVE site?", True):
+            check_all_links(live_jsr308_website, live_afu_website, live_checker_website, "live", test_mode)
+    else:
+        print  "Test mode: Skipping checking of live site links."
 
     # This step pushes the changes committed to the interm repositories to the GitHub/Bitbucket
     # repositories. This is the first irreversible change. After this point, you can no longer
@@ -417,7 +427,7 @@ def main(argv):
     print_step("Push Step 9. Push changes to repositories") # SEMIAUTO
     # This step could be performed without asking for user input but I think we should err on the side of caution.
     if not test_mode:
-        if prompt_yes_no("Push the release to GitHub/Bitbucket repositories?  This is irreversible."):
+        if prompt_yes_no("Push the release to GitHub/Bitbucket repositories?  This is irreversible.", True):
             push_interm_to_release_repos()
             print  "Pushed to repos"
     else:
@@ -439,7 +449,8 @@ def main(argv):
                "First log into https://oss.sonatype.org using your Sonatype credentials. Go to Staging Repositories and " +
                "locate the orgcheckerframework repository and click on it.\n" +
                "Then, in the view for the orgcheckerframework staging repository at the bottom of the page, click on the Content tab. " +
-               "Expand the subdirectories until you find the one called checker-framework-plugin. Right-click on it, and choose delete.\n"
+               "Expand subdirectories to find org/checkerframework/checkerframework-maven-plugin. Right-click on it, and choose delete.\n" +
+               "If you have a permissions problem, try logging out and back in.\n" +
                "Finally, click on the Release button at the top of the page.  For the description, write " +
                "Checker Framework release " + new_checker_version + "\n\n")
 

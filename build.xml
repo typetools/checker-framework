@@ -120,6 +120,17 @@
       </ant>
   </target>
 
+  <target name="html-validate"
+	  description="Validate that HTML files are well-formed; only works with JDK 8">
+    <exec executable="html5validator">
+      <arg value="--ignore"/>
+      <arg value="/api/"/>
+      <arg value="/build/"/>
+      <arg value="/checker/manual/manual.html"/>
+      <arg value="/checker/jdk/nullness/src/java/lang/ref/package.html"/>
+    </exec>
+  </target>
+
   <property name="style.args1" value="-r -n -e"/>
   <property name="style.args2" value="--exclude-dir=.git --exclude-dir=api --exclude-dir=bootstrap --exclude-dir=jdk --exclude-dir=stubparser --exclude='*.aux' --exclude='*.class' --exclude='*.dvi' --exclude='*.jar' --exclude='*.jtr' --exclude='*.log' --exclude='*.patch' --exclude='*.pdf' --exclude='*.png' --exclude='*.sty' --exclude='*~' --exclude='CFLogo.ai' --exclude='logfile.log.rec.index' --exclude='manual.html' ."/>
 

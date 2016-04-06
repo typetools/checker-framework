@@ -6,7 +6,7 @@ Documentation:
  * Clarified Maven documentation about use of annotations in comments.
  * Added FAQ about annotating fully-qualified type names.
 
-Closed issues:  438, 579, 607, 624, 631.
+Closed issues:  438, 572, 579, 607, 624, 631.
 
 ---------------------------------------------------------------------------
 

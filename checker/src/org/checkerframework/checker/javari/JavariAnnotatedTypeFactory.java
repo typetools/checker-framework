@@ -779,7 +779,7 @@ public class JavariAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new JavariTypeHierarchy(checker, qualHierarchy,
-                                       checker.hasOption("ignoreRawTypeArguments"),
+                                       checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                                        checker.hasOption("invariantArrays"));
     }
 
