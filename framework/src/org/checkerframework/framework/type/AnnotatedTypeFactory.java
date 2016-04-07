@@ -218,7 +218,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * A cache used to store elements whose declaration annotations
-     * have already been stored by calling the method getDeclAnnotations.
+     * have already been stored by calling the method {@link #getDeclAnnotations(Element)}.
      */
     private final Map<Element, Set<AnnotationMirror>> cacheDeclAnnos;
 
