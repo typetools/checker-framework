@@ -294,11 +294,12 @@ public class ElementUtils {
      * TODO: can we learn from the implementation of
      * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
      */
-    public static List<TypeElement> getSuperTypes(TypeElement type) {
+    public static List<TypeElement> getSuperTypes(Elements elements, TypeElement type) {
 
         List<TypeElement> superelems = new ArrayList<TypeElement>();
-        if (type == null)
+        if (type == null) {
             return superelems;
+        }
 
         // Set up a stack containing type, which is our starting point.
         Deque<TypeElement> stack = new ArrayDeque<TypeElement>();
@@ -327,6 +328,12 @@ public class ElementUtils {
             }
         }
 
+        // Include java.lang.Object as implicit superclass for all classes and interfaces.
+        TypeElement jlobject = elements.getTypeElement("java.lang.Object");
+        if (!superelems.contains(jlobject)) {
+            superelems.add(jlobject);
+        }
+
         return Collections.<TypeElement>unmodifiableList(superelems);
     }
 
@@ -335,10 +342,10 @@ public class ElementUtils {
      * TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement)
      * instead of our own getSuperTypes?
      */
-    public static List<VariableElement> getAllFieldsIn(TypeElement type) {
+    public static List<VariableElement> getAllFieldsIn(Elements elements, TypeElement type) {
         List<VariableElement> fields = new ArrayList<VariableElement>();
         fields.addAll(ElementFilter.fieldsIn(type.getEnclosedElements()));
-        List<TypeElement> alltypes = getSuperTypes(type);
+        List<TypeElement> alltypes = getSuperTypes(elements, type);
         for (TypeElement atype : alltypes) {
             fields.addAll(ElementFilter.fieldsIn(atype.getEnclosedElements()));
         }
@@ -351,11 +358,11 @@ public class ElementUtils {
      * TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement)
      * instead of our own getSuperTypes?
      */
-    public static List<ExecutableElement> getAllMethodsIn(TypeElement type) {
+    public static List<ExecutableElement> getAllMethodsIn(Elements elements, TypeElement type) {
         List<ExecutableElement> meths = new ArrayList<ExecutableElement>();
         meths.addAll(ElementFilter.methodsIn(type.getEnclosedElements()));
 
-        List<TypeElement> alltypes = getSuperTypes(type);
+        List<TypeElement> alltypes = getSuperTypes(elements, type);
         for (TypeElement atype : alltypes) {
             meths.addAll(ElementFilter.methodsIn(atype.getEnclosedElements()));
         }
