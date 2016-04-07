@@ -13,16 +13,22 @@ import sys
 # TODO: handle annotations with arguments
 
 # TODO: complete this list
+# These are annotations that *should* go on their own line.
 declarationAnnotations = {
     "/*@Deterministic*/",
     "/*@FormatMethod*/",
     "/*@Pure*/",
     "/*@SideEffectFree*/",
+    "/*@UsesObjectEquals*/",
 }
 
 debug = False
 
+# Two annotations in a row, or an annotation abutting array brackets "[]".
+# Space is inserted between.
 abuttingannoRegex = re.compile(r"(/\*@[A-Za-z0-9_]+\*/)(\[\]|/\*@[A-Za-z0-9_]+\*/)")
+# An annotation at the end of its line.
+# The annotation will be moved to the beginning of the following line.
 trailingannoRegex = re.compile(r"^(.*?)[ \t]*(/\*@[A-Za-z0-9_]+\*/)$")
 whitespaceRegex = re.compile(r"^([ \t]*).*$")
 emptylineRegex = re.compile(r"^[ \t]*$")
