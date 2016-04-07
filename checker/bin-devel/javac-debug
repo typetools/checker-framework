@@ -8,6 +8,9 @@
 # build directory before it uses any jar files so
 # that a user does not have to repackage the whole
 # project (that is, create .jar files) to debug changes.
+# 
+# This script also has debug arguments set up to allow
+# remote debugging of the framework on port 5005.
 
 # When editing, keep this file in sync with javac in this directory.
 
