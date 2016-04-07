@@ -82,13 +82,13 @@ public class AliasingTransfer extends CFTransfer {
 
     /**
      * Handling pseudo-assignments. Called by
-     * <tt>CFAbstractTransfer.visitMethodInvocation()</tt>.
+     * <code>CFAbstractTransfer.visitMethodInvocation()</code>.
      * <p>
      * Case 2: Given a method call, traverses all formal parameters of the
      * method declaration, and if it doesn't have the {@literal @}NonLeaked or
      * {@literal @}LeakedToResult annotations, we remove the node of the
      * respective argument in the method call from the store. If parameter has
-     * {@literal @}LeakedToResult, <tt>visitMethodInvocation()</tt> handles it.
+     * {@literal @}LeakedToResult, <code>visitMethodInvocation()</code> handles it.
      */
     @Override
     protected void processPostconditions(MethodInvocationNode n, CFStore store,
