@@ -119,10 +119,9 @@ public class Overriding {
     }
 
     // Test overriding @Holding with JCIP @GuardedBy.
-    // Disable since JCIP annotations are not supported.
-    /*class SubClassJcip extends SuperClass {
-        @net.jcip.annotations.GuardedBy({"a", "b"})  // error
-        //    error (contracts.precondition.override.invalid)
+    class SubClassJcip extends SuperClass {
+        @net.jcip.annotations.GuardedBy({"a", "b"})
+        //:: error: (contracts.precondition.override.invalid)
         @Override void guardedByOne() { }
 
         @net.jcip.annotations.GuardedBy({"a", "b"})
@@ -130,5 +129,18 @@ public class Overriding {
 
         @net.jcip.annotations.GuardedBy({"a", "b"})
         @Override void guardedByThree() { }
-    }*/
+    }
+
+    // Test overriding @Holding with Javax @GuardedBy.
+    class SubClassJavax extends SuperClass {
+        @javax.annotation.concurrent.GuardedBy({"a", "b"})
+        //:: error: (contracts.precondition.override.invalid)
+        @Override void guardedByOne() { }
+
+        @javax.annotation.concurrent.GuardedBy({"a", "b"})
+        @Override void guardedByTwo() { }
+
+        @javax.annotation.concurrent.GuardedBy({"a", "b"})
+        @Override void guardedByThree() { }
+    }
 }

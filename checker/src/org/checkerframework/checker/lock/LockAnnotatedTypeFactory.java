@@ -25,15 +25,19 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -510,5 +514,50 @@ public class LockAnnotatedTypeFactory
                new PropagationTreeAnnotator(this),
                new ImplicitsTreeAnnotator(this)
         );
+    }
+
+    @Override
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+        if (tree.getKind() == Tree.Kind.VARIABLE) {
+
+            // If one of these declaration annotations is present on a variable declaration:
+            // @net.jcip.annotations.GuardedBy
+            // @javax.annotation.concurrent.GuardedBy
+            // insert the corresponding
+            // @org.checkerframework.checker.lock.qual.GuardedBy
+            // type qualifier.
+
+            List<AnnotationMirror> annos = InternalUtils
+                    .annotationsFromTypeAnnotationTrees(((VariableTree) tree).getModifiers().getAnnotations());
+            for(AnnotationMirror anno : annos) {
+                if (AnnotationUtils.areSameByClass(anno, net.jcip.annotations.GuardedBy.class) ||
+                    AnnotationUtils.areSameByClass(anno, javax.annotation.concurrent.GuardedBy.class)) {
+                    List<String> lockExpressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+
+                    if (lockExpressions.isEmpty()) {
+                        type.addAnnotation(GUARDEDBY);
+                    } else {
+                        type.addAnnotation(createGuardedByAnnotationMirror(lockExpressions));
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        super.annotateImplicit(tree, type, useFlow);
+    }
+
+    /**
+     * @param values a list of lock expressions
+     * @return an AnnotationMirror corresponding to @GuardedBy(values)
+     */
+    private AnnotationMirror createGuardedByAnnotationMirror(List<String> values) {
+        AnnotationBuilder builder =
+                new AnnotationBuilder(getProcessingEnv(), GuardedBy.class);
+        builder.setValue("value", values.toArray());
+
+        // Return the resulting AnnotationMirror
+        return builder.build();
     }
 }

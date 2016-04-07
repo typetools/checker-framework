@@ -1,257 +1,64 @@
-// @skip-test
-import net.jcip.annotations.*;
+import net.jcip.annotations.GuardedBy;
+import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
-import org.checkerframework.checker.lock.qual.Holding;
 
-// Smoke test for supporting JCIP and Javax annotations
+// Smoke test for supporting JCIP and Javax annotations.
+// Note that JCIP and Javax @GuardedBy can only be written on fields and methods.
 public class JCIPAnnotations {
-    void testGuardedAccess5(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
-        x = new MyClass();
+    class MyClass {
+        Object field;
+        @LockingFree
+        void methodWithUnguardedReceiver() { }
+        @LockingFree
+        void methodWithGuardedReceiver(@org.checkerframework.checker.lock.qual.GuardedBy("lock") MyClass this) { }
+        @LockingFree
+        void methodWithGuardSatisfiedReceiver(@GuardSatisfied MyClass this) { }
     }
 
- class MyClass {
-     Object field = new Object();
-     @LockingFree
-     Object method(MyClass this){return new Object();}
-  }
+    final Object lock = new Object();
 
-    void testGuardedAccess1(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
-        this.guardedReceiver();
-    }
+    @GuardedBy("lock") MyClass jcipGuardedField;
+    @javax.annotation.concurrent.GuardedBy("lock") MyClass javaxGuardedField;
 
-    Object lock;
-
-    @GuardedBy("lock") MyClass guardedField;
-    MyClass unguardedField;
-
-    @LockingFree
-    void guardedReceiver(@GuardedBy("lock") JCIPAnnotations this) { }
-    @LockingFree
-    void unguardedReceiver(@GuardedBy({}) JCIPAnnotations this) { }
-
-    @LockingFree
-    void guardedArg(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass arg) { }
-    @LockingFree
-    void guardedArgUnguardedReceiver(@GuardedBy("lock") MyClass arg) { }
-    @LockingFree
-    void unguardedArg(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass arg) { }
-    @LockingFree
-    void unguardedArgAndReceiver(@GuardedBy({}) JCIPAnnotations this, @GuardedBy({}) MyClass arg) { }
-
-    @LockingFree
-    static void guardedStaticArg(@GuardedBy("lock") MyClass x) { }
-    @LockingFree
-    static void unguardedStaticArg(@GuardedBy({}) MyClass x) { }
-
-    void testUnguardedAccess(@GuardedBy({}) JCIPAnnotations this, @GuardedBy({}) MyClass x) {
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.field.toString();
-        this.unguardedField.field.toString();
+    // Tests that Javax and JCIP @GuardedBy(...) typecheck against the Lock Checker @GuardedBy on a receiver.
+    void testReceivers() {
         //:: error: (method.invocation.invalid)
-        this.guardedReceiver();
-        this.unguardedReceiver();
-        //:: error: (argument.type.incompatible)
-        this.guardedArgUnguardedReceiver(x);
-        this.unguardedArgAndReceiver(x);
-        unguardedStaticArg(x);
-        //:: error: (argument.type.incompatible)
-        guardedStaticArg(x);
+        jcipGuardedField.methodWithUnguardedReceiver();
+        jcipGuardedField.methodWithGuardedReceiver();
+        //:: error: (contracts.precondition.not.satisfied)
+        jcipGuardedField.methodWithGuardSatisfiedReceiver();
+        //:: error: (method.invocation.invalid)
+        javaxGuardedField.methodWithUnguardedReceiver();
+        javaxGuardedField.methodWithGuardedReceiver();
+        //:: error: (contracts.precondition.not.satisfied)
+        javaxGuardedField.methodWithGuardSatisfiedReceiver();
     }
 
-    void testGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
+    void testDereferences() {
         //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.field.toString();
-        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
+        this.jcipGuardedField.field.toString();
         //:: error: (contracts.precondition.not.satisfied.field)
-        this.unguardedField.field.toString();
-        this.guardedReceiver();
-        //:: error: (method.invocation.invalid)
-        this.unguardedReceiver();
-        this.guardedArg(x);
-        //:: error: (argument.type.incompatible)
-        this.unguardedArg(x);
-        //:: error: (argument.type.incompatible)
-        unguardedStaticArg(x);
-        guardedStaticArg(x);
+        this.javaxGuardedField.field.toString();
         synchronized(lock) {
-            this.guardedField.field.toString();
-            this.unguardedField.field.toString();
-            this.guardedReceiver();
-            //:: error: (method.invocation.invalid)
-            this.unguardedReceiver();
-            this.guardedArg(x);
-            //:: error: (argument.type.incompatible)
-            this.unguardedArg(x);
-            //:: error: (argument.type.incompatible)
-            unguardedStaticArg(x);
-            guardedStaticArg(x);
-        }
-    }
-
-    void testSemiGuardedAccess(@GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass x) {
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.field.toString();
-        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.unguardedField.field.toString();
-        this.guardedReceiver();
-        //:: error: (method.invocation.invalid)
-        this.unguardedReceiver();
-        //:: error: (argument.type.incompatible)
-        this.guardedArg(x);
-        this.unguardedArg(x);
-        unguardedStaticArg(x);
-        //:: error: (argument.type.incompatible)
-        guardedStaticArg(x);
-        synchronized(lock) {
-            this.guardedField.field.toString();
-            this.unguardedField.field.toString();
-            this.guardedReceiver();
-            //:: error: (method.invocation.invalid)
-            this.unguardedReceiver();
-            //:: error: (argument.type.incompatible)
-            this.guardedArg(x);
-            this.unguardedArg(x);
-            unguardedStaticArg(x);
-            //:: error: (argument.type.incompatible)
-            guardedStaticArg(x);
-        }
-    }
-
-    void testGuardedAccessAgainstJavaxGuardedBy(@javax.annotation.concurrent.GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.field.toString();
-        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.unguardedField.field.toString();
-        this.guardedReceiver();
-        //:: error: (method.invocation.invalid)
-        this.unguardedReceiver();
-        this.guardedArg(x);
-        //:: error: (argument.type.incompatible)
-        this.unguardedArg(x);
-        //:: error: (argument.type.incompatible)
-        unguardedStaticArg(x);
-        guardedStaticArg(x);
-        synchronized(lock) {
-            this.guardedField.field.toString();
-            this.unguardedField.field.toString();
-            this.guardedReceiver();
-            //:: error: (method.invocation.invalid)
-            this.unguardedReceiver();
-            this.guardedArg(x);
-            //:: error: (argument.type.incompatible)
-            this.unguardedArg(x);
-            //:: error: (argument.type.incompatible)
-            unguardedStaticArg(x);
-            guardedStaticArg(x);
-        }
-    }
-
-    void testSemiGuardedAccessAgainstJavaxGuardedBy(@javax.annotation.concurrent.GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass x) {
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.field.toString();
-        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.unguardedField.field.toString();
-        this.guardedReceiver();
-        //:: error: (method.invocation.invalid)
-        this.unguardedReceiver();
-        //:: error: (argument.type.incompatible)
-        this.guardedArg(x);
-        this.unguardedArg(x);
-        unguardedStaticArg(x);
-        //:: error: (argument.type.incompatible)
-        guardedStaticArg(x);
-        synchronized(lock) {
-            this.guardedField.field.toString();
-            this.unguardedField.field.toString();
-            this.guardedReceiver();
-            //:: error: (method.invocation.invalid)
-            this.unguardedReceiver();
-            //:: error: (argument.type.incompatible)
-            this.guardedArg(x);
-            this.unguardedArg(x);
-            unguardedStaticArg(x);
-            //:: error: (argument.type.incompatible)
-            guardedStaticArg(x);
-        }
-    }
-
-    void testGuardedAccessAgainstCheckerGuardedBy(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, @GuardedBy("lock") MyClass x) {
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.field.toString();
-        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.unguardedField.field.toString();
-        this.guardedReceiver();
-        //:: error: (method.invocation.invalid)
-        this.unguardedReceiver();
-        this.guardedArg(x);
-        //:: error: (argument.type.incompatible)
-        this.unguardedArg(x);
-        //:: error: (argument.type.incompatible)
-        unguardedStaticArg(x);
-        guardedStaticArg(x);
-        synchronized(lock) {
-            this.guardedField.field.toString();
-            this.unguardedField.field.toString();
-            this.guardedReceiver();
-            //:: error: (method.invocation.invalid)
-            this.unguardedReceiver();
-            this.guardedArg(x);
-            //:: error: (argument.type.incompatible)
-            this.unguardedArg(x);
-            //:: error: (argument.type.incompatible)
-            unguardedStaticArg(x);
-            guardedStaticArg(x);
-        }
-    }
-
-    void testSemiGuardedAccessAgainstCheckerGuardedBy(@org.checkerframework.checker.lock.qual.GuardedBy("lock") JCIPAnnotations this, @GuardedBy({}) MyClass x) {
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.guardedField.field.toString();
-        // Error because 'lock' is not known to be held, and 'lock' is guarding 'this':
-        //:: error: (contracts.precondition.not.satisfied.field)
-        this.unguardedField.field.toString();
-        this.guardedReceiver();
-        //:: error: (method.invocation.invalid)
-        this.unguardedReceiver();
-        //:: error: (argument.type.incompatible)
-        this.guardedArg(x);
-        this.unguardedArg(x);
-        unguardedStaticArg(x);
-        //:: error: (argument.type.incompatible)
-        guardedStaticArg(x);
-        synchronized(lock) {
-            this.guardedField.field.toString();
-            this.unguardedField.field.toString();
-            this.guardedReceiver();
-            //:: error: (method.invocation.invalid)
-            this.unguardedReceiver();
-            //:: error: (argument.type.incompatible)
-            this.guardedArg(x);
-            this.unguardedArg(x);
-            unguardedStaticArg(x);
-            //:: error: (argument.type.incompatible)
-            guardedStaticArg(x);
+            this.jcipGuardedField.field.toString();
+            this.javaxGuardedField.field.toString();
         }
     }
 
     @GuardedBy("lock")
     void testGuardedByAsHolding() {
-        this.guardedField.field.toString();
-        guardedField.field.toString();
+        this.jcipGuardedField.field.toString();
+        this.javaxGuardedField.field.toString();
+        jcipGuardedField.field.toString();
+        javaxGuardedField.field.toString();
     }
 
-    @GuardedBy("lock") // JCIP GuardedBy applies to both the method and the return type, unfortunately.
-    Object testGuardedByAsHolding2() {
-        this.guardedField.field.toString();
-        guardedField.field.toString();
+    @GuardedBy("lock")
+    Object testGuardedByAsHolding2(@org.checkerframework.checker.lock.qual.GuardedBy({}) Object param) {
         testGuardedByAsHolding();
-        @GuardedBy("lock") Object o = new Object();
-        return o;
+        // Test that the JCIP GuardedBy applies to the method but not the return type.
+        return param;
     }
 
     void testGuardedByAsHolding3() {
@@ -261,4 +68,50 @@ public class JCIPAnnotations {
         //:: error: (contracts.precondition.not.satisfied)
         testGuardedByAsHolding();
     }
+
+    @Holding("lock")
+    @GuardedBy("lock")
+    //:: error: (multiple.lock.precondition.annotations)
+    void testMultipleMethodAnnotations1() {
+    }
+
+    @Holding("lock")
+    @javax.annotation.concurrent.GuardedBy("lock")
+    //:: error: (multiple.lock.precondition.annotations)
+    void testMultipleMethodAnnotations2() {
+    }
+
+    @GuardedBy("lock")
+    @javax.annotation.concurrent.GuardedBy("lock")
+    //:: error: (multiple.lock.precondition.annotations)
+    void testMultipleMethodAnnotations3() {
+    }
+
+    @Holding("lock")
+    @GuardedBy("lock")
+    @javax.annotation.concurrent.GuardedBy("lock")
+    //:: error: (multiple.lock.precondition.annotations)
+    void testMultipleMethodAnnotations4() {
+    }
+
+    @org.checkerframework.checker.lock.qual.GuardedBy("lock")
+    @GuardedBy("lock")
+    //:: error: (multiple.guardedby.annotations)
+    Object fieldWithMultipleGuardedByAnnotations1;
+
+    @org.checkerframework.checker.lock.qual.GuardedBy("lock")
+    @javax.annotation.concurrent.GuardedBy("lock")
+    //:: error: (multiple.guardedby.annotations)
+    Object fieldWithMultipleGuardedByAnnotations2;
+
+    @GuardedBy("lock")
+    @javax.annotation.concurrent.GuardedBy("lock")
+    //:: error: (multiple.guardedby.annotations)
+    Object fieldWithMultipleGuardedByAnnotations3;
+
+    @org.checkerframework.checker.lock.qual.GuardedBy("lock")
+    @GuardedBy("lock")
+    @javax.annotation.concurrent.GuardedBy("lock")
+    //:: error: (multiple.guardedby.annotations)
+    Object fieldWithMultipleGuardedByAnnotations4;
 }
