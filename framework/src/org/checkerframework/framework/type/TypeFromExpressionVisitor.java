@@ -195,6 +195,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             case INTERFACE: // o instanceof MyClass.InnerInterface
             case ANNOTATION_TYPE:
                 return f.fromElement(elt);
+            default:
+                // Fall-through.
         }
 
         if (node.getIdentifier().contentEquals("this")) {
