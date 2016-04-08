@@ -12,17 +12,101 @@ import sys
 
 # TODO: handle annotations with arguments
 
-# TODO: complete this list
+# These are annotations defined in the Checker Framework that *should* go
+# on their own line.
+# (To generate this list, search for occurrences of "@Target("
+# and remove those that contain "TYPE_USE" or "{}".)
 declarationAnnotations = {
-    "/*@Deterministic*/",
-    "/*@FormatMethod*/",
+    "/*@GetConstructor*/",
+    "/*@NewInstance*/",
+    "/*@Invoke*/",
+    "/*@GetClass*/",
+    "/*@GetMethod*/",
+    "/*@ForName*/",
+    "/*@ReportCreation*/",
+    "/*@ReportReadWrite*/",
+    "/*@ReportWrite*/",
+    "/*@ReportOverride*/",
+    "/*@ReportInherit*/",
+    "/*@ReportCall*/",
+    "/*@ReportUse*/",
+    "/*@StaticallyExecutable*/",
+    "/*@InheritedAnnotation*/",
+    "/*@FromByteCode*/",
+    "/*@PostconditionAnnotation*/",
+    "/*@RequiresQualifiers*/",
+    "/*@DefaultQualifier*/",
+    "/*@DefaultQualifierInHierarchyInUncheckedCode*/",
+    "/*@InvisibleQualifier*/",
+    "/*@TargetLocations*/",
+    "/*@RequiresQualifier*/",
+    "/*@ImplicitFor*/",
+    "/*@StubFiles*/",
+    "/*@EnsuresQualifiersIf*/",
+    "/*@EnsuresQualifier*/",
+    "/*@DefaultInUncheckedCodeFor*/",
+    "/*@AnnotatedFor*/",
+    "/*@PreconditionAnnotation*/",
+    "/*@ConditionalPostconditionAnnotation*/",
+    "/*@DefaultQualifiers*/",
+    "/*@FieldIsExpression*/",
+    "/*@FromStubFile*/",
+    "/*@Unused*/",
+    "/*@EnsuresQualifiers*/",
+    "/*@PolymorphicQualifier*/",
+    "/*@SubtypeOf*/",
+    "/*@DefaultQualifierInHierarchy*/",
+    "/*@DefaultFor*/",
+    "/*@EnsuresQualifierIf*/",
+    "/*@MonotonicQualifier*/",
     "/*@Pure*/",
+    "/*@LockingFree*/",
+    "/*@TerminatesExecution*/",
+    "/*@Deterministic*/",
     "/*@SideEffectFree*/",
+    "/*@SafeType*/",
+    "/*@SafeEffect*/",
+    "/*@UIType*/",
+    "/*@UIPackage*/",
+    "/*@PolyUIEffect*/",
+    "/*@PolyUIType*/",
+    "/*@UIEffect*/",
+    "/*@NotOnlyInitialized*/",
+    "/*@ClassRegexParam*/",
+    "/*@MethodRegexParam*/",
+    "/*@MultiMethodRegexParam*/",
+    "/*@Assignable*/",
+    "/*@I18nValidFormat*/",
+    "/*@I18nMakeFormat*/",
+    "/*@Assignable*/",
+    "/*@Assignable*/",
+    "/*@EnsuresLockHeldIf*/",
+    "/*@HoldingOnEntry*/",
+    "/*@EnsuresLockHeld*/",
+    "/*@Holding*/",
+    "/*@FormatMethod*/",
+    "/*@ReturnsFormat*/",
+    "/*@EnsuresNonNull*/",
+    "/*@Covariant*/",
+    "/*@EnsuresNonNullIf*/",
+    "/*@RequiresNonNull*/",
+    "/*@AssertNonNullIfNonNull*/",
+    "/*@UsesObjectEquals*/",
+    "/*@I18nChecksFormat*/",
+    "/*@MultiClassRegexParam*/",
+    "/*@MethodTaintingParam*/",
+    "/*@MultiMethodTaintingParam*/",
+    "/*@ClassTaintingParam*/",
+    "/*@MultiClassTaintingParam*/",
 }
 
 debug = False
 
+# Two annotations in a row, or an annotation abutting array brackets "[]".
+# Space is inserted between.
 abuttingannoRegex = re.compile(r"(/\*@[A-Za-z0-9_]+\*/)(\[\]|/\*@[A-Za-z0-9_]+\*/)")
+# An annotation at the end of its line.
+# The annotation will be moved to the beginning of the following line.
 trailingannoRegex = re.compile(r"^(.*?)[ \t]*(/\*@[A-Za-z0-9_]+\*/)$")
 whitespaceRegex = re.compile(r"^([ \t]*).*$")
 emptylineRegex = re.compile(r"^[ \t]*$")

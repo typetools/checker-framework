@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  * This annotation is important to pluggable type-checking because if some
  * fact about an object is known before a call to such a method, then the
  * fact is still known afterwards, even if the fact is about some non-final
- * field.  When any non-<tt>@SideEffectFree</tt> method is called, then a
+ * field.  When any non-<code>@SideEffectFree</code> method is called, then a
  * pluggable type-checker must assume that any field of any accessible
  * object might have been modified, which annuls the effect of
  * flow-sensitive type refinement and prevents the pluggable type-checker
@@ -31,14 +31,14 @@ import java.lang.annotation.Target;
  * <p>
  * <b>Analysis:</b>
  * The Checker Framework performs a conservative analysis to verify a
- * <tt>@SideEffectFree</tt> annotation.
+ * <code>@SideEffectFree</code> annotation.
  * The Checker Framework issues a warning
  * if the method uses any of the following Java constructs:
  * <ol>
  * <li>Assignment to any expression, except for local variables and method
  * parameters.
- * <li>A method invocation of a method that is not <tt>@SideEffectFree</tt>.
- * <li>Construction of a new object where the constructor is not <tt>@SideEffectFree</tt>.
+ * <li>A method invocation of a method that is not <code>@SideEffectFree</code>.
+ * <li>Construction of a new object where the constructor is not <code>@SideEffectFree</code>.
  * </ol>
  * These rules are conservative:  any code that passes the checks is
  * side-effect-free, but the Checker Framework may issue false positive
@@ -49,7 +49,7 @@ import java.lang.annotation.Target;
  *
  * In fact, the rules are so conservative that checking is currently
  * disabled by default, but can be enabled via the
- * <tt>-AcheckPurityAnnotations</tt> command-line option.
+ * <code>-AcheckPurityAnnotations</code> command-line option.
  * <p>
  *
  * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis
