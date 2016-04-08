@@ -110,10 +110,6 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
     /**
      * Generate the dot representation as String.
-     * @param cfg
-     * @param entry
-     * @param analysis
-     * @return
      */
     protected String generateDotGraph(ControlFlowGraph cfg, Block entry,
         /*@Nullable*/ Analysis<A, S, T> analysis) {

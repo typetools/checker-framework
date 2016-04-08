@@ -67,7 +67,7 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
     void visualizeStore(S store);
 
     /**
-     * Called by a {@link CFAbstractStore} to visualize
+     * Called by a <code>CFAbstractStore</code> to visualize
      * the class name before calling the
      * <code>CFAbstractStore#internalVisualize()</code> method.
      *
@@ -131,8 +131,8 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
     /**
      * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
      * the specific information collected according to the specific kind of Store.
-     * Currently, these Stores call this method: {@link LockStore},
-     * {@link NullnessStore}, and {@link InitializationStore} to visualize additional
+     * Currently, these Stores call this method: <code>LockStore</code>,
+     * <code>NullnessStore</code>, and <code>InitializationStore</code> to visualize additional
      * information.
      *
      * @param keyName The name of the specific information to be visualized.
