@@ -455,7 +455,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
     @Override
     public void visualizeStoreMethodVals(FlowExpressions.PureMethodCall methodCall, A value) {
-        this.sbStore.append("  " + methodCall.toString().replace("\"", "\\\"") + " > " + 
+        this.sbStore.append("  " + methodCall.toString().replace("\"", "\\\"") + " > " +
                 value + "\\n");
     }
 
