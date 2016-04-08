@@ -54,11 +54,12 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     protected String outdir;
     protected boolean verbose;
     protected String checkerName;
+
     protected StringBuilder sbDigraph;
-    //sbStore is for visualizing store
     protected StringBuilder sbStore;
-    // Mapping from class/method representation to generated dot file.
     protected StringBuilder sbBlock;
+
+    // Mapping from class/method representation to generated dot file.
     protected Map<String, String> generated;
 
     public void init(Map<String, Object> args) {
@@ -122,9 +123,6 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         // header
         this.sbDigraph.append("digraph {\n");
 
-        /*generateDotEdges must called BEFORE generateDotNodes,
-         * since DoteNodes needs the information in 'Set<Block> visited' that created in generateDotEdges()  */
-//        generateDotEdges(sbDigraph, visited, entry);
         Block cur = entry;
         Queue<Block> worklist = new LinkedList<>();
         visited.add(entry);
@@ -183,6 +181,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
             cur = worklist.poll();
         }
+
         generateDotNodes(visited, cfg, analysis);
 
         // footer
@@ -210,7 +209,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         }
 
         this.sbDigraph.append("\n");
-	}
+    }
 
     /** @return The file name used for DOT output. */
     protected String dotOutputFileName(UnderlyingAST ast) {
@@ -277,11 +276,9 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     }
 
     /**
-     * Produce a string representation of the contests of a basic block.
+     * Produce a representation of the contests of a basic block.
      *
-     * @param bb
-     *            Basic block to visualize.
-     * @return String representation.
+     * @param bb Basic block to visualize.
      */
     @Override
     public void visualizeBlock(Block bb,
@@ -319,7 +316,6 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         if (this.sbBlock.length() == 0) {
             centered = true;
             if (bb.getType() == BlockType.SPECIAL_BLOCK) {
-//                visualizeSpecialBlock((SpecialBlock) bb, sbBlock);
                 visualizeSpecialBlock((SpecialBlock) bb);
             } else if (bb.getType() == BlockType.CONDITIONAL_BLOCK) {
                 this.sbDigraph.append(" \",];\n");
@@ -332,7 +328,6 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
         // visualize transfer input if necessary
         if (analysis != null) {
-//            visualizeBlockTransferInput(bb, analysis, sbBlock);
             visualizeBlockTransferInput(bb, analysis);
         }
 
@@ -378,7 +373,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         // separator
         this.sbStore.append("\\n~~~~~~~~~\\n");
 
-        //the transfer input before this block should add before this block content
+        // the transfer input before this block is added before the block content
         this.sbBlock.insert(0, this.sbStore);
 
         if (verbose) {
@@ -405,7 +400,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     }
 
     @Override
-	public void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis) {
+    public void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis) {
         A value = analysis.getValue(t);
         String valueInfo = "";
         if (value != null) {
@@ -423,35 +418,8 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         return s.replace("\"", "\\\"");
     }
 
-    /**
-     * @param sId
-     * @param eId
-     * @param labelContent
-     * @return
-     */
     protected void addDotEdge(long sId, long eId, String labelContent) {
         this.sbDigraph.append("    " + sId + " -> "+ eId + " [label=\""+ labelContent + "\"];\n");
-    }
-
-    /** Write a file methods.txt that contains a mapping from
-     * source code location to generated dot file.
-     */
-    public void shutdown() {
-        try {
-            // Open for append, in case of multiple sub-checkers.
-            FileWriter fstream = new FileWriter(outdir + "/methods.txt", true);
-            BufferedWriter out = new BufferedWriter(fstream);
-            for (Map.Entry<String, String> kv : generated.entrySet()) {
-                out.write(kv.getKey());
-                out.append('\t');
-                out.write(kv.getValue());
-                out.append('\n');
-            }
-            out.close();
-        } catch (IOException e) {
-            ErrorReporter.errorAbort("Error creating methods.txt file in: " + outdir +
-                    "; ensure the path is valid", e);
-        }
     }
 
     @Override
@@ -519,4 +487,26 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         this.sbStore.append(")");
     }
 
+    /**
+     * Write a file <code>methods.txt</code> that contains a mapping from
+     * source code location to generated dot file.
+     */
+    @Override
+    public void shutdown() {
+        try {
+            // Open for append, in case of multiple sub-checkers.
+            FileWriter fstream = new FileWriter(outdir + "/methods.txt", true);
+            BufferedWriter out = new BufferedWriter(fstream);
+            for (Map.Entry<String, String> kv : generated.entrySet()) {
+                out.write(kv.getKey());
+                out.append('\t');
+                out.write(kv.getValue());
+                out.append('\n');
+            }
+            out.close();
+        } catch (IOException e) {
+            ErrorReporter.errorAbort("Error creating methods.txt file in: " + outdir +
+                    "; ensure the path is valid", e);
+        }
+    }
 }

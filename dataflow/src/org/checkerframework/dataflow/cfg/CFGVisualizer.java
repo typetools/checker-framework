@@ -21,7 +21,7 @@ import javax.lang.model.element.Element;
 
 /**
  * Perform some visualization on a control flow graph.
- * The particular operations depend on the particular implementation.
+ * The particular operations depend on the implementation.
  */
 public interface CFGVisualizer<A extends AbstractValue<A>,
         S extends Store<S>, T extends TransferFunction<A, S>> {
@@ -47,108 +47,139 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      *            The entry node of the control flow graph to be represented.
      * @param analysis
      *            An analysis containing information about the program
-     *            represented by the CFG. The information includes {@link Store}
-     *            s that are valid at the beginning of basic blocks reachable
+     *            represented by the CFG. The information includes {@link Store}s
+     *            that are valid at the beginning of basic blocks reachable
      *            from <code>entry</code> and per-node information for value
      *            producing {@link Node}s. Can also be <code>null</code> to
      *            indicate that this information should not be output.
-     * @return Possible analysis results, e.g. generated files.
+     * @return Possible analysis results, e.g. generated file names.
      */
     /*@Nullable*/ Map<String, Object> visualize(ControlFlowGraph cfg, Block entry,
             /*@Nullable*/ Analysis<A, S, T> analysis);
 
-    /** This is a double-direction delegate pattern interface.
-     * this method would delegate the visualize responsibility
-     * to the passed {@link Store} instance.
-     * Then the store would do something and delegate the 
-     * visualize responsibility back to the CFGVisualizer.
-     * @param store
+    /**
+     * Delegate the visualization responsibility
+     * to the passed {@link Store} instance, which will call back to this
+     * visualizer instance for sub-components.
+     *
+     * @param store The store to visualize.
      */
     void visualizeStore(S store);
 
-    /**A delegate method called by a {@link CFAbstractStore} to visualize 
-     * the class CanonicalName before calling the internalVisualize() method of CFAbstractStore.
-     * @param classCanonicalName
+    /**
+     * Called by a {@link CFAbstractStore} to visualize
+     * the class name before calling the
+     * <code>CFAbstractStore#internalVisualize()</code> method.
+     *
+     * @param classCanonicalName The canonical name of the class.
      */
     void visualizeStoreHeader(String classCanonicalName);
 
-    /**This method is called by internalVisualize() of CFAbstractStore to visualize its Local Variable
-     * @param localVar
-     * @param value
+    /**
+     * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
+     * a local variable.
+     *
+     * @param localVar The local variable.
+     * @param value The value of the local variable.
      */
     void visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value);
 
-    /**This method is called by internalVisualize() of CFAbstractStore to visualize the Info of Current Object in this Store
-     * @param value
+    /**
+     * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
+     * the value of the current object <code>this</code> in this Store.
+     *
+     * @param value The value of the current object this.
      */
     void visualizeStoreThisVal(A value);
 
-    /**This method is called by internalVisualize() of CFAbstractStore to visualize the Info of fields collected by this Store
-     * @param fieldAccess
-     * @param value
+    /**
+     * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
+     * the value of fields collected by this Store.
+     *
+     * @param fieldAccess The field.
+     * @param value The value of the field.
      */
     void visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, A value);
 
-    /**This method is called by internalVisualize() of CFAbstractStore to visualize the Info of Arrays collected by this Store
-     * @param arrayValue
-     * @param value
+    /**
+     * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
+     * the value of arrays collected by this Store.
+     *
+     * @param arrayValue The array.
+     * @param value The value of the array.
      */
     void visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value);
 
-    /**This method is called by internalVisualize() of CFAbstractStore to visualize 
-     * the Info of pure method calls collected by this Store
-     * @param methodCall
-     * @param value
+    /**
+     * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
+     * the value of pure method calls collected by this Store.
+     *
+     * @param methodCall The pure method call.
+     * @param value The value of the pure method call.
      */
     void visualizeStoreMethodVals(FlowExpressions.PureMethodCall methodCall, A value);
 
-    /**This method is called by internalVisualize() of CFAbstractStore to visualize the Info of class values collected by this Store
-     * @param className
-     * @param value
+    /**
+     * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
+     * the value of class names collected by this Store.
+     *
+     * @param className The class name.
+     * @param value The value of the class name.
      */
     void visualizeStoreClassVals(FlowExpressions.ClassName className, A value);
 
-    /**This method is called by internalVisualize() of subclasses of CFAbstractStore to visualize
-     * the specific Info collected according to the specific kind of Store 
-     * current these Stores call this method: {@link LockStore}, {@link NullnessStore}, and {@link InitializationStore}
-     * @param keyName the name of the specific Info to be visualize
-     * @param value the value of the specific Info to be visualize
+    /**
+     * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
+     * the specific information collected according to the specific kind of Store.
+     * Currently, these Stores call this method: {@link LockStore},
+     * {@link NullnessStore}, and {@link InitializationStore} to visualize additional
+     * information.
+     *
+     * @param keyName The name of the specific information to be visualized.
+     * @param value The value of the specific information to be visualized.
      */
     void visualizeStoreKeyVal(String keyName, Object value);
 
-    /**A delegate method called by a {@link CFAbstractStore} to visualize
-     * any info need to be visualize after the internalVisualize() method of CFAbstractStore.
+    /**
+     * Called by <code>CFAbstractStore</code> to visualize
+     * any information after the invocation of <code>CFAbstractStore#internalVisualize()</code>.
      */
     void visualizeStoreFooter();
 
     /**
-     * Visualize a block based on the analysis
-     * @param bb
-     * @param analysis
+     * Visualize a block based on the analysis.
+     *
+     * @param bb The block.
+     * @param analysis The current analysis.
      */
     void visualizeBlock(Block bb, /*@Nullable*/ Analysis<A, S, T> analysis);
 
     /**
-     * Visualize a specialBlock
-     * @param sbb
+     * Visualize a SpecialBlock.
+     *
+     * @param sbb The special block.
      */
     void visualizeSpecialBlock(SpecialBlock sbb);
 
     /**
-     * Visualize the transferInput of a Block based on analysis
-     * @param bb
-     * @param analysis
+     * Visualize the transferInput of a Block based on the analysis.
+     *
+     * @param bb The block.
+     * @param analysis The current analysis.
      */
     void visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis);
 
     /**
-     * visualized a blockNode based on analysis
-     * @param t
-     * @param analysis
+     * Visualize a Node based on the analysis.
+     *
+     * @param t The node.
+     * @param analysis The current analysis.
      */
     void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis);
-    /** Shutdown method called once from the shutdown hook of the BaseTypeChecker.
-     */
 
+    /**
+     * Shutdown method called once from the shutdown hook of the
+     * <code>BaseTypeChecker</code>.
+     */
     void shutdown();
 }
