@@ -984,9 +984,9 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     @Override
-	public void visualize(CFGVisualizer<?, S, ?> viz) {
-        /*This cast is guaranteed be safe, as long as the CFGVisualizer is created by 
-         * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory*/
+    public void visualize(CFGVisualizer<?, S, ?> viz) {
+        /* This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
+         * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
         CFGVisualizer<V, S, ?> casted_viz = (CFGVisualizer<V, S, ?> ) viz;
         casted_viz.visualizeStoreHeader(
@@ -996,8 +996,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * Adds a DOT representation of the internal information of this store to
-     * {@code result}.
+     * Adds a representation of the internal information of this store to
+     * visualizer {@code viz}.
      */
     protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
         for (Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {

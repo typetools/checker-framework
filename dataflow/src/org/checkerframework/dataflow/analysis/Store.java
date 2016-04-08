@@ -64,8 +64,10 @@ public interface Store<S extends Store<S>> {
     boolean canAlias(FlowExpressions.Receiver a,
                      FlowExpressions.Receiver b);
 
-    /** delegate visualize responsibility to a visualizer
-     * @param viz the visualizer that visualize this store
+    /**
+     * Delegate visualization responsibility to a visualizer.
+     *
+     * @param viz the visualizer to visualize this store
      */
     void visualize(CFGVisualizer<?, S, ?> viz);
 }

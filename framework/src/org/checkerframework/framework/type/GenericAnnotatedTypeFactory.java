@@ -1181,6 +1181,9 @@ public abstract class GenericAnnotatedTypeFactory<
         return res;
     }
 
+    /**
+     * The CFGVisualizer to be used by all CFAbstractAnalysis instances.
+     */
     public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
         return cfgVisualizer;
     }

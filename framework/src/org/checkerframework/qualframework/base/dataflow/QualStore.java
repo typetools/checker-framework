@@ -49,8 +49,8 @@ public class QualStore<Q> implements Store<QualStore<Q>> {
         // In the future, the QualifiedTypeFactory should call this method
         // and something like the following might work:
         // CFGVisualizer<?, ?, ?> adaptViz = (CFGVisualizer<?, ?, ?>) viz;
-	    // this.adapter.visualize((CFGVisualizer <?, CFStore, ?>) adaptViz);
+        // this.adapter.visualize((CFGVisualizer <?, CFStore, ?>) adaptViz);
         // however, the mismatch between the QualStore<Q> and the
         // CFStore might require some further refactorings.
-	}
+    }
 }
