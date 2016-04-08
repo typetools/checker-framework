@@ -516,7 +516,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
     protected void shutdownHook() {
         super.shutdownHook();
 
-        CFGVisualizer viz = getTypeFactory().getCFGVisualizer();
+        CFGVisualizer<?, ?, ?> viz = getTypeFactory().getCFGVisualizer();
         if (viz != null) {
             viz.shutdown();
         }

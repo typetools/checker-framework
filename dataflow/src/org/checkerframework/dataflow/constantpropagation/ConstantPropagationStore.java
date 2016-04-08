@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -153,13 +154,8 @@ public class ConstantPropagationStore implements
     }
 
     @Override
-    public boolean hasDOToutput() {
-        return false;
-    }
-
-    @Override
-    public String toDOToutput() {
-        return "";
-    }
+	public void visualize(CFGVisualizer<?, ConstantPropagationStore, ?> viz) {
+		// Do nothing since ConstantPropagationStore doesn't support visualize
+	}
 
 }
