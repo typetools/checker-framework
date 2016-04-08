@@ -1,9 +1,9 @@
 package org.checkerframework.framework.util.defaults;
 
 import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.framework.qual.DefaultQualifiers;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.CheckerMain;
+import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -50,7 +51,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-
 import com.sun.tools.javac.code.Type.WildcardType;
 
 /**
@@ -168,6 +168,27 @@ public class QualifierDefaults {
         this.upstreamCheckerNames = atypeFactory.getContext().getChecker().getUpstreamCheckerNames();
         this.useUncheckedCodeDefaultsBytecode = atypeFactory.getContext().getChecker().useUncheckedCodeDefault("bytecode");
         this.useUncheckedCodeDefaultsSource = atypeFactory.getContext().getChecker().useUncheckedCodeDefault("source");
+    }
+
+    @Override
+    public String toString() {
+        // displays the checked and unchecked code defaults
+        StringBuilder sb = new StringBuilder();
+        sb.append("Checked code defaults: ");
+        sb.append(System.lineSeparator());
+        sb.append(PluginUtil.join(System.lineSeparator(), checkedCodeDefaults));
+        sb.append(System.lineSeparator());
+        sb.append("Unchecked code defaults: ");
+        sb.append(System.lineSeparator());
+        sb.append(PluginUtil.join(System.lineSeparator(), uncheckedCodeDefaults));
+        sb.append(System.lineSeparator());
+        sb.append("useUncheckedCodeDefaultsSource: ");
+        sb.append(useUncheckedCodeDefaultsSource);
+        sb.append(System.lineSeparator());
+        sb.append("useUncheckedCodeDefaultsBytecode: ");
+        sb.append(useUncheckedCodeDefaultsBytecode);
+        sb.append(System.lineSeparator());
+        return sb.toString();
     }
 
     /**
@@ -437,10 +458,10 @@ public class QualifierDefaults {
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
         if (elt != null) {
-            boolean useFlow = (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>)
-                           && (((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory).getUseFlow());
+            boolean defaultTypeVarLocals = (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>)
+                           && (((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory).getShouldDefaultTypeVarLocals());
 
-            applyToTypeVar = useFlow
+            applyToTypeVar = defaultTypeVarLocals
                           && elt.getKind() == ElementKind.LOCAL_VARIABLE
                           && type.getKind() == TypeKind.TYPEVAR
                           && atypeFactory.type(tree).getKind() == TypeKind.TYPEVAR;
@@ -1023,7 +1044,7 @@ public class QualifierDefaults {
         }
 
         if (type instanceof AnnotatedWildcardType) {
-            return getWilcardBoundType((AnnotatedWildcardType) type, typeFactory);
+            return getWildcardBoundType((AnnotatedWildcardType) type, typeFactory);
         }
 
         ErrorReporter.errorAbort("Unexpected type kind: type=" + type);
@@ -1083,7 +1104,7 @@ public class QualifierDefaults {
      * @return the BoundType of annotatedWildcard.  If it is unbounded, use the type parameter to
      * which its an argument
      */
-    public static BoundType getWilcardBoundType(final AnnotatedWildcardType annotatedWildcard,
+    public static BoundType getWildcardBoundType(final AnnotatedWildcardType annotatedWildcard,
                                                 final AnnotatedTypeFactory typeFactory) {
 
         final WildcardType wildcard = (WildcardType) annotatedWildcard.getUnderlyingType();

@@ -110,6 +110,7 @@
         <property name="checker.tutorial"    value="${checker}/../tutorial"                  />
         <property name="checker.release"     value="${checker}/../release"                   />
         <property name="checkerWebPage"      value="${checker.manual}/checker-framework-webpage.html" />
+        <property name="checkerQuickStartPage" value="${checker.manual}/checker-framework-quick-start.html" />
         <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
         <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
         <property name="checker.release.poms" value="${maven.plugin}/release/"               />
@@ -147,6 +148,13 @@
         <update file="${checkerWebPage}"
                 start="${afu.date.0}" end="${afu.date.1}"
                 with="${afu.release.date}"/>
+
+        <replaceregexp file="${checkerQuickStartPage}" byline="true"
+                       match="checker-framework-${release.version.regexp}{0,1}" replace="checker-framework-${release.ver}"/>
+
+        <update file="${checkerQuickStartPage}"
+                start="${checkers.zip.ver.0}" end="${checkers.zip.ver.1}"
+                with="checker-framework-${release.ver}.zip"/>
 
         <replaceregexp file="${checker.manual}/introduction.tex" byline="true"
                        match="1.8.0-jsr308-\S*" replace="1.8.0-jsr308-${release.ver}"/>
@@ -386,18 +394,15 @@
         <!-- All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
              At the moment we only have these for the checker artifact so for now we can create dummies with
              READMEs in them and pass those to Central.  This is the recommended way of handling this
-             situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
+             situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
+
+             The checker artifact source/javadoc jars contain all the resources needed for checker-qual and
+             checker-compat-qual, so those jars are re-used for these other artifacts. -->
 
         <fail unless="maven.plugin.dir" message="maven.plugin.dir property is not set!"  />
         <fail unless="dest.dir"         message="dest.dir property is not set!" />
 
         <property name="maven.release.dir" value="${maven.plugin.dir}/release"/>
-
-        <jar destfile="${dest.dir}/checker-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-qual"/>
-        <jar destfile="${dest.dir}/checker-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-qual"/>
-
-        <jar destfile="${dest.dir}/checker-compat-qual-source.jar"  basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
-        <jar destfile="${dest.dir}/checker-compat-qual-javadoc.jar" basedir="${maven.release.dir}" includes="README-checker-compat-qual"/>
 
         <jar destfile="${dest.dir}/compiler-source.jar"  basedir="${maven.release.dir}" includes="README-compiler"/>
         <jar destfile="${dest.dir}/compiler-javadoc.jar" basedir="${maven.release.dir}" includes="README-compiler"/>
@@ -425,9 +430,9 @@
         <copy todir="${dest.dir}" file="${langtools.doc}/Makefile-jsr308-install" />
         <copy todir="${dest.dir}" file="${langtools.doc}/changelog-jsr308.txt"    />
 
-        <symlink overwrite="true" link="index.html" resource="${dest.dir}/jsr308-webpage.html"/>
+        <symlink overwrite="true" link="${web.root}/index.html" resource="current/jsr308-webpage.html"/>
         <symlink overwrite="true"
-                 link="favicon-jsr308.png" resource="${web.root}/current/favicon-jsr308.png"/>
+                 link="${web.root}/favicon-jsr308.png" resource="current/favicon-jsr308.png"/>
 
     </target>
 
@@ -484,9 +489,7 @@
             </fileset>
         </copy>
 
-        <symlink overwrite="true" link="index.html" resource="${dest.dir}/${checker.webpage}" />
-        <symlink overwrite="true"
-                 link="current/favicon-jsr308.png" resource="${web.root}/favicon-jsr308.png"/>
+        <symlink overwrite="true" link="${dest.dir}/index.html" resource="${checker.webpage}" />
 
     </target>
 
@@ -508,6 +511,16 @@
         <update file="${dest.dir}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${version}"/>
+    </target>
+
+    <!-- Run from parent directory as: ant -e -file release/release.xml pylint -->
+    <target name="pylint" description="Run pylint on Python code">
+        <apply executable="pylint">
+            <arg value="--output-format=parseable"/>
+            <arg value="--rcfile=release/.pylintrc"/>
+            <srcfile/>
+            <fileset dir="." includes="release/*.py"/>
+        </apply>
     </target>
 
 </project>

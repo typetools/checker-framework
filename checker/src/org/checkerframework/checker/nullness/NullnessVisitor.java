@@ -195,26 +195,19 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
                 return;
             }
         }
-
-        if (TreeUtils.isFieldAccess(varTree)) {
-            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
-            // special case writing to NonNull field for free/unc receivers
-            AnnotatedTypeMirror annos = atypeFactory.getDeclaredAndDefaultedAnnotatedType(varTree);
-            // receiverType is null for static field accesses
-            AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType((ExpressionTree) varTree);
-            if (receiverType != null
-                    && (atypeFactory.isFree(receiverType) || atypeFactory.isUnclassified(receiverType))) {
-                if (annos.hasEffectiveAnnotation(NONNULL)
-                        && !valueType.hasEffectiveAnnotation(NONNULL)) {
-                    checker.report(Result.failure(ASSIGNMENT_TYPE_INCOMPATIBLE,
-                            valueType.toString(),
-                            annos.toString()), varTree);
-                }
-            }
-        }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
+    @Override
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType, ExpressionTree valueExp,
+                                         /*@CompilerMessageKey*/ String errorKey) {
+        // Use the valueExp as the context because data flow will have a value for that tree.
+        // It might not have a value for the var tree.  This is sound because
+        // if data flow has determined @PolyNull is @Nullable at the RHS, then
+        // it is also @Nullable for the LHS.
+        atypeFactory.replacePolyQualifier(varType, valueExp);
+        super.commonAssignmentCheck(varType, valueExp, errorKey);
+    }
     /** Case 1: Check for null dereferencing */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {

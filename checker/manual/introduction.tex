@@ -141,7 +141,7 @@ code stays completely backward-compatible:  your code compiles with any
 Java compiler, it runs on any JVM, and your coworkers don't have to use the
 enhanced type system if they don't want to.  You can check only part of
 your program.  Type inference tools exist to help you annotate your
-code.
+code; see \chapterpageref{type-inference-to-annotate}.
 
 
 A type system designer uses the Checker Framework to define type qualifiers
@@ -211,7 +211,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.11.zip}
+  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.13.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -242,6 +242,9 @@ We recommend that you work through the
 Framework tutorial}, which walks you through how to use the Checker
 Framework in Eclipse or on
 the command line.
+There is also a
+\ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness Checker
+tutorial} by David B\"urgin.
 
 Section~\ref{example-use} walks you through a simple example.  More detailed
 instructions for using a checker appear in Chapter~\ref{using-a-checker}.
@@ -253,7 +256,10 @@ instructions for using a checker appear in Chapter~\ref{using-a-checker}.
 This section gives a very simple example of running the Checker Framework.
 There is also a \ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
 that gives more extensive instructions for using the Checker Framework in
-Eclipse or on the command line.
+Eclipse or on the command line,
+and a
+\ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness Checker
+tutorial} by David B\"urgin.
 
 % To run a checker on a source file, just compile as usual, but pass the
 % \<-processor> flag to the compiler.
@@ -437,7 +443,7 @@ Additional topics that apply to all checkers are covered later in the manual:
 Finally, there is a
 \ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
 that walks you through using the Checker Framework in Eclipse or on the
-command line.
+command line, and a separate <a href="https://github.com/glts/safer-spring-petclinic/wiki">Nullness Checker tutorial</a>.
 
 % The annotations have to be on your classpath even when you are not using
 % the -processor, because of the existence of the import statement for
@@ -449,10 +455,16 @@ command line.
 The syntax of type annotations in Java is specified by
 the Java Language Specification (Java SE 8 edition).
 % \href{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}.
-Java 5 permitted annotations on declarations.  Java 8 also permits annotations
-anywhere that you would write a type, including generics and casts.  You
-can also write annotations to indicate type qualifiers for array levels and
-receivers.  Here are a few examples:
+
+Java 5 defines declaration annotations such as \<@Deprecated>, which apply
+to a class, method, or field, but do not apply to the method's return type
+or the field's type.  They are typically written on their own line in the
+source code.
+
+Java 8 defines type annotations, which you write immediately before any
+use of a type, including in generics and casts.  Because array levels are
+types and receivers have types, you can also write type annotations on
+them.  Here are a few examples of type annotations:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -469,12 +481,16 @@ receivers.  Here are a few examples:
 \end{smaller}
 %END LATEX
 
-You can also write the annotations within comments, as in
+You only need to write annotations on method signatures and fields.
+Annotations within method bodies are inferred for you; for more details,
+see  Section~\ref{type-refinement}.
+
+You may write the annotations within comments, as in
 \code{List</*@NonNull*/ String>}.  The Checker Framework compiler, which is
 distributed with the Checker Framework, will still process
 the annotations.
-However, your code will remain compilable by people who are not using the
-Checker Framework compiler.  For more details, see
+However, your code will remain compilable by people who are not yet using
+Java 8.  For more details, see
 Section~\ref{annotations-in-comments}.
 
 
@@ -920,9 +936,12 @@ code contains documentation; you will find that you spend most of your time
 understanding the code, and very little time actually writing annotations
 or running the checker.
 
-Start by annotating just part of your program.  Be systematic, such as
+Start by annotating just part of your program.  Be systematic; we recommend
 annotating an entire class at a time (not just some of the methods)
-so that you don't lose track of your work.
+so that you don't lose track of your work or redo work.  For example,
+working class-by-class avoids confusion about whether an unannotated type
+means you determined that the default is desirable, or it means you didn't
+yet examine that type.
 You may find it helpful to start annotating the leaves of the call tree ---
 that is,
 start with methods/classes/packages that have few dependencies on other

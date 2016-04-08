@@ -481,7 +481,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         if (a == null) {
             ErrorReporter.errorAbort("MultiGraphQualifierHierarchy found an unqualified type.  Please ensure that " +
                     "your implicit rules cover all cases and/or " +
-                    "use a @DefaulQualifierInHierarchy annotation.");
+                    "use a @DefaultQualifierInHierarchy annotation.");
         } else {
             // System.out.println("MultiGraphQH: " + this);
             ErrorReporter.errorAbort("MultiGraphQualifierHierarchy found the unrecognized qualifier: " + a +

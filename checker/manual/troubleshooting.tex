@@ -240,7 +240,8 @@ correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
 
-If you are building from source, you might need to rebuild the Annotation
+If you are building from source  (Section~\ref{build-source}),
+you might need to rebuild the Annotation
 File Utilities before recompiling or using the Checker Framework.
 
 
@@ -262,16 +263,19 @@ FileNotFoundException and prints out the directory name with ``\<+>''
 replaced by blanks.
 
 \item
-If you get an error
+If you get an error like the following
 
 \begin{Verbatim}
 error: scoping construct for static nested type cannot be annotated
+error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 \noindent
 \begin{sloppypar}
 then you have probably written something like \<@Nullable java.util.List>.
-The correct syntax is \<java.util.@Nullable List>.  But, it's usually
+The correct Java syntax to write an annotation on a fully-qualified type
+name is to put the annotation on the simple name part, as in
+\<java.util.@Nullable List>.  But, it's usually
 better to add \<import java.util.List> to your source file, so that you can
 just write \<@Nullable List>.  Likewise, you must write \<Outer.@Nullable
 StaticNestedClass> rather than \<@Nullable Outer.StaticNestedClass>.
@@ -513,6 +517,29 @@ Add this .jar file to your build path.
 
 
 \end{itemize}
+
+
+\subsection{Unexpected compilation output when running javac without a
+  pluggable type-checker\label{common-problems-running-javac}}
+
+On rare occasions, javac may issue an error when compiling against the
+Checker Framework's annotated JDK that you do not get when using the
+regular JDK\@.  (Recall that the Checker Framework compiler uses the
+annotated JDK\@.)  This may occur even when you are \emph{not} running any
+annotation processor.  The error is:
+
+\begin{Verbatim}
+  unchecked method invocation: method myMethod in class C is applied to given types
+\end{Verbatim}
+
+The reason for this is that there are some wildcards in the annotated JDK
+that have been given an explicit upper bound --- they have been changed
+from, for example, \code{List<?>} to \code{List<? extends Object>}.  The
+JDK treats these two types as identical in almost all respects.  However,
+they have a different representation in bytecode.  More importantly,
+\code{List<?>} is reifiable but \code{List<? extends Object>} is not; this
+means that the compiler permits uses of the former in some locations where
+it issues a warning for the latter.  You can suppress the warning.
 
 
 \subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
@@ -821,6 +848,7 @@ an IDE such as Eclipse.
 
 \end{enumerate}
 
+
 \subsection{Build the Checker Framework Manual (this document)\label{building-manual}}
 
 \begin{enumerate}
@@ -834,6 +862,17 @@ instructions.
 \item
 Run \code{make} in the \code{checker/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
+
+
+\subsection{Enable Travis continuous integration builds\label{building-travis}}
+
+If you have forked any of the projects rather than just creating a clone,
+then we recommend that you enable Travis-CI continuous integration builds,
+so that you learn quickly of any errors that creep into your fork.
+
+Run the
+\ahref{https://docs.travis-ci.com/user/getting-started/#To-get-started-with-Travis-CI\%3A}{Travis-CI getting started directions},
+though note that the \<.travis.yml> files already exist.
 
 
 \section{Publications\label{publications}\label{learning-more}}

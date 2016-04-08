@@ -1,9 +1,10 @@
+<!DOCTYPE html>
 <html>
   <head>
     <title>Checker Framework Development Process</title>
   </head>
   <div>
-    <h2 align="center">Checker Framework Development Process</h2>
+    <h2>Checker Framework Development Process</h2>
     <p>This document describes the process and timeline for a Checker Framework development milestone.
     The important deadlines are described as well as what happens when a deadline is missed.
     A checklist is also provided of things a release person must do. If you are a release person,
@@ -18,7 +19,7 @@
     <h3 id="checklist">Checklist of steps a release person must follow</h3>
 
     <ol>
-       <li>First day of the development milestone:</li>
+       <li>First day of the development milestone:
          <ul>
            <li>If you have not done so before, follow the steps in the <a href="README-maintainers.html#pre_release_checklist">Pre-release Checklist</a>
            in the Release Process document. These steps are important not just for the work performed on release day but
@@ -32,17 +33,20 @@
              to keep track of the cadence of our releases (e.g. having a June 1st and a June 30th release makes
              it harder to tell that the June 30th release is meant for distribution in the month of July).</li>
          </ul>
-       <li>One week before Feature Freeze:</li>
+       </li>
+       <li>One week before Feature Freeze:
          <ul>
           <li>Remind bug owners of their bugs outstanding.</li>
          </ul>
-       <li>Two business days before Feature Freeze:</li>
+       </li>
+       <li>Two business days before Feature Freeze:
          <ul>
           <li>E-mail checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev reminding
           users of the upcoming Feature Freeze and the requirements for this deadline, including
           the requirement for changelogs to be complete.</li>
          </ul>
-       <li>The work morning after Feature Freeze:</li>
+       </li>
+       <li>The work morning after Feature Freeze:
          <ul>
            <li>Ensure that all the <a href="README-maintainers.html#continuous-integration">continuous integration jobs</a> are passing.</li>
            <li>Ensure that
@@ -53,13 +57,15 @@
            <li>E-mail checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev reminding
            users of the upcoming Code Freeze and the requirements for this deadline.</li>
          </ul>
-       <li>The work morning after Code Freeze:</li>
+       </li>
+       <li>The work morning after Code Freeze:
          <ul>
            <li>Ensure that all the <a
            href="README-maintainers.html#continuous-integration">continuous
            integration jobs</a> are passing.</li>
            <li>If the above items are taken care of, <a href="README-maintainers.html">perform the release</a>.</li>
          </ul>
+       </li>
 
     </ol>
 
@@ -77,17 +83,19 @@
     </ul>
 
     <h3 id="phases">Milestone Phases</h3>
-    <table border="1" width="864" cellspacing="2" cellpadding="2">
+    <!-- I'm not sure how to get the exact effect achieved by this HTML 4 code: -->
+    <!--    <table border="1" width="864" cellspacing="2" cellpadding="2"> -->
+    <table style="border:1px solid black;width:864px;border-collapse:separate;border-spacing:2px;paddng:2px;">
       <tbody>
         <tr>
           <td>
-            <p><mark style="background-color: #6d9de9">Development</p>
+            <p style="background-color: #6d9de9">Development</p>
           </td>
           <td>
-            <p><mark style="background-color: #92c27d">Bug fixing</p>
+            <p style="background-color: #92c27d">Bug fixing</p>
           </td>
           <td>
-            <p><mark style="background-color: #d0e0e3">Release</p>
+            <p style="background-color: #d0e0e3">Release</p>
           </td>
         </tr>
         <tr>
@@ -103,20 +111,20 @@
         </tr>
       </tbody>
     </table>
-    <table border="0" width="864" cellspacing="0" cellpadding="0">
+    <table style="width:864px;">
       <tbody>
         <tr>
           <td>
             <p>Deadlines:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
           </td>
           <td>
-            <p><font color="blue">Feature freeze</font></p>
+            <p style="color:blue">Feature freeze</p>
           </td>
           <td>
-            <p><font color="#6aa74f">Code freeze</font></p>
+            <p style="color:#6aa74f">Code freeze</p>
           </td>
-          <td align="right">
-            <p><font color="#999999">Release</font></p>
+          <td style="float:right;">
+            <p style="color:#999999">Release</p>
           </td>
         </tr>
       </tbody>
@@ -124,26 +132,26 @@
   </div>
   <div>
     <p>Example timeline:</p>
-    <img src="example-release-schedule.png">
+    <img src="example-release-schedule.png" alt="Example release schedule" />
     <h3>Description of the phases and deadlines</h3>
-    <p><mark style="background-color: #6d9de9">Development</p>
+    <p style="background-color: #6d9de9">Development</p>
     <p>During the development phase, arbitrarily large or complex changes may be pushed.</p>
-    <p><font color="blue">Feature freeze</font></p>
+    <p style="background-color:blue">Feature freeze</p>
     <p>By the <em>feature freeze </em>deadline, all new feature code, associated tests, and documentation
     must be pushed. If a feature is not complete by this time, then it should be delayed until the next
     release. By this time, all users should update the relevant project&rsquo;s changelog to include
     features and bug fixes they have made during this development cycle (not including bug fixes made
     in the day that follows).</p>
-    <p><mark style="background-color: #92c27d">Bug fixing</p>
+    <p style="background-color: #92c27d">Bug fixing</p>
     <p>During this phase bugs are fixed, including minor bugs that may have been discovered
     (by the new tests or otherwise) in the feature implementation or documentation. You are allowed
     to fix any bug that you want, add new tests and documentation, etc., during this time. But no
     new features may be implemented. Example bugs that would be fixed during this phase are bugs
     revealed by Jenkins that were not revealed by the test suites that were run before pushing a feature.</p>
-    <p><font color="#6aa74f">Code freeze</font></p>
+    <p style="color:#6aa74f">Code freeze</p>
     <p>By <em>code freeze</em>, the code is assumed to be in a shippable state. Pushes to the
     repository are no longer allowed.</p>
-    <p><mark style="background-color: #d0e0e3">Release</p>
+    <p style="background-color: #d0e0e3">Release</p>
     <p>The person responsible for making the release runs the release scripts and other manual tasks
     for the release (note that any pushes during this phase force the automated tests to restart and
     are likely to delay the release).</p>

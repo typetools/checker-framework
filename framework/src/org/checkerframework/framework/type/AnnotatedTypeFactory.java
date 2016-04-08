@@ -205,7 +205,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Initially null, then assigned in postInit().  Caching is enabled as
     // soon as this is non-null, so it should be first set to its final
     // value, not initialized to an empty map that is incrementally filled.
-    private Map<Element, AnnotatedTypeMirror> indexTypes;
+    private Map<Element, AnnotatedTypeMirror> typesFromStubFiles;
 
     /**
      * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
@@ -214,7 +214,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * verbose element name, as returned by ElementUtils.getVerboseName.
      */
     // Not final, because it is assigned in postInit().
-    private Map<String, Set<AnnotationMirror>> indexDeclAnnos;
+    private Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles;
 
     /**
      * A cache used to store elements whose declaration annotations
@@ -281,9 +281,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * So setting this to false is not equivalent to setting shouldReadCache to false. */
     public boolean shouldCache;
 
-    /** Should the cached result be used, or should it be freshly computed? */
-    public boolean shouldReadCache;
-
     /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
     private final static int DEFAULT_CACHE_SIZE = 300;
 
@@ -334,14 +331,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.cacheDeclAnnos = new HashMap<Element, Set<AnnotationMirror>>();
 
-        int cacheSize = getCacheSize();
-        this.treeCache = CollectionUtils.createLRUCache(cacheSize);
-        this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
-        this.elementCache = CollectionUtils.createLRUCache(cacheSize);
-        this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
-        this.shouldReadCache = !checker.hasOption("atfDoNotReadCache");
         this.shouldCache = !checker.hasOption("atfDoNotCache");
-
+        if (shouldCache) {
+            int cacheSize = getCacheSize();
+            this.treeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.elementCache = CollectionUtils.createLRUCache(cacheSize);
+            this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
+        } else {
+            this.treeCache = null;
+            this.fromTreeCache = null;
+            this.elementCache = null;
+            this.elementToTreeCache = null;
+        }
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
     }
@@ -349,7 +351,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Actions that logically belong in the constructor, but need to run
      * after the subclass constructor has completed.  In particular,
-     * buildIndexTypes may try to do type resolution with this
+     * parseStubFiles() may try to do type resolution with this
      * AnnotatedTypeFactory.
      */
     protected void postInit() {
@@ -378,7 +380,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         initilizeReflectionResolution();
 
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
-            this.buildIndexTypes();
+            this.parseStubFiles();
         }
     }
 
@@ -539,7 +541,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected TypeHierarchy createTypeHierarchy() {
         return new DefaultTypeHierarchy(checker, getQualifierHierarchy(),
-                                        checker.hasOption("ignoreRawTypeArguments"),
+                                        checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                                         checker.hasOption("invariantArrays"));
     }
 
@@ -888,7 +890,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
             return null; // dead code
         }
-        if (treeCache.containsKey(tree) && shouldReadCache) {
+        if (shouldCache && treeCache.containsKey(tree)) {
             return treeCache.get(tree).deepCopy();
         }
 
@@ -973,17 +975,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of the element
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
-        if (elementCache.containsKey(elt) && shouldReadCache) {
+        if (shouldCache && elementCache.containsKey(elt)) {
             return elementCache.get(elt).deepCopy();
         }
         if (elt.getKind() == ElementKind.PACKAGE)
             return toAnnotatedType(elt.asType(), false);
         AnnotatedTypeMirror type;
+
+        // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
+        // so get explicit annotations from the tree. (This bug has been fixed in Java 9.)
         Tree decl = declarationFromElement(elt);
 
-        if (decl == null && indexTypes != null && indexTypes.containsKey(elt)) {
-            type = indexTypes.get(elt).deepCopy();
-        } else if (decl == null && (indexTypes == null || !indexTypes.containsKey(elt))) {
+        if (decl == null && typesFromStubFiles != null && typesFromStubFiles.containsKey(elt)) {
+            type = typesFromStubFiles.get(elt).deepCopy();
+        } else if (decl == null && (typesFromStubFiles == null || !typesFromStubFiles.containsKey(elt))) {
             type = toAnnotatedType(elt.asType(), ElementUtils.isTypeDeclaration(elt));
             ElementAnnotationApplier.apply(type, elt, this);
 
@@ -1005,10 +1010,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = null; // dead code
         }
 
-        // Caching is disabled if indexTypes == null, because calls to this
+        // Caching is disabled if typesFromStubFiles == null, because calls to this
         // method before the stub files are fully read can return incorrect
         // results.
-        if (shouldCache && indexTypes != null)
+        if (shouldCache && typesFromStubFiles != null)
             elementCache.put(elt, type.deepCopy());
         return type;
     }
@@ -1018,7 +1023,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * that are not already annotated with @FromStubFile
      */
     private void addFromByteCode(Element elt) {
-        if (indexDeclAnnos == null) { // || trees.getTree(elt) != null) {
+        if (declAnnosFromStubFiles == null) { // || trees.getTree(elt) != null) {
             // Parsing stub files, don't add @FromByteCode
             return;
         }
@@ -1027,11 +1032,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 elt.getKind() == ElementKind.METHOD || elt.getKind() == ElementKind.FIELD) {
             // Only add @FromByteCode to methods, constructors, and fields
             if (ElementUtils.isElementFromByteCode(elt)) {
-                Set<AnnotationMirror> annos = indexDeclAnnos.get(ElementUtils
+                Set<AnnotationMirror> annos = declAnnosFromStubFiles.get(ElementUtils
                         .getVerboseName(elt));
                 if (annos == null) {
                     annos = AnnotationUtils.createAnnotationSet();
-                    indexDeclAnnos.put(ElementUtils.getVerboseName(elt), annos);
+                    declAnnosFromStubFiles.put(ElementUtils.getVerboseName(elt), annos);
                 }
                 if (!AnnotationUtils.containsSameIgnoringValues(annos, fromStubFile)) {
                     annos.add(fromByteCode);
@@ -1064,7 +1069,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.fromMember: not a method or variable declaration: " + tree);
             return null; // dead code
         }
-        if (fromTreeCache.containsKey(tree) && shouldReadCache) {
+        if (shouldCache && fromTreeCache.containsKey(tree)) {
             return fromTreeCache.get(tree).deepCopy();
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
@@ -1081,7 +1086,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of the expression
      */
     public AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
-        if (fromTreeCache.containsKey(tree) && shouldReadCache)
+        if (shouldCache && fromTreeCache.containsKey(tree))
             return fromTreeCache.get(tree).deepCopy();
 
         AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
@@ -1101,7 +1106,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotated type of the type in the AST
      */
     public AnnotatedTypeMirror fromTypeTree(Tree tree) {
-        if (fromTreeCache.containsKey(tree) && shouldReadCache) {
+        if (shouldCache && fromTreeCache.containsKey(tree)) {
             return fromTreeCache.get(tree).deepCopy();
         }
 
@@ -1110,32 +1115,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // treat Raw as generic!
         // TODO: This doesn't handle recursive type parameter
         // e.g. class Pair<Y extends List<Y>> { ... }
+        // Type argument inference for raw types can be improved. See Issue 635.
+        // https://github.com/typetools/checker-framework/issues/635
         if (result.getKind() == TypeKind.DECLARED) {
-            AnnotatedDeclaredType dt = (AnnotatedDeclaredType)result;
+            AnnotatedDeclaredType dt = (AnnotatedDeclaredType) result;
             if (dt.wasRaw()) {
-                List<AnnotatedTypeMirror> typeArgs;
-                Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
-                if (ctx != null) {
-                    if (ctx.second.getKind() == TypeKind.DECLARED &&
-                            types.isSameType(types.erasure(ctx.second.actualType), types.erasure(dt.actualType))) {
-                        typeArgs = ((AnnotatedDeclaredType) ctx.second).getTypeArguments();
-                    } else {
-                        // TODO: we want a way to go from the raw type to an instantiation of the raw type
-                        // that is compatible with the context.
-                        typeArgs = null;
-                    }
-                } else {
-                    // TODO: the context is null, use uninstantiated wildcards instead.
-                    typeArgs = new ArrayList<AnnotatedTypeMirror>();
-                    AnnotatedDeclaredType declaration = fromElement((TypeElement)dt.getUnderlyingType().asElement());
-                    for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
-                        AnnotatedWildcardType wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam);
-                        typeArgs.add(wct);
-                    }
+                List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
+                AnnotatedDeclaredType declaration = fromElement((TypeElement) dt.getUnderlyingType().asElement());
+                for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
+                    AnnotatedWildcardType wct = getUninferredWildcardType((AnnotatedTypeVariable) typeParam);
+                    typeArgs.add(wct);
                 }
                 dt.setTypeArguments(typeArgs);
             }
         }
+
         annotateInheritedFromClass(result);
         if (shouldCache)
             fromTreeCache.put(tree, result.deepCopy());
@@ -1249,7 +1243,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>
      *
      * An example of an adaptation follows.  Suppose, I have a declaration:
-     * class MyClass&lt;E extends Listlt;E&gt;&gt;
+     * class MyClass&lt;E extends List&lt;E&gt;&gt;
      * And an instantiation:
      * new MyClass&lt;@NonNull String&gt;()
      *
@@ -2176,7 +2170,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // if root is null, we cannot find any declaration
         if (root == null)
             return null;
-        if (elementToTreeCache.containsKey(elt) && shouldReadCache) {
+        if (shouldCache && elementToTreeCache.containsKey(elt)) {
             return elementToTreeCache.get(elt);
         }
 
@@ -2429,69 +2423,85 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
-    /** Sets indexTypes and indexDeclAnnos by side effect, just before returning. */
-    protected void buildIndexTypes() {
-        if (this.indexTypes != null || this.indexDeclAnnos != null) {
-            ErrorReporter.errorAbort("AnnotatedTypeFactory.buildIndexTypes called more than once");
+    /**
+     * Parses the stub files in the following order: <br>
+     * 1. jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is not supplied <br>
+     * 2. flow.astub in the same directory as BaseTypeChecker <br>
+     * 3. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker<br>
+     * 4. Stub files provide via stubs system property <br>
+     * 5. Stub files provide via stubs environment variable <br>
+     * 6. Stub files provide via stubs compiler option
+     * <p>
+     *  If a type is annotated with a qualifier from the same hierarchy in more than one stub file, the qualifier
+     *  in the last stub file is applied.
+     * <p>
+     * Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
+     */
+    protected void parseStubFiles() {
+        if (this.typesFromStubFiles != null || this.declAnnosFromStubFiles != null) {
+            ErrorReporter.errorAbort("AnnotatedTypeFactory.parseStubFiles called more than once");
         }
 
-        Map<Element, AnnotatedTypeMirror> indexTypes
+        Map<Element, AnnotatedTypeMirror> typesFromStubFiles
             = new HashMap<Element, AnnotatedTypeMirror>();
-        Map<String, Set<AnnotationMirror>> indexDeclAnnos
+        Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles
             = new HashMap<String, Set<AnnotationMirror>>();
 
+        // 1. jdk.astub
         if (!checker.hasOption("ignorejdkastub")) {
             InputStream in = null;
-            if (checker != null)
-                in = checker.getClass().getResourceAsStream("jdk.astub");
+            in = checker.getClass().getResourceAsStream("jdk.astub");
             if (in != null) {
                 StubParser stubParser = new StubParser("jdk.astub", in, this, processingEnv);
-                stubParser.parse(indexTypes, indexDeclAnnos);
+                stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
             }
         }
 
+        // 2. flow.astub
         // stub file for type-system independent annotations
         InputStream input = BaseTypeChecker.class.getResourceAsStream("flow.astub");
         if (input != null) {
             StubParser stubParser = new StubParser("flow.astub", input, this, processingEnv);
-            stubParser.parse(indexTypes, indexDeclAnnos);
+            stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
         }
 
-        String allstubFiles = "";
-        String stubFiles;
+        // Stub files specified via stubs compiler option, stubs system property,
+        // stubs env. variable, or @Stubfiles
+        List<String> allStubFiles = new ArrayList<>();
 
-        stubFiles = checker.getOption("stubs");
-        if (stubFiles != null)
-            allstubFiles += File.pathSeparator + stubFiles;
-
-        stubFiles = System.getProperty("stubs");
-        if (stubFiles != null)
-            allstubFiles += File.pathSeparator + stubFiles;
-
-        stubFiles = System.getenv("stubs");
-        if (stubFiles != null)
-            allstubFiles += File.pathSeparator + stubFiles;
-
-        {
-            StubFiles sfanno = checker.getClass().getAnnotation(StubFiles.class);
-            if (sfanno != null) {
-                String[] sfarr = sfanno.value();
-                stubFiles = "";
-                for (String sf : sfarr) {
-                    stubFiles += File.pathSeparator + sf;
-                }
-                allstubFiles += stubFiles;
-            }
+        // 3. Stub files listed in @Stubfiles annotation on the checker
+        StubFiles stubFilesAnnotation = checker.getClass().getAnnotation(StubFiles.class);
+        if (stubFilesAnnotation != null) {
+            Collections.addAll(allStubFiles, stubFilesAnnotation.value());
         }
 
-        if (allstubFiles.isEmpty()) {
-            this.indexTypes = indexTypes;
-            this.indexDeclAnnos = indexDeclAnnos;
+        // 4. Stub files provide via stubs system property
+        String stubsProperty = System.getProperty("stubs");
+        if (stubsProperty != null) {
+            Collections.addAll(allStubFiles, stubsProperty.split(File.pathSeparator));
+        }
+
+        // 5. Stub files provide via stubs environment variable
+        String stubEnvVar = System.getenv("stubs");
+        if (stubEnvVar != null) {
+            Collections.addAll(allStubFiles, stubEnvVar.split(File.pathSeparator));
+        }
+
+        // 6. Stub files provide via stubs option
+        String stubsOption = checker.getOption("stubs");
+        if (stubsOption != null) {
+            Collections.addAll(allStubFiles, stubsOption.split(File.pathSeparator));
+        }
+
+        if (allStubFiles.isEmpty()) {
+            this.typesFromStubFiles = typesFromStubFiles;
+            this.declAnnosFromStubFiles = declAnnosFromStubFiles;
             return;
         }
 
-        String[] stubArray = allstubFiles.split(File.pathSeparator);
-        for (String stubPath : stubArray) {
+        // Parse stub files specified via stubs compiler option, stubs system property,
+        // stubs env. variable, or @Stubfiles
+        for (String stubPath : allStubFiles) {
             if (stubPath == null || stubPath.isEmpty()) {
                 continue;
             }
@@ -2503,11 +2513,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.size() == 0) {
                 InputStream in = null;
-                if (checker != null)
-                    in = checker.getClass().getResourceAsStream(stubPath);
+                in = checker.getClass().getResourceAsStream(stubPath);
                 if (in != null) {
                     StubParser stubParser = new StubParser(stubPath, in, this, processingEnv);
-                    stubParser.parse(indexTypes, indexDeclAnnos);
+                    stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
                     // We could handle the stubPath -> continue.
                     continue;
                 }
@@ -2525,13 +2534,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     continue;
                 }
                 StubParser stubParser = new StubParser(resource.getDescription(), stubStream, this, processingEnv);
-                stubParser.parse(indexTypes, indexDeclAnnos);
+                stubParser.parse(typesFromStubFiles, declAnnosFromStubFiles);
             }
         }
 
-        this.indexTypes = indexTypes;
-        this.indexDeclAnnos = indexDeclAnnos;
-        return;
+        this.typesFromStubFiles = typesFromStubFiles;
+        this.declAnnosFromStubFiles = declAnnosFromStubFiles;
     }
 
     /**
@@ -2628,15 +2636,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Set<AnnotationMirror> results = AnnotationUtils.createAnnotationSet();
         // Retrieving the annotations from the element.
         results.addAll(elt.getAnnotationMirrors());
-        // If indexDeclAnnos == null, return the annotations in the element.
-        if (indexDeclAnnos != null) {
-            // Adding @FromByteCode annotation to indexDeclAnnos entry with key
+        // If declAnnosFromStubFiles == null, return the annotations in the element.
+        if (declAnnosFromStubFiles != null) {
+            // Adding @FromByteCode annotation to declAnnosFromStubFiles entry with key
             // elt, if elt is from bytecode.
             addFromByteCode(elt);
 
             // Retrieving annotations from stub files.
             String eltName = ElementUtils.getVerboseName(elt);
-            Set<AnnotationMirror> stubAnnos = indexDeclAnnos.get(eltName);
+            Set<AnnotationMirror> stubAnnos = declAnnosFromStubFiles.get(eltName);
             if (stubAnnos != null) {
                 results.addAll(stubAnnos);
             }
@@ -2949,6 +2957,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         Tree parentTree = TreePath.getPath(this.root, lambdaTree).getParentPath().getLeaf();
         switch (parentTree.getKind()) {
+            case PARENTHESIZED:
+                return getFunctionalInterfaceType(parentTree, javacTypes);
+
             case TYPE_CAST:
                 TypeCastTree cast = (TypeCastTree) parentTree;
                 assertFunctionalInterface(javacTypes, (Type) trees.getTypeMirror(getPath(cast.getType())), parentTree, lambdaTree);
@@ -2973,7 +2984,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 NewClassTree newClass = (NewClassTree) parentTree;
                 int indexOfLambda = newClass.getArguments().indexOf(lambdaTree);
                 Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> con = this.constructorFromUse(newClass);
-                AnnotatedTypeMirror constructorParam = AnnotatedTypes.unwrapVarargs(con.first.getParameterTypes(), indexOfLambda);
+                AnnotatedTypeMirror constructorParam = AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(con.first, indexOfLambda);
                 assertFunctionalInterface(javacTypes, (Type) constructorParam.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) constructorParam;
 
@@ -2981,7 +2992,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 MethodInvocationTree method = (MethodInvocationTree) parentTree;
                 int index = method.getArguments().indexOf(lambdaTree);
                 Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> exe = this.methodFromUse(method);
-                AnnotatedTypeMirror param = AnnotatedTypes.unwrapVarargs(exe.first.getParameterTypes(), index);
+                AnnotatedTypeMirror param = AnnotatedTypes.getAnnotatedTypeMirrorOfParameter(exe.first, index);
                 assertFunctionalInterface(javacTypes, (Type)param.getUnderlyingType(), parentTree, lambdaTree);
                 return (AnnotatedDeclaredType) param;
 

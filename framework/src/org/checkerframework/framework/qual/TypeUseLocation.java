@@ -58,8 +58,8 @@ public enum TypeUseLocation {
     /**
      * Apply default annotations to unannotated lower bounds
      * for type variables and wildcards both explicit ones in
-     * <tt>extends</tt> clauses, and implicit upper bounds
-     * when no explicit <tt>extends</tt> or <tt>super</tt>
+     * <code>extends</code> clauses, and implicit upper bounds
+     * when no explicit <code>extends</code> or <code>super</code>
      * clause is present
      */
     LOWER_BOUND,
@@ -80,8 +80,8 @@ public enum TypeUseLocation {
 
     /**
      * Apply default annotations to unannotated upper bounds:  both
-     * explicit ones in <tt>extends</tt> clauses, and implicit upper bounds
-     * when no explicit <tt>extends</tt> or <tt>super</tt> clause is
+     * explicit ones in <code>extends</code> clauses, and implicit upper bounds
+     * when no explicit <code>extends</code> or <code>super</code> clause is
      * present.
      *
      * Especially useful for parametrized classes that provide a lot of
