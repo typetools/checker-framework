@@ -61,11 +61,20 @@ The Javadoc documentation of the framework and the checkers is in the
 distribution and is also available online at
 \myurl{http://types.cs.washington.edu/checker-framework/current/api/}.
 
+\textbf{Tips:}  Before you start coding, first write the user manual (see
+Section~\ref{documenting-a checker}), which explains the type system, what
+it guarantees, how to use it, etc.  This will help you flesh out your goals
+and the concepts, which are easier to understand and change in text than in
+an imprementation.  Once you have settled on type rules, you may also want
+to choose some case studies and play computer to ensure that they give
+the expected results.  During manual checking, ask yourself what reasoning
+you applied, what information you needed, and whether your written-down
+rules were sufficient.
+
 If you write a new checker and wish to advertise it to the world, let us
 know so we can mention it in the Checker Framework Manual, link to
 it from the webpages, or include it in the Checker Framework distribution.
-For examples, see Chapters~\ref{typestate-checker}
-and~\ref{third-party-checkers}.
+For examples, see \chapterpageref{third-party-checkers}.
 
 
 \section{Relationship of the Checker Framework to other tools\label{tool-relationships}}
