@@ -11,6 +11,7 @@ import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FromByteCode;
@@ -174,6 +175,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Represent the type relations. */
     protected TypeHierarchy typeHierarchy;
 
+    /** performs whole program inference */
+    private WholeProgramInference wholeProgramInference;
+
     /**
      * This formatter is used for converting AnnotatedTypeMirrors to Strings.
      * This formatter will be passed to all AnnotatedTypeMirrors created by this
@@ -276,6 +280,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected AnnotationClassLoader loader;
 
     /**
+     * Indicates that the whole-program inference is on.
+     */
+    private final boolean inferSignatures;
+
+    /**
+     * Array of options that cannot be passed together with "inferSignatures".
+     */
+    private final String[] invalidWholeProgramInferenceOptions =
+            new String[]{"useDefaultsForUncheckedCode"};
+
+    /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
      * instance and syntax tree root. (These parameters are required so that
      * the factory may conduct the appropriate annotation-gathering analyses on
@@ -311,7 +326,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
+
+        inferSignatures = checker.hasOption("inferSignatures");
+        if (inferSignatures) {
+            checkInvalidOptionsInferSignatures();
+            wholeProgramInference = new WholeProgramInferenceScenes(
+                    "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName()));
+        }
     }
+
+
+    /**
+     * This method is called only when -AinferSignatures is passed as an option.
+     * It checks if another option that should not occur simultaneously with
+     * the whole-program inference is also passed as argument, and
+     * aborts the process if that is the case. For example, the whole-program
+     * inference process was not designed to work with safe defaults.
+     */
+    private void checkInvalidOptionsInferSignatures() {
+        for (String option : invalidWholeProgramInferenceOptions) {
+            if (checker.hasOption(option)) {
+                ErrorReporter.errorAbort("The option -AinferSignatures cannot be" +
+                        " used together with the option -A" + option + ".");
+            }
+        }
+     }
 
     /**
      * Actions that logically belong in the constructor, but need to run
@@ -347,6 +386,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
             this.buildIndexTypes();
         }
+    }
+
+    /**
+     * Returns the WholeProgramInference instance.
+     */
+    public WholeProgramInference getWholeProgramInference() {
+        return wholeProgramInference;
     }
 
     protected void initilizeReflectionResolution() {
@@ -911,13 +957,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
-        if (checker.getOptions().containsKey("inferSignatures")) {
+        if (checker.getOptions().containsKey("inferSignatures") && wholeProgramInference != null) {
             // Write scenes into .jaif files. In order to perform the write
             // operation only once for each .jaif file, the best location to
             // do so is here.
-            WholeProgramInferenceScenes.writeScenesToJaif();
+            wholeProgramInference.saveResults();
         }
-
     }
 
     /**

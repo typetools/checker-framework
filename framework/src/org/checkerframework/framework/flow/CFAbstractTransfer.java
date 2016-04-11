@@ -123,31 +123,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
         this.inferSignatures = analysis.checker.hasOption("inferSignatures");
-        if (inferSignatures) {
-            checkInvalidOptionsInferSignatures(
-                    new String[]{"useDefaultsForUncheckedCode"});
-            WholeProgramInferenceScenes.setIsNullnessChecker(
-                    "NullnessTransfer".equals(this.getClass().getSimpleName()));
-        }
     }
-        
-    /**
-     * This method is called only when -AinferSignatures is passed as an option.
-     * It checks if another option that should not occur simultaneously with
-     * the whole-program inference is also passed as argument, and
-     * aborts the process if that is the case. For example, the whole-program
-     * inference process was not designed to work with safe defaults.
-     * @param invalidOptions an array containing all options that cannot occur
-     * simultaneously with -AinferSignatures.
-     */
-    private void checkInvalidOptionsInferSignatures(String[] invalidOptions) {
-        for (String option : invalidOptions) {
-            if (analysis.checker.hasOption(option)) {
-                ErrorReporter.errorAbort("The option -AinferSignatures cannot be" +
-                        " used together with the option -A" + option + ".");
-            }
-        }
-     }
 
     /**
      * This method is called before returning the abstract value {@code value}
@@ -754,18 +730,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         V rhsValue = in.getValueOfSubNode(rhs);
         Receiver expr = FlowExpressions.internalReprOf(
                 analysis.getTypeFactory(), lhs);
-        if (inferSignatures &&
-                !analysis.checker.shouldSuppressWarnings(n.getTree(), null) &&
-                !analysis.checker.shouldSuppressWarnings(
-                        InternalUtils.symbol(lhs.getTree()), null)) {
+        if (performWholePrograminference(
+                n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
             if (expr instanceof FieldAccess) {
                 // Updates inferred field type
-                WholeProgramInferenceScenes.updateInferredFieldType(
+                analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
                         lhs, rhs, analysis.getContainingClass(n.getTree()),
                         analysis.getTypeFactory());
             } else if (lhs instanceof LocalVariableNode &&
                     ((LocalVariableNode)lhs).getElement().getKind() == ElementKind.PARAMETER) {
-                WholeProgramInferenceScenes.updateInferredParameterType(
+                analysis.atypeFactory.getWholeProgramInference().updateInferredParameterType(
                         (LocalVariableNode)lhs, rhs, analysis.getContainingClass(n.getTree()),
                         analysis.getContainingMethod(n.getTree()), analysis.getTypeFactory());
             }
@@ -785,7 +759,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
                     classTree);
             // Updates the inferred return type of the method
-            WholeProgramInferenceScenes.updateInferredMethodReturnType(
+            analysis.atypeFactory.getWholeProgramInference().updateInferredMethodReturnType(
                     n, classSymbol,
                     analysis.getContainingMethod(n.getTree()),
                     analysis.getTypeFactory());
@@ -810,12 +784,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         Receiver expr = FlowExpressions.internalReprOf(
                 analysis.getTypeFactory(), lhs);
-        if (inferSignatures && expr instanceof FieldAccess &&
-                !analysis.checker.shouldSuppressWarnings(n.getTree(), null) &&
-                !analysis.checker.shouldSuppressWarnings(
-                        InternalUtils.symbol(lhs.getTree()), null)) {
+        if (expr instanceof FieldAccess &&
+                performWholePrograminference(
+                        n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
             // Updates inferred field type
-            WholeProgramInferenceScenes.updateInferredFieldType(
+            analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
                     lhs, rhs, analysis.getContainingClass(n.getTree()),
                     analysis.getTypeFactory());
         }
@@ -865,9 +838,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
-        if (inferSignatures &&
-                !analysis.checker.shouldSuppressWarnings(n.getTree(), null) &&
-                !analysis.checker.shouldSuppressWarnings(method, null)) {
+        if (performWholePrograminference(n.getTree(), method)) {
             // Finds the receiver's type
             Tree receiverTree = n.getTarget().getReceiver().getTree();
             if (receiverTree == null) {
@@ -878,12 +849,22 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 // happens when the method is called from a static context.
             }
             // Updates the inferred parameter type of the invoked method
-            WholeProgramInferenceScenes.updateInferredMethodParametersTypes(
+            analysis.atypeFactory.getWholeProgramInference().updateInferredMethodParametersTypes(
                     n, receiverTree, method, analysis.getTypeFactory());
         }
 
         return new ConditionalTransferResult<>(finishValue(resValue, thenStore,
                 elseStore), thenStore, elseStore);
+    }
+
+    /**
+     * Returns true if whole-program inference should be performed.
+     */
+    private boolean performWholePrograminference(Tree tree,
+            Element elt) {
+        return inferSignatures &&
+                !analysis.checker.shouldSuppressWarnings(tree, null) &&
+                !analysis.checker.shouldSuppressWarnings(elt, null);
     }
 
     /**
@@ -1164,4 +1145,5 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return analysis.getTypeFactoryOfSubchecker(checkerClass);
     }
+
 }

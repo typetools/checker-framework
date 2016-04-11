@@ -6,6 +6,7 @@ import org.checkerframework.checker.nullness.qual.*;
 */
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
@@ -193,6 +194,8 @@ import com.sun.tools.javac.util.Log;
 
     // Whether to use .jaif files whole-program inference
     "inferSignatures",
+    // Path to .jaif files (optional)
+    "inferSignaturesJaifPath",
 
     ///
     /// Stub libraries
