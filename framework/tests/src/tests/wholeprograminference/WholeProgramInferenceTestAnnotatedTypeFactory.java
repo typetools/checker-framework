@@ -30,6 +30,7 @@ import tests.wholeprograminference.qual.Sibling2;
 import tests.wholeprograminference.qual.SiblingWithFields;
 import tests.wholeprograminference.qual.WholeProgramInferenceBottom;
 import tests.wholeprograminference.qual.Top;
+
 /**
  * AnnotatedTypeFactory to test whole-program inference using .jaif
  * files.
@@ -131,7 +132,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                 return false;
             }
 
-            if ((AnnotationUtils.areSameByClass(sub, ImplicitAnno.class))
+            if (AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
                 && (AnnotationUtils.areSameByClass(sup, Sibling1.class)
                     || AnnotationUtils.areSameByClass(sup, Sibling2.class)
                     || AnnotationUtils.areSameByClass(sup, SiblingWithFields.class))) {
