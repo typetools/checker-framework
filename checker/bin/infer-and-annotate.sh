@@ -58,11 +58,12 @@ debug=
 # that every argument starts with a hyphen. It means one cannot pass arguments
 # such as -processorpath and -source, which are followed by a value.
 read_input() {
+    # First two arguments are processor and cp.
     processor=$1
     cp=$2:$AFU_JAR
-    # Ignores first two arguments (processor and cp).
     shift
     shift
+
     extra_args=""
     java_files=""
     jaif_files=""
@@ -150,8 +151,8 @@ clean() {
 
 # Main
 if [ "$#" -lt 3 ]; then
-    echo "Aborting infer-and-annotate.sh: Expected at least 3 arguments. Check the script's documentation."
-    echo "Received the following arguments: $@."
+    echo "Aborting infer-and-annotate.sh: Expected at least 3 arguments, received $#."
+    echo "Received the following arguments: $@"
     exit 1
 fi
 
