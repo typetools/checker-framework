@@ -657,7 +657,9 @@ public class StubParser {
             if (declType.getTypeArgs() != null
                     && !declType.getTypeArgs().isEmpty()
                     && !adeclType.getTypeArguments().isEmpty()) {
-                assert declType.getTypeArgs().size() == adeclType.getTypeArguments().size();
+                assert declType.getTypeArgs().size() == adeclType.getTypeArguments().size() : String.format(
+                        "Mismatch in type argument size between %s (%d) and %s (%d)", declType,
+                        declType.getTypeArgs().size(), adeclType, adeclType.getTypeArguments().size());
                 for (int i = 0; i < declType.getTypeArgs().size(); ++i) {
                     annotate(adeclType.getTypeArguments().get(i),
                             declType.getTypeArgs().get(i));
