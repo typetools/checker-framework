@@ -1,3 +1,5 @@
+package javax.annotation.concurrent;
+
 import java.lang.annotation.*;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
