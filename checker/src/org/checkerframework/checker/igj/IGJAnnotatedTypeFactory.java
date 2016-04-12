@@ -763,8 +763,14 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (typeSuper.getKind() != TypeKind.TYPEVAR)
                 return visit(typeSuper, actualType);
 
-            assert typeSuper.getKind() == actualType.getKind() : actualType;
-            assert type.getKind() == actualType.getKind() : actualType;
+            assert typeSuper.getKind() == actualType.getKind()
+                : String.format("Kinds differ: typeSuper (kind=%s) %s ; actualType (kind=%s) %s",
+                                typeSuper, typeSuper.getKind(),
+                                actualType, actualType.getKind());
+            assert type.getKind() == actualType.getKind()
+                : String.format("Kinds differ: type (kind=%s) %s ; actualType (kind=%s) %s",
+                                type, type.getKind(),
+                                actualType, actualType.getKind());
             AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
 
             typeVar.add(type.getUnderlyingType());
