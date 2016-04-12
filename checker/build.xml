@@ -496,6 +496,7 @@
                dir="${basedir}"
                printsummary="false"
                haltonfailure="${halt.on.test.failure}"
+               haltonerror="${halt.on.test.failure}"
                maxmemory="2500M"
                >
             <formatter type="xml"/>
@@ -506,6 +507,7 @@
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                haltonfailure="${halt.on.test.failure}"
+               haltonerror="${halt.on.test.failure}"
                maxmemory="2500M"
                showoutput="true"
                printsummary="withOutAndErr"
@@ -579,6 +581,7 @@
         <junit fork="${run.tests.should.fork}"
                dir="${basedir}"
                printsummary="false"
+               haltonerror="${halt.on.test.failure}"
                haltonfailure="${halt.on.test.failure}">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="-ea"/>
