@@ -16,6 +16,6 @@ public class TaintingClassicTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"tainting", "all-systems"};
+        return new String[]{"tainting_classic", "all-systems"};
     }
 }
