@@ -58,7 +58,6 @@ public class TestConfigurationBuilder {
                 .addOption("-Xlint:unchecked")
                 .addOption("-XDrawDiagnostics")  //use short javac diagnostics
                 .addOption("-AprintErrorStack")
-                .addOption("-J-Xmx2500m")
                 .addSourceFiles(testSourceFiles);
 
         if (outputClassDirectory != null) {
