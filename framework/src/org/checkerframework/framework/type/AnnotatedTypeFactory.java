@@ -953,7 +953,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * annotations explicitly written on the element and annotations from stub files
      *
      * @param elt the element
-     * @return AnnotatedTypeMirror of the element with explicity and stub file annotations
+     * @return AnnotatedTypeMirror of the element with explicitly-written and stub file annotations
      */
     public AnnotatedTypeMirror fromElement(Element elt) {
         if (shouldCache && elementCache.containsKey(elt)) {
@@ -1042,7 +1042,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Creates an AnnotatedTypeMirror for a variable or method declaration tree.
      * The AnnotatedTypeMirror contains annotations explicitly written on the tree
-     * and annotations inherited from the class declaration of types
+     * and annotations inherited from the class declarations
      * {@link #annotateInheritedFromClass(AnnotatedTypeMirror)}.
      * <p>
      * If a VariableTree is a parameter to a lambda, this method also adds
@@ -1099,8 +1099,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates an AnnotatedTypeMirror for the tree.  The AnnotatedTypeMirror contains
-     * annotations explicitly written on the tree and annotations inherited from the class
-     * declaration of types {@link #annotateInheritedFromClass(AnnotatedTypeMirror)}.
+     * annotations explicitly written on the tree and annotations inherited from  class
+     * declarations {@link #annotateInheritedFromClass(AnnotatedTypeMirror)}.
      * It also adds type arguments to raw types that include annotations from the element
      * declaration of the type {@link #fromElement(Element)}.
      * <p>
@@ -1810,7 +1810,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * As an implementation detail, this method depends on
      * {@link AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)},
-     * and customization based on receiver type should be in accordance to its
+     * and customization based on receiver type should be in accordance with its
      * specification.
      *
      * The return type is a pair of the type of the invoked constructor and
@@ -1883,7 +1883,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates an AnnotatedDeclaredType for a NewClassTree.  Adds explicit annotations
-     * and annotations inherited from the class declaration {@link #annotateInheritedFromClass(AnnotatedTypeMirror)}.
+     * and annotations inherited from class declarations {@link #annotateInheritedFromClass(AnnotatedTypeMirror)}.
      * <p>
      * If the NewClassTree has type arguments, then any explicit (or inherited from class) annotations
      * on those type arguments are included. If the NewClassTree has a diamond operator, then
@@ -1897,7 +1897,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (!TreeUtils.isDiamondTree(newClassTree)) {
             // If newClassTree does not create anonymous class,
             // newClassTree.getIdentifier includes the explicit annotations in this location:
-            // new @HERE Class()
+            //   new @HERE Class()
             type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
         } else {
             type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(newClassTree), false);
@@ -1905,10 +1905,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (newClassTree.getClassBody() != null) {
             // If newClassTree creates an anonymous class, then annotations in this location:
-            // new @HERE Class() {}
+            //   new @HERE Class() {}
             // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
             List<? extends AnnotationTree> annos = newClassTree.getClassBody().getModifiers().getAnnotations();
-            // replace the annotation because a different annotation could have been
+            // Replace the annotation because a different annotation could have been
             // inherited from the class declaration.
             type.replaceAnnotations(InternalUtils.annotationsFromTypeAnnotationTrees(annos));
         }

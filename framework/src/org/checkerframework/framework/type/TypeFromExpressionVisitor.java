@@ -273,11 +273,13 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
 
     /**
-     * Creates an AnnotatedDeclaredType for the NewClassTree and adds: <br>
-     *  - either explicit annotations from the new class expression ({@code new @HERE MyClass()} ), <br>
-     *  - or explicit annotations from the declaration of the class ({@code @HERE class MyClass {}} ), <br>
-     *  - or explicit annotations from the declaration of the constructor ({@code @HERE public MyClass() {}} ), <br>
-     *  - or no annotations.
+     * Creates an AnnotatedDeclaredType for the NewClassTree and adds one of:
+     * <ul>
+     *   <li>explicit annotations from the new class expression ({@code new @HERE MyClass()} ), or</li>
+     *   <li>explicit annotations from the declaration of the class ({@code @HERE class MyClass {}} ), or</li>
+     *   <li>explicit annotations from the declaration of the constructor ({@code @HERE public MyClass() {}} ), or</li>
+     *   <li>no annotations.</li>
+     * </ul>
      *
      * @param node NewClassTree
      * @param f the type factory
