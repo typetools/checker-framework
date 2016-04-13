@@ -894,10 +894,10 @@
         </antcall>
     </target>
 
-    <target name="tainting-tests" depends="jar,build-tests"
+    <target name="tainting-qual-poly-tests" depends="jar,build-tests"
             description="Run tests for the Tainting Checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.TaintingTest"/>
+            <param name="param" value="tests.TaintingQualPolyTest"/>
         </antcall>
     </target>
 

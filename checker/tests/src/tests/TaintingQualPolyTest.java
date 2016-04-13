@@ -6,9 +6,9 @@ import org.checkerframework.checker.tainting.TaintingChecker;
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class TaintingTest extends CheckerFrameworkTest {
+public class TaintingQualPolyTest extends CheckerFrameworkTest {
 
-    public TaintingTest(File testFile) {
+    public TaintingQualPolyTest(File testFile) {
         super(testFile,
                 TaintingChecker.class,
                 "tainting_qual_poly",
