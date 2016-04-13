@@ -608,17 +608,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * In total, there are 5 ways to indicate annotations that are supported by a
      * checker:
-     * <p>
      *
-     * 1) Only support annotations located in a checker's {@literal qual} directory,
+     * <ol>
+     * <li>
+     * Only support annotations located in a checker's {@literal qual} directory,
      * and {@link PolyAll}:
      * <p>
      *
      * This is the default behavior. Simply place those annotations within the
      * {@literal qual} directory.
-     * <p>
+     * </li>
      *
-     * 2) Support annotations located in a checker's {@literal qual} directory, but
+     * <li>
+     * Support annotations located in a checker's {@literal qual} directory, but
      * without {@link PolyAll}:
      * <p>
      *
@@ -632,8 +634,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *      return getBundledTypeQualifiersWithoutPolyAll();
      *  } }
      * </pre>
+     * </li>
      *
-     * 3) Support annotations located in a checker's {@literal qual} directory,
+     * <li>
+     * Support annotations located in a checker's {@literal qual} directory,
      * {@link PolyAll}, and a list of other annotations:
      * <p>
      *
@@ -647,8 +651,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *      return getBundledTypeQualifiersWithPolyAll(Regex.class, PartialRegex.class, RegexBottom.class, UnknownRegex.class);
      *  } }
      * </pre>
+     * </li>
      *
-     * 4) Support annotations located in a checker's {@literal qual} directory and a
+     * <li>
+     * Support annotations located in a checker's {@literal qual} directory and a
      * list of other annotations, but without supporting {@link PolyAll}:
      * <p>
      *
@@ -662,8 +668,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *      return getBundledTypeQualifiersWithoutPolyAll(UnknownFormat.class, FormatBottom.class);
      *  } }
      * </pre>
+     * </li>
      *
-     * 5) Supporting only annotations that are explicitly listed:
+     * <li>
+     * Supporting only annotations that are explicitly listed:
      *
      * Override
      * {@link #createSupportedTypeQualifiers()} and return an immutable
@@ -683,7 +691,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} and
      * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} each
      * return an immutable set.
-     * <p>
+     * </li>
+     * </ol>
      *
      * @return the type qualifiers supported this processor, or an empty set if
      *         none
