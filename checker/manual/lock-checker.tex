@@ -884,6 +884,7 @@ them exactly as if you had written the corresponding annotation from the
 Lock Checker, as described in Figure~\ref{fig-lock-refactoring}.
 
 
+% These lists should be kept in sync with LockAnnotatedTypeFactory.java .
 \begin{figure}
 \begin{center}
 % The ~ around the text makes things look better in Hevea (and not terrible
@@ -897,10 +898,13 @@ Lock Checker, as described in Figure~\ref{fig-lock-refactoring}.
 \end{tabular}
 &
 $\Rightarrow$
+%HEVEA ~org.checkerframework.checker.lock.qual.GuardedBy (for fields) or \ldots Holding (for methods)~
+%BEGIN LATEX
 \begin{tabular}{l}
- ~org.checkerframework.checker.lock.qual.GuardedBy (Fields)~ \\
- ~org.checkerframework.checker.lock.qual.Holding (Methods)~
+ ~org.checkerframework.checker.lock.qual.GuardedBy (for fields), or~ \\
+ ~org.checkerframework.checker.lock.qual.Holding (for methods)~
 \end{tabular}
+%END LATEX
 \end{tabular}
 \end{center}
 %BEGIN LATEX
@@ -920,7 +924,7 @@ The Checker Framework interprets them according to the right
 side of Figure~\ref{fig-lock-refactoring}.
 
 
-\section{Relationship to annotations in \emph{Java Concurrency in Practice}\label{lock-jcip-annotations}}
+\subsection{Relationship to annotations in \emph{Java Concurrency in Practice}\label{lock-jcip-annotations}}
 
 The book \href{http://jcip.net/}{\emph{Java Concurrency in Practice}}~\cite{Goetz2006} defines a
 \href{http://jcip.net.s3-website-us-east-1.amazonaws.com/annotations/doc/net/jcip/annotations/GuardedBy.html}{\code{@GuardedBy}} annotation that is the inspiration for ours.  The book's
