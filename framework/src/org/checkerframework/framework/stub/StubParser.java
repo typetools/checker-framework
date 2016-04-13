@@ -226,8 +226,9 @@ public class StubParser {
 
         Map<String, AnnotationMirror> result = new HashMap<String, AnnotationMirror>();
 
-        if (cu.getImports() == null)
+        if (cu.getImports() == null) {
             return result;
+        }
 
         for (ImportDeclaration importDecl : cu.getImports()) {
             String imported = importDecl.getName().toString();
@@ -714,8 +715,9 @@ public class StubParser {
     }
 
     private void annotate(AnnotatedTypeMirror type, List<AnnotationExpr> annotations) {
-        if (annotations == null)
+        if (annotations == null) {
             return;
+        }
         for (AnnotationExpr annotation : annotations) {
             AnnotationMirror annoMirror = getAnnotation(annotation, supportedAnnotations);
             if (annoMirror != null) {
@@ -769,19 +771,26 @@ public class StubParser {
                 || typeDecl.getName().endsWith("$" + typeElt.getSimpleName().toString()))
             : String.format("%s  %s", typeElt.getSimpleName(), typeDecl.getName());
 
-        Map<Element, BodyDeclaration> result = new HashMap<Element, BodyDeclaration>();
+        Map<Element, BodyDeclaration> result = new HashMap<>();
 
         for (BodyDeclaration member : typeDecl.getMembers()) {
             if (member instanceof MethodDeclaration) {
                 Element elt = findElement(typeElt, (MethodDeclaration)member);
-                putNew(result, elt, member);
+                if (elt != null) {
+                    putNew(result, elt, member);
+                }
             } else if (member instanceof ConstructorDeclaration) {
                 Element elt = findElement(typeElt, (ConstructorDeclaration)member);
-                putNew(result, elt, member);
+                if (elt != null) {
+                    putNew(result, elt, member);
+                }
             } else if (member instanceof FieldDeclaration) {
                 FieldDeclaration fieldDecl = (FieldDeclaration)member;
                 for (VariableDeclarator var : fieldDecl.getVariables()) {
-                    putNew(result, findElement(typeElt, var), fieldDecl);
+                    Element varelt = findElement(typeElt, var);
+                    if (varelt != null) {
+                        putNew(result, varelt, fieldDecl);
+                    }
                 }
             } else if (member instanceof ClassOrInterfaceDeclaration) {
                 // TODO: handle nested classes
@@ -823,13 +832,13 @@ public class StubParser {
         return null;
     }
 
-    public ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
+    private ExecutableElement findElement(TypeElement typeElt, MethodDeclaration methodDecl) {
         final String wantedMethodName = methodDecl.getName();
         final int wantedMethodParams =
             (methodDecl.getParameters() == null) ? 0 :
                 methodDecl.getParameters().size();
         final String wantedMethodString = StubUtil.toString(methodDecl);
-        for (ExecutableElement method : ElementUtils.getAllMethodsIn(typeElt)) {
+        for (ExecutableElement method : ElementUtils.getAllMethodsIn(elements, typeElt)) {
             // do heuristics first
             if (wantedMethodParams == method.getParameters().size()
                 && wantedMethodName.contentEquals(method.getSimpleName())
@@ -846,7 +855,7 @@ public class StubParser {
         return null;
     }
 
-    public ExecutableElement findElement(TypeElement typeElt, ConstructorDeclaration methodDecl) {
+    private ExecutableElement findElement(TypeElement typeElt, ConstructorDeclaration methodDecl) {
         final int wantedMethodParams =
             (methodDecl.getParameters() == null) ? 0 :
                 methodDecl.getParameters().size();
@@ -868,13 +877,13 @@ public class StubParser {
         return null;
     }
 
-    public VariableElement findElement(TypeElement typeElt, VariableDeclarator variable) {
+    private VariableElement findElement(TypeElement typeElt, VariableDeclarator variable) {
         final String fieldName = variable.getId().getName();
         return findFieldElement(typeElt, fieldName);
     }
 
-    public VariableElement findFieldElement(TypeElement typeElt, String fieldName) {
-        for (VariableElement field : ElementUtils.getAllFieldsIn(typeElt)) {
+    private VariableElement findFieldElement(TypeElement typeElt, String fieldName) {
+        for (VariableElement field : ElementUtils.getAllFieldsIn(elements, typeElt)) {
             // field.getSimpleName() is a CharSequence, not a String
             if (fieldName.equals(field.getSimpleName().toString())) {
                 return field;
@@ -916,6 +925,7 @@ public class StubParser {
     /** Just like Map.put, but errs if the key is already in the map. */
     private static <K,V> void putNew(Map<K,V> m, K key, V value) {
         if (key == null) {
+            ErrorReporter.errorAbort("StubParser: key is null!");
             return;
         }
         if (m.containsKey(key) && !m.get(key).equals(value)) {
@@ -943,6 +953,7 @@ public class StubParser {
     /** Just like Map.put, but does not throw an error if the key with the same value is already in the map. */
     private static void putNew(Map<Element, AnnotatedTypeMirror> m, Element key, AnnotatedTypeMirror value) {
         if (key == null) {
+            ErrorReporter.errorAbort("StubParser: key is null!");
             return;
         }
         if (m.containsKey(key)) {
@@ -1024,7 +1035,7 @@ public class StubParser {
             }
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoMirror);
             List<MemberValuePair> pairs = nrmanno.getPairs();
-            if (pairs!=null) {
+            if (pairs != null) {
                 for (MemberValuePair mvp : pairs) {
                     String meth = mvp.getName();
                     Expression exp = mvp.getValue();
@@ -1074,13 +1085,13 @@ public class StubParser {
             ExecutableElement var = builder.findElement(name);
             TypeMirror expected = var.getReturnType();
             if (expected.getKind() == TypeKind.DECLARED) {
-                if (elem.getConstantValue()!=null) {
+                if (elem.getConstantValue() != null) {
                     builder.setValue(name, (String) elem.getConstantValue());
                 } else {
                     builder.setValue(name, elem);
                 }
             } else if (expected.getKind() == TypeKind.ARRAY) {
-                if (elem.getConstantValue()!=null) {
+                if (elem.getConstantValue() != null) {
                     String[] arr = { (String) elem.getConstantValue() };
                     builder.setValue(name, arr);
                 } else {
@@ -1147,7 +1158,7 @@ public class StubParser {
                         return;
                     }
                     String constval = (String) ((VariableElement)elemarr[i]).getConstantValue();
-                    if (constval!=null) {
+                    if (constval != null) {
                         elemarr[i] = constval;
                     }
                 } else if (anaiexpr instanceof IntegerLiteralExpr) {
