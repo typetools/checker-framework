@@ -44,9 +44,10 @@ import com.sun.tools.javac.code.Type.ClassType;
  * that manipulates .jaif files to perform whole-program inference.
  * <p>
  * Calling an update* method
- * ({@link #updateInferredFieldType},
- * {@link #updateInferredMethodParametersTypes}, or
- * {@link #updateInferredMethodReturnType})
+ * ({@link #updateInferredFieldType updateInferredFieldType},
+ * {@link #updateInferredMethodParametersTypes updateInferredMethodParametersTypes},
+ * {@link #updateInferredMethodParametersTypes updateInferredParameterType}, or
+ * {@link #updateInferredMethodReturnType updateInferredMethodReturnType})
  * replaces the currently-stored type for an element in a Scene, if any,
  * by the LUB of it and the update method's argument.
  * <p>
@@ -54,21 +55,30 @@ import com.sun.tools.javac.code.Type.ClassType;
  * explicit annotations:  an update* method ignores an
  * explicitly annotated field, method return, or method parameter when
  * passed as an argument.
- * More specifically, whole program inference ignores inferred types in a few scenarios.
+ * <p>
+ * In addition, whole program inference ignores inferred types in a few scenarios.
  * When discovering a use, if:
- *      1. The inferred type is a subtype of the upper bounds of the current
- *       type on the source code.
- *      2. The annotation annotates a null literal, except for the NullnessChecker.
+ * <ol>
+ *   <li>The inferred type is a subtype of the upper bounds of the current
+ *       type on the source code.</li>
+ *   <li>The annotation annotates a <code>null</code> literal, except when
+ *       doing inference for the NullnessChecker.  (The rationale for this
+ *       is that <code>null</code> is a frequently-used default value, and
+ *       it would be undesirable to compute any inferred type if
+ *       <code>null</code> were the only value passed as an argument.)</li>
+ * </ol>
  * When outputting a .jaif file, if:
- *      1. The @Target annotation does not permit the annotation to be
- *       written at this location.
- *      2. It has the @InvisibleQualifier meta-annotation.
- *      3. The resulting type would be defaulted or implicited -- that is, if
- *       omitting it has the same effect as writing it.
- *      4. Special case: The
+ * <ol>
+ *   <li>The @Target annotation does not permit the annotation to be
+ *       written at this location.</li>
+ *   <li>The inferred has the @InvisibleQualifier meta-annotation.</li>
+ *   <li>The resulting type would be defaulted or implicited &mdash; that is, if
+ *       omitting it has the same effect as writing it.</li>
+ *   <li>Special case: The
  *       {@link org.checkerframework.qualframework.base.TypeMirrorConverter.Key}
  *       won't be written into .jaif. (This will probably change once we support
- *       type-checkers that use a CheckerAdapter)
+ *       type-checkers that use a CheckerAdapter.)</li>
+ * </ol>
  *  @author pbsf
  */
 //  TODO: We could add an option to update the type of explicitly annotated
@@ -77,9 +87,9 @@ import com.sun.tools.javac.code.Type.ClassType;
 //  into source code, adds annotations on top of existing
 //  annotations. See https://github.com/typetools/annotation-tools/issues/105 .
 //  TODO: Ensure that annotations are inserted deterministically into .jaif
-//  files. This is important otherwise developers might achieve different
-//  results (order of annotations) when running the whole-program inference for
-//  the same set of files.
+//  files. This is important for debugging and comparison; otherwise running
+//  the whole-program inference on the same set of files can yield different
+//  results (order of annotations).
 public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     private final WholePrograminferenceScenesHelper helper;
