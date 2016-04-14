@@ -1306,14 +1306,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Return an AnnotatedNullType with {@code annosToAdd} added
-     * @param annosToAdd annotations to add to the AnnotatedNullType
-     * @return AnnotatedNullType with {@code annosToAdd} added
+     * Creates and returns an AnnotatedNullType qualified with {@code annotations}.
+     * @param annotations Set of AnnotationMirrors to qualify the returned type with
+     * @return AnnotatedNullType qualified with {@code annotations}
      */
-    public AnnotatedNullType getAnnotatedNullType(Set<? extends AnnotationMirror> annosToAdd) {
+    public AnnotatedNullType getAnnotatedNullType(Set<? extends AnnotationMirror> annotations) {
         final AnnotatedTypeMirror.AnnotatedNullType nullType = (AnnotatedNullType)
                 toAnnotatedType(processingEnv.getTypeUtils().getNullType(), false);
-        nullType.addAnnotations(annosToAdd);
+        nullType.addAnnotations(annotations);
         return nullType;
     }
 
