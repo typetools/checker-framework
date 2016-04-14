@@ -115,6 +115,7 @@ public class WholePrograminferenceScenesHelper {
             try {
                 AScene scene = scenes.get(jaifPath).clone();
                 removeIgnoredAnnosFromScene(scene);
+                new File(jaifPath).delete();
                 if (!scene.prune()) {
                     // Only write non-empty scenes into .jaif files.
                     IndexFileWriter.write(scene, new FileWriter(jaifPath));
