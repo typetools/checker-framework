@@ -328,7 +328,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
     @Override
     public Void visitMethod(MethodTree node, Void p) {
         if (TreeUtils.isConstructor(node)) {
-            Collection<? extends AnnotationMirror> returnTypeAnnotations = atypeFactory.getExplicitAnnotationsOnConstructorResult(node);
+            Collection<? extends AnnotationMirror> returnTypeAnnotations = AnnotationUtils.getExplicitAnnotationsOnConstructorResult(node);
             // check for invalid constructor return type
             for (Class<? extends Annotation> c : atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {
                 for (AnnotationMirror a : returnTypeAnnotations) {
