@@ -1039,12 +1039,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
 
     /**
-     * Returns an AnnotatedDeclaredType with explicit annotations on the class declaration.
+     * Returns an AnnotatedDeclaredType with explicit annotations from the
+     * ClassTree {@code tree}.
      *
      * @param tree the class declaration
      * @return AnnotatedDeclaredType with explicit annotations from {@code tree}
      */
-    private final AnnotatedDeclaredType fromClass(ClassTree tree) {
+    private AnnotatedDeclaredType fromClass(ClassTree tree) {
         return TypeFromTree.fromClassTree(this, tree);
     }
 
@@ -1082,18 +1083,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * The AnnotatedTypeMirror contains explicit annotations written with on the expression,
      * annotations inherited from class declarations, and for some expressions, annotations
      * from sub-expressions that could have been explicitly written, implicited, defaulted,
-     * refined, or otherwise computed.
-     *
+     * refined, or otherwise computed. (Expression whose type include annotations from sub-
+     * expressions are: ArrayAccessTree, ConditionalExpressionTree, IdentifierTree,
+     * MemberSelectTree, and MethodInvocationTree.)
+     * <p>
      * For example, the AnnotatedTypeMirror returned for an array access expression is the
      * fully annotated type of the array component of the array being accessed.
      *
      * @param tree an expression
-     * @return AnnotatedTypeMirror of the expressions either fully-annotated or partialy
+     * @return AnnotatedTypeMirror of the expressions either fully-annotated or partially
      * annotated depending on the kind of expression
      *
      * @see TypeFromExpressionVisitor
      */
-    private final AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
+    private AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
         if (shouldCache && fromTreeCache.containsKey(tree))
             return fromTreeCache.get(tree).deepCopy();
 
@@ -1670,7 +1673,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the receiver type of the expression tree, or null if it does not exist.
-     *
+     * <p>
      * The only trees that could potentially have a receiver are:
      * <ul>
      *  <li> Array Access
@@ -1809,19 +1812,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Determines the type of the invoked constructor based on the passed new
      * class tree.
-     *
+     * <p>
      * The returned method type has all type variables resolved, whether based
      * on receiver type, passed type parameters if any, and constructor invocation
      * parameter.
-     *
+     * <p>
      * Subclasses may override this method to customize inference of types
      * or qualifiers based on constructor invocation parameters.
-     *
+     * <p>
      * As an implementation detail, this method depends on
      * {@link AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)},
      * and customization based on receiver type should be in accordance with its
      * specification.
-     *
+     * <p>
      * The return type is a pair of the type of the invoked constructor and
      * the (inferred) type arguments.
      * Note that neither the explicitly passed nor the inferred type arguments
@@ -1829,7 +1832,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * See method
      * {@link org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List)}
      * for the checks of type argument well-formedness.
-     *
+     * <p>
      * Note that "this" and "super" constructor invocations are handled by
      * method {@link #methodFromUse}. This method only handles constructor invocations
      * in a "new" expression.
