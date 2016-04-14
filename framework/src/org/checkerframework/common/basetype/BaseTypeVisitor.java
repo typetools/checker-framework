@@ -2266,43 +2266,43 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that a method reference is allowed.
      * Using the OverrideChecker class.
      *
-     * @param overriderTree The tree for the method reference
+     * @param memberReferenceTree The tree for the method reference
      * @return true if the method reference is allowed
      */
-    protected boolean checkMethodReferenceAsOverride(MemberReferenceTree overriderTree, Void p) {
+    protected boolean checkMethodReferenceAsOverride(MemberReferenceTree memberReferenceTree, Void p) {
 
-        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = atypeFactory.getFnInterfaceFromTree(overriderTree);
+        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = atypeFactory.getFnInterfaceFromTree(memberReferenceTree);
         AnnotatedDeclaredType overriddenType = result.first;
-        AnnotatedExecutableType overridden = result.second;
+        AnnotatedExecutableType overriddenMethodType = result.second;
 
         // ========= Overriding Type =========
         // Get declared type from <expression>::method or <type use>::method
         // This doesn't get the correct type for a "MyOuter.super" based on the receiver of the enclosing method.
         // That is handled separately in method receiver check.
         // TODO: Class type argument inference
-        AnnotatedTypeMirror overridingType = atypeFactory.getAnnotatedType(overriderTree.getQualifierExpression());
+        AnnotatedTypeMirror overridingType = atypeFactory.getAnnotatedType(memberReferenceTree.getQualifierExpression());
 
         // ========= Overriding Executable =========
         // The ::method element
-        ExecutableElement overridingElement = (ExecutableElement)InternalUtils.symbol(overriderTree);
-        AnnotatedExecutableType overrider =
-                atypeFactory.methodFromUse(overriderTree, overridingElement, overridingType).first;
+        ExecutableElement overridingElement = (ExecutableElement)InternalUtils.symbol(memberReferenceTree);
+        AnnotatedExecutableType overridingMethodType =
+                atypeFactory.methodFromUse(memberReferenceTree, overridingElement, overridingType).first;
 
-        if (checkMethodReferenceInference(overriderTree, overrider, overridden, overridingType)) {
+        if (checkMethodReferenceInference(memberReferenceTree, overridingMethodType, overriddenMethodType, overridingType)) {
             // Type argument inference is required, skip check.
             // #checkMethodReferenceInference issued a warning.
             return true;
         }
 
-        // This needs to be done before overrider.getReturnType() and overridden.getReturnType()
-        if (overrider.getTypeVariables().isEmpty()
-                && !overridden.getTypeVariables().isEmpty()) {
-            overridden = overridden.getErased();
+        // This needs to be done before overridingMethodType.getReturnType() and overriddenMethodType.getReturnType()
+        if (overridingMethodType.getTypeVariables().isEmpty()
+                && !overriddenMethodType.getTypeVariables().isEmpty()) {
+            overriddenMethodType = overriddenMethodType.getErased();
         }
 
         // Use the functional interface's parameters to resolve poly quals.
         QualifierPolymorphism poly = new QualifierPolymorphism(atypeFactory.getProcessingEnv(), atypeFactory);
-        poly.annotate(overridden, overrider);
+        poly.annotate(overriddenMethodType, overridingMethodType);
 
         AnnotatedTypeMirror overridingReturnType;
         if (overridingElement.getKind() == ElementKind.CONSTRUCTOR) {
@@ -2310,17 +2310,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // Special casing for the return of array constructor
                 overridingReturnType = overridingType;
             } else {
-                overridingReturnType = atypeFactory.getResultingTypeOfConstructorMemberReference(overriderTree, overrider);
+                overridingReturnType = atypeFactory.getResultingTypeOfConstructorMemberReference(memberReferenceTree, overridingMethodType);
 
             }
         } else {
-            overridingReturnType = overrider.getReturnType();
+            overridingReturnType = overridingMethodType.getReturnType();
         }
 
         OverrideChecker overrideChecker = new OverrideChecker(
-                overriderTree,
-                overrider, overridingType, overridingReturnType,
-                overridden, overriddenType, overridden.getReturnType());
+                memberReferenceTree,
+                overridingMethodType, overridingType, overridingReturnType,
+                overriddenMethodType, overriddenType, overriddenMethodType.getReturnType());
         return overrideChecker.checkOverride();
     }
 
