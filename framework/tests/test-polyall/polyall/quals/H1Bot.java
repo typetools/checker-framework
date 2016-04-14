@@ -12,7 +12,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@SubtypeOf({H1S1.class, H1S2.class})
+@SubtypeOf({H1S1.class, H1S2.class, H1Invalid.class})
 @ImplicitFor(literals = LiteralKind.NULL)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
