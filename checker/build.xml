@@ -1205,6 +1205,9 @@
           <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
           </ant>
+          <ant dir="${framework.loc}/../tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
+              <target name="clean"/>
+          </ant>
     </target>
 
     <target name="demos.check">
