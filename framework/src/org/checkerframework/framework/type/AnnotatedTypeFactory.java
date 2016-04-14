@@ -27,6 +27,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -1302,6 +1303,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type,
             Set<AnnotationMirror> fromClass) {
         type.addMissingAnnotations(fromClass);
+    }
+
+    /**
+     * Creates and returns an AnnotatedNullType qualified with {@code annotations}.
+     * @param annotations Set of AnnotationMirrors to qualify the returned type with
+     * @return AnnotatedNullType qualified with {@code annotations}
+     */
+    public AnnotatedNullType getAnnotatedNullType(Set<? extends AnnotationMirror> annotations) {
+        final AnnotatedTypeMirror.AnnotatedNullType nullType = (AnnotatedNullType)
+                toAnnotatedType(processingEnv.getTypeUtils().getNullType(), false);
+        nullType.addAnnotations(annotations);
+        return nullType;
     }
 
     /**
