@@ -549,7 +549,7 @@ public abstract class GenericAnnotatedTypeFactory<
      */
     public AnnotatedTypeMirror getResultingTypeOfConstructorMemberReference(MemberReferenceTree memberReferenceTree,
                                                                             AnnotatedExecutableType constructorType) {
-        assert memberReferenceTree.getMode() != MemberReferenceTree.ReferenceMode.NEW;
+        assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
 
         // The return type for constructors should only have explicit annotations from the constructor
         // Recreate some of the logic from TypeFromTree.visitNewClass here.
