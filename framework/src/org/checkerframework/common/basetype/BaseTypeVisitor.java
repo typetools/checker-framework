@@ -44,7 +44,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ConstructorReturnUtil;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -2267,70 +2266,43 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that a method reference is allowed.
      * Using the OverrideChecker class.
      *
-     * @param overriderTree The tree for the method reference
+     * @param memberReferenceTree The tree for the method reference
      * @return true if the method reference is allowed
      */
-    protected boolean checkMethodReferenceAsOverride(MemberReferenceTree overriderTree, Void p) {
+    protected boolean checkMethodReferenceAsOverride(MemberReferenceTree memberReferenceTree, Void p) {
 
-        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = atypeFactory.getFnInterfaceFromTree(overriderTree);
+        Pair<AnnotatedDeclaredType, AnnotatedExecutableType> result = atypeFactory.getFnInterfaceFromTree(memberReferenceTree);
         AnnotatedDeclaredType overriddenType = result.first;
-        AnnotatedExecutableType overridden = result.second;
+        AnnotatedExecutableType overriddenMethodType = result.second;
 
         // ========= Overriding Type =========
         // Get declared type from <expression>::method or <type use>::method
         // This doesn't get the correct type for a "MyOuter.super" based on the receiver of the enclosing method.
         // That is handled separately in method receiver check.
         // TODO: Class type argument inference
-        AnnotatedTypeMirror overridingType = atypeFactory.getAnnotatedType(overriderTree.getQualifierExpression());
+        AnnotatedTypeMirror overridingType = atypeFactory.getAnnotatedType(memberReferenceTree.getQualifierExpression());
 
         // ========= Overriding Executable =========
         // The ::method element
-        ExecutableElement overridingElement = (ExecutableElement)InternalUtils.symbol(overriderTree);
+        ExecutableElement overridingElement = (ExecutableElement)InternalUtils.symbol(memberReferenceTree);
+        AnnotatedExecutableType overridingMethodType =
+                atypeFactory.methodFromUse(memberReferenceTree, overridingElement, overridingType).first;
 
-        // TODO: Method type argument inference
-        AnnotatedExecutableType overrider = atypeFactory.methodFromUse(
-                overriderTree, overridingElement, overridingType).first;
-
-        // TODO: Enable checks for method reference with inferred type arguments.
-        // For now, error on mismatch of class or method type arguments.
-        if (overridden.getTypeVariables().size() == 0) {
-            boolean requiresInference = false;
-            // The functional interface does not have any method type parameters
-            if (overrider.getTypeVariables().size() > 0
-                    && (overriderTree.getTypeArguments() == null
-                        || overriderTree.getTypeArguments().size() == 0)) {
-                // Method type args
-
-                requiresInference = true;
-            } else if (overridingType.getKind() == TypeKind.DECLARED
-                    && ((AnnotatedDeclaredType)overridingType).getTypeArguments().size() > 0) {
-                // Class type args
-
-                if (overriderTree.getQualifierExpression().getKind() != Tree.Kind.PARAMETERIZED_TYPE) {
-                    requiresInference = true;
-                } else if (((AnnotatedDeclaredType)overridingType).getTypeArguments().size() !=
-                        ((ParameterizedTypeTree) overriderTree.getQualifierExpression()).getTypeArguments().size()) {
-                    requiresInference = true;
-                }
-            }
-            if (requiresInference) {
-                if (!typeArgumentInferenceCheck) {
-                    checker.report(Result.warning("methodref.inference.unimplemented"), overriderTree);
-                    typeArgumentInferenceCheck = true;
-                }
-                return true;
-            }
+        if (checkMethodReferenceInference(memberReferenceTree, overridingMethodType, overriddenMethodType, overridingType)) {
+            // Type argument inference is required, skip check.
+            // #checkMethodReferenceInference issued a warning.
+            return true;
         }
 
-        // This needs to be done before overrider.getReturnType() and overridden.getReturnType()
-        if (overrider.getTypeVariables().isEmpty()
-                && !overridden.getTypeVariables().isEmpty()) {
-            overridden = overridden.getErased();
+        // This needs to be done before overridingMethodType.getReturnType() and overriddenMethodType.getReturnType()
+        if (overridingMethodType.getTypeVariables().isEmpty()
+                && !overriddenMethodType.getTypeVariables().isEmpty()) {
+            overriddenMethodType = overriddenMethodType.getErased();
         }
 
         // Use the functional interface's parameters to resolve poly quals.
         QualifierPolymorphism poly = new QualifierPolymorphism(atypeFactory.getProcessingEnv(), atypeFactory);
-        poly.annotate(overridden, overrider);
+        poly.annotate(overriddenMethodType, overridingMethodType);
 
         AnnotatedTypeMirror overridingReturnType;
         if (overridingElement.getKind() == ElementKind.CONSTRUCTOR) {
@@ -2338,29 +2310,58 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // Special casing for the return of array constructor
                 overridingReturnType = overridingType;
             } else {
-                // The return type for constructors should only have explicit annotations from the constructor
-                // Recreate some of the logic from TypeFromTree.visitNewClass here.
+                overridingReturnType = atypeFactory.getResultingTypeOfConstructorMemberReference(memberReferenceTree, overridingMethodType);
 
-                // The return type of the constructor will be the overriding type.
-                AnnotatedTypeMirror.AnnotatedDeclaredType constructorReturnType = (AnnotatedTypeMirror.AnnotatedDeclaredType)
-                        atypeFactory.fromTypeTree(overriderTree.getQualifierExpression());
-
-                // Keep only explicit annotations and those from @Poly
-                ConstructorReturnUtil.keepOnlyExplicitConstructorAnnotations(atypeFactory, constructorReturnType, overrider);
-
-                // Now add back defaulting.
-                atypeFactory.annotateImplicit(overriderTree.getQualifierExpression(), constructorReturnType);
-                overridingReturnType = constructorReturnType;
             }
         } else {
-            overridingReturnType = overrider.getReturnType();
+            overridingReturnType = overridingMethodType.getReturnType();
         }
 
         OverrideChecker overrideChecker = new OverrideChecker(
-                overriderTree,
-                overrider, overridingType, overridingReturnType,
-                overridden, overriddenType, overridden.getReturnType());
+                memberReferenceTree,
+                overridingMethodType, overridingType, overridingReturnType,
+                overriddenMethodType, overriddenType, overriddenMethodType.getReturnType());
         return overrideChecker.checkOverride();
+    }
+
+    /**
+     * Check if method reference type argument inference is required.  Issue an error if
+     * is is.
+     */
+    private boolean checkMethodReferenceInference(MemberReferenceTree memberReferenceTree, AnnotatedExecutableType memberReferenceType,
+                                                  AnnotatedExecutableType overridden, AnnotatedTypeMirror overridingType) {
+        // TODO: Method type argument inference
+        // TODO: Enable checks for method reference with inferred type arguments.
+        // For now, error on mismatch of class or method type arguments.
+        if (overridden.getTypeVariables().size() == 0) {
+            boolean requiresInference = false;
+            // The functional interface does not have any method type parameters
+            if (memberReferenceType.getTypeVariables().size() > 0
+                    && (memberReferenceTree.getTypeArguments() == null
+                        || memberReferenceTree.getTypeArguments().size() == 0)) {
+                // Method type args
+
+                requiresInference = true;
+            } else if (overridingType.getKind() == TypeKind.DECLARED
+                    && ((AnnotatedDeclaredType)overridingType).getTypeArguments().size() > 0) {
+                // Class type args
+
+                if (memberReferenceTree.getQualifierExpression().getKind() != Tree.Kind.PARAMETERIZED_TYPE) {
+                    requiresInference = true;
+                } else if (((AnnotatedDeclaredType)overridingType).getTypeArguments().size() !=
+                        ((ParameterizedTypeTree) memberReferenceTree.getQualifierExpression()).getTypeArguments().size()) {
+                    requiresInference = true;
+                }
+            }
+            if (requiresInference) {
+                if (!typeArgumentInferenceCheck) {
+                    checker.report(Result.warning("methodref.inference.unimplemented"), memberReferenceTree);
+                    typeArgumentInferenceCheck = true;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
