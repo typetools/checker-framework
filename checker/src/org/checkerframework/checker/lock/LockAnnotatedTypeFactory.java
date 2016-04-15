@@ -517,35 +517,52 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
+    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+        insertLockCheckerGuardedByIfJcipOrJavaxGuardedByIsPresent(elt, type);
+
+        super.annotateImplicit(elt, type);
+    }
+
+    @Override
     public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         if (tree.getKind() == Tree.Kind.VARIABLE) {
-
-            // If one of these declaration annotations is present on a variable declaration:
-            // @net.jcip.annotations.GuardedBy
-            // @javax.annotation.concurrent.GuardedBy
-            // insert the corresponding
-            // @org.checkerframework.checker.lock.qual.GuardedBy
-            // type qualifier.
-
-            List<AnnotationMirror> annos = InternalUtils
-                    .annotationsFromTypeAnnotationTrees(((VariableTree) tree).getModifiers().getAnnotations());
-            for(AnnotationMirror anno : annos) {
-                if (AnnotationUtils.areSameByClass(anno, net.jcip.annotations.GuardedBy.class) ||
-                    AnnotationUtils.areSameByClass(anno, javax.annotation.concurrent.GuardedBy.class)) {
-                    List<String> lockExpressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
-
-                    if (lockExpressions.isEmpty()) {
-                        type.addAnnotation(GUARDEDBY);
-                    } else {
-                        type.addAnnotation(createGuardedByAnnotationMirror(lockExpressions));
-                    }
-
-                    break;
-                }
-            }
+            insertLockCheckerGuardedByIfJcipOrJavaxGuardedByIsPresent(InternalUtils.symbol((VariableTree) tree), type);
         }
 
         super.annotateImplicit(tree, type, useFlow);
+    }
+
+    /**
+     * Given a field declaration with a {@code @net.jcip.annotations.GuardedBy} or
+     * {@code javax.annotation.concurrent.GuardedBy} annotation and an AnnotatedTypeMirror
+     * for that field, inserts the corresponding {@code @org.checkerframework.checker.lock.qual.GuardedBy}
+     * type qualifier into that AnnotatedTypeMirror.
+     *
+     * @param element the Element for a field declaration (this method does nothing if the Element is not for a field declaration)
+     * @param atm the AnnotatedTypeMirror for the field - the {@code @GuardedBy} type qualifier will be inserted here
+     */
+    private void insertLockCheckerGuardedByIfJcipOrJavaxGuardedByIsPresent(Element element, AnnotatedTypeMirror atm) {
+        if (!element.getKind().isField()) {
+            return;
+        }
+
+        AnnotationMirror anno = getDeclAnnotation(element, net.jcip.annotations.GuardedBy.class);
+
+        if (anno == null) {
+            anno = getDeclAnnotation(element, javax.annotation.concurrent.GuardedBy.class);
+        }
+
+        if (anno == null) {
+            return;
+        }
+
+        List<String> lockExpressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+
+        if (lockExpressions.isEmpty()) {
+            atm.addAnnotation(GUARDEDBY);
+        } else {
+            atm.addAnnotation(createGuardedByAnnotationMirror(lockExpressions));
+        }
     }
 
     /**
