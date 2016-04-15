@@ -7,7 +7,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ConstructorReturnUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
@@ -302,7 +301,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // Therefore, ensure to only add the qualifiers that are explicitly on
         // the constructor, but then take the possibly substituted qualifier.
         AnnotatedExecutableType ex = f.constructorFromUse(node).first;
-        ConstructorReturnUtil.keepOnlyExplicitConstructorAnnotations(f, type, ex);
+        AnnotatedTypes.keepOnlyExplicitConstructorAnnotations(f, type, ex);
 
         return type;
     }

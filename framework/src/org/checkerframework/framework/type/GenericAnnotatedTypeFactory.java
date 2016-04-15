@@ -46,7 +46,7 @@ import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.util.ConstructorReturnUtil;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
@@ -561,7 +561,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 fromTypeTree(memberReferenceTree.getQualifierExpression());
 
         // Keep only explicit annotations and those from @Poly
-        ConstructorReturnUtil.keepOnlyExplicitConstructorAnnotations(this, constructorReturnType, constructorType);
+        AnnotatedTypes.keepOnlyExplicitConstructorAnnotations(this, constructorReturnType, constructorType);
 
         // Now add back defaulting.
         annotateImplicit(memberReferenceTree.getQualifierExpression(), constructorReturnType);
