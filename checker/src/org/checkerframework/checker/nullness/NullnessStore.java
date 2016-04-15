@@ -3,6 +3,7 @@ package org.checkerframework.checker.nullness;
 import org.checkerframework.checker.initialization.InitializationStore;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 
@@ -53,9 +54,9 @@ public class NullnessStore extends
     }
 
     @Override
-    protected void internalDotOutput(StringBuilder result) {
-        super.internalDotOutput(result);
-        result.append("  isPolyNonNull = " + isPolyNullNull + "\\n");
+    protected void internalVisualize(CFGVisualizer<NullnessValue, NullnessStore, ?> viz) {
+        super.internalVisualize(viz);
+        viz.visualizeStoreKeyVal("isPolyNonNull", isPolyNullNull);
     }
 
     public boolean isPolyNullNull() {

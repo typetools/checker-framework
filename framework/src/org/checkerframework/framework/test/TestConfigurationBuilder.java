@@ -366,6 +366,7 @@ public class TestConfigurationBuilder {
         return options.getOptionsAsList();
     }
 
+    @Override
     public String toString() {
         return "TestConfigurationBuilder:\n"
              + "testSourceFiles="  + ( testSourceFiles == null ? "null" : PluginUtil.join(" ", testSourceFiles) ) + "\n"
