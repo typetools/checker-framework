@@ -838,11 +838,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         visitorState.setAssignmentContext(Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
 
         try {
-            boolean valid = validateTypeOf(node);
             // If there's no assignment in this variable declaration, skip it.
-            if (valid && node.getInitializer() != null) {
+            if (node.getInitializer() != null) {
                 commonAssignmentCheck(node, node.getInitializer(),
                         "assignment.type.incompatible");
+            } else {
+                // commonAssignmentCheck validates the type of node,
+                // so only validate if commonAssignmentCheck wasn't called
+                validateTypeOf(node);
             }
             return super.visitVariable(node, p);
         } finally {
@@ -1796,12 +1799,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
             /*@CompilerMessageKey*/ String errorKey) {
-        if (!validateTypeOf(varTree)) {
-            return;
-        }
-
         AnnotatedTypeMirror var = atypeFactory.getAnnotatedTypeLhs(varTree);
         assert var != null : "no variable found for tree: " + varTree;
+
+        if (!validateType(varTree, var)) {
+            return;
+        }
 
         checkAssignability(var, varTree);
 
