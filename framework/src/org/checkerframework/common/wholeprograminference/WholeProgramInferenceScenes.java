@@ -46,8 +46,8 @@ import com.sun.tools.javac.code.Type.ClassType;
  * <p>
  * Calling an update* method
  * ({@link #updateInferredFieldType updateInferredFieldType},
- * {@link #updateInferredMethodParametersTypes updateInferredMethodParametersTypes},
- * {@link #updateInferredMethodParametersTypes updateInferredParameterType}, or
+ * {@link #updateInferredMethodParameterTypes updateInferredMethodParameterTypes},
+ * {@link #updateInferredParameterType updateInferredParameterType}, or
  * {@link #updateInferredMethodReturnType updateInferredMethodReturnType})
  * replaces the currently-stored type for an element in a Scene, if any,
  * by the LUB of it and the update method's argument.
