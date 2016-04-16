@@ -5,6 +5,7 @@ import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 
@@ -20,7 +21,18 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 public interface WholeProgramInference {
 
     /**
-     * Updates the parameter types of the method methodElt.
+     * Updates the parameter types of the constructor created by objectCreationNode.
+     * @param objectCreationNode the new Object() node.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the constructor's parameters' types.
+     */
+    public void updateInferredConstructorParameterTypes(
+            ObjectCreationNode objectCreationNode, ExecutableElement constructorElt,
+            AnnotatedTypeFactory atf);
+
+    /**
+     * Updates the parameter types of all parameters of the method methodElt on
+     * the method invocation methodInvNode.
      * @param methodInvNode the node representing a method invocation.
      * @param receiverTree the Tree of the class that contains the method being
      * invoked.
@@ -28,14 +40,15 @@ public interface WholeProgramInference {
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the method parameters' types.
      */
-    public void updateInferredMethodParametersTypes(
+    public void updateInferredMethodParameterTypes(
             MethodInvocationNode methodInvNode, Tree receiverTree,
             ExecutableElement methodElt, AnnotatedTypeFactory atf);
 
     /**
-     * Updates the parameter type represented by lhs of the method methodTree.
+     * Updates the parameter type of the parameter lhs of the method methodTree
+     * at an assignment on the method body.
      * @param lhs the node representing the parameter.
-     * @param rhs the node being assigned to the parameter.
+     * @param rhs the node being assigned to the parameter in the method body.
      * @param classTree the tree of the class that contains the parameter.
      * @param methodTree the tree of the method that contains the parameter.
      * @param atf the annotated type factory of a given type system, whose

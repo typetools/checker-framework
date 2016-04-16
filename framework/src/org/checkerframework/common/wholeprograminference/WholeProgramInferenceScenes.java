@@ -13,6 +13,7 @@ import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -45,8 +46,8 @@ import com.sun.tools.javac.code.Type.ClassType;
  * <p>
  * Calling an update* method
  * ({@link #updateInferredFieldType updateInferredFieldType},
- * {@link #updateInferredMethodParametersTypes updateInferredMethodParametersTypes},
- * {@link #updateInferredMethodParametersTypes updateInferredParameterType}, or
+ * {@link #updateInferredMethodParameterTypes updateInferredMethodParameterTypes},
+ * {@link #updateInferredParameterType updateInferredParameterType}, or
  * {@link #updateInferredMethodReturnType updateInferredMethodReturnType})
  * replaces the currently-stored type for an element in a Scene, if any,
  * by the LUB of it and the update method's argument.
@@ -98,6 +99,48 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         helper = new WholePrograminferenceScenesHelper(isNullness);
     }
 
+    @Override
+    public void updateInferredConstructorParameterTypes(
+            ObjectCreationNode objectCreationNode,
+            ExecutableElement constructorElt, AnnotatedTypeFactory atf) {
+        ClassSymbol classSymbol = getEnclosingClassSymbol(objectCreationNode.getTree());
+        if (classSymbol == null) {
+            // TODO: Handle anonymous classes.
+            // Also struggled to obtain the ClassTree from an anonymous class.
+            // Ignoring it for now.
+            return;
+        }
+        // TODO: We must handle cases where the method is declared on a superclass.
+        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
+        if (!classSymbol.getEnclosedElements().contains(constructorElt)) return;
+
+        String className = classSymbol.flatname.toString();
+        String jaifPath = helper.getJaifPath(className);
+        AClass clazz = helper.getAClass(className, jaifPath);
+        String methodName = JVMNames.getJVMMethodName(constructorElt);
+        AMethod method = clazz.methods.vivify(methodName);
+
+        for (int i = 0; i < objectCreationNode.getArguments().size(); i++) {
+            VariableElement ve = constructorElt.getParameters().get(i);
+            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
+
+            Node arg = objectCreationNode.getArgument(i);
+            Tree treeNode = arg.getTree();
+            if (treeNode == null) {
+                // TODO: Handle variable-length list as parameter.
+                // An ArrayCreationNode with a null tree is created when the
+                // parameter is a variable-length list. We are ignoring it for now.
+                continue;
+            }
+            AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
+            AField param = method.parameters.vivify(i);
+            helper.updateAnnotationSetInScene(
+                    param.type, atf, jaifPath, argATM, paramATM,
+                    TypeUseLocation.PARAMETER);
+        }
+
+    }
+
     /**
      * Updates the parameter types of the method methodElt in the Scene of the
      * receiverTree's enclosing class.
@@ -122,7 +165,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * type hierarchy will be used to update the method parameters' types.
      */
     @Override
-    public void updateInferredMethodParametersTypes(
+    public void updateInferredMethodParameterTypes(
             MethodInvocationNode methodInvNode, Tree receiverTree,
             ExecutableElement methodElt, AnnotatedTypeFactory atf) {
         if (receiverTree == null) {

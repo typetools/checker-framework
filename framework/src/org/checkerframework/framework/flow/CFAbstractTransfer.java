@@ -1,7 +1,6 @@
 package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -31,6 +30,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
@@ -48,7 +48,6 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -810,6 +809,19 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     }
 
     @Override
+    public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n,
+            TransferInput<V, S> p) {
+        if (inferSignatures
+                && !analysis.checker.shouldSuppressWarnings(n.getTree(), null)) {
+            ExecutableElement constructorElt = analysis.getTypeFactory().
+                    constructorFromUse(n.getTree()).first.getElement();
+            analysis.atypeFactory.getWholeProgramInference()
+                    .updateInferredConstructorParameterTypes(n, constructorElt, analysis.getTypeFactory());
+        }
+        return super.visitObjectCreation(n, p);
+    }
+
+    @Override
     public TransferResult<V, S> visitMethodInvocation(MethodInvocationNode n,
             TransferInput<V, S> in) {
 
@@ -849,7 +861,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 // happens when the method is called from a static context.
             }
             // Updates the inferred parameter type of the invoked method
-            analysis.atypeFactory.getWholeProgramInference().updateInferredMethodParametersTypes(
+            analysis.atypeFactory.getWholeProgramInference().updateInferredMethodParameterTypes(
                     n, receiverTree, method, analysis.getTypeFactory());
         }
 
