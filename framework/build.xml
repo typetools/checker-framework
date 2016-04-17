@@ -40,6 +40,10 @@
         <available property="dataflow.project"
                    file="${dataflow.loc}/build.xml"/>
         <antcall target="-prep-dataflow-compile"/>
+
+        <available property="annotation-file-utilities.project"
+                   file="${annotation-file-utilities.loc}/build.xml"/>
+        <antcall target="-prep-annotation-file-utilities-compile"/>
     </target>
 
     <target name="-prep-stubparser-compile" if="stubparser.project"
@@ -63,6 +67,12 @@
         </ant>
     </target>
 
+    <target name="-prep-annotation-file-utilities-compile" if="annotation-file-utilities.project"
+            description="Compile AFU project">
+        <ant dir="${annotation-file-utilities.loc}">
+            <target name="jarfile"/>
+        </ant>
+    </target>
 
     <target name="clean" description="Remove generated files">
         <ant dir="${javacutil.loc}">
@@ -74,6 +84,10 @@
         </ant>
 
         <ant dir="${stubparser.loc}">
+            <target name="clean"/>
+        </ant>
+
+        <ant dir="${annotation-file-utilities.loc}">
             <target name="clean"/>
         </ant>
 
@@ -119,6 +133,7 @@
         <uptodate property="stubparser.lib.uptodate" targetfile="${build}" srcfile="${stubparser.lib}"/>
         <uptodate property="javacutil.lib.uptodate" targetfile="${build}" srcfile="${javacutil.lib}"/>
         <uptodate property="dataflow.lib.uptodate" targetfile="${build}" srcfile="${dataflow.lib}"/>
+        <uptodate property="annotation-file-utilities.lib.uptodate" targetfile="${build}" srcfile="${annotation-file-utilities.lib}"/>
 
         <condition property="build.uptodate">
           <and>
@@ -127,6 +142,7 @@
             <isset property="stubparser.lib.uptodate"/>
             <isset property="javacutil.lib.uptodate"/>
             <isset property="dataflow.lib.uptodate"/>
+            <isset property="annotation-file-utilities.lib.uptodate"/>
           </and>
         </condition>
 
@@ -204,7 +220,7 @@
              mirrors javadoc dependencies. If changing project
              dependencies, change the Javadoc dependencies to keep
              them in sync (and vice versa). -->
-        <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}" destdir="${api.doc}"
+        <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}" destdir="${api.doc}"
                  private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
@@ -240,6 +256,7 @@
         <unjar src="${stubparser.lib}" dest="${build}" />
         <unjar src="${javacutil.lib}" dest="${build}" />
         <unjar src="${dataflow.lib}" dest="${build}" />
+        <unjar src="${annotation-file-utilities.lib}" dest="${build}" />
 
         <mkdir dir="dist" />
 

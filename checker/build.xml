@@ -137,6 +137,11 @@
             <include name="**/*.astub"/>
         </fileset>
 
+        <fileset id="annotation-file-utilities.src.astub.files" dir="${annotation-file-utilities.loc}/${src}">
+            <include name="**/*.properties"/>
+            <include name="**/*.astub"/>
+        </fileset>
+
         <!-- I can't figure out how to combine filesets (or even selectors)
              to get just one *.uptodate property, so do them individually
              and then combine with <condition>. -->
@@ -150,6 +155,7 @@
           <srcfiles refid="dataflow.src.astub.files"/>
           <srcfiles refid="framework.src.astub.files"/>
           <srcfiles refid="checker.src.astub.files"/>
+          <srcfiles refid="annotation-file-utilities.src.astub.files"/>
         </uptodate>
 
         <uptodate property="framework.lib.uptodate" targetfile="${build}" srcfile="${framework.lib}"/>
@@ -178,6 +184,7 @@
             <fileset refid="dataflow.src.astub.files"/>
             <fileset refid="framework.src.astub.files"/>
             <fileset refid="checker.src.astub.files"/>
+            <fileset refid="annotation-file-utilities.src.astub.files"/>
         </copy>
 
         <pathconvert pathsep=" " property="qual.src.files.spaceseparated">
@@ -201,6 +208,9 @@
                     <include name="**/qual/*.java"/>
                 </fileset>
                 <fileset dir="${framework.loc}/${src}">
+                    <include name="**/qual/*.java"/>
+                </fileset>
+                <fileset dir="${annotation-file-utilities.loc}/${src}">
                     <include name="**/qual/*.java"/>
                 </fileset>
             </path>
@@ -242,6 +252,9 @@
                 <fileset dir="${framework.loc}/${src}">
                     <include name="**/*.java"/>
                 </fileset>
+                <fileset dir="${annotation-file-utilities.loc}/${src}">
+                    <include name="**/*.java"/>
+                </fileset>
             </path>
         </pathconvert>
 
@@ -249,7 +262,7 @@
         <echo message="${qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -297,7 +310,7 @@
         <echo message="${compat.qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -345,7 +358,7 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}" destdir="${api.doc}"
+        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}" destdir="${api.doc}"
                  private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
@@ -459,7 +472,7 @@
 
         <java fork="true"
               failonerror="true"
-              classpath="${build}:${javac.lib}:${junit.lib}:${hamcrest.lib}"
+              classpath="${build}:${javac.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -529,6 +542,7 @@
                 <pathelement path="${javac.lib}"/>
                 <pathelement path="${junit.lib}"/>
                 <pathelement path="${hamcrest.lib}"/>
+                <pathelement path="${annotation-file-utilities.lib}"/>
             </classpath>
 
 
@@ -592,6 +606,7 @@
               <pathelement path="${javac.lib}"/>
               <pathelement path="${junit.lib}"/>
               <pathelement path="${hamcrest.lib}"/>
+              <pathelement path="${annotation-file-utilities.lib}"/>
             </classpath>
 
             <formatter type="xml"/>
@@ -1228,7 +1243,7 @@
         <javac failonerror="true"
                 includeantruntime="false"
                 bootclasspath="${javac.lib}:${java.home}/lib/rt.jar"
-                classpath="${javac.lib}:${checker.lib}:${junit.lib}:${hamcrest.lib}"
+                classpath="${javac.lib}:${checker.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
                 srcdir="${src}"
                 includes="**/*.java"
                 excludes="org/checkerframework/checker/nullness/NullnessUtils.java org/checkerframework/checker/regex/RegexUtils.java"

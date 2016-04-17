@@ -45,9 +45,6 @@ TEMP_DIR=build/temp-whole-program-inference-output
 # Path to directory that will contain .jaif files from the previous iteration.
 PREV_ITERATION_DIR=build/prev-whole-program-inference
 
-# Path to annotation-file-utilities.jar
-AFU_JAR="${CHECKERFRAMEWORK}/../annotation-tools/annotation-file-utilities/annotation-file-utilities.jar"
-
 debug=
 # For debugging
 # debug=1
@@ -60,7 +57,7 @@ debug=
 read_input() {
     # First two arguments are processor and cp.
     processor=$1
-    cp=$2:$AFU_JAR
+    cp=$2
     shift
     shift
 
