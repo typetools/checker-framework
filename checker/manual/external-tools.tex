@@ -45,14 +45,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.9.11/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-1.9.13/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.13
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -77,7 +77,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.13
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -85,7 +85,7 @@ use the last one.
     indicate:
 
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.13
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
 \end{Verbatim}
 
@@ -111,11 +111,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.13
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.9.11\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.9.13\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -137,7 +137,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.9.11
+  javac 1.8.0-jsr308-1.9.13
 \end{Verbatim}
 
 
@@ -308,19 +308,29 @@ If you use the \href{http://maven.apache.org/}{Maven} tool,
 then you can enable Checker Framework checkers by following the
 instructions below.
 
-These instructions use the artifacts from
-\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven Central}.
+See the directory \code{examples/MavenExample/} for examples of the use of
+Maven build files that run a checker.  These examples can be used to verify that
+Maven is correctly downloading the Checker Framework from
+\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
+  Central} and executing it.
 
-See the demonstration \code{examples/MavenExample/} for an example of the use of
-these instructions in a Maven project.  This example can be used to verify that
-Maven is correctly downloading and executing the Checker Framework on your machine.
+There are two general ways you can configure your Maven buildfile,
+corresponding to the two ways to run the Checker Framework:
+\begin{itemize}
+\item
+  Use the Type Annotations compiler.  You need to use this if you write
+  annotations in comments (see Section~\ref{annotations-in-comments}).
+\item
+  Use the standard Java 8 compiler.
+\end{itemize}
 
 Please note that the \<-AoutputArgsToFile> command-line option
 (see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
 (see Section~\ref{shorthand-for-checkers}) are not available when
 following these instructions.  Both these features are available only when a checker is
 launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
-is run.  These instructions bypass \<checker.jar> and cause the compiler to run a
+is run.  The Gradle instructions in this section
+bypass \<checker.jar> and cause the compiler to run a
 checker as an annotation processor directly.
 
 \begin{enumerate}
@@ -344,7 +354,7 @@ checker as an annotation processor directly.
             <artifactId>checker</artifactId>
             <version>\ReleaseVersion{}</version>
         </dependency>
-        <!-- The type annotations compiler - uncomment if using Java 7 -->
+        <!-- The type annotations compiler - uncomment if desired -->
         <!-- <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>compiler</artifactId>
@@ -360,7 +370,7 @@ checker as an annotation processor directly.
 \end{alltt}
 
 \item Use Maven properties to hold the locations of the
-  annotated JDK and, if using Java 7, the type annotations compiler.  Both were declared as Maven dependencies above.
+  annotated JDK and (if using annotations in comments), the type annotations compiler.  Both were declared as Maven dependencies above.
 To set the value of these properties automatically, use the Maven Dependency plugin.
 
 First, create the properties in the \code{properties} section of the POM:
@@ -370,8 +380,7 @@ First, create the properties in the \code{properties} section of the POM:
     <!-- These properties will be set by the Maven Dependency plugin -->
     <!-- Change to jdk7 if using Java 7 -->
     <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
-    <!-- The type annotations compiler is required if using Java 7. -->
-    <!-- Uncomment the following line if using Java 7. -->
+    <!-- Uncomment to use the type annotations compiler. -->
     <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
 </properties>
 \end{alltt}
@@ -419,7 +428,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
             <compilerArgs>
                 <!-- location of the annotated JDK, which comes from a Maven dependency -->
                 <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-                <!-- Uncomment the following line if using Java 7. -->
+                <!-- Uncomment the following line to use the type annotations compiler. -->
                 <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
             </compilerArgs>
         </configuration>
@@ -432,9 +441,9 @@ Now, building with Maven should run the checkers during compilation.
 Notice that using this approach, no external setup is necessary,
 so your Maven build should be reproducible on any server.
 
-If you want to allow Maven to compile your code without running the checkers, you may
-want to move the declarations above to within a Maven profile, so that the checkers
-would only run if the profile was enabled.
+If you want to allow Maven to compile your code without running the
+checkers, you may want to move the declarations above to within a Maven
+profile, so that the checkers run only if the profile was enabled.
 
 \end{enumerate}
 
@@ -447,6 +456,12 @@ then you can run a checker by following the instructions below.
 These instructions can be used with Java 7 or Java 8.  If using Java 7, then
 type annotations should be placed in comments as explained in
 Section~\ref{annotations-in-comments}.
+
+See the directory \code{examples/GradleExamples/} for examples of Gradle
+build files that run a checker.  You can use these examples to verify that
+Gradle is correctly downloading the Checker Framework from
+\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
+  Central} and executing it.
 
 \begin{enumerate}
 
@@ -495,7 +510,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '1.9.11'
+    ext.checkerFrameworkVersion = '1.9.13'
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
 
@@ -530,21 +545,6 @@ allprojects {
 \end{Verbatim}
 \end{mysmall}
 \end{enumerate}
-
-See the directory \code{examples/GradleExamples/} for examples of Gradle
-build files that run a checker.  You can use these examples to verify that
-Gradle is correctly downloading the Checker Framework from
-\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
-  Central} and executing it.
-
-Please note that the \<-AoutputArgsToFile> command-line option
-(see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
-(see Section~\ref{shorthand-for-checkers}) are not available when
-following these instructions.  Both these features are available only when a checker is
-launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
-is run.  The Gradle instructions in this section
-bypass \<checker.jar> and cause the compiler to run a
-checker as an annotation processor directly.
 
 
 \section{IntelliJ IDEA\label{intellij}}

@@ -11,13 +11,13 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.PureMethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.qual.MonotonicQualifier;
@@ -980,69 +980,43 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     @SideEffectFree
     @Override
     public String toString() {
-        return toDOToutput().replace("\\n", "\n");
+        return "Use a CFGVisualizer to see the Store: " + this.hashCode();
     }
 
-    @Pure
     @Override
-    public boolean hasDOToutput() {
-        return true;
+    public void visualize(CFGVisualizer<?, S, ?> viz) {
+        /* This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
+         * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
+        @SuppressWarnings("unchecked")
+        CFGVisualizer<V, S, ?> casted_viz = (CFGVisualizer<V, S, ?> ) viz;
+        casted_viz.visualizeStoreHeader(
+            this.getClass().getCanonicalName());
+        internalVisualize(casted_viz);
+        casted_viz.visualizeStoreFooter();
     }
 
     /**
-     * @return DOT representation of the store (may contain control characters
-     *         such as "\n").
+     * Adds a representation of the internal information of this store to
+     * visualizer {@code viz}.
      */
-    @Override
-    public String toDOToutput() {
-        StringBuilder result = new StringBuilder(this.getClass()
-                .getCanonicalName() + " (\\n");
-        internalDotOutput(result);
-        result.append(")");
-        return result.toString();
-    }
-
-
-    protected String escapeDoubleQuotes(final String str) {
-        return str.replace("\"", "\\\"");
-    }
-
-
-    protected String toStringEscapeDoubleQuotes(final Object obj) {
-        return escapeDoubleQuotes(String.valueOf(obj));
-    }
-
-    /**
-     * Adds a DOT representation of the internal information of this store to
-     * {@code result}.
-     */
-    protected void internalDotOutput(StringBuilder result) {
+    protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
         for (Entry<FlowExpressions.LocalVariable, V> entry : localVariableValues.entrySet()) {
-            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
-                    + "\\n");
+            viz.visualizeStoreLocalVar(entry.getKey(), entry.getValue());
         }
         if (thisValue != null) {
-            result.append("  this > " + thisValue
-                    + "\\n");
+            viz.visualizeStoreThisVal(thisValue);
         }
-        for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues
-                .entrySet()) {
-            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
-                    + "\\n");
+        for (Entry<FlowExpressions.FieldAccess, V> entry : fieldValues.entrySet()) {
+            viz.visualizeStoreFieldVals(entry.getKey(), entry.getValue());
         }
-        for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues
-                .entrySet()) {
-            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
-                    + "\\n");
+        for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
+            viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue());
         }
         for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
-            result.append("  " + entry.getKey().toString().replace("\"", "\\\"")
-                    + " > " + entry.getValue() + "\\n");
+            viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue());
         }
-        for (Entry<FlowExpressions.ClassName, V> entry : classValues
-                .entrySet()) {
-            result.append("  " + entry.getKey() + " > " + toStringEscapeDoubleQuotes(entry.getValue())
-                    + "\\n");
+        for (Entry<FlowExpressions.ClassName, V> entry : classValues.entrySet()) {
+            viz.visualizeStoreClassVals(entry.getKey(), entry.getValue());
         }
     }
 }

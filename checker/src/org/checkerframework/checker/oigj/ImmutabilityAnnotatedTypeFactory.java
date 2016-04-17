@@ -19,7 +19,9 @@ import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.StructuralEqualityComparer;
 import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -163,8 +165,15 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.CLASS, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.ENUM, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.INTERFACE, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, BOTTOM_QUAL);
+
         return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
+                new PropagationTreeAnnotator(this),
+                implicitsTreeAnnotator,
                 new IGJTreePreAnnotator(this)
         );
     }
@@ -854,7 +863,7 @@ public class ImmutabilityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new OIGJImmutabilityTypeHierarchy(checker, getQualifierHierarchy(),
-                                                 checker.hasOption("ignoreRawTypeArguments"),
+                                                 checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                                                  checker.hasOption("invariantArrays"));
     }
 

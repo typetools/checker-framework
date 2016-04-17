@@ -60,6 +60,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
@@ -1256,22 +1257,24 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Given a list of types representing the formal parameters to a method, get the parameter type
+     * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter type
      * expect at the indexth position (unwrapping var args if necessary).
      *
-     * @param parameterTypes The list of formal parameters to a method
-     * @param index The index into parameterTypes of the parameter we want
+     * @param methodType AnnotatedExecutableType of method or constructor containing parameter to return
+     * @param index position of parameter type to return
      * @return If that parameter is a varArgs, return the component of the var args and NOT the array type.
      *         Otherwise, return the exact type of the parameter in the index position
      */
-    public static AnnotatedTypeMirror unwrapVarargs(List<AnnotatedTypeMirror> parameterTypes, int index) {
+    public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(AnnotatedExecutableType methodType, int index) {
+        List<AnnotatedTypeMirror> parameterTypes = methodType.getParameterTypes();
+        boolean hasVarArg = methodType.getElement().isVarArgs();
+
         final int lastIndex = parameterTypes.size() - 1;
         final AnnotatedTypeMirror lastType = parameterTypes.get(lastIndex);
         final boolean parameterBeforeVarargs = index < lastIndex;
         if (!parameterBeforeVarargs && lastType instanceof AnnotatedArrayType) {
             final AnnotatedArrayType arrayType = (AnnotatedArrayType) lastType;
-            final Type.ArrayType underlyingType = (Type.ArrayType) arrayType.getUnderlyingType();
-            if (underlyingType.isVarargs()) {
+            if (hasVarArg) {
                 return arrayType.getComponentType();
             }
         }
@@ -1893,5 +1896,62 @@ public class AnnotatedTypes {
         return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
     }
 
+
+    /**
+     * keepOnlyExplicitConstructorAnnotations modifies returnType to
+     * keep only annotations explicitly on the constructor
+     * and annotations resulting from resolution of polymorphic qualifiers.
+     *
+     * @param atypeFactory type factory
+     * @param returnType The return type for the constructor. No polymorphic qualifiers should have been substituted.
+     * @param constructor The ATM for the constructor.
+     */
+    public static void keepOnlyExplicitConstructorAnnotations(AnnotatedTypeFactory atypeFactory,
+                                                              AnnotatedDeclaredType returnType,
+                                                              AnnotatedExecutableType constructor) {
+
+        // TODO: There will be a nicer way to access this in 308 soon.
+        List<Attribute.TypeCompound> decall = ((Symbol)constructor.getElement()).getRawTypeAttributes();
+        Set<AnnotationMirror> decret = AnnotationUtils.createAnnotationSet();
+        for (Attribute.TypeCompound da : decall) {
+            if (da.position.type == com.sun.tools.javac.code.TargetType.METHOD_RETURN) {
+                decret.add(da);
+            }
+        }
+
+        // Collect all polymorphic qualifiers; we should substitute them.
+        Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror anno : returnType.getAnnotations()) {
+            if (QualifierPolymorphism.isPolymorphicQualified(anno)) {
+                polys.add(anno);
+            }
+        }
+
+        for (AnnotationMirror cta : constructor.getReturnType().getAnnotations()) {
+            AnnotationMirror ctatop = atypeFactory.getQualifierHierarchy().getTopAnnotation(cta);
+            if (atypeFactory.isSupportedQualifier(cta) &&
+                !returnType.isAnnotatedInHierarchy(cta)) {
+                for (AnnotationMirror fromDecl : decret) {
+                    if (atypeFactory.isSupportedQualifier(fromDecl) &&
+                        AnnotationUtils.areSame(ctatop,
+                                                atypeFactory.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
+                        returnType.addAnnotation(cta);
+                        break;
+                    }
+                }
+            }
+
+            // Go through the polymorphic qualifiers and see whether
+            // there is anything left to replace.
+            for (AnnotationMirror pa : polys) {
+                if (AnnotationUtils.areSame(ctatop,
+                                            atypeFactory.getQualifierHierarchy().getTopAnnotation(pa))) {
+                    returnType.replaceAnnotation(cta);
+                    break;
+                }
+            }
+        }
+
+    }
 
 }

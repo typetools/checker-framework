@@ -2,6 +2,7 @@ package org.checkerframework.checker.oigj;
 
 import org.checkerframework.checker.oigj.qual.Dominator;
 import org.checkerframework.checker.oigj.qual.Modifier;
+import org.checkerframework.checker.oigj.qual.Mutable;
 import org.checkerframework.checker.oigj.qual.O;
 import org.checkerframework.checker.oigj.qual.OIGJMutabilityBottom;
 import org.checkerframework.checker.oigj.qual.World;
@@ -9,7 +10,9 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -20,7 +23,6 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -28,14 +30,17 @@ import javax.lang.model.element.AnnotationMirror;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 
 public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected final AnnotationMirror BOTTOM_QUAL;
+    protected final AnnotationMirror BOTTOM_QUAL, MUTABLE;
 
     public OwnershipAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         BOTTOM_QUAL = AnnotationUtils.fromClass(elements, OIGJMutabilityBottom.class);
+        MUTABLE = AnnotationUtils.fromClass(elements, Mutable.class);
+
         this.postInit();
     }
 
@@ -48,10 +53,17 @@ public class OwnershipAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
-                new OwnershipTreeAnnotator(this)
-        );
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_CLASS, MUTABLE);
+
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.CLASS, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.ENUM, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.ANNOTATION_TYPE, BOTTOM_QUAL);
+        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NEW_ARRAY, BOTTOM_QUAL);
+
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this),
+                                     implicitsTreeAnnotator,
+                                     new OwnershipTreeAnnotator(this));
     }
 
 //    @Override

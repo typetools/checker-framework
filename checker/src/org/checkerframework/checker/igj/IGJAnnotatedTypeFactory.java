@@ -2,6 +2,7 @@ package org.checkerframework.checker.igj;
 
 import org.checkerframework.checker.igj.qual.AssignsFields;
 import org.checkerframework.checker.igj.qual.I;
+import org.checkerframework.checker.igj.qual.IGJBottom;
 import org.checkerframework.checker.igj.qual.Immutable;
 import org.checkerframework.checker.igj.qual.Mutable;
 import org.checkerframework.checker.igj.qual.ReadOnly;
@@ -34,7 +35,6 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -177,12 +177,6 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // this.addAliasedDeclAnnotation(org.jmlspecs.annotation.Pure.class, Pure.class, annotationToUse);
 
         this.postInit();
-    }
-
-    @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(
-                IGJBottom.class);
     }
 
     @Override
@@ -769,8 +763,14 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (typeSuper.getKind() != TypeKind.TYPEVAR)
                 return visit(typeSuper, actualType);
 
-            assert typeSuper.getKind() == actualType.getKind() : actualType;
-            assert type.getKind() == actualType.getKind() : actualType;
+            assert typeSuper.getKind() == actualType.getKind()
+                : String.format("Kinds differ: typeSuper (kind=%s) %s ; actualType (kind=%s) %s",
+                                typeSuper, typeSuper.getKind(),
+                                actualType, actualType.getKind());
+            assert type.getKind() == actualType.getKind()
+                : String.format("Kinds differ: type (kind=%s) %s ; actualType (kind=%s) %s",
+                                type, type.getKind(),
+                                actualType, actualType.getKind());
             AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
 
             typeVar.add(type.getUnderlyingType());
@@ -852,7 +852,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new IGJTypeHierarchy(checker, getQualifierHierarchy(),
-                                    checker.hasOption("ignoreRawTypeArguments"),
+                                    checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                                     checker.hasOption("invariantArrays"));
     }
 

@@ -27,7 +27,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -78,15 +77,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignement) {
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
         if (valueType.getKind() == TypeKind.NULL) {
             // Avoid issuing warnings about 'null' not matching the type of the variable.
             return;
         }
 
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignement);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
     private void reportFailure(/*@CompilerMessageKey*/ String messageKey,

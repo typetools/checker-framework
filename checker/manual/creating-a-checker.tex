@@ -61,11 +61,20 @@ The Javadoc documentation of the framework and the checkers is in the
 distribution and is also available online at
 \myurl{http://types.cs.washington.edu/checker-framework/current/api/}.
 
+\textbf{Tips:}  Before you start coding, first write the user manual (see
+Section~\ref{documenting-a-checker}), which explains the type system, what
+it guarantees, how to use it, etc.  This will help you flesh out your goals
+and the concepts, which are easier to understand and change in text than in
+an imprementation.  Once you have settled on type rules, you may also want
+to choose some case studies and play computer to ensure that they give
+the expected results.  During manual checking, ask yourself what reasoning
+you applied, what information you needed, and whether your written-down
+rules were sufficient.
+
 If you write a new checker and wish to advertise it to the world, let us
 know so we can mention it in the Checker Framework Manual, link to
 it from the webpages, or include it in the Checker Framework distribution.
-For examples, see Chapters~\ref{typestate-checker}
-and~\ref{third-party-checkers}.
+For examples, see \chapterpageref{third-party-checkers}.
 
 
 \section{Relationship of the Checker Framework to other tools\label{tool-relationships}}
@@ -422,10 +431,10 @@ appropriate bottom qualifier.
 \end{sloppypar}
 
 If your type system has a special bottom type that is used \emph{only} for
-the \code{null} value, then users should never write the bottom qualifier
-explicitly.  To ensure this, write \<@Target(\{\})> on the definition of
-the bottom qualifier.
-
+the \code{null} value, then users should only write the bottom qualifier
+on explicit bounds.  To ensure this, write
+\<@TargetLocations(\{ TypeUseLocation.EXPLICIT\_LOWER\_BOUND, TypeUseLocation.EXPLICIT\_UPPER\_BOUND \})>
+on the definition of the bottom qualifier.
 
 The hierarchy shown in Figure~\ref{fig-igj-hierarchy} lacks
 a bottom qualifier, because there is no qualifier that is a subtype of both
@@ -434,11 +443,17 @@ The actual IGJ hierarchy does contain a (non-user-visible) bottom qualifier,
 defined like this:
 
 \begin{Verbatim}
-  @SubtypeOf({Mutable.class, Immutable.class, I.class})
-  @Target({}) // forbids a programmer from writing it in a program
-  @ImplicitFor(trees = { Kind.NULL_LITERAL, Kind.CLASS, Kind.NEW_ARRAY },
-               typeClasses = { AnnotatedPrimitiveType.class })
-  @interface IGJBottom { }
+@SubtypeOf({Mutable.class, Immutable.class, I.class})
+@ImplicitFor(literals = { LiteralKind.NULL },
+    types = { TypeKind.BOOLEAN, TypeKind.BYTE,
+              TypeKind.CHAR, TypeKind.DOUBLE,
+              TypeKind.FLOAT, TypeKind.INT,
+              TypeKind.LONG, TypeKind.SHORT })
+@DefaultFor({ TypeUseLocation.LOWER_BOUND })
+@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
+    TypeUseLocation.EXPLICIT_UPPER_BOUND })
+@interface IGJBottom {}
 \end{Verbatim}
 
 The IGJ Checker adds this qualifier in code in \refclass{checker/igj}{IGJAnnotatedTypeFactory}.
@@ -483,30 +498,7 @@ specifies the trees (AST nodes) and types for which the framework should
 automatically add that qualifier.
 
 In short, the types and trees can be
-specified via any combination of five fields in \refclass{framework/qual}{ImplicitFor}:
-
-  \begin{itemize}
-  \item \code{trees}: an array of
-    \href{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{com.sun.source.tree.Tree.Kind}}, e.g.,
-    \code{NEW\_ARRAY} or \code{METHOD\_INVOCATION}
-  \item \code{types}: an array of
-    \refModelclass{type}{TypeKind}, e.g., \code{ARRAY}
-    or \code{BOOLEAN}
-  \item
-    \begin{sloppypar}
-    \code{treeClasses}: an array of class literals for classes
-    implementing \refTreeclass{tree}{Tree}, e.g.,
-    \code{LiteralTree.class} or \code{ExpressionTree.class}
-    \end{sloppypar}
-  \item \code{typeClasses}: an array of class literals for classes
-    implementing \code{javax.lang.model.type.TypeMirror}, e.g.,
-    \code{javax.lang.model.type.PrimitiveType}.  Often you should use
-    a subclass of \refclass{framework/type}{AnnotatedTypeMirror}.
-  \item \code{stringPatterns}: an array of regular expressions that will
-    be matched against
-    string literals, e.g., \code{"[01]+"} for a binary number.  Useful
-    for annotations that indicate the format of a string.
-  \end{itemize}
+specified via any combination of four fields in \refclass{framework/qual}{ImplicitFor}.
 
 For example, consider the definitions of the \refqualclass{checker/nullness/qual}{NonNull} and \refqualclass{checker/nullness/qual}{Nullable}
 type qualifiers:
@@ -516,23 +508,20 @@ type qualifiers:
 %END LATEX
 \begin{Verbatim}
   @SubtypeOf( { Nullable.class } )
-  @ImplicitFor(
-    types={TypeKind.PACKAGE},
-    typeClasses={AnnotatedPrimitiveType.class},
-    trees={
-      Tree.Kind.NEW_CLASS,
-      Tree.Kind.NEW_ARRAY,
-      Tree.Kind.PLUS,
+  @ImplicitFor(types = { TypeKind.PACKAGE,
+                         TypeKind.INT, TypeKind.BOOLEAN, TypeKind.CHAR,
+                         TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.LONG,
+                         TypeKind.SHORT, TypeKind.BYTE },
       // All literals except NULL_LITERAL:
-      Tree.Kind.BOOLEAN_LITERAL, Tree.Kind.CHAR_LITERAL, Tree.Kind.DOUBLE_LITERAL, Tree.Kind.FLOAT_LITERAL,
-      Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL, Tree.Kind.STRING_LITERAL
-    })
+      literals = { LiteralKind.BOOLEAN, LiteralKind.CHAR, LiteralKind.DOUBLE,
+                   LiteralKind.FLOAT, LiteralKind.INT, LiteralKind.LONG,
+                   LiteralKind.STRING })
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface NonNull {  }
 
 
   @SubtypeOf({})
-  @ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
+  @ImplicitFor(literals = { LiteralKind.NULL }, typeNames = { java.lang.Void.class })
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface Nullable { }
 \end{Verbatim}
@@ -1403,11 +1392,27 @@ Section~\ref{extending-visitor}).
 
 \begin{itemize}
 
-\item \code{-Aflowdotdir}:
-  Directory for .dot files that visualize the control flow graph of all the methods and code fragments
+\item \code{-Acfgviz}:
+  Mechanism to visualize the control flow graph (CFG) of
+  all the methods and code fragments
   analyzed by the dataflow analysis (Section~\ref{dataflow}).
   The graph also contains information about flow-sensitively refined
   types of various expressions at many program points.
+  The argument is a sequence of values or key-value pairs.
+  The first argument has to be the fully-qualified name of the
+  \<org.checkerframework.dataflow.cfg.CFGVisualizer> implementation
+  that should be used. The remaining values or key-value pairs are
+  passed to \<CFGVisualizer.init>.
+
+\item \code{-Aflowdotdir}:
+  Specify directory for \<.dot> files visualizing the CFG.
+  Short-hand for
+  \<-Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=xyz>
+
+\item \code{-Averbosecfg}:
+  Enable additional output in the CFG visualization.
+  Equivalent to passing \<verbose> to \<cfgviz>, e.g. as in
+  \<-Acfgviz=MyClass,verbose>
 
 \item \code{-AresourceStats}:
   Whether to output resource statistics at JVM shutdown.

@@ -13,14 +13,21 @@ Copyright (c) 2015 University of Washington. All rights reserved.
 from release_vars  import *
 from release_utils import *
 
-def print_usage():
-    print( "Usage:    python release_build.py [projects] [options]" )
-    print_projects( True, 1, 4 )
-    print( "\n  --auto  accepts or chooses the default for all prompts" )
-    print( "\n  --review-manual  review the documentation changes only and don't perform a full build" )
+# Turned on by the --debug command-line option.
+debug = False
+ant_debug = ""
 
-# If the relevant repos do not exist, clone them, otherwise, update them.
-def delete_and_clone_repos( auto ):
+
+def print_usage():
+    """Print usage information."""
+    print "Usage:    python release_build.py [projects] [options]"
+    print_projects(True, 1, 4)
+    print "\n  --auto  accepts or chooses the default for all prompts"
+    print "\n  --debug  turns on debugging mode which produces verbose output"
+    print "\n  --review-manual  review the documentation changes only; don't perform a full build"
+
+def delete_and_clone_repos(auto):
+    """If the relevant repos do not exist, clone them, otherwise, update them."""
     message = """Before building the release, we delete any old release repositories and then
 clone them again.  However, if you have had to run the script multiple times
 and no files have changed, you may skip this test.
@@ -40,92 +47,95 @@ The following repositories will be deleted then re-cloned from their origins:
     message += "Delete and re-clone?"
 
     if not auto:
-        if not prompt_yes_no(message):
-            print("WARNING: Continuing without refreshing repositories.\n")
+        if not prompt_yes_no(message, True):
+            print "WARNING: Continuing without refreshing repositories.\n"
             return
 
     for live_to_interm in LIVE_TO_INTERM_REPOS:
-        delete_and_clone( live_to_interm[0], live_to_interm[1], True )
+        delete_and_clone(live_to_interm[0], live_to_interm[1], True)
 
     for interm_to_build in INTERM_TO_BUILD_REPOS:
-        delete_and_clone( interm_to_build[0], interm_to_build[1], False )
+        delete_and_clone(interm_to_build[0], interm_to_build[1], False)
 
-    delete_and_clone( LIVE_PLUME_LIB, PLUME_LIB, False )
-    delete_and_clone( LIVE_PLUME_BIB, PLUME_BIB, False )
+    delete_and_clone(LIVE_PLUME_LIB, PLUME_LIB, False)
+    delete_and_clone(LIVE_PLUME_BIB, PLUME_BIB, False)
 
 def copy_cf_logo(cf_release_dir):
     dev_releases_png = os.path.join(cf_release_dir, "CFLogo.png")
-    cmd="rsync --times %s %s" % (LIVE_CF_LOGO, dev_releases_png)
+    cmd = "rsync --times %s %s" % (LIVE_CF_LOGO, dev_releases_png)
     execute(cmd)
 
-def get_afu_date( building_afu ):
+def get_afu_date(building_afu):
     if building_afu:
         return get_current_date()
     else:
-        afu_site = os.path.join( HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities" )
-        return extract_from_site( afu_site, "<!-- afu-date -->", "<!-- /afu-date -->" )
+        afu_site = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
+        return extract_from_site(afu_site, "<!-- afu-date -->", "<!-- /afu-date -->")
 
-def get_new_version( project_name, curr_version, auto ):
+def get_new_version(project_name, curr_version, auto):
     "Queries the user for the new version number; returns old and new version numbers."
 
     print "Current " + project_name + " version: " + curr_version
-    suggested_version = increment_version( curr_version )
+    suggested_version = increment_version(curr_version)
 
     if auto:
         new_version = suggested_version
     else:
-        new_version = prompt_w_suggestion( "Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
+        new_version = prompt_w_suggestion("Enter new version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
 
     print "New version: " + new_version
 
     if curr_version == new_version:
-        curr_version = prompt_w_suggestion( "Enter current version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$" )
+        curr_version = prompt_w_suggestion("Enter current version", suggested_version, "^\\d+\\.\\d+(?:\\.\\d+){0,2}$")
         print "Current version: " + curr_version
 
     return (curr_version, new_version)
 
-def create_interm_dir( project_name, version, auto ):
-    interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, project_name, "releases", version )
-    prompt_or_auto_delete( interm_dir, auto )
+def create_dev_website_release_version_dir(project_name, version, auto):
+    interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, project_name, "releases", version)
+    prompt_or_auto_delete(interm_dir, auto)
 
     execute("mkdir -p %s" % interm_dir, True, False)
     return interm_dir
 
-def create_interm_version_dirs( jsr308_version, afu_version, auto ):
+def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version, auto):
     # these directories correspond to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
-    jsr308_interm_dir = create_interm_dir("jsr308", jsr308_version, auto )
-    afu_interm_dir    = create_interm_dir("annotation-file-utilities", afu_version, auto )
-    checker_framework_interm_dir = create_interm_dir("checker-framework", jsr308_version, auto )
+    jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_version, auto)
+    afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", afu_version, auto)
+    checker_framework_interm_dir = create_dev_website_release_version_dir("checker-framework", jsr308_version, auto)
 
-    return ( jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir )
+    return (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir)
 
-def update_project_symlink( project_name, interm_dir ):
+def update_project_dev_website_symlink(project_name, release_version):
     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
-    link_path   = os.path.join( project_dev_site, "current" )
+    link_path = os.path.join(project_dev_site, "current")
 
-    print( "Writing symlink: " + link_path + "\nto directory: " + interm_dir )
-    force_symlink( interm_dir, link_path )
+    dev_website_relative_dir = os.path.join(RELEASES_SUBDIR, release_version)
 
-def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir):
+    print "Writing symlink: " + link_path + "\nto point to relative directory: " + dev_website_relative_dir
+    force_symlink(dev_website_relative_dir, link_path)
 
-    afu_build_properties = os.path.join( ANNO_FILE_UTILITIES, "build.properties" )
+def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr308_interm_dir):
+
+    afu_build_properties = os.path.join(ANNO_FILE_UTILITIES, "build.properties")
 
     # update jsr308_langtools versions
-    ant_props = "-Dlangtools=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (JSR308_LANGTOOLS, version, afu_version, afu_build_properties, afu_release_date )
+    ant_props = "-Dlangtools=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (JSR308_LANGTOOLS, version, afu_version, afu_build_properties, afu_release_date)
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd   = "ant -f release.xml %s update-langtools-versions " % ant_props
+    ant_cmd = "ant %s -f release.xml %s update-langtools-versions " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # TODO: perhaps make a "dist" target rather than listing out the relevant targets
     # build jsr308 binaries and documents but not website, fail if the tests don't pass
-    execute("ant -Dhalt.on.test.failure=true -Dlauncher.java=java clean-and-build-all-tools build-javadoc build-doclets", True, False, JSR308_MAKE)
+    ant_cmd = "ant %s -Dhalt.on.test.failure=true -Dlauncher.java=java clean-and-build-all-tools build-javadoc build-doclets" % (ant_debug)
+    execute(ant_cmd, True, False, JSR308_MAKE)
 
     jsr308ZipName = "jsr308-langtools-%s.zip" % version
 
     # zip up jsr308-langtools project and place it in jsr308_interm_dir
     ant_props = "-Dlangtools=%s  -Dcheckerframework=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (JSR308_LANGTOOLS, CHECKER_FRAMEWORK, jsr308_interm_dir, jsr308ZipName, version)
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd   = "ant -f release.xml %s zip-langtools " % ant_props
+    ant_cmd = "ant %s -f release.xml %s zip-langtools " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     # build jsr308 website
@@ -135,10 +145,10 @@ def build_jsr308_langtools_release(auto, version, afu_version, afu_release_date,
     # copy remaining website files to jsr308_interm_dir
     ant_props = "-Dlangtools=%s -Ddest.dir=%s" % (JSR308_LANGTOOLS, jsr308_interm_dir)
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd   = "ant -f release.xml %s langtools-website-docs " % ant_props
+    ant_cmd = "ant %s -f release.xml %s langtools-website-docs " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
-    update_project_symlink( "jsr308", jsr308_interm_dir )
+    update_project_dev_website_symlink("jsr308", version)
 
     return
 
@@ -146,49 +156,49 @@ def get_current_date():
     return CURRENT_DATE.strftime("%d %b %Y")
 
 
-def build_annotation_tools_release( auto, version, afu_interm_dir ):
-    jv = execute( 'java -version', True )
+def build_annotation_tools_release(version, afu_interm_dir):
+    execute('java -version', True)
 
     date = get_current_date()
 
     build = os.path.join(ANNO_FILE_UTILITIES, "build.xml")
-    ant_cmd   = "ant -buildfile %s -e update-versions -Drelease.ver=\"%s\" -Drelease.date=\"%s\"" % (build, version, date)
-    execute( ant_cmd )
+    ant_cmd = "ant %s -buildfile %s -e update-versions -Drelease.ver=\"%s\" -Drelease.date=\"%s\"" % (ant_debug, build, version, date)
+    execute(ant_cmd)
 
     # Deploy to intermediate site
-    ant_cmd   = "ant -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % ( build, version, afu_interm_dir )
-    execute( ant_cmd )
+    ant_cmd = "ant %s -buildfile %s -e web-no-checks -Dafu.version=%s -Ddeploy-dir=%s" % (ant_debug, build, version, afu_interm_dir)
+    execute(ant_cmd)
 
-    update_project_symlink( "annotation-file-utilities", afu_interm_dir )
+    update_project_dev_website_symlink("annotation-file-utilities", version)
 
-def build_and_locally_deploy_maven(version, checker_framework_interm_dir):
+def build_and_locally_deploy_maven(version):
     protocol_length = len("file://")
     maven_dev_repo_without_protocol = MAVEN_DEV_REPO[protocol_length:]
 
-    execute( "mkdir -p " + maven_dev_repo_without_protocol )
+    execute("mkdir -p " + maven_dev_repo_without_protocol)
 
     # Build and then deploy the maven plugin
-    mvn_install( MAVEN_PLUGIN_DIR )
-    mvn_deploy_mvn_plugin( MAVEN_PLUGIN_DIR, MAVEN_PLUGIN_POM, version, MAVEN_DEV_REPO )
+    mvn_install(MAVEN_PLUGIN_DIR)
+    mvn_deploy_mvn_plugin(MAVEN_PLUGIN_DIR, MAVEN_PLUGIN_POM, version, MAVEN_DEV_REPO)
 
     # Deploy jsr308 and checker-qual jars to maven repo
-    mvn_deploy( CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO )
-    mvn_deploy( CHECKER_QUAL,   CHECKER_QUAL_POM,   MAVEN_DEV_REPO )
-    mvn_deploy( JAVAC_BINARY,    JAVAC_BINARY_POM,    MAVEN_DEV_REPO )
-    mvn_deploy( JDK7_BINARY,     JDK7_BINARY_POM,     MAVEN_DEV_REPO )
-    mvn_deploy( JDK8_BINARY,     JDK8_BINARY_POM,     MAVEN_DEV_REPO )
+    mvn_deploy(CHECKER_BINARY, CHECKER_BINARY_POM, MAVEN_DEV_REPO)
+    mvn_deploy(CHECKER_QUAL, CHECKER_QUAL_POM, MAVEN_DEV_REPO)
+    mvn_deploy(JAVAC_BINARY, JAVAC_BINARY_POM, MAVEN_DEV_REPO)
+    mvn_deploy(JDK7_BINARY, JDK7_BINARY_POM, MAVEN_DEV_REPO)
+    mvn_deploy(JDK8_BINARY, JDK8_BINARY_POM, MAVEN_DEV_REPO)
 
     return
 
-def build_checker_framework_release(auto, version, afu_version, afu_release_date, checker_framework_interm_dir, jsr308_interm_dir, manual_only = False):
+def build_checker_framework_release(version, afu_version, afu_release_date, checker_framework_interm_dir, manual_only=False):
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
 
-    afu_build_properties = os.path.join( ANNO_FILE_UTILITIES, "build.properties" )
+    afu_build_properties = os.path.join(ANNO_FILE_UTILITIES, "build.properties")
 
     # update jsr308_langtools versions
     ant_props = "-Dchecker=%s -Drelease.ver=%s -Dafu.version=%s -Dafu.properties=%s -Dafu.release.date=\"%s\"" % (checker_dir, version, afu_version, afu_build_properties, afu_release_date)
     # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-    ant_cmd   = "ant -f release.xml %s update-checker-framework-versions " % ant_props
+    ant_cmd = "ant %s -f release.xml %s update-checker-framework-versions " % (ant_debug, ant_props)
     execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
     if not manual_only:
@@ -196,7 +206,8 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
         execute("sh checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # build the checker framework binaries and documents, run checker framework tests
-        execute("ant -Dhalt.on.test.failure=true dist-release", True, False, CHECKER_FRAMEWORK)
+        ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
+        execute(ant_cmd, True, False, CHECKER_FRAMEWORK)
 
     # make the Checker Framework Manual
     checker_manual_dir = os.path.join(checker_dir, "manual")
@@ -217,31 +228,31 @@ def build_checker_framework_release(auto, version, afu_version, afu_release_date
         # Create checker-framework-X.Y.Z.zip and put it in checker_framework_interm_dir
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, cfZipName, version)
         # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-        ant_cmd   = "ant -f release.xml %s zip-checker-framework " % ant_props
+        ant_cmd = "ant %s -f release.xml %s zip-checker-framework " % (ant_debug, ant_props)
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dfile.name=%s -Dversion=%s" % (checker_dir, checker_framework_interm_dir, "mvn-examples.zip", version)
         # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-        ant_cmd   = "ant -f release.xml %s zip-maven-examples " % ant_props
+        ant_cmd = "ant %s -f release.xml %s zip-maven-examples " % (ant_debug, ant_props)
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # copy the remaining checker-framework website files to checker_framework_interm_dir
         ant_props = "-Dchecker=%s -Ddest.dir=%s -Dmanual.name=%s -Ddataflow.manual.name=%s -Dchecker.webpage=%s" % (
-                     checker_dir, checker_framework_interm_dir, "checker-framework-manual",
-                     "checker-framework-dataflow-manual", "checker-framework-webpage.html"
+            checker_dir, checker_framework_interm_dir, "checker-framework-manual",
+            "checker-framework-dataflow-manual", "checker-framework-webpage.html"
         )
 
         # IMPORTANT: The release.xml in the directory where the Checker Framework is being built is used. Not the release.xml in the directory you ran release_build.py from.
-        ant_cmd   = "ant -f release.xml %s checker-framework-website-docs " % ant_props
-        execute( ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE )
+        ant_cmd = "ant %s -f release.xml %s checker-framework-website-docs " % (ant_debug, ant_props)
+        execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # clean no longer necessary files left over from building the checker framework tutorial
         checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
         execute("make clean", True, False, checker_tutorial_dir)
 
-        build_and_locally_deploy_maven(version, checker_framework_interm_dir)
+        build_and_locally_deploy_maven(version)
 
-        update_project_symlink( "checker-framework", checker_framework_interm_dir )
+        update_project_dev_website_symlink("checker-framework", version)
 
     return
 
@@ -258,33 +269,39 @@ def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
 
 def main(argv):
     # MANUAL Indicates a manual step
-    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully-automated when --auto is used.
-    # AUTO Indicates the step is fully-automated.
+    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully automated when --auto is used.
+    # AUTO Indicates the step is fully automated.
 
-    delete_if_exists( RELEASE_BUILD_COMPLETED_FLAG_FILE )
+    delete_if_exists(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
     set_umask()
 
-    projects_to_release = read_projects( argv, print_usage )
+    projects_to_release = read_projects(argv, print_usage)
 
     # Check for a --auto
     # If --auto then no prompt and just build a full release
     # Otherwise provide all prompts
+    auto = read_command_line_option(argv, "--auto")
+    global debug
+    global ant_debug
+    debug = read_command_line_option(argv, "--debug")
+    if debug:
+        ant_debug = "-debug"
 
-    auto = read_auto( argv )
-    review_documentation = read_review_manual( argv ) # Indicates whether to review documentation changes only and not perform a build.
-    add_project_dependencies( projects_to_release )
+    # Indicates whether to review documentation changes only and not perform a build.
+    review_documentation = read_command_line_option(argv, "--review-manual")
+    add_project_dependencies(projects_to_release)
 
-    afu_date = get_afu_date( projects_to_release[AFU_OPT] )
+    afu_date = get_afu_date(projects_to_release[AFU_OPT])
 
     # For each project, build what is necessary but don't push
 
     if not review_documentation:
-        print( "Building a new release of Langtools, Annotation Tools, and the Checker Framework!" )
+        print "Building a new release of Langtools, Annotation Tools, and the Checker Framework!"
     else:
-        print( "Reviewing the documentation for Langtools, Annotation Tools, and the Checker Framework." )
+        print "Reviewing the documentation for Langtools, Annotation Tools, and the Checker Framework."
 
-    print( "\nPATH:\n" + os.environ['PATH'] + "\n" )
+    print "\nPATH:\n" + os.environ['PATH'] + "\n"
 
     print_step("Build Step 1: Clone the build and intermediate repositories.") # SEMIAUTO
 
@@ -301,21 +318,21 @@ def main(argv):
 
     # check we are cloning LIVE -> INTERM, INTERM -> RELEASE
     print_step("\n1a: Clone repositories.") # SEMIAUTO
-    delete_and_clone_repos( auto )
+    delete_and_clone_repos(auto)
 
     # This step ensures the previous step worked. It checks to see if we have any modified files, untracked files,
     # or outgoing changesets. If so, it fails.
 
     print_step("1b: Verify repositories.") # SEMIAUTO
-    check_repos( INTERM_REPOS, True, True )
-    check_repos( BUILD_REPOS,  True, False )
+    check_repos(INTERM_REPOS, True, True)
+    check_repos(BUILD_REPOS, True, False)
 
     # The release script requires a number of common tools (Ant, Maven, make, etc...). This step checks
     # to make sure all tools are available on the command line in order to avoid wasting time in the
     # event a tool is missing late in execution.
 
     print_step("Build Step 2: Check tools.") # AUTO
-    check_tools( TOOLS )
+    check_tools(TOOLS)
 
     # Usually we increment the release by 0.0.1 per release unless there is a major change.
     # The release script will read the current version of the Checker Framework/Annotation File Utilities
@@ -329,20 +346,20 @@ def main(argv):
 
     print_step("Build Step 3: Determine release versions.") # SEMIAUTO
 
-    old_jsr308_version = current_distribution( CHECKER_FRAMEWORK )
-    (old_jsr308_version, jsr308_version) = get_new_version( "JSR308/Checker Framework", old_jsr308_version, auto )
+    old_jsr308_version = current_distribution(CHECKER_FRAMEWORK)
+    (old_jsr308_version, jsr308_version) = get_new_version("JSR308/Checker Framework", old_jsr308_version, auto)
 
-    if (old_jsr308_version == jsr308_version):
+    if old_jsr308_version == jsr308_version:
         print("It is *strongly discouraged* to not update the release version numbers for the Checker Framework " +
               "and jsr308-langtools even if no changes were made to these in a month. This would break so much " +
               "in the release scripts that they would become unusable.\n")
         prompt_until_yes()
 
     anno_html = os.path.join(ANNO_FILE_UTILITIES, "annotation-file-utilities.html")
-    old_afu_version = get_afu_version_from_html( anno_html )
-    (old_afu_version, afu_version)       = get_new_version( "Annotation File Utilities", old_afu_version, auto )
+    old_afu_version = get_afu_version_from_html(anno_html)
+    (old_afu_version, afu_version) = get_new_version("Annotation File Utilities", old_afu_version, auto)
 
-    if (old_afu_version == afu_version):
+    if old_afu_version == afu_version:
         print("The AFU version has not changed. It is recommended to include a small bug fix or doc update in every " +
               "AFU release so the version number can be updated, but when that is not possible, before and after running " +
               "release_build, you must:\n" +
@@ -357,21 +374,13 @@ def main(argv):
     if review_documentation:
         print_step("Build Step 4: Review changelogs.") # SEMIAUTO
 
-        print( "Verify that all changelog messages follow the guidelines found in README-maintainers.html#changelog_guide\n" )
+        print "Verify that all changelog messages follow the guidelines found in README-maintainers.html#changelog_guide\n"
 
-        print( "Ensure that the changelogs end with a line like" )
-        print( "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374\n" )
+        print "Ensure that the changelogs end with a line like"
+        print "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374\n"
 
-        print( "List all issues that have been closed since the last release:\n" )
-        # TODO The jsr308-langtools issues list does not seem to be updated often. Is there a better link or should this link be removed?
-        print( "https://bitbucket.org/typetools/jsr308-langtools/issues?status=resolved&sort=-updated_on" )
-        print( "https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc" )
-        print( "https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc" )
-        print( "" )
-        print( "Finally, please review commits since the last release to ensure they are reflected in the changelogs when appropriate:\n" )
-        print( "https://bitbucket.org/typetools/jsr308-langtools/commits/all" )
-        print( "https://github.com/typetools/annotation-tools/commits/master" )
-        print( "https://github.com/typetools/checker-framework/commits/master" )
+        print("To ensure the jsr308-langtools, AFU and Checker Framework changelogs are correct and complete, " +
+              "please follow the Content Guidelines found in README-maintainers.html#content_guidelines\n")
 
         prompt_until_yes()
 
@@ -380,56 +389,56 @@ def main(argv):
 
         print_step("Build Step 5: Review documentation changes.") # SEMIAUTO
 
-        print( "Please review the documentation changes since the last release to ensure that" )
-        print( " * All new features mentioned in the manuals appear in the changelogs, and" )
-        print( " * All new features mentioned in the changelogs are documented in the manuals." )
-        print( "" )
+        print "Please review the documentation changes since the last release to ensure that"
+        print " * All new features mentioned in the manuals appear in the changelogs, and"
+        print " * All new features mentioned in the changelogs are documented in the manuals."
+        print ""
 
         if projects_to_release[LT_OPT]:
-            propose_change_review( "the JSR308 documentation updates", old_jsr308_version, JSR308_LANGTOOLS,
-                                   JSR308_TAG_PREFIXES, JSR308_LT_DOC, TMP_DIR + "/jsr308.manual" )
+            propose_change_review("the JSR308 documentation updates", old_jsr308_version, JSR308_LANGTOOLS,
+                                  JSR308_TAG_PREFIXES, JSR308_LT_DOC, TMP_DIR + "/jsr308.manual")
 
         if projects_to_release[AFU_OPT]:
-            propose_change_review( "the Annotation File Utilities documentation updates", old_afu_version, ANNO_TOOLS,
-                                   AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual"  )
+            propose_change_review("the Annotation File Utilities documentation updates", old_afu_version, ANNO_TOOLS,
+                                  AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual")
 
         if projects_to_release[CF_OPT]:
-            build_checker_framework_release(False, jsr308_version, afu_date, "", "", manual_only = True)
+            build_checker_framework_release(jsr308_version, afu_version, afu_date, "", manual_only=True)
 
-            print("")
-            print("The built Checker Framework manual (HTML and PDF) can be found at " + CHECKER_MANUAL)
-            print("")
-            print("Verify that the manual PDF has no lines that are longer than the page width")
-            print("(it is acceptable for some lines to extend into the right margin).")
-            print("")
-            print("If any checkers have been added or removed, then verify that the lists")
-            print("of checkers in these manual sections are up to date:")
-            print(" * Introduction")
-            print(" * Run-time tests and type refinement")
-            print("and make sure that the checkers supported in the Eclipse plug-in are up to date")
-            print("by following the instructions at eclipse/README-developers.html#update_checkers")
-            print("")
+            print ""
+            print "The built Checker Framework manual (HTML and PDF) can be found at " + CHECKER_MANUAL
+            print ""
+            print "Verify that the manual PDF has no lines that are longer than the page width"
+            print "(it is acceptable for some lines to extend into the right margin)."
+            print ""
+            print "If any checkers have been added or removed, then verify that the lists"
+            print "of checkers in these manual sections are up to date:"
+            print " * Introduction"
+            print " * Run-time tests and type refinement"
+            print "and make sure that the checkers supported in the Eclipse plug-in are up to date"
+            print "by following the instructions at eclipse/README-developers.html#update_checkers"
+            print ""
 
-            propose_change_review( "the Checker Framework documentation updates", old_jsr308_version, CHECKER_FRAMEWORK,
-                                   CHECKER_TAG_PREFIXES, CHECKER_MANUAL, TMP_DIR + "/checker-framework.manual"  )
+            propose_change_review("the Checker Framework documentation updates", old_jsr308_version, CHECKER_FRAMEWORK,
+                                  CHECKER_TAG_PREFIXES, CHECKER_MANUAL, TMP_DIR + "/checker-framework.manual")
 
         return
 
     print_step("Build Step 4: Copy entire live site to dev site (~22 minutes).") # AUTO
 
-    if auto or prompt_yes_no("Proceed with copy of live site to dev site?"):
+    if auto or prompt_yes_no("Proceed with copy of live site to dev site?", True):
         # ************************************************************************************************
         # WARNING: BE EXTREMELY CAREFUL WHEN MODIFYING THIS COMMAND.  The --delete option is destructive
         # and its work cannot be undone.  If, for example, this command were modified to accidentally make
         # /cse/www2/types/ the target directory, the entire types directory could be wiped out.
-        execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev /cse/www2/types/ /cse/www2/types/dev")
+        execute("rsync --omit-dir-times --recursive --links --delete --quiet --exclude=dev --exclude=sparta/release/versions /cse/www2/types/ /cse/www2/types/dev")
         # ************************************************************************************************
 
     print_step("Build Step 5: Create directories for the current release on the dev site.") # SEMIAUTO
 
-    version_dirs = create_interm_version_dirs( jsr308_version, afu_version, auto )
-    jsr308_interm_dir            = version_dirs[0]
-    afu_interm_dir               = version_dirs[1]
+    version_dirs = create_dirs_for_dev_website_release_versions(jsr308_version, afu_version, auto)
+    jsr308_interm_dir = version_dirs[0]
+    afu_interm_dir = version_dirs[1]
     checker_framework_interm_dir = version_dirs[2]
 
     # The projects are built in the following order: JSR308-Langtools, Annotation File Utilities,
@@ -439,18 +448,18 @@ def main(argv):
     # of coffee and do something else until it is done.
 
     print_step("Build Step 6: Build projects and websites.") # AUTO
-    print( projects_to_release )
+    print projects_to_release
     if projects_to_release[LT_OPT]:
         print_step("6a: Build Type Annotations Compiler.")
-        build_jsr308_langtools_release(auto, jsr308_version, afu_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
+        build_jsr308_langtools_release(jsr308_version, afu_version, afu_date, jsr308_interm_dir)
 
     if projects_to_release[AFU_OPT]:
         print_step("6b: Build Annotation File Utilities.")
-        build_annotation_tools_release( auto, afu_version, afu_interm_dir )
+        build_annotation_tools_release(afu_version, afu_interm_dir)
 
     if projects_to_release[CF_OPT]:
         print_step("6c: Build Checker Framework.")
-        build_checker_framework_release(auto, jsr308_version, afu_version, afu_date, checker_framework_interm_dir, jsr308_interm_dir)
+        build_checker_framework_release(jsr308_version, afu_version, afu_date, checker_framework_interm_dir)
 
 
     print_step("Build Step 7: Overwrite .htaccess.") # SEMIAUTO
@@ -466,7 +475,7 @@ def main(argv):
     # scripts in the jsr308-release/scripts directory will never be checked in.
 
     print_step("Build Step 8: Commit projects to intermediate repos.") # AUTO
-    commit_to_interm_projects( jsr308_version, afu_version, projects_to_release )
+    commit_to_interm_projects(jsr308_version, afu_version, projects_to_release)
 
     # Adds read/write/execute group permissions to all of the new dev website directories
     # under http://types.cs.washington.edu/dev/ These directories need group read/execute
@@ -474,18 +483,18 @@ def main(argv):
 
     print_step("\n\nBuild Step 9: Add group permissions to repos.")
     for build in BUILD_REPOS:
-        ensure_group_access( build )
+        ensure_group_access(build)
 
     for interm in INTERM_REPOS:
-        ensure_group_access( interm )
+        ensure_group_access(interm)
 
     # At the moment, this will lead to output error messages because some metadata in some of the
     # dirs I think is owned by Mike or Werner.  We should identify these and have them fix it.
     # But as long as the processes return a zero exit status, we should be ok.
     print_step("\n\nBuild Step 10: Add group permissions to websites.") # AUTO
-    ensure_group_access( FILE_PATH_TO_DEV_SITE )
+    ensure_group_access(FILE_PATH_TO_DEV_SITE)
 
-    create_empty_file( RELEASE_BUILD_COMPLETED_FLAG_FILE )
+    create_empty_file(RELEASE_BUILD_COMPLETED_FLAG_FILE)
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

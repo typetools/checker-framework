@@ -18,11 +18,11 @@ import java.lang.annotation.Target;
  * <p>
  *
  * <b>Method parameters:</b>
- * A common example is that the <tt>equals</tt> method is annotated as follows:
+ * A common example is that the <code>equals</code> method is annotated as follows:
  * <pre><code>   @EnsuresNonNullIf(expression="#1", result=true)
  *   public boolean equals(@Nullable Object obj) { ... }</code></pre>
- * because, if <tt>equals</tt> returns true, then the first (#1) argument to
- * <tt>equals</tt> was not null.
+ * because, if <code>equals</code> returns true, then the first (#1) argument to
+ * <code>equals</code> was not null.
  * <p>
  *
  * <b>Fields:</b>
@@ -31,15 +31,15 @@ import java.lang.annotation.Target;
  *   public boolean isDerived() {
  *     return (this.derived != null);
  *   }</code></pre>
- * As another example, an <tt>Iterator</tt> may cache the next value that
- * will be returned, in which case its <tt>hasNext</tt> method could be
+ * As another example, an <code>Iterator</code> may cache the next value that
+ * will be returned, in which case its <code>hasNext</code> method could be
  * annotated as:
  * <pre><code>   @EnsuresNonNullIf(expression="next_cache", result=true)
  *   public boolean hasNext() {
  *     if (next_cache == null) return false;
  *     ...
  *   }</code></pre>
- * An <tt>EnsuresNonNullIf</tt> annotation that refers to a private field is
+ * An <code>EnsuresNonNullIf</code> annotation that refers to a private field is
  * useful for verifying that client code performs needed checks in the right
  * order, even if the client code cannot directly affect the field.
  * <p>

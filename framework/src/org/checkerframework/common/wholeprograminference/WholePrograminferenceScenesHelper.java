@@ -356,12 +356,6 @@ public class WholePrograminferenceScenesHelper {
             }
 
             try {
-                Class<? extends AnnotatedTypeMirror>[] classes =
-                        implicitFor.typeClasses();
-                for (Class<? extends AnnotatedTypeMirror> c : classes) {
-                    if (c.isInstance(atm)) return true;
-                }
-
                 Class<?>[] names = implicitFor.typeNames();
                 for (Class<?> c : names) {
                     TypeMirror underlyingtype = atm.getUnderlyingType();

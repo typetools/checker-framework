@@ -329,7 +329,7 @@ public class KeyForAnnotatedTypeFactory extends
   @Override
   protected TypeHierarchy createTypeHierarchy() {
       return new KeyForTypeHierarchy(checker, getQualifierHierarchy(),
-                                     checker.hasOption("ignoreRawTypeArguments"),
+                                     checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                                      checker.hasOption("invariantArrays"));
   }
 

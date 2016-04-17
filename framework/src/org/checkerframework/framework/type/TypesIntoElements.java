@@ -143,7 +143,7 @@ public class TypesIntoElements {
             // TODO: this is rather ugly: we do not want refinement from the
             // initializer of the field. We need a general way to get
             // the "defaulted" type of a variable.
-            type = ((GenericAnnotatedTypeFactory<?, ?, ?, ?>)atypeFactory).getDefaultedAnnotatedType(var, var.getInitializer());
+            type = ((GenericAnnotatedTypeFactory<?, ?, ?, ?>)atypeFactory).getAnnotatedTypeLhs(var);
         } else {
             type = atypeFactory.getAnnotatedType(var);
         }

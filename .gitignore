@@ -41,7 +41,6 @@ checker/examples/**/*.class
 
 # manual files
 bib
-doc
 *.synctex.gz
 manual.aux
 manual.blg
@@ -80,6 +79,8 @@ dataflow/manual/dataflow.log
 dataflow/manual/dataflow.out
 dataflow/manual/dataflow.pdf
 
+checker/tests/command-line/issue618/TwoCheckers.class
+checker/tests/command-line/issue618/out.txt
 checker/tests/nullness-extra/*.class
 checker/tests/nullness-extra/compat/Out.txt
 checker/tests/nullness-extra/compat/javax/annotation/Nullable.class
@@ -93,6 +94,9 @@ checker/tests/nullness-extra/shorthand/Out.txt
 checker/tests/nullness-extra/issue502/Issue502.class
 checker/tests/nullness-extra/issue502/Out.txt
 checker/tests/nullness-extra/issue594/Out.txt
+checker/tests/nullness-extra/issue607/Issue607.class
+checker/tests/nullness-extra/issue607/Issue607Interface.class
+checker/tests/nullness-extra/issue607/Issue607SuperClass.class
 checker/tests/nullness/generics/*.class
 checker/tests/nullness-temp/*.java
 checker/tests/nullness-temp/*.class

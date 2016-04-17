@@ -202,7 +202,7 @@ import com.sun.tools.javac.util.Log;
     ///
 
     // Additional stub files to use
-    // org.checkerframework.framework.type.AnnotatedTypeFactory.buildIndexTypes()
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "stubs",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
@@ -248,7 +248,7 @@ import com.sun.tools.javac.util.Log;
     /// Stub and JDK libraries
 
     // Ignore the standard jdk.astub file; primarily for testing or debugging.
-    // org.checkerframework.framework.type.AnnotatedTypeFactory.buildIndexTypes()
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "ignorejdkastub",
 
     // Whether to check that the annotated JDK is correctly provided
@@ -271,16 +271,42 @@ import com.sun.tools.javac.util.Log;
 
     /// Miscellaneous debugging options
 
-    // Directory for .dot files generated from the CFG
-    // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.analyze
+    // Mechanism to visualize the control flow graph (CFG).
+    // The argument is a sequence of values or key-value pairs.
+    // The first argument has to be the fully-qualified name of the
+    // org.checkerframework.dataflow.cfg.CFGVisualizer implementation
+    // that should be used. The remaining values or key-value pairs are
+    // passed to CFGVisualizer.init.
+    // For example:
+    //    -Acfgviz=MyViz,a,b=c,d
+    // instantiates class MyViz and calls CFGVisualizer.init
+    // with {"a" -> true, "b" -> "c", "d" -> true}.
+    "cfgviz",
+
+    // Directory for .dot files generated from the CFG visualization in
+    // org.checkerframework.dataflow.cfg.DOTCFGVisualizer
+    // as initialized by
+    // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.createCFGVisualizer()
+    // -Aflowdotdir=xyz
+    // is short-hand for
+    // -Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=xyz
     "flowdotdir",
 
-    // Enable additional output in the flow .dot files.
+    // Enable additional output in the CFG visualization.
+    // -Averbosecfg
+    // is short-hand for
+    // -Acfgviz=MyClass,verbose
     "verbosecfg",
 
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
+
+    // Set the cache size for caches in AnnotatedTypeFactory
+    "atfCacheSize",
+
+    // Sets AnnotatedTypeFactory shouldCache to false
+    "atfDoNotCache"
 
 })
 public abstract class SourceChecker

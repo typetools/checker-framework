@@ -17,7 +17,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>
  *
  * Internal form is the same as the binary name, but with periods
- * (<tt>.</tt>) replaced by forward slashes (<tt>/</tt>).
+ * (<code>.</code>) replaced by forward slashes (<code>/</code>).
  * <p>
  *
  * Programmers more often use the binary name, leaving the internal form as
