@@ -756,7 +756,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return Collections.emptyMap();
 
             if (actualType.getKind() == TypeKind.WILDCARD
-                    && ((AnnotatedWildcardType)actualType).getSuperBound() != null)
+                    && ((AnnotatedWildcardType)actualType).getSuperBound().getKind() != TypeKind.NULL)
                 actualType = ((AnnotatedWildcardType)actualType).getSuperBound();
 
             AnnotatedTypeMirror typeSuper = findType(type, actualType);
