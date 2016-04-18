@@ -30,8 +30,8 @@ build: classes
 
 ############## Validate annotated jdk against missing methods ##############
 
-SOURCES = $(shell find src/java src/javax -name '*.java')
-# CLASSES = $(shell find src/java src/javax -name '*.class')
+SOURCES = $(shell find src/java src/javax src/org -name '*.java')
+# CLASSES = $(shell find src/java src/javax src/org -name '*.class')
 DIFFS = $(patsubst src/%.java,build/%.diff, $(SOURCES))
 
 .PHONY: classes
@@ -42,13 +42,13 @@ classes: $(SOURCES)
 	@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build -processor $(JDKDIR) -AprintErrorStack -Awarns $?
 
 build/%.expected: build/%.class
-	$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
+	@$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
 
 build/%.actual: build/%.class
-	$(JAVAP) -Xbootclasspath/p:build $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
+	@$(JAVAP) -Xbootclasspath/p:build $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
 
 build/%.diff: build/%.expected build/%.actual
-	echo "validating class:" $(subst /,.,$*)
+	@echo "validating class:" $(subst /,.,$*)
 	diff $? > $@
 
 validate: classes $(DIFFS)
@@ -62,17 +62,17 @@ validate: classes $(DIFFS)
 # does not exist.  So long as the variables are not used on such a make
 # invocation, this doesn't cause a problem, but it is irritating (and a bit
 # sloppy).
-BUILD_CLASSES = $(shell find build/java build/javax -name '*.class')
+BUILD_CLASSES = $(shell find build/java build/javax build/org -name '*.class')
 JAIFS = $(patsubst build/%.class,build/%.jaif, $(BUILD_CLASSES))
 ANNOTATED = $(patsubst build/%.class,annotated/%.class, $(BUILD_CLASSES))
 
 build/%.jaif: build/%.class
-	$(AFU_SCRIPTS)/extract-annotations '$<'
+	@$(AFU_SCRIPTS)/extract-annotations '$<'
 
 jaifs: $(JAIFS)
 
 annotated/%.class: build/%.jaif
-	$(AFU_SCRIPTS)/insert-annotations '../$@' '$<'
+	@$(AFU_SCRIPTS)/insert-annotations '../$@' '$<'
 
 annotated: $(ANNOTATED)
 

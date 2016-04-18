@@ -33,6 +33,9 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
+import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.model.JavacElements;
@@ -555,5 +558,23 @@ public class AnnotationUtils {
             result.addAll(newQual);
         }
         map.put(key, Collections.unmodifiableSet(result));
+    }
+
+    /**
+     * Returns the annotations explicitly written on a constructor result.
+     * Callers should check that {@code constructorDeclaration} is in fact a declaration
+     * of a constructor.
+     *
+     * @param constructorDeclaration Declaration tree of constructor
+     * @return set of annotations explicit on the resulting type of the constructor
+     */
+    public static Set<AnnotationMirror> getExplicitAnnotationsOnConstructorResult(MethodTree constructorDeclaration) {
+        Set<AnnotationMirror> annotationSet = AnnotationUtils.createAnnotationSet();
+        ModifiersTree modifiersTree = constructorDeclaration.getModifiers();
+        if (modifiersTree != null) {
+            List<? extends AnnotationTree> annotationTrees = modifiersTree.getAnnotations();
+            annotationSet.addAll(InternalUtils.annotationsFromTypeAnnotationTrees(annotationTrees));
+        }
+        return annotationSet;
     }
 }

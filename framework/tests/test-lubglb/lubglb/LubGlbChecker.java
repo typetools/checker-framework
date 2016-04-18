@@ -16,7 +16,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 //    D   E
 //     \ /
 //      F
-import lubglb.quals.A;
 import lubglb.quals.B;
 import lubglb.quals.C;
 import lubglb.quals.D;

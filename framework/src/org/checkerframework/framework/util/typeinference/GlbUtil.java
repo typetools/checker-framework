@@ -114,10 +114,7 @@ public class GlbUtil {
      */
     private static AnnotatedNullType createBottom(final AnnotatedTypeFactory typeFactory,
                                            final Set<? extends AnnotationMirror> annos) {
-        final AnnotatedNullType nullType = (AnnotatedNullType)
-                typeFactory.toAnnotatedType(typeFactory.getProcessingEnv().getTypeUtils().getNullType(), false);
-        nullType.addAnnotations(annos);
-        return nullType;
+        return typeFactory.getAnnotatedNullType(annos);
     }
 
     /**

@@ -140,6 +140,8 @@ public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
 
     public RETURN_TYPE visitPrimitive_Primitive( AnnotatedPrimitiveType subtype, AnnotatedPrimitiveType supertype, PARAM param );
 
+    public RETURN_TYPE visitPrimitive_Typevar( AnnotatedPrimitiveType subtype, AnnotatedTypeVariable supertype, PARAM param );
+
     public RETURN_TYPE visitPrimitive_Union( AnnotatedPrimitiveType subtype, AnnotatedUnionType supertype, PARAM param );
 
     public RETURN_TYPE visitPrimitive_Wildcard( AnnotatedPrimitiveType subtype, AnnotatedWildcardType supertype, PARAM param );

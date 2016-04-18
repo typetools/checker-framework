@@ -2,17 +2,15 @@
 
 package org.checkerframework.checker.regex;
 
-import org.checkerframework.checker.regex.qual.Regex;
-import org.checkerframework.framework.qual.EnsuresQualifierIf;
-
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 /*>>>
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.regex.qual.*;
 import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 */
+
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Utility methods for regular expressions, most notably for testing whether
@@ -62,13 +60,13 @@ public final class RegexUtil {
    *   ... Pattern.compile(myString) ...
    * </pre>
    *
-   * Simply calling <tt>Pattern.compile</tt> would have a similar effect,
-   * in that <tt>PatternSyntaxException</tt> would be thrown at run time if
-   * <tt>myString</tt> is not a regular expression.  There are two problems
-   * with such an approach.  First, a client of <tt>myMethod</tt> might
-   * forget to handle the exception, since <tt>PatternSyntaxException</tt>
+   * Simply calling <code>Pattern.compile</code> would have a similar effect,
+   * in that <code>PatternSyntaxException</code> would be thrown at run time if
+   * <code>myString</code> is not a regular expression.  There are two problems
+   * with such an approach.  First, a client of <code>myMethod</code> might
+   * forget to handle the exception, since <code>PatternSyntaxException</code>
    * is not checked.  Also, the Regex Checker would issue a warning about
-   * the call to <tt>Pattern.compile</tt> that might throw an exception.
+   * the call to <code>Pattern.compile</code> that might throw an exception.
    * The above usage pattern avoids both problems.
    *
    * @see PatternSyntaxException
