@@ -458,13 +458,12 @@ public class QualifierDefaults {
         //        " gives elt: " + elt + "(" + elt.getKind() + ")");
 
         if (elt != null) {
-            boolean useFlow = (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>)
-                           && (((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory).getUseFlow());
+            boolean defaultTypeVarLocals = (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>)
+                           && (((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory).getShouldDefaultTypeVarLocals());
 
-            applyToTypeVar = useFlow
+            applyToTypeVar = defaultTypeVarLocals
                           && elt.getKind() == ElementKind.LOCAL_VARIABLE
-                          && type.getKind() == TypeKind.TYPEVAR
-                          && atypeFactory.type(tree).getKind() == TypeKind.TYPEVAR;
+                          && type.getKind() == TypeKind.TYPEVAR;
             applyDefaultsElement(elt, type);
             applyToTypeVar = false;
         }

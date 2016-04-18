@@ -144,7 +144,7 @@ public abstract class QualifierHierarchy {
      * <p>
      *
      * This is necessary for determining the type of a conditional
-     * expression (<tt>?:</tt>), where the type of the expression is the
+     * expression (<code>?:</code>), where the type of the expression is the
      * least upper bound of the true and false clauses.
      *
      * @param annos1 First collection of qualifiers
@@ -299,7 +299,7 @@ public abstract class QualifierHierarchy {
      * <p>
      *
      * This is necessary for determining the type of a conditional
-     * expression (<tt>?:</tt>), where the type of the expression is the
+     * expression (<code>?:</code>), where the type of the expression is the
      * least upper bound of the true and false clauses.
      *
      * <p>
@@ -491,7 +491,7 @@ public abstract class QualifierHierarchy {
      * <p>
      *
      * This is necessary for determining the type of a conditional
-     * expression (<tt>?:</tt>), where the type of the expression is the
+     * expression (<code>?:</code>), where the type of the expression is the
      * least upper bound of the true and false clauses.
      *
      * <p>

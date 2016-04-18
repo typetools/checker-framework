@@ -8,15 +8,15 @@ import java.lang.annotation.Target;
 
 /**
  * A method is called <em>deterministic</em> if it returns the same value
- * (according to <tt>==</tt>) every time it is called with the same
+ * (according to <code>==</code>) every time it is called with the same
  * parameters and in the same environment. The parameters include the
  * receiver, and the environment includes all of the Java heap (that is,
  * all fields of all objects and all static variables).
  * <p>
  * This annotation is important to pluggable type-checking because, after a
- * call to a <tt>@Deterministic</tt> method, flow-sensitive type refinement
+ * call to a <code>@Deterministic</code> method, flow-sensitive type refinement
  * can assume that anything learned about the first invocation is true
- * about subsequent invocations (so long as no non-<tt>@</tt>{@link
+ * about subsequent invocations (so long as no non-<code>@</code>{@link
  * SideEffectFree} method call intervenes).  For example,
  * the following code never suffers a null pointer
  * exception, so the Nullness Checker need not issue a warning:
@@ -24,9 +24,9 @@ import java.lang.annotation.Target;
         x.myDeterministicMethod().hashCode();
       }</code></pre>
  * <p>
- * Note that <tt>@Deterministic</tt> guarantees that the result is
- * identical according to <tt>==</tt>, <b>not</b> equal according to
- * <tt>equals</tt>.  This means that writing <tt>@Deterministic</tt> on a
+ * Note that <code>@Deterministic</code> guarantees that the result is
+ * identical according to <code>==</code>, <b>not</b> equal according to
+ * <code>equals</code>.  This means that writing <code>@Deterministic</code> on a
  * method that returns a reference is often erroneous unless the
  * returned value is cached or interned.
  * <p>
@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  * <p>
  * <b>Analysis:</b>
  * The Checker Framework performs a conservative analysis to verify a
- * <tt>@Deterministic</tt> annotation.  The Checker Framework issues a
+ * <code>@Deterministic</code> annotation.  The Checker Framework issues a
  * warning if the method uses any of the following Java constructs:
  * <ol>
  * <li>Assignment to any expression, except for local variables (and method
@@ -61,7 +61,7 @@ import java.lang.annotation.Target;
     </code>
 </pre>
  * </ol>
- * A constructor can be <tt>@Pure</tt>, but a constructor <em>invocation</em> is
+ * A constructor can be <code>@Pure</code>, but a constructor <em>invocation</em> is
  * not deterministic since it returns a different new object each time.
  * TODO: Side-effect-free constructors could be allowed to set their own fields.
  * <p>
@@ -80,7 +80,7 @@ import java.lang.annotation.Target;
  *
  * In fact, the rules are so conservative that checking is currently
  * disabled by default, but can be enabled via the
- * <tt>-AcheckPurityAnnotations</tt> command-line option.
+ * <code>-AcheckPurityAnnotations</code> command-line option.
  * <p>
  *
  * @checker_framework.manual #type-refinement-purity Side effects, determinism, purity, and flow-sensitive analysis

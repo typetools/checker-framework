@@ -5,6 +5,7 @@ import org.checkerframework.checker.igj.qual.*;
 */
 
 import org.checkerframework.common.reflection.MethodValChecker;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -496,6 +497,35 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             return getTypeFactory().getAnnotationFormatter().formatAnnotationMirror((AnnotationMirror)arg);
         } else {
             return super.processArg(arg);
+        }
+    }
+
+    protected boolean shouldAddShutdownHook() {
+        if (super.shouldAddShutdownHook() ||
+                getTypeFactory().getCFGVisualizer() != null) {
+            return true;
+        }
+        for (BaseTypeChecker checker : getSubcheckers()) {
+            if (checker.getTypeFactory().getCFGVisualizer() != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected void shutdownHook() {
+        super.shutdownHook();
+
+        CFGVisualizer<?, ?, ?> viz = getTypeFactory().getCFGVisualizer();
+        if (viz != null) {
+            viz.shutdown();
+        }
+
+        for (BaseTypeChecker checker : getSubcheckers()) {
+            viz = checker.getTypeFactory().getCFGVisualizer();
+            if (viz != null) {
+                viz.shutdown();
+            }
         }
     }
 }

@@ -266,11 +266,31 @@ import com.sun.tools.javac.util.Log;
 
     /// Miscellaneous debugging options
 
-    // Directory for .dot files generated from the CFG
-    // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.analyze
+    // Mechanism to visualize the control flow graph (CFG).
+    // The argument is a sequence of values or key-value pairs.
+    // The first argument has to be the fully-qualified name of the
+    // org.checkerframework.dataflow.cfg.CFGVisualizer implementation
+    // that should be used. The remaining values or key-value pairs are
+    // passed to CFGVisualizer.init.
+    // For example:
+    //    -Acfgviz=MyViz,a,b=c,d
+    // instantiates class MyViz and calls CFGVisualizer.init
+    // with {"a" -> true, "b" -> "c", "d" -> true}.
+    "cfgviz",
+
+    // Directory for .dot files generated from the CFG visualization in
+    // org.checkerframework.dataflow.cfg.DOTCFGVisualizer
+    // as initialized by
+    // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.createCFGVisualizer()
+    // -Aflowdotdir=xyz
+    // is short-hand for
+    // -Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=xyz
     "flowdotdir",
 
-    // Enable additional output in the flow .dot files.
+    // Enable additional output in the CFG visualization.
+    // -Averbosecfg
+    // is short-hand for
+    // -Acfgviz=MyClass,verbose
     "verbosecfg",
 
     // Whether to output resource statistics at JVM shutdown
@@ -279,9 +299,6 @@ import com.sun.tools.javac.util.Log;
 
     // Set the cache size for caches in AnnotatedTypeFactory
     "atfCacheSize",
-
-    // Sets AnnotatedTypeFactory shouldReadCache to false
-    "atfDoNotReadCache",
 
     // Sets AnnotatedTypeFactory shouldCache to false
     "atfDoNotCache"

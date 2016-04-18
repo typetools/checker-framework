@@ -18,9 +18,9 @@ import java.lang.annotation.Target;
  * For example, if an expression's type is <em>@Regex(2) String</em>, then
  * at run time its value will be a legal regular expression with at least
  * two capturing groups. The type states that possible run-time values
- * include <tt>"(a*)(b*)"</tt>, <tt>"a(b?)c(d?)e"</tt>, and
- * <tt>"(.)(.)(.)"</tt>, but not <tt>"hello"</tt> nor <tt>"(good)bye"</tt>
- * nor <tt>"(a*)(b*)("</tt>.
+ * include <code>"(a*)(b*)"</code>, <code>"a(b?)c(d?)e"</code>, and
+ * <code>"(.)(.)(.)"</code>, but not <code>"hello"</code> nor <code>"(good)bye"</code>
+ * nor <code>"(a*)(b*)("</code>.
  */
 //@ImplicitFor(trees = { Tree.Kind.NULL_LITERAL })
 @Retention(RetentionPolicy.RUNTIME)

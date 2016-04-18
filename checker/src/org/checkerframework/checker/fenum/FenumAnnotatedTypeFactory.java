@@ -2,7 +2,6 @@ package org.checkerframework.checker.fenum;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 

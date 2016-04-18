@@ -9,7 +9,9 @@ import org.checkerframework.dataflow.analysis.AnalysisResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.CFGBuilder;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.ControlFlowGraph;
+import org.checkerframework.dataflow.cfg.DOTCFGVisualizer;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGLambda;
 import org.checkerframework.dataflow.cfg.UnderlyingAST.CFGMethod;
@@ -29,8 +31,8 @@ import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.Unqualified;
@@ -44,8 +46,10 @@ import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
@@ -73,13 +77,12 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -124,13 +127,26 @@ public abstract class GenericAnnotatedTypeFactory<
 
     // Flow related fields
 
-    /** Should use flow-sensitive type refinement analysis?
+    /**
+     * Should use flow-sensitive type refinement analysis?
      * This value can be changed when an AnnotatedTypeMirror
-     * without annotations from data flow is required. */
-    protected boolean useFlow;
+     * without annotations from data flow is required.
+     *
+     * @see #getAnnotatedTypeLhs(Tree)
+     */
+    private boolean useFlow;
 
     /** Is this type factory configured to use flow-sensitive type refinement? */
     private final boolean everUseFlow;
+
+    /**
+     * Should the local variable default annotation be applied to type variables?<p>
+     * It is initialized to true if data flow is used by the checker.
+     * It is set to false when getting the assignment context for type argument inference.
+     *
+     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeLhsNoTypeVarDefault
+     */
+    private boolean shouldDefaultTypeVarLocals;
 
     /** An empty store. */
     private Store emptyStore;
@@ -146,6 +162,7 @@ public abstract class GenericAnnotatedTypeFactory<
         super(checker);
 
         this.everUseFlow = useFlow;
+        this.shouldDefaultTypeVarLocals = useFlow;
         this.useFlow = useFlow;
         this.analyses = new LinkedList<>();
         this.scannedClasses = new HashMap<>();
@@ -156,6 +173,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
         this.initializationStore = null;
         this.initializationStaticStore = null;
+
+        this.cfgVisualizer = createCFGVisualizer();
 
         // Add common aliases.
         // addAliasedDeclAnnotation(checkers.nullness.quals.Pure.class,
@@ -524,6 +543,33 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Gets the type of the resulting constructor call of a MemberReferenceTree.
+     *
+     * @param memberReferenceTree MemberReferenceTree where the member is a constructor
+     * @param constructorType     AnnotatedExecutableType of the declaration of the constructor
+     * @return AnnotatedTypeMirror of the resulting type of the constructor
+     */
+    public AnnotatedTypeMirror getResultingTypeOfConstructorMemberReference(MemberReferenceTree memberReferenceTree,
+                                                                            AnnotatedExecutableType constructorType) {
+        assert memberReferenceTree.getMode() == MemberReferenceTree.ReferenceMode.NEW;
+
+        // The return type for constructors should only have explicit annotations from the constructor
+        // Recreate some of the logic from TypeFromTree.visitNewClass here.
+
+        // The return type of the constructor will be the type of the expression of the member reference tree.
+        AnnotatedDeclaredType constructorReturnType = (AnnotatedDeclaredType)
+                fromTypeTree(memberReferenceTree.getQualifierExpression());
+
+        // Keep only explicit annotations and those from @Poly
+        AnnotatedTypes.keepOnlyExplicitConstructorAnnotations(this, constructorReturnType, constructorType);
+
+        // Now add back defaulting.
+        annotateImplicit(memberReferenceTree.getQualifierExpression(), constructorReturnType);
+        return constructorReturnType;
+
+    }
+
+    /**
      * Track the state of org.checkerframework.dataflow analysis scanning for each class tree in the
      * compilation unit.
      */
@@ -675,7 +721,7 @@ public abstract class GenericAnnotatedTypeFactory<
             Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue = new LinkedList<>();
 
             try {
-                List<MethodTree> methods = new ArrayList<>();
+                List<CFGMethod> methods = new ArrayList<>();
                 for (Tree m : ct.getMembers()) {
                     switch (m.getKind()) {
                     case METHOD:
@@ -697,7 +743,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
                         // Wait with scanning the method until all other members
                         // have been processed.
-                        methods.add(mt);
+                        CFGMethod met = new CFGMethod(mt, ct);
+                        methods.add(met);
                         break;
                     case VARIABLE:
                         VariableTree vt = (VariableTree) m;
@@ -705,7 +752,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         // analyze initializer if present
                         if (initializer != null) {
                             boolean isStatic = vt.getModifiers().getFlags().contains(Modifier.STATIC);
-                            analyze(queue, lambdaQueue, new CFGStatement(vt),
+                            analyze(queue, lambdaQueue, new CFGStatement(vt, ct),
                                     fieldValues, classTree, true, true, isStatic);
                             Value value = flowResult.getValue(initializer);
                             if (value != null) {
@@ -726,7 +773,7 @@ public abstract class GenericAnnotatedTypeFactory<
                         break;
                     case BLOCK:
                         BlockTree b = (BlockTree) m;
-                        analyze(queue, lambdaQueue, new CFGStatement(b), fieldValues, ct, true, true, b.isStatic());
+                        analyze(queue, lambdaQueue, new CFGStatement(b, ct), fieldValues, ct, true, true, b.isStatic());
                         break;
                     default:
                         assert false : "Unexpected member: " + m.getKind();
@@ -737,11 +784,10 @@ public abstract class GenericAnnotatedTypeFactory<
                 // Now analyze all methods.
                 // TODO: at this point, we don't have any information about
                 // fields of superclasses.
-                for (MethodTree mt : methods) {
-                    boolean isInitCode = TreeUtils.isConstructor(mt);
-                    analyze(queue, lambdaQueue,
-                            new CFGMethod(mt, TreeUtils.enclosingClass(getPath(mt))),
-                                fieldValues, classTree, isInitCode, false, false);
+                for (CFGMethod met : methods) {
+                    analyze(queue, lambdaQueue, met,
+                            fieldValues, classTree,
+                            TreeUtils.isConstructor(met.getMethod()), false, false);
                 }
 
                 while (lambdaQueue.size() > 0) {
@@ -789,14 +835,21 @@ public abstract class GenericAnnotatedTypeFactory<
      * @param currentClass The class we are currently looking at.
      * @param isInitializationCode Are we analyzing a (non-static) initializer block of a class.
      */
-    protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
-            List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
+    protected void analyze(Queue<ClassTree> queue,
+            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
+            UnderlyingAST ast,
+            List<Pair<VariableElement, Value>> fieldValues,
+            ClassTree currentClass,
             boolean isInitializationCode, boolean updateInitializationStore, boolean isStatic) {
-        analyze(queue, lambdaQueue, ast, fieldValues, currentClass, isInitializationCode, updateInitializationStore, isStatic, null);
+        analyze(queue, lambdaQueue, ast, fieldValues, currentClass,
+                isInitializationCode, updateInitializationStore, isStatic, null);
     }
 
-    protected void analyze(Queue<ClassTree> queue, Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue, UnderlyingAST ast,
-            List<Pair<VariableElement, Value>> fieldValues, ClassTree currentClass,
+    protected void analyze(Queue<ClassTree> queue,
+            Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
+            UnderlyingAST ast,
+            List<Pair<VariableElement, Value>> fieldValues,
+            ClassTree currentClass,
             boolean isInitializationCode, boolean updateInitializationStore, boolean isStatic,
             Store lambdaStore) {
         CFGBuilder builder = new CFCFGBuilder(checker, this);
@@ -860,20 +913,9 @@ public abstract class GenericAnnotatedTypeFactory<
             }
         }
 
-        if (checker.hasOption("flowdotdir")) {
-
-            String checkerName = checker.getClass().getSimpleName();
-            if (checkerName.endsWith("Checker") || checkerName.endsWith("checker")) {
-                checkerName = checkerName.substring(0, checkerName.length() - "checker".length());
-            }
-
-            String dotfilename = checker.getOption("flowdotdir") + "/"
-                    + dotOutputFileName(ast) + "_" + checkerName + ".dot";
-            // make path safe for Windows
-            dotfilename = dotfilename.replace("<", "_").replace(">", "");
-            System.err.println("Output to DOT file: " + dotfilename);
-            boolean verbose = checker.hasOption("verbosecfg");
-            analyses.getFirst().outputToDotFile(dotfilename, verbose);
+        if (checker.hasOption("flowdotdir") ||
+                checker.hasOption("cfgviz")) {
+            handleCFGViz();
         }
 
         analyses.removeFirst();
@@ -885,42 +927,75 @@ public abstract class GenericAnnotatedTypeFactory<
         }
     }
 
-    /** @return The file name used for DOT output. */
-    protected String dotOutputFileName(UnderlyingAST ast) {
-        if (ast.getKind() == UnderlyingAST.Kind.ARBITRARY_CODE) {
-            return "initializer-" + ast.hashCode();
-        } else if (ast.getKind() == UnderlyingAST.Kind.METHOD) {
-            return ((CFGMethod) ast).getMethod().getName().toString();
-        }
-        assert false;
-        return null;
+    /**
+     * Handle the visualization of the CFG, by calling {@code visualizeCFG}
+     * on the first analysis. This method gets invoked in {@code analyze} if
+     * on of the visualization options is provided.
+     */
+    protected void handleCFGViz() {
+        analyses.getFirst().visualizeCFG();
     }
 
+    /**
+     * Returns the type of the left-hand side of an assignment without
+     * applying local variable defaults to type variables.
+     *
+     * The type variables that are types of local variables are defaulted to
+     * top so that they can be refined by dataflow.  When these types are used
+     * as context during type argument inference, this default is too conservative.
+     * So this method is used instead of
+     * {@link GenericAnnotatedTypeFactory#getAnnotatedTypeLhs(Tree)}.
+     *
+     * {@link TypeArgInferenceUtil#assignedToVariable(AnnotatedTypeFactory, Tree)} explains
+     * why a different type is used.
+     *
+     * @param lhsTree left-hand side of an assignment
+     * @return AnnotatedTypeMirror of {@code lhsTree}
+     */
+    public AnnotatedTypeMirror getAnnotatedTypeLhsNoTypeVarDefault(Tree lhsTree) {
+        boolean old = this.shouldDefaultTypeVarLocals;
+        shouldDefaultTypeVarLocals = false;
+        AnnotatedTypeMirror type = getAnnotatedTypeLhs(lhsTree);
+        this.shouldDefaultTypeVarLocals = old;
+        return type;
+    }
 
     /**
-     * Get the defaulted type of a variable, without considering
-     * flow inference from the initializer expression.
-     * This is needed to determine the type of the assignment context,
-     * which should have the "default" meaning, without flow inference.
-     * TODO: describe and generalize
+     * Returns the type of a left-hand side of an assignment.
+     *
+     * The default implementation returns the type without considering
+     * dataflow type refinement.  Subclass can override this method
+     * and add additional logic for computing the type of a LHS.
+     *
+     * @param lhsTree left-hand side of an assignment
+     * @return AnnotatedTypeMirror of {@code lhsTree}
      */
-    public AnnotatedTypeMirror getDefaultedAnnotatedType(Tree tree) {
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
         AnnotatedTypeMirror res = null;
-        if (tree instanceof VariableTree) {
-            res = fromMember(tree);
-            annotateImplicit(tree, res, false);
-        } else if (tree instanceof AssignmentTree) {
-            res = fromExpression(((AssignmentTree) tree).getVariable());
-            annotateImplicit(tree, res, false);
-        } else if (tree instanceof CompoundAssignmentTree) {
-            res = fromExpression(((CompoundAssignmentTree) tree).getVariable());
-            annotateImplicit(tree, res, false);
-        } else if (TreeUtils.isExpressionTree(tree)) {
-            res = fromExpression((ExpressionTree) tree);
-            annotateImplicit(tree, res, false);
-        } else {
-            assert false;
+        boolean oldUseFlow = useFlow;
+        boolean oldShouldCache = shouldCache;
+        useFlow = false;
+        // Don't cache the result because getAnnotatedType(lhsTree) could
+        // be called from elsewhere and would expect flow-sensitive type refinements.
+        shouldCache = false;
+        switch (lhsTree.getKind()) {
+        case VARIABLE:
+        case IDENTIFIER:
+        case MEMBER_SELECT:
+        case ARRAY_ACCESS:
+            res = getAnnotatedType(lhsTree);
+            break;
+        default:
+            if (TreeUtils.isTypeTree(lhsTree)) {
+                // lhsTree is a type tree at the pseudo assignment of a returned expression to declared return type.
+                res = getAnnotatedType(lhsTree);
+            } else {
+                ErrorReporter.errorAbort("GenericAnnotatedTypeFactory: Unexpected tree passed to getAnnotatedTypeLhs. "
+                                         + "lhsTree: " + lhsTree + " Tree.Kind: " + lhsTree.getKind());
+            }
         }
+        useFlow = oldUseFlow;
+        shouldCache = oldShouldCache;
         return res;
     }
 
@@ -1041,18 +1116,102 @@ public abstract class GenericAnnotatedTypeFactory<
         return emptyStore;
     }
 
-    public boolean getUseFlow() {
-        return useFlow;
-    }
-
-    public void setUseFlow(boolean useFlow) {
-        this.useFlow = useFlow;
-    }
-
     /**
      * @see BaseTypeChecker#getTypeFactoryOfSubchecker(Class)
      */
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return checker.getTypeFactoryOfSubchecker(checkerClass);
+    }
+
+    /**
+     * Should the local variable default annotation be applied to type variables?<p>
+     * It is initialized to true if data flow is used by the checker.
+     * It is set to false when getting the assignment context for type argument inference.
+     *
+     * @see GenericAnnotatedTypeFactory#getAnnotatedTypeLhsNoTypeVarDefault
+     * @return shouldDefaultTypeVarLocals
+     */
+    public boolean getShouldDefaultTypeVarLocals() {
+        return shouldDefaultTypeVarLocals;
+    }
+
+    /**
+     * The CFGVisualizer to be used by all CFAbstractAnalysis instances.
+     */
+    protected final CFGVisualizer<Value, Store, TransferFunction> cfgVisualizer;
+
+    protected CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() {
+        if (checker.hasOption("flowdotdir")) {
+            String flowdotdir = checker.getOption("flowdotdir");
+            boolean verbose = checker.hasOption("verbosecfg");
+
+            Map<String, Object> args = new HashMap<>(2);
+            args.put("outdir", flowdotdir);
+            args.put("verbose", verbose);
+            args.put("checkerName", getCheckerName());
+
+            CFGVisualizer<Value, Store, TransferFunction> res =
+                    new DOTCFGVisualizer<Value, Store, TransferFunction>();
+            res.init(args);
+            return res;
+        } else if (checker.hasOption("cfgviz")) {
+            String cfgviz = checker.getOption("cfgviz");
+            String[] opts = cfgviz.split(",");
+
+            Map<String, Object> args = processCFGVisualizerOption(opts);
+            if (!args.containsKey("verbose")) {
+                boolean verbose = checker.hasOption("verbosecfg");
+                args.put("verbose", verbose);
+            }
+            args.put("checkerName", getCheckerName());
+
+            CFGVisualizer<Value, Store, TransferFunction> res =
+                    BaseTypeChecker.invokeConstructorFor(opts[0], null, null);
+            res.init(args);
+            return res;
+        }
+        // Nobody expected to use cfgVisualizer if neither option given.
+        return null;
+    }
+
+    /* A simple utility method to determine a short checker name to be
+     * used by CFG visualizations.
+     */
+    private String getCheckerName() {
+        String checkerName = checker.getClass().getSimpleName();
+        if (checkerName.endsWith("Checker") || checkerName.endsWith("checker")) {
+            checkerName = checkerName.substring(0, checkerName.length() - "checker".length());
+        }
+        return checkerName;
+    }
+
+    /* Parse values or key-value pairs into a map from value to true, respectively,
+     * from the value to the key.
+     */
+    private Map<String, Object> processCFGVisualizerOption(String[] opts) {
+        Map<String, Object> res = new HashMap<>(opts.length - 1);
+        // Index 0 is the visualizer class name and can be ignored.
+        for (int i = 1; i < opts.length; ++i) {
+            String opt = opts[i];
+            String[] split = opt.split("=");
+            switch (split.length) {
+            case 1:
+                res.put(split[0], true);
+                break;
+            case 2:
+                res.put(split[0], split[1]);
+                break;
+            default:
+                ErrorReporter.errorAbort("Too many `=` in cfgviz option: " + opt);
+            }
+        }
+        return res;
+    }
+
+    /**
+     * The CFGVisualizer to be used by all CFAbstractAnalysis instances.
+     */
+    public CFGVisualizer<Value, Store, TransferFunction> getCFGVisualizer() {
+        return cfgVisualizer;
     }
 }

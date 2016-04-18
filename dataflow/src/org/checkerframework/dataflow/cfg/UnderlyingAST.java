@@ -110,14 +110,22 @@ public abstract class UnderlyingAST {
 
         protected final Tree code;
 
-        public CFGStatement(Tree code) {
+        /** The class tree this method belongs to. */
+        protected final ClassTree classTree;
+
+        public CFGStatement(Tree code, ClassTree classTree) {
             super(Kind.ARBITRARY_CODE);
             this.code = code;
+            this.classTree = classTree;
         }
 
         @Override
         public Tree getCode() {
             return code;
+        }
+
+        public ClassTree getClassTree() {
+            return classTree;
         }
 
         @Override

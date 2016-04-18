@@ -7,7 +7,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ConstructorReturnUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
@@ -31,6 +30,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberReferenceTree;
@@ -194,6 +194,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             case INTERFACE: // o instanceof MyClass.InnerInterface
             case ANNOTATION_TYPE:
                 return f.fromElement(elt);
+            default:
+                // Fall-through.
         }
 
         if (node.getIdentifier().contentEquals("this")) {
@@ -299,7 +301,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // Therefore, ensure to only add the qualifiers that are explicitly on
         // the constructor, but then take the possibly substituted qualifier.
         AnnotatedExecutableType ex = f.constructorFromUse(node).first;
-        ConstructorReturnUtil.keepOnlyExplicitConstructorAnnotations(f, type, ex);
+        AnnotatedTypes.keepOnlyExplicitConstructorAnnotations(f, type, ex);
 
         return type;
     }
@@ -386,6 +388,12 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
     @Override
     public AnnotatedTypeMirror visitParameterizedType(ParameterizedTypeTree node, AnnotatedTypeFactory f) {
+        return f.fromTypeTree(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitIntersectionType(IntersectionTypeTree node,
+                                                     AnnotatedTypeFactory f) {
         return f.fromTypeTree(node);
     }
 }

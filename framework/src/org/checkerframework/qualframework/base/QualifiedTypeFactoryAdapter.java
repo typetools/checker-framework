@@ -122,7 +122,7 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
                 getCheckerAdapter().getTypeMirrorConverter(),
                 getCheckerAdapter(),
                 getQualifierHierarchyAdapter(),
-                checker.hasOption("ignoreRawTypeArguments"),
+                checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                 checker.hasOption("invariantArrays"));
 
         // TODO: Move this check (and others like it) into the adapter

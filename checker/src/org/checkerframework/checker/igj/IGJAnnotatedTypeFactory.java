@@ -35,7 +35,6 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -764,8 +763,14 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (typeSuper.getKind() != TypeKind.TYPEVAR)
                 return visit(typeSuper, actualType);
 
-            assert typeSuper.getKind() == actualType.getKind() : actualType;
-            assert type.getKind() == actualType.getKind() : actualType;
+            assert typeSuper.getKind() == actualType.getKind()
+                : String.format("Kinds differ: typeSuper (kind=%s) %s ; actualType (kind=%s) %s",
+                                typeSuper, typeSuper.getKind(),
+                                actualType, actualType.getKind());
+            assert type.getKind() == actualType.getKind()
+                : String.format("Kinds differ: type (kind=%s) %s ; actualType (kind=%s) %s",
+                                type, type.getKind(),
+                                actualType, actualType.getKind());
             AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
 
             typeVar.add(type.getUnderlyingType());
@@ -847,7 +852,7 @@ public class IGJAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TypeHierarchy createTypeHierarchy() {
         return new IGJTypeHierarchy(checker, getQualifierHierarchy(),
-                                    checker.hasOption("ignoreRawTypeArguments"),
+                                    checker.getOption("ignoreRawTypeArguments", "true").equals("true"),
                                     checker.hasOption("invariantArrays"));
     }
 
