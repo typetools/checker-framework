@@ -838,10 +838,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an AnnotatedTypeMirror representing the qualified type of {@code elt}.
+     * Returns an AnnotatedTypeMirror representing the annotated type of {@code elt}.
      *
      * @param elt the element
-     * @return the qualified type of {@code elt}
+     * @return the annotated type of {@code elt}
      *
      */
     public AnnotatedTypeMirror getAnnotatedType(Element elt) {
@@ -869,10 +869,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an AnnotatedTypeMirror representing the qualified type of {@code tree}.
+     * Returns an AnnotatedTypeMirror representing the annotated type of {@code tree}.
      *
      * @param tree the AST node
-     * @return the qualified type of {@code tree}
+     * @return the annotated type of {@code tree}
      */
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
         if (tree == null) {
