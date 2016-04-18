@@ -290,7 +290,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitNewClass(NewClassTree node,
                                              AnnotatedTypeFactory f) {
         // constructorFromUse return type has implicits
-        // so use fromNewClass which does diamond inference but does not do any implicits
+        // so use fromNewClass which does diamond inference and only
+        // contains explicit annotations and those inherited from the class declaration
         AnnotatedDeclaredType type = f.fromNewClass(node);
 
         // Enum constructors lead to trouble.
@@ -305,7 +306,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // Therefore, ensure to only add the qualifiers that are explicitly on
         // the constructor, but then take the possibly substituted qualifier.
         AnnotatedExecutableType ex = f.constructorFromUse(node).first;
-        AnnotatedTypes.keepOnlyExplicitConstructorAnnotations(f, type, ex);
+        AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(f, type, ex);
 
         return type;
     }

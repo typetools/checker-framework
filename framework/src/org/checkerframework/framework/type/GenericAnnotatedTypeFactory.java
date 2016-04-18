@@ -561,7 +561,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 fromTypeTree(memberReferenceTree.getQualifierExpression());
 
         // Keep only explicit annotations and those from @Poly
-        AnnotatedTypes.keepOnlyExplicitConstructorAnnotations(this, constructorReturnType, constructorType);
+        AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(this, constructorReturnType, constructorType);
 
         // Now add back defaulting.
         annotateImplicit(memberReferenceTree.getQualifierExpression(), constructorReturnType);
