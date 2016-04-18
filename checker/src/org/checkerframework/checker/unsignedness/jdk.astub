@@ -1,0 +1,24 @@
+import org.checkerframework.checker.unsignedness.qual.*;
+
+package java.lang;
+
+class Integer {
+    public static String toUnsignedString(@Unsigned int i, int radix);
+
+    static int formatUnsignedInt(@Unsigned int val, int shift, char[] buf, int offset, int len);
+
+    public static String toUnsignedString(@Unsigned int i);
+
+    public static @Unsigned int parseUnsignedInt(String s, int radix);
+
+    public static @Unsigned int parseUnsignedInt(String s);
+
+    public static int compareUnsigned(@Unsigned int x, @Unsigned int y);
+
+    public static @Constant long toUnsignedLong(@Unsigned int x);
+
+    public static @Unsigned int divideUnsigned(@Unsigned int dividend, @Unsigned int divisor);
+
+    public static @Unsigned int remainderUnsigned(@Unsigned int dividend, @Unsigned int divisor);
+
+}
