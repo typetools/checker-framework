@@ -33,25 +33,25 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
         case DIVIDE:
         case REMAINDER:
             if (leftOpType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("binary.operation.type.incompatible",
+                checker.report(Result.failure("binary.operation.type.incompatible.unsignedlhs",
                                               kind), node);
             } else if (rightOpType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("binary.operation.type.incompatible",
+                checker.report(Result.failure("binary.operation.type.incompatible.unsignedrhs",
                                               kind), node);
             }
             break;
 
         case RIGHT_SHIFT:
             if (leftOpType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("binary.operation.shift.type.incompatible",
-                                              kind, "unsigned"), node);
+                checker.report(Result.failure("binary.operation.shift.signed.type.incompatible",
+                                              kind), node);
             }
             break;
 
         case UNSIGNED_RIGHT_SHIFT:
             if (leftOpType.hasAnnotation(Signed.class)) {
-                checker.report(Result.failure("binary.operation.shift.type.incompatible",
-                                              kind, "signed"), node);
+                checker.report(Result.failure("binary.operation.shift.unsigned.type.incompatible",
+                                              kind), node);
             }
             break;
 
@@ -63,10 +63,10 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
         case LESS_THAN:
         case LESS_THAN_EQUAL:
             if (leftOpType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("binary.comparison.type.incompatible",
+                checker.report(Result.failure("binary.comparison.type.incompatible.unsignedlhs",
                                               kind), node);
             } else if (rightOpType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("binary.comparison.type.incompatible",
+                checker.report(Result.failure("binary.comparison.type.incompatible.unsignedrhs",
                                               kind), node);
             }
             break;
@@ -74,26 +74,24 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
         case EQUAL_TO:
         case NOT_EQUAL_TO:
             if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
-                checker.report(Result.failure("binary.comparison.type.incompatible.unsignedlhs",
+                checker.report(Result.failure("binary.comparison.type.incompatible.mixed.unsignedlhs",
                                               kind), node);
             } else if (leftOpType.hasAnnotation(Signed.class) && rightOpType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("binary.comparison.type.incompatible.unsignedrhs",
+                checker.report(Result.failure("binary.comparison.type.incompatible.mixed.unsignedrhs",
                                               kind), node);
             }
             break;
 
         default:
             if (leftOpType.hasAnnotation(Unsigned.class) && rightOpType.hasAnnotation(Signed.class)) {
-                checker.report(Result.failure("binary.operation.type.incompatible.unsignedlhs",
+                checker.report(Result.failure("binary.operation.type.incompatible.mixed.unsignedlhs",
                                               kind), node);
             } else if (leftOpType.hasAnnotation(Signed.class) && rightOpType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("binary.operation.type.incompatible.unsignedrhs",
+                checker.report(Result.failure("binary.operation.type.incompatible.mixed.unsignedrhs",
                                               kind), node);
             }
             break;
-
         }
-        
         return super.visitBinary(node, p);
     }
 
@@ -112,34 +110,39 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
         case DIVIDE_ASSIGNMENT:
         case REMAINDER_ASSIGNMENT:
             if (varType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("compound.assignment.type.incompatible",
+                checker.report(Result.failure("compound.assignment.type.incompatible.unsigned.variable",
                                               kind), node);
             } else if (exprType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("compound.assignment.type.incompatible",
+                checker.report(Result.failure("compound.assignment.type.incompatible.unsigned.expression",
                                               kind), node);
             }
             break;
 
         case RIGHT_SHIFT_ASSIGNMENT:
             if (varType.hasAnnotation(Unsigned.class)) {
-                checker.report(Result.failure("compound.assignment.shift.type.incompatible",
+                checker.report(Result.failure("compound.assignment.shift.signed.type.incompatible",
                                               kind, "unsigned"), node);
             }
             break;
 
         case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
             if (varType.hasAnnotation(Signed.class)) {
-                checker.report(Result.failure("compound.assignment.shift.type.incompatible",
+                checker.report(Result.failure("compound.assignment.shift.unsigned.type.incompatible",
                                               kind, "signed"), node);
             }
             break;
 
         case LEFT_SHIFT_ASSIGNMENT:
         default:
+            if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)) {
+                checker.report(Result.failure("compound.assignment.type.incompatible.mixed.unsigned.variable",
+                                              kind), node);
+            } else if (varType.hasAnnotation(Signed.class) && exprType.hasAnnotation(Unsigned.class)) {
+                checker.report(Result.failure("compound.assignment.type.incompatible.mixed.unsigned.expression",
+                                              kind), node);
+            }
             break;
-
         }
-        
         return super.visitCompoundAssignment(node, p);
     }
 }

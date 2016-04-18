@@ -6,28 +6,28 @@ public class Comparisons {
 
         boolean testRes;
 
-        //:: error: (binary.comparison.type.incompatible)
+        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
         testRes = unsigned < unknown;
 
-        //:: error: (binary.comparison.type.incompatible)
+        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
         testRes = unknown < unsigned;
 
-        //:: error: (binary.comparison.type.incompatible)
+        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
         testRes = unsigned <= unknown;
 
-        //:: error: (binary.comparison.type.incompatible)
+        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
         testRes = unknown <= unsigned;
 
-        //:: error: (binary.comparison.type.incompatible)
+        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
         testRes = unsigned > unknown;
 
-        //:: error: (binary.comparison.type.incompatible)
+        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
         testRes = unknown > unsigned;
 
-        //:: error: (binary.comparison.type.incompatible)
+        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
         testRes = unsigned >= unknown;
 
-        //:: error: (binary.comparison.type.incompatible)
+        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
         testRes = unknown >= unsigned;
     }
 
@@ -35,16 +35,16 @@ public class Comparisons {
 
         boolean testRes;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
+        //:: error: (binary.comparison.type.incompatible.mixed.unsignedlhs)
         testRes = unsigned == signed;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
+        //:: error: (binary.comparison.type.incompatible.mixed.unsignedrhs)
         testRes = signed == unsigned;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
+        //:: error: (binary.comparison.type.incompatible.mixed.unsignedlhs)
         testRes = unsigned != signed;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
+        //:: error: (binary.comparison.type.incompatible.mixed.unsignedrhs)
         testRes = signed != unsigned;
     }
 }
