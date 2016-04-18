@@ -62,7 +62,7 @@ distribution and is also available online at
 \myurl{http://types.cs.washington.edu/checker-framework/current/api/}.
 
 \textbf{Tips:}  Before you start coding, first write the user manual (see
-Section~\ref{documenting-a checker}), which explains the type system, what
+Section~\ref{documenting-a-checker}), which explains the type system, what
 it guarantees, how to use it, etc.  This will help you flesh out your goals
 and the concepts, which are easier to understand and change in text than in
 an imprementation.  Once you have settled on type rules, you may also want
@@ -1392,11 +1392,27 @@ Section~\ref{extending-visitor}).
 
 \begin{itemize}
 
-\item \code{-Aflowdotdir}:
-  Directory for .dot files that visualize the control flow graph of all the methods and code fragments
+\item \code{-Acfgviz}:
+  Mechanism to visualize the control flow graph (CFG) of
+  all the methods and code fragments
   analyzed by the dataflow analysis (Section~\ref{dataflow}).
   The graph also contains information about flow-sensitively refined
   types of various expressions at many program points.
+  The argument is a sequence of values or key-value pairs.
+  The first argument has to be the fully-qualified name of the
+  \<org.checkerframework.dataflow.cfg.CFGVisualizer> implementation
+  that should be used. The remaining values or key-value pairs are
+  passed to \<CFGVisualizer.init>.
+
+\item \code{-Aflowdotdir}:
+  Specify directory for \<.dot> files visualizing the CFG.
+  Short-hand for
+  \<-Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=xyz>
+
+\item \code{-Averbosecfg}:
+  Enable additional output in the CFG visualization.
+  Equivalent to passing \<verbose> to \<cfgviz>, e.g. as in
+  \<-Acfgviz=MyClass,verbose>
 
 \item \code{-AresourceStats}:
   Whether to output resource statistics at JVM shutdown.

@@ -33,6 +33,11 @@ public class ImmutabilityVisitor extends BaseTypeVisitor<ImmutabilityAnnotatedTy
         return true;
     }
 
+    @Override
+    public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
+        return true;
+    }
+
     //
     // OIGJ Rule 2. Field assignment
     // Field assignment o.f = ... is legal  iff

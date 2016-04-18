@@ -2,6 +2,7 @@ package org.checkerframework.qualframework.base.dataflow;
 
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.flow.CFStore;
 
 /**
@@ -34,21 +35,22 @@ public class QualStore<Q> implements Store<QualStore<Q>> {
         return adapter.canAlias(a, b);
     }
 
-    @Override
-    public boolean hasDOToutput() {
-        return adapter.hasDOToutput();
-    }
-
-    @Override
-    public String toDOToutput() {
-        return adapter.toDOToutput();
-    }
-
     public CFStore getUnderlyingStore() {
         return adapter;
     }
 
     public void insertValue(Receiver r, Q regexAnnotation) {
         adapter.insertValue(r, analysis.getConverter().getAnnotation(regexAnnotation));
+    }
+
+    public void visualize(CFGVisualizer<?, QualStore<Q>, ?> viz) {
+        // TODO: this method currently isn't called. The corresponding
+        // method on the adapter is called by the AnnotatedTypeFactory.
+        // In the future, the QualifiedTypeFactory should call this method
+        // and something like the following might work:
+        // CFGVisualizer<?, ?, ?> adaptViz = (CFGVisualizer<?, ?, ?>) viz;
+        // this.adapter.visualize((CFGVisualizer <?, CFStore, ?>) adaptViz);
+        // however, the mismatch between the QualStore<Q> and the
+        // CFStore might require some further refactorings.
     }
 }
