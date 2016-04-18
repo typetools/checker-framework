@@ -2091,14 +2091,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * @see #getAnnotatedType(Element)
+     * @see #fromElement(Element)
      */
     public final AnnotatedDeclaredType fromElement(TypeElement elt) {
         return (AnnotatedDeclaredType)fromElement((Element)elt);
     }
 
     /**
-     * @see #getAnnotatedType(Element)
+     * @see #fromElement(Element)
      */
     public final AnnotatedExecutableType fromElement(ExecutableElement elt) {
         return (AnnotatedExecutableType)fromElement((Element)elt);
