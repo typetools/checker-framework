@@ -622,9 +622,7 @@ if (typecheck) {
                 "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
         ]
             compile.options.compilerArgs += ['-source', '7', '-target', '7']
-            options.bootClasspath = "${configurations.checkerFrameworkJavac.asPath}:"
-                                  + System.getProperty("sun.boot.class.path") + ":"
-                                  + options.bootClasspath
+            options.bootClasspath = "${configurations.checkerFrameworkJavac.asPath}:" + System.getProperty("    sun.boot.class.path") + ":" + options.bootClasspath
             options.fork = true
             options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
         }
