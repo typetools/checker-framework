@@ -24,6 +24,7 @@ public class IGJTest extends CheckerFrameworkTest {
     public static String[] getTestDirs() {
         // TODO: expected suppress warnings in the all-systems test,
         // correct any unexpected warnings, and add that directory.
+        // Also see https://github.com/typetools/checker-framework/issues/669
         return new String[]{"igj"};
     }
 }
