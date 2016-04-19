@@ -518,7 +518,7 @@ public class LockAnnotatedTypeFactory
 
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        insertLockCheckerGuardedByIfJcipOrJavaxGuardedByIsPresent(elt, type);
+        translateJcipAndJavaxAnnotations(elt, type);
 
         super.annotateImplicit(elt, type);
     }
@@ -526,7 +526,7 @@ public class LockAnnotatedTypeFactory
     @Override
     public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         if (tree.getKind() == Tree.Kind.VARIABLE) {
-            insertLockCheckerGuardedByIfJcipOrJavaxGuardedByIsPresent(InternalUtils.symbol((VariableTree) tree), type);
+            translateJcipAndJavaxAnnotations(InternalUtils.symbol((VariableTree) tree), type);
         }
 
         super.annotateImplicit(tree, type, useFlow);
@@ -538,10 +538,10 @@ public class LockAnnotatedTypeFactory
      * for that field, inserts the corresponding {@code @org.checkerframework.checker.lock.qual.GuardedBy}
      * type qualifier into that AnnotatedTypeMirror.
      *
-     * @param element the Element for a field declaration (this method does nothing if the Element is not for a field declaration)
-     * @param atm the AnnotatedTypeMirror for the field - the {@code @GuardedBy} type qualifier will be inserted here
+     * @param element any Element (this method does nothing if the Element is not for a field declaration)
+     * @param atm the AnnotatedTypeMirror for element - the {@code @GuardedBy} type qualifier will be inserted here
      */
-    private void insertLockCheckerGuardedByIfJcipOrJavaxGuardedByIsPresent(Element element, AnnotatedTypeMirror atm) {
+    private void translateJcipAndJavaxAnnotations(Element element, AnnotatedTypeMirror atm) {
         if (!element.getKind().isField()) {
             return;
         }
