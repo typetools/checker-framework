@@ -311,8 +311,9 @@ def main(argv):
     # Every time we run release_build, changes are committed to the intermediate repository from build but NOT to
     # the release repositories. If we are running the build script multiple times without actually committing the
     # release then these changes need to be cleaned before we run the release_build script again.
-    # Since the move to Git, cleaning can be error prone, so we have moved to deleting the repos entirely
-    # and cloning.
+    # The "Clone/update repositories" step updates the repositories with respect to the live repositories on
+    # GitHub/Bitbucket, but it is the "Verify repositories" step that ensures that they are clean,
+    # i.e. indistinguishable from a freshly cloned repository.
 
     # check we are cloning LIVE -> INTERM, INTERM -> RELEASE
     print_step("\n1a: Clone/update repositories.") # SEMIAUTO

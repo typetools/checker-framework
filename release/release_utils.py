@@ -399,24 +399,14 @@ def hg_push(repo_root):
     else:
         execute('hg -R %s push' % repo_root)
 
-# Clean repo, pull the latest changes and update
+# Pull the latest changes and update
 def update_repo(path, bareflag):
     if is_git(path):
         if bareflag:
-            # Reset the HEAD to a safe number of commits ago, removing any
-            # discrepancies between the local bare repo and the origin repo
-            # TODO: find a way to determine the exact commit that the HEAD
-            # needs to be reset to.
-            execute('git -C %s reset --soft HEAD^^^^^^^^^^^^^^^^^^^^^^^^^^' % path)
             execute('git -C %s fetch origin master:master' % path)
         else:
-            clean_repo(path)
             execute('git -C %s pull' % path)
-            # Clean again, in case the pull brought in changes from the origin repo,
-            # requiring a re-evaluation of whether the repo is clean.
-            clean_repo(path)
     else:
-        clean_repo(path)
         execute('hg -R %s pull -u' % path)
 
 # Commit the changes we made for this release
