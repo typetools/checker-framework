@@ -26,6 +26,7 @@ classfiles() {
 
 # extract-annotations on directory tree
 extract() {
+    (
     cd "$1"
     [ -z "*" ] && echo "empty directory!" && return 1
     find * -name '*\.jaif' -delete
@@ -36,6 +37,7 @@ extract() {
         [ $? -ne 0 ] && echo "$f" && return 1
         mv "$D/*.jaif" "$D/$B.jaif"
     done
+    )
     return 0
 }
 
@@ -50,7 +52,7 @@ fi
 cd jdiffs/a
 for f in `find * -name '*\.jaif' -print` ; do
     mkdir -p "../d/`dirname $f`"
-    bash "${JAIDIFF}" "$f" "../b/$f" > "../d/$f" && continue
+    bash ${JAIDIFF} $f ../b/$f > ../d/$f && continue
     echo "d failed" && exit $?
 done
 
