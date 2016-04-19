@@ -1,9 +1,2 @@
-The IGJ tests use a different framework than all the other tests.
-We should probably standardize.
-See file checker-framework/checker/tests/src/tests/IGJTest.java
-
-To add a new file to the test suite, see
-  ../README
-
-To run the tests, do
-  ant -e -find build.xml igj-tests
+The old IGJ tests that use a different framework than all the other tests.
+New files should be added to checker-framework/checker/tests/igj.

@@ -17,15 +17,16 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-//TODO: The IGJ has a completely different testing mechanism from the rest of the framework
-//TODO: We should probably standardize
-// Also see file FailedTests, that contains currently-failing tests.
 /**
- * JUnit tests for the IGJ annotation checker.
+ * Old style JUnit tests for the IGJ annotation checker.
+ * This class runs the test in igj-old that require a diagnostic file with expected errors rather
+ * the expected errors appear in the Java file.  Do not add test to this file, instead add tests to
+ * the igj directory, which will be run by IGJTest
+ * @see tests.IGJTest
  */
 public class OldStyleIGJTest {
 
-    private final String checkerDir = "tests" + File.separator + "igj";
+    private final String checkerDir = "tests" + File.separator + "igj-old";
     private final Class<?> checker = org.checkerframework.checker.igj.IGJChecker.class;
     private final String checkerName = checker.getName();
     private final List<String> checkerOptions = Arrays.asList("-Anomsgtext");
@@ -116,11 +117,6 @@ public class OldStyleIGJTest {
         runTestWithDefault("MethodInvocation.out", false, "MethodInvocation.java");
     }
 
-    /** Tests Immutable Object */
-    @Test public void testImmutableObject() {
-        runTest();
-    }
-
     /** Tests ListNode */
     // This test is skipped because the IGJ/OIGJ org.checkerframework.checker are not fully compatible with the latest
     // version of the Checker Framework.
@@ -184,76 +180,14 @@ public class OldStyleIGJTest {
         runTestWithDefault("Assignability.out", false, "Assignability.java");
     }
 
-    @Test public void testThrowCatch() {
-        runTest();
-    }
-
-    @Test public void testOverrideGenericMethod() {
-        runTest();
-    }
-
-    @Test public void testArrays() {
-        runTest();
-    }
-
-    @Test public void testPrimitives() {
-        runTest();
-    }
-
-    @Test public void testFlow() {
-        runTest();
-    }
-
-    // This test is skipped because the IGJ/OIGJ org.checkerframework.checker are not fully compatible with the latest
-    // version of the Checker Framework.
-    // See issue https://github.com/typetools/checker-framework/issues/199.
-    @Ignore
-    @Test public void testRandomTests() {
-        runTest();
-    }
-
-    @Test public void testMutableEnum() {
-        runTest();
-    }
 
     @Test public void testInnerClassesThis() {
-        runTest();
-    }
-
-    // This test is skipped because the IGJ/OIGJ org.checkerframework.checker are not fully compatible with the latest
-    // version of the Checker Framework.
-    // See issue https://github.com/typetools/checker-framework/issues/199.
-    @Ignore
-    @Test public void testInnerClassesInvok() {
-        runTest();
-    }
-
-    @Test public void testIResolution() {
-        runTest();
-    }
-
-    // This test is skipped because the IGJ/OIGJ org.checkerframework.checker are not fully compatible with the latest
-    // version of the Checker Framework.
-    // See issue https://github.com/typetools/checker-framework/issues/199.
-    @Ignore
-    @Test public void testConstructors() {
         runTest();
     }
 
     @Test public void testGenericClass() { runTest(); }
     @Test public void testManifestClass()   { runTest(); }
     @Test public void testMutableClass()    { runTest(); }
-    @Test public void testUnannoFieldArrayAccess() { runTest(); }
-
     // TODO: MDE will add
     // @Test public void testSubclassing() { test(); }
-
-    // currently failing
-    // @Test public void testFailedTests() { test(); }
-
-    @Test public void testALTest1() {
-        runTest();
-    }
-
-    @Test public void testImplicitBounds() { runTest(); }
 }

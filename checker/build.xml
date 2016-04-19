@@ -680,6 +680,9 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.IGJTest"/>
         </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.OldStyleIGJTest"/>
+        </antcall>
     </target>
 
     <target name="oigj-tests" depends="jar,build-tests"
