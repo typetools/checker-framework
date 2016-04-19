@@ -2,12 +2,13 @@
 // https://github.com/typetools/checker-framework/issues/668
 // @skip-test
 
-// Does not terminate when -AuseDefaultsForUncheckedCode=source is used
-// but does otherwise.
+import org.checkerframework.checker.igj.qual.IGJBottom;
+import org.checkerframework.checker.igj.qual.ReadOnly;
+
 public class Issue668 {
     public static boolean flag = false;
-    Issue668 field;
-    void foo(Issue668 param) {
+    @ReadOnly Issue668 field;
+    void foo(@IGJBottom Issue668 param) {
         Issue668 myObject = param;
         for (Issue668 otherObject = param; myObject != null; ) {
             myObject = otherObject.field;
