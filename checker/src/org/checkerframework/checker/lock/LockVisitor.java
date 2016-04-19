@@ -10,6 +10,7 @@ import org.checkerframework.checker.lock.qual.EnsuresLockHeldIf;
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
+import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -100,19 +101,52 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         // A user may not annotate a primitive type, a boxed primitive type or a String
         // with any qualifier from the @GuardedBy hierarchy.
 
-        AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(node);
-        TypeMirror tm = atm.getUnderlyingType();
-        if ((TypesUtils.isBoxedPrimitive(tm) ||
-             TypesUtils.isPrimitive(tm) ||
-             TypesUtils.isString(tm)) &&
-            (atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDSATISFIED) ||
-             atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDEDBY) ||
-             atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYUNKNOWN) ||
-             atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYBOTTOM))){
-            checker.report(Result.failure("primitive.type.guardedby"), node);
+        TypeMirror tm = InternalUtils.typeOf(node);
+
+        if (TypesUtils.isBoxedPrimitive(tm) ||
+            TypesUtils.isPrimitive(tm) ||
+            TypesUtils.isString(tm)) {
+            AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(node);
+            if (atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDSATISFIED) ||
+                atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDEDBY) ||
+                atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYUNKNOWN) ||
+                atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYBOTTOM)){
+                checker.report(Result.failure("primitive.type.guardedby"), node);
+            }
         }
+
+        issueErrorIfMoreThanOneGuardedByAnnotationPresent(node);
+
         return super.visitVariable(node, p);
     }
+
+    /**
+     * Issues an error if two or more of the following annotations are present on a variable declaration:<br>
+     * {@code @org.checkerframework.checker.lock.qual.GuardedBy}<br>
+     * {@code @net.jcip.annotations.GuardedBy}<br>
+     * {@code @javax.annotation.concurrent.GuardedBy}
+     *
+     * @param variableTree the VariableTree for the variable declaration used to determine if
+     * multiple @GuardedBy annotations are present and to report the error via checker.report.
+     */
+    private void issueErrorIfMoreThanOneGuardedByAnnotationPresent(VariableTree variableTree) {
+        int guardedByAnnotationCount = 0;
+
+        List<AnnotationMirror> annos = InternalUtils
+                .annotationsFromTypeAnnotationTrees(variableTree.getModifiers().getAnnotations());
+        for(AnnotationMirror anno : annos) {
+            if (AnnotationUtils.areSameByClass(anno, GuardedBy.class) ||
+                AnnotationUtils.areSameByClass(anno, net.jcip.annotations.GuardedBy.class) ||
+                AnnotationUtils.areSameByClass(anno, javax.annotation.concurrent.GuardedBy.class)) {
+                guardedByAnnotationCount++;
+                if (guardedByAnnotationCount > 1) {
+                    checker.report(Result.failure("multiple.guardedby.annotations"), variableTree);
+                    return;
+                }
+            }
+        }
+    }
+
 
     @Override
     public LockAnnotatedTypeFactory createTypeFactory() {
@@ -129,6 +163,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     @Override
     public Void visitMethod(MethodTree node, Void p) {
         ExecutableElement methodElement = TreeUtils.elementFromDeclaration(node);
+
+        issueErrorIfMoreThanOneLockPreconditionMethodAnnotationPresent(methodElement, node);
 
         SideEffectAnnotation sea = atypeFactory.methodSideEffectAnnotation(methodElement, true);
 
@@ -175,6 +211,37 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         }
 
         return super.visitMethod(node, p);
+    }
+
+    /**
+     * Issues an error if two or more of the following annotations are present on a method:<br>
+     * {@code @Holding}<br>
+     * {@code @net.jcip.annotations.GuardedBy}<br>
+     * {@code @javax.annotation.concurrent.GuardedBy}
+     *
+     * @param methodElement the ExecutableElement for the method call referred to by {@code node}
+     * @param treeForErrorReporting the MethodTree used to report the error via checker.report.
+     */
+    private void issueErrorIfMoreThanOneLockPreconditionMethodAnnotationPresent(ExecutableElement methodElement,
+            MethodTree treeForErrorReporting) {
+        int lockPreconditionAnnotationCount = 0;
+
+        if (atypeFactory.getDeclAnnotation(methodElement, Holding.class) != null) {
+            lockPreconditionAnnotationCount++;
+        }
+
+        if (atypeFactory.getDeclAnnotation(methodElement, net.jcip.annotations.GuardedBy.class) != null) {
+            lockPreconditionAnnotationCount++;
+        }
+
+        if (lockPreconditionAnnotationCount < 2 &&
+            atypeFactory.getDeclAnnotation(methodElement, javax.annotation.concurrent.GuardedBy.class) != null) {
+            lockPreconditionAnnotationCount++;
+        }
+
+        if (lockPreconditionAnnotationCount > 1) {
+            checker.report(Result.failure("multiple.lock.precondition.annotations"), treeForErrorReporting);
+        }
     }
 
     /**
@@ -660,7 +727,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * Issues an error if the receiver of an unlock() call is not effectively final.
      *
      * @param node the MethodInvocationTree for any method call
-     * @param methodElement the ExecutableElement methodElement for the method call referred to by {@code node}
+     * @param methodElement the ExecutableElement for the method call referred to by {@code node}
      * @param lockExpression the receiver tree of {@code node}. Can be null.
      */
     private void ensureReceiverOfExplicitUnlockCallIsEffectivelyFinal(MethodInvocationTree node, ExecutableElement methodElement,

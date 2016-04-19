@@ -25,15 +25,19 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -510,5 +514,67 @@ public class LockAnnotatedTypeFactory
                new PropagationTreeAnnotator(this),
                new ImplicitsTreeAnnotator(this)
         );
+    }
+
+    @Override
+    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+        translateJcipAndJavaxAnnotations(elt, type);
+
+        super.annotateImplicit(elt, type);
+    }
+
+    @Override
+    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+        if (tree.getKind() == Tree.Kind.VARIABLE) {
+            translateJcipAndJavaxAnnotations(InternalUtils.symbol((VariableTree) tree), type);
+        }
+
+        super.annotateImplicit(tree, type, useFlow);
+    }
+
+    /**
+     * Given a field declaration with a {@code @net.jcip.annotations.GuardedBy} or
+     * {@code javax.annotation.concurrent.GuardedBy} annotation and an AnnotatedTypeMirror
+     * for that field, inserts the corresponding {@code @org.checkerframework.checker.lock.qual.GuardedBy}
+     * type qualifier into that AnnotatedTypeMirror.
+     *
+     * @param element any Element (this method does nothing if the Element is not for a field declaration)
+     * @param atm the AnnotatedTypeMirror for element - the {@code @GuardedBy} type qualifier will be inserted here
+     */
+    private void translateJcipAndJavaxAnnotations(Element element, AnnotatedTypeMirror atm) {
+        if (!element.getKind().isField()) {
+            return;
+        }
+
+        AnnotationMirror anno = getDeclAnnotation(element, net.jcip.annotations.GuardedBy.class);
+
+        if (anno == null) {
+            anno = getDeclAnnotation(element, javax.annotation.concurrent.GuardedBy.class);
+        }
+
+        if (anno == null) {
+            return;
+        }
+
+        List<String> lockExpressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+
+        if (lockExpressions.isEmpty()) {
+            atm.addAnnotation(GUARDEDBY);
+        } else {
+            atm.addAnnotation(createGuardedByAnnotationMirror(lockExpressions));
+        }
+    }
+
+    /**
+     * @param values a list of lock expressions
+     * @return an AnnotationMirror corresponding to @GuardedBy(values)
+     */
+    private AnnotationMirror createGuardedByAnnotationMirror(List<String> values) {
+        AnnotationBuilder builder =
+                new AnnotationBuilder(getProcessingEnv(), GuardedBy.class);
+        builder.setValue("value", values.toArray());
+
+        // Return the resulting AnnotationMirror
+        return builder.build();
     }
 }

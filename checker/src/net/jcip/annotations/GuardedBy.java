@@ -1,6 +1,7 @@
-package javax.annotation.concurrent;
+package net.jcip.annotations;
 
 import java.lang.annotation.*;
+
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
@@ -8,6 +9,9 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 // to the Lock Checker's @GuardedBy annotation) or on a method (in which case
 // it is a declaration annotation corresponding to the Lock Checker's @Holding
 // annotation).
+// It is preferred to use these Checker Framework annotations instead:
+//  org.checkerframework.checker.lock.qual.GuardedBy
+//  org.checkerframework.checker.lock.qual.Holding
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
