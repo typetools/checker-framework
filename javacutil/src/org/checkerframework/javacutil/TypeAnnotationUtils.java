@@ -82,10 +82,7 @@ public class TypeAnnotationUtils {
      */
     public static boolean isSameTAPosition(TypeAnnotationPosition p1,
             TypeAnnotationPosition p2) {
-        if (isSameTAPositionExceptTreePos(p1, p2) && p1.pos == p2.pos ) {
-            return true;
-        }
-        return false;
+        return isSameTAPositionExceptTreePos(p1, p2) && p1.pos == p2.pos;
     }
 
     public static boolean isSameTAPositionExceptTreePos(TypeAnnotationPosition p1,
