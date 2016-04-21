@@ -37,7 +37,7 @@ import tests.wholeprograminference.qual.Top;
  * <p>
  * The used qualifier hierarchy is straightforward and only intended for test
  * purposes.
- * 
+ *
  * @author pbsf
  */
 public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -101,7 +101,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         public AnnotationMirror leastUpperBound(AnnotationMirror a1,
                 AnnotationMirror a2) {
             if ((AnnotationUtils.areSameByClass(a1, Sibling1.class)
-                 && AnnotationUtils.areSameByClass(a2, Sibling2.class)) 
+                 && AnnotationUtils.areSameByClass(a2, Sibling2.class))
                 || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
                  && AnnotationUtils.areSameByClass(a2, Sibling1.class))
                 || (AnnotationUtils.areSameByClass(a1, Sibling1.class)
@@ -151,7 +151,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                  || AnnotationUtils.areSameByClass(sub, Sibling2.class)
                  || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
                  || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
-                 || AnnotationUtils.areSameByClass(sub, Parent.class)) 
+                 || AnnotationUtils.areSameByClass(sub, Parent.class))
                 && AnnotationUtils.areSameByClass(sup, DefaultType.class)){
                 return true;
             }

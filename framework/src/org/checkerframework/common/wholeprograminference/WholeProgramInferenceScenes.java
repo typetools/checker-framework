@@ -41,7 +41,7 @@ import com.sun.tools.javac.code.Type.ClassType;
  * WholeProgramInferenceScenes is an implementation of
  * {@link org.checkerframework.common.wholeprograminference.WholeProgramInference}
  * that uses a helper class
- * ({@link org.checkerframework.common.wholeprograminference.WholePrograminferenceScenesHelper})
+ * ({@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesHelper})
  * that manipulates .jaif files to perform whole-program inference.
  * <p>
  * Calling an update* method
@@ -94,10 +94,10 @@ import com.sun.tools.javac.code.Type.ClassType;
 //  results (order of annotations).
 public class WholeProgramInferenceScenes implements WholeProgramInference {
 
-    private final WholePrograminferenceScenesHelper helper;
+    private final WholeProgramInferenceScenesHelper helper;
 
     public WholeProgramInferenceScenes(boolean isNullness) {
-        helper = new WholePrograminferenceScenesHelper(isNullness);
+        helper = new WholeProgramInferenceScenesHelper(isNullness);
     }
 
     /**

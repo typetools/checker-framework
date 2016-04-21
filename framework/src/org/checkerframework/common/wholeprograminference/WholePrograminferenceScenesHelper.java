@@ -60,7 +60,7 @@ import com.sun.tools.javac.code.TypeAnnotationPosition;
  * inference analysis will be better. {@link #writeScenesToJaif} rewrites
  * the initial .jaif files, and may create new ones.
  */
-public class WholePrograminferenceScenesHelper {
+public class WholeProgramInferenceScenesHelper {
 
     /** Maps a TypeUseLocation to a set of names of annotations that should
      * not be added to .jaif files for that location.
@@ -96,7 +96,7 @@ public class WholePrograminferenceScenesHelper {
      */
     private final Set<String> modifiedScenes = new HashSet<>();
 
-    public WholePrograminferenceScenesHelper(boolean isNullness) {
+    public WholeProgramInferenceScenesHelper(boolean isNullness) {
         this.isNullnessChecker = isNullness;
     }
 
@@ -299,7 +299,7 @@ public class WholePrograminferenceScenesHelper {
     }
 
     /**
-     * Returns true if am should not be inserted in source code, for example 
+     * Returns true if am should not be inserted in source code, for example
      * {@link org.checkerframework.common.value.qual.BottomVal}. This happens
      * when am cannot be inserted in source code or is the default for the
      * location passed as argument.
