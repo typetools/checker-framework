@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/sh
 
 # compile Package At A Time
 
@@ -78,7 +78,7 @@ finish() {
     jar cf ${WORKDIR}/jdk.jar *
     cd ${WORKDIR}
     [ ${PRESERVE} -ne 0 ] || rm -rf sym
-    echo "success!"
+    return 0
 }
 
 if [ ${BOOT} -ne 0 ] ; then
@@ -102,14 +102,16 @@ fi
 
 if [ ${BOOT} -ne 0 ] ; then
     echo "build bootstrap JDK"
-    ${LT_JAVAC} -g -d ${BOOTDIR} ${JFLAGS} ${SRC}
+    ${LT_JAVAC} -g -d ${BOOTDIR} ${JFLAGS} ${SRC} | tee ${WORKDIR}/LOG
     [ $? -ne 0 ] && exit 1
     grep -q 'not found' ${WORKDIR}/LOG
     [ $? -eq 0 ] && exit 0
     (cd ${BOOTDIR} && jar cf ../jdk.jar *)
 fi
 
-echo "build individually w/processors on"
+echo "build one package at a time w/processors on"
+rm -rf ${WORKDIR}/log
+mkdir -p ${WORKDIR}/log
 for d in ${DIRS} ; do
     echo :$d: `echo $d/*.java | wc -w` files
     ${CF_JAVAC} -g -d ${BINDIR} ${JFLAGS} -processor ${PROCESSORS} ${PFLAGS} \
