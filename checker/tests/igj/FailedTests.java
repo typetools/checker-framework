@@ -3,6 +3,7 @@ import java.util.Date;
 /**
  * This file contains some failing test cases.  Should be fixed relatively soon.
  */
+@SuppressWarnings("deprecation")
 public class FailedTests {
 
     // Type Variables upper bound

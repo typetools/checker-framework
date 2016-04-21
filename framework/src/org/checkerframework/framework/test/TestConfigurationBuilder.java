@@ -58,7 +58,6 @@ public class TestConfigurationBuilder {
                 .addOption("-Xlint:unchecked")
                 .addOption("-XDrawDiagnostics")  //use short javac diagnostics
                 .addOption("-AprintErrorStack")
-                .addOption("-J-Xmx2500m")
                 .addSourceFiles(testSourceFiles);
 
         if (outputClassDirectory != null) {
@@ -367,6 +366,7 @@ public class TestConfigurationBuilder {
         return options.getOptionsAsList();
     }
 
+    @Override
     public String toString() {
         return "TestConfigurationBuilder:\n"
              + "testSourceFiles="  + ( testSourceFiles == null ? "null" : PluginUtil.join(" ", testSourceFiles) ) + "\n"
