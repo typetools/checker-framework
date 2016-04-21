@@ -288,7 +288,7 @@ def current_distribution_by_website(site):
     returns the version of the current release
     """
     print 'Looking up checker-framework-version from %s\n' % site
-    ver_re = re.compile(r"<!-- checker-framework-version -->(.*),")
+    ver_re = re.compile(r"<!-- checker-framework-zip-version -->checker-framework-(.*)\.zip")
     text = urllib2.urlopen(url=site).read()
     result = ver_re.search(text)
     return result.group(1)
@@ -369,19 +369,28 @@ def git_repo_exists_at_path(repo_root):
 def hg_repo_exists_at_path(repo_root):
     return os.path.isdir(repo_root + "/.hg")
 
-def hg_push_or_fail(repo_root):
-    if is_git(repo_root):
-        cmd = 'git -C %s push --tags' % repo_root
+def hg_push_prompt_if_fail(repo_root):
+    while True:
+        if is_git(repo_root):
+            cmd = 'git -C %s push --tags' % repo_root
+            result = os.system(cmd)
+            if result == 0:
+                break
+            else:
+                print "Could not push tags from: " + repo_root + "; result=" + str(result) + " for command: `" + cmd + "` in " + os.getcwd()
+                if not prompt_yn("Try again (responding 'n' will skip this push command but will not exit the script) ?"):
+                    break
+        if is_git(repo_root):
+            cmd = 'git -C %s push' % repo_root
+        else:
+            cmd = 'hg -R %s push' % repo_root
         result = os.system(cmd)
-        if not result == 0:
-            raise Exception("Could not push tags to: " + repo_root + "; result=" + str(result) + " for command: `" + cmd + "` in " + os.getcwd())
-    if is_git(repo_root):
-        cmd = 'git -C %s push' % repo_root
-    else:
-        cmd = 'hg -R %s push' % repo_root
-    result = os.system(cmd)
-    if not result == 0:
-        raise Exception("Could not push to: " + repo_root + "; result=" + str(result) + " for command: " + cmd + "` in " + os.getcwd())
+        if result == 0:
+            break
+        else:
+            print "Could not push from: " + repo_root + "; result=" + str(result) + " for command: " + cmd + "` in " + os.getcwd()
+            if not prompt_yn("Try again (responding 'n' will skip this push command but will not exit the script) ?"):
+                break
 
 def hg_push(repo_root):
     if is_git(repo_root):
@@ -391,19 +400,14 @@ def hg_push(repo_root):
         execute('hg -R %s push' % repo_root)
 
 # Pull the latest changes and update
-def update_project(path):
-    if git_bare_repo_exists_at_path(path):
-        execute('git -C %s fetch' % path)
-    elif is_git(path):
-        execute('git -C %s pull' % path)
+def update_repo(path, bareflag):
+    if is_git(path):
+        if bareflag:
+            execute('git -C %s fetch origin master:master' % path)
+        else:
+            execute('git -C %s pull' % path)
     else:
         execute('hg -R %s pull -u' % path)
-
-def update_projects(paths):
-    for path in paths:
-        update_project(path)
-        # print "Checking changes"
-        # execute('hg -R %s outgoing' % path)
 
 # Commit the changes we made for this release
 # Then add a tag for this release
@@ -426,11 +430,11 @@ def retrieve_changes(root, prev_version, prefix):
     return execute(cmd_template % (root, prefix, prev_version),
                    capture_output=True)
 
-def delete_and_clone(src_repo, dst_repo, bareflag):
+def clone_or_update(src_repo, dst_repo, bareflag):
     if os.path.exists(dst_repo):
-        delete_path(dst_repo)
-
-    clone(src_repo, dst_repo, bareflag)
+        update_repo(dst_repo, bareflag)
+    else:
+        clone(src_repo, dst_repo, bareflag)
 
 def clone(src_repo, dst_repo, bareflag):
     isGitRepo = False
@@ -526,22 +530,12 @@ If "ignored_files" argument is true, also delete ignored files."""
             cmd = 'hg -R %s purge' % repo
     execute(cmd)
 
-def clean_repo(repo, prompt):
-    if maybe_prompt_yn('Remove all modified files, untracked files and outgoing commits from %s ?' % repo, prompt):
-        ensure_group_access(repo)
-        if git_bare_repo_exists_at_path(repo):
-            return
-        revert(repo)
-        strip(repo)
-        purge(repo, all)
-        revert(repo) # avoids the issue of purge deleting ignored files we want to get back
-    print ''
-
-def clean_repos(repos, prompt):
-    if maybe_prompt_yn('Remove all modified files, untracked files and outgoing commits from:\n%s ?' % '\n'.join(repos), prompt):
-        for repo in repos:
-            if repo_exists(repo):
-                clean_repo(repo, False)
+def clean_repo(repo):
+    ensure_group_access(repo)
+    revert(repo)
+    strip(repo)
+    purge(repo, all)
+    revert(repo) # avoids the issue of purge deleting ignored files we want to get back
 
 def check_repos(repos, fail_on_error, is_intermediate_repo_list):
     """Fail if the repository is not clean and up to date."""

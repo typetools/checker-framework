@@ -188,9 +188,9 @@ def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_m
                         "(in order to update the development site), and running \"python release_push" + release_option + "\" again.")
 
 def push_interm_to_release_repos():
-    hg_push_or_fail(INTERM_JSR308_REPO)
-    hg_push_or_fail(INTERM_ANNO_REPO)
-    hg_push_or_fail(INTERM_CHECKER_REPO)
+    hg_push_prompt_if_fail(INTERM_JSR308_REPO)
+    hg_push_prompt_if_fail(INTERM_ANNO_REPO)
+    hg_push_prompt_if_fail(INTERM_CHECKER_REPO)
 
 def continue_or_exit(msg):
     continue_script = prompt_w_suggestion(msg + " Continue ('no' will exit the script)?", "yes", "^(Yes|yes|No|no)$")
@@ -361,7 +361,6 @@ def main(argv):
     # will NOT update the symlinks.
 
     print_step("Push Step 5. Push dev current release website to live website") # SEMIAUTO
-    # This step could be performed without asking for user input but I think we should err on the side of caution.
     if not test_mode:
         if auto or prompt_yes_no("Copy release to the live website?"):
             print "Copying to live site"
@@ -451,7 +450,8 @@ def main(argv):
                "Then, in the view for the orgcheckerframework staging repository at the bottom of the page, click on the Content tab. " +
                "Expand subdirectories to find org/checkerframework/checkerframework-maven-plugin. Right-click on it, and choose delete.\n" +
                "If you have a permissions problem, try logging out and back in.\n" +
-               "Finally, click on the Release button at the top of the page.  For the description, write " +
+               "Finally, click on the Release button at the top of the page. In the dialog box that pops up, " +
+               "leave the \"Automatically drop\" box checked. For the description, write " +
                "Checker Framework release " + new_checker_version + "\n\n")
 
     # TODO: fix this so that the maven plug-in directory directory is not included in the first place.
