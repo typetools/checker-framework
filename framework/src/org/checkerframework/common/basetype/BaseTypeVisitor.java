@@ -2,8 +2,6 @@ package org.checkerframework.common.basetype;
 
 /*>>>
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
-import org.checkerframework.checker.igj.qual.Immutable;
-import org.checkerframework.checker.igj.qual.ReadOnly;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
@@ -2990,17 +2988,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * <p>
      *
-     * For instance, in the IGJ type system, a {@code @Mutable} is an invalid
-     * qualifier for {@link String}, as {@link String} is declared as
-     * {@code @Immutable String}.
-     *
-     * <p>
-     *
      * In most cases, {@code useType} simply needs to be a subtype of
-     * {@code declarationType}, but there are exceptions.  In IGJ, a variable may be
-     * declared {@code @ReadOnly String}, even though {@link String} is
-     * {@code @Immutable String};  {@link org.checkerframework.checker.igj.qual.ReadOnly} is not a subtype of
-     * {@link org.checkerframework.checker.igj.qual.Immutable}.
+     * {@code declarationType}, but there are exceptions.
      *
      * @param declarationType the type of the class (TypeElement)
      * @param useType the use of the class (instance type)
@@ -3188,9 +3177,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (member.toString().equals("equals(java.lang.Object)")) {
                 ExecutableElement m = (ExecutableElement) member;
                 // The Nullness JDK serves as a proxy for all annotated
-                // JDKs.  (In part because of problems with
-                // IGJAnnotatedTypeFactory.postAsMemberOf that make it hard
-                // to directly check for the IGJ annotated JDK.)
+                // JDKs.
 
                 // Note that we cannot use the AnnotatedTypeMirrors from the
                 // Checker Framework, because those only return the annotations

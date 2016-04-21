@@ -2,7 +2,6 @@ package org.checkerframework.framework.type;
 
 /*>>>
 import org.checkerframework.checker.interning.qual.*;
-import org.checkerframework.checker.javari.qual.Mutable;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
@@ -1146,7 +1145,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type the type obtained from {@code tree}
      */
     // TODO: rename the method; it's not just implicits, but also defaulting, etc.
-    protected void annotateImplicit(Tree tree, /*@Mutable*/ AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         // Pass.
     }
 
@@ -1158,7 +1157,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param elt an element
      * @param type the type obtained from {@code elt}
      */
-    protected void annotateImplicit(Element elt, /*@Mutable*/ AnnotatedTypeMirror type) {
+    protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
         // Pass.
     }
 
@@ -1169,8 +1168,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <p>
      * The default provided implementation adds {@code type} annotations to
      * {@code supertypes}.  This allows the {@code type} and its supertypes
-     * to have the qualifiers, e.g. the supertypes of an {@code Immutable}
-     * type are also {@code Immutable}.
+     * to have the qualifiers.
      *
      * @param type  the type whose supertypes are desired
      * @param supertypes
@@ -1285,14 +1283,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param type the type for which class annotations will be inherited if
      * there are no annotations already present
      */
-    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type) {
+    protected void annotateInheritedFromClass(AnnotatedTypeMirror type) {
         InheritedFromClassAnnotator.INSTANCE.visit(type, this);
     }
 
     /**
      * Callback to determine what to do with the annotations from a class declaration.
      */
-    protected void annotateInheritedFromClass(/*@Mutable*/ AnnotatedTypeMirror type,
+    protected void annotateInheritedFromClass(AnnotatedTypeMirror type,
             Set<AnnotationMirror> fromClass) {
         type.addMissingAnnotations(fromClass);
     }

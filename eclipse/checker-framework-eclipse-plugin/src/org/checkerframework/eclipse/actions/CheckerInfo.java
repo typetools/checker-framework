@@ -1,7 +1,6 @@
 package org.checkerframework.eclipse.actions;
 
 import org.checkerframework.checker.guieffect.GuiEffectChecker;
-import org.checkerframework.checker.igj.IGJChecker;
 import org.checkerframework.checker.propkey.PropertyKeyChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
 import org.checkerframework.checker.units.UnitsChecker;
@@ -18,7 +17,6 @@ import org.checkerframework.checker.formatter.FormatterChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.interning.InterningChecker;
-import org.checkerframework.checker.javari.JavariChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
@@ -84,8 +82,6 @@ public class CheckerInfo
                 new CheckerInfo("Aliasing Checker",      AliasingChecker.class),
                 new CheckerInfo("Linear Checker",     LinearChecker.class),
 
-                new CheckerInfo("IGJ Immutability Checker",    IGJChecker.class),
-                new CheckerInfo("Javari Immutability Checker", JavariChecker.class),
                 new CheckerInfo("Subtyping Checker",           SubtypingChecker.class, null)
             );
 

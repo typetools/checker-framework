@@ -6,7 +6,6 @@ abstract class Outer<T> {
     public class Inner {
         private T t;
 
-        @SuppressWarnings("javari")
         public Inner(T t) {
             this.t = t;
         }
