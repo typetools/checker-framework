@@ -65,6 +65,25 @@ public class TypeAnnotationUtils {
         return false;
     }
 
+    /**
+     * Check whether a TypeCompound with the same name and position is contained in a list of TypeCompounds.
+     *
+     *
+     * @param list The input list of TypeCompounds.
+     * @param tc The TypeCompound to find.
+     * @return true, iff a TypeCompound with the same name and position as tc is contained in list.
+     */
+    public static boolean isTypeCompoundContainedByName(Types types, List<TypeCompound> list, TypeCompound tc) {
+        for (Attribute.TypeCompound rawat : list) {
+            if (contentEquals(rawat.type.tsym.name, tc.type.tsym.name) &&
+                isSameTAPositionExceptTreePosAndLocation(rawat.position, tc.position)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     private static boolean contentEquals(Name n1, Name n2) {
         // Views of underlying bytes, not copies as with Name#contentEquals
         ByteBuffer b1 = ByteBuffer.wrap(n1.getByteArray(), n1.getByteOffset(), n1.getByteLength());
@@ -86,11 +105,22 @@ public class TypeAnnotationUtils {
     }
 
     public static boolean isSameTAPositionExceptTreePos(TypeAnnotationPosition p1,
-                                           TypeAnnotationPosition p2) {
+                                                        TypeAnnotationPosition p2) {
+        return isSameTAPositionExceptTreePosAndLocation(p1, p2) && p1.location.equals(p2.location);
+    }
+
+    /**
+     * Compare two TypeAnnotationPositions for equality ignoring the {@code pos} and {@code location}
+     * fields.  TypeAnnotationPositions create by this class do not have set these fields.
+     * @param p1 TypeAnnotationPosition
+     * @param p2 TypeAnnotationPosition
+     * @return whether or not {@code p1} and {@code p2} are equal (ignoring {@code pos} and{@code location})
+     */
+    public static boolean isSameTAPositionExceptTreePosAndLocation(TypeAnnotationPosition p1,
+                                                                   TypeAnnotationPosition p2) {
         return p1.isValidOffset == p2.isValidOffset &&
                p1.bound_index == p2.bound_index &&
                p1.exception_index == p2.exception_index &&
-               p1.location.equals(p2.location) &&
                Arrays.equals(p1.lvarIndex, p2.lvarIndex) &&
                Arrays.equals(p1.lvarLength, p2.lvarLength) &&
                Arrays.equals(p1.lvarOffset, p2.lvarOffset) &&
