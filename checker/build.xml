@@ -137,11 +137,6 @@
             <include name="**/*.astub"/>
         </fileset>
 
-        <fileset id="annotation-file-utilities.src.astub.files" dir="${annotation-file-utilities.loc}/${src}">
-            <include name="**/*.properties"/>
-            <include name="**/*.astub"/>
-        </fileset>
-
         <!-- I can't figure out how to combine filesets (or even selectors)
              to get just one *.uptodate property, so do them individually
              and then combine with <condition>. -->
@@ -155,7 +150,6 @@
           <srcfiles refid="dataflow.src.astub.files"/>
           <srcfiles refid="framework.src.astub.files"/>
           <srcfiles refid="checker.src.astub.files"/>
-          <srcfiles refid="annotation-file-utilities.src.astub.files"/>
         </uptodate>
 
         <uptodate property="framework.lib.uptodate" targetfile="${build}" srcfile="${framework.lib}"/>
@@ -184,7 +178,6 @@
             <fileset refid="dataflow.src.astub.files"/>
             <fileset refid="framework.src.astub.files"/>
             <fileset refid="checker.src.astub.files"/>
-            <fileset refid="annotation-file-utilities.src.astub.files"/>
         </copy>
 
         <pathconvert pathsep=" " property="qual.src.files.spaceseparated">
@@ -208,9 +201,6 @@
                     <include name="**/qual/*.java"/>
                 </fileset>
                 <fileset dir="${framework.loc}/${src}">
-                    <include name="**/qual/*.java"/>
-                </fileset>
-                <fileset dir="${annotation-file-utilities.loc}/${src}">
                     <include name="**/qual/*.java"/>
                 </fileset>
             </path>
@@ -252,9 +242,6 @@
                 <fileset dir="${framework.loc}/${src}">
                     <include name="**/*.java"/>
                 </fileset>
-                <fileset dir="${annotation-file-utilities.loc}/${src}">
-                    <include name="**/*.java"/>
-                </fileset>
             </path>
         </pathconvert>
 
@@ -262,7 +249,7 @@
         <echo message="${qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -310,7 +297,7 @@
         <echo message="${compat.qual.src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -404,8 +391,9 @@
     <target name="jar" depends="build,checker-qual-jar,checker-compat-qual-jar"
             description="Create checker.jar file">
 
-        <!-- Only unjar the stubparser - everything else is recompiled. -->
+        <!-- Only unjar the stubparser and afu - everything else is recompiled. -->
         <unjar src="${stubparser.lib}" dest="${build}" />
+        <unjar src="${annotation-file-utilities.lib}" dest="${build}" />
 
         <mkdir dir="dist" />
 
