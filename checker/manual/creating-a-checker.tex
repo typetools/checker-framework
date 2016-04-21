@@ -197,7 +197,7 @@ Here is an example of one good way to proceed.
 \item
   Implement the type qualifiers and hierarchy
   (Section~\ref{writing-typequals}).
-  
+
   Write simple test cases to test your type hierarchy.  For instance, if
   your type hierarchy consists of a supertype \<@UnknownSign> and a subtype
   \<@NonNegative>, then you could write a test case such as:
@@ -257,7 +257,6 @@ Here is an example of one good way to proceed.
   For instance, if after an arithmetic comparison, your type system infers
   which expressions are now known to be non-negative, you could write a
   test case such as:
-  additional 
 
 \begin{Verbatim}
   void foo(@UnknownSign int us, @NonNegative int nn) {
