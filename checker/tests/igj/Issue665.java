@@ -8,7 +8,6 @@ import java.util.Spliterators;
 import org.checkerframework.checker.igj.qual.I;
 import org.checkerframework.framework.qual.AnnotatedFor;
 
-// @skip-test  temporarily until bug is fixed
 
 //@below-java8-jdk-skip-test
 

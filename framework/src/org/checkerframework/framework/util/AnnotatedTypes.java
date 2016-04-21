@@ -1898,15 +1898,15 @@ public class AnnotatedTypes {
 
 
     /**
-     * keepOnlyExplicitConstructorAnnotations modifies returnType to
-     * keep only annotations explicitly on the constructor
-     * and annotations resulting from resolution of polymorphic qualifiers.
+     * Copies explicit annotations and annotations resulting from resolution of polymorphic qualifiers
+     * from {@code constructor} to {@code returnType}. If {@code returnType} has an annotation in the
+     * same hierarchy of an annotation to be copied, that annotation is not copied.
      *
      * @param atypeFactory type factory
-     * @param returnType The return type for the constructor. No polymorphic qualifiers should have been substituted.
+     * @param returnType return type to copy annotations to
      * @param constructor The ATM for the constructor.
      */
-    public static void keepOnlyExplicitConstructorAnnotations(AnnotatedTypeFactory atypeFactory,
+    public static void copyOnlyExplicitConstructorAnnotations(AnnotatedTypeFactory atypeFactory,
                                                               AnnotatedDeclaredType returnType,
                                                               AnnotatedExecutableType constructor) {
 

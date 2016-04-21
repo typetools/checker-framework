@@ -1,0 +1,2 @@
+The old IGJ tests that use a different framework than all the other tests.
+New files should be added to checker-framework/checker/tests/igj.
