@@ -60,6 +60,9 @@
         <available property="framework.project"
                    file="${framework.loc}/build.xml"/>
         <antcall target="-prep-framework-compile"/>
+
+        <copy file="bin-devel/git.post-merge" tofile="../.git/hooks/post-merge" preservelastmodified="true" />
+        <copy file="bin-devel/git.pre-commit" tofile="../.git/hooks/pre-commit" preservelastmodified="true" />
     </target>
 
     <target name="-prep-framework-compile" if="framework.project"
@@ -1178,6 +1181,9 @@
         so useNativeBasedir is required. -->
           <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
+          </ant>
+          <ant dir="${framework.loc}/../tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
+              <target name="clean"/>
           </ant>
     </target>
 
