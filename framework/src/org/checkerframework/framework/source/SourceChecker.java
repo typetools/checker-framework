@@ -1288,6 +1288,8 @@ public abstract class SourceChecker
      *         it is contained by a declaration with an appropriately-valued
      *         {@literal @}SuppressWarnings annotation; false otherwise
      */
+    // Public so it can be called from a few places in
+    // org.checkerframework.framework.flow.CFAbstractTransfer
     public boolean shouldSuppressWarnings(Tree tree, String errKey) {
 
         // Don't suppress warnings if this checker provides no key to do so.

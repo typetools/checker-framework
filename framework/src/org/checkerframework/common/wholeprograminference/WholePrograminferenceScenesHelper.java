@@ -426,7 +426,6 @@ public class WholePrograminferenceScenesHelper {
         if (atm.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atm;
             for (ATypeElement innerType : type.innerTypes.values()) {
-                typeElementToATM(atv.getLowerBound(), innerType, atf);
                 typeElementToATM(atv.getUpperBound(), innerType, atf);
             }
         }
@@ -506,8 +505,6 @@ public class WholePrograminferenceScenesHelper {
             AnnotatedTypeVariable newATV = (AnnotatedTypeVariable) newATM;
             AnnotatedTypeVariable oldATV = (AnnotatedTypeVariable) curATM;
             updateTypeElementFromATM(newATV.getUpperBound(), oldATV.getUpperBound(),
-                    atf, typeToUpdate, idx, defLoc);
-            updateTypeElementFromATM(newATV.getLowerBound(), oldATV.getLowerBound(),
                     atf, typeToUpdate, idx, defLoc);
         }
     }

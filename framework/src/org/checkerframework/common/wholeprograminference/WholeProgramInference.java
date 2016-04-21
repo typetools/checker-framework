@@ -16,6 +16,12 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 
 /**
  * Interface for a whole-program inference implementation.
+ * <p>
+ * This interface has update* methods that should be called at certain
+ * (pseudo-)assignments, and they may update the type of the LHS of the
+ * (pseudo-)assignment based on the type of the RHS. In case the element on the
+ * LHS already had an inferred type, its new type will be the LUB between the
+ * previous and new types.
  * @author pbsf
  */
 public interface WholeProgramInference {

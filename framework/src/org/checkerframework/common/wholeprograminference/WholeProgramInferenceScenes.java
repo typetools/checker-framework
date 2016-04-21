@@ -60,7 +60,8 @@ import com.sun.tools.javac.code.Type.ClassType;
  * In addition, whole program inference ignores inferred types in a few scenarios.
  * When discovering a use, if:
  * <ol>
- *   <li>The inferred type is a subtype of the upper bounds of the current
+ *   <li>The inferred type of an element that should be written into a .jaif
+ *       file is a subtype of the upper bounds of this element's currently-written
  *       type on the source code.</li>
  *   <li>The annotation annotates a <code>null</code> literal, except when
  *       doing inference for the NullnessChecker.  (The rationale for this
@@ -99,6 +100,25 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         helper = new WholePrograminferenceScenesHelper(isNullness);
     }
 
+    /**
+     * Updates the parameter types of the constructor created by objectCreationNode.
+     * <p>
+     * For each parameter in constructorElt:
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for that
+     *     parameter, then the type of the respective value passed as argument
+     *     in the object creation call objectCreationNode will be added to the
+     *     parameter in the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for that
+     *     parameter, then its new type will be the LUB between the previous
+     *     type and the type of the respective value passed as argument in the
+     *     object creation call.</li>
+     *   </ul>
+     * <p>
+     * @param objectCreationNode the new Object() node.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the constructor's parameters' types.
+     */
     @Override
     public void updateInferredConstructorParameterTypes(
             ObjectCreationNode objectCreationNode,
