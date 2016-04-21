@@ -100,6 +100,7 @@
         <delete failonerror="false">
             <fileset dir="${tests.build}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
+            <fileset dir="${checker.loc}/examples" includes="**/*.class"/>
         </delete>
 
         <delete dir="${dist}"/>
