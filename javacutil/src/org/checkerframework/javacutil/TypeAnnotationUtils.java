@@ -87,21 +87,18 @@ public class TypeAnnotationUtils {
 
     public static boolean isSameTAPositionExceptTreePos(TypeAnnotationPosition p1,
                                            TypeAnnotationPosition p2) {
-        if (p1.isValidOffset == p2.isValidOffset &&
-                p1.bound_index == p2.bound_index &&
-                p1.exception_index == p2.exception_index &&
-                p1.location.equals(p2.location) &&
-                Arrays.equals(p1.lvarIndex, p2.lvarIndex) &&
-                Arrays.equals(p1.lvarLength, p2.lvarLength) &&
-                Arrays.equals(p1.lvarOffset, p2.lvarOffset) &&
-                p1.offset == p2.offset &&
-                p1.onLambda == p2.onLambda &&
-                p1.parameter_index == p2.parameter_index &&
-                p1.type == p2.type &&
-                p1.type_index == p2.type_index) {
-            return true;
-        }
-        return false;
+        return p1.isValidOffset == p2.isValidOffset &&
+               p1.bound_index == p2.bound_index &&
+               p1.exception_index == p2.exception_index &&
+               p1.location.equals(p2.location) &&
+               Arrays.equals(p1.lvarIndex, p2.lvarIndex) &&
+               Arrays.equals(p1.lvarLength, p2.lvarLength) &&
+               Arrays.equals(p1.lvarOffset, p2.lvarOffset) &&
+               p1.offset == p2.offset &&
+               p1.onLambda == p2.onLambda &&
+               p1.parameter_index == p2.parameter_index &&
+               p1.type == p2.type &&
+               p1.type_index == p2.type_index;
     }
 
     /**
