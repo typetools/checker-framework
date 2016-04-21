@@ -11,6 +11,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Ant (Section~\ref{ant-task})
 \item Maven (Section~\ref{maven})
 \item Gradle (Section~\ref{gradle})
+\item Android plugin for Gradle (Section~\ref{android-gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
 \item Eclipse (Section~\ref{eclipse})
 \item tIDE (Section~\ref{tide})
@@ -547,6 +548,96 @@ allprojects {
 }
 \end{Verbatim}
 \end{mysmall}
+\end{enumerate}
+
+\section{Android plugin for Gradle\label{android-gradle}}
+
+If you use the
+\href{http://developer.android.com/tools/building/plugin-for-gradle.html}{Android plugin for Gradle},
+then you can run a checker by following the instructions below.
+
+These instructions can be used with Java 7 or Java 8.  Because Android does not
+support type annotations, they must be placed in comments as explained in
+Section~\ref{annotations-in-comments}.
+
+\begin{enumerate}
+
+\item Use the Maven Central repository:
+
+\begin{Verbatim}
+repositories {
+  ... existing repositories...
+  mavenCentral()
+}
+\end{Verbatim}
+
+\item Add dependency configurations for the annotated JDK, \<checker.jar>, and the Type Annotations compiler:
+
+\begin{mysmall}
+\begin{Verbatim}
+configurations {
+    ... existing configurations ...
+    checkerFrameworkJavac {
+        description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+    }
+    checkerFrameworkAnnotatedJDK {
+       description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+    }
+    checkerFramework {
+       description = 'The Checker Framework: custom pluggable types for Java'
+    }
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item Declare the Checker Framework dependencies:
+
+\begin{mysmall}
+\begin{Verbatim}
+dependencies {
+    ... existing dependencies...
+    ext.checkerFrameworkVersion = '1.9.13'
+    ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
+    checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
+    checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
+    checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+    compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item Direct all tasks of type \<JavaCompile> to use the desired checkers, when the \<typecheck> project property is set:
+
+\begin{mysmall}
+\begin{Verbatim}
+def typecheck = project.properties['typecheck'] ?: false
+allprojects {
+if (typecheck) {
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile).all { JavaCompile compile ->
+        compile.options.compilerArgs = [
+                '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+                '-processorpath', "${configurations.checkerFramework.asPath}",
+                // uncomment to turn Checker Framework errors into warnings
+                //'-Awarns',
+                "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+        ]
+            compile.options.compilerArgs += ['-source', '7', '-target', '7']
+            options.bootClasspath = "${configurations.checkerFrameworkJavac.asPath}:" + System.getProperty("    sun.boot.class.path") + ":" + options.bootClasspath
+            options.fork = true
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
+        }
+    }
+}
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item Run the checkers:
+
+\begin{Verbatim}
+gradle compileReleaseJavaWithJavac -Ptypecheck=true
+\end{Verbatim}
 \end{enumerate}
 
 
