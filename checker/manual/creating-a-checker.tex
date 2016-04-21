@@ -33,13 +33,16 @@ this chapter when you need more expressiveness or power than the Subtyping
 Checker affords.
 
 You can also create your own checker by customizing a different existing
-checker.  Specific checkers that are designed for extension (besides the Subtyping
-Checker) include the Fake Enumeration Checker
-(\chapterpageref{fenum-checker}), the Units Checker
-(\chapterpageref{units-checker}), and a typestate checker
-(\chapterpageref{typestate-checker}).
+checker.  Specific checkers that are designed for extension include
+the Subtyping Checker (\chapterpageref{subtyping-checker}),
+the Fake Enumeration Checker (\chapterpageref{fenum-checker}),
+the Units Checker (\chapterpageref{units-checker}),
+ and a typestate checker (\chapterpageref{typestate-checker}).
 Or, you can copy and then modify a different existing checker --- whether
 one distributed with the Checker Framework or a third-party one.
+(One good choice to copy and modify is the Regex Checker
+(\chapterpageref{regex-checker}); a bad choice is the Nullness Checker,
+which is more sophisticated than anything you want to start out building.)
 
 \begin{sloppypar}
 You can place your checker's source files wherever you like.  When you
@@ -60,16 +63,6 @@ of those.
 The Javadoc documentation of the framework and the checkers is in the
 distribution and is also available online at
 \myurl{http://types.cs.washington.edu/checker-framework/current/api/}.
-
-\textbf{Tips:}  Before you start coding, first write the user manual (see
-Section~\ref{documenting-a-checker}), which explains the type system, what
-it guarantees, how to use it, etc.  This will help you flesh out your goals
-and the concepts, which are easier to understand and change in text than in
-an imprementation.  Once you have settled on type rules, you may also want
-to choose some case studies and play computer to ensure that they give
-the expected results.  During manual checking, ask yourself what reasoning
-you applied, what information you needed, and whether your written-down
-rules were sufficient.
 
 If you write a new checker and wish to advertise it to the world, let us
 know so we can mention it in the Checker Framework Manual, link to
@@ -149,9 +142,6 @@ the components of a type system as written using the Checker Framework:
   other than \<null> has a \refqualclass{checker/nullness/qual}{NonNull} type;
   examples of literals include \code{"some string"} and \<java.util.Date.class>.
 
-  Optionally, write dataflow rules to enhance flow-sensitive type qualifier
-  inference (Section~\ref{dataflow}).
-
 \item{\ref{extending-visitor}}
   \textbf{Type rules.}  You specify the type system semantics (type
   rules), violation of which yields a type error.  There are two types of
@@ -169,11 +159,128 @@ the components of a type system as written using the Checker Framework:
   write these additional rules yourself.
 \end{itemize}
 
+\item{\ref{dataflow}}
+  \textbf{Dataflow rules.}  These optional rules enhance flow-sensitive
+  type qualifier inference (local variable type inference).
+
 \item{\ref{writing-compiler-interface}}
   \textbf{Interface to the compiler.}  The compiler interface indicates
   which annotations are part of the type system, which command-line options
   and \<@SuppressWarnings> annotations the checker recognizes, etc.
 \end{description}
+
+
+\subsection{Tips for creating a checker\label{writing-tips}}
+
+To make your job easier, we recommend that you build your type-checker
+incrementally, testing at each phase rather than trying to build the whole
+thing at once.
+
+Here is an example of one good way to proceed.
+
+\begin{enumerate}
+\item
+  Before you start coding, first write the user manual, which explains the
+  type system, what it guarantees, how to use it, etc., from the point of
+  view of a user.
+  This will help you flesh out your goals and the concepts, which are
+  easier to understand and change in text than in an imprementation.
+  Section~\ref{documenting-a-checker} gives a suggested structure for the
+  manual chapter, which will help you avoid omitting any parts.
+
+  Once you have designed and documented the parts of your type system, you
+  may also want to choose some case studies and play computer to ensure
+  that they give the expected results.  During manual checking, ask
+  yourself what reasoning you applied, what information you needed, and
+  whether your written-down rules were sufficient.
+
+\item
+  Implement the type qualifiers and hierarchy
+  (Section~\ref{writing-typequals}).
+
+  Write simple test cases to test your type hierarchy.  For instance, if
+  your type hierarchy consists of a supertype \<@UnknownSign> and a subtype
+  \<@NonNegative>, then you could write a test case such as:
+
+\begin{Verbatim}
+  void foo(@UnknownSign int us, @NonNegative int nn) {
+    @UnknownSign int a = us;
+    @UnknownSign int b = nn;
+    @NonNegative int c = us;
+    @NonNegative int d = nn;  // expected error on this line
+  }
+\end{Verbatim}
+
+  Type-check these test files using the Subtyping Checker
+  (\chapterpageref{subtyping-checker}).
+
+\item
+  Write the checker class itself
+  (Section~\ref{writing-compiler-interface}).
+  Ensure that you can still type-check your test files and that the results
+  are the same.
+
+\item
+  Implement type rules, if any (Section~\ref{extending-visitor}).
+
+  Write simple test cases to test the type rules, and ensure that the
+  typechecker behaves as expected on those test files.
+  For example, if your type system forbids indexing an array by a
+  possibly-negative value, then you would write a test case such as:
+
+\begin{Verbatim}
+  void foo(String[] myarray, @UnknownSign int us, @NonNegative int nn) {
+    myarray[us];  // expected error on this line
+    myarray[nn];
+  }
+\end{Verbatim}
+
+\item
+  Implement and test type introduction rules, if any (Section~\ref{writing-type-introduction}).
+
+  For example, if your type system sets the qualifier for manifest literal
+  integers and for array lengths, you would write a test case like the following:
+
+\begin{Verbatim}
+  void foo(String[] myarray) {
+    @NonNegative nn1 = -1;  // expected error on this line
+    @NonNegative nn2 = 0;
+    @NonNegative nn3 = 1;
+    @NonNegative nn4 = myarray.length;
+  }
+\end{Verbatim}
+
+\item
+  Optionally, implement and test dataflow refinement rules
+  (Section~\ref{dataflow}).
+
+  For instance, if after an arithmetic comparison, your type system infers
+  which expressions are now known to be non-negative, you could write a
+  test case such as:
+
+\begin{Verbatim}
+  void foo(@UnknownSign int us, @NonNegative int nn) {
+    @NonNegative nn2;
+    nn2 = us;  // expected error on this line
+    if (us > j) {
+      nn2 = us;
+    }
+    if (us >= j) {
+      nn2 = us;
+    }
+    if (j < us) {
+      nn2 = us;
+    }
+    if (j <= us) {
+      nn2 = us;
+    }
+    nn = us;  // expected error on this line
+  }
+\end{Verbatim}
+
+\end{enumerate}
+
+
 
 
 \section{Annotations: Type qualifiers and hierarchy\label{writing-typequals}}
@@ -535,6 +642,110 @@ written one.  The type system designer may subclass
 \code{annotateImplicit(Tree,AnnotatedTypeMirror)} and
 \code{annotateImplicit(Element,AnnotatedTypeMirror)} to account for
 such constructs.
+
+
+\section{Visitor: Type rules\label{extending-visitor}}
+
+A type system's rules define which operations on values of a
+particular type are forbidden.
+These rules must be defined procedurally, not declaratively.
+
+The Checker Framework provides a \textit{base visitor class},
+\refclass{common/basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
+source file's AST\@.  It uses the visitor design pattern to traverse
+Java syntax trees as provided by Oracle's
+\href{http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
+API},
+and it issues a warning whenever the type system is violated.
+
+A checker's visitor overrides one method in the base visitor for each special
+rule in the type qualifier system.  Most type-checkers
+override only a few methods in \refclass{common/basetype}{BaseTypeVisitor}.  For example, the
+visitor for the Nullness type system of Chapter~\ref{nullness-checker}
+contains a single 4-line method that warns if an expression of nullable type
+is dereferenced, as in:
+\begin{Verbatim}
+  myObject.hashCode();  // invalid dereference
+\end{Verbatim}
+
+
+
+By default, \refclass{common/basetype}{BaseTypeVisitor} performs subtyping checks that are
+similar to Java subtype rules, but taking the type qualifiers into account.
+\refclass{common/basetype}{BaseTypeVisitor} issues these errors:
+
+\begin{itemize}
+
+\item invalid assignment (type.incompatible) for an assignment from
+  an expression type to an incompatible type.  The assignment may be a
+  simple assignment, or pseudo-assignment like return expressions or
+  argument passing in a method invocation
+
+  In particular, in every assignment and pseudo-assignment, the
+  left-hand side of the assignment is a supertype of (or the same type
+  as) the right-hand side.  For example, this assignment is not
+  permitted:
+
+  \begin{Verbatim}
+    @Nullable Object myObject;
+    @NonNull Object myNonNullObject;
+    ...
+    myNonNullObject = myObject;  // invalid assignment
+  \end{Verbatim}
+
+\item invalid generic argument (type.argument.type.incompatible) when a type
+  is bound to an incompatible generic type variable
+
+\item invalid method invocation (method.invocation.invalid) when a
+  method is invoked on an object whose type is incompatible with the
+  method receiver type
+
+\item invalid overriding parameter type (override.parameter.invalid)
+  when a parameter in a method declaration is incompatible with that
+  parameter in the overridden method's declaration
+
+\item invalid overriding return type (override.return.invalid) when a
+  parameter in a method declaration is incompatible with that
+  parameter in the overridden method's declaration
+
+\item invalid overriding receiver type (override.receiver.invalid)
+  when a receiver in a method declaration is incompatible with that
+  receiver in the overridden method's declaration
+
+\end{itemize}
+
+
+\subsection{AST traversal\label{ast-traversal}}
+
+The Checker Framework needs to do its own traversal of the AST even though
+it operates as an ordinary annotation processor~\cite{JSR269}.  Annotation
+processors can utilize a visitor for Java code, but that visitor only
+visits the public elements of Java code, such as classes, fields, methods,
+and method arguments --- it does not visit code bodies or various other
+locations.  The Checker Framework hardly uses the built-in visitor --- as
+soon as the built-in visitor starts to visit a class, then the Checker
+Framework's visitor takes over and visits all of the class's source code.
+
+Because there is no standard API for the AST of Java code\footnote{Actually,
+there is a standard API for Java ASTs --- JSR 198 (Extension API for
+Integrated Development Environments)~\cite{JSR198}.  If tools were to
+implement it
+(which would just require writing wrappers or adapters), then the Checker
+Framework and similar tools could be portable among different compilers and
+IDEs.}, the Checker
+Framework uses the javac implementation.  This is why the Checker Framework
+is not deeply integrated with Eclipse, but runs as an external tool (see
+Section~\ref{eclipse}).
+
+
+\subsection{Avoid hardcoding\label{avoid-hardcoding}}
+
+It may be tempting to write a type-checking rule for method invocation,
+where your rule checks the name of the method being called and then treats
+the method in a special way.  This is usually the wrong approach.  It
+is better to write annotations, in a stub file
+(Chapter~\ref{annotating-libraries}), and leave the work to the standard
+type-checking rules.
 
 
 \section{Dataflow: enhancing flow-sensitive type qualifier inference\label{dataflow}}
@@ -954,110 +1165,6 @@ call, the checker will refine the return type of the method if it can determine
 the value of the integer parameter at compile time.
 
 \end{enumerate}
-
-
-\section{Visitor: Type rules\label{extending-visitor}}
-
-A type system's rules define which operations on values of a
-particular type are forbidden.
-These rules must be defined procedurally, not declaratively.
-
-The Checker Framework provides a \textit{base visitor class},
-\refclass{common/basetype}{BaseTypeVisitor}, that performs type-checking at each node of a
-source file's AST\@.  It uses the visitor design pattern to traverse
-Java syntax trees as provided by Oracle's
-\href{http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
-API},
-and it issues a warning whenever the type system is violated.
-
-A checker's visitor overrides one method in the base visitor for each special
-rule in the type qualifier system.  Most type-checkers
-override only a few methods in \refclass{common/basetype}{BaseTypeVisitor}.  For example, the
-visitor for the Nullness type system of Chapter~\ref{nullness-checker}
-contains a single 4-line method that warns if an expression of nullable type
-is dereferenced, as in:
-\begin{Verbatim}
-  myObject.hashCode();  // invalid dereference
-\end{Verbatim}
-
-
-
-By default, \refclass{common/basetype}{BaseTypeVisitor} performs subtyping checks that are
-similar to Java subtype rules, but taking the type qualifiers into account.
-\refclass{common/basetype}{BaseTypeVisitor} issues these errors:
-
-\begin{itemize}
-
-\item invalid assignment (type.incompatible) for an assignment from
-  an expression type to an incompatible type.  The assignment may be a
-  simple assignment, or pseudo-assignment like return expressions or
-  argument passing in a method invocation
-
-  In particular, in every assignment and pseudo-assignment, the
-  left-hand side of the assignment is a supertype of (or the same type
-  as) the right-hand side.  For example, this assignment is not
-  permitted:
-
-  \begin{Verbatim}
-    @Nullable Object myObject;
-    @NonNull Object myNonNullObject;
-    ...
-    myNonNullObject = myObject;  // invalid assignment
-  \end{Verbatim}
-
-\item invalid generic argument (type.argument.type.incompatible) when a type
-  is bound to an incompatible generic type variable
-
-\item invalid method invocation (method.invocation.invalid) when a
-  method is invoked on an object whose type is incompatible with the
-  method receiver type
-
-\item invalid overriding parameter type (override.parameter.invalid)
-  when a parameter in a method declaration is incompatible with that
-  parameter in the overridden method's declaration
-
-\item invalid overriding return type (override.return.invalid) when a
-  parameter in a method declaration is incompatible with that
-  parameter in the overridden method's declaration
-
-\item invalid overriding receiver type (override.receiver.invalid)
-  when a receiver in a method declaration is incompatible with that
-  receiver in the overridden method's declaration
-
-\end{itemize}
-
-
-\subsection{AST traversal\label{ast-traversal}}
-
-The Checker Framework needs to do its own traversal of the AST even though
-it operates as an ordinary annotation processor~\cite{JSR269}.  Annotation
-processors can utilize a visitor for Java code, but that visitor only
-visits the public elements of Java code, such as classes, fields, methods,
-and method arguments --- it does not visit code bodies or various other
-locations.  The Checker Framework hardly uses the built-in visitor --- as
-soon as the built-in visitor starts to visit a class, then the Checker
-Framework's visitor takes over and visits all of the class's source code.
-
-Because there is no standard API for the AST of Java code\footnote{Actually,
-there is a standard API for Java ASTs --- JSR 198 (Extension API for
-Integrated Development Environments)~\cite{JSR198}.  If tools were to
-implement it
-(which would just require writing wrappers or adapters), then the Checker
-Framework and similar tools could be portable among different compilers and
-IDEs.}, the Checker
-Framework uses the javac implementation.  This is why the Checker Framework
-is not deeply integrated with Eclipse, but runs as an external tool (see
-Section~\ref{eclipse}).
-
-
-\subsection{Avoid hardcoding\label{avoid-hardcoding}}
-
-It may be tempting to write a type-checking rule for method invocation,
-where your rule checks the name of the method being called and then treats
-the method in a special way.  This is usually the wrong approach.  It
-is better to write annotations, in a stub file
-(Chapter~\ref{annotating-libraries}), and leave the work to the standard
-type-checking rules.
 
 
 \section{The checker class:  Compiler interface\label{writing-compiler-interface}}
