@@ -3,7 +3,6 @@ import java.util.Comparator;
 
 class List<K0> {}
 
-@SuppressWarnings({"javari"})
 abstract class Ordering<T> implements Comparator<T> {
     // Natural order
 
@@ -17,7 +16,6 @@ abstract class Ordering<T> implements Comparator<T> {
     }
 }
 
-@SuppressWarnings("javari")
 class PolyCollectorTypeVars {
   //Both of these come from the extends Comparable on line 9
   @SuppressWarnings({"rawtypes","type.argument.type.incompatible"})

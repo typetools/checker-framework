@@ -8,8 +8,7 @@ interface A<T> {
 
 class B implements A<Object> {
   //This shouldn't work for nullness as the function won't take possibly nullable values
-  // TODO: doesn't work for Javari and OIGJ right now
-  @SuppressWarnings({"javari", "oigj", "nullness"})
+  @SuppressWarnings("nullness")
   @Override
   public int transform(List<Object> function) {
     return 0;

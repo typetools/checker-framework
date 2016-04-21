@@ -174,16 +174,6 @@ public class AnnotatedTypes {
                 }
             }
 
-            /* Something like the following seemed sensible for intersection types,
-             * which came up in the Ternary test case with classes MethodSymbol and ClassSymbol.
-             * However, it results in an infinite recursion with the IGJ Checker.
-             * For now, let's handle the null result in the caller, TypeFromTree.visitConditionalExpression.
-            if (p.getKind() == TypeKind.DECLARED &&
-                    ((AnnotatedDeclaredType)p).getUnderlyingType().asElement().getSimpleName().length() == 0) {
-                p = ((AnnotatedDeclaredType)p).directSuperTypes().get(0);
-            }
-            */
-
             if (shouldStop(p, type))
                 return type;
 

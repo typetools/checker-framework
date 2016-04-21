@@ -40,7 +40,7 @@ import org.checkerframework.stubparser.ast.type.WildcardType;
 import org.checkerframework.stubparser.ast.visitor.SimpleVoidVisitor;
 
 /**
- * Utility class for skeleton files
+ * Utility class for stub files
  */
 public class StubUtil {
 

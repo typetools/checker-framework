@@ -1208,7 +1208,7 @@ public abstract class SourceChecker
      * <ol>
      * <li>{@code "suppress-key"}, where suppress-key is a supported warnings
      * key, as specified by {@link #getSuppressWarningsKeys()}
-     * (e.g., {@code "nullness"} for Nullness, {@code "igj"} for IGJ)</li>
+     * (e.g., {@code "nullness"} for Nullness, {@code "regex"} for Regex)</li>
      *
      * <li>{@code "suppress-key:error-key}, where the suppress-key
      * is as above, and error-key is a prefix of the errors

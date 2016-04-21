@@ -182,16 +182,6 @@
             style="push">
           </command>
           <command
-            commandId="checkers.eclipse.runigj"
-            label="IGJ Checker"
-            style="push">
-          </command>
-          <command
-            commandId="checkers.eclipse.runjavari"
-            label="Javari Checker"
-            style="push">
-          </command>
-          <command
             commandId="checkers.eclipse.runsubtypingchecker"
             label="Subtyping Checker"
             style="push">
@@ -316,18 +306,6 @@
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$LinearAction"
       id="checkers.eclipse.runlinear"
       name="Run Linear Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$IGJAction"
-      id="checkers.eclipse.runigj"
-      name="Run IGJ Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$JavariAction"
-      id="checkers.eclipse.runjavari"
-      name="Run Javari Checker">
     </command>
     <command
       categoryId="checkers.eclipse.category"

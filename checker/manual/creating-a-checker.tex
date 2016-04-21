@@ -271,13 +271,7 @@ hierarchy.
   % annotations, but Java forbids annotations from subtyping one another.)
   %
   \refqualclass{framework/qual}{SubtypeOf} accepts multiple annotation classes as an argument,
-  permitting the type hierarchy to be an arbitrary DAG\@.  For example,
-  in the IGJ type system (Section~\ref{igj-annotations}), \refqualclass{checker/igj/qual}{Mutable}
-  and \refqualclass{checker/igj/qual}{Immutable} induce two mutually exclusive subtypes of the
-  \refqualclass{checker/igj/qual}{ReadOnly} qualifier.
-%TODO: In the IGJ hierarchy I didn't find a use of multiple supertypes. Like
-% this the previous paragraph is confusing, as it does not give a correct
-% example.
+  permitting the type hierarchy to be an arbitrary DAG\@.
 
 % TODO: describe multiple type hierarchies
 % TODO: describe multiple polymorphic qualifiers and PolyAll
@@ -341,16 +335,15 @@ For more details, see the Javadoc of those methods and of the classes
 \refclass{framework/type}{QualifierHierarchy} and \refclass{framework/type}{TypeHierarchy}.
 
 The \refclass{framework/type}{QualifierHierarchy} class represents the qualifier hierarchy (not the
-type hierarchy), e.g., \refclass{checker/igj/qual}{Mutable}
-is a subtype of \refclass{checker/igj/qual}{ReadOnly}.  A type-system designer may subclass
+type hierarchy).  A type-system designer may subclass
 \refclass{framework/type}{QualifierHierarchy} to express customized qualifier
 relationships (e.g., relationships based on annotation
 arguments).
 
 The \refclass{framework/type}{TypeHierarchy} class represents the type hierarchy ---
 that is, relationships between
-annotated types, rather than merely type qualifiers, e.g., \<@Mutable
-Date> is a subtype of \<@ReadOnly Date>.  The default \refclass{framework/type}{TypeHierarchy} uses
+annotated types, rather than merely type qualifiers, e.g., \<@NonNull
+Date> is a subtype of \<@Nullable Date>.  The default \refclass{framework/type}{TypeHierarchy} uses
 \refclass{framework/type}{QualifierHierarchy} to determine all subtyping relationships.
 The default \refclass{framework/type}{TypeHierarchy} handles
 generic type arguments, array components, type variables, and
@@ -362,10 +355,6 @@ if their type arguments are identical:  for example,
 \code{List<Date>} is not a subtype of \code{List<Object>}, or of any other
 generic \code{List}.
 (In the technical jargon, the generic arguments are ``invariant'' or ``novariant''.)
-The Javari type system overrides this
-behavior to allow some type arguments to change covariantly in a type-safe
-manner (e.g.,
-\code{List<@Mutable Date>} is a subtype of \code{List<@QReadOnly Date>}).
 
 
 \subsection{Defining a default annotation\label{typesystem-defaults}}
@@ -436,27 +425,9 @@ on explicit bounds.  To ensure this, write
 \<@TargetLocations(\{ TypeUseLocation.EXPLICIT\_LOWER\_BOUND, TypeUseLocation.EXPLICIT\_UPPER\_BOUND \})>
 on the definition of the bottom qualifier.
 
-The hierarchy shown in Figure~\ref{fig-igj-hierarchy} lacks
-a bottom qualifier, because there is no qualifier that is a subtype of both
-\<@Immutable> and \<@Mutable>.
-The actual IGJ hierarchy does contain a (non-user-visible) bottom qualifier,
-defined like this:
+The hierarchy shown in Figure~\ref{fig-initialization-hierarchy} lacks
+a bottom qualifier, but the actual implementation does contain a (non-user-visible) bottom qualifier.
 
-\begin{Verbatim}
-@SubtypeOf({Mutable.class, Immutable.class, I.class})
-@ImplicitFor(literals = { LiteralKind.NULL },
-    types = { TypeKind.BOOLEAN, TypeKind.BYTE,
-              TypeKind.CHAR, TypeKind.DOUBLE,
-              TypeKind.FLOAT, TypeKind.INT,
-              TypeKind.LONG, TypeKind.SHORT })
-@DefaultFor({ TypeUseLocation.LOWER_BOUND })
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
-    TypeUseLocation.EXPLICIT_UPPER_BOUND })
-@interface IGJBottom {}
-\end{Verbatim}
-
-The IGJ Checker adds this qualifier in code in \refclass{checker/igj}{IGJAnnotatedTypeFactory}.
 
 \paragraph{Top qualifier\label{top-qualifier}}
 Your type hierarchy must have a top qualifier
@@ -1799,14 +1770,14 @@ without warnings or errors.
 % LocalWords:  TreeScanner visitAssignment AssignmentTree AnnotatedClassTypes
 % LocalWords:  SubtypeChecker SubtypeVisitor NonNull isSubtype getClass nonnull
 % LocalWords:  AnnotatedClassType isAnnotatedWith hasAnnotationAt TODO src jdk
-% LocalWords:  processor NullnessChecker InterningChecker Nullness Nullable igj
+% LocalWords:  processor NullnessChecker InterningChecker Nullness Nullable
 % LocalWords:  AnnotatedTypeMirrors BaseTypeChecker BaseTypeVisitor basetype
-% LocalWords:  Aqual Anqual java CharSequence getAnnotatedType UseLovely IGJ
+% LocalWords:  Aqual Anqual java CharSequence getAnnotatedType UseLovely
 % LocalWords:  AnnotatedTypeMirror LovelyChecker Anomsgtext Ashowchecks enums
 % LocalWords:  Afilenames dereferenced SuppressWarnings declaratively SubtypeOf
-% LocalWords:  TypeHierarchy GraphQualifierHierarchy ReadOnly Foo qual
+% LocalWords:  TypeHierarchy GraphQualifierHierarchy Foo qual
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
-% LocalWords:  createTypeHierarchy QReadOnly ImplicitFor treeClasses TypeMirror
+% LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror
 % LocalWords:  LiteralTree ExpressionTree typeClasses annotateImplicit nullable
 % LocalWords:  createSupportedTypeQualifiers FooChecker nullness PolyAll
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
@@ -1841,4 +1812,4 @@ without warnings or errors.
 %%  LocalWords:  I18nChecker i18n I18nSubchecker LocalizableKeyChecker
 %%  LocalWords:  MyChecker MyHelperChecker getImmediateSubcheckerClasses
 %%  LocalWords:  MyChecker's subchecker plugins ElementType
-%%  LocalWords:  IGJAnnotatedTypeFactory CheckerFrameworkTest
+%%  LocalWords:  CheckerFrameworkTest

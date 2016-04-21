@@ -5,9 +5,7 @@ import org.checkerframework.checker.formatter.FormatterChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.guieffect.GuiEffectChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
-import org.checkerframework.checker.igj.IGJChecker;
 import org.checkerframework.checker.interning.InterningChecker;
-import org.checkerframework.checker.javari.JavariChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
@@ -152,22 +150,6 @@ public class CheckerActions
         public LinearAction()
         {
             super(LinearChecker.class.getCanonicalName());
-        }
-    }
-
-    public static class IGJAction extends RunCheckerAction
-    {
-        public IGJAction()
-        {
-            super(IGJChecker.class.getCanonicalName());
-        }
-    }
-
-    public static class JavariAction extends RunCheckerAction
-    {
-        public JavariAction()
-        {
-            super(JavariChecker.class.getCanonicalName());
         }
     }
 

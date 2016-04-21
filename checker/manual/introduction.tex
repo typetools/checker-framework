@@ -80,14 +80,6 @@ The Checker Framework comes with checkers for specific types of errors:
   \ahrefloc{linear-checker}{Linear Checker} to control aliasing and prevent
   re-use (see \chapterpageref{linear-checker})
 \item
-  \ahrefloc{igj-checker}{IGJ Checker} for mutation errors (incorrect
-  side effects), based on the IGJ type system (see
-  \chapterpageref{igj-checker})
-\item
-  \ahrefloc{javari-checker}{Javari Checker} for mutation errors
-  (incorrect side effects), based on the Javari type system (see
-  \chapterpageref{javari-checker})
-\item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
 % \item
@@ -162,8 +154,7 @@ evaluate and deploy their type systems.
 % \item
 %   The next chapters are user manuals for the \ahrefloc{nullness-checker}{Nullness}
 %   (Chapter~\ref{nullness-checker}), \ahrefloc{interning-checker}{Interning}
-%   (Chapter~\ref{interning-checker}), \ahrefloc{javari-checker}{Javari} (Chapter~\ref{javari-checker}),
-%   \ahrefloc{igj-checker}{IGJ} (Chapter~\ref{igj-checker}), and \ahrefloc{subtyping-checker}{Basic}
+%   (Chapter~\ref{interning-checker}), and \ahrefloc{subtyping-checker}{Basic}
 %   (Chapter~\ref{subtyping-checker}) checkers.
 % \item Chapter~\ref{annotating-libraries} describes an approach for \ahrefloc{annotating-libraries}{annotating external
 % libraries}.
@@ -412,7 +403,7 @@ described in Sections~\ref{writing-annotations} and~\ref{running}.
 \item The programmer writes annotations, such as \refqualclass{checker/nullness/qual}{NonNull} and
   \refqualclass{checker/interning/qual}{Interned}, that specify additional information about Java types.
   (Or, the programmer uses an inference tool to automatically insert
-  annotations in his code:  see Chapter~\ref{type-inference}.)
+  annotations in his code:  see Section~\ref{nullness-inference}.)
   It is possible to annotate only part of your code:  see
   Section~\ref{unannotated-code}.
 
@@ -472,10 +463,10 @@ them.  Here are a few examples of type annotations:
 \begin{alltt}
   \underline{@Interned} String intern() \ttlcb{} ... \ttrcb{}               // return value
   int compareTo(\underline{@NonNull} String other) \ttlcb{} ... \ttrcb{}    // parameter
-  String toString(\underline{@ReadOnly} MyClass this) \ttlcb{} ... \ttrcb{} // receiver ("this" parameter)
+  String toString(\underline{@Tainted} MyClass this) \ttlcb{} ... \ttrcb{}  // receiver ("this" parameter)
   \underline{@NonNull} List<\underline{@Interned} String> messages;       // generics:  non-null list of interned Strings
   \underline{@Interned} String \underline{@NonNull} [] messages;          // arrays:  non-null array of interned Strings
-  myDate = (\underline{@ReadOnly} Date) readonlyObject;       // cast
+  myDate = (\underline{@Initialized} Date) beingConstructed;  // cast
 \end{alltt}
 %BEGIN LATEX
 \end{smaller}
@@ -750,9 +741,6 @@ checker is an ``annotation processor''.
   means to skip checking; \<-proc:only> means to do only
   checking, without any subsequent compilation; see
   Section~\ref{checker-auto-discovery}
-%% Users shouldn't need to use this
-% \item \<-Xbootclasspath/p:> Indicates where to find the annotated JDK classes;
-%   see Section~\ref{skeleton-using}
 \item \<-implicit:class> Suppresses warnings about implicitly compiled files
   (not named on the command line); see Section~\ref{ant-task}
 \item \<-XDTA:noannotationsincomments> and \<-XDTA:spacesincomments>
@@ -799,12 +787,9 @@ You can disable this auto-discovery mechanism by passing the
 annotation processing including all pluggable type-checking.
 
 %% Auto-discovering all the distributed checkers by default would be
-%% problematic.  So, leave it up to the user to enable auto-discovery.
-%%  1. We don't want to auto-discover both the Javari & IGJ type-checkers,
-%%     as then the user would see multiple, possibly contradictory, types
-%%     of mutability diagnostics.
-%%  2. The nullness and mutability checkers would issue lots of errors for
-%%     unannotated code, and that would be irritating.
+%% problematic:  the nullness and mutability checkers would issue lots of
+%% errors for unannotated code, and that would be irritating.  So, leave it
+%% up to the user to enable auto-discovery.  1.
 
 \subsection{Shorthand for built-in checkers \label{shorthand-for-checkers}}
 
@@ -1150,8 +1135,8 @@ That is, the following two expressions have identical semantics:  one is
 just shorthand for the other.
 
 \begin{Verbatim}
-  new @ReadOnly Date()
-  (@ReadOnly Date) new Date()
+  new @Untainted Date()
+  (@Untainted Date) new Date()
 \end{Verbatim}
 
 However, you should rarely have to use this.  The Checker Framework will
@@ -1161,16 +1146,13 @@ appears before the constructor name, for example:
 
 \begin{Verbatim}
   class MyClass {
-    @ReadOnly MyClass() { ... }
+    @Untainted MyClass() { ... }
   }
 \end{Verbatim}
 
 In general, you should only use an annotation on a constructor invocation
 when you know that the cast is
-guaranteed to succeed.  An example from the IGJ checker
-(Chapter~\ref{igj-checker}) is \<new @Immutable MyClass()> or \<new
-@Mutable MyClass()>, where you know that every other reference to the class
-is annotated \<@ReadOnly>.
+guaranteed to succeed.
 
 
 \subsection{What to do if a checker issues a warning about your code\label{handling-warnings}}
@@ -1219,8 +1201,8 @@ Also see Chapter~\ref{troubleshooting}, Troubleshooting.
 
 
 % LocalWords:  NonNull zipfile processor classfiles annotationname javac htoc
-% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp igj
-% LocalWords:  nonnull javari langtools sourcepath classpath OpenJDK pre jsr
+% LocalWords:  SuppressWarnings un skipUses java plugins plugin TODO cp
+% LocalWords:  nonnull langtools sourcepath classpath OpenJDK pre jsr
 % LocalWords:  Djsr qual Alint javac's dotequals nullable supertype JLS Papi
 % LocalWords:  deserialization Mahmood Telmo Correa changelog txt nullness ESC
 % LocalWords:  Nullness Xspacesincomments unselect checkbox unsetting PolyNull
@@ -1228,7 +1210,7 @@ Also see Chapter~\ref{troubleshooting}, Troubleshooting.
 % LocalWords:  type-checker proc discoverable Xlint util QualifierDefaults Foo
 % LocalWords:  DefaultQualifier DefaultQualifiers SoyLatte GetStarted Formatter
 % LocalWords:  Dcheckers Warski MyClass ProcessorName compareTo toString myDate
-% LocalWords:  ReadOnly readonlyObject int XDTA spacesincomments newdir Awarns
+% LocalWords:  int XDTA spacesincomments newdir Awarns
 % LocalWords:  subpackages bak tIDE Multiset NullPointerException AskipUses
 % LocalWords:  html JCIP MultiSet Astubs Afilenames Anomsgtext Ashowchecks tex
 % LocalWords:  Aquals processorpath regex RegEx Xmaxwarns Xbootclasspath com

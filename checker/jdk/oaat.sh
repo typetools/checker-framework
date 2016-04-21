@@ -24,7 +24,7 @@ CTSYM="${JAVA_HOME}/lib/ct.sym"
 CP="${BINDIR}:${BOOTDIR}:${LT_BIN}:${TOOLSJAR}:${CF_BIN}:${CF_JAR}"
 JFLAGS="-XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 \
         -source 8 -target 8 -encoding ascii -cp ${CP}"
-PROCESSORS="interning,igj,javari,nullness,signature"
+PROCESSORS="interning,nullness,signature"
 PFLAGS="-Anocheckjdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source -AprintErrorStack -Awarns"
 
 PID=$$      # script process id
