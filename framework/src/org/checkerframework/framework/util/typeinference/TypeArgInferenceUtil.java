@@ -33,6 +33,7 @@ import javax.lang.model.util.Types;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -147,9 +148,17 @@ public class TypeArgInferenceUtil {
             AnnotatedExecutableType method = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, methodElt);
             int treeIndex = -1;
             for (int i = 0; i < method.getParameterTypes().size(); ++i) {
-                if (TreeUtils.skipParens(methodInvocation.getArguments().get(i)) == path.getLeaf()) {
+                Tree argumentTree = TreeUtils.skipParens(methodInvocation.getArguments().get(i));
+                if (argumentTree == path.getLeaf()) {
                     treeIndex = i;
                     break;
+                } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
+                    ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) argumentTree;
+                    if (conditionalExpressionTree.getFalseExpression() == path.getLeaf()
+                        || conditionalExpressionTree.getTrueExpression() == path.getLeaf()) {
+                        treeIndex = i;
+                        break;
+                    }
                 }
             }
 
@@ -188,9 +197,17 @@ public class TypeArgInferenceUtil {
             AnnotatedExecutableType constructor = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, constructorElt);
             int treeIndex = -1;
             for (int i = 0; i < constructor.getParameterTypes().size(); ++i) {
-                if (TreeUtils.skipParens(newClassTree.getArguments().get(i)) == path.getLeaf()) {
+                Tree argumentTree = TreeUtils.skipParens(newClassTree.getArguments().get(i));
+                if (argumentTree == path.getLeaf()) {
                     treeIndex = i;
                     break;
+                } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
+                    ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) argumentTree;
+                    if (conditionalExpressionTree.getFalseExpression() == path.getLeaf()
+                        || conditionalExpressionTree.getTrueExpression() == path.getLeaf()) {
+                        treeIndex = i;
+                        break;
+                    }
                 }
             }
 
