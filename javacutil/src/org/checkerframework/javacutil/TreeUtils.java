@@ -343,6 +343,10 @@ public final class TreeUtils {
             return null;
         }
         Tree node = path.getLeaf();
+        if (node instanceof ExpressionTree) {
+            node = TreeUtils.skipParens((ExpressionTree) node);
+        }
+
         if ((node instanceof AssignmentTree) ||
                 (node instanceof CompoundAssignmentTree) ||
                 (node instanceof MethodInvocationTree) ||
