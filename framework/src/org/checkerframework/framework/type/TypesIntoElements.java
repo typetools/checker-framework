@@ -244,7 +244,8 @@ public class TypesIntoElements {
         List<Attribute.TypeCompound> res = List.nil();
 
         for (Attribute.TypeCompound tc : tcs) {
-            if (!TypeAnnotationUtils.isTypeCompoundContained(types, raw, tc)) {
+            // Don't insert an annotation if one with the same name already exists.
+            if (!TypeAnnotationUtils.isTypeCompoundContainedByName(types, raw, tc)) {
                 res = res.append(tc);
             }
         }

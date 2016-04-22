@@ -65,6 +65,25 @@ public class TypeAnnotationUtils {
         return false;
     }
 
+    /**
+     * Check whether a TypeCompound with the same name and position is contained in a list of TypeCompounds.
+     *
+     *
+     * @param list The input list of TypeCompounds.
+     * @param tc The TypeCompound to find.
+     * @return true, iff a TypeCompound with the same name and position as tc is contained in list.
+     */
+    public static boolean isTypeCompoundContainedByName(Types types, List<TypeCompound> list, TypeCompound tc) {
+        for (Attribute.TypeCompound rawat : list) {
+            if (contentEquals(rawat.type.tsym.name, tc.type.tsym.name) &&
+                isSameTAPositionExceptTreePos(rawat.position, tc.position)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     private static boolean contentEquals(Name n1, Name n2) {
         // Views of underlying bytes, not copies as with Name#contentEquals
         ByteBuffer b1 = ByteBuffer.wrap(n1.getByteArray(), n1.getByteOffset(), n1.getByteLength());
