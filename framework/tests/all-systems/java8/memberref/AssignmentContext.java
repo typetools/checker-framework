@@ -4,7 +4,6 @@ interface Function {
     String apply(String s);
 }
 
-@SuppressWarnings("oigj")
 class AssignmentContext {
     // Test assign
     Function f1 = String::toString;

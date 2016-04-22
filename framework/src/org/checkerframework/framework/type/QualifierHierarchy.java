@@ -112,7 +112,6 @@ public abstract class QualifierHierarchy {
      * Examples:
      * <ul>
      * <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rArr; Nullable</li>
-     * <li>For IGJ,     leastUpperBound('Immutable', 'Mutable') &rArr; ReadOnly</li>
      * </ul>
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
@@ -248,9 +247,6 @@ public abstract class QualifierHierarchy {
      * @return true iff an annotation in lhs is a super of one in rhs
      */
     // This method requires more revision.
-    // The only case were rhs and lhs have more than one qualifier is in IGJ
-    // where the type of 'this' is '@AssignsFields @I FOO'.  Subtyping for
-    // this case, requires subtyping with respect to one qualifier only.
     public abstract boolean isSubtypeTypeVariable(Collection<? extends AnnotationMirror> rhs,
             Collection<? extends AnnotationMirror> lhs);
 
@@ -261,7 +257,6 @@ public abstract class QualifierHierarchy {
      * Examples:
      * <ul>
      * <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable</li>
-     * <li>For IGJ,     leastUpperBound('Immutable', 'Mutable') &rarr; ReadOnly</li>
      * </ul>
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,
@@ -437,7 +432,6 @@ public abstract class QualifierHierarchy {
      * Examples:
      * <ul>
      * <li>For NonNull, leastUpperBound('Nullable', 'NonNull') &rarr; Nullable</li>
-     * <li>For IGJ,     leastUpperBound('Immutable', 'Mutable') &rarr; ReadOnly</li>
      * </ul>
      *
      * The two qualifiers have to be from the same qualifier hierarchy. Otherwise,

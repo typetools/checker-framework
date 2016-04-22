@@ -179,7 +179,7 @@ this marker, as the tests will be executed with a Java 8 compiler.
 
 To disable all tests for a given type system, temporarily move away a file;
 for example,
-  mv $CHECKERFRAMEWORK/checker/tests/src/tests/OIGJTest.java $CHECKERFRAMEWORK/checker/tests/src/tests/OIGJTest.java-SAVE
+  mv $CHECKERFRAMEWORK/checker/tests/src/tests/RegexTest.java $CHECKERFRAMEWORK/checker/tests/src/tests/RegexTest.java-SAVE
 [Is there a better way?]
 
 

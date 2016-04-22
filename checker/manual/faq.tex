@@ -171,14 +171,11 @@ use it.  You will be the best judge of this for your own code, of course.
 
 The \ahrefloc{linear-checker}{Linear Checker} (see
 \chapterpageref{linear-checker}) has not been extensively tested.
-The
-\ahrefloc{igj-checker}{IGJ Checker} (see \chapterpageref{igj-checker}),
-\ahrefloc{javari-checker}{Javari Checker} (see
-\chapterpageref{javari-checker}), and some of the third-party checkers (see
+Some of the third-party checkers (see
 \chapterpageref{third-party-checkers})
 have known bugs that limit their
-usability.  (Report the ones that affect you, and the Checker Framework
-developers will prioritize fixing them.)
+usability.  (Report the ones that affect you, so the developers
+will prioritize fixing them.)
 
 
 \subsection{Should I use pluggable types or Java subtypes?\label{faq-typequals-vs-subtypes}}
@@ -224,9 +221,7 @@ Type annotations can be applied to primitives and to final classes such as
 
 \item[Richer semantics and new supertypes]
 Type qualifiers permit you to remove operations, with a compile-time
-guarantee.  An example is that an immutable version of a type prohibits
-calling mutator methods
-(see Chapters~\ref{igj-checker} and~\ref{javari-checker}).  More
+guarantee.  More
 generally, type qualifiers permit creating a new supertype, not just a
 subtype, of an existing Java type.
 
@@ -340,9 +335,6 @@ to be written.  Figure 1 of the paper
 \item
     1 annotation per 1736 lines for interning annotations (\<@Interned>)
     % (/ 224048 129)
-\item
-    1 annotation per 27 lines for immutability annotations (IGJ type system)
-    % (/ (+ 6236 18159 30507 8691 59221 26828) (+ 315 1125 1386 384 1815 450))
 \end{itemize}
 
 % ICSE 2011 paper says:
@@ -1239,12 +1231,12 @@ be used with previous versions of the Java language via the
 annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 
 
-% LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
+% LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtils
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  igj javari MonotonicNonNull EnsuresNonNull myFieldName pre
+%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre
 %  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs

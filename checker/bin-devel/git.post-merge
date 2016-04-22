@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# This file will be used as .git/hooks/post-merge.
+# However, it should be edited as checker/bin-devel/git.post-merge.
+
+ant -e check-style
