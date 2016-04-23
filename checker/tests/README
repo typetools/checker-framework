@@ -177,6 +177,10 @@ need runtime support (e.g. lambdas) or depends on Java 8 APIs
 Tests that only exercise the static type annotation API do not need
 this marker, as the tests will be executed with a Java 8 compiler.
 
+Write @above-java7-jdk-skip-test anywhere in a test file to disable that
+test if the executing JDK version is higher than 7.
+This is useful if a test has a mismatch between Java 7 and Java 8 (e.g. Tests of Information Flow Checker), and need to ignore this test on Java 8.
+
 To disable all tests for a given type system, temporarily move away a file;
 for example,
   mv $CHECKERFRAMEWORK/checker/tests/src/tests/RegexTest.java $CHECKERFRAMEWORK/checker/tests/src/tests/RegexTest.java-SAVE
