@@ -303,12 +303,11 @@ subclassing \refclass{framework/type}{QualifierHierarchy} or
 % represent non-null values, indicating that the variable may not hold
 % \<null> values.
 
-Type qualifiers are defined as Java annotations~\cite{JSR269}.  In Java, an
+Type qualifiers are defined as Java annotations.  In Java, an
 annotation is defined using the Java \code{@interface} keyword.
-For example:
+For example, to define the \<@NonNull> annotation:
 
 \begin{Verbatim}
-  // Define an annotation for the @NonNull type qualifier.
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface NonNull { }
 \end{Verbatim}
@@ -318,11 +317,11 @@ For example:
 Write a \sunjavadocanno{java/lang/annotation/Target.html}{Target}
 meta-annotation on the annotation definition to indicate where the annotation
 may be written. All type qualifiers that users can write in source code should
-have the value \<ElementType.TYPE\_USE> (and optionally with the additional value of
-\<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values).
-(An annotation that is written on an annotation definition, such as
-\sunjavadocanno{java/lang/annotation/Target.html}{Target}, is called a
-\emph{meta-annotation}.)
+have the value \<ElementType.TYPE\_USE> and optionally with the additional value of
+\<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
+(Terminological note:  a \emph{meta-annotation} is an annotation that
+is written on an annotation definition, such as
+\sunjavadocanno{java/lang/annotation/Target.html}{Target}.)
 
 The annotations should be placed within a directory called \<qual>, and this
 directory should be placed in the same directory as your Checker's source file.
