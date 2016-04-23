@@ -305,23 +305,41 @@ subclassing \refclass{framework/type}{QualifierHierarchy} or
 
 Type qualifiers are defined as Java annotations.  In Java, an
 annotation is defined using the Java \code{@interface} keyword.
-For example, to define the \<@NonNull> annotation:
+For example, to define a two-qualifier hierarchy: the \<@Nullable> annotation which is the top
+qualifier in its type hierarchy:
 
 \begin{Verbatim}
+  import java.lang.annotation.ElementType;
+  import java.lang.annotation.Target;
+  import org.checkerframework.framework.qual.SubtypeOf;
+  import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+  @DefaultQualifierInHierarchy
+  @SubtypeOf({})
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface NonNull { }
+  public @interface UnknownSign {}
+
+
+  import java.lang.annotation.ElementType;
+  import java.lang.annotation.Target;
+  import org.checkerframework.framework.qual.SubtypeOf;
+  @SubtypeOf({UnknownSign.class})
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public @interface NonNegative {}
 \end{Verbatim}
 
-\noindent
+The \refqualclass{framework/qual}{SubtypeOf} meta-annotation
+indicates the parent in the type hierarchy.
 
-Write a \sunjavadocanno{java/lang/annotation/Target.html}{Target}
-meta-annotation on the annotation definition to indicate where the annotation
+The \sunjavadocanno{java/lang/annotation/Target.html}{Target}
+meta-annotation indicates where the annotation
 may be written. All type qualifiers that users can write in source code should
-have the value \<ElementType.TYPE\_USE> and optionally with the additional value of
-\<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
-(Terminological note:  a \emph{meta-annotation} is an annotation that
-is written on an annotation definition, such as
-\sunjavadocanno{java/lang/annotation/Target.html}{Target}.)
+have the value \<ElementType.TYPE\_USE> and optionally with the additional value
+of \<ElementType.TYPE\_PARAMETER>, but no other \<ElementType> values.
+%% This feels like clutter that distracts from the main point of the section.
+% (Terminological note:  a \emph{meta-annotation} is an annotation that
+% is written on an annotation definition, such as
+% \refqualclass{framework/qual}{SubtypeOf} and
+% \sunjavadocanno{java/lang/annotation/Target.html}{Target}.)
 
 The annotations should be placed within a directory called \<qual>, and this
 directory should be placed in the same directory as your Checker's source file.
@@ -1856,13 +1874,14 @@ the following:
 
 \begin{itemize}
 
-\item Add a \code{XXX-tests} build target and ensure all tests pass.
+\item Add a \code{XXX-tests} build target in file
+  \<checker-framework/checker/build.xml> and ensure all tests pass.
 
 \item Make sure \code{all-tests} tests the new checker.
 
 \item Extend the \code{check-compilermsgs} target to include the
 compiler messages property file of the new checker in
-the \code{checker-args} list.
+the \code{checker-args} list.  (Keep the list in alphabetical order.)
 
 \item Make sure \code{check-compilermsgs} and \code{check-purity} run
 without warnings or errors.
