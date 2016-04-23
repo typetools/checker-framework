@@ -135,7 +135,8 @@ public class TestUtilities {
             String nextLine = in.nextLine();
             if (nextLine.contains("@skip-test") ||
                     (!isJSR308Compiler && nextLine.contains("@non-308-skip-test")) ||
-                    (!isAtLeast8Jvm && nextLine.contains("@below-java8-jdk-skip-test"))) {
+                    (!isAtLeast8Jvm && nextLine.contains("@below-java8-jdk-skip-test")) ||
+                    (isAtLeast8Jvm && nextLine.contains("@above-java8-jdk-skip-test"))) {
                 in.close();
                 return false;
             }
