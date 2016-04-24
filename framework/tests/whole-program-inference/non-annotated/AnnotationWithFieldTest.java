@@ -21,12 +21,12 @@ public class AnnotationWithFieldTest {
     void expectsSiblingWithEmptyFields(@SiblingWithFields(value={}, value2="") String s) {}
 
     String getSiblingWithFields() {
-        //:: warning: (cast.unsafe) 
+        //:: warning: (cast.unsafe)
         return (@SiblingWithFields(value={"test", "test2"}, value2="test3") String) "";
     }
 
     String getSiblingWithFieldsEmpty() {
-        //:: warning: (cast.unsafe) 
+        //:: warning: (cast.unsafe)
         return (@SiblingWithFields(value={}, value2="") String) "";
     }
 

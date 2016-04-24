@@ -152,7 +152,7 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                  || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
                  || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
                  || AnnotationUtils.areSameByClass(sub, Parent.class))
-                && AnnotationUtils.areSameByClass(sup, DefaultType.class)){
+                && AnnotationUtils.areSameByClass(sup, DefaultType.class)) {
                 return true;
             }
 
