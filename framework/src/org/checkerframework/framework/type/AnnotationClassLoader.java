@@ -696,7 +696,7 @@ public class AnnotationClassLoader {
             // retrieve the set of ElementTypes in the @Target
             // meta-annotation and check to see if this annotation is
             // supported for automatic loading
-            if (AnnotatedTypes.hasTypeQualifierElementTypes(cls.getAnnotation(Target.class).value())) {
+            if (AnnotatedTypes.hasTypeQualifierElementTypes(cls.getAnnotation(Target.class).value(), cls, checker)) {
                 // if it is supported, then subclass it as an Annotation
                 // class
                 Class<? extends Annotation> annoClass = cls.asSubclass(Annotation.class);
