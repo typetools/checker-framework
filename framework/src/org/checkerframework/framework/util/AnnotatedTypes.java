@@ -1435,7 +1435,7 @@ public class AnnotatedTypes {
             }
         }
 
-        return true;
+        return hasTypeUse;
     }
 
     public static boolean containsTypeAnnotation(Collection<? extends AnnotationMirror> annos, Class<?> cls, BaseTypeChecker checker) {
