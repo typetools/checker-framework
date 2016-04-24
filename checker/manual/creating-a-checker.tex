@@ -588,7 +588,9 @@ source file's AST\@.  It uses the visitor design pattern to traverse
 Java syntax trees as provided by Oracle's
 \href{http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
 API},
-and it issues a warning whenever the type system is violated.
+and it issues a warning (by calling
+\refmethod{framework/source}{SourceChecker}{report})
+whenever the type system is violated.
 
 A checker's visitor overrides one method in the base visitor for each special
 rule in the type qualifier system.  Most type-checkers
