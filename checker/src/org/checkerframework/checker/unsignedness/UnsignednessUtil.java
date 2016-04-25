@@ -21,6 +21,12 @@ public final class UnsignednessUtil {
 		b.get(bs);
 	}
 
+	
+	@SuppressWarnings("unsignedness")
+	public static int compareUnsignedLongs(@Unsigned long x, @Unsigned long y) {
+		return Long.compareUnsigned(x, y);
+	}
+
 	@SuppressWarnings("unsignedness")
 	public static int compareUnsignedInts(@Unsigned int x, @Unsigned int y) {
 		return Integer.compareUnsigned(x, y);

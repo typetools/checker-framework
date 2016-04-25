@@ -22,3 +22,23 @@ class Integer {
     public static @Unsigned int remainderUnsigned(@Unsigned int dividend, @Unsigned int divisor);
 
 }
+
+class Long {
+    public static String toUnsignedString(@Unsigned long i, int radix);
+
+    //private static @Unsigned BigInteger toUnsignedBigInteger(@Unsigned long i);
+    
+    static int formatUnsignedLong(@Unsigned long val, int shift, char[] buf, int offset, int len);
+    
+    public static String toUnsignedString(@Unsigned long i);
+    
+    public static @Unsigned long parseUnsignedLong(String s, int radix);
+    
+    public static @Unsigned long parseUnsignedLong(String s);
+    
+    public static int compareUnsigned(@Unsigned long x, @Unsigned long y);
+    
+    public static @Unsigned long divideUnsigned(@Unsigned long dividend, @Unsigned long divisor);
+    
+    public static @Unsigned long remainderUnsigned(@Unsigned long dividend, @Unsigned long divisor);
+}
