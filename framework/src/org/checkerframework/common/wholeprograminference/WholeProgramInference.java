@@ -2,6 +2,7 @@ package org.checkerframework.common.wholeprograminference;
 
 import javax.lang.model.element.ExecutableElement;
 
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -53,7 +54,7 @@ public interface WholeProgramInference {
 
     /**
      * Updates the parameter type of the parameter lhs of the method methodTree
-     * at an assignment on the method body.
+     * at an assignment in the method body.
      * @param lhs the node representing the parameter.
      * @param rhs the node being assigned to the parameter in the method body.
      * @param classTree the tree of the class that contains the parameter.
@@ -73,7 +74,7 @@ public interface WholeProgramInference {
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the field's type.
      */
-    void updateInferredFieldType(Node lhs, Node rhs,
+    void updateInferredFieldType(FieldAccessNode lhs, Node rhs,
             ClassTree classTree, AnnotatedTypeFactory atf);
 
     /**

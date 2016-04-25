@@ -737,7 +737,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             if (lhs instanceof FieldAccessNode) {
                 // Updates inferred field type
                 analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
-                        lhs, rhs, analysis.getContainingClass(n.getTree()),
+                        (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()),
                         analysis.getTypeFactory());
             } else if (lhs instanceof LocalVariableNode &&
                     ((LocalVariableNode)lhs).getElement().getKind() == ElementKind.PARAMETER) {
@@ -789,7 +789,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                         n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
             // Updates inferred field type
             analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
-                    lhs, rhs, analysis.getContainingClass(n.getTree()),
+                    (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()),
                     analysis.getTypeFactory());
         }
 

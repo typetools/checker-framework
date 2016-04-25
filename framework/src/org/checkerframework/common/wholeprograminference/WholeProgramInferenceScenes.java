@@ -308,13 +308,12 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     @Override
     public void updateInferredFieldType(
-            Node lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
-        FieldAccessNode lhsFieldNode = (FieldAccessNode) lhs;
-        ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhsFieldNode);
+            FieldAccessNode lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
+        ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
         if (classSymbol == null) return; // TODO: Handle anonymous classes.
         // TODO: We must handle cases where the field is declared on a superclass.
         // Currently we are ignoring them. See ElementUtils#getSuperTypes.
-        if (!classSymbol.getEnclosedElements().contains(lhsFieldNode.getElement())) return;
+        if (!classSymbol.getEnclosedElements().contains(lhs.getElement())) return;
 
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
@@ -330,7 +329,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
 
-        AField field = clazz.fields.vivify(lhsFieldNode.getFieldName());
+        AField field = clazz.fields.vivify(lhs.getFieldName());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         helper.updateAnnotationSetInScene(
