@@ -274,19 +274,24 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
 
     /**
-     * The type of a NewClassTree is the type of the Identifier
-     * plus any explicit annotations (including polymorphic qualifiers)
-     * on the constructor.
+     * Creates an AnnotatedDeclaredType for the NewClassTree and adds, for each hierarchy, one of:
+     * <ul>
+     *   <li>an explicit annotation on the new class expression ({@code new @HERE MyClass()} ), or</li>
+     *   <li>an explicit annotation on the declaration of the class ({@code @HERE class MyClass {}} ), or</li>
+     *   <li>an explicit annotation on the declaration of the constructor ({@code @HERE public MyClass() {}} ), or</li>
+     *   <li>no annotation for a this hierarchy.</li>
+     * </ul>
      *
-     * @param node the NewClassTree
+     * @param node NewClassTree
      * @param f the type factory
-     * @return the type of the new class
+     * @return AnnotatedDeclaredType of {@code node}
      */
     @Override
     public AnnotatedTypeMirror visitNewClass(NewClassTree node,
                                              AnnotatedTypeFactory f) {
         // constructorFromUse return type has implicits
-        // so use fromNewClass which does diamond inference but does not do any implicits
+        // so use fromNewClass which does diamond inference and only
+        // contains explicit annotations and those inherited from the class declaration
         AnnotatedDeclaredType type = f.fromNewClass(node);
 
         // Enum constructors lead to trouble.
@@ -301,7 +306,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // Therefore, ensure to only add the qualifiers that are explicitly on
         // the constructor, but then take the possibly substituted qualifier.
         AnnotatedExecutableType ex = f.constructorFromUse(node).first;
-        AnnotatedTypes.keepOnlyExplicitConstructorAnnotations(f, type, ex);
+        AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(f, type, ex);
 
         return type;
     }

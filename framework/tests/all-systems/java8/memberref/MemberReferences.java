@@ -15,7 +15,6 @@ interface BiFunction<T, U, R> {
 
 /** super # instMethod */
 //SUPER(ReferenceMode.INVOKE, false),
-//@SuppressWarnings("javari")
 class Super {
 
     Object func1 (Object o) { return o; }
@@ -28,12 +27,10 @@ class Super {
             //:: warning: (methodref.inference.unimplemented)
             Function f2 = super::func2;
             // Top level wildcards are ignored when type checking
-            @SuppressWarnings("javari")
             Function<? extends String, ? extends String> f3 = super::<String>func2;
         }
     }
 }
-@SuppressWarnings("javari")
 class SuperWithArg<U> {
 
     void func1 (U o) { }
@@ -47,7 +44,6 @@ class SuperWithArg<U> {
 
 /** Type # instMethod */
 // UNBOUND(ReferenceMode.INVOKE, true),
-@SuppressWarnings("javari")
 class Unbound {
     <T> T func1 (T o) { return o; }
 
@@ -59,7 +55,6 @@ class Unbound {
         BiFunction<? extends Unbound, ? super Integer, ? extends Integer> f3 = Unbound::<Integer>func1;
     }
 }
-@SuppressWarnings({"oigj", "javari"})
 abstract class UnboundWithArg<U> {
     abstract U func1();
 
@@ -75,7 +70,6 @@ abstract class UnboundWithArg<U> {
 
 /** Type # staticMethod */
 // STATIC(ReferenceMode.INVOKE, false),
-@SuppressWarnings("javari")
 class Static {
     static <T> T func1 (T o) { return o; }
     void context() {
@@ -87,7 +81,6 @@ class Static {
 
 ///** Expr # instMethod */
 // BOUND(ReferenceMode.INVOKE, false),
-@SuppressWarnings("javari")
 class Bound {
     <T> T func1 (T o) { return o; }
     void context(Bound bound) {
@@ -99,7 +92,6 @@ class Bound {
         Function<? extends String, ? extends String> f4 = this::<String>func1;
     }
 }
-@SuppressWarnings("javari")
 class BoundWithArg<U> {
     void func1 (U param) { }
     void context(BoundWithArg<Number> bound) {
@@ -110,7 +102,6 @@ class BoundWithArg<U> {
 
 /** Inner # new */
 // IMPLICIT_INNER(ReferenceMode.NEW, false),
-@SuppressWarnings("javari")
 class Outer {
     void context(Outer other) {
         Supplier<Inner> f1 = Inner::new;
@@ -119,7 +110,6 @@ class Outer {
 
     }
 }
-@SuppressWarnings({"oigj", "javari"})
 class OuterWithArg {
     void context() {
         // TODO: type argument inference
@@ -134,7 +124,6 @@ class OuterWithArg {
 
 /** Toplevel # new */
 // TOPLEVEL(ReferenceMode.NEW, false),
-@SuppressWarnings("javari")
 class TopLevel {
     TopLevel() {}
     <T> TopLevel(T s) {}
@@ -145,7 +134,6 @@ class TopLevel {
         Function<String, TopLevel> f3 = TopLevel::<String>new;
     }
 }
-@SuppressWarnings("javari")
 class TopLevelWithArg<T> {
     TopLevelWithArg() {}
     <U> TopLevelWithArg(U s) {}
@@ -159,8 +147,6 @@ class TopLevelWithArg<T> {
 
 /** ArrayType # new */
 // ARRAY_CTOR(ReferenceMode.NEW, false);
-// NOTE: Unsignedness Checker temporarily suppressed while waiting for DefaultFor feature update.
-@SuppressWarnings({"oigj", "javari", "unsignedness"})
 class ArrayType {
     void context() {
         Function<Integer, String[]> string = String[]::new;

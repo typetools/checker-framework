@@ -12,7 +12,6 @@ import java.time.chrono.ChronoLocalDateTime;
 import java.time.chrono.Chronology;
 import java.util.Comparator;
 
-@SuppressWarnings("oigj")
 public abstract class Issue573 implements Chronology {
     Object o = (Comparator<ChronoLocalDateTime<? extends ChronoLocalDate>> & Serializable) (dateTime1, dateTime2) -> {
         return 0;

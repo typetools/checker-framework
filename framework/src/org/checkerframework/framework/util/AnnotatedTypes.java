@@ -174,16 +174,6 @@ public class AnnotatedTypes {
                 }
             }
 
-            /* Something like the following seemed sensible for intersection types,
-             * which came up in the Ternary test case with classes MethodSymbol and ClassSymbol.
-             * However, it results in an infinite recursion with the IGJ Checker.
-             * For now, let's handle the null result in the caller, TypeFromTree.visitConditionalExpression.
-            if (p.getKind() == TypeKind.DECLARED &&
-                    ((AnnotatedDeclaredType)p).getUnderlyingType().asElement().getSimpleName().length() == 0) {
-                p = ((AnnotatedDeclaredType)p).directSuperTypes().get(0);
-            }
-            */
-
             if (shouldStop(p, type))
                 return type;
 
@@ -1898,15 +1888,15 @@ public class AnnotatedTypes {
 
 
     /**
-     * keepOnlyExplicitConstructorAnnotations modifies returnType to
-     * keep only annotations explicitly on the constructor
-     * and annotations resulting from resolution of polymorphic qualifiers.
+     * Copies explicit annotations and annotations resulting from resolution of polymorphic qualifiers
+     * from {@code constructor} to {@code returnType}. If {@code returnType} has an annotation in the
+     * same hierarchy of an annotation to be copied, that annotation is not copied.
      *
      * @param atypeFactory type factory
-     * @param returnType The return type for the constructor. No polymorphic qualifiers should have been substituted.
+     * @param returnType return type to copy annotations to
      * @param constructor The ATM for the constructor.
      */
-    public static void keepOnlyExplicitConstructorAnnotations(AnnotatedTypeFactory atypeFactory,
+    public static void copyOnlyExplicitConstructorAnnotations(AnnotatedTypeFactory atypeFactory,
                                                               AnnotatedDeclaredType returnType,
                                                               AnnotatedExecutableType constructor) {
 

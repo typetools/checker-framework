@@ -40,7 +40,7 @@ import java.lang.annotation.*;
  * public @interface Nullable { }
  *
  * &#64;SubtypeOf( {} )
- * public @interface ReadOnly { }
+ * public @interface MaybeAliased { }
  * </pre>
  *
  * <p>

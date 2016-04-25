@@ -60,6 +60,9 @@
         <available property="framework.project"
                    file="${framework.loc}/build.xml"/>
         <antcall target="-prep-framework-compile"/>
+
+        <copy file="bin-devel/git.post-merge" tofile="../.git/hooks/post-merge" preservelastmodified="true" />
+        <copy file="bin-devel/git.pre-commit" tofile="../.git/hooks/pre-commit" preservelastmodified="true" />
     </target>
 
     <target name="-prep-framework-compile" if="framework.project"
@@ -100,6 +103,7 @@
         <delete failonerror="false">
             <fileset dir="${tests.build}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
+            <fileset dir="${checker.loc}/examples" includes="**/*.class"/>
         </delete>
 
         <delete dir="${dist}"/>
@@ -654,6 +658,13 @@
         </antcall>
     </target>
 
+    <target name="i18n-tests" depends="jar,build-tests"
+            description="Run tests for the I18n Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.I18nTest"/>
+        </antcall>
+    </target>
+
     <target name="interning-tests" depends="jar,build-tests"
             description="Run tests for the Interning Checker">
         <antcall target="-run-tests">
@@ -665,34 +676,6 @@
             description="Run tests for the Lock Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.LockTest"/>
-        </antcall>
-    </target>
-
-    <target name="i18n-tests" depends="jar,build-tests"
-            description="Run tests for the I18n Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.I18nTest"/>
-        </antcall>
-    </target>
-
-    <target name="igj-tests" depends="jar,build-tests"
-            description="Run tests for the IGJ Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.IGJTest"/>
-        </antcall>
-    </target>
-
-    <target name="oigj-tests" depends="jar,build-tests"
-            description="Run tests for the OIGJ Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.OIGJTest"/>
-        </antcall>
-    </target>
-
-    <target name="javari-tests" depends="jar,build-tests"
-            description="Run tests for the Javari Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.JavariTest"/>
         </antcall>
     </target>
 
@@ -1180,20 +1163,12 @@
         </antcall>
     </target>
 
-    <target name="check-igj"
-            description="Run the IGJ Checker on the Framework">
-        <antcall target="-run-checker">
-            <param name="checker-name" value="org.checkerframework.checker.igj.IGJChecker"/>
-            <param name="checker-jdk" value="jdk/igj/src"/>
-            <param name="checker-args" value="-Awarns"/>
-        </antcall>
-    </target>
-
     <target name="check-compilermsgs"
             description="Run the compiler message keys checker on the Framework">
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
-            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/javari/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:./src/org/checkerframework/checker/unsignedness/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties"/>
+
+            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/unsignedness/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties"/>
         </antcall>
     </target>
 
@@ -1211,6 +1186,9 @@
         so useNativeBasedir is required. -->
           <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
+          </ant>
+          <ant dir="${framework.loc}/../tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
+              <target name="clean"/>
           </ant>
     </target>
 

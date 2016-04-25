@@ -24,8 +24,6 @@ unsignedness-checker.tex \
 constant-value-checker.tex \
 aliasing-checker.tex \
 linear-checker.tex \
-igj-checker.tex \
-javari-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
 subtyping-checker.tex \

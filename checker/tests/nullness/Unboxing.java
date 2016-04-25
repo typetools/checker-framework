@@ -2,7 +2,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.checker.oigj.qual.O;
 
 class Unboxing {
 

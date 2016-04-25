@@ -1,9 +1,5 @@
 package org.checkerframework.common.basetype;
 
-/*>>>
-import org.checkerframework.checker.igj.qual.*;
-*/
-
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.framework.qual.SubtypeOf;

@@ -44,17 +44,10 @@ code above, which contains no type annotations.
 
 Java's covariant array typing is sound if the array is used in a read-only
 fashion:  that is, if the array's elements are accessed but the array is
-not modified.  However, fact about read-only usage is not built into any of
-the type-checkers except those that are specifically about immutability:
-IGJ (see \chapterpageref{igj-checker}) and Javari (see
-\chapterpageref{javari-checker}).  Therefore, when using other type systems
+not modified.  However, facts about read-only usage are not built into any of
+the type-checkers.  Therefore, when using type systems
 along with \<-AinvariantArrays>, you will need to suppress any warnings that
 are false positives because the array is treated in a read-only way.
-
-% An alternative would be for the Nullness Checker to read and trust (but not
-% verify) existing IGJ/Javari annotations; this would be unsound but would be
-% a better and more explicit way of suppressing the warning.
-
 
 
 \section{Context-sensitive type inference for array constructors\label{array-context-sensitive}}
@@ -239,8 +232,8 @@ class MyClass {
       ...
   }
 
-  @DefaultQualifier(Mutable.class)
-  public boolean isJavaFile(File myfile) {  // myFile has type "@Mutable File"
+  @DefaultQualifier(Tainted.class)
+  public boolean isJavaFile(File myfile) {  // myFile has type "@Tainted File"
     ...
   }
 }
@@ -254,7 +247,7 @@ use
 \begin{Verbatim}
 @DefaultQualifiers({
   @DefaultQualifier(NonNull.class),
-  @DefaultQualifier(Mutable.class)
+  @DefaultQualifier(Tainted.class)
 })
 \end{Verbatim}
 
@@ -831,14 +824,6 @@ Type systems that cannot support a run-time test are:
   \ahrefloc{linear-checker}{Linear Checker} to control aliasing and prevent
   re-use (see \chapterpageref{linear-checker})
 \item
-  \ahrefloc{igj-checker}{IGJ Checker} for mutation errors (incorrect
-  side effects), based on the IGJ type system (see
-  \chapterpageref{igj-checker})
-\item
-  \ahrefloc{javari-checker}{Javari Checker} for mutation errors
-  (incorrect side effects), based on the Javari type system (see
-  \chapterpageref{javari-checker})
-\item
   \ahrefloc{subtyping-checker}{Subtyping Checker} for customized checking without
   writing any code (see \chapterpageref{subtyping-checker})
 \end{itemize}
@@ -1006,12 +991,6 @@ the two invocations \code{x.getField(y)} have the same value, and
 therefore that \code{x.getField(y)} is non-null within the then branch
 of the if statement.
 
-
-If a method is side-effect-free or pure, then it would be legal to annotate its receiver and
-every parameter as \<@ReadOnly>, in the IGJ (Chapter~\ref{igj-checker}) or
-Javari (Chapter~\ref{javari-checker}) type systems.  The reverse is not
-true, because the method might side-effect a global variable.  (Also, for
-the case of \<@Pure>, the method might not be deterministic.)
 
 If you supply the command-line option \<-AsuggestPureMethods>, then the
 Checker Framework will suggest methods that can be marked as
@@ -1424,10 +1403,10 @@ class @Marsupial-Animal {
 % LocalWords:  getComponentType enum implementers dereferenced superclasses
 %  LocalWords:  regex myStrings myVar pouchSize myMammal getter foo MyAnno
 %  LocalWords:  getPouchSize TerminatesExecution myvar myField getField m1
-%  LocalWords:  computeValue ReadOnly IGJ AsuggestPureMethods Instanceof
+%  LocalWords:  computeValue AsuggestPureMethods Instanceof
 %  LocalWords:  AcheckPurityAnnotations AassumeSideEffectFree iMplicit instanceof m2
 %  LocalWords:  AassumeAssertionsAreEnabled myArray vals propkey forName
-%  LocalWords:  fenum igj javari i18n RequiresQualifier EnsuresQualifier
+%  LocalWords:  fenum i18n RequiresQualifier EnsuresQualifier
 %  LocalWords:  EnsuresQualifierIf AsuppressWarnings AinvariantArrays asts
 %  LocalWords:  formatter ocals nstanceof plicit ounds wildcard's da
 %%  LocalWords:  wildcards guieffect AassumeAssertionsAreDisabled
