@@ -2,7 +2,10 @@ package org.checkerframework.checker.unsignedness.qual;
 
 import java.lang.annotation.*;
 
+import javax.lang.model.type.TypeKind;
+
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -17,4 +20,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf( { } )
 @DefaultQualifierInHierarchy
+@ImplicitFor(types = {TypeKind.BOOLEAN})
 public @interface UnknownSignedness { }

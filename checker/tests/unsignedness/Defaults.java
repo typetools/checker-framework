@@ -136,7 +136,7 @@ public class Defaults {
         botObj = testObj;
     }
 
-    public void UnknownSignedness(Object testObj) {
+    public void UnknownSignedness(Object testObj, @Unsigned int unsigned, @Signed int signed) {
 
         @UnknownSignedness Object unkObj;
         @Signed Object sinObj;
@@ -145,5 +145,7 @@ public class Defaults {
 
         //:: error: (assignment.type.incompatible)
         sinObj = testObj;
+        
+        //boolean testBool = unsigned == 1 || signed > 1;
     }
 }
