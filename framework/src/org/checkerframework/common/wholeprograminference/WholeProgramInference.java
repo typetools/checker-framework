@@ -22,6 +22,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
  * (pseudo-)assignment based on the type of the RHS. In case the element on the
  * LHS already had an inferred type, its new type will be the LUB between the
  * previous and new types.
+ * @checker_framework.manual #whole-program-inference Whole-program inference
  * @author pbsf
  */
 public interface WholeProgramInference {
