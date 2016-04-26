@@ -201,7 +201,7 @@ public class WholeProgramInferenceScenesHelper {
         updatesATMWithLUB(atf, rhsATM, atmFromJaif);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos = ((AnnotatedTypeVariable) lhsATM).
-                        getUpperBound().getAnnotations();
+                        getUpperBound().getEffectiveAnnotations();
             // If the inferred type is a subtype of the upper bounds of the
             // current type on the source code, halt.
             if (upperAnnos.size() == rhsATM.getAnnotations().size() &&
