@@ -101,7 +101,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the parameter types of the constructor created by objectCreationNode.
+     * Updates the parameter types of the constructor created by objectCreationNode
+     * based on arguments to the constructor.
      * <p>
      * For each parameter in constructorElt:
      *   <ul>
@@ -137,30 +138,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String methodName = JVMNames.getJVMMethodName(constructorElt);
         AMethod method = clazz.methods.vivify(methodName);
 
-        for (int i = 0; i < objectCreationNode.getArguments().size(); i++) {
-            VariableElement ve = constructorElt.getParameters().get(i);
-            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
-
-            Node arg = objectCreationNode.getArgument(i);
-            Tree treeNode = arg.getTree();
-            if (treeNode == null) {
-                // TODO: Handle variable-length list as parameter.
-                // An ArrayCreationNode with a null tree is created when the
-                // parameter is a variable-length list. We are ignoring it for now.
-                continue;
-            }
-            AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-            AField param = method.parameters.vivify(i);
-            helper.updateAnnotationSetInScene(
-                    param.type, atf, jaifPath, argATM, paramATM,
-                    TypeUseLocation.PARAMETER);
-        }
+        List<Node> arguments = objectCreationNode.getArguments();
+        updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
 
     }
 
     /**
      * Updates the parameter types of the method methodElt in the Scene of the
-     * receiverTree's enclosing class.
+     * receiverTree's enclosing class based on the arguments to the method.
      * <p>
      * For each method parameter in methodElt:
      *   <ul>
@@ -209,11 +194,20 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String methodName = JVMNames.getJVMMethodName(methodElt);
         AMethod method = clazz.methods.vivify(methodName);
 
-        for (int i = 0; i < methodInvNode.getArguments().size(); i++) {
+        List<Node> arguments = methodInvNode.getArguments();
+        updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
+    }
+
+    /**
+     * Helper method for updating parameter types based on calls to a method or constructor.
+     */
+    private void updateInferredExecutableParameterTypes(ExecutableElement methodElt, AnnotatedTypeFactory atf,
+                                                        String jaifPath, AMethod method, List<Node> arguments) {
+        for (int i = 0; i < arguments.size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
 
-            Node arg = methodInvNode.getArgument(i);
+            Node arg = arguments.get(i);
             Tree treeNode = arg.getTree();
             if (treeNode == null) {
                 // TODO: Handle variable-length list as parameter.
@@ -231,7 +225,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /**
      * Updates the parameter type represented by lhs of the method methodTree
-     * in the Scene of the receiverTree's enclosing class.
+     * in the Scene of the receiverTree's enclosing class based on assignments
+     * to the parameter inside the method body.
      *   <ul>
      *     <li>If the Scene does not contain an annotated type for that
      *     parameter, then the type of the respective value passed as argument
