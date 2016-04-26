@@ -122,9 +122,9 @@ public class WholeProgramInferenceScenesHelper {
                 }
             } catch (IOException e) {
                 ErrorReporter.errorAbort("Problem while reading file in: " + jaifPath
-                        + ". Exception message: " + e.getMessage());
+                        + ". Exception message: " + e.getMessage(), e);
             } catch (DefException e) {
-                ErrorReporter.errorAbort(e.getMessage());
+                ErrorReporter.errorAbort(e.getMessage(), e);
             }
         }
         modifiedScenes.clear();
@@ -152,7 +152,7 @@ public class WholeProgramInferenceScenesHelper {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
                     ErrorReporter.errorAbort("Problem while reading file in: " + jaifPath + "."
-                            + " Exception message: " + e.getMessage());
+                            + " Exception message: " + e.getMessage(), e);
                 }
             }
             scenes.put(jaifPath, scene);
