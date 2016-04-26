@@ -130,9 +130,6 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             // Ignoring it for now.
             return;
         }
-        // TODO: We must handle cases where the method is declared on a superclass.
-        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
-        if (!classSymbol.getEnclosedElements().contains(constructorElt)) return;
 
         String className = classSymbol.flatname.toString();
         String jaifPath = helper.getJaifPath(className);
