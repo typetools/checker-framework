@@ -49,7 +49,7 @@ import com.sun.tools.javac.code.Type.ClassType;
  * {@link #updateInferredMethodParameterTypes updateInferredMethodParameterTypes},
  * {@link #updateInferredParameterType updateInferredParameterType}, or
  * {@link #updateInferredMethodReturnType updateInferredMethodReturnType})
- * replaces the currently-stored type for an element in a Scene, if any,
+ * replaces the currently-stored type for an element in a {@link annotations.el.AScene}, if any,
  * by the LUB of it and the update method's argument.
  * <p>
  * This class does not perform inference for an element if the element has
