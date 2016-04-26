@@ -4,7 +4,7 @@ public class SignatureTypeFactoryTest {
 
     // The hierarchy of type representations contains:
     //
-    //     SignatureUnknown.class,
+    //     UnannotatedString.class,
     //
     //     FullyQualifiedName.class,
     //     BinaryName.class,
@@ -82,7 +82,7 @@ public class SignatureTypeFactoryTest {
       String t32 = "package/Outer$22[]";
       String t33 = "[]";
 
-      String us; // @SignatureUnknown
+      String us; // @UnannotatedString
       @FullyQualifiedName String fqn;
       @BinaryName String bn;
       @ClassGetName String cgn;

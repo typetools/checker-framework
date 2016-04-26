@@ -68,12 +68,6 @@
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
             <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
         </javadoc>
-        <property name="favicon.targetfile" value="favicon-checkerframework.png"/>
-        <copy file="../checker/manual/logo/Checkmark/CFCheckmark_favicon.png" tofile="${api.doc}/${favicon.targetfile}" />
-        <exec executable="../checker/manual/logo/add-favicon" failonerror="true">
-            <arg value="${api.doc}"/>
-            <arg value="${favicon.targetfile}"/>
-        </exec>
     </target>
 
 </project>
