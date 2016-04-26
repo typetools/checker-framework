@@ -96,8 +96,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     private final WholeProgramInferenceScenesHelper helper;
 
-    public WholeProgramInferenceScenes(boolean isNullness) {
-        helper = new WholeProgramInferenceScenesHelper(isNullness);
+    public WholeProgramInferenceScenes(boolean ignoreNullAssignments) {
+        helper = new WholeProgramInferenceScenesHelper(ignoreNullAssignments);
     }
 
     /**

@@ -367,7 +367,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (inferSignatures) {
             checkInvalidOptionsInferSignatures();
             wholeProgramInference = new WholeProgramInferenceScenes(
-                    "NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName()));
+                    !"NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName()));
         }
     }
 

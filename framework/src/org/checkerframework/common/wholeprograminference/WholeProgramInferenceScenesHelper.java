@@ -62,7 +62,8 @@ import com.sun.tools.javac.code.TypeAnnotationPosition;
  */
 public class WholeProgramInferenceScenesHelper {
 
-    /** Maps a TypeUseLocation to a set of names of annotations that should
+    /**
+     * Maps a TypeUseLocation to a set of names of annotations that should
      * not be added to .jaif files for that location.
      */
     private final Map<TypeUseLocation, Set<String>> annosToIgnore = new HashMap<>();
@@ -75,10 +76,9 @@ public class WholeProgramInferenceScenesHelper {
             "whole-program-inference" + File.separator;
 
     /**
-     * Indicates whether the whole-inference analysis is being performed for the
-     * Nullness type system.
+     * Indicates whether assignments where the rhs is null should be ignored.
      */
-    private final boolean isNullnessChecker;
+    private final boolean ignoreNullAssignments;
 
     /** Maps .jaif file paths (Strings) to Scenes. Relatives to jaifFilesPath. */
     private final Map<String, AScene> scenes = new HashMap<>();
@@ -96,8 +96,8 @@ public class WholeProgramInferenceScenesHelper {
      */
     private final Set<String> modifiedScenes = new HashSet<>();
 
-    public WholeProgramInferenceScenesHelper(boolean isNullness) {
-        this.isNullnessChecker = isNullness;
+    public WholeProgramInferenceScenesHelper(boolean ignoreNullAssignments) {
+        this.ignoreNullAssignments = ignoreNullAssignments;
     }
 
     /**
@@ -192,9 +192,7 @@ public class WholeProgramInferenceScenesHelper {
             AnnotatedTypeFactory atf, String jaifPath,
             AnnotatedTypeMirror rhsATM, AnnotatedTypeMirror lhsATM,
             TypeUseLocation defLoc) {
-        if (rhsATM instanceof AnnotatedNullType && !isNullnessChecker) {
-            // Design decision: Do not perform inference when the RHS of the
-            // assignment is the null literal, except for the NullnessChecker.
+        if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
         AnnotatedTypeMirror atmFromJaif = AnnotatedTypeMirror.createType(
