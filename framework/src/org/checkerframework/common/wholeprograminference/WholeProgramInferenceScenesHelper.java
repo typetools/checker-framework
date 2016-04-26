@@ -62,7 +62,8 @@ import com.sun.tools.javac.code.TypeAnnotationPosition;
  */
 public class WholeProgramInferenceScenesHelper {
 
-    /** Maps a TypeUseLocation to a set of names of annotations that should
+    /**
+     * Maps a TypeUseLocation to a set of names of annotations that should
      * not be added to .jaif files for that location.
      */
     private final Map<TypeUseLocation, Set<String>> annosToIgnore = new HashMap<>();
@@ -75,10 +76,9 @@ public class WholeProgramInferenceScenesHelper {
             "whole-program-inference" + File.separator;
 
     /**
-     * Indicates whether the whole-inference analysis is being performed for the
-     * Nullness type system.
+     * Indicates whether assignments where the rhs is null should be ignored.
      */
-    private final boolean isNullnessChecker;
+    private final boolean ignoreNullAssignments;
 
     /** Maps .jaif file paths (Strings) to Scenes. Relatives to jaifFilesPath. */
     private final Map<String, AScene> scenes = new HashMap<>();
@@ -96,8 +96,8 @@ public class WholeProgramInferenceScenesHelper {
      */
     private final Set<String> modifiedScenes = new HashSet<>();
 
-    public WholeProgramInferenceScenesHelper(boolean isNullness) {
-        this.isNullnessChecker = isNullness;
+    public WholeProgramInferenceScenesHelper(boolean ignoreNullAssignments) {
+        this.ignoreNullAssignments = ignoreNullAssignments;
     }
 
     /**
@@ -122,9 +122,9 @@ public class WholeProgramInferenceScenesHelper {
                 }
             } catch (IOException e) {
                 ErrorReporter.errorAbort("Problem while reading file in: " + jaifPath
-                        + ". Exception message: " + e.getMessage());
+                        + ". Exception message: " + e.getMessage(), e);
             } catch (DefException e) {
-                ErrorReporter.errorAbort(e.getMessage());
+                ErrorReporter.errorAbort(e.getMessage(), e);
             }
         }
         modifiedScenes.clear();
@@ -152,7 +152,7 @@ public class WholeProgramInferenceScenesHelper {
                     IndexFileParser.parseFile(jaifPath, scene);
                 } catch (IOException e) {
                     ErrorReporter.errorAbort("Problem while reading file in: " + jaifPath + "."
-                            + " Exception message: " + e.getMessage());
+                            + " Exception message: " + e.getMessage(), e);
                 }
             }
             scenes.put(jaifPath, scene);
@@ -192,9 +192,7 @@ public class WholeProgramInferenceScenesHelper {
             AnnotatedTypeFactory atf, String jaifPath,
             AnnotatedTypeMirror rhsATM, AnnotatedTypeMirror lhsATM,
             TypeUseLocation defLoc) {
-        if (rhsATM instanceof AnnotatedNullType && !isNullnessChecker) {
-            // Design decision: Do not perform inference when the RHS of the
-            // assignment is the null literal, except for the NullnessChecker.
+        if (rhsATM instanceof AnnotatedNullType && ignoreNullAssignments) {
             return;
         }
         AnnotatedTypeMirror atmFromJaif = AnnotatedTypeMirror.createType(
@@ -203,7 +201,7 @@ public class WholeProgramInferenceScenesHelper {
         updatesATMWithLUB(atf, rhsATM, atmFromJaif);
         if (lhsATM instanceof AnnotatedTypeVariable) {
             Set<AnnotationMirror> upperAnnos = ((AnnotatedTypeVariable) lhsATM).
-                        getUpperBound().getAnnotations();
+                        getUpperBound().getEffectiveAnnotations();
             // If the inferred type is a subtype of the upper bounds of the
             // current type on the source code, halt.
             if (upperAnnos.size() == rhsATM.getAnnotations().size() &&
@@ -276,19 +274,40 @@ public class WholeProgramInferenceScenesHelper {
      */
     private void updatesATMWithLUB(AnnotatedTypeFactory atf,
             AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
-        if (sourceCodeATM instanceof AnnotatedTypeVariable) {
+
+        switch (sourceCodeATM.getKind()) {
+        case TYPEVAR:
             updatesATMWithLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
-                    ((AnnotatedTypeVariable) jaifATM).getLowerBound());
+                              ((AnnotatedTypeVariable) jaifATM).getLowerBound());
             updatesATMWithLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
-                    ((AnnotatedTypeVariable) jaifATM).getUpperBound());
-        }
-        if (sourceCodeATM instanceof AnnotatedArrayType) {
+                              ((AnnotatedTypeVariable) jaifATM).getUpperBound());
+            break;
+//        case WILDCARD:
+// Because inferring type arguments is not supported, wildcards won't be encoutered
+//            updatesATMWithLUB(atf, ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
+//                              ((AnnotatedWildcardType) jaifATM).getExtendsBound());
+//            updatesATMWithLUB(atf, ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
+//                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
+//            break;
+        case ARRAY:
             updatesATMWithLUB(atf, ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-                    ((AnnotatedArrayType) jaifATM).getComponentType());
+                              ((AnnotatedArrayType) jaifATM).getComponentType());
+            break;
+        //case DECLARED:
+        // inferring annotations on type arguments is not supported, so no need to recur on
+        // generic types. If this was every implemented, this method would need VisitHistory
+        // object to prevent infinite recursion on types such as T extends List<T>.
+        default:
+            // ATM only has primary annotations
+            break;
         }
+
+        // LUB primary annotations
         Set<AnnotationMirror> annosToReplace = new HashSet<>();
         for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
             AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
+            // amJaif only contains  annotations from the jaif, so it might be missing
+            // an annotation in the hierarchy
             if (amJaif != null) {
                 amSource = atf.getQualifierHierarchy().leastUpperBound(
                         amSource, amJaif);
@@ -311,6 +330,8 @@ public class WholeProgramInferenceScenesHelper {
      * TODO: Merge functionality somewhere else with
      * {@link org.checkerframework.framework.type.GenericAnnotatedTypeFactory#createQualifierDefaults}.
      * Look into the createQualifierDefaults method before changing anything here.
+     * See Issue 683
+     * https://github.com/typetools/checker-framework/issues/683
      */
     private boolean shouldIgnore(AnnotationMirror am,
             TypeUseLocation location, AnnotatedTypeFactory atf,

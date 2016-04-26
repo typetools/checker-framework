@@ -49,7 +49,7 @@ import com.sun.tools.javac.code.Type.ClassType;
  * {@link #updateInferredMethodParameterTypes updateInferredMethodParameterTypes},
  * {@link #updateInferredParameterType updateInferredParameterType}, or
  * {@link #updateInferredMethodReturnType updateInferredMethodReturnType})
- * replaces the currently-stored type for an element in a Scene, if any,
+ * replaces the currently-stored type for an element in a {@link annotations.el.AScene}, if any,
  * by the LUB of it and the update method's argument.
  * <p>
  * This class does not perform inference for an element if the element has
@@ -96,12 +96,13 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     private final WholeProgramInferenceScenesHelper helper;
 
-    public WholeProgramInferenceScenes(boolean isNullness) {
-        helper = new WholeProgramInferenceScenesHelper(isNullness);
+    public WholeProgramInferenceScenes(boolean ignoreNullAssignments) {
+        helper = new WholeProgramInferenceScenesHelper(ignoreNullAssignments);
     }
 
     /**
-     * Updates the parameter types of the constructor created by objectCreationNode.
+     * Updates the parameter types of the constructor created by objectCreationNode
+     * based on arguments to the constructor.
      * <p>
      * For each parameter in constructorElt:
      *   <ul>
@@ -126,13 +127,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         ClassSymbol classSymbol = getEnclosingClassSymbol(objectCreationNode.getTree());
         if (classSymbol == null) {
             // TODO: Handle anonymous classes.
-            // Also struggled to obtain the ClassTree from an anonymous class.
-            // Ignoring it for now.
+            // See Issue 682
+            // https://github.com/typetools/checker-framework/issues/682
             return;
         }
-        // TODO: We must handle cases where the method is declared on a superclass.
-        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
-        if (!classSymbol.getEnclosedElements().contains(constructorElt)) return;
 
         String className = classSymbol.flatname.toString();
         String jaifPath = helper.getJaifPath(className);
@@ -140,30 +138,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String methodName = JVMNames.getJVMMethodName(constructorElt);
         AMethod method = clazz.methods.vivify(methodName);
 
-        for (int i = 0; i < objectCreationNode.getArguments().size(); i++) {
-            VariableElement ve = constructorElt.getParameters().get(i);
-            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
-
-            Node arg = objectCreationNode.getArgument(i);
-            Tree treeNode = arg.getTree();
-            if (treeNode == null) {
-                // TODO: Handle variable-length list as parameter.
-                // An ArrayCreationNode with a null tree is created when the
-                // parameter is a variable-length list. We are ignoring it for now.
-                continue;
-            }
-            AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
-            AField param = method.parameters.vivify(i);
-            helper.updateAnnotationSetInScene(
-                    param.type, atf, jaifPath, argATM, paramATM,
-                    TypeUseLocation.PARAMETER);
-        }
+        List<Node> arguments = objectCreationNode.getArguments();
+        updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
 
     }
 
     /**
      * Updates the parameter types of the method methodElt in the Scene of the
-     * receiverTree's enclosing class.
+     * receiverTree's enclosing class based on the arguments to the method.
      * <p>
      * For each method parameter in methodElt:
      *   <ul>
@@ -192,6 +174,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             // TODO: Method called from static context.
             // I struggled to obtain the ClassTree of a method called
             // from a static context and currently I'm ignoring it.
+            // See Issue 682
+            // https://github.com/typetools/checker-framework/issues/682
             return;
         }
         ClassSymbol classSymbol = getEnclosingClassSymbol(receiverTree);
@@ -199,10 +183,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             // TODO: Handle anonymous classes.
             // Also struggled to obtain the ClassTree from an anonymous class.
             // Ignoring it for now.
+            // See Issue 682
+            // https://github.com/typetools/checker-framework/issues/682
             return;
         }
         // TODO: We must handle cases where the method is declared on a superclass.
         // Currently we are ignoring them. See ElementUtils#getSuperTypes.
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
         if (!classSymbol.getEnclosedElements().contains(methodElt)) return;
 
         String className = classSymbol.flatname.toString();
@@ -212,16 +200,27 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String methodName = JVMNames.getJVMMethodName(methodElt);
         AMethod method = clazz.methods.vivify(methodName);
 
-        for (int i = 0; i < methodInvNode.getArguments().size(); i++) {
+        List<Node> arguments = methodInvNode.getArguments();
+        updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
+    }
+
+    /**
+     * Helper method for updating parameter types based on calls to a method or constructor.
+     */
+    private void updateInferredExecutableParameterTypes(ExecutableElement methodElt, AnnotatedTypeFactory atf,
+                                                        String jaifPath, AMethod method, List<Node> arguments) {
+        for (int i = 0; i < arguments.size(); i++) {
             VariableElement ve = methodElt.getParameters().get(i);
             AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
 
-            Node arg = methodInvNode.getArgument(i);
+            Node arg = arguments.get(i);
             Tree treeNode = arg.getTree();
             if (treeNode == null) {
                 // TODO: Handle variable-length list as parameter.
                 // An ArrayCreationNode with a null tree is created when the
                 // parameter is a variable-length list. We are ignoring it for now.
+                // See Issue 682
+                // https://github.com/typetools/checker-framework/issues/682
                 continue;
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
@@ -234,7 +233,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
     /**
      * Updates the parameter type represented by lhs of the method methodTree
-     * in the Scene of the receiverTree's enclosing class.
+     * in the Scene of the receiverTree's enclosing class based on assignments
+     * to the parameter inside the method body.
      *   <ul>
      *     <li>If the Scene does not contain an annotated type for that
      *     parameter, then the type of the respective value passed as argument
@@ -258,7 +258,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             LocalVariableNode lhs, Node rhs, ClassTree classTree,
             MethodTree methodTree, AnnotatedTypeFactory atf) {
         ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
-        if (classSymbol == null) return; // TODO: Handle anonymous classes.
+        // TODO: Anonymous classes
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
+        if (classSymbol == null) return;
 
         String className = classSymbol.flatname.toString();
         String jaifPath = helper.getJaifPath(className);
@@ -276,6 +279,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     // TODO: Handle variable-length list as parameter.
                     // An ArrayCreationNode with a null tree is created when the
                     // parameter is a variable-length list. We are ignoring it for now.
+                    // See Issue 682
+                    // https://github.com/typetools/checker-framework/issues/682
                     continue;
                 }
                 AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
@@ -308,13 +313,17 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      */
     @Override
     public void updateInferredFieldType(
-            Node lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
-        FieldAccessNode lhsFieldNode = (FieldAccessNode) lhs;
-        ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhsFieldNode);
+            FieldAccessNode lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
+        ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
         if (classSymbol == null) return; // TODO: Handle anonymous classes.
+
         // TODO: We must handle cases where the field is declared on a superclass.
         // Currently we are ignoring them. See ElementUtils#getSuperTypes.
-        if (!classSymbol.getEnclosedElements().contains(lhsFieldNode.getElement())) return;
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
+        if (!classSymbol.getEnclosedElements().contains(lhs.getElement())) return;
 
         // If the inferred field has a declaration annotation with the
         // @IgnoreInWholeProgramInference meta-annotation, exit this routine.
@@ -330,7 +339,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         String jaifPath = helper.getJaifPath(className);
         AClass clazz = helper.getAClass(className, jaifPath);
 
-        AField field = clazz.fields.vivify(lhsFieldNode.getFieldName());
+        AField field = clazz.fields.vivify(lhs.getFieldName());
         AnnotatedTypeMirror lhsATM = atf.getAnnotatedType(lhs.getTree());
         AnnotatedTypeMirror rhsATM = atf.getAnnotatedType(rhs.getTree());
         helper.updateAnnotationSetInScene(
@@ -359,6 +368,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public void updateInferredMethodReturnType(ReturnNode retNode,
             ClassSymbol classSymbol, MethodTree methodTree,
             AnnotatedTypeFactory atf) {
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
         if (classSymbol == null) return; // TODO: Handle anonymous classes.
         String className = classSymbol.flatname.toString();
 

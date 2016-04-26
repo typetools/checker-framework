@@ -732,12 +732,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
-        if (performWholePrograminference(
+        if (shouldPerformWholeProgramInference(
                 n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
             if (lhs instanceof FieldAccessNode) {
                 // Updates inferred field type
                 analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
-                        lhs, rhs, analysis.getContainingClass(n.getTree()),
+                        (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()),
                         analysis.getTypeFactory());
             } else if (lhs instanceof LocalVariableNode &&
                     ((LocalVariableNode)lhs).getElement().getKind() == ElementKind.PARAMETER) {
@@ -754,8 +754,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
-        if (inferSignatures &&
-                !analysis.checker.shouldSuppressWarnings(n.getTree(), null)) {
+        if (shouldPerformWholeProgramInference(n.getTree(), null)) {
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
@@ -785,11 +784,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         V resultValue = result.getResultValue();
 
         if (lhs instanceof FieldAccessNode &&
-                performWholePrograminference(
+                shouldPerformWholeProgramInference(
                         n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
             // Updates inferred field type
             analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
-                    lhs, rhs, analysis.getContainingClass(n.getTree()),
+                    (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()),
                     analysis.getTypeFactory());
         }
 
@@ -812,8 +811,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     @Override
     public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n,
             TransferInput<V, S> p) {
-        if (inferSignatures
-                && !analysis.checker.shouldSuppressWarnings(n.getTree(), null)) {
+        if (shouldPerformWholeProgramInference(n.getTree(), null)) {
             ExecutableElement constructorElt = analysis.getTypeFactory().
                     constructorFromUse(n.getTree()).first.getElement();
             analysis.atypeFactory.getWholeProgramInference()
@@ -851,7 +849,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
-        if (performWholePrograminference(n.getTree(), method)) {
+        if (shouldPerformWholeProgramInference(n.getTree(), method)) {
             // Finds the receiver's type
             Tree receiverTree = n.getTarget().getReceiver().getTree();
             if (receiverTree == null) {
@@ -872,12 +870,20 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
     /**
      * Returns true if whole-program inference should be performed.
+     * If the tree or elt is in the scope of a @SuppressWarning,
+     * then this method returns false.
      */
-    private boolean performWholePrograminference(Tree tree,
-            Element elt) {
-        return inferSignatures &&
-                !analysis.checker.shouldSuppressWarnings(tree, null) &&
-                !analysis.checker.shouldSuppressWarnings(elt, null);
+    private boolean shouldPerformWholeProgramInference(Tree tree,
+                                                       Element elt) {
+        boolean returnB = inferSignatures;
+        if (tree != null) {
+            returnB = returnB && !analysis.checker.shouldSuppressWarnings(tree, null);
+        }
+        if (elt != null) {
+            returnB = returnB &&
+                      !analysis.checker.shouldSuppressWarnings(elt, null);
+        }
+        return returnB;
     }
 
     /**
