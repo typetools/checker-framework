@@ -1,6 +1,5 @@
 // Test case for Issue #671
 // https://github.com/typetools/checker-framework/issues/671
-// @skip-test
 class Issue671 {
 
     void foo() {
