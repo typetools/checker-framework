@@ -274,19 +274,40 @@ public class WholeProgramInferenceScenesHelper {
      */
     private void updatesATMWithLUB(AnnotatedTypeFactory atf,
             AnnotatedTypeMirror sourceCodeATM, AnnotatedTypeMirror jaifATM) {
-        if (sourceCodeATM instanceof AnnotatedTypeVariable) {
+
+        switch (sourceCodeATM.getKind()) {
+        case TYPEVAR:
             updatesATMWithLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getLowerBound(),
-                    ((AnnotatedTypeVariable) jaifATM).getLowerBound());
+                              ((AnnotatedTypeVariable) jaifATM).getLowerBound());
             updatesATMWithLUB(atf, ((AnnotatedTypeVariable) sourceCodeATM).getUpperBound(),
-                    ((AnnotatedTypeVariable) jaifATM).getUpperBound());
-        }
-        if (sourceCodeATM instanceof AnnotatedArrayType) {
+                              ((AnnotatedTypeVariable) jaifATM).getUpperBound());
+            break;
+//        case WILDCARD:
+// Because inferring type arguments is not supported, wildcards won't be encoutered
+//            updatesATMWithLUB(atf, ((AnnotatedWildcardType) sourceCodeATM).getExtendsBound(),
+//                              ((AnnotatedWildcardType) jaifATM).getExtendsBound());
+//            updatesATMWithLUB(atf, ((AnnotatedWildcardType) sourceCodeATM).getSuperBound(),
+//                              ((AnnotatedWildcardType) jaifATM).getSuperBound());
+//            break;
+        case ARRAY:
             updatesATMWithLUB(atf, ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
-                    ((AnnotatedArrayType) jaifATM).getComponentType());
+                              ((AnnotatedArrayType) jaifATM).getComponentType());
+            break;
+        //case DECLARED:
+        // inferring annotations on type arguments is not supported, so no need to recur on
+        // generic types. If this was every implemented, this method would need VisitHistory
+        // object to prevent infinite recursion on types such as T extends List<T>.
+        default:
+            // ATM only has primary annotations
+            break;
         }
+
+        // LUB primary annotations
         Set<AnnotationMirror> annosToReplace = new HashSet<>();
         for (AnnotationMirror amSource : sourceCodeATM.getAnnotations()) {
             AnnotationMirror amJaif = jaifATM.getAnnotationInHierarchy(amSource);
+            // amJaif only contains  annotations from the jaif, so it might be missing
+            // an annotation in the hierarchy
             if (amJaif != null) {
                 amSource = atf.getQualifierHierarchy().leastUpperBound(
                         amSource, amJaif);
