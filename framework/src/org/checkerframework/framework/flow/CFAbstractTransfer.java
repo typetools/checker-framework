@@ -732,11 +732,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
-        Receiver expr = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), lhs);
         if (performWholePrograminference(
                 n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
-            if (expr instanceof FieldAccess) {
+            if (lhs instanceof FieldAccessNode) {
                 // Updates inferred field type
                 analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
                         lhs, rhs, analysis.getContainingClass(n.getTree()),
@@ -786,9 +784,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         // ResultValue is the type of LHS + RHS
         V resultValue = result.getResultValue();
 
-        Receiver expr = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), lhs);
-        if (expr instanceof FieldAccess &&
+        if (lhs instanceof FieldAccessNode &&
                 performWholePrograminference(
                         n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
             // Updates inferred field type
