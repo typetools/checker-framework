@@ -127,8 +127,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         ClassSymbol classSymbol = getEnclosingClassSymbol(objectCreationNode.getTree());
         if (classSymbol == null) {
             // TODO: Handle anonymous classes.
-            // Also struggled to obtain the ClassTree from an anonymous class.
-            // Ignoring it for now.
+            // See Issue 682
+            // https://github.com/typetools/checker-framework/issues/682
             return;
         }
 
@@ -174,6 +174,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             // TODO: Method called from static context.
             // I struggled to obtain the ClassTree of a method called
             // from a static context and currently I'm ignoring it.
+            // See Issue 682
+            // https://github.com/typetools/checker-framework/issues/682
             return;
         }
         ClassSymbol classSymbol = getEnclosingClassSymbol(receiverTree);
@@ -181,10 +183,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             // TODO: Handle anonymous classes.
             // Also struggled to obtain the ClassTree from an anonymous class.
             // Ignoring it for now.
+            // See Issue 682
+            // https://github.com/typetools/checker-framework/issues/682
             return;
         }
         // TODO: We must handle cases where the method is declared on a superclass.
         // Currently we are ignoring them. See ElementUtils#getSuperTypes.
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
         if (!classSymbol.getEnclosedElements().contains(methodElt)) return;
 
         String className = classSymbol.flatname.toString();
@@ -213,6 +219,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 // TODO: Handle variable-length list as parameter.
                 // An ArrayCreationNode with a null tree is created when the
                 // parameter is a variable-length list. We are ignoring it for now.
+                // See Issue 682
+                // https://github.com/typetools/checker-framework/issues/682
                 continue;
             }
             AnnotatedTypeMirror argATM = atf.getAnnotatedType(treeNode);
@@ -250,7 +258,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
             LocalVariableNode lhs, Node rhs, ClassTree classTree,
             MethodTree methodTree, AnnotatedTypeFactory atf) {
         ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
-        if (classSymbol == null) return; // TODO: Handle anonymous classes.
+        // TODO: Anonymous classes
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
+        if (classSymbol == null) return;
 
         String className = classSymbol.flatname.toString();
         String jaifPath = helper.getJaifPath(className);
@@ -268,6 +279,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                     // TODO: Handle variable-length list as parameter.
                     // An ArrayCreationNode with a null tree is created when the
                     // parameter is a variable-length list. We are ignoring it for now.
+                    // See Issue 682
+                    // https://github.com/typetools/checker-framework/issues/682
                     continue;
                 }
                 AnnotatedTypeMirror paramATM = atf.getAnnotatedType(vt);
@@ -302,9 +315,14 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public void updateInferredFieldType(
             FieldAccessNode lhs, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf) {
         ClassSymbol classSymbol = getEnclosingClassSymbol(classTree, lhs);
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
         if (classSymbol == null) return; // TODO: Handle anonymous classes.
+
         // TODO: We must handle cases where the field is declared on a superclass.
         // Currently we are ignoring them. See ElementUtils#getSuperTypes.
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
         if (!classSymbol.getEnclosedElements().contains(lhs.getElement())) return;
 
         // If the inferred field has a declaration annotation with the
@@ -350,6 +368,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     public void updateInferredMethodReturnType(ReturnNode retNode,
             ClassSymbol classSymbol, MethodTree methodTree,
             AnnotatedTypeFactory atf) {
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
         if (classSymbol == null) return; // TODO: Handle anonymous classes.
         String className = classSymbol.flatname.toString();
 

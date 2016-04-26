@@ -330,6 +330,8 @@ public class WholeProgramInferenceScenesHelper {
      * TODO: Merge functionality somewhere else with
      * {@link org.checkerframework.framework.type.GenericAnnotatedTypeFactory#createQualifierDefaults}.
      * Look into the createQualifierDefaults method before changing anything here.
+     * See Issue 683
+     * https://github.com/typetools/checker-framework/issues/683
      */
     private boolean shouldIgnore(AnnotationMirror am,
             TypeUseLocation location, AnnotatedTypeFactory atf,
