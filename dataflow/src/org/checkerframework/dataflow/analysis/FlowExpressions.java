@@ -120,7 +120,7 @@ public class FlowExpressions {
         } else if (receiverNode instanceof ThisLiteralNode) {
             receiver = new ThisReference(receiverNode.getType());
         } else if (receiverNode instanceof SuperNode) {
-            receiver = new ThisReference(receiverNode.getType());
+            receiver = new ThisReference(receiverNode.getType(), true);
         } else if (receiverNode instanceof LocalVariableNode) {
             LocalVariableNode lv = (LocalVariableNode) receiverNode;
             receiver = new LocalVariable(lv);
@@ -334,23 +334,42 @@ public class FlowExpressions {
     }
 
     public static class ThisReference extends Receiver {
+        boolean isSuperReference = false;
+
         public ThisReference(TypeMirror type) {
             super(type);
         }
 
+        public ThisReference(TypeMirror type, boolean isSuperReference) {
+            super(type);
+            this.isSuperReference = isSuperReference;
+        }
+
+        /***
+         * @return true if the reference to is to the 'super' class, (e.g. 'super.expression'), false
+         * if the reference is to 'this', (e.g. 'this.expression')
+         */
+        public boolean isSuper() {
+            return isSuperReference;
+        }
+
         @Override
         public boolean equals(Object obj) {
-            return obj != null && obj instanceof ThisReference;
+            if (obj == null || !(obj instanceof ThisReference)) {
+                return false;
+            }
+            ThisReference other = (ThisReference) obj;
+            return isSuperReference == other.isSuperReference;
         }
 
         @Override
         public int hashCode() {
-            return HashCodeUtils.hash(0);
+            return HashCodeUtils.hash(isSuperReference);
         }
 
         @Override
         public String toString() {
-            return "this";
+            return isSuperReference ? "super" : "this";
         }
 
         @Override
@@ -360,17 +379,17 @@ public class FlowExpressions {
 
         @Override
         public boolean syntacticEquals(Receiver other) {
-            return other instanceof ThisReference;
+            return this.equals(other);
         }
 
         @Override
         public boolean isUnmodifiableByOtherCode() {
-            return true;
+            return true; // 'this' or 'super' is not modifiable
         }
 
         @Override
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
-            return false; // 'this' is not modifiable
+            return false; // 'this' or 'super' is not modifiable
         }
     }
 

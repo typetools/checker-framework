@@ -16,6 +16,8 @@ import org.checkerframework.checker.lock.qual.LockPossiblyHeld;
 import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.*;
@@ -24,20 +26,29 @@ import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
 
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -71,6 +82,8 @@ public class LockAnnotatedTypeFactory
     protected final AnnotationMirror LOCKHELD, LOCKPOSSIBLYHELD,
         SIDEEFFECTFREE, GUARDEDBYUNKNOWN, GUARDEDBY,
         GUARDEDBYBOTTOM, GUARDSATISFIED;
+
+    private final GuardedByViewpointAdapter guardedbyViewpointAdapter = new GuardedByViewpointAdapter();
 
     public LockAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker, true);
@@ -521,6 +534,8 @@ public class LockAnnotatedTypeFactory
         translateJcipAndJavaxAnnotations(elt, type);
 
         super.annotateImplicit(elt, type);
+
+        // TODO: viewpointAdaptGuardedByExpressions(elt, type);
     }
 
     @Override
@@ -530,6 +545,22 @@ public class LockAnnotatedTypeFactory
         }
 
         super.annotateImplicit(tree, type, useFlow);
+
+        viewpointAdaptGuardedByExpressions(tree, type);
+    }
+
+    @Override
+    public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
+        AnnotatedTypeMirror atm = super.getMethodReturnType(m, r);
+        viewpointAdaptGuardedByExpressions(m, atm);
+        return atm;
+    }
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
+        AnnotatedTypeMirror atm = super.getAnnotatedTypeLhs(lhsTree);
+        viewpointAdaptGuardedByExpressions(lhsTree, atm);
+        return atm;
     }
 
     /**
@@ -558,10 +589,113 @@ public class LockAnnotatedTypeFactory
 
         List<String> lockExpressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
 
+        // TODO: check if a Lock Checker @GuardedBy annotation is present before inserting one.
+
         if (lockExpressions.isEmpty()) {
             atm.addAnnotation(GUARDEDBY);
         } else {
             atm.addAnnotation(createGuardedByAnnotationMirror(lockExpressions));
+        }
+    }
+
+    /***
+     * Viewpoint adapt 'expressions' in @GuardedBy(expressions) annotations in the given
+     * AnnotatedTypeMirror with respect to the given Tree. The @GuardedBy(...) annotations
+     * with adapted expressions are reinserted into the AnnotatedTypeMirror.
+     *
+     * @param tree the Tree with respect to which to perform the viewpoint adaptation.
+     * @param atm the AnnotatedTypeMirror containing the @GuardedBy(...) annotations.
+     */
+    // package-private
+    void viewpointAdaptGuardedByExpressions(Tree tree, AnnotatedTypeMirror atm) {
+        Element elem = InternalUtils.symbol(tree);
+
+        TreePath path = getPath(elem == null ? null : declarationFromElement(elem));
+        if (path == null) {
+            // TODO: What is the appropriate way to issue an error from an AnnotatedTypeFactory?
+            // An error could be issued by having an AnnotatedTypeScanner scan atm for @GuardedBy(...)
+            // annotations and only issue the error if one is present.
+            return;
+        }
+
+        FlowExpressionContext flowExprContext = null;
+        Node node = null;
+
+        switch(tree.getKind()) {
+            case VARIABLE:
+                flowExprContext = getFlowExpressionContextFromEnclosingMethodOrClass(path);
+                break;
+            case METHOD:
+                flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration((MethodTree) tree, path, checker);
+                break;
+            default:
+                node = getNodeForTree(tree);
+                if (node != null) {
+                    flowExprContext = checker.getVisitor().getFlowExpressionContextFromNode(node, path);
+                } else {
+                    flowExprContext = getFlowExpressionContextFromEnclosingMethodOrClass(path);
+                }
+            break;
+        }
+
+        if (flowExprContext == null) {
+            // TODO: What is the appropriate way to issue an error from an AnnotatedTypeFactory?
+            // An error could be issued by having an AnnotatedTypeScanner scan atm for @GuardedBy(...)
+            // annotations and only issue the error if one is present.
+            return;
+        }
+
+        guardedbyViewpointAdapter.viewpointAdapt(atm, flowExprContext, path, tree, node);
+    }
+
+    private FlowExpressionContext getFlowExpressionContextFromEnclosingMethodOrClass(TreePath path) {
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+        if (enclosingMethod != null) {
+            return FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclosingMethod, path, checker.getContext());
+        } else {
+            ClassTree enclosingClass = TreeUtils.enclosingClass(path);
+            if (enclosingClass == null) {
+                return null;
+            }
+            return FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclosingClass, path, checker.getContext());
+        }
+    }
+
+    private void viewpointAdaptGuardedByValues(AnnotatedTypeMirror atm, FlowExpressionContext flowExprContext, TreePath path, Tree tree, Node node) {
+        AnnotationMirror anno = atm.getAnnotation(GuardedBy.class);
+
+        if (anno == null) {
+            return;
+        }
+
+        List<String> lockExpressions = AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
+
+        if (lockExpressions.isEmpty()) {
+            return;
+        }
+
+        ArrayList<String> newLockExpressions = new ArrayList<String>(lockExpressions.size());
+
+        for (String lockExpression : lockExpressions) {
+            try {
+                // Attempt to parse the lock expression.
+
+                if (lockExpression.equals("itself") || lockExpression.startsWith("itself.")) {
+                    // Take the risk that "itself" might be the name of a variable. Ignore that case.
+                    newLockExpressions.add(lockExpression);
+                }
+                else {
+                    Receiver expr = checker.getVisitor().parseExpressionString(lockExpression, flowExprContext,
+                                          path, node, tree);
+                    newLockExpressions.add(expr.toString());
+                }
+            } catch (FlowExpressionParseException e) {
+                newLockExpressions.add(lockExpression);
+            }
+        }
+
+        if (!newLockExpressions.equals(lockExpressions)) {
+            atm.replaceAnnotation(createGuardedByAnnotationMirror(newLockExpressions));
         }
     }
 
@@ -576,5 +710,40 @@ public class LockAnnotatedTypeFactory
 
         // Return the resulting AnnotationMirror
         return builder.build();
+    }
+
+    class GuardedByViewpointAdapter extends AnnotatedTypeScanner<Void, Void> {
+        private FlowExpressionContext context = null;
+        private TreePath path = null;
+        private Tree leaf = null;
+        private Node node = null;
+
+        // An instance of GuardedByViewpointAdapter can be reused because viewpointAdapt calls reset().
+        protected  void viewpointAdapt(final AnnotatedTypeMirror type, final FlowExpressionContext context,
+                                     final TreePath path, final Tree leaf, final Node node) {
+            reset();
+
+            this.context = context;
+            this.path = path;
+            this.leaf = leaf;
+            this.node = node;
+            this.scan(type, null);
+        }
+
+        @Override
+        protected Void scan(AnnotatedTypeMirror type, Void v) {
+          if (type == null) {
+              return null;             //handles non-existent receivers
+          }
+
+          viewpointAdaptGuardedByValues(type, context, path, leaf, node);
+          return super.scan(type, null);
+        }
+      }
+
+    // TODO: temporary hack to avoid insertion of duplicate @GuardedBy annotations - remove and fix the root cause.
+    @Override
+    protected void postProcessClassTree(ClassTree tree) {
+        DeclarationsIntoElements.store(processingEnv, this, tree);
     }
 }

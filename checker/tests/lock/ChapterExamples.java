@@ -948,10 +948,8 @@ void boxingUnboxing() {
     //:: error: (lock.expression.not.final)
     @GuardedBy("o2") Object guarded19[];
 
-    // TODO: BaseTypeVisitor.visitAnnotation does not currently visit annotations on type arguments.
-    // Address this for the Lock Checker somehow and enable the warnings below:
     MyParameterizedClass1<@GuardedBy("o1") Object> m1;
-    // TODO: Enable :: error: (lock.expression.not.final)
+    //:: error: (lock.expression.not.final)
     MyParameterizedClass1<@GuardedBy("o2") Object> m2;
 
     boolean b = c1 instanceof @GuardedBy("o1") Object;
@@ -984,20 +982,18 @@ void boxingUnboxing() {
 
   //:: error: (lock.expression.not.final)
   <T extends @GuardedBy("nonFinalField") Object> T myMethodThatReturnsT_2(T t) {
+    //:: error: (lock.expression.not.final)
     return t;
   }
 
   class MyParameterizedClass1<T extends @GuardedByUnknown Object> {};
 
-  // TODO: BaseTypeVisitor.visitAnnotation does not currently visit annotations on wildcard bounds.
-  // Address this for the Lock Checker somehow and enable the warnings below:
-
   MyParameterizedClass1<? super @GuardedBy("finalField") Object> m1;
-  // TODO: Enable :: error: (lock.expression.not.final)
+  //:: error: (lock.expression.not.final)
   MyParameterizedClass1<? super @GuardedBy("nonFinalField") Object> m2;
 
   MyParameterizedClass1<? extends @GuardedBy("finalField") Object> m3;
-  // TODO: Enable :: error: (lock.expression.not.final)
+  //:: error: (lock.expression.not.final)
   MyParameterizedClass1<? extends @GuardedBy("nonFinalField") Object> m4;
 
   class MyClassContainingALock {

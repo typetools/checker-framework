@@ -291,6 +291,18 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     @Override
+    protected void checkMethodInvocability(AnnotatedExecutableType method,
+            MethodInvocationTree node) {
+        if (method.getReceiverType() != null && // Static methods don't have a receiver.
+            method.getElement().getKind() != ElementKind.CONSTRUCTOR) { // See TODO in super.checkMethodInvocability
+            AnnotatedTypeMirror methodReceiver = method.getReceiverType();
+            atypeFactory.viewpointAdaptGuardedByExpressions(node, methodReceiver);
+        }
+
+        super.checkMethodInvocability(method, node);
+    }
+
+    @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
         Set<? extends AnnotationMirror> tops = atypeFactory.getQualifierHierarchy().getTopAnnotations();
         Set<AnnotationMirror> annotationSet = AnnotationUtils.createAnnotationSet();
@@ -938,7 +950,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * @param guardedByAnnotation GuardedBy AnnotationMirror
      */
     private void checkLockExpressionInGuardedByAnnotation(AnnotationTree tree, AnnotationMirror guardedByAnnotation) {
-            List<String> guardedByValue = AnnotationUtils.getElementValueArray(guardedByAnnotation, "value", String.class, true);
+        List<String> guardedByValue = AnnotationUtils.getElementValueArray(guardedByAnnotation, "value", String.class, true);
         if (guardedByValue.isEmpty()){
             // getting the FlowExpressionContext could be costly,
             // so don't do it if there isn't a lock expression to check
@@ -1126,7 +1138,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * Returns the result of the super implementation otherwise.
      */
     @Override
-    protected FlowExpressions.Receiver parseExpressionString(String expression,
+    public FlowExpressions.Receiver parseExpressionString(String expression,
             FlowExpressionContext flowExprContext,
             TreePath path,
             Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
