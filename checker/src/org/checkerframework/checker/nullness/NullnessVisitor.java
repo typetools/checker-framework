@@ -60,7 +60,7 @@ import com.sun.source.tree.WhileLoopTree;
 public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedTypeFactory,
         NullnessValue, NullnessStore> {
     // Error message keys
-    private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
+    // private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
     private static final /*@CompilerMessageKey*/ String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
     private static final /*@CompilerMessageKey*/ String KNOWN_NONNULL = "known.nonnull";
     private static final /*@CompilerMessageKey*/ String LOCKING_NULLABLE = "locking.nullable";

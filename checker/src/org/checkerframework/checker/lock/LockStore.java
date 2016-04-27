@@ -10,6 +10,8 @@ import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnno
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -121,10 +123,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
      * {@inheritDoc}
      */
     @Override
-    protected void internalDotOutput(StringBuilder result) {
-        result.append("  inConstructorOrInitializer = " + inConstructorOrInitializer
-                + "\\n");
-        super.internalDotOutput(result);
+    protected void internalVisualize(CFGVisualizer<CFValue, LockStore, ?> viz) {
+        viz.visualizeStoreKeyVal("inConstructorOrInitializer", inConstructorOrInitializer);
+        super.internalVisualize(viz);
     }
 
     @Override

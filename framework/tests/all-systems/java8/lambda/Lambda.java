@@ -23,7 +23,6 @@ interface Noop {
     void noop();
 }
 
-@SuppressWarnings("javari")
 class Lambda {
 
     public static void consumeStr(String str) {}

@@ -1,5 +1,7 @@
 package org.checkerframework.dataflow.analysis;
 
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
+
 /**
  * A store is used to keep track of the information that the org.checkerframework.dataflow analysis
  * has accumulated at any given point in time.
@@ -62,9 +64,10 @@ public interface Store<S extends Store<S>> {
     boolean canAlias(FlowExpressions.Receiver a,
                      FlowExpressions.Receiver b);
 
-    /** @return Whether the Store supports DOT graph output. */
-    boolean hasDOToutput();
-
-    /** @return The store encoded as a DOT graph for visualization. */
-    String toDOToutput();
+    /**
+     * Delegate visualization responsibility to a visualizer.
+     *
+     * @param viz the visualizer to visualize this store
+     */
+    void visualize(CFGVisualizer<?, S, ?> viz);
 }

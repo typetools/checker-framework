@@ -518,6 +518,10 @@ public enum AtmCombo {
                 return visitor.visitPrimitive_Primitive( (AnnotatedPrimitiveType) type1, (AnnotatedPrimitiveType) type2, initialParam );
 
 
+            case PRIMITIVE_TYPEVAR:
+                return visitor.visitPrimitive_Typevar((AnnotatedPrimitiveType) type1, (AnnotatedTypeVariable) type2, initialParam);
+
+
             case PRIMITIVE_UNION:
                 return visitor.visitPrimitive_Union( (AnnotatedPrimitiveType) type1, (AnnotatedUnionType) type2, initialParam );
 

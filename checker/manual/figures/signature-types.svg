@@ -328,12 +328,12 @@
      id="namedview222"
      showgrid="false"
      inkscape:zoom="1.9525943"
-     inkscape:cx="618.1001"
+     inkscape:cx="435.69311"
      inkscape:cy="173.89965"
      inkscape:window-x="0"
      inkscape:window-y="24"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g126-6"
+     inkscape:current-layer="svg2"
      showborder="true"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -403,35 +403,6 @@
          x="870"
          y="569.84998"
          id="tspan26">String</tspan>
-    </text>
-  </g>
-  <g
-     id="g28"
-     transform="translate(118.14935,-0.5408881)">
-    <rect
-       style="fill:#ffffff"
-       x="850"
-       y="450"
-       width="160"
-       height="42"
-       id="rect30" />
-    <rect
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
-       x="850"
-       y="450"
-       width="160"
-       height="42"
-       id="rect32" />
-    <text
-       font-size="16"
-       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
-       x="930"
-       y="475.85001"
-       id="text34">
-      <tspan
-         x="930"
-         y="475.85001"
-         id="tspan36">String</tspan>
     </text>
   </g>
   <g
@@ -1105,4 +1076,33 @@
        sodipodi:role="line"
        id="tspan3726">InUnnamedPackage String</tspan>
   </text>
+  <g
+     id="g126-9-2"
+     transform="translate(175.24307,-115.61455)">
+    <rect
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.60138321"
+       x="786.90729"
+       y="563.59802"
+       width="171.79887"
+       height="42.914902"
+       id="rect130-7-0" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.24050808px;line-height:125%;font-family:'courier new';-inkscape-font-specification:'courier new, Normal';text-align:center;writing-mode:lr-tb;text-anchor:middle;fill:#000000"
+       x="872.51892"
+       y="581.39917"
+       id="text132-4-5"
+       sodipodi:linespacing="125%">
+      <tspan
+         sodipodi:role="line"
+         id="tspan3568-5"
+         x="872.51892"
+         y="581.39917">@SignatureUnknown</tspan>
+      <tspan
+         sodipodi:role="line"
+         id="tspan3570-4"
+         x="872.51892"
+         y="595.44983">String</tspan>
+    </text>
+  </g>
 </svg>

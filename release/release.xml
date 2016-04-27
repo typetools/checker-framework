@@ -392,12 +392,14 @@
 
     <target name="jar-maven-extras" description="Create jars with readmes to fill in for required maven artifacts!">
         <!-- All Maven artifacts should have a sources/javadoc jar in order to be submitted to Maven central.
-             At the moment we only have these for the checker artifact so for now we can create dummies with
-             READMEs in them and pass those to Central.  This is the recommended way of handling this
-             situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide
+             At the moment we only have these for the checker artifact. Since the checker artifact source/javadoc
+             jars contain all the resources needed for checker-qual and checker-compat-qual artifacts, the sources/javadoc
+             jars for the checker artifact are re-used for the checker-qual and checker-compat-qual artifacts.
 
-             The checker artifact source/javadoc jars contain all the resources needed for checker-qual and
-             checker-compat-qual, so those jars are re-used for these other artifacts. -->
+             For other artifacts, we create dummies with READMEs in them and pass those to Central.
+
+             This is the recommended way of handling this
+             situation.  See: https://docs.sonatype.org/display/Repository/Sonatype+OSS+Maven+Repository+Usage+Guide -->
 
         <fail unless="maven.plugin.dir" message="maven.plugin.dir property is not set!"  />
         <fail unless="dest.dir"         message="dest.dir property is not set!" />
