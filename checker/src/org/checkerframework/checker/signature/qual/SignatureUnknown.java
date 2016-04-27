@@ -17,4 +17,4 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
 @Target({}) // empty target prevents programmers from writing this in a program
-public @interface UnannotatedString {}
+public @interface SignatureUnknown {}

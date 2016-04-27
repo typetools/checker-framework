@@ -1642,12 +1642,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // **********************************************************************
 
     /**
-     * Issue error if the exception parameter is not a super type of the
-     * annotation specified by getExceptionParameterLowerBoundAnnotations(), which is top
-     * by default (Subclasses may override this method to change the behavior of
+     * Issue error if the exception parameter is not a supertype of the
+     * annotation specified by
+     * {@link #getExceptionParameterLowerBoundAnnotations()},
+     * which is top by default.
+     * <p>
+     *
+     * Subclasses may override this method to change the behavior of
      * this check. Subclasses wishing to enforce that exception parameter be
      * annotated with other annotations can just override
-     * getExceptionParameterLowerBoundAnnotations())
+     * {@link #getExceptionParameterLowerBoundAnnotations()}.
      *
      * @param node
      *            CatchTree to check
@@ -1702,17 +1706,21 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks the type of the thrown expression.
+     * <p>
      *
      * By default, this method checks that the thrown expression is a subtype of top.
+     * <p>
      *
-     * getExceptionParameterLowerBound
      * Issue error if the thrown expression is not a sub type of the
-     * the annotation given by getThrowUpperBoundAnnotations(), the same as getExceptionParameterLowerBound
+     * the annotation given by {@link #getThrowUpperBoundAnnotations()},
+     * the same as {@link getExceptionParameterLowerBoundAnnotations()}
      * by default.
+     * <p>
      *
-     * (Subclasses may override this method to change the behavior of this check.
+     * Subclasses may override this method to change the behavior of this check.
      * Subclasses wishing to enforce that the thrown expression be a subtype of a type besides
-     * getExceptionParameterLowerBound, should override getThrowUpperBoundAnnotations().  )
+     * {@link #getExceptionParameterLowerBoundAnnotations}, should override
+     * {@link #getThrowUpperBoundAnnotations()}.
      *
      * @param node ThrowTree to check
      */

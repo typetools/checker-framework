@@ -250,8 +250,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
      * on the contents of a tree.
      *
-     * Subclasses may override this method to specify more appropriate
-     * {@link TreeAnnotator}
+     * Subclasses may override this method to specify a more appropriate
+     * {@link TreeAnnotator}.
      *
      * @return a tree annotator
      */
@@ -1010,15 +1010,21 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * This method is final. Override
+     * This method is final; override
      * {@link #annotateImplicit(Tree, AnnotatedTypeMirror, boolean)}
      * instead.
+     *
+     * {@inheritDoc}
      */
     @Override
     protected final void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         annotateImplicit(tree, type, this.useFlow);
     }
 
+    /**
+     * Like {#annotateImplicit(Tree, AnnotatedTypeMirror)}.
+     * Overriding implementations typically simply pass the boolean to calls to super.
+     */
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
                 " root needs to be set when used on trees; factory: " + this.getClass();
