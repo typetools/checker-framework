@@ -2,6 +2,16 @@
 
 # compile Package At A Time
 
+# ensure CHECKERFRAMEWORK set
+if [ -z "$CHECKERFRAMEWORK" ] ; then
+    if [ -z "$CHECKER_FRAMEWORK" ] ; then
+        export CHECKERFRAMEWORK=`(cd "$0/../.." && pwd)`
+    else
+        export CHECKERFRAMEWORK=${CHECKER_FRAMEWORK}
+    fi
+fi
+[ $? -eq 0 ] || (echo "CHECKERFRAMEWORK not set; exiting" && exit 1)
+
 # Debugging
 PRESERVE=1  # option to preserve intermediate files
 
@@ -66,12 +76,10 @@ finish() {
                     echo ${CLS}: not found
                 fi
             done
-            if [ ${PRESERVE} -ne 0 ] ; then
-                # save JAIFs for analysis
-                DEST=${WORKDIR}/jaifs/$D
-                mkdir -p ${DEST}
-                mv ${JAIFS} ${DEST}
-            fi
+            # save JAIFs for analysis
+            DEST=${WORKDIR}/jaifs/$D
+            mkdir -p ${DEST}
+            mv ${JAIFS} ${DEST}
         fi
     done
     # recreate jar
