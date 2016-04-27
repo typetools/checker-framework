@@ -16,13 +16,13 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
+import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -170,9 +170,9 @@ public class InitializationStore<V extends CFAbstractValue<V>,
     }
 
     @Override
-    protected void internalDotOutput(StringBuilder result) {
-        super.internalDotOutput(result);
-        result.append("  initialized fields = " + initializedFields + "\\n");
+    protected void internalVisualize(CFGVisualizer<V, S, ?> viz) {
+        super.internalVisualize(viz);
+        viz.visualizeStoreKeyVal("initialized fields", initializedFields);
     }
 
     public Map<FieldAccess, V> getFieldValues() {

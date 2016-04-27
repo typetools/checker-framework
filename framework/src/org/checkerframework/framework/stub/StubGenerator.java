@@ -73,10 +73,10 @@ public class StubGenerator {
     }
 
     /**
-     * Generate the skeleton file for all the classes within the provided
+     * Generate the stub file for all the classes within the provided
      * package.
      */
-    public void skeletonFromField(Element elt) {
+    public void stubFromField(Element elt) {
         if (!(elt.getKind() == ElementKind.FIELD))
             return;
 
@@ -93,10 +93,10 @@ public class StubGenerator {
     }
 
     /**
-     * Generate the skeleton file for all the classes within the provided
+     * Generate the stub file for all the classes within the provided
      * package.
      */
-    public void skeletonFromPackage(PackageElement packageElement) {
+    public void stubFromPackage(PackageElement packageElement) {
         currentPackage = packageElement.getQualifiedName().toString();
 
         indent();
@@ -114,10 +114,10 @@ public class StubGenerator {
     }
 
     /**
-     * Generate the skeleton file for all the classes within the provided
+     * Generate the stub file for all the classes within the provided
      * package.
      */
-    public void skeletonFromMethod(Element elt) {
+    public void stubFromMethod(Element elt) {
         if (!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD))
             return;
 
@@ -134,12 +134,12 @@ public class StubGenerator {
     }
 
     /**
-     * Generate the skeleton file for provided class.  The generated file
+     * Generate the stub file for provided class.  The generated file
      * includes the package name.
      */
-    public void skeletonFromType(TypeElement typeElement) {
+    public void stubFromType(TypeElement typeElement) {
 
-        // only output skeleton for classes or interfaces.  not enums
+        // only output stub for classes or interfaces.  not enums
         if (typeElement.getKind() != ElementKind.CLASS
                 && typeElement.getKind() != ElementKind.INTERFACE)
             return;
@@ -405,9 +405,9 @@ public class StubGenerator {
         StubGenerator generator = new StubGenerator();
 
         if (env.getElementUtils().getPackageElement(args[0]) != null)
-            generator.skeletonFromPackage(env.getElementUtils().getPackageElement(args[0]));
+            generator.stubFromPackage(env.getElementUtils().getPackageElement(args[0]));
         else if (env.getElementUtils().getTypeElement(args[0]) != null)
-            generator.skeletonFromType(env.getElementUtils().getTypeElement(args[0]));
+            generator.stubFromType(env.getElementUtils().getTypeElement(args[0]));
         else
             error("Couldn't find a package or a class named " + args[0]);
     }

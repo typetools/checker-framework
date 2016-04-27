@@ -627,8 +627,8 @@ That signature requires the element type annotation to be identical for the
 two arguments.  For example, it forbids this invocation:
 
 \begin{Verbatim}
-    @Mutable Object[] x;
-  @Immutable Object   y;
+  @Nullable Object[] x;
+   @NonNull Object   y;
   ... indexOf(x, y) ...
 \end{Verbatim}
 

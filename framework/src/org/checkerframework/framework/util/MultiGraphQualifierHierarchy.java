@@ -436,8 +436,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      *
      * When client specifies an annotation, a1, to be a subtype of annotation
      * with values, a2, then a1 is a subtype of all instances of a2 regardless
-     * of a2 values.  i.e. IGJBottom is a subtype of all instances of
-     * {@code @I}.
+     * of a2 values.
      *
      * @param rhs The right-hand side, i.e. the sub qualifier
      * @param lhs The left-hand side, i.e. the super qualifier

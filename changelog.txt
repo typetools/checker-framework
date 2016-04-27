@@ -1,5 +1,20 @@
 ---------------------------------------------------------------------------
 
+Version 2.0.0, 1 May 2016
+
+The IGJ, OIGJ, and Javari Checkers are no longer distributed with the
+Checker Framework.  If you wish to use them, install version 1.9.13 of the
+Checker Framework.  They have been removed because they were not being
+maintained; as a result, they often caused false positive test failures.
+The type systems are valuable, but the best way to get to a good
+implementation of them is to rewrite the type-checker from scratch, which
+will lead to a smaller, simpler, more correct implementation.
+
+New manual section "Tips for creating a checker" shows how to break down
+the implementation of a type system into small, manageable pieces.
+
+---------------------------------------------------------------------------
+
 Version 1.9.13, 1 April 2016
 
 Documentation:

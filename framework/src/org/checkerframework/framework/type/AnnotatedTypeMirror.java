@@ -641,7 +641,7 @@ public abstract class AnnotatedTypeMirror {
         // removed.
         // TODO: however, this also means that if we are annotated with "@I(1)" and
         // remove "@I(2)" it will be removed. Is this what we want?
-        // It's currently necessary for the IGJ Checker and Lock Checker.
+        // It's currently necessary for the Lock Checker.
         AnnotationMirror anno = getAnnotation(AnnotationUtils.annotationName(a));
         if (anno != null) {
             return annotations.remove(anno);
@@ -962,8 +962,8 @@ public abstract class AnnotatedTypeMirror {
         }
 
         /*
-         * Return the direct super types field without lazy initialization,
-         * to prevent infinite recursion in IGJATF.postDirectSuperTypes.
+         * Return the direct super types field without lazy initialization;
+         * originally to prevent infinite recursion in IGJATF.postDirectSuperTypes.
          * TODO: find a nicer way, see the single caller in QualifierDefaults
          * for comment.
          */

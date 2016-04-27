@@ -59,20 +59,6 @@ you can use either the annotated
 library or the regular distributed version of the library --- they
 behave identically.
 
-%% Extra detail about the
-% \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
-%
-% The Checker Framework distribution contains two
-% annotated JDKs at the paths \<checker/dist/jdk7.jar> and
-% \<checker/dist/jdk8.jar>.
-% The \<javac> that is distributed with the Checker Framework and the command
-% \code{java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar} both use the appropriate \<jdk7.jar> or \<jdk8.jar>
-% based on the version of Java used to run them.
-%
-% The annotated JDKs should \emph{not} be in your classpath at run time, only
-% at compile time; and they are automatically added to your classpath at
-% compile time.
-
 Some projects, such as
   \href{http://plse.cs.washington.edu/daikon/}{Daikon}
   and
@@ -133,11 +119,6 @@ Given the library annotations, you have two options:
 \end{enumerate}
 
 
-% It uses both of the above mechanisms.  The
-% Nullness, Javari, IGJ, and Interning Checkers use the annotated JDKs
-% (Section~\ref{skeleton}), and all other checkers use stub files
-% (Section~\ref{stub}).
-
 If you write any library annotations,
 please share them so that they
 can be distributed with the Checker Framework.
@@ -151,8 +132,7 @@ when getting started, but you should always examine their results.
 % You can determine the correct annotations for a library either
 % automatically by running an inference tool, or manually by reading the
 % documentation.  Presently, automated type inference tools are available for the
-% Nullness (Section~\ref{nullness-inference}) and Javari
-% (Section~\ref{javari-inference}) type systems.
+% Nullness (Section~\ref{nullness-inference}) type system.
 
 
 \section{Compiling partially-annotated libraries\label{compiling-libraries}}
@@ -332,9 +312,6 @@ These sections illustrate stub classes via the example of creating a \refqualcla
 version of \code{java.lang.String}.  You don't need to repeat these steps
 to handle \code{java.lang.String} for the Interning Checker,
 but you might do something similar for a different class and/or checker.
-
-% First, you must install the skeleton class generator
-% (Section~\ref{skeleton-installing}).
 
 
 \subsection{Using a stub file\label{stub-using}}
@@ -675,54 +652,6 @@ If these limitations are a problem, then you should insert annotations
 in the library's \<.class> files instead.
 
 
-% Label "skeleton" is for old links from the Javarifier manual, to prevent
-% them from being broken links.
-
-
-% Skeleton classes are inferior to stub classes for two reasons.  First,
-% skeleton files must be on the classpath during compilation but must
-% \emph{not} be on the classpath during execution; this is inconvenient and
-% error-prone.  Second, the skeleton files contain incorrect values for
-% certain static final fields.  These incorrect values can lead to
-% run-time problems unless the Java code is re-compiled without the skeleton
-% classes after type-checking is complete.
-
-
-
-% \section{Installing the skeleton class generator\label{skeleton-installing}}
-%
-% Source code for the skeleton class generator tool is included in the
-% Checker Framework
-% distribution, but because the tool has additional dependencies, the provided
-% build script does not build the tool by default.
-%
-% Follow these steps to install the skeleton class generator:
-%
-% \begin{enumerate}
-%
-% \item
-%   Install the annotation file utilities, using the instructions at
-%   \myurl{http://types.cs.washington.edu/annotation-file-utilities/}.
-%   Per those instructions, the \code{annotation-file-utilities.jar} file
-%   should be on your classpath.
-%
-% % TODO This item should become optional; tell people to install the AFU in
-% % the right place.
-% \item
-%   Update the \code{build.properties} file in the Checker Framework distribution so
-%   that the \code{annotation-utils.lib} property specifies the location of
-%   the \code{annotation-file-utilities.jar} library.
-%
-% \item
-%   Build the skeleton class generator tool by running \code{ant
-%     skeleton-util dist} in the \code{checker} directory.  This updates the
-%   \code{checker.jar} file to contain the skeleton class generator.
-%   \code{checker.jar} should already be on your classpath (see
-%   Section~\ref{installation}).
-%
-% \end{enumerate}
-
-
 \section{Troubleshooting/debugging annotated libraries\label{libraries-troubleshooting}}
 
 Sometimes, it may seem that a checker is treating a library as unannotated
@@ -743,7 +672,7 @@ read whether the library's annotations are parsed.
 
 % LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
-% LocalWords:  IGJ's jdk Astubs skipUses astub AskipUses toArray IGJ JDK6
+% LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
 % LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java pre
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7

@@ -60,6 +60,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
@@ -172,16 +173,6 @@ public class AnnotatedTypes {
                     return null;
                 }
             }
-
-            /* Something like the following seemed sensible for intersection types,
-             * which came up in the Ternary test case with classes MethodSymbol and ClassSymbol.
-             * However, it results in an infinite recursion with the IGJ Checker.
-             * For now, let's handle the null result in the caller, TypeFromTree.visitConditionalExpression.
-            if (p.getKind() == TypeKind.DECLARED &&
-                    ((AnnotatedDeclaredType)p).getUnderlyingType().asElement().getSimpleName().length() == 0) {
-                p = ((AnnotatedDeclaredType)p).directSuperTypes().get(0);
-            }
-            */
 
             if (shouldStop(p, type))
                 return type;
@@ -1895,5 +1886,62 @@ public class AnnotatedTypes {
         return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
     }
 
+
+    /**
+     * Copies explicit annotations and annotations resulting from resolution of polymorphic qualifiers
+     * from {@code constructor} to {@code returnType}. If {@code returnType} has an annotation in the
+     * same hierarchy of an annotation to be copied, that annotation is not copied.
+     *
+     * @param atypeFactory type factory
+     * @param returnType return type to copy annotations to
+     * @param constructor The ATM for the constructor.
+     */
+    public static void copyOnlyExplicitConstructorAnnotations(AnnotatedTypeFactory atypeFactory,
+                                                              AnnotatedDeclaredType returnType,
+                                                              AnnotatedExecutableType constructor) {
+
+        // TODO: There will be a nicer way to access this in 308 soon.
+        List<Attribute.TypeCompound> decall = ((Symbol)constructor.getElement()).getRawTypeAttributes();
+        Set<AnnotationMirror> decret = AnnotationUtils.createAnnotationSet();
+        for (Attribute.TypeCompound da : decall) {
+            if (da.position.type == com.sun.tools.javac.code.TargetType.METHOD_RETURN) {
+                decret.add(da);
+            }
+        }
+
+        // Collect all polymorphic qualifiers; we should substitute them.
+        Set<AnnotationMirror> polys = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror anno : returnType.getAnnotations()) {
+            if (QualifierPolymorphism.isPolymorphicQualified(anno)) {
+                polys.add(anno);
+            }
+        }
+
+        for (AnnotationMirror cta : constructor.getReturnType().getAnnotations()) {
+            AnnotationMirror ctatop = atypeFactory.getQualifierHierarchy().getTopAnnotation(cta);
+            if (atypeFactory.isSupportedQualifier(cta) &&
+                !returnType.isAnnotatedInHierarchy(cta)) {
+                for (AnnotationMirror fromDecl : decret) {
+                    if (atypeFactory.isSupportedQualifier(fromDecl) &&
+                        AnnotationUtils.areSame(ctatop,
+                                                atypeFactory.getQualifierHierarchy().getTopAnnotation(fromDecl))) {
+                        returnType.addAnnotation(cta);
+                        break;
+                    }
+                }
+            }
+
+            // Go through the polymorphic qualifiers and see whether
+            // there is anything left to replace.
+            for (AnnotationMirror pa : polys) {
+                if (AnnotationUtils.areSame(ctatop,
+                                            atypeFactory.getQualifierHierarchy().getTopAnnotation(pa))) {
+                    returnType.replaceAnnotation(cta);
+                    break;
+                }
+            }
+        }
+
+    }
 
 }
