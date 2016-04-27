@@ -30,6 +30,8 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
@@ -74,6 +76,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 
 /**
  * The default analysis transfer function for the Checker Framework propagates
@@ -110,9 +113,15 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     protected final boolean sequentialSemantics;
 
+    /**
+     * Indicates that the whole-program inference is on.
+     */
+    private final boolean infer;
+
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
+        this.infer = analysis.checker.hasOption("infer");
     }
 
     /**
@@ -723,9 +732,40 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
+        if (shouldPerformWholeProgramInference(
+                n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
+            if (lhs instanceof FieldAccessNode) {
+                // Updates inferred field type
+                analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
+                        (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()),
+                        analysis.getTypeFactory());
+            } else if (lhs instanceof LocalVariableNode &&
+                    ((LocalVariableNode)lhs).getElement().getKind() == ElementKind.PARAMETER) {
+                analysis.atypeFactory.getWholeProgramInference().updateInferredParameterType(
+                        (LocalVariableNode)lhs, rhs, analysis.getContainingClass(n.getTree()),
+                        analysis.getContainingMethod(n.getTree()), analysis.getTypeFactory());
+            }
+        }
+
         processCommonAssignment(in, lhs, rhs, info, rhsValue);
 
         return new RegularTransferResult<>(finishValue(rhsValue, info), info);
+    }
+
+    @Override
+    public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
+        if (shouldPerformWholeProgramInference(n.getTree(), null)) {
+            // Retrieves class containing the method
+            ClassTree classTree = analysis.getContainingClass(n.getTree());
+            ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
+                    classTree);
+            // Updates the inferred return type of the method
+            analysis.atypeFactory.getWholeProgramInference().updateInferredMethodReturnType(
+                    n, classSymbol,
+                    analysis.getContainingMethod(n.getTree()),
+                    analysis.getTypeFactory());
+        }
+        return super.visitReturn(n, p);
     }
 
     @Override
@@ -742,6 +782,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S info = result.getRegularStore();
         // ResultValue is the type of LHS + RHS
         V resultValue = result.getResultValue();
+
+        if (lhs instanceof FieldAccessNode &&
+                shouldPerformWholeProgramInference(
+                        n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
+            // Updates inferred field type
+            analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
+                    (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()),
+                    analysis.getTypeFactory());
+        }
+
         processCommonAssignment(in, lhs, rhs, info, resultValue);
 
         return new RegularTransferResult<>(finishValue(resultValue, info), info);
@@ -756,6 +806,18 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         // update information in the store
         info.updateForAssignment(lhs, rhsValue);
+    }
+
+    @Override
+    public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n,
+            TransferInput<V, S> p) {
+        if (shouldPerformWholeProgramInference(n.getTree(), null)) {
+            ExecutableElement constructorElt = analysis.getTypeFactory().
+                    constructorFromUse(n.getTree()).first.getElement();
+            analysis.atypeFactory.getWholeProgramInference()
+                    .updateInferredConstructorParameterTypes(n, constructorElt, analysis.getTypeFactory());
+        }
+        return super.visitObjectCreation(n, p);
     }
 
     @Override
@@ -787,8 +849,41 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
+        if (shouldPerformWholeProgramInference(n.getTree(), method)) {
+            // Finds the receiver's type
+            Tree receiverTree = n.getTarget().getReceiver().getTree();
+            if (receiverTree == null) {
+                // If there is no receiver, then get the class being visited.
+                // This happens when the receiver corresponds to "this".
+                receiverTree = analysis.getContainingClass(n.getTree());
+                // receiverTree could still be null after the call above. That
+                // happens when the method is called from a static context.
+            }
+            // Updates the inferred parameter type of the invoked method
+            analysis.atypeFactory.getWholeProgramInference().updateInferredMethodParameterTypes(
+                    n, receiverTree, method, analysis.getTypeFactory());
+        }
+
         return new ConditionalTransferResult<>(finishValue(resValue, thenStore,
                 elseStore), thenStore, elseStore);
+    }
+
+    /**
+     * Returns true if whole-program inference should be performed.
+     * If the tree or elt is in the scope of a @SuppressWarning,
+     * then this method returns false.
+     */
+    private boolean shouldPerformWholeProgramInference(Tree tree,
+                                                       Element elt) {
+        boolean returnB = infer;
+        if (tree != null) {
+            returnB = returnB && !analysis.checker.shouldSuppressWarnings(tree, null);
+        }
+        if (elt != null) {
+            returnB = returnB &&
+                      !analysis.checker.shouldSuppressWarnings(elt, null);
+        }
+        return returnB;
     }
 
     /**
@@ -1069,4 +1164,5 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return analysis.getTypeFactoryOfSubchecker(checkerClass);
     }
+
 }

@@ -10,6 +10,8 @@ import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
 import org.checkerframework.common.reflection.ReflectionResolver;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
+import org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenes;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.FromByteCode;
 import org.checkerframework.framework.qual.FromStubFile;
@@ -173,6 +175,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Represent the type relations. */
     protected TypeHierarchy typeHierarchy;
 
+    /** performs whole program inference */
+    private WholeProgramInference wholeProgramInference;
+
     /**
      * This formatter is used for converting AnnotatedTypeMirrors to Strings.
      * This formatter will be passed to all AnnotatedTypeMirrors created by this
@@ -275,6 +280,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected AnnotationClassLoader loader;
 
     /**
+     * Indicates that the whole-program inference is on.
+     */
+    private final boolean infer;
+
+    /**
      * Should results be cached?
      * This means that ATM.deepCopy() will be called.
      * ATM.deepCopy() used to (and perhaps still does) side effect the ATM being copied.
@@ -346,7 +356,32 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
+
+        infer = checker.hasOption("infer");
+        if (infer) {
+            checkInvalidOptionsInferSignatures();
+            wholeProgramInference = new WholeProgramInferenceScenes(
+                    !"NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName()));
+        }
     }
+
+
+    /**
+     * This method is called only when -Ainfer is passed as an option.
+     * It checks if another option that should not occur simultaneously with
+     * the whole-program inference is also passed as argument, and
+     * aborts the process if that is the case. For example, the whole-program
+     * inference process was not designed to work with unchecked code defaults.
+     * (Subclasses may override this method to add more options.)
+     */
+    protected void checkInvalidOptionsInferSignatures() {
+        // See Issue 683
+        // https://github.com/typetools/checker-framework/issues/683
+        if (checker.useUncheckedCodeDefault("source") || checker.useUncheckedCodeDefault("bytecode")) {
+            ErrorReporter.errorAbort("The option -Ainfer cannot be" +
+                                     " used together with unchecked code defaults.");
+        }
+     }
 
     /**
      * Actions that logically belong in the constructor, but need to run
@@ -382,6 +417,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (this.getClass().equals(AnnotatedTypeFactory.class)) {
             this.parseStubFiles();
         }
+    }
+
+    /**
+     * Returns the WholeProgramInference instance.
+     */
+    public WholeProgramInference getWholeProgramInference() {
+        return wholeProgramInference;
     }
 
     protected void initilizeReflectionResolution() {
@@ -905,6 +947,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
+        if (checker.getOptions().containsKey("infer") && wholeProgramInference != null) {
+            // Write scenes into .jaif files. In order to perform the write
+            // operation only once for each .jaif file, the best location to
+            // do so is here.
+            wholeProgramInference.saveResults();
+        }
     }
 
     /**
