@@ -687,13 +687,20 @@ type-checking rules.
 For some types and expressions, a qualifier should be treated as present
 even if a programmer did not explicitly write it.  For example, every
 literal (other than \<null>) has a \refqualclass{checker/nullness/qual}{NonNull} type.
+Section~\ref{effective-qualifier} explains the meaning of implicit
+qualifiers, such as that they cannot be overridden.
 
-The implicit annotations may be specified declaratively and/or procedurally.
+The implicit annotations may be specified declaratively
+(Section~\ref{declarative-type-introduction}) and/or procedurally
+(Section~\ref{procedurally-specifying-implicit-annotations}).
+It is easiest to specify them declaratively, when the declarative method is
+sufficiently expressive.
 
 
 \subsection{Declaratively specifying implicit annotations\label{declarative-type-introduction}}
 
-The \refqualclass{framework/qual}{ImplicitFor} meta-annotation indicates implicit annotations.
+The \refqualclass{framework/qual}{ImplicitFor} meta-annotation indicates
+implicit annotations.
 When written on a qualifier, \refclass{framework/qual}{ImplicitFor}
 specifies the trees (AST nodes) and types for which the framework should
 automatically add that qualifier.
@@ -701,13 +708,21 @@ automatically add that qualifier.
 In short, the types and trees can be
 specified via any combination of four fields in \refclass{framework/qual}{ImplicitFor}.
 
-For example, consider the definitions of the \refqualclass{checker/nullness/qual}{NonNull} and \refqualclass{checker/nullness/qual}{Nullable}
+For example, consider the definitions of the
+\refqualclass{checker/nullness/qual}{Nullable} and
+\refqualclass{checker/nullness/qual}{NonNull}
 type qualifiers:
 
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
+  @SubtypeOf({})
+  @ImplicitFor(literals = { LiteralKind.NULL },
+               typeNames = { java.lang.Void.class })
+  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+  public @interface Nullable { }
+
   @SubtypeOf( { Nullable.class } )
   @ImplicitFor(types = { TypeKind.PACKAGE,
                          TypeKind.INT, TypeKind.BOOLEAN, TypeKind.CHAR,
@@ -719,19 +734,13 @@ type qualifiers:
                    LiteralKind.STRING })
   @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
   public @interface NonNull {  }
-
-
-  @SubtypeOf({})
-  @ImplicitFor(literals = { LiteralKind.NULL }, typeNames = { java.lang.Void.class })
-  @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-  public @interface Nullable { }
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
 For more details, see the Javadoc for the \refclass{framework/qual}{ImplicitFor}
-  annotation, and the Javadoc for the javac classes that are linked from
+annotation, and the Javadoc for the javac classes that are linked from
 it.  You only need to understand a small amount about the javac AST, such
 as the
 \href{\TreeAPIBase{}/tree/Tree.Kind.html?is-external=true}{\code{Tree.Kind}}
@@ -743,28 +752,28 @@ Section~\ref{javac-tips} can help you get started.
 
 \subsection{Procedurally specifying implicit annotations\label{procedurally-specifying-implicit-annotations}}
 
+If the \<@ImplicitFor> annotation is not sufficiently expressive, then you
+can write code to set implicit annotations.  To do so, create a subclass of
+\refclass{framework/type}{AnnotatedTypeFactory} and override its
+\<annotateImplicit> methods.
 
-The Checker Framework provides a representation of annotated types,
-\refclass{framework/type}{AnnotatedTypeMirror}, that extends the standard \<TypeMirror>
-interface but integrates a representation of the annotations into a
-type representation.  A checker's \emph{type factory} class, given an AST
-node, returns the annotated type of that expression.  The Checker
-Framework's abstract
-\emph{base type factory} class, \refclass{framework/type}{AnnotatedTypeFactory},
-supplies a uniform, Tree-API-based interface
-for querying the annotations on a program element, regardless of
-whether that element is declared in a source file or in a class file.
-It also handles default annotations, and it optionally performs
-flow-sensitive local type inference.
+\<AnnotatedTypeFactory>, when given a program
+expression, returns the expression's type.  This should include not only
+the qualifiers that the programmer explicitly wrote in the source code, but
+also default and implicit annotations, and flow-sensitive local type
+inference (see Section~\ref{effective-qualifier} for explanations of these
+concepts).
 
-\refclass{framework/type}{AnnotatedTypeFactory} inserts the qualifiers that the programmer
-explicitly inserted in the code.  Yet, certain constructs should be
-treated as having a type qualifier even when the programmer has not
-written one.  The type system designer may subclass
-\refclass{framework/type}{AnnotatedTypeFactory} and override
-\code{annotateImplicit(Tree,AnnotatedTypeMirror)} and
-\code{annotateImplicit(Element,AnnotatedTypeMirror)} to account for
-such constructs.
+To add implicit annotations, you should override
+\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{annotateImplicit}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{annotateImplicit(Tree,AnnotatedTypeMirror)}
+(or
+\refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{annotateImplicit}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{annotateImplicit(Tree,AnnotatedTypeMirror,boolean)}
+if extending \code{GenericAnnotatedTypeFactory})
+and
+\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{annotateImplicit}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{annotateImplicit(Element,AnnotatedTypeMirror)}.
+The methods operate on \refclass{framework/type}{AnnotatedTypeMirror},
+which is the Checker Framework's representation of an annotated type.
+
 
 
 \section{Dataflow: enhancing flow-sensitive type qualifier inference\label{dataflow}}
