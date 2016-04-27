@@ -3,6 +3,16 @@
 # Builds JDK jar for Checker Framework by inserting annotations into
 # ct.sym.
 
+# ensure CHECKERFRAMEWORK set
+if [ -z "$CHECKERFRAMEWORK" ] ; then
+    if [ -z "$CHECKER_FRAMEWORK" ] ; then
+        export CHECKERFRAMEWORK=`(cd "$0/../.." && pwd)`
+    else
+        export CHECKERFRAMEWORK=${CHECKER_FRAMEWORK}
+    fi
+fi
+[ $? -eq 0 ] || (echo "CHECKERFRAMEWORK not set; exiting" && exit 1)
+
 # parameters derived from environment
 # CTSYM derived from JAVA_HOME, rest from CHECKERFRAMEWORK
 DIST="${CHECKERFRAMEWORK}/checker/dist"
