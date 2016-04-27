@@ -959,7 +959,7 @@ Regex Checker:
   Support concatenation of PolyRegex strings.
   Improve examples of use of RegexUtil methods.
 
-Signature Checker:
+Signature String Checker:
   Add new @ClassGetName annotation, for a 4th string representation of a
     class that is used by the JDK.  Add supporting annotations to make the
     type hierarchy a complete lattice.
@@ -1112,7 +1112,7 @@ Interning:
 - Add @UsesObjectEquals annotation
 
 Manual:
-- Signature Checker is now documented
+- Signature String Checker is now documented
 - Fenum Checker documentation improved
 - Small improvements to other sections
 
@@ -1158,7 +1158,7 @@ Property File Checker (new):
   Also includes a checker that code is properly internationalized and a
   checker for compiler message keys as used in the Checker Framework.
 
-Signature Checker (new):
+Signature String Checker (new):
   Ensures that different string representations of a Java type (e.g.,
   "package.Outer.Inner" vs. "package.Outer$Inner" vs. "Lpackage/Outer$Inner;")
   are not misused.
