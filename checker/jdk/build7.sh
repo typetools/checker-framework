@@ -1,10 +1,7 @@
-#!/usr/bin/bash
+#!/bin/sh
 
 # Builds JDK jar for Checker Framework by inserting annotations into
 # ct.sym.
-
-# Debugging
-PRESERVE=1  # option to preserve intermediate files
 
 # parameters derived from environment
 # CTSYM derived from JAVA_HOME, rest from CHECKERFRAMEWORK
@@ -59,8 +56,5 @@ for f in `find * -name '*\.class' -print` ; do
 done
 
 # recreate jar
-jar cf ${WORKDIR}/jdk7.jar *
-cd ${WORKDIR}
-cp jdk7.jar ${DIST}
-[ ${PRESERVE} -ne 0 ] || rm -rf ${JAIFDIR} ${SYMDIR}
+jar cf ${DIST}/jdk7.jar *
 

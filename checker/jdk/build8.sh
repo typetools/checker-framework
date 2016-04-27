@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# build Java 8 annotated JDK
+# compile Package At A Time
 
 # Debugging
 PRESERVE=1  # option to preserve intermediate files
@@ -19,18 +19,18 @@ LT_JAVAC="${JSR308}/jsr308-langtools/dist/bin/javac"
 CF_BIN="${CHECKERFRAMEWORK}/checker/build"
 CF_DIST="${CHECKERFRAMEWORK}/checker/dist"
 CF_JAR="${CF_DIST}/checker.jar"
-CF_JAVAC="java -Xms128m -Xmx512m -jar ${CF_JAR} -Xbootclasspath/p:${BOOTDIR}"
+CF_JAVAC="java -Xmx512m -jar ${CF_JAR} -Xbootclasspath/p:${BOOTDIR}"
 CTSYM="${JAVA_HOME}/lib/ct.sym"
 CP="${BINDIR}:${BOOTDIR}:${LT_BIN}:${TOOLSJAR}:${CF_BIN}:${CF_JAR}"
-JFLAGS="-XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 \
-        -source 8 -target 8 -encoding ascii -cp ${CP}"
-PROCESSORS="interning,igj,javari,nullness,signature"
-PFLAGS="-Anocheckjdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source -AprintErrorStack -Awarns"
+JFLAGS="-XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000\
+ -source 8 -target 8 -encoding ascii -cp ${CP}"
+PROCESSORS="interning,nullness,signature"
+PFLAGS="-Anocheckjdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source\
+ -AprintErrorStack -Awarns"
 
 PID=$$      # script process id
 BOOT=0      # 0 to skip building bootstrap class directory
 
-trap "exit 0" SIGHUP
 set -o pipefail
 
 # This is called only when all source files successfully compiled.
@@ -43,7 +43,7 @@ set -o pipefail
 #  * repackages the resulting classfiles as jdk8.jar.
 finish() {
     echo "building JAR"
-    rm -rf ${WORKDIR}/sym
+    rm -rf ${WORKDIR}/sym ${WORKDIR}/jaifs
     mkdir -p ${WORKDIR}/sym
     cd ${WORKDIR}/sym
     # unjar ct.sym
@@ -75,7 +75,7 @@ finish() {
         fi
     done
     # recreate jar
-    jar cf ${WORKDIR}/jdk.jar *
+    jar cf ${CF_DIST}/jdk8.jar *
     cd ${WORKDIR}
     [ ${PRESERVE} -ne 0 ] || rm -rf sym
     return 0
