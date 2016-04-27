@@ -761,11 +761,12 @@ Checker Framework compiler.
 
 This mechanism is intended for two purposes.
 First, it supports the receiver (\<this> parameter) syntax.  For example,
-to specify a method that does not modify its receiver:
+to specify a method whose receiver may incorporate unvalidated information
+read from an untrusted external source:
 
 \begin{Verbatim}
-public boolean method1(/*>>> @ReadOnly MyClass this*/) { ... }
-public boolean method2(/*>>> @ReadOnly MyClass this, */ String argument) { ... }
+public boolean method1(/*>>> @Tainted MyClass this*/) { ... }
+public boolean method2(/*>>> @Tainted MyClass this, */ String argument) { ... }
 \end{Verbatim}
 
 Second, it can be used for import statements:

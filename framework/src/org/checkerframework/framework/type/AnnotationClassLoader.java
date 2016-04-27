@@ -583,7 +583,7 @@ public class AnnotationClassLoader {
         } catch (ClassNotFoundException e) {
             checker.userErrorAbort(checker.getClass().getSimpleName() + ": could not load class for annotation: " + annoName + "; ensure that your classpath is correct");
         } catch (ClassCastException e) {
-            checker.userErrorAbort(checker.getClass().getSimpleName() + ": the loaded class: " + annoName + " is not an annotation, ensure it is defined correctly");
+            checker.userErrorAbort(checker.getClass().getSimpleName() + ": class " + annoName + " is not an annotation");
         }
         return null;
     }

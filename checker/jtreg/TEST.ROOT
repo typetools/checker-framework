@@ -2,4 +2,4 @@
 # It also contains test-suite configuration information.
 
 # The list of keywords supported in the entire test suite
-keys=nullness igj javari framework stubs skeleton
+keys=nullness framework stubs

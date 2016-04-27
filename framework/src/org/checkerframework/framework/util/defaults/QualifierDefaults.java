@@ -463,8 +463,7 @@ public class QualifierDefaults {
 
             applyToTypeVar = defaultTypeVarLocals
                           && elt.getKind() == ElementKind.LOCAL_VARIABLE
-                          && type.getKind() == TypeKind.TYPEVAR
-                          && atypeFactory.type(tree).getKind() == TypeKind.TYPEVAR;
+                          && type.getKind() == TypeKind.TYPEVAR;
             applyDefaultsElement(elt, type);
             applyToTypeVar = false;
         }
@@ -757,8 +756,6 @@ public class QualifierDefaults {
 
             /* Intersection types, list the types in the direct supertypes.
              * Make sure to apply the default there too.
-             * Use the direct supertypes field to prevent an infinite recursion
-             * with the IGJATF.postDirectSuperTypes. TODO: investigate better way.
              */
             if (type.getKind() == TypeKind.INTERSECTION) {
                 List<AnnotatedDeclaredType> sups = ((AnnotatedIntersectionType)type).directSuperTypesField();

@@ -1,15 +1,24 @@
 package polyall;
 
-import java.lang.annotation.Annotation;
-import java.util.Set;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.javacutil.AnnotationUtils;
+
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 
 import polyall.quals.H1Bot;
+import polyall.quals.H1Invalid;
 import polyall.quals.H1Poly;
 import polyall.quals.H1S1;
 import polyall.quals.H1S2;
@@ -22,9 +31,11 @@ import polyall.quals.H2Top;
 
 public class PolyAllAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
+    AnnotationMirror H1S2;
     public PolyAllAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
+        H1S2 =  AnnotationUtils.fromClass(elements, polyall.quals.H1S2.class);
     }
 
     @Override
@@ -32,7 +43,7 @@ public class PolyAllAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return getBundledTypeQualifiersWithPolyAll(
                 H1Top.class, H1S1.class, H1S2.class, H1Bot.class,
                 H2Top.class, H2S1.class, H2S2.class, H2Bot.class,
-                H1Poly.class, H2Poly.class);
+                H1Poly.class, H2Poly.class, H1Invalid.class);
     }
 
     @Override
@@ -43,5 +54,13 @@ public class PolyAllAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new MultiGraphQualifierHierarchy(factory);
+    }
+
+    @Override
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        super.annotateImplicit(tree, type, iUseFlow);
+        if (tree.getKind() == Kind.VARIABLE && ((VariableTree) tree).getName().toString().contains("addH1S2")) {
+            type.replaceAnnotation(H1S2);
+        }
     }
 }

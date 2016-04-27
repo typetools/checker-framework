@@ -40,8 +40,7 @@ public class JavacRunner implements CheckersRunner
     public static final String JAVAC_LOCATION = "lib/javac.jar";
     public static final String JDK_LOCATION = "lib/jdk.jar";
     public static final List<String> IMPLICIT_ARGS = Arrays.asList(
-            "checkers.nullness.quals.*", "checkers.igj.quals.*",
-            "checkers.javari.quals.*", "checkers.interning.quals.*");
+            "checkers.nullness.quals.*", "checkers.interning.quals.*");
 
     private final Iterable<String> fileNames;
     private final Iterable<String> processors;

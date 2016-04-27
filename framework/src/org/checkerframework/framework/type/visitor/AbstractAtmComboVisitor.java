@@ -380,6 +380,11 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM> implements Atm
     }
 
     @Override
+    public RETURN_TYPE visitPrimitive_Typevar(AnnotatedPrimitiveType type1, AnnotatedTypeVariable type2, PARAM param) {
+        return defaultAction(type1, type2, param);
+    }
+
+    @Override
     public RETURN_TYPE visitPrimitive_Union(AnnotatedPrimitiveType type1, AnnotatedUnionType type2, PARAM param) {
         return defaultAction(type1, type2, param);
     }
