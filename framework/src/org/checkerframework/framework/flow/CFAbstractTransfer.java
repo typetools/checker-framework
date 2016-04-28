@@ -732,8 +732,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
-        if (shouldPerformWholeProgramInference(
-                n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
+        if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
             if (lhs instanceof FieldAccessNode) {
                 // Updates inferred field type
                 analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
@@ -754,7 +753,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
     @Override
     public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
-        if (shouldPerformWholeProgramInference(n.getTree(), null)) {
+        if (shouldPerformWholeProgramInference(n.getTree())) {
             // Retrieves class containing the method
             ClassTree classTree = analysis.getContainingClass(n.getTree());
             ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
@@ -785,7 +784,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         if (lhs instanceof FieldAccessNode &&
                 shouldPerformWholeProgramInference(
-                        n.getTree(), InternalUtils.symbol(lhs.getTree()))) {
+                        n.getTree(),lhs.getTree())) {
             // Updates inferred field type
             analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
                     (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()),
@@ -811,7 +810,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     @Override
     public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n,
             TransferInput<V, S> p) {
-        if (shouldPerformWholeProgramInference(n.getTree(), null)) {
+        if (shouldPerformWholeProgramInference(n.getTree())) {
             ExecutableElement constructorElt = analysis.getTypeFactory().
                     constructorFromUse(n.getTree()).first.getElement();
             analysis.atypeFactory.getWholeProgramInference()
@@ -870,20 +869,35 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
     /**
      * Returns true if whole-program inference should be performed.
-     * If the tree or elt is in the scope of a @SuppressWarning,
+     * If the tree is in the scope of a @SuppressWarning,
      * then this method returns false.
      */
-    private boolean shouldPerformWholeProgramInference(Tree tree,
-                                                       Element elt) {
-        boolean returnB = infer;
-        if (tree != null) {
-            returnB = returnB && !analysis.checker.shouldSuppressWarnings(tree, null);
+    private boolean shouldPerformWholeProgramInference(Tree tree) {
+        return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, null));
+    }
+
+    /**
+     * Returns true if whole-program inference should be performed.
+     * If the expressionTree or lhsTree is in the scope of a @SuppressWarning,
+     * then this method returns false.
+     */
+    private boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
+        // Check that infer is true and the tree isn't in scope of a @SuppressWarning
+        // before calling  InternalUtils.symbol(lhs)
+        if (!shouldPerformWholeProgramInference(expressionTree)) {
+            return false;
         }
-        if (elt != null) {
-            returnB = returnB &&
-                      !analysis.checker.shouldSuppressWarnings(elt, null);
-        }
-        return returnB;
+        Element elt = InternalUtils.symbol(lhsTree);
+        return !analysis.checker.shouldSuppressWarnings(elt, null);
+    }
+
+    /**
+     * Returns true if whole-program inference should be performed.
+     * If the tree or element is in the scope of a @SuppressWarning,
+     * then this method returns false.
+     */
+    private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
+        return shouldPerformWholeProgramInference(tree) && !analysis.checker.shouldSuppressWarnings(elt, null);
     }
 
     /**
