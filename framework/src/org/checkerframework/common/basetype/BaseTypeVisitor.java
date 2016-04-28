@@ -1713,7 +1713,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * Issue error if the thrown expression is not a sub type of the
      * the annotation given by {@link #getThrowUpperBoundAnnotations()},
-     * the same as {@link getExceptionParameterLowerBoundAnnotations()}
+     * the same as {@link #getExceptionParameterLowerBoundAnnotations()}
      * by default.
      * <p>
      *
