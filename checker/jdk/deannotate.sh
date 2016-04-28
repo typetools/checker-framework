@@ -15,7 +15,7 @@ SCMD=""
 for f in ${ANNOS} ; do
     # add both qualified and unqualified versions to SCMD
     QUAL=`echo $f | sed 's/\([^.]*\.\)*/\\\\@/'`
-    SCMD="s/${QUAL}${QEND}//g;s/\\@$f${QEND}//g;$SCMD"
+    SCMD="s/${QUAL}\b${QEND}//g;s/\\@$f\b${QEND}//g;$SCMD"
 done
 
 # run each source file through sed
