@@ -38,9 +38,6 @@ PROCESSORS="interning,nullness,signature"
 PFLAGS="-Anocheckjdk -Aignorejdkastub -AuseDefaultsForUncheckedCode=source\
  -AprintErrorStack -Awarns"
 
-PID=$$      # script process id
-BOOT=0      # 0 to skip building bootstrap class directory
-
 set -o pipefail
 
 # This is called only when all source files successfully compiled.
@@ -89,10 +86,8 @@ finish() {
     return 0
 }
 
-if [ ${BOOT} -ne 0 ] ; then
-    rm -rf ${BOOTDIR} ${BINDIR}
-    mkdir -p ${BOOTDIR} ${BINDIR}
-fi
+rm -rf ${BOOTDIR} ${BINDIR}
+mkdir -p ${BOOTDIR} ${BINDIR}
 cd ${SRCDIR}
 
 SRC="`find com/sun/jarsigner com/sun/security com/sun/tools/attach \
@@ -108,14 +103,12 @@ if [ -z "${DIRS}" ] ; then
     exit 1
 fi
 
-if [ ${BOOT} -ne 0 ] ; then
-    echo "build bootstrap JDK"
-    ${LT_JAVAC} -g -d ${BOOTDIR} ${JFLAGS} ${SRC} | tee ${WORKDIR}/LOG
-    [ $? -ne 0 ] && exit 1
-    grep -q 'not found' ${WORKDIR}/LOG
-    [ $? -eq 0 ] && exit 0
-    (cd ${BOOTDIR} && jar cf ../jdk.jar *)
-fi
+echo "build bootstrap JDK"
+${LT_JAVAC} -g -d ${BOOTDIR} ${JFLAGS} ${SRC} | tee ${WORKDIR}/LOG
+[ $? -ne 0 ] && exit 1
+grep -q 'not found' ${WORKDIR}/LOG
+[ $? -eq 0 ] && exit 0
+(cd ${BOOTDIR} && jar cf ../jdk.jar *)
 
 echo "build one package at a time w/processors on"
 rm -rf ${WORKDIR}/log
