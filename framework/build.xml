@@ -531,6 +531,7 @@
             <fileset dir="build/whole-program-inference/" includes="*.jaif"/>
             <fileset dir="tests/whole-program-inference/annotated/" includes="*.java"/>
             <arg value="--outdir=tests/whole-program-inference/annotated/"/>
+            <env key="LANGTOOLS" value="${jsr308.langtools}"/>
         </apply>
 
         <!-- Running the checker again on the final .java files. -->
