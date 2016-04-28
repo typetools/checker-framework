@@ -16,7 +16,7 @@ public class Overriding {
         void guardedByThree() { }
 
         @ReleasesNoLocks
-        void rnlMethod(){
+        void rnlMethod() {
             //:: error: (method.guarantee.violated)
             mrlMethod();
             rnlMethod();
@@ -24,7 +24,7 @@ public class Overriding {
             lfMethod();
         }
 
-        void implicitRnlMethod(){
+        void implicitRnlMethod() {
             //:: error: (method.guarantee.violated)
             mrlMethod();
             rnlMethod();
@@ -33,7 +33,7 @@ public class Overriding {
         }
 
         @LockingFree
-        void lfMethod(){
+        void lfMethod() {
             //:: error: (method.guarantee.violated)
             mrlMethod();
             //:: error: (method.guarantee.violated)
@@ -44,7 +44,7 @@ public class Overriding {
         }
 
         @MayReleaseLocks
-        void mrlMethod(){
+        void mrlMethod() {
             mrlMethod();
             rnlMethod();
             implicitRnlMethod();
@@ -52,23 +52,23 @@ public class Overriding {
         }
 
         @ReleasesNoLocks
-        void rnlMethod2(){ }
+        void rnlMethod2() { }
 
-        void implicitRnlMethod2(){ }
+        void implicitRnlMethod2() { }
 
         @LockingFree
-        void lfMethod2(){ }
+        void lfMethod2() { }
 
         @MayReleaseLocks
-        void mrlMethod2(){ }
+        void mrlMethod2() { }
 
         @ReleasesNoLocks
-        void rnlMethod3(){ }
+        void rnlMethod3() { }
 
-        void implicitRnlMethod3(){ }
+        void implicitRnlMethod3() { }
 
         @LockingFree
-        void lfMethod3(){ }
+        void lfMethod3() { }
     }
 
     class SubClass extends SuperClass {
@@ -84,38 +84,38 @@ public class Overriding {
 
         @MayReleaseLocks
         //:: error: (override.sideeffect.invalid)
-        @Override void rnlMethod(){ }
+        @Override void rnlMethod() { }
 
         @MayReleaseLocks
         //:: error: (override.sideeffect.invalid)
-        @Override void implicitRnlMethod(){ }
+        @Override void implicitRnlMethod() { }
 
         @ReleasesNoLocks
         //:: error: (override.sideeffect.invalid)
-        @Override void lfMethod(){ }
+        @Override void lfMethod() { }
 
         @MayReleaseLocks
-        @Override void mrlMethod(){ }
+        @Override void mrlMethod() { }
 
         @ReleasesNoLocks
-        @Override void rnlMethod2(){ }
+        @Override void rnlMethod2() { }
 
-        @Override void implicitRnlMethod2(){ }
+        @Override void implicitRnlMethod2() { }
 
         @LockingFree
-        @Override void lfMethod2(){ }
+        @Override void lfMethod2() { }
 
         @ReleasesNoLocks
-        @Override void mrlMethod2(){ }
+        @Override void mrlMethod2() { }
 
         @LockingFree
-        @Override void rnlMethod3(){ }
+        @Override void rnlMethod3() { }
 
         @LockingFree
-        @Override void implicitRnlMethod3(){ }
+        @Override void implicitRnlMethod3() { }
 
         @SideEffectFree
-        @Override void lfMethod3(){ }
+        @Override void lfMethod3() { }
     }
 
     // Test overriding @Holding with JCIP @GuardedBy.

@@ -93,7 +93,7 @@ class ChapterExamples {
   class MyClass {
     Object field = new Object();
     @LockingFree
-    Object method(@GuardSatisfied MyClass this){return new Object();}
+    Object method(@GuardSatisfied MyClass this) {return new Object();}
     @LockingFree
     public @GuardSatisfied(1) MyClass append(@GuardSatisfied(1) MyClass this,
         @GuardSatisfied(2) MyClass m) {
@@ -110,7 +110,7 @@ class ChapterExamples {
   @MayReleaseLocks
   @ReleasesNoLocks
   // TODO: enable (multiple.sideeffect.annotation)
-  void testMultipleSideEffectAnnotations(){
+  void testMultipleSideEffectAnnotations() {
   }
 
   void guardedByItselfOnReceiver(@GuardedBy("itself") ChapterExamples this) {
@@ -184,7 +184,7 @@ class ChapterExamples {
     lock = new Object();
   }
 
-  void myMethod8(){
+  void myMethod8() {
     //:: error: (contracts.precondition.not.satisfied)
     boolean b4 = compare(p1, myMethod());
 
@@ -195,7 +195,7 @@ class ChapterExamples {
     boolean b3 = compare(p1, this.p2);
     //:: error: (contracts.precondition.not.satisfied)
     boolean b5 = compare(p1, this.myMethod());
-    synchronized(lock){
+    synchronized(lock) {
       boolean b6 = compare(p1, p2); // OK
       boolean b7 = compare(p1, this.p2); // OK
       boolean b8 = compare(p1, myMethod()); // OK
@@ -210,7 +210,7 @@ class ChapterExamples {
   // myObject.method()
   // myMethod().method()
 
-  void myMethod7(){
+  void myMethod7() {
     //:: error: (contracts.precondition.not.satisfied.field)
     Object f = myObj.field;
     //:: error: (contracts.precondition.not.satisfied)
@@ -220,7 +220,7 @@ class ChapterExamples {
     //:: error: (contracts.precondition.not.satisfied)
     myMethodReturningMyObj().method(); // method()'s receiver is annotated as @GuardSatisfied
 
-    synchronized(lock){
+    synchronized(lock) {
       f = myObj.field;
       f2 = myMethodReturningMyObj().field;
       myObj.method();
@@ -232,10 +232,10 @@ class ChapterExamples {
     myMethodReturningMyObj().field = new Object();
     //:: error: (contracts.precondition.not.satisfied.field)
     x.field = new Object();
-    synchronized(lock){
+    synchronized(lock) {
       myMethod().field = new Object();
     }
-    synchronized(lock){
+    synchronized(lock) {
       x.field = new Object(); // toString is not LockingFree. How annoying.
     }
 
@@ -250,11 +250,11 @@ class ChapterExamples {
   //:: error: (assignment.type.incompatible)
   @GuardedBy({}) MyClass z = x; // ILLEGAL because dereferences of z do not require "lock" to be held.
   @LockingFree
-  @GuardedBy("lock") MyClass myMethod(){
+  @GuardedBy("lock") MyClass myMethod() {
     return x; // OK because the return type is @GuardedBy("lock")
   }
 
-  void exampleMethod(){
+  void exampleMethod() {
     //:: error: (contracts.precondition.not.satisfied.field)
     x.field = new Object(); // ILLEGAL because the lock is not known to be held
     //:: error: (contracts.precondition.not.satisfied.field)
@@ -325,13 +325,13 @@ class ChapterExamples {
 
 
   @LockingFree
-  boolean compare(@GuardSatisfied MyClass a, @GuardSatisfied MyClass b){ return true; }
+  boolean compare(@GuardSatisfied MyClass a, @GuardSatisfied MyClass b) { return true; }
 
   @GuardedBy({}) MyClass p1;
   @GuardedBy("lock") MyClass p2;
 
-  void myMethod6(){
-    synchronized(lock){ // It is the responsibility of callers to 'compare' to acquire the lock.
+  void myMethod6() {
+    synchronized(lock) { // It is the responsibility of callers to 'compare' to acquire the lock.
       boolean b1 = compare(p1, p2); // OK. No error issued.
     }
     //:: error: (contracts.precondition.not.satisfied.field)
@@ -709,7 +709,7 @@ void boxingUnboxing() {
       @GuardedBy("b") Object o2 = o; // o is no longer null and an assignment.type.incompatible error should be issued
     }
 
-    void bar(){
+    void bar() {
       o = new Object();
     }
 
@@ -744,34 +744,34 @@ void boxingUnboxing() {
 
   @MayReleaseLocks
   void mayReleaseLocksMethodWithSynchronizedBlock() {
-    synchronized(this){
+    synchronized(this) {
     }
   }
 
   @ReleasesNoLocks
   void releasesNoLocksMethodWithSynchronizedBlock() {
-    synchronized(this){
+    synchronized(this) {
     }
   }
 
   @LockingFree
   void lockingFreeMethodWithSynchronizedBlock() {
     //:: error: (synchronized.block.in.lockingfree.method)
-    synchronized(this){
+    synchronized(this) {
     }
   }
 
   @SideEffectFree
   void sideEffectFreeMethodWithSynchronizedBlock() {
     //:: error: (synchronized.block.in.lockingfree.method)
-    synchronized(this){
+    synchronized(this) {
     }
   }
 
   @Pure
   void pureMethodWithSynchronizedBlock() {
     //:: error: (synchronized.block.in.lockingfree.method)
-    synchronized(this){
+    synchronized(this) {
     }
   }
 

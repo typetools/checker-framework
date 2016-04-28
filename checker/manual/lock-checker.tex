@@ -472,7 +472,7 @@ variable name the value was originally assigned to falls out of scope.
 \begin{Verbatim}
 class MyClass {
   private final @GuardedBy("itself") Object x = new Object();
-  void method(){
+  void method() {
     x.toString(); // ILLEGAL because x is not known to be held.
     synchronized(x) {
       x.toString(); // OK: x is known to be held.

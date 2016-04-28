@@ -31,7 +31,7 @@ class FlowExpressions {
             m.field = new Object();
             //:: error: (contracts.precondition.not.satisfied)
             getm().field = new Object();
-            synchronized(itself){
+            synchronized(itself) {
                 m.field = new Object();
                 getm().field = new Object();
             }

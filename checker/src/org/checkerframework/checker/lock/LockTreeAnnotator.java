@@ -39,7 +39,7 @@ public class LockTreeAnnotator extends TreeAnnotator {
 
     // Indicates that the result of the operation is a boolean value.
     private static boolean isBinaryComparisonOrInstanceOfOperator(Kind opKind) {
-        switch(opKind){
+        switch(opKind) {
             case EQUAL_TO:
             case NOT_EQUAL_TO:
             // Technically, <=, <, > and >= are irrelevant for visitBinary, since currently boxed primitives

@@ -12,11 +12,11 @@ public class Simple {
        synchronized(lock2) {}
        //:: error: (contracts.precondition.not.satisfied.field)
        synchronized(this.lock2) {}
-       
+
        final @GuardedBy("myClass.field") MyClass myClass = new MyClass();
        //:: error: (contracts.precondition.not.satisfied.field)
-       synchronized(myClass.field){}
-       synchronized(myClass){}
+       synchronized(myClass.field) {}
+       synchronized(myClass) {}
    }
 
   class MyClass{
