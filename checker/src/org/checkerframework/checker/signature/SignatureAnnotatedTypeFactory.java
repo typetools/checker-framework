@@ -44,8 +44,8 @@ public class SignatureAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new ImplicitsTreeAnnotator(this),
-                new SignatureTreeAnnotator(this)
+                new SignatureTreeAnnotator(this),
+                super.createTreeAnnotator()
         );
     }
 
