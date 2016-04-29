@@ -679,6 +679,13 @@
         </antcall>
     </target>
 
+    <target name="lock-safedefaults-tests" depends="jar,build-tests"
+            description="Run tests for the Lock Checker with unchecked code defaults turned on for source code">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.LockSafeDefaultsTest"/>
+        </antcall>
+    </target>
+
     <target name="lubglb-tests" depends="jar,build-tests"
             description="Run tests for the Lubglb Checker">
         <antcall target="-run-tests">

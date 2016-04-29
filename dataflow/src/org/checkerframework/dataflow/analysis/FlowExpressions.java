@@ -1,6 +1,7 @@
 package org.checkerframework.dataflow.analysis;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.element.Element;
@@ -177,7 +178,7 @@ public class FlowExpressions {
                     methodReceiver = internalReprOf(provider, mn.getTarget()
                             .getReceiver());
                 }
-                receiver = new PureMethodCall(mn.getType(), invokedMethod,
+                receiver = new MethodCall(mn.getType(), invokedMethod,
                         methodReceiver, parameters);
             }
         }
@@ -482,12 +483,12 @@ public class FlowExpressions {
             LocalVariable other = (LocalVariable) obj;
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
-            // Use type.toString().equals(...) instead of Types.isSameType(...)
+            // Use type.unannotatedType().toString().equals(...) instead of Types.isSameType(...)
             // because Types requires a processing environment, and FlowExpressions is
             // designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
             return vsother.name.contentEquals(vs.name) &&
-                   vsother.type.toString().equals(vs.type.toString()) &&
+                   vsother.type.unannotatedType().toString().equals(vs.type.unannotatedType().toString()) &&
                    vsother.owner.toString().equals(vs.owner.toString());
         }
 
@@ -499,7 +500,7 @@ public class FlowExpressions {
         public int hashCode() {
             VarSymbol vs = (VarSymbol) element;
             return HashCodeUtils.hash(vs.name.toString(),
-                    vs.type.toString(),
+                    vs.type.unannotatedType().toString(),
                     vs.owner.toString());
         }
 
@@ -599,18 +600,19 @@ public class FlowExpressions {
 
     /**
      * A method call, typically a deterministic one. However, this is not
-     * enforced and non-pure methods are also possible. It is the clients
+     * enforced and non-pure methods are also possible. It is the client's
      * responsibility to ensure that using non-deterministic methods is done in
      * a sound way.  The CF allows non-deterministic methods to be used in
      * postconditions such as EnsuresNonNull.
      */
-    public static class PureMethodCall extends Receiver {
+    // TODO: Which clients? What is their responsibility? What is "a sound way"?
+    public static class MethodCall extends Receiver {
 
         protected final Receiver receiver;
         protected final List<Receiver> parameters;
         protected final Element method;
 
-        public PureMethodCall(TypeMirror type, Element method,
+        public MethodCall(TypeMirror type, Element method,
                 Receiver receiver, List<Receiver> parameters) {
             super(type);
             this.receiver = receiver;
@@ -634,6 +636,27 @@ public class FlowExpressions {
             return false;
         }
 
+        /**
+         * @return the method call receiver (for inspection only - do not modify).
+         */
+        public Receiver getReceiver() {
+            return receiver;
+        }
+
+        /**
+         * @return the method call parameters (for inspection only - do not modify any of the parameters).
+         */
+        public List<Receiver> getParameters() {
+            return Collections.unmodifiableList(parameters);
+        }
+
+        /**
+         * @return the Element for the method call.
+         */
+        public Element getElement() {
+            return method;
+        }
+
         @Override
         public boolean isUnmodifiableByOtherCode() {
             return false;
@@ -646,10 +669,10 @@ public class FlowExpressions {
 
         @Override
         public boolean syntacticEquals(Receiver other) {
-            if (!(other instanceof PureMethodCall)) {
+            if (!(other instanceof MethodCall)) {
                 return false;
             }
-            PureMethodCall otherMethod = (PureMethodCall) other;
+            MethodCall otherMethod = (MethodCall) other;
             if (!receiver.syntacticEquals(otherMethod.receiver)) {
                 return false;
             }
@@ -690,10 +713,10 @@ public class FlowExpressions {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof PureMethodCall)) {
+            if (obj == null || !(obj instanceof MethodCall)) {
                 return false;
             }
-            PureMethodCall other = (PureMethodCall) obj;
+            MethodCall other = (MethodCall) obj;
             int i = 0;
             for (Receiver p : parameters) {
                 if (!p.equals(other.parameters.get(i))) {
