@@ -1,6 +1,19 @@
 ---------------------------------------------------------------------------
 
-Version 2.0.0, 1 May 2016
+Version 2.0.0, 2 May 2016
+
+Type systems:
+
+The Lock Checker has been replaced by a new implementation with different
+semantics.  The new semantics give better guarantees.
+...
+
+The top type qualifier for the Signature String type system has been
+renamed from @UnannotatedString to @SignatureUnknown.  You shouldn't ever
+write this annotation, but if you perform separate compilation (for
+instance, if you do type-checking with the Signature String Checker against
+a library that is annotated with Signature String annotations), then you
+need to re-compile the library.
 
 The IGJ, OIGJ, and Javari Checkers are no longer distributed with the
 Checker Framework.  If you wish to use them, install version 1.9.13 of the
@@ -9,6 +22,8 @@ maintained; as a result, they often caused false positive test failures.
 The type systems are valuable, but the best way to get to a good
 implementation of them is to rewrite the type-checker from scratch, which
 will lead to a smaller, simpler, more correct implementation.
+
+Documentation improvements:
 
 New manual section "Tips for creating a checker" shows how to break down
 the implementation of a type system into small, manageable pieces.
