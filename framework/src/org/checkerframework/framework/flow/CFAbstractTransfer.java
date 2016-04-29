@@ -137,6 +137,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis, boolean forceConcurrentSemantics) {
         this.analysis = analysis;
         this.sequentialSemantics = !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
+        this.infer = analysis.checker.hasOption("infer");
     }
 
     /**
