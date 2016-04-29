@@ -74,7 +74,7 @@ public class FlowExpressionParseUtil {
      * Matches the self reference. In the future we could allow "#0" as a
      * synonym for "this".
      */
-    protected static final Pattern selfPattern = Pattern.compile("^this$");
+    protected static final Pattern thisPattern = Pattern.compile("^this$");
     /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
     protected static final Pattern itselfPattern = Pattern.compile("^itself$");
     /** Matches 'super' */
@@ -162,7 +162,7 @@ public class FlowExpressionParseUtil {
             throws FlowExpressionParseException {
         s = s.trim();
 
-        Matcher selfMatcher = selfPattern.matcher(s);
+        Matcher selfMatcher = thisPattern.matcher(s);
 
         // Do not do this in recursive calls, otherwise we can get an infinite loop where
         // "this" gets converted to "this.<fieldname>" in the line below, then
@@ -170,7 +170,7 @@ public class FlowExpressionParseUtil {
         // with s == "this"
         if (selfMatcher.matches() && allowSelf && !recursiveCall) {
             s = context.receiver.toString(); // it is possible that s == "this" after this call
-            selfMatcher = selfPattern.matcher(s); // Refresh the matcher
+            selfMatcher = thisPattern.matcher(s); // Refresh the matcher
         }
 
         Matcher itselfMatcher = itselfPattern.matcher(s);
@@ -440,11 +440,14 @@ public class FlowExpressionParseUtil {
 
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
+            // Parameter allowItself is set to false since "itself" can only be
+            // in the receiver, not in the remaining string.
             return parse(remainingString, newContext, path, false, true, false,
-                    true, true, false, false, false, false /*"itself" can only be in the receiver, not in the remaining string*/, true);
+                    true, true, false, false, false, false, true);
         } else if (parenthesesMatcher.matches()) {
             String expressionString = parenthesesMatcher.group(1);
-            // Do not modify the value of recursiveCall, since a parenthesis match is essentially a match to a no-op and should not semantically affect the parsing.
+            // Do not modify the value of recursiveCall, since a parenthesis match is essentially
+            // a match to a no-op and should not semantically affect the parsing.
             return parse(expressionString, context, path, allowSelf,
                     allowIdentifier, allowParameter, allowDot,
                     allowMethods, allowArrays, allowLiterals,

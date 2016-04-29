@@ -44,7 +44,7 @@ class Primitives {
         --primitive;
 
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-        if (primitive != 5){ }
+        if (primitive != 5) { }
 
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
         i = primitive >> i;
@@ -115,7 +115,7 @@ class Primitives {
 
 
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-        if (primitiveBoolean){}
+        if (primitiveBoolean) {}
 
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
         i = ~primitive;

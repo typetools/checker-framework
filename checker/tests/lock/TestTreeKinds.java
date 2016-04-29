@@ -8,8 +8,8 @@ public class TestTreeKinds {
   class MyClass {
      Object field = new Object();
      @LockingFree
-     Object method(@GuardSatisfied MyClass this){return new Object();}
-     void method2(@GuardSatisfied MyClass this){}
+     Object method(@GuardSatisfied MyClass this) {return new Object();}
+     void method2(@GuardSatisfied MyClass this) {}
   }
 
   @GuardedBy("lock") MyClass m;
@@ -136,7 +136,7 @@ void testEnumType() {
 final Object intrinsicLock = new Object();
 
 void testThreadHoldsLock(@GuardedBy("intrinsicLock") MyClass m) {
-    if (Thread.holdsLock(intrinsicLock)){
+    if (Thread.holdsLock(intrinsicLock)) {
         m.field.toString();
     } else {
         //:: error: (contracts.precondition.not.satisfied.field)
@@ -161,9 +161,9 @@ void testTreeTypes() {
     //:: error: (contracts.precondition.not.satisfied)
     foo.method2(); // Same as above, but the guard must be satisfied if the receiver is @GuardSatisfied.
     //:: error: (contracts.precondition.not.satisfied.field)
-    switch(foo.field.hashCode()){ // attempt to use guarded object in a switch statement
+    switch(foo.field.hashCode()) { // attempt to use guarded object in a switch statement
     }
-    // try(foo = new MyClass()){ foo.field.toString(); } // attempt to use guarded object inside a try with resources
+    // try(foo = new MyClass()) { foo.field.toString(); } // attempt to use guarded object inside a try with resources
 
     // Retrieving an element from a guarded array is a dereference
     //:: error: (contracts.precondition.not.satisfied.field)
@@ -243,9 +243,9 @@ void testTreeTypes() {
     this.foo.field.toString(); // method call on guarded object using 'this' literal
     //:: error: (contracts.precondition.not.satisfied.field)
     label: foo.field.toString(); // dereference of guarded object in labeled statement
-    if (foo instanceof MyClass){} // access to guarded object in instanceof expression (OK)
-    while(foo != null){ break; } // access to guarded object in while condition of while loop (OK)
-    if (false){}else if (foo == o){} // binary operator on guarded object in else if condition (OK)
+    if (foo instanceof MyClass) {} // access to guarded object in instanceof expression (OK)
+    while (foo != null) { break; } // access to guarded object in while condition of while loop (OK)
+    if (false) {} else if (foo == o) {} // binary operator on guarded object in else if condition (OK)
     //:: error: (contracts.precondition.not.satisfied.field)
     Runnable rn = () -> { foo.field.toString(); }; // access to guarded object in a lambda expression
     //:: error: (contracts.precondition.not.satisfied.field)
@@ -387,7 +387,7 @@ public void testMethodAnnotations() {
   }
 }
 
-  void methodThatTakesAnInteger(Integer i){ }
+  void methodThatTakesAnInteger(Integer i) { }
 
   void testBoxedPrimitiveType() {
     Integer i = null;
@@ -422,7 +422,7 @@ public void testMethodAnnotations() {
   void testExplicitLockSynchronized() {
      final ReentrantLock lock = new ReentrantLock();
      //:: error: (explicit.lock.synchronized)
-     synchronized(lock){
+     synchronized(lock) {
      }
   }
 

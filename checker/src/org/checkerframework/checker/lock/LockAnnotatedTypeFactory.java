@@ -367,8 +367,8 @@ public class LockAnnotatedTypeFactory
     SideEffectAnnotation methodSideEffectAnnotation(Element element, boolean issueErrorIfMoreThanOnePresent) {
         if (element != null) {
             List<SideEffectAnnotation> sideEffectAnnotationPresent = new ArrayList<>();
-            for (SideEffectAnnotation sea : SideEffectAnnotation.values()){
-                if (getDeclAnnotationNoAliases(element, sea.getAnnotationClass()) != null){
+            for (SideEffectAnnotation sea : SideEffectAnnotation.values()) {
+                if (getDeclAnnotationNoAliases(element, sea.getAnnotationClass()) != null) {
                     sideEffectAnnotationPresent.add(sea);
                 }
             }
