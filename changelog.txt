@@ -4,6 +4,11 @@ Version 2.0.0, 2 May 2016
 
 Type systems:
 
+A new option, -Ainfer, has been added. With this option enabled, annotations on
+method return types, method parameters and field types can be inferred.  See
+the Whole-program inference section in the manual for more details.
+
+
 The Lock Checker has been replaced by a new implementation with value
 protection semantics, i.e. a reference value guarded by a lock is
 protected from data races regardless of the expression that is used
