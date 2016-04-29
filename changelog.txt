@@ -13,11 +13,10 @@ Type systems:
 
  * The Lock Checker has been replaced by a new implementation that provides
    a stronger guarantee.  The old Lock Checker prevented two threads from
-   simultaneously accessing a given variable, but race conditions were
-   still possible due to aliases.  The new Lock Checker prevents two
-   threads from simultaneously accessing a given value, and thus prevents
-   race conditions.  See the "Lock Checker" chapter in the manual for
-   details.
+   simultaneously using a given variable, but race conditions were still
+   possible due to aliases.  The new Lock Checker prevents two threads from
+   simultaneously dereferencing a given value, and thus prevents race
+   conditions.  See the "Lock Checker" chapter in the manual for details.
 
  * The top type qualifier for the Signature String type system has been
    renamed from @UnannotatedString to @SignatureUnknown.  You shouldn't
