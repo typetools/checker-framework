@@ -1028,4 +1028,22 @@ void boxingUnboxing() {
     //:: error: (lock.expression.not.final)
     m.field = new Object();
   }
+
+  class Session {
+    @Holding("this")
+    public void kill(@GuardSatisfied Session this) {
+    }
+  }
+
+  class SessionManager {
+    private @GuardedBy("itself") Session session = new Session();
+
+    private void session_done() {
+      final @GuardedBy("itself") Session tmp = session;
+      session = null;
+      synchronized (tmp) {
+        tmp.kill();
+      }
+    }
+  }
 }

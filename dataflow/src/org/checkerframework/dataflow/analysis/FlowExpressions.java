@@ -483,12 +483,12 @@ public class FlowExpressions {
             LocalVariable other = (LocalVariable) obj;
             VarSymbol vs = (VarSymbol) element;
             VarSymbol vsother = (VarSymbol) other.element;
-            // Use type.toString().equals(...) instead of Types.isSameType(...)
+            // Use type.unannotatedType().toString().equals(...) instead of Types.isSameType(...)
             // because Types requires a processing environment, and FlowExpressions is
             // designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
             return vsother.name.contentEquals(vs.name) &&
-                   vsother.type.toString().equals(vs.type.toString()) &&
+                   vsother.type.unannotatedType().toString().equals(vs.type.unannotatedType().toString()) &&
                    vsother.owner.toString().equals(vs.owner.toString());
         }
 
@@ -500,7 +500,7 @@ public class FlowExpressions {
         public int hashCode() {
             VarSymbol vs = (VarSymbol) element;
             return HashCodeUtils.hash(vs.name.toString(),
-                    vs.type.toString(),
+                    vs.type.unannotatedType().toString(),
                     vs.owner.toString());
         }
 
@@ -610,9 +610,9 @@ public class FlowExpressions {
 
         protected final Receiver receiver;
         protected final List<Receiver> parameters;
-        protected final ExecutableElement method;
+        protected final Element method;
 
-        public MethodCall(TypeMirror type, ExecutableElement method,
+        public MethodCall(TypeMirror type, Element method,
                 Receiver receiver, List<Receiver> parameters) {
             super(type);
             this.receiver = receiver;
@@ -651,9 +651,9 @@ public class FlowExpressions {
         }
 
         /**
-         * @return the ExecutableElement for the method call.
+         * @return the Element for the method call.
          */
-        public ExecutableElement getElement() {
+        public Element getElement() {
             return method;
         }
 

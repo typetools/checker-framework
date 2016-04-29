@@ -354,7 +354,7 @@ public class FlowExpressionParseUtil {
             for (Receiver p : parameters) {
                 parameterTypes.add(p.getType());
             }
-            ExecutableElement methodElement = null;
+            Element methodElement = null;
             try {
                 // try to find the correct method
                 Resolver resolver = new Resolver(env);
@@ -362,7 +362,7 @@ public class FlowExpressionParseUtil {
 
                 // Search for method in each enclosing class.
                 while (receiverType.getKind() == TypeKind.DECLARED) {
-                    methodElement = (ExecutableElement) resolver.findMethod(methodName, receiverType,
+                    methodElement = resolver.findMethod(methodName, receiverType,
                             path, parameterTypes);
                     if (methodElement.getKind() == ElementKind.METHOD) {
                         break;
@@ -374,8 +374,10 @@ public class FlowExpressionParseUtil {
                     throw constructParserException(s);
                 }
 
+                ExecutableElement mElem = (ExecutableElement) methodElement;
+
                 for (int i = 0; i < parameters.size(); i++) {
-                    VariableElement formal = methodElement.getParameters().get(i);
+                    VariableElement formal = mElem.getParameters().get(i);
                     TypeMirror formalType = formal.asType();
                     Receiver actual = parameters.get(i);
                     TypeMirror actualType = actual.getType();
