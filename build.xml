@@ -153,7 +153,7 @@
       <arg line="${style.args1}"/>
       <arg value="[^\\]\b\(else\|finally\|try\){\|}\(catch\|else\|finally\)\b\|){\($\|[^0-9]\)\|\b\(catch\|for\|if\|while\)("/>
       <arg line="${style.args2}"/>
-      <arg line="--exclude=build.xml"/>
+      <arg line="--exclude=build.xml --exclude=Makefile"/>
     </exec>
     <fail message="Missing space:${line.separator}${missingspace}">
       <condition>
