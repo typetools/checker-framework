@@ -118,10 +118,34 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     private final boolean infer;
 
+    protected static final Pattern thisPattern = Pattern.compile("^(this)$");
+
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
         this.infer = analysis.checker.hasOption("infer");
+    }
+
+    /**
+     * Constructor that allows forcing concurrent semantics to be on for this instance of CFAbstractTransfer.
+     *
+     * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on.
+     * If false, concurrent semantics are turned off by default, but the user can
+     * still turn them on via -AconcurrentSemantics.
+     * If true, the user cannot turn off concurrent semantics.
+     */
+    public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis, boolean forceConcurrentSemantics) {
+        this.analysis = analysis;
+        this.sequentialSemantics = !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
+    }
+
+    /**
+     * @return true if the transfer function uses sequential semantics, false if it uses concurrent semantics.
+     * Useful when creating an empty store, since a store makes different decisions depending on whether
+     * sequential or concurrent semantics are used.
+     */
+    public boolean usesSequentialSemantics() {
+        return sequentialSemantics;
     }
 
     /**
@@ -541,7 +565,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S store = p.getRegularStore();
         V storeValue = store.getValue(n);
         // look up value in factory, and take the more specific one
-        // TODO: handle cases, where this is not allowed (e.g. contructors in
+        // TODO: handle cases, where this is not allowed (e.g. constructors in
         // non-null type systems)
         V factoryValue = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(factoryValue, storeValue);
@@ -929,8 +953,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
                 String s = expression.trim();
 
-                Pattern selfPattern = Pattern.compile("^(this)$");
-                Matcher selfMatcher = selfPattern.matcher(s);
+                Matcher selfMatcher = thisPattern.matcher(s);
                 if (selfMatcher.matches()) {
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
 
@@ -1017,8 +1040,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
                 String s = expression.trim();
 
-                Pattern selfPattern = Pattern.compile("^(this)$");
-                Matcher selfMatcher = selfPattern.matcher(s);
+                Matcher selfMatcher = thisPattern.matcher(s);
                 if (selfMatcher.matches()) {
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
 

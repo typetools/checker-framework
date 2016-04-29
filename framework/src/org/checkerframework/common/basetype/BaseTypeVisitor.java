@@ -10,12 +10,14 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.BooleanLiteralNode;
+import org.checkerframework.dataflow.cfg.node.ExplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
+import org.checkerframework.dataflow.cfg.node.ThisLiteralNode;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.util.PurityChecker;
 import org.checkerframework.dataflow.util.PurityChecker.PurityResult;
@@ -183,6 +185,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
+
+    protected static final Pattern thisPattern = Pattern.compile("^(this)$");
 
     /**
      * @param checker
@@ -940,7 +944,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         // check precondition annotations
-        checkPreconditions(node, invokedMethodElement, true);
+        checkPreconditions(node, contractsUtils.getPreconditions(invokedMethodElement));
 
         // Do not call super, as that would observe the arguments without
         // a set assignment context.
@@ -949,146 +953,159 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks all the preconditions of the method invocation or variable access {@code tree} with
-     * element {@code invokedElement}.
+     * Checks that all the given {@code preconditions} hold true immediately prior to
+     * the method invocation or variable access at {@code tree}.
+     *
+     * @param tree the Tree immediately prior to which the preconditions must hold true.
+     * @param preconditions the preconditions to be checked.
      */
-    protected void checkPreconditions(Tree tree,
-            Element invokedElement, boolean methodCall) {
-        checkPreconditions(tree, invokedElement, methodCall, null);
+    protected void checkPreconditions(Tree tree, Set<Pair<String, String>> preconditions) {
+        // This check is needed for the GUI effects and Units Checkers tests to pass.
+        // TODO: Remove this check and investigate the root cause.
+        if (preconditions.isEmpty()) {
+            return;
+        }
+
+        checkPreconditions(tree, atypeFactory.getNodeForTree(tree), preconditions);
     }
 
     /**
-     * Checks all the preconditions of the method invocation or variable access {@code tree} with
-     * element {@code invokedElement}.
+     * Checks that all the given {@code preconditions} hold true immediately prior to
+     * the method invocation or variable access at {@code node}.  Errors are reported
+     * with respect to {@code treeForErrorReporting}, which does not need to correspond to {@code node}.
+     *
+     * @param treeForErrorReporting the Tree used to report the error via checker.report.
+     * @param node the Node immediately prior to which the preconditions must hold true.
+     * @param preconditions the preconditions to be checked.
      */
-    protected void checkPreconditions(Tree tree,
-            Element invokedElement, boolean methodCall, Set<Pair<String, String>> additionalPreconditions) {
-        Set<Pair<String, String>> preconditions = invokedElement == null ?
-                new HashSet<Pair<String, String>>() :
-                contractsUtils.getPreconditions(invokedElement);
-
-        if (additionalPreconditions != null) {
-            preconditions.addAll(additionalPreconditions);
+    protected void checkPreconditions(Tree treeForErrorReporting,
+            Node node, Set<Pair<String, String>> preconditions) {
+        if (preconditions.isEmpty()) {
+            return;
         }
 
-        FlowExpressionContext flowExprContext = null;
+        FlowExpressionContext flowExprContext = getFlowExpressionContextFromNode(node);
+
+        if (flowExprContext == null) {
+            checker.report(Result.failure("flowexpr.parse.context.not.determined",
+                    node), treeForErrorReporting);
+            return;
+        }
 
         for (Pair<String, String> p : preconditions) {
             String expression = p.first;
             AnnotationMirror anno = AnnotationUtils.fromName(elements, p.second);
 
-            // Only check if the precondition concerns this checker
+            // Only check the precondition if it concerns this checker
             if (!atypeFactory.isSupportedQualifier(anno)) {
-                return;
+                continue;
             }
 
-            Node nodeNode = atypeFactory.getNodeForTree(tree);
+            try {
+                FlowExpressions.Receiver expr = parseExpressionString(expression, flowExprContext,
+                        getCurrentPath(), node, treeForErrorReporting);
 
-            if (flowExprContext == null) {
-                if (methodCall) {
-                    flowExprContext = FlowExpressionParseUtil
-                            .buildFlowExprContextForUse(
-                                    (MethodInvocationNode) nodeNode, checker.getContext());
+                CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(node);
+
+                CFAbstractValue<?> value = store.getValue(expr);
+
+                AnnotationMirror inferredAnno = null;
+
+                if (value != null) {
+                    inferredAnno = value.getType().getAnnotationInHierarchy(anno);
                 }
-                else if (nodeNode instanceof FieldAccessNode) {
-                    // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
 
-                    Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
-                        ((FieldAccessNode) nodeNode).getReceiver());
-
-                    flowExprContext = new FlowExpressionContext(
-                            internalReceiver, null, checker.getContext());
+                if (!checkContract(expr, anno, inferredAnno, store)) {
+                    checker.report(Result.failure(
+                            treeForErrorReporting.getKind() == Tree.Kind.METHOD_INVOCATION
+                                ? "contracts.precondition.not.satisfied"
+                                : "contracts.precondition.not.satisfied.field",
+                            treeForErrorReporting.toString(),
+                            expr == null ? expression : expr.toString()), treeForErrorReporting);
                 }
-                else if (nodeNode instanceof LocalVariableNode) {
-                    // Adapted from org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitVariable
-
-                    ClassTree enclosingClass = TreeUtils
-                            .enclosingClass(getCurrentPath());
-                    TypeElement classElem = TreeUtils
-                            .elementFromDeclaration(enclosingClass);
-                    Node receiver = new ImplicitThisLiteralNode(classElem.asType());
-
-                    Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
-                            receiver);
-
-                    flowExprContext = new FlowExpressionContext(
-                            internalReceiver, null, checker.getContext());
-                }
-                else if (nodeNode instanceof ArrayAccessNode) {
-                    // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
-
-                    Receiver internalReceiver = FlowExpressions.internalReprOfArrayAccess(atypeFactory,
-                        (ArrayAccessNode) nodeNode);
-
-                    flowExprContext = new FlowExpressionContext(
-                            internalReceiver, null, checker.getContext());
-                }
-            }
-
-            if (flowExprContext != null) {
-                FlowExpressions.Receiver expr = null;
-                try {
-                    CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(tree);
-
-                    String s = expression.trim();
-                    Pattern selfPattern = Pattern.compile("^(this)$");
-                    Matcher selfMatcher = selfPattern.matcher(s);
-                    if (selfMatcher.matches()) {
-                        s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
-                    }
-
-                    expr = FlowExpressionParseUtil.parse(expression,
-                            flowExprContext, getCurrentPath());
-
-                    if (expr == null) {
-                        // TODO: Wrap the following 'itself' handling logic into a method that calls FlowExpressionParseUtil.parse
-
-                        /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
-                        Pattern itselfPattern = Pattern.compile("^itself$");
-                        Matcher itselfMatcher = itselfPattern.matcher(expression.trim());
-
-                        if (itselfMatcher.matches()) { // There is no variable, class, etc. named "itself"
-                            expr = FlowExpressions.internalReprOf(atypeFactory,
-                                    nodeNode);
-                        }
-                    }
-
-                    CFAbstractValue<?> value = store.getValue(expr);
-
-                    AnnotationMirror inferredAnno = value == null ? null : value
-                            .getType().getAnnotationInHierarchy(anno);
-                    if (!skipContractCheck(tree, expr, flowExprContext) &&
-                        !checkContract(expr, anno, inferredAnno, store)) {
-
-                        checker.report(Result.failure(
-                                methodCall ? "contracts.precondition.not.satisfied" : "contracts.precondition.not.satisfied.field",
-                                tree.toString(),
-                                expr == null ? expression : expr.toString()), tree);
-                    }
-                } catch (FlowExpressionParseException e) {
-                    // errors are reported at declaration site
-                }
+            } catch (FlowExpressionParseException e) {
+                // errors are reported at declaration site
             }
         }
     }
 
-    /**
-     * Whether to skip a contract check based on whether the condition with
-     * given expression {@code expr} is valid for the
-     * tree {@code tree} under the context {@code flowExprContext}.
-     *
-     *  @param tree The tree that is being analyzed.
-     *  @param expr The expression condition to consider.
-     *  @param flowExprContext The current context.
-     *
-     *  @return Whether to skip the contract check.
-     */
-    protected boolean skipContractCheck(Tree tree, FlowExpressions.Receiver expr, FlowExpressionContext flowExprContext) {
-        // Do not add code here. Overridden versions of this method
-        // will always have a weaker condition than simply 'return false',
-        // so calling super.skipContractCheck is not useful.
+    private FlowExpressionContext getFlowExpressionContextFromNode(Node node) {
+        FlowExpressionContext flowExprContext = null;
 
-        return false;
+        if (node instanceof MethodInvocationNode) {
+            flowExprContext = FlowExpressionParseUtil
+                    .buildFlowExprContextForUse(
+                            (MethodInvocationNode) node, checker.getContext());
+        }
+        else if (node instanceof FieldAccessNode) {
+            // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
+
+            Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
+                ((FieldAccessNode) node).getReceiver());
+
+            flowExprContext = new FlowExpressionContext(
+                    internalReceiver, null, checker.getContext());
+        }
+        else if (node instanceof LocalVariableNode) {
+            // Adapted from org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitVariable
+
+            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+            TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
+            Node receiver = new ImplicitThisLiteralNode(classElem.asType());
+
+            Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
+                    receiver);
+
+            flowExprContext = new FlowExpressionContext(
+                    internalReceiver, null, checker.getContext());
+        }
+        else if (node instanceof ArrayAccessNode) {
+            // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
+
+            Receiver internalReceiver = FlowExpressions.internalReprOfArrayAccess(atypeFactory,
+                (ArrayAccessNode) node);
+
+            flowExprContext = new FlowExpressionContext(
+                    internalReceiver, null, checker.getContext());
+        } else if (node instanceof ExplicitThisLiteralNode ||
+                   node instanceof ImplicitThisLiteralNode ||
+                   node instanceof ThisLiteralNode) {
+            Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, node, false);
+
+            flowExprContext = new FlowExpressionContext(
+                    internalReceiver, null, checker.getContext());
+        }
+
+        return flowExprContext;
+    }
+
+    /***
+     * Returns the flow expression receiver for the {@code expression} given the
+     * {@code flowExprContext}. The expression "this" is allowed and is handled.
+     * {@code node} refers to the method invocation or variable access being analyzed.
+     * It can be used by an overriding method for special handling of expressions
+     * such as "itself" which may indicate a reference to {@code node}.
+     *
+     * @param expression the flow expression string to be parsed.
+     * @param flowExprContext the flow expression context with respect to which the expression string is to be evaluated.
+     * @param node the Node immediately prior to which the preconditions checked by the calling method must hold true.
+     * Used by overriding implementations. Allowed to be null.
+     * @param path the TreePath from which to obtain the scope relative to which local variables are parsed.
+     * @param treeForErrorReporting the Tree used to report parsing errors via checker.report.
+     * Used by overriding implementations.
+     */
+    protected FlowExpressions.Receiver parseExpressionString(String expression,
+            FlowExpressionContext flowExprContext,
+            TreePath path, Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
+        expression = expression.trim();
+
+        Matcher selfMatcher = thisPattern.matcher(expression);
+        if (selfMatcher.matches()) {
+            // It is possible that expression == "this" after this call.
+            expression = flowExprContext.receiver.toString().trim();
+        }
+
+        return FlowExpressionParseUtil.parse(expression, flowExprContext, path);
     }
 
     /**
@@ -2659,7 +2676,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         private boolean checkParameters() {
             boolean result = true;
-            // Check parameter values. (FIXME varargs)
+            // Check parameter values. (TODO: FIXME varargs)
             List<AnnotatedTypeMirror> overriderParams =
                     overrider.getParameterTypes();
             List<AnnotatedTypeMirror> overriddenParams =
@@ -2929,19 +2946,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     protected void checkAccess(IdentifierTree node, Void p) {
-        // Do not add functionality to this method body.
-        // Add it in the method called below instead.
-        checkAccess(node, p, true);
-    }
-
-    protected void checkAccess(IdentifierTree node, Void p, boolean doCheckPreconditions) {
         MemberSelectTree memberSel = enclosingMemberSelect();
         ExpressionTree tree;
         Element elem;
-
-        if (doCheckPreconditions) {
-            checkPreconditions(node, TreeUtils.elementFromUse(node), false);
-        }
 
         if (memberSel == null) {
             tree = node;
@@ -2955,10 +2962,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
-
-        if (doCheckPreconditions) {
-            checkPreconditions(tree, elem, false);
-        }
 
         if (!isAccessAllowed(elem, receiver, tree)) {
             checker.report(Result.failure("unallowed.access", elem, receiver), node);
