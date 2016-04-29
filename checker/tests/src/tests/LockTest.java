@@ -13,7 +13,8 @@ public class LockTest extends CheckerFrameworkTest {
         super(testFile,
                 org.checkerframework.checker.lock.LockChecker.class,
                 "lock",
-                "-Anomsgtext");
+                "-Anomsgtext"
+                );
     }
 
     @Parameters

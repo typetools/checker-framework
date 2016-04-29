@@ -40,6 +40,7 @@ class MyClass {
  * Constraints for implicit inner constraints
  * and super
  */
+@SuppressWarnings("lock")
 class Outer {
     class Inner {
         Inner(/*1*/ Outer Outer.this) { }

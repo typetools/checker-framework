@@ -123,6 +123,13 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         if (node == null) {
             return null;
         }
+        return getStoreBefore(node);
+    }
+
+    /**
+     * @return The store immediately before a given {@link Node}.
+     */
+    public S getStoreBefore(Node node) {
         return runAnalysisFor(node, true);
     }
 
