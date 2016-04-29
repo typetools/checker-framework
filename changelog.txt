@@ -4,9 +4,25 @@ Version 2.0.0, 2 May 2016
 
 Type systems:
 
-The Lock Checker has been replaced by a new implementation with different
-semantics.  The new semantics give better guarantees.
-...
+The Lock Checker has been replaced by a new implementation with value
+protection semantics, i.e. a reference value guarded by a lock is
+protected from data races regardless of the expression that is used
+to refer to that value. For example, given:
+
+@GuardedBy("x") StringBuilder sb;
+@GuardedBy("x") StringBuilder myMethod() { return sb; }
+
+A value stored in variable sb can only be dereferenced by a thread
+when the thread holds lock x regardless of how the value is retrieved,
+such as by a call to myMethod. Dereferencing a value is reading
+or writing one of its fields.
+
+The new semantics provide a better guarantee than name protection
+semantics, since with the latter there is no assurance that a guarded
+value is always protected if it is assigned from one variable to another.
+
+See the Lock Checker chapter of the manual for more details.
+
 
 The top type qualifier for the Signature String type system has been
 renamed from @UnannotatedString to @SignatureUnknown.  You shouldn't ever
