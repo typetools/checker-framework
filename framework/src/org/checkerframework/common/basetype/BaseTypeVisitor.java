@@ -984,7 +984,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        FlowExpressionContext flowExprContext = getFlowExpressionContextFromNode(node);
+        TreePath currentPath = getCurrentPath();
+
+        FlowExpressionContext flowExprContext = getFlowExpressionContextFromNode(node, currentPath);
 
         if (flowExprContext == null) {
             checker.report(Result.failure("flowexpr.parse.context.not.determined",
@@ -1003,7 +1005,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             try {
                 FlowExpressions.Receiver expr = parseExpressionString(expression, flowExprContext,
-                        getCurrentPath(), node, treeForErrorReporting);
+                        currentPath, node, treeForErrorReporting);
 
                 CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(node);
 
@@ -1029,7 +1031,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    private FlowExpressionContext getFlowExpressionContextFromNode(Node node) {
+    /***
+     * Returns the flow expression context for a given {@code node}. The {@code path} parameter
+     * is used to determine the "receiver" class for a local variable node (that is, a local
+     * variable does not truly have a receiver, but its enclosing class is used as a placeholder).
+     *
+     * @param node the Node for which to obtain the flow expression context.
+     * @param path in the case of a local variable node, the TreePath to the use of the local variable.
+     * @return the resulting flow expression context.
+     */
+    public FlowExpressionContext getFlowExpressionContextFromNode(Node node, TreePath path) {
         FlowExpressionContext flowExprContext = null;
 
         if (node instanceof MethodInvocationNode) {
@@ -1049,7 +1060,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         else if (node instanceof LocalVariableNode) {
             // Adapted from org.checkerframework.dataflow.cfg.CFGBuilder.CFGTranslationPhaseOne.visitVariable
 
-            ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+            ClassTree enclosingClass = TreeUtils.enclosingClass(path);
             TypeElement classElem = TreeUtils.elementFromDeclaration(enclosingClass);
             Node receiver = new ImplicitThisLiteralNode(classElem.asType());
 
@@ -1094,7 +1105,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param treeForErrorReporting the Tree used to report parsing errors via checker.report.
      * Used by overriding implementations.
      */
-    protected FlowExpressions.Receiver parseExpressionString(String expression,
+    public FlowExpressions.Receiver parseExpressionString(String expression,
             FlowExpressionContext flowExprContext,
             TreePath path, Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
         expression = expression.trim();
