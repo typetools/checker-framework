@@ -1310,12 +1310,6 @@ public class CFGBuilder {
         protected Map<Name, Label> continueLabels;
 
         /**
-         * Node yielding the value for the lexically enclosing synchronized statement,
-         * or null if there is no such statement.
-         */
-        protected Node synchronizedExpr;
-
-        /**
          * Maps from AST {@link Tree}s to {@link Node}s.  Every Tree that produces
          * a value will have at least one corresponding Node.  Trees
          * that undergo conversions, such as boxing or unboxing, can map to two
@@ -3998,7 +3992,7 @@ public class CFGBuilder {
         public Node visitSynchronized(SynchronizedTree tree, Void p) {
             // see JLS 14.19
 
-            synchronizedExpr = scan(tree.getExpression(), p);
+            Node synchronizedExpr = scan(tree.getExpression(), p);
             SynchronizedNode synchronizedStartNode = new SynchronizedNode(tree, synchronizedExpr, true, env.getTypeUtils());
             extendWithNode(synchronizedStartNode);
             scan(tree.getBlock(), p);
