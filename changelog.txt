@@ -2,52 +2,39 @@
 
 Version 2.0.0, 2 May 2016
 
+Inference:
+
+ * The Checker Framework can now infer annotations and insert them in your
+   source code.  This can reduce the burden of writing annotations and let
+   you get started using a type system more quickly.  See the
+   "Whole-program inference" section in the manual for details.
+
 Type systems:
 
-A new option, -Ainfer, has been added. With this option enabled, annotations on
-method return types, method parameters and field types can be inferred.  See
-the Whole-program inference section in the manual for more details.
+ * The Lock Checker has been replaced by a new implementation that provides
+   a stronger guarantee.  The old Lock Checker prevented two threads from
+   simultaneously accessing a given variable, but race conditions were
+   still possible due to aliases.  The new Lock Checker prevents two
+   threads from simultaneously accessing a given value, and thus prevents
+   race conditions.  See the "Lock Checker" chapter in the manual for
+   details.
 
+ * The top type qualifier for the Signature String type system has been
+   renamed from @UnannotatedString to @SignatureUnknown.  You shouldn't
+   ever write this annotation, but if you perform separate compilation (for
+   instance, if you do type-checking with the Signature String Checker
+   against a library that is annotated with Signature String annotations),
+   then you need to re-compile the library.
 
-The Lock Checker has been replaced by a new implementation with value
-protection semantics, i.e. a reference value guarded by a lock is
-protected from data races regardless of the expression that is used
-to refer to that value. For example, given:
-
-@GuardedBy("x") StringBuilder sb;
-@GuardedBy("x") StringBuilder myMethod() { return sb; }
-
-A value stored in variable sb can only be dereferenced by a thread
-when the thread holds lock x regardless of how the value is retrieved,
-such as by a call to myMethod. Dereferencing a value is reading
-or writing one of its fields.
-
-The new semantics provide a better guarantee than name protection
-semantics, since with the latter there is no assurance that a guarded
-value is always protected if it is assigned from one variable to another.
-
-See the Lock Checker chapter of the manual for more details.
-
-
-The top type qualifier for the Signature String type system has been
-renamed from @UnannotatedString to @SignatureUnknown.  You shouldn't ever
-write this annotation, but if you perform separate compilation (for
-instance, if you do type-checking with the Signature String Checker against
-a library that is annotated with Signature String annotations), then you
-need to re-compile the library.
-
-The IGJ, OIGJ, and Javari Checkers are no longer distributed with the
-Checker Framework.  If you wish to use them, install version 1.9.13 of the
-Checker Framework.  They have been removed because they were not being
-maintained; as a result, they often caused false positive test failures.
-The type systems are valuable, but the best way to get to a good
-implementation of them is to rewrite the type-checker from scratch, which
-will lead to a smaller, simpler, more correct implementation.
+ * The IGJ, OIGJ, and Javari Checkers are no longer distributed with the
+   Checker Framework.  If you wish to use them, install version 1.9.13 of
+   the Checker Framework.  The implementations have been removed because
+   they were not being maintained.  The type systems are valuable, but the type-checkers should be rewritten from scratch.
 
 Documentation improvements:
 
-New manual section "Tips for creating a checker" shows how to break down
-the implementation of a type system into small, manageable pieces.
+ * New manual section "Tips for creating a checker" shows how to break down
+   the implementation of a type system into small, manageable pieces.
 
 ---------------------------------------------------------------------------
 
