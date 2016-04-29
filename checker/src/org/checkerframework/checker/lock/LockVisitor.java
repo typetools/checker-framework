@@ -816,7 +816,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * var1, var2, field1 and field2 are enforced to be final or effectively final, and
      * method1 and method2 are enforced to be @Deterministic.
      *
-     * @param tree the expression tree of a synchronized block.
+     * @param lockExpressionTree the expression tree of a synchronized block.
      */
     private void ensureExpressionIsEffectivelyFinal(final ExpressionTree lockExpressionTree) {
         // This functionality could be implemented using a visitor instead,

@@ -348,7 +348,6 @@ public class LockAnnotatedTypeFactory
      *
      * @param element The method element.
      * @param issueErrorIfMoreThanOnePresent Whether to issue an error if more than one side effect annotation is present on the method.
-     * @return
      */
     // package-private
     SideEffectAnnotation methodSideEffectAnnotation(Element element, boolean issueErrorIfMoreThanOnePresent) {
@@ -486,7 +485,7 @@ public class LockAnnotatedTypeFactory
      * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will potentially have
      * its annotation in the {@code @GuardedBy} hierarchy replaced.
      * @param atm an AnnotatedTypeMirror that may contain a {@code @GuardSatisfied} annotation. May be null.
-     * @param matchingGuardSatisfiedIndex the {@GuardSatisfied} index that the {@code @GuardSatisfied} annotation
+     * @param matchingGuardSatisfiedIndex the {code @GuardSatisfied} index that the {@code @GuardSatisfied} annotation
      * in {@code atm} must have in order for the replacement to occur.
      * @param annotationInGuardedByHierarchy if the replacement occurs, the annotation in the {@code @GuardedBy}
      *  hierarchy in this parameter will be used for the replacement.
