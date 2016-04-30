@@ -4,9 +4,9 @@ Version 2.0.0, 2 May 2016
 
 Inference:
 
- * The Checker Framework can now infer annotations and insert them in your
-   source code.  This can reduce the burden of writing annotations and let
-   you get started using a type system more quickly.  See the
+ * The infer-and-annotate.sh script infers annotations and inserts them in
+   your source code.  This can reduce the burden of writing annotations and
+   let you get started using a type system more quickly.  See the
    "Whole-program inference" section in the manual for details.
 
 Type systems:
@@ -28,12 +28,19 @@ Type systems:
  * The IGJ, OIGJ, and Javari Checkers are no longer distributed with the
    Checker Framework.  If you wish to use them, install version 1.9.13 of
    the Checker Framework.  The implementations have been removed because
-   they were not being maintained.  The type systems are valuable, but the type-checkers should be rewritten from scratch.
+   they were not being maintained.  The type systems are valuable, but the
+   type-checkers should be rewritten from scratch.
 
 Documentation improvements:
 
  * New manual section "Tips for creating a checker" shows how to break down
    the implementation of a type system into small, manageable pieces.
+
+ * Improved instructions for using Maven and Gradle, including for Android
+   code.
+
+Closed issues:
+69, 86, 199, 299, 421, 557, 564, 573, 579, 665, 668, 669, 670, 671.
 
 ---------------------------------------------------------------------------
 
