@@ -56,12 +56,15 @@ public class Constant implements AbstractValue<Constant> {
 
     @Override
     public Constant leastUpperBound(Constant other) {
-        if (other.isBottom())
+        if (other.isBottom()) {
             return this.copy();
-        if (this.isBottom())
+        }
+        if (this.isBottom()) {
             return other.copy();
-        if (other.isTop() || this.isTop())
+        }
+        if (other.isTop() || this.isTop()) {
             return new Constant(Type.TOP);
+        }
         if (other.getValue().equals(getValue())) {
             return this.copy();
         }
@@ -70,8 +73,9 @@ public class Constant implements AbstractValue<Constant> {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof Constant))
+        if (obj == null || !(obj instanceof Constant)) {
             return false;
+        }
         Constant other = (Constant) obj;
         return type == other.type && Objects.equals(value, other.value);
     }

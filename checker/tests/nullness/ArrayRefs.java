@@ -9,8 +9,9 @@ public class ArrayRefs {
         String[] s = null;
 
         //:: error: (dereference.of.nullable)
-        if (s.length > 0)
+        if (s.length > 0) {
             System.out.println("s.length > 0");
+        }
 
     }
 

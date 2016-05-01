@@ -35,8 +35,9 @@ class ChapterExamples {
   private abstract class Values<V> extends AbstractCollection<V> {
     public <T> T[] toArray(T[] a) {
       Collection<V> c = new ArrayList<V>(size());
-      for (Iterator<V> i = iterator(); i.hasNext(); )
+      for (Iterator<V> i = iterator(); i.hasNext(); ) {
         c.add(i.next());
+      }
       return c.toArray(a);
     }
   }
@@ -589,8 +590,9 @@ void boxingUnboxing() {
   }
 
   public static <T extends @GuardedBy({}) Object> boolean indexOf(T[] a, Object elt) {
-    if (elt.equals(a[0]))
+    if (elt.equals(a[0])) {
       return false;
+    }
     return true;
     //    found   : (@org.checkerframework.checker.lock.qual.GuardedBy({}) :: T)[ extends @GuardedByUnknown @LockPossiblyHeld Object super @GuardedBy({}) @LockHeld Void]
     //        required: @GuardedBy @LockPossiblyHeld Object

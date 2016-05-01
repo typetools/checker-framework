@@ -73,11 +73,12 @@ class Poly {
 
     // Test assignment to poly
     @PolyEncrypted String test4(@PolyEncrypted String s) {
-        if (s == null)
+        if (s == null) {
             return encrypt(null);  // valid
-        else
+        } else {
             //:: error: (return.type.incompatible)
             return "m";  // invalid
+        }
     }
 
     @SuppressWarnings("encrypted")

@@ -200,8 +200,9 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<MethodSignature> subSignatures = getListOfMethodSignatures(sub);
             List<MethodSignature> superSignatures = getListOfMethodSignatures(sup);
             for (MethodSignature sig : subSignatures) {
-                if (!superSignatures.contains(sig))
+                if (!superSignatures.contains(sig)) {
                     return false;
+                }
             }
             return true;
         }
@@ -391,25 +392,33 @@ class MethodSignature {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         MethodSignature other = (MethodSignature) obj;
         if (className == null) {
-            if (other.className != null)
+            if (other.className != null) {
                 return false;
-        } else if (!className.equals(other.className))
+            }
+        } else if (!className.equals(other.className)) {
             return false;
+        }
         if (methodName == null) {
-            if (other.methodName != null)
+            if (other.methodName != null) {
                 return false;
-        } else if (!methodName.equals(other.methodName))
+            }
+        } else if (!methodName.equals(other.methodName)) {
             return false;
-        if (params != other.params)
+        }
+        if (params != other.params) {
             return false;
+        }
         return true;
     }
 

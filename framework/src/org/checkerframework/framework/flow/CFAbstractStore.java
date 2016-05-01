@@ -359,8 +359,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     classValues.put(className, newValue);
                 }
             }
-        }
-        else {
+        } else {
             // No other types of expressions need to be stored.
         }
     }

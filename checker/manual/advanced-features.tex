@@ -855,8 +855,9 @@ class DBObject {
     // updatedAt is @Nullable, so warning about .getTime()
     ... updatedAt.getTime() ... // warning about possible NullPointerException
 
-    if (updatedAt == null)
-        updatedAt = new Date();
+    if (updatedAt == null) {
+      updatedAt = new Date();
+    }
 
     // updatedAt is now @NonNull, so .getTime() call is OK
     ... updatedAt.getTime() ...

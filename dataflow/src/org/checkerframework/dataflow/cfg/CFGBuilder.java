@@ -1127,8 +1127,9 @@ public class CFGBuilder {
                     // ensure linking between e and next block (normal edge)
                     // Note: do not link to the next block for throw statements
                     // (these throw exceptions for sure)
-                    if (!node.getTerminatesExecution())
+                    if (!node.getTerminatesExecution()) {
                         missingEdges.add(new Tuple<>(e, i + 1));
+                    }
 
                     // exceptional edges
                     for (Entry<TypeMirror, Set<Label>> entry : en.getExceptions()
@@ -3690,10 +3691,11 @@ public class CFGBuilder {
                     break;
                 case FIELD:
                     // Note that "this"/"super" is a field, but not a field access.
-                    if (element.getSimpleName().contentEquals("this"))
+                    if (element.getSimpleName().contentEquals("this")) {
                         node = new ExplicitThisLiteralNode(tree);
-                    else
+                    } else {
                         node = new SuperNode(tree);
+                    }
                     break;
                 case EXCEPTION_PARAMETER:
                 case LOCAL_VARIABLE:

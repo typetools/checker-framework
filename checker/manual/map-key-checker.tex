@@ -131,8 +131,7 @@ if (m.containsKey(k)) {
     // At this point, the type of k is refined to @KeyFor("m") String.
     km = k;   // OK
     ...
-}
-else {
+} else {
     km = k;   // Error since k is not known to be a key for map m.
     ...
 }

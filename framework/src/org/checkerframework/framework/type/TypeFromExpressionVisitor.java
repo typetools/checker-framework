@@ -110,8 +110,9 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
 
         //here
-        if (trueType.equals(falseType))
+        if (trueType.equals(falseType)) {
             return trueType;
+        }
 
         // TODO: We would want this:
         /*

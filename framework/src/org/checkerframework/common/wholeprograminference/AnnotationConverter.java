@@ -114,22 +114,23 @@ public class AnnotationConverter {
             } catch (ClassNotFoundException e) {
                 ErrorReporter.errorAbort(e.getMessage());
             }
-        } else if (value instanceof Boolean)
+        } else if (value instanceof Boolean) {
             return BasicAFT.forType(boolean.class);
-        else if (value instanceof Character)
+        } else if (value instanceof Character) {
             return BasicAFT.forType(char.class);
-        else if (value instanceof Double)
+        } else if (value instanceof Double) {
             return BasicAFT.forType(double.class);
-        else if (value instanceof Float)
+        } else if (value instanceof Float) {
             return BasicAFT.forType(float.class);
-        else if (value instanceof Integer)
+        } else if (value instanceof Integer) {
             return BasicAFT.forType(int.class);
-        else if (value instanceof Long)
+        } else if (value instanceof Long) {
             return BasicAFT.forType(long.class);
-        else if (value instanceof Short)
+        } else if (value instanceof Short) {
             return BasicAFT.forType(short.class);
-        else if (value instanceof String)
+        } else if (value instanceof String) {
             return BasicAFT.forType(String.class);
+        }
         return null;
     }
 

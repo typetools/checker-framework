@@ -124,8 +124,9 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         visited.add(entry);
         // traverse control flow graph and define all arrows
         while (true) {
-            if (cur == null)
+            if (cur == null) {
                 break;
+            }
 
             if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
                 ConditionalBlock ccur = ((ConditionalBlock) cur);

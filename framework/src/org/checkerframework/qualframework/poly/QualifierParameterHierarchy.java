@@ -74,11 +74,13 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
 
     @Override
     public boolean isSubtype(QualParams<Q> subtype, QualParams<Q> supertype) {
-        if (subtype.equals(supertype))
+        if (subtype.equals(supertype)) {
             return true;
+        }
 
-        if (subtype == PARAMS_BOTTOM || supertype == PARAMS_TOP)
+        if (subtype == PARAMS_BOTTOM || supertype == PARAMS_TOP) {
             return true;
+        }
 
         // There is no corollary for PARAMS_BOTTOM, since the other would have to have every parameter.
         if (subtype == PARAMS_TOP
@@ -109,8 +111,9 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
 
         for (String k : subtype.keySet()) {
             if (constraintTarget == null) {
-                if (!containmentHierarchy.isSubtype(subtype.get(k), supertype.get(k)))
+                if (!containmentHierarchy.isSubtype(subtype.get(k), supertype.get(k))) {
                     return false;
+                }
             } else {
                 constraintTarget.add(Pair.of(subtype.get(k), supertype.get(k)));
             }
@@ -125,14 +128,17 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             throw new UnsupportedOperationException("unexpected leastUpperBound when generating constraints");
         }
 
-        if (a == PARAMS_BOTTOM)
+        if (a == PARAMS_BOTTOM) {
             return b;
+        }
 
-        if (b == PARAMS_BOTTOM)
+        if (b == PARAMS_BOTTOM) {
             return a;
+        }
 
-        if (a == PARAMS_TOP || b == PARAMS_TOP)
+        if (a == PARAMS_TOP || b == PARAMS_TOP) {
             return PARAMS_TOP;
+        }
 
         Map<String, Wildcard<Q>> result = new HashMap<>();
 
@@ -163,14 +169,17 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             throw new UnsupportedOperationException("unexpected leastUpperBound when generating constraints");
         }
 
-        if (a == PARAMS_TOP)
+        if (a == PARAMS_TOP) {
             return b;
+        }
 
-        if (b == PARAMS_TOP)
+        if (b == PARAMS_TOP) {
             return a;
+        }
 
-        if (a == PARAMS_BOTTOM || b == PARAMS_BOTTOM)
+        if (a == PARAMS_BOTTOM || b == PARAMS_BOTTOM) {
             return PARAMS_BOTTOM;
+        }
 
         Map<String, Wildcard<Q>> result = new HashMap<>();
 

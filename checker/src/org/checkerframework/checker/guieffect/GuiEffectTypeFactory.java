@@ -50,17 +50,20 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     // Could move this to a public method on the checker class
     public ExecutableElement findJavaOverride(ExecutableElement overrider, TypeMirror parentType) {
         if (parentType.getKind() != TypeKind.NONE) {
-            if (debugSpew)
+            if (debugSpew) {
                 System.err.println("Searching for overridden methods from " + parentType);
+            }
 
             TypeElement overriderClass = (TypeElement)overrider.getEnclosingElement();
             TypeElement elem = (TypeElement)((DeclaredType)parentType).asElement();
-            if (debugSpew)
+            if (debugSpew) {
                 System.err.println("necessary TypeElements acquired: " + elem);
+            }
 
             for (Element e : elem.getEnclosedElements()) {
-                if (debugSpew)
+                if (debugSpew) {
                     System.err.println("Considering element "+e);
+                }
                 if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
                     ExecutableElement ex = (ExecutableElement)e;
                     boolean overrides = elements.overrides(overrider, ex, overriderClass);
@@ -69,8 +72,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
             }
-            if (debugSpew)
+            if (debugSpew) {
                 System.err.println("Done considering elements of " + parentType);
+            }
         }
         return null;
     }
@@ -82,8 +86,9 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public boolean isUIType(TypeElement cls) {
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println(" isUIType("+cls+")");
+        }
         boolean targetClassUIP = fromElement(cls).hasAnnotation(UI.class);
         AnnotationMirror targetClassUITypeP = getDeclAnnotation(cls, UIType.class);
         AnnotationMirror targetClassSafeTypeP = getDeclAnnotation(cls, SafeType.class);
@@ -118,11 +123,13 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         Element packageP = ElementUtils.enclosingPackage(cls);
 
         if (packageP != null) {
-            if (debugSpew)
+            if (debugSpew) {
                 System.err.println("Found package " + packageP);
+            }
             if (getDeclAnnotation(packageP, UIPackage.class) != null) {
-                if (debugSpew)
+                if (debugSpew) {
                     System.err.println("Package " + packageP + " is annotated @UIPackage");
+                }
                 return true;
             }
         }
@@ -154,28 +161,33 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
           backwards-compatible --- to change our minds about this later)
     */
     public Effect getDeclaredEffect(ExecutableElement methodElt) {
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("begin mayHaveUIEffect(" + methodElt + ")");
+        }
         AnnotationMirror targetUIP = getDeclAnnotation(methodElt, UIEffect.class);
         AnnotationMirror targetSafeP = getDeclAnnotation(methodElt, SafeEffect.class);
         AnnotationMirror targetPolyP = getDeclAnnotation(methodElt, PolyUIEffect.class);
         TypeElement targetClassElt = (TypeElement)methodElt.getEnclosingElement();
 
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("targetClassElt found");
+        }
 
         // Short-circuit if the method is explicitly annotated
         if (targetSafeP != null) {
-            if (debugSpew)
+            if (debugSpew) {
                 System.err.println("Method marked @SafeEffect");
+            }
             return new Effect(SafeEffect.class);
         } else if (targetUIP != null) {
-            if (debugSpew)
+            if (debugSpew) {
                 System.err.println("Method marked @UIEffect");
+            }
             return new Effect(UIEffect.class);
         } else if (targetPolyP != null) {
-            if (debugSpew)
+            if (debugSpew) {
                 System.err.println("Method marked @PolyUIEffect");
+            }
             return new Effect(PolyUIEffect.class);
         }
 
@@ -249,10 +261,12 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 if (eff.isSafe()) {
                     // found a safe override
                     safe_override = overrides;
-                    if (isUI && issueConflictWarning)
+                    if (isUI && issueConflictWarning) {
                         checker.report(Result.failure("override.effect.invalid", overridingMethod, declaringType, safe_override, superclass), errorNode);
-                    if (isPolyUI && issueConflictWarning)
+                    }
+                    if (isPolyUI && issueConflictWarning) {
                         checker.report(Result.failure("override.effect.invalid.polymorphic", overridingMethod, declaringType, safe_override, superclass), errorNode);
+                    }
                 } else if (eff.isUI()) {
                     // found a ui override
                     ui_override = overrides;
@@ -286,10 +300,12 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                 if (eff.isSafe()) {
                     // found a safe override
                     safe_override = overrides;
-                    if (isUI && issueConflictWarning)
+                    if (isUI && issueConflictWarning) {
                         checker.report(Result.failure("override.effect.invalid", overridingMethod, declaringType, safe_override, ty), errorNode);
-                    if (isPolyUI && issueConflictWarning)
+                    }
+                    if (isPolyUI && issueConflictWarning) {
                         checker.report(Result.failure("override.effect.invalid.polymorphic", overridingMethod, declaringType, safe_override, ty), errorNode);
+                    }
                 } else if (eff.isUI()) {
                     // found a ui override
                     ui_override = overrides;
@@ -332,14 +348,16 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         Effect max = (ui_override != null ? new Effect(UIEffect.class) :
                         (poly_override != null ? new Effect(PolyUIEffect.class) :
                            (safe_override != null ? new Effect(SafeEffect.class) : null)));
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("Found " + declaringType + "." + overridingMethod +
                     " to have inheritance pair (" + min + "," + max + ")");
+        }
 
-        if (min == null && max == null)
+        if (min == null && max == null) {
             return null;
-        else
+        } else {
             return new Effect.EffectRange(min, max);
+        }
     }
 
     @Override

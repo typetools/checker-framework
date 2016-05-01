@@ -309,8 +309,9 @@ public abstract class GenericAnnotatedTypeFactory<
                     classToLoad,
                     new Class<?>[] { BaseTypeChecker.class, this.getClass(), List.class },
                     new Object[] { checker, this, fieldValues });
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 
@@ -353,8 +354,9 @@ public abstract class GenericAnnotatedTypeFactory<
             TransferFunction result = BaseTypeChecker.invokeConstructorFor(
                     classToLoad, new Class<?>[] { analysis.getClass() },
                     new Object[] { analysis });
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 

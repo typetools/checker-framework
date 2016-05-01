@@ -22,9 +22,10 @@ public class Polymorphism {
 
     // Test within a method
     @PolyNull String random(@PolyNull String m) {
-        if (m == "d")
+        if (m == "d") {
             //:: error: (return.type.incompatible)
             return null;    // invalid
+        }
         return "m";         // valid
     }
 

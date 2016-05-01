@@ -35,9 +35,10 @@ public class ConditionalNullness {
     }
 
     void testSelfWithCheckNegation() {
-        if (checkNonNull()) { }
-        else {
-                //:: error: (dereference.of.nullable)
+        if (checkNonNull()) {
+            // nothing to do
+        } else {
+            //:: error: (dereference.of.nullable)
             field.toString();   // error
         }
         field.toString();       // error
@@ -73,8 +74,9 @@ public class ConditionalNullness {
 
     void testOtherWithCheckNegation() {
         ConditionalNullness other = new ConditionalNullness();
-        if (other.checkNonNull()) { }
-        else {
+        if (other.checkNonNull()) {
+            // nothing to do
+        } else {
             //:: error: (dereference.of.nullable)
             other.field.toString();     // error
             //:: error: (dereference.of.nullable)

@@ -200,8 +200,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             BaseTypeVisitor<?> result = invokeConstructorFor(classToLoad,
                     new Class<?>[]{BaseTypeChecker.class},
                     new Object[]{this});
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 

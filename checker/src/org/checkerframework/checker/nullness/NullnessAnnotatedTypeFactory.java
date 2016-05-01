@@ -332,8 +332,9 @@ public class NullnessAnnotatedTypeFactory
      *            the type of the element {@code elt}
      */
     private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
-        if (elt == null)
+        if (elt == null) {
             return;
+        }
 
         if (elt.getKind().isClass() || elt.getKind().isInterface()
         // Workaround for System.{out,in,err} issue: assume all static
@@ -344,11 +345,13 @@ public class NullnessAnnotatedTypeFactory
     }
 
     private static boolean isSystemField(Element elt) {
-        if (!elt.getKind().isField())
+        if (!elt.getKind().isField()) {
             return false;
+        }
 
-        if (!ElementUtils.isStatic(elt) || !ElementUtils.isFinal(elt))
+        if (!ElementUtils.isStatic(elt) || !ElementUtils.isFinal(elt)) {
             return false;
+        }
 
         VariableElement var = (VariableElement) elt;
 

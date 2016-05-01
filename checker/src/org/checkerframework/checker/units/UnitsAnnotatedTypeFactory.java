@@ -217,8 +217,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // then add the aliased annotation to the alias map
                 // TODO: refactor so we can directly add to alias map, skipping the assert check in aliasedAnnotation
                 aliasedAnnotation(mirror);
-            }
-            else {
+            } else {
                 // error: somehow the aliased annotation has @UnitsMultiple meta annotation, but no base class defined in that meta annotation
                 // TODO: error abort
             }
