@@ -611,8 +611,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         if (valueFromFactory == null) {
             value = valueFromStore;
-        }
-        else {
+        } else {
             value = moreSpecificValue(valueFromFactory, valueFromStore);
         }
 

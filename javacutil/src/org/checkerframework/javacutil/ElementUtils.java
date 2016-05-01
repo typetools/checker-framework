@@ -144,12 +144,13 @@ public class ElementUtils {
      * @return  the type for the element used as a value
      */
     public static TypeMirror getType(Element element) {
-        if (element.getKind() == ElementKind.METHOD)
+        if (element.getKind() == ElementKind.METHOD) {
             return ((ExecutableElement)element).getReturnType();
-        else if (element.getKind() == ElementKind.CONSTRUCTOR)
+        } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
             return enclosingClass(element).asType();
-        else
+        } else {
             return element.asType();
+        }
     }
 
     /**
@@ -169,8 +170,9 @@ public class ElementUtils {
         }
 
         TypeElement elem = enclosingClass(element);
-        if (elem == null)
+        if (elem == null) {
             return null;
+        }
 
         return elem.getQualifiedName();
     }
@@ -212,8 +214,9 @@ public class ElementUtils {
      * Always return false if elt is a package.
      */
     public static boolean isElementFromByteCode(Element elt) {
-        if (elt == null)
+        if (elt == null) {
             return false;
+        }
 
         if (elt instanceof Symbol.ClassSymbol) {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
@@ -232,8 +235,9 @@ public class ElementUtils {
      * Always return false if elt is a package.
      */
     private static boolean isElementFromByteCode(Element elt, Element orig) {
-        if (elt == null)
+        if (elt == null) {
             return false;
+        }
         if (elt instanceof Symbol.ClassSymbol) {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if (null != clss.classfile) {

@@ -993,8 +993,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (shouldCache && elementCache.containsKey(elt)) {
             return elementCache.get(elt).deepCopy();
         }
-        if (elt.getKind() == ElementKind.PACKAGE)
+        if (elt.getKind() == ElementKind.PACKAGE) {
             return toAnnotatedType(elt.asType(), false);
+        }
         AnnotatedTypeMirror type;
 
         // Because of a bug in Java 8, annotations on type parameters are not stored in elements,
@@ -1030,8 +1031,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // Caching is disabled if typesFromStubFiles == null, because calls to this
         // method before the stub files are fully read can return incorrect
         // results.
-        if (shouldCache && typesFromStubFiles != null)
+        if (shouldCache && typesFromStubFiles != null) {
             elementCache.put(elt, type.deepCopy());
+        }
         return type;
     }
 
@@ -1098,8 +1100,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         AnnotatedTypeMirror result = TypeFromTree.fromMember(this, tree);
         annotateInheritedFromClass(result);
-        if (shouldCache)
+        if (shouldCache) {
             fromTreeCache.put(tree, result.deepCopy());
+        }
         return result;
     }
 
@@ -1122,15 +1125,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @see TypeFromExpressionVisitor
      */
     private AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
-        if (shouldCache && fromTreeCache.containsKey(tree))
+        if (shouldCache && fromTreeCache.containsKey(tree)) {
             return fromTreeCache.get(tree).deepCopy();
+        }
 
         AnnotatedTypeMirror result = TypeFromTree.fromExpression(this, tree);
 
         annotateInheritedFromClass(result);
 
-        if (shouldCache)
+        if (shouldCache) {
             fromTreeCache.put(tree, result.deepCopy());
+        }
         return result;
     }
 
@@ -1174,8 +1179,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         annotateInheritedFromClass(result);
-        if (shouldCache)
+        if (shouldCache) {
             fromTreeCache.put(tree, result.deepCopy());
+        }
         return result;
     }
 
@@ -2251,8 +2257,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public final Tree declarationFromElement(Element elt) {
         // if root is null, we cannot find any declaration
-        if (root == null)
+        if (root == null) {
             return null;
+        }
         if (shouldCache && elementToTreeCache.containsKey(elt)) {
             return elementToTreeCache.get(elt);
         }
@@ -2283,8 +2290,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     (com.sun.tools.javac.tree.JCTree) root);
             break;
         }
-        if (shouldCache)
+        if (shouldCache) {
             elementToTreeCache.put(elt, fromElt);
+        }
         return fromElt;
     }
 
@@ -2351,19 +2359,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     protected final boolean isWithinConstructor(Tree tree) {
-        if (visitorState.getClassType() != null)
+        if (visitorState.getClassType() != null) {
             return visitorState.getMethodTree() != null
                 && TreeUtils.isConstructor(visitorState.getMethodTree());
+        }
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(getPath(tree));
         return enclosingMethod != null && TreeUtils.isConstructor(enclosingMethod);
     }
 
     private final Element getMostInnerClassOrMethod(Tree tree) {
-        if (visitorState.getMethodTree() != null)
+        if (visitorState.getMethodTree() != null) {
             return TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
-        if (visitorState.getClassTree() != null)
+        }
+        if (visitorState.getClassTree() != null) {
             return TreeUtils.elementFromDeclaration(visitorState.getClassTree());
+        }
 
         TreePath path = getPath(tree);
         if (path == null) {
@@ -2372,10 +2383,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null; // dead code
         }
         for (Tree pathTree : path) {
-            if (pathTree instanceof MethodTree)
+            if (pathTree instanceof MethodTree) {
                 return TreeUtils.elementFromDeclaration((MethodTree)pathTree);
-            else if (pathTree instanceof ClassTree)
+            } else if (pathTree instanceof ClassTree) {
                 return TreeUtils.elementFromDeclaration((ClassTree)pathTree);
+            }
         }
 
         ErrorReporter.errorAbort("AnnotatedTypeFactory.getMostInnerClassOrMethod: cannot be here!");
@@ -2409,8 +2421,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         };
 
         TreePath currentPath = visitorState.getPath();
-        if (currentPath == null)
+        if (currentPath == null) {
             return TreePath.getPath(root, node);
+        }
 
         // This method uses multiple heuristics to avoid calling
         // TreePath.getPath()
@@ -2424,13 +2437,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // within a small subtree containing the node we are currently visiting
 
         // When testing on Daikon, two steps resulted in the best performance
-        if (currentPath.getParentPath() != null)
+        if (currentPath.getParentPath() != null) {
             currentPath = currentPath.getParentPath();
+        }
         if (currentPath.getLeaf() == node) {
             return currentPath;
         }
-        if (currentPath.getParentPath() != null)
+        if (currentPath.getParentPath() != null) {
             currentPath = currentPath.getParentPath();
+        }
         if (currentPath.getLeaf() == node) {
             return currentPath;
         }
@@ -2445,8 +2460,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         // class
         TreePath current = currentPath;
         while (current != null) {
-            if (current.getLeaf() == node)
+            if (current.getLeaf() == node) {
                 return current;
+            }
             current = current.getParentPath();
         }
 
@@ -2479,10 +2495,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return true if the type is a valid annotated type, false otherwise
      */
     static final boolean validAnnotatedType(AnnotatedTypeMirror type) {
-        if (type == null)
+        if (type == null) {
             return false;
-        if (type.getUnderlyingType() == null)
+        }
+        if (type.getUnderlyingType() == null) {
             return true; // e.g., for receiver types
+        }
         return validType(type.getUnderlyingType());
     }
 
@@ -2494,8 +2512,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *         otherwise
      */
     private static final boolean validType(TypeMirror type) {
-        if (type == null)
+        if (type == null) {
             return false;
+        }
         switch (type.getKind()) {
             case ERROR:
             case OTHER:
@@ -2591,8 +2610,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Handle case when running in jtreg
             String base = System.getProperty("test.src");
             String stubPathFull = stubPath;
-            if (base != null)
+            if (base != null) {
                 stubPathFull = base + "/" + stubPath;
+            }
             List<StubResource> stubs = StubUtil.allStubFiles(stubPathFull);
             if (stubs.size() == 0) {
                 InputStream in = null;

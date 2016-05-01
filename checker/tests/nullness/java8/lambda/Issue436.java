@@ -10,8 +10,7 @@ class Issue436 {
         Supplier<List<String>> supplier = () -> {
             if (makeAll) {
                 return asList("beer", "peanuts");
-            }
-            else {
+            } else {
                 return asList("cheese", "wine");
             }
         };

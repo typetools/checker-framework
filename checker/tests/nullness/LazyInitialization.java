@@ -34,8 +34,9 @@ public class LazyInitialization {
         nullable = "m";
         nonnull = "m";
         lazy = "m";
-        if (lazy3 == null)
+        if (lazy3 == null) {
             return;
+        }
 
         randomMethod();
 

@@ -87,8 +87,9 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
     }
 
     protected RETURN_TYPE reduce(RETURN_TYPE r1, RETURN_TYPE r2) {
-        if (r1 == null)
+        if (r1 == null) {
             return r2;
+        }
         return r1;
     }
 

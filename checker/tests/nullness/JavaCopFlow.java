@@ -19,8 +19,9 @@ class Flow {
 
         //String str = "foo";
         @NonNull String a;
-        if (str != null)
+        if (str != null) {
             a = str;
+        }
 
         str = null;
         //:: error: (assignment.type.incompatible)
@@ -46,10 +47,11 @@ class Flow {
 
         //String str = "foo";
         @NonNull String a;
-        if (str == null)
+        if (str == null) {
             testAssert("");
-        else
+        } else {
             a = str;
+        }
 
         str = null;
         //:: error: (assignment.type.incompatible)
@@ -76,8 +78,9 @@ class Flow {
 //        String str = "foo";
         if (str != null) {
             testAssert("");
-        } else
+        } else {
             return;
+        }
 
         @NonNull String a = str;
 
@@ -106,8 +109,9 @@ class Flow {
         //String str = "foo";
         if (str != null) {
             testAssert("");
-        } else
+        } else {
             throw new RuntimeException("foo");
+        }
 
         @NonNull String a = str;
 

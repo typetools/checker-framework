@@ -77,10 +77,11 @@ public final class ReferenceType extends Type {
     }
 
     public List<AnnotationExpr> getAnnotationsAtLevel(int level) {
-        if (level == -1)
+        if (level == -1) {
             return type.getAnnotations();
-        else
+        } else {
             return arrayAnnotations.get(level);
+        }
     }
 
     public Type getType() {

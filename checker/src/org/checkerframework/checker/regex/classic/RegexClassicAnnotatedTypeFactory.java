@@ -455,8 +455,9 @@ public class RegexClassicAnnotatedTypeFactory extends GenericAnnotatedTypeFactor
                         for (final AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).directSuperTypes()) {
                             Integer boundRegexNum = getMinimumRegexCount(bound);
                             if (boundRegexNum != null) {
-                                if (maxBound == null || boundRegexNum > maxBound)
+                                if (maxBound == null || boundRegexNum > maxBound) {
                                     maxBound = boundRegexNum;
+                                }
                             }
                         }
                         return maxBound;

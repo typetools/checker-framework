@@ -107,27 +107,34 @@ public class ReferenceInfoUtil {
     }
 
     private static boolean areEquals(int[] a, int[] a2) {
-        if (a==a2)
+        if (a==a2) {
             return true;
-        if (a==null || a2==null)
+        }
+        if (a==null || a2==null) {
             return false;
+        }
 
         int length = a.length;
-        if (a2.length != length)
+        if (a2.length != length) {
             return false;
+        }
 
-        for (int i=0; i<length; i++)
-            if (areEquals(a[i], a2[i]))
+        for (int i=0; i<length; i++) {
+            if (areEquals(a[i], a2[i])) {
                 return false;
+            }
+        }
 
         return true;
     }
 
     public static boolean areEquals(TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
-        if (p1 == p2)
+        if (p1 == p2) {
             return true;
-        if (p1 == null || p2 == null)
+        }
+        if (p1 == null || p2 == null) {
             return false;
+        }
 
         boolean result =
                    ((p1.type == p2.type)

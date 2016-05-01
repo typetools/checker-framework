@@ -60,8 +60,9 @@ public class StubUtil {
         for (CompilationUnit cu : indexFile.getCompilationUnits()) {
             if (cu.getPackage() != null && cu.getPackage().getName().getName().equals(packageName)) {
                 TypeDeclaration type = findDeclaration(simpleName, cu);
-                if (type != null)
+                if (type != null) {
                     return type;
+                }
             }
         }
 
@@ -75,34 +76,41 @@ public class StubUtil {
 
     /*package-scope*/ static FieldDeclaration findDeclaration(VariableElement field, IndexUnit indexFile) {
         TypeDeclaration type = findDeclaration((TypeElement)field.getEnclosingElement(), indexFile);
-        if (type == null)
+        if (type == null) {
             return null;
+        }
 
         for (BodyDeclaration member : type.getMembers()) {
-            if (!(member instanceof FieldDeclaration))
+            if (!(member instanceof FieldDeclaration)) {
                 continue;
+            }
             FieldDeclaration decl = (FieldDeclaration)member;
-            for (VariableDeclarator var : decl.getVariables())
-                if (toString(var).equals(field.getSimpleName().toString()))
+            for (VariableDeclarator var : decl.getVariables()) {
+                if (toString(var).equals(field.getSimpleName().toString())) {
                     return decl;
+                }
+            }
         }
         return null;
     }
 
     /*package-scope*/ static BodyDeclaration findDeclaration(ExecutableElement method, IndexUnit indexFile) {
         TypeDeclaration type = findDeclaration((TypeElement)method.getEnclosingElement(), indexFile);
-        if (type == null)
+        if (type == null) {
             return null;
+        }
 
         String methodRep = toString(method);
 
         for (BodyDeclaration member : type.getMembers()) {
             if (member instanceof MethodDeclaration) {
-                if (toString((MethodDeclaration)member).equals(methodRep))
+                if (toString((MethodDeclaration)member).equals(methodRep)) {
                     return member;
+                }
             } else if (member instanceof ConstructorDeclaration) {
-                if (toString((ConstructorDeclaration)member).equals(methodRep))
+                if (toString((ConstructorDeclaration)member).equals(methodRep)) {
                     return member;
+                }
             }
         }
         return null;
@@ -110,8 +118,9 @@ public class StubUtil {
 
     /*package-scope*/ static TypeDeclaration findDeclaration(String simpleName, CompilationUnit cu) {
         for (TypeDeclaration type : cu.getTypes()) {
-            if (simpleName.equals(type.getName()))
+            if (simpleName.equals(type.getName())) {
                 return type;
+            }
         }
         // Couldn't find it
         return null;
@@ -147,8 +156,9 @@ public class StubUtil {
         sb.append("(");
         for (Iterator<? extends VariableElement> i = element.getParameters().iterator(); i.hasNext();) {
             sb.append(standarizeType(i.next().asType()));
-            if (i.hasNext())
+            if (i.hasNext()) {
                 sb.append(",");
+            }
         }
         sb.append(")");
 
@@ -161,12 +171,13 @@ public class StubUtil {
     }
 
     /*package-scope*/ static String toString(Element element) {
-        if (element instanceof ExecutableElement)
+        if (element instanceof ExecutableElement) {
             return toString((ExecutableElement)element);
-        else if (element instanceof VariableElement)
+        } else if (element instanceof VariableElement) {
             return toString((VariableElement)element);
-        else
+        } else {
             return null;
+        }
     }
 
     /*package-scope*/ static Pair<String, String> partitionQualifiedName(String imported) {
@@ -192,8 +203,9 @@ public class StubUtil {
             return ((DeclaredType)type).asElement().getSimpleName().toString();
         }
         default:
-            if (type.getKind().isPrimitive())
+            if (type.getKind().isPrimitive()) {
                 return type.toString();
+            }
         }
         ErrorReporter.errorAbort("StubUtil: unhandled type: " + type);
         return null; // dead code
@@ -254,8 +266,9 @@ public class StubUtil {
             }
 
             n.getType().accept(this, arg);
-            if (n.isVarArgs())
+            if (n.isVarArgs()) {
                 sb.append("[]");
+            }
         }
 
         // Types
@@ -299,8 +312,9 @@ public class StubUtil {
         @Override
         public void visit(ReferenceType n, Void arg) {
             n.getType().accept(this, arg);
-            for (int i = 0; i < n.getArrayCount(); ++i)
+            for (int i = 0; i < n.getArrayCount(); ++i) {
                 sb.append("[]");
+            }
         }
 
         @Override
@@ -327,8 +341,9 @@ public class StubUtil {
             String workingDir = System.getProperty("user.dir")
                     + System.getProperty("file.separator");
             stubFile = new File(workingDir + stub);
-            if (stubFile.exists())
+            if (stubFile.exists()) {
                 allStubFiles(stubFile, resources);
+            }
         }
         return resources;
     }

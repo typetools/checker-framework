@@ -539,16 +539,19 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                         }
                     }
                 }
-                if (result.size() != 0)
+                if (result.size() != 0) {
                     break;
+                }
                 Type t = classSym.getSuperclass();
-                if (!t.hasTag(CLASS) || t.isErroneous())
+                if (!t.hasTag(CLASS) || t.isErroneous()) {
                     break;
+                }
                 classSym = (ClassSymbol) t.tsym;
             }
-            if (result.size() == 0)
+            if (result.size() == 0) {
                 debugReflection("Unable to resolve method: " + className + "@"
                         + methodName);
+            }
         } catch (SecurityException | NoSuchMethodException
                 | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
@@ -596,8 +599,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                     }
                 }
             }
-            if (result.size() == 0)
+            if (result.size() == 0) {
                 debugReflection("Unable to resolve constructor!");
+            }
         } catch (SecurityException | NoSuchMethodException
                 | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {

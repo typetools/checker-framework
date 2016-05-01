@@ -285,18 +285,21 @@ public class TypesIntoElements {
 
         @Override
         protected List<TypeCompound> scan(Iterable<? extends AnnotatedTypeMirror> types, TypeAnnotationPosition pos) {
-            if (types == null)
+            if (types == null) {
                 return List.nil();
+            }
             return super.scan(types, pos);
         }
 
         @Override
         public List<TypeCompound> reduce(List<TypeCompound> r1,
                 List<TypeCompound> r2) {
-            if (r1 == null)
+            if (r1 == null) {
                 return r2;
-            if (r2 == null)
+            }
+            if (r2 == null) {
                 return r1;
+            }
             return r1.appendList(r2);
         }
 

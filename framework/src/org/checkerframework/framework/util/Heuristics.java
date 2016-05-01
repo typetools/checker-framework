@@ -98,8 +98,9 @@ public class Heuristics {
         @Override
         public boolean match(TreePath path) {
             StatementTree stmt = TreeUtils.enclosingOfClass(path, StatementTree.class);
-            if (stmt == null)
+            if (stmt == null) {
                 return false;
+            }
             TreePath p = path;
             while (p.getLeaf() != stmt) p = p.getParentPath();
             assert p.getLeaf() == stmt;
@@ -108,11 +109,13 @@ public class Heuristics {
                 if (p.getParentPath().getLeaf() instanceof BlockTree) {
                     BlockTree block = (BlockTree)p.getParentPath().getLeaf();
                     for (StatementTree st : block.getStatements()) {
-                        if (st == p.getLeaf())
+                        if (st == p.getLeaf()) {
                             break;
+                        }
 
-                        if (matcher.match(new TreePath(p, st)))
+                        if (matcher.match(new TreePath(p, st))) {
                             return true;
+                        }
                     }
                 }
                 p = p.getParentPath();
@@ -132,8 +135,9 @@ public class Heuristics {
         public boolean match(TreePath path) {
             TreePath p = path;
             while (p != null) {
-                if (matcher.match(p))
+                if (matcher.match(p)) {
                     return true;
+                }
                 p = p.getParentPath();
             }
 
@@ -182,8 +186,9 @@ public class Heuristics {
 
         @Override
         public boolean match(TreePath path) {
-            if (path.getLeaf().getKind() == kind)
+            if (path.getLeaf().getKind() == kind) {
                 return matcher.match(path);
+            }
             return false;
         }
     }
@@ -196,8 +201,9 @@ public class Heuristics {
         @Override
         public boolean match(TreePath path) {
             for (Matcher matcher: matchers) {
-                if (matcher.match(path))
+                if (matcher.match(path)) {
                     return true;
+                }
             }
             return false;
         }

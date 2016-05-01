@@ -21,8 +21,9 @@ public class Flow {
         String str = "foo";
         @NonNull String a;
         //:: warning: (known.nonnull)
-        if (str != null)
+        if (str != null) {
             a = str;
+        }
 
         str = null;
         //:: error: (assignment.type.incompatible)
@@ -50,10 +51,11 @@ public class Flow {
         String str = "foo";
         @NonNull String a;
         //:: warning: (known.nonnull)
-        if (str == null)
+        if (str == null) {
             testAssert();
-        else
+        } else {
             a = str;
+        }
 
         str = null;
         //:: error: (assignment.type.incompatible)
@@ -82,8 +84,9 @@ public class Flow {
         //:: warning: (known.nonnull)
         if (str != null) {
             testAssert();
-        } else
+        } else {
             return;
+        }
 
         @NonNull String a = str;
 
@@ -114,8 +117,9 @@ public class Flow {
         //:: warning: (known.nonnull)
         if (str != null) {
             testAssert();
-        } else
+        } else {
             throw new RuntimeException("foo");
+        }
 
         @NonNull String a = str;
 
@@ -239,12 +243,14 @@ public class Flow {
     public static String spf (String format, @NonNull Object[] args) {
         int current_arg = 0;
         Object arg = args[current_arg];
-        if (false)
+        if (false) {
             return arg.toString(); // not an error
-        if (arg instanceof long[])
+        }
+        if (arg instanceof long[]) {
             return "foo";
-        else
+        } else {
             return arg.toString(); // still not an error
+        }
     }
 
     void empty_makes_no_change() {
@@ -261,8 +267,9 @@ public class Flow {
 
     @org.checkerframework.dataflow.qual.Pure
     public boolean equals(@Nullable Object o) {
-        if (!(o instanceof Integer))
+        if (!(o instanceof Integer)) {
             return false;
+        }
         @NonNull Object nno = o;
         @NonNull Integer nni = (Integer)o;
         return true;
@@ -288,9 +295,10 @@ public class Flow {
         return null;
     }
     void testNullableCall() {
-        if (returnNullable() != null)
+        if (returnNullable() != null) {
             //:: error: (dereference.of.nullable)
             returnNullable().toString(); // error
+        }
     }
 
     void nonNullArg(@NonNull Object arg) {

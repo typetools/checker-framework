@@ -3,8 +3,9 @@ import org.checkerframework.checker.nullness.qual.*;
 public class Varargs {
 
     public void test(@NonNull Object @NonNull... o) {
-        for (@NonNull Object p : o)
+        for (@NonNull Object p : o) {
             System.out.println(p);
+        }
     }
 
     public void test2(Object o1, Object o2) {

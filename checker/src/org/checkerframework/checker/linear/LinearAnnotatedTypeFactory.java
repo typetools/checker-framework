@@ -80,8 +80,9 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * that causes the reference to be "used up".
          *
         private void markAsUnusableIfLinear(ExpressionTree node) {
-            if (!LinearVisitor.isLocalVarOrParam(node))
+            if (!LinearVisitor.isLocalVarOrParam(node)) {
                 return;
+                }
 
             Element elem = TreeUtils.elementFromUse(node);
             assert elem != null;

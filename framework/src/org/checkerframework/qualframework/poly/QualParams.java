@@ -45,8 +45,9 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
      */
     /*
     public QualParams<Q> capture() {
-        if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom())
+        if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom()) {
             return this;
+            }
 
         Map<String, Wildcard<Q>> newMap = new HashMap<>();
         for (String k : this.map.keySet()) {

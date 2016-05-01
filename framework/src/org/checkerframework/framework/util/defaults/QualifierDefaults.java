@@ -386,8 +386,9 @@ public class QualifierDefaults {
                     DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
                     DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
 
-                    if (d == null && ds == null)
+                    if (d == null && ds == null) {
                         break;
+                    }
                 }
                 if (prev!=null && prev.getKind() == Tree.Kind.MODIFIERS) {
                     // Annotations are modifiers. We do not want to apply the local variable default to
