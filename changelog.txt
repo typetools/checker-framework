@@ -42,6 +42,9 @@ Documentation improvements:
 
 Tool changes:
 
+ * The Checker Framework Live Demo webpage lets you try the Checker
+   Framework without installing it:  http://eisop.uwaterloo.ca/live/
+
  * New command-line arguments -Acfgviz and -Averbosecfg enable better
    debugging of the control-flow-graph generation step of type-checking.
 
