@@ -37,16 +37,8 @@ Documentation improvements:
  * New manual section "Tips for creating a checker" shows how to break down
    the implementation of a type system into small, manageable pieces.
 
-<<<<<<< HEAD
  * Improved instructions for using Maven and Gradle, including for Android
    code.
-
-Closed issues:
-69, 86, 199, 299, 421, 557, 564, 573, 579, 665, 668, 669, 670, 671.
-
-||||||| merged common ancestors
-=======
- * Improved documentation for Maven and Gradle, including for Android code.
 
 Tool changes:
 
@@ -56,7 +48,9 @@ Tool changes:
  * New command-line argument -Ainfer is used by the infer-and-annotate.sh
    script that performs type inference.
 
->>>>>>> 9ea709553f258d4faf2398e9d4dcb80062f12e41
+Closed issues:
+69, 86, 199, 299, 421, 557, 564, 573, 579, 665, 668, 669, 670, 671.
+
 ---------------------------------------------------------------------------
 
 Version 1.9.13, 1 April 2016
