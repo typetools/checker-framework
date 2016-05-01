@@ -35,6 +35,11 @@ Documentation improvements:
  * New manual section "Tips for creating a checker" shows how to break down
    the implementation of a type system into small, manageable pieces.
 
+Tool changes:
+
+ * New command-line arguments -Acfgviz and -Averbosecfg enable better
+   debugging of the control-flow-graph generation step of type-checking.
+
 ---------------------------------------------------------------------------
 
 Version 1.9.13, 1 April 2016
