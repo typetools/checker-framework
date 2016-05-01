@@ -36,6 +36,8 @@ Documentation improvements:
  * New manual section "Tips for creating a checker" shows how to break down
    the implementation of a type system into small, manageable pieces.
 
+ * Improved documentation for Maven and Gradle, including for Android code.
+
 Tool changes:
 
  * New command-line arguments -Acfgviz and -Averbosecfg enable better
