@@ -28,7 +28,8 @@ Type systems:
  * The IGJ, OIGJ, and Javari Checkers are no longer distributed with the
    Checker Framework.  If you wish to use them, install version 1.9.13 of
    the Checker Framework.  The implementations have been removed because
-   they were not being maintained.  The type systems are valuable, but the type-checkers should be rewritten from scratch.
+   they were not being maintained.  The type systems are valuable, but the
+   type-checkers should be rewritten from scratch.
 
 Documentation improvements:
 
