@@ -40,9 +40,9 @@ and is released on exit from that method or block.
 %  the current thread locks the monitor associated with the value of
 %  \emph{E}; see \href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.1}{JLS \S17.1}.)
 An explicit lock is acquired by a method call such as
-\sunjavadoc{java/util/concurrent/locks/Lock.html\#lock()}{Lock.lock()},
+\sunjavadoc{java/util/concurrent/locks/Lock.html\#lock--}{Lock.lock()},
 and is released by another method call such as
-\sunjavadoc{java/util/concurrent/locks/Lock.html\#unlock()}{Lock.unlock()}.
+\sunjavadoc{java/util/concurrent/locks/Lock.html\#unlock--}{Lock.unlock()}.
 The Lock Checker enforces that any expression whose type implements
 \sunjavadoc{java/util/concurrent/locks/Lock.html}{Lock} is used as an
 explicit lock, and all other expressions are used as monitor locks.
@@ -212,7 +212,7 @@ method itself rather than to some particular type.
   locked upon method return if the method
   terminates successfully.  This is useful for annotating a
   method that acquires a lock such as
-  \sunjavadoc{java/util/concurrent/locks/ReentrantLock.html\#lock()}{ReentrantLock.lock()}.
+  \sunjavadoc{java/util/concurrent/locks/ReentrantLock.html\#lock--}{ReentrantLock.lock()}.
 
 \item[\refqualclass{checker/lock/qual}{EnsuresLockHeldIf}\small{(String[] locks, boolean result)}]
   If the annotated method returns the given
@@ -727,12 +727,12 @@ Java provides two types of locking:  monitor locks and explicit locks.
   We use the term ``monitor lock'' for a lock acquired using a
   \<synchronized>  block or \<synchronized> method modifier.
 \item A method call, such as
-  \sunjavadoc{java/util/concurrent/locks/Lock.html\#lock()}{Lock.lock()},
+  \sunjavadoc{java/util/concurrent/locks/Lock.html\#lock--}{Lock.lock()},
   acquires a lock that implements the
   \sunjavadoc{java/util/concurrent/locks/Lock.html}{Lock}
   interface.
   The lock is released by another method call, such as
-  \sunjavadoc{java/util/concurrent/locks/Lock.html\#unlock()}{Lock.unlock()}.
+  \sunjavadoc{java/util/concurrent/locks/Lock.html\#unlock--}{Lock.unlock()}.
   We use the term ``explicit lock'' for a lock expression acquired in this
   way.
 \end{itemize}
