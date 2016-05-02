@@ -61,7 +61,8 @@ public class Defaults {
     }
 
     public void SignedTest(byte testByte, short testShort, int testInt, long testLong,
-        float testFloat, double testDouble, char testChar, boolean testBool) {
+        float testFloat, double testDouble, char testChar, boolean testBool,
+        Byte testBoxedByte, Short testBoxedShort, Integer testBoxedInteger, Long testBoxedLong) {
 
         //Test bytes
         @Signed byte sinByte;
@@ -125,6 +126,42 @@ public class Defaults {
 
         //:: error: (assignment.type.incompatible)
         conChar = testChar;
+        
+        //Test boxed bytes
+        @Signed Byte sinBoxedByte;
+        @Constant Byte conBoxedByte;
+        
+        sinBoxedByte = testBoxedByte;
+        
+        //:: error: (assignment.type.incompatible)
+        conBoxedByte = testBoxedByte;
+        
+        //Test boxed shorts
+        @Signed Short sinBoxedShort;
+        @Constant Short conBoxedShort;
+        
+        sinBoxedShort = testBoxedShort;
+        
+        //:: error: (assignment.type.incompatible)
+        conBoxedShort = testBoxedShort;
+        
+        //Test boxed Integers
+        @Signed Integer sinBoxedInteger;
+        @Constant Integer conBoxedInteger;
+        
+        sinBoxedInteger = testBoxedInteger;
+        
+        //:: error: (assignment.type.incompatible)
+        conBoxedInteger = testBoxedInteger;
+        
+        //Test boxed Longs
+        @Signed Long sinBoxedLong;
+        @Constant Long conBoxedLong;
+        
+        sinBoxedLong = testBoxedLong;
+        
+        //:: error: (assignment.type.incompatible)
+        conBoxedLong = testBoxedLong;
     }
 
     public void UnsignednessBottom() {
