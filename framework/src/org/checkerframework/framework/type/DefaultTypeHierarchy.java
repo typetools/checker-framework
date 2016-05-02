@@ -535,12 +535,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     @Override
-    public Boolean visitTypevar_Intersection(AnnotatedTypeVariable subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
-        //this can happen when checking type param bounds
-        return visitIntersectionSupertype(subtype, supertype, visited);
-    }
-
-    @Override
     public Boolean visitDeclared_Typevar(AnnotatedDeclaredType subtype, AnnotatedTypeVariable supertype, VisitHistory visited) {
         return visitTypevarSupertype(subtype, supertype, visited);
     }
@@ -660,6 +654,12 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitTypevar_Declared(AnnotatedTypeVariable subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
         return visitTypevarSubtype(subtype, supertype, visited);
+    }
+
+    @Override
+    public Boolean visitTypevar_Intersection(AnnotatedTypeVariable subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
+        //this can happen when checking type param bounds
+        return visitIntersectionSupertype(subtype, supertype, visited);
     }
 
     @Override
