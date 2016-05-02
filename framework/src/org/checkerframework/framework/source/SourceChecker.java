@@ -6,6 +6,7 @@ import org.checkerframework.checker.nullness.qual.*;
 */
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
@@ -191,6 +192,8 @@ import com.sun.tools.javac.util.Log;
     // to be output.
     "resolveReflection",
 
+    // Whether to use .jaif files whole-program inference
+    "infer",
 
     ///
     /// Stub libraries
@@ -1286,7 +1289,9 @@ public abstract class SourceChecker
      *         it is contained by a declaration with an appropriately-valued
      *         {@literal @}SuppressWarnings annotation; false otherwise
      */
-    private boolean shouldSuppressWarnings(Tree tree, String errKey) {
+    // Public so it can be called from a few places in
+    // org.checkerframework.framework.flow.CFAbstractTransfer
+    public boolean shouldSuppressWarnings(Tree tree, String errKey) {
 
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerKeys = this.getSuppressWarningsKeys();

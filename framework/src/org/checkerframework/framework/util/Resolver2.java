@@ -126,8 +126,9 @@ public class Resolver2 {
             String idnt = reference.substring(lastDot + 1);
 
             Symbol site = (Symbol)findType(expr, env);
-            if (site.kind == ERR)
+            if (site.kind == ERR) {
                 return site;
+            }
             Name name = names.fromString(idnt);
             if (site.kind == PCK) {
                 env.toplevel.packge = (PackageSymbol)site;

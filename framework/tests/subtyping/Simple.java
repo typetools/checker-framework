@@ -24,8 +24,9 @@ abstract class BasicFunctionality {
         lst.add(s);
         lst.add(t);
 
-        for (@Encrypted String str : lst)
+        for (@Encrypted String str : lst) {
             sendOverTheInternet(str);
+        }
 
 //        for (String str : lst)
 //            sendOverTheInternet(str);           // should be valid!

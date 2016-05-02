@@ -152,8 +152,9 @@ public class FlowLoop {
     void test1() {
         while (true) {
             String s = null;
-            if (s == null)
+            if (s == null) {
                 return;
+            }
             s.toString();
         }
     }

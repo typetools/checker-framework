@@ -106,8 +106,9 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
      * @return a visitor-specified result
      */
     protected R scan(Iterable<? extends AnnotatedTypeMirror> types, P p) {
-        if (types == null)
+        if (types == null) {
             return null;
+        }
         R r = null;
         boolean first = true;
         for (AnnotatedTypeMirror type : types) {
@@ -126,8 +127,9 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
     }
 
     protected R reduce(R r1, R r2) {
-        if (r1 == null)
+        if (r1 == null) {
             return r2;
+        }
         return r1;
     }
 

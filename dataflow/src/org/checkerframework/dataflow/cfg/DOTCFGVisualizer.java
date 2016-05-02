@@ -124,8 +124,9 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         visited.add(entry);
         // traverse control flow graph and define all arrows
         while (true) {
-            if (cur == null)
+            if (cur == null) {
                 break;
+            }
 
             if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
                 ConditionalBlock ccur = ((ConditionalBlock) cur);
@@ -450,7 +451,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     }
 
     @Override
-    public void visualizeStoreMethodVals(FlowExpressions.PureMethodCall methodCall, A value) {
+    public void visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value) {
         this.sbStore.append("  " + methodCall.toString().replace("\"", "\\\"") + " > " +
                 value + "\\n");
     }

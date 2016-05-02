@@ -353,9 +353,11 @@ public abstract class AnnotatedTypeMirror {
      */
     public AnnotationMirror getAnnotation(/*@Interned*/ String annotationStr) {
         assert annotationStr != null : "Null annotationName in getAnnotation";
-        for (AnnotationMirror anno : getAnnotations())
-            if (AnnotationUtils.areSameByName(anno, annotationStr))
+        for (AnnotationMirror anno : getAnnotations()) {
+            if (AnnotationUtils.areSameByName(anno, annotationStr)) {
                 return anno;
+            }
+        }
         return null;
     }
 
@@ -698,8 +700,9 @@ public abstract class AnnotatedTypeMirror {
      */
     public boolean removeAnnotations(Iterable<? extends AnnotationMirror> annotations) {
         boolean changed = false;
-        for (AnnotationMirror a : annotations)
+        for (AnnotationMirror a : annotations) {
             changed |= this.removeAnnotation(a);
+        }
         return changed;
     }
 
@@ -980,8 +983,9 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedDeclaredType shallowCopy(boolean copyAnnotations) {
             AnnotatedDeclaredType type =
                 new AnnotatedDeclaredType(getUnderlyingType(), atypeFactory, declaration);
-            if (copyAnnotations)
+            if (copyAnnotations) {
                 type.addAnnotations(this.getAnnotationsField());
+            }
             type.setEnclosingType(getEnclosingType());
             type.setTypeArguments(getTypeArguments());
             return type;
@@ -1130,8 +1134,9 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof AnnotatedExecutableType))
+            if (!(o instanceof AnnotatedExecutableType)) {
                 return false;
+                }
             // TODO compare components
             return true;
         }
@@ -1153,8 +1158,9 @@ public abstract class AnnotatedTypeMirror {
         public List<AnnotatedTypeMirror> getParameterTypes() {
             if (paramTypes.isEmpty()
                     && !((ExecutableType) actualType).getParameterTypes().isEmpty()) { // lazy init
-                for (TypeMirror t : ((ExecutableType) actualType).getParameterTypes())
+                for (TypeMirror t : ((ExecutableType) actualType).getParameterTypes()) {
                     paramTypes.add(createType(t, atypeFactory, false));
+                }
             }
             return Collections.unmodifiableList(paramTypes);
         }
@@ -1242,8 +1248,9 @@ public abstract class AnnotatedTypeMirror {
         public List<AnnotatedTypeMirror> getThrownTypes() {
             if (throwsTypes.isEmpty()
                     && !((ExecutableType) actualType).getThrownTypes().isEmpty()) { // lazy init
-                for (TypeMirror t : ((ExecutableType) actualType).getThrownTypes())
+                for (TypeMirror t : ((ExecutableType) actualType).getThrownTypes()) {
                     throwsTypes.add(createType(t, atypeFactory, false));
+                }
             }
             return Collections.unmodifiableList(throwsTypes);
         }
@@ -1330,8 +1337,9 @@ public abstract class AnnotatedTypeMirror {
 
         private List<AnnotatedTypeMirror> erasureList(Iterable<? extends AnnotatedTypeMirror> lst) {
             List<AnnotatedTypeMirror> erased = new ArrayList<AnnotatedTypeMirror>();
-            for (AnnotatedTypeMirror t : lst)
+            for (AnnotatedTypeMirror t : lst) {
                 erased.add(t.getErased());
+            }
             return erased;
         }
     }
@@ -1395,8 +1403,9 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedArrayType shallowCopy(boolean copyAnnotations) {
             AnnotatedArrayType type = new AnnotatedArrayType((ArrayType) actualType, atypeFactory);
-            if (copyAnnotations)
+            if (copyAnnotations) {
                 type.addAnnotations(this.getAnnotationsField());
+            }
             type.setComponentType(getComponentType());
             return type;
         }
@@ -1499,8 +1508,9 @@ public abstract class AnnotatedTypeMirror {
          * @param type the lower bound type
          */
         void setLowerBound(AnnotatedTypeMirror type) {
-            if (type != null)
+            if (type != null) {
                 type = type.asUse();
+            }
             this.lowerBound = type;
         }
 
@@ -1755,8 +1765,9 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedNoType shallowCopy(boolean copyAnnotations) {
             AnnotatedNoType type = new AnnotatedNoType((NoType) actualType, atypeFactory);
-            if (copyAnnotations)
+            if (copyAnnotations) {
                 type.addAnnotations(this.getAnnotationsField());
+            }
             return type;
         }
 
@@ -1798,8 +1809,9 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedNullType shallowCopy(boolean copyAnnotations) {
             AnnotatedNullType type = new AnnotatedNullType((NullType) actualType, atypeFactory);
-            if (copyAnnotations)
+            if (copyAnnotations) {
                 type.addAnnotations(this.getAnnotationsField());
+            }
             return type;
         }
 
@@ -1845,8 +1857,9 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedPrimitiveType shallowCopy(boolean copyAnnotations) {
             AnnotatedPrimitiveType type =
                 new AnnotatedPrimitiveType((PrimitiveType) actualType, atypeFactory);
-            if (copyAnnotations)
+            if (copyAnnotations) {
                 type.addAnnotations(this.getAnnotationsField());
+            }
             return type;
         }
 
@@ -1983,8 +1996,9 @@ public abstract class AnnotatedTypeMirror {
             AnnotatedWildcardType type = new AnnotatedWildcardType((WildcardType) actualType, atypeFactory);
             type.setExtendsBound(getExtendsBound().shallowCopy());
             type.setSuperBound(getSuperBound().shallowCopy());
-            if (copyAnnotations)
+            if (copyAnnotations) {
                 type.addAnnotations(this.getAnnotationsField());
+            }
 
             type.typeArgHack = typeArgHack;
 
@@ -2056,8 +2070,9 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedIntersectionType shallowCopy(boolean copyAnnotations) {
             AnnotatedIntersectionType type =
                     new AnnotatedIntersectionType((IntersectionType) actualType, atypeFactory);
-            if (copyAnnotations)
+            if (copyAnnotations) {
                 type.addAnnotations(this.getAnnotationsField());
+            }
             type.supertypes = this.supertypes;
             return type;
         }
@@ -2126,8 +2141,9 @@ public abstract class AnnotatedTypeMirror {
         public AnnotatedUnionType shallowCopy(boolean copyAnnotations) {
             AnnotatedUnionType type =
                     new AnnotatedUnionType((UnionType) actualType, atypeFactory);
-            if (copyAnnotations)
+            if (copyAnnotations) {
                 type.addAnnotations(this.getAnnotationsField());
+            }
             type.alternatives = this.alternatives;
             return type;
         }

@@ -52,8 +52,9 @@ public class ComplexComparison {
         public int compare(double[] a1, double[] a2) {
             // Heuristic: permit "arg1 == arg2" in a test in the first statement
             // of a "Comparator.compare" method, if the body just returns 0.
-            if (a1 == a2)
+            if (a1 == a2) {
                 return 0;
+            }
             int len = Math.min(a1.length, a2.length);
             for (int i=0; i<len; i++) {
                 if (a1[i] != a2[i]) {

@@ -589,12 +589,15 @@ public class TypeAnnotationUtils {
         TypeAnnotationPosition.class.getField("bound_index").set(res, tapos.bound_index);
         res.exception_index = tapos.exception_index;
         res.location = List.from(tapos.location);
-        if (tapos.lvarIndex != null)
+        if (tapos.lvarIndex != null) {
             res.lvarIndex = Arrays.copyOf(tapos.lvarIndex, tapos.lvarIndex.length);
-        if (tapos.lvarLength != null)
+        }
+        if (tapos.lvarLength != null) {
             res.lvarLength = Arrays.copyOf(tapos.lvarLength, tapos.lvarLength.length);
-        if (tapos.lvarOffset != null)
+        }
+        if (tapos.lvarOffset != null) {
             res.lvarOffset = Arrays.copyOf(tapos.lvarOffset, tapos.lvarOffset.length);
+        }
         res.offset = tapos.offset;
         TypeAnnotationPosition.class.getField("onLambda").set(res, tapos.onLambda);
         TypeAnnotationPosition.class.getField("parameter_index").set(res, tapos.parameter_index);

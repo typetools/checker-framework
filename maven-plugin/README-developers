@@ -38,7 +38,7 @@ The artifact names are:
 The version number is specified by the checkerFrameworkVersion element in your
 pom.xml or, if the checkerFrameworkVersion element is missing, is the version of
 your Maven plugin.  See
-http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#maven-plugin.
+http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#maven.
 
 
 

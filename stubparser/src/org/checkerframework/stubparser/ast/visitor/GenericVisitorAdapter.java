@@ -822,8 +822,9 @@ public abstract class GenericVisitorAdapter<R, A> implements GenericVisitor<R, A
 
     @Override
     public R visit(IndexUnit n, A arg) {
-        for (CompilationUnit unit : n.getCompilationUnits())
+        for (CompilationUnit unit : n.getCompilationUnits()) {
             unit.accept(this, arg);
+        }
         return null;
     }
 

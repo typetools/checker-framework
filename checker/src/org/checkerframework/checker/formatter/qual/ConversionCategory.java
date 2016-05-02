@@ -173,14 +173,18 @@ public enum ConversionCategory {
      */
     public static ConversionCategory intersect(ConversionCategory a,
             ConversionCategory b) {
-        if (a == UNUSED)
+        if (a == UNUSED) {
             return b;
-        if (b == UNUSED)
+        }
+        if (b == UNUSED) {
             return a;
-        if (a == GENERAL)
+        }
+        if (a == GENERAL) {
             return b;
-        if (b == GENERAL)
+        }
+        if (b == GENERAL) {
             return a;
+        }
 
         Set<Class<? extends Object>> as = arrayToSet(a.types);
         Set<Class<? extends Object>> bs = arrayToSet(b.types);
@@ -198,22 +202,30 @@ public enum ConversionCategory {
 
 
     private String className(Class<?> cls) {
-        if (cls == Boolean.class)
+        if (cls == Boolean.class) {
             return "boolean";
-        if (cls == Character.class)
+        }
+        if (cls == Character.class) {
             return "char";
-        if (cls == Byte.class)
+        }
+        if (cls == Byte.class) {
             return "byte";
-        if (cls == Short.class)
+        }
+        if (cls == Short.class) {
             return "short";
-        if (cls == Integer.class)
+        }
+        if (cls == Integer.class) {
             return "int";
-        if (cls == Long.class)
+        }
+        if (cls == Long.class) {
             return "long";
-        if (cls == Float.class)
+        }
+        if (cls == Float.class) {
             return "float";
-        if (cls == Double.class)
+        }
+        if (cls == Double.class) {
             return "double";
+        }
         return cls.getSimpleName();
     }
 

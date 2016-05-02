@@ -26,11 +26,12 @@ class Explosion {
         String s2;
         s2 = null;
         //:: warning: (known.nonnull)
-        if (s2 != null || s != null)
+        if (s2 != null || s != null) {
             //:: error: (assignment.type.incompatible)
             s = s2;
-        else
+        } else {
             s = new String("Levitan");
+        }
         s2 = args[0];
         //:: error: (dereference.of.nullable)
         System.out.println("Possibly cause null pointer with this: " + s2.length());
