@@ -61,8 +61,9 @@ public class DaikonTests {
         @Nullable Object derived;
 
         void good1(Bug3 v1) {
-            if (!v1.isDerived() || !(5 > 9))
+            if (!v1.isDerived() || !(5 > 9)) {
                 return;
+            }
             v1.derived.hashCode();
         }
 
@@ -74,8 +75,9 @@ public class DaikonTests {
 //        }
 
         void good3(Bug3 v1) {
-            if (!v1.isDerived() || !(v1 instanceof Bug3))
+            if (!v1.isDerived() || !(v1 instanceof Bug3)) {
                 return;
+            }
             Object o = (Object) v1.derived;
             o.hashCode();
         }
@@ -88,8 +90,9 @@ public class DaikonTests {
         @MonotonicNonNull Object field;
 
         void m(Bug4 p) {
-            if (false && p.field != null)
+            if (false && p.field != null) {
                 p.field.hashCode();
+            }
         }
     }
 
@@ -103,8 +106,9 @@ public class DaikonTests {
         }
 
         void test(Bug5 b) {
-            if (b.clazz == null)
+            if (b.clazz == null) {
                 b.init();
+            }
 
             // The problem is:
             // In the "then" branch, we have in "nnExpr" that "clazz" is non-null.

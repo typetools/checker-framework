@@ -114,8 +114,9 @@ public class AnnotatedTypes {
 
         @Override
         public AnnotatedTypeMirror visitPrimitive(AnnotatedPrimitiveType type, AnnotatedTypeMirror p) {
-            if (!p.getKind().isPrimitive())
+            if (!p.getKind().isPrimitive()) {
                 return visit(atypeFactory.getBoxedType(type), p);
+            }
 
             AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType)p;
             AnnotatedPrimitiveType st = pt.shallowCopy(false);
@@ -125,8 +126,9 @@ public class AnnotatedTypes {
 
         @Override
         public AnnotatedTypeMirror visitTypeVariable(AnnotatedTypeVariable type, AnnotatedTypeMirror p) {
-            if (p.getKind() == TypeKind.TYPEVAR)
+            if (p.getKind() == TypeKind.TYPEVAR) {
                 return type;
+            }
             // Operate on the effective upper bound
             AnnotatedTypeMirror res = asSuper(types, atypeFactory, type.getUpperBound(), p);
             if (res != null) {
@@ -140,8 +142,9 @@ public class AnnotatedTypes {
 
         @Override
         public AnnotatedTypeMirror visitWildcard(AnnotatedWildcardType type, AnnotatedTypeMirror p) {
-            if (p.getKind() == TypeKind.WILDCARD)
+            if (p.getKind() == TypeKind.WILDCARD) {
                 return type;
+            }
             return asSuper(types, atypeFactory, type.getExtendsBound(), p);
         }
 
@@ -150,8 +153,9 @@ public class AnnotatedTypes {
         public AnnotatedTypeMirror visitArray(AnnotatedArrayType type, AnnotatedTypeMirror p) {
             // Check if array component is subtype of the element
             // first
-            if (shouldStop(p, type))
+            if (shouldStop(p, type)) {
                 return type;
+            }
             for (AnnotatedTypeMirror st : type.directSuperTypes()) {
                 AnnotatedTypeMirror x = asSuper(types, atypeFactory, st, p);
                 if (x != null) {
@@ -174,8 +178,9 @@ public class AnnotatedTypes {
                 }
             }
 
-            if (shouldStop(p, type))
+            if (shouldStop(p, type)) {
                 return type;
+            }
 
             // Visit the superclass first!
             for (AnnotatedDeclaredType st : type.directSuperTypes()) {
@@ -198,8 +203,9 @@ public class AnnotatedTypes {
 
         @Override
         public AnnotatedTypeMirror visitIntersection(AnnotatedIntersectionType type, AnnotatedTypeMirror p) {
-            if (shouldStop(p, type))
+            if (shouldStop(p, type)) {
                 return type;
+            }
 
             for (AnnotatedDeclaredType st : type.directSuperTypes()) {
                 AnnotatedDeclaredType x = (AnnotatedDeclaredType) asSuper(types, atypeFactory, st, p);
@@ -255,8 +261,9 @@ public class AnnotatedTypes {
                 do {
                     // Search among supers for a desired supertype
                     AnnotatedTypeMirror s = asSuper(types, atypeFactory, dt, elem);
-                    if (s != null)
+                    if (s != null) {
                         return s;
+                    }
                     // if not found immediately, try enclosing type
                     // like A in A.B
                     dt = dt.getEnclosingType();
@@ -278,11 +285,13 @@ public class AnnotatedTypes {
     private static boolean shouldStop(AnnotatedTypeMirror sup, AnnotatedTypeMirror sub) {
         // Check if it's the same type
         // if sup is primitive, but not sub
-        if (sup.getKind().isPrimitive() && !sub.getKind().isPrimitive())
+        if (sup.getKind().isPrimitive() && !sub.getKind().isPrimitive()) {
             /// XXX shouldn't this be "return false"?
             return true;
-        if (sup.getKind().isPrimitive() && sub.getKind().isPrimitive())
+        }
+        if (sup.getKind().isPrimitive() && sub.getKind().isPrimitive()) {
             return sup.getKind() == sub.getKind();
+        }
         // if both are declared
         if (sup.getKind() == TypeKind.DECLARED && sub.getKind() == TypeKind.DECLARED) {
             AnnotatedDeclaredType supdt = (AnnotatedDeclaredType) sup;
@@ -364,8 +373,9 @@ public class AnnotatedTypes {
                 return atypeFactory.fromElement(elem);
             default:
                 AnnotatedTypeMirror type = asMemberOfImpl(types, atypeFactory, t, elem);
-                if (!ElementUtils.isStatic(elem))
+                if (!ElementUtils.isStatic(elem)) {
                     atypeFactory.postAsMemberOf(type, t, elem);
+                }
                 return type;
         }
     }
@@ -496,12 +506,14 @@ public class AnnotatedTypes {
         }
 
         // For type variables and wildcards take the effective upper bound.
-        if (iterableType.getKind() == TypeKind.WILDCARD)
+        if (iterableType.getKind() == TypeKind.WILDCARD) {
             return getIteratedType(processingEnv, atypeFactory,
                     ((AnnotatedWildcardType) iterableType).getExtendsBound().deepCopy());
-        if (iterableType.getKind() == TypeKind.TYPEVAR)
+        }
+        if (iterableType.getKind() == TypeKind.TYPEVAR) {
             return getIteratedType(processingEnv, atypeFactory,
                     ((AnnotatedTypeVariable) iterableType).getUpperBound());
+        }
 
         if (iterableType.getKind() != TypeKind.DECLARED) {
             ErrorReporter.errorAbort("AnnotatedTypes.getIteratedType: not iterable type: " + iterableType);
@@ -532,8 +544,9 @@ public class AnnotatedTypes {
     public static Set<AnnotatedDeclaredType> getSuperTypes(AnnotatedDeclaredType type) {
 
         Set<AnnotatedDeclaredType> supertypes = new LinkedHashSet<>();
-        if (type == null)
+        if (type == null) {
             return supertypes;
+        }
 
         // Set up a stack containing the type mirror of subtype, which
         // is our starting point.
@@ -910,18 +923,20 @@ public class AnnotatedTypes {
             if (typei.getKind() == TypeKind.WILDCARD) {
                 putOnOrig.addAll(typei.getAnnotations());
                 AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typei;
-                if (wildcard.getExtendsBound() != null)
+                if (wildcard.getExtendsBound() != null) {
                     types.set(i, wildcard.getExtendsBound().deepCopy());
-                else if (wildcard.getSuperBound() != null)
+                } else if (wildcard.getSuperBound() != null) {
                     types.set(i, wildcard.getSuperBound().deepCopy());
+                }
             }
             if (typei.getKind() == TypeKind.TYPEVAR) {
                 putOnOrig.addAll(typei.getAnnotations());
                 AnnotatedTypeVariable typevar = (AnnotatedTypeVariable) types.get(i);
-                if (typevar.getUpperBound() != null)
+                if (typevar.getUpperBound() != null) {
                     types.set(i, typevar.getUpperBound());
-                else if (typevar.getLowerBound() != null)
+                } else if (typevar.getLowerBound() != null) {
                     types.set(i, typevar.getLowerBound());
+                }
             }
         }
 
@@ -929,8 +944,9 @@ public class AnnotatedTypes {
 
         boolean isFirst = true;
         for (AnnotatedTypeMirror type : types) {
-            if (type.getAnnotations().isEmpty())
+            if (type.getAnnotations().isEmpty()) {
                 continue;
+            }
             // TODO: unification fails with an empty set of annotations.
             // Why are they sometimes empty, e.g. in the FlowNegation test case.
 
@@ -1215,8 +1231,9 @@ public class AnnotatedTypes {
         }
 
         parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
-        for (int i = args.size() - parameters.size(); i > 0; --i)
+        for (int i = args.size() - parameters.size(); i > 0; --i) {
             parameters.add(varargs.getComponentType());
+        }
 
         return parameters;
     }
@@ -1240,8 +1257,9 @@ public class AnnotatedTypes {
         }
 
         parameters = new ArrayList<>(parameters.subList(0, parameters.size() - 1));
-        for (int i = args.size() - parameters.size(); i > 0; --i)
+        for (int i = args.size() - parameters.size(); i > 0; --i) {
             parameters.add(varargs.getComponentType());
+        }
 
         return parameters;
     }
@@ -1391,8 +1409,9 @@ public class AnnotatedTypes {
 
     public static boolean isTypeAnnotation(AnnotationMirror anno) {
         TypeElement elem = (TypeElement)anno.getAnnotationType().asElement();
-        if (isTypeAnnotationCache.containsKey(elem))
+        if (isTypeAnnotationCache.containsKey(elem)) {
             return isTypeAnnotationCache.get(elem);
+        }
 
         // the annotation is a type annotation if it has the proper ElementTypes in the @Target meta-annotation
         boolean result = hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value());
@@ -1430,8 +1449,9 @@ public class AnnotatedTypes {
 
     public static boolean containsTypeAnnotation(Collection<? extends AnnotationMirror> annos) {
         for (AnnotationMirror am : annos) {
-            if (isTypeAnnotation(am))
+            if (isTypeAnnotation(am)) {
                 return true;
+            }
         }
         return false;
     }

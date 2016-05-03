@@ -213,8 +213,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
         AnnotatedTypeMirror type = f.type(node);
 
-        if (type.getKind() == TypeKind.TYPEVAR)
+        if (type.getKind() == TypeKind.TYPEVAR) {
             return forTypeVariable(type, f).asUse();
+        }
 
         return type;
     }
@@ -225,8 +226,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
         AnnotatedTypeMirror type = f.type(node);
 
-        if (type.getKind() == TypeKind.TYPEVAR)
+        if (type.getKind() == TypeKind.TYPEVAR) {
             return forTypeVariable(type, f).asUse();
+        }
 
         return type;
     }
@@ -236,8 +238,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                                               AnnotatedTypeFactory f) {
         AnnotatedTypeMirror type = f.type(node);
 
-        if (type.getKind() == TypeKind.TYPEVAR)
+        if (type.getKind() == TypeKind.TYPEVAR) {
             return forTypeVariable(type, f).asUse();
+        }
 
         return type;
     }
@@ -247,8 +250,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                                                      AnnotatedTypeFactory f) {
         AnnotatedTypeMirror type = f.type(node);
 
-        if (type.getKind() == TypeKind.TYPEVAR)
+        if (type.getKind() == TypeKind.TYPEVAR) {
             return forTypeVariable(type, f).asUse();
+        }
 
         return type;
     }

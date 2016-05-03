@@ -11,8 +11,9 @@ public class InternMethod {
 
         @SuppressWarnings("interning")
         public @Interned Foo intern() {
-            if (!pool.containsKey(this))
+            if (!pool.containsKey(this)) {
                 pool.put(this, (@Interned Foo)this);
+            }
             return pool.get(this);
         }
     }

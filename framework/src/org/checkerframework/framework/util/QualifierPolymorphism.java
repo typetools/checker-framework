@@ -136,8 +136,9 @@ public class QualifierPolymorphism {
     }
 
     public static AnnotationMirror getPolymorphicQualifier(AnnotationMirror qual) {
-        if (qual == null)
+        if (qual == null) {
             return null;
+        }
         Element qualElt = qual.getAnnotationType().asElement();
         for (AnnotationMirror am : qualElt.getAnnotationMirrors()) {
             if (am.getAnnotationType().toString().equals(PolymorphicQualifier.class.getCanonicalName())) {
@@ -162,8 +163,9 @@ public class QualifierPolymorphism {
         AnnotationMirror poly = getPolymorphicQualifier(qual);
 
         // System.out.println("poly: " + poly + " pq: " + PolymorphicQualifier.class.getCanonicalName());
-        if (poly == null)
+        if (poly == null) {
             return null;
+        }
         @SuppressWarnings("unchecked")
         Class<? extends Annotation> ret = (Class<? extends Annotation>) AnnotationUtils.getElementValueClass(poly, "value", true);
         return ret;
@@ -300,10 +302,12 @@ public class QualifierPolymorphism {
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> reduce(Map<AnnotationMirror, Set<? extends AnnotationMirror>> r1,
                 Map<AnnotationMirror, Set<? extends AnnotationMirror>> r2) {
 
-            if (r1 == null || r1.isEmpty())
+            if (r1 == null || r1.isEmpty()) {
                 return r2;
-            if (r2 == null || r2.isEmpty())
+            }
+            if (r2 == null || r2.isEmpty()) {
                 return r1;
+            }
 
             Map<AnnotationMirror, Set<? extends AnnotationMirror>> res =
                     new HashMap<AnnotationMirror, Set<? extends AnnotationMirror>>(r1.size());
@@ -349,8 +353,9 @@ public class QualifierPolymorphism {
                 AnnotatedDeclaredType type, AnnotatedTypeMirror actualType) {
 
             if (actualType.getKind() == TypeKind.TYPEVAR) {
-                if (visited.contains(actualType.getUnderlyingType()))
+                if (visited.contains(actualType.getUnderlyingType())) {
                     return Collections.emptyMap();
+                }
                 visited.add(actualType.getUnderlyingType());
                 Map<AnnotationMirror, Set<? extends AnnotationMirror>> result =
                         visit(type, ((AnnotatedTypeVariable)actualType).getUpperBound());
@@ -359,8 +364,9 @@ public class QualifierPolymorphism {
             }
 
             if (actualType.getKind() == TypeKind.WILDCARD) {
-                if (visited.contains(actualType.getUnderlyingType()))
+                if (visited.contains(actualType.getUnderlyingType())) {
                     return Collections.emptyMap();
+                }
                 AnnotatedWildcardType wctype = (AnnotatedWildcardType)actualType;
 
                 visited.add(actualType.getUnderlyingType());
@@ -386,8 +392,9 @@ public class QualifierPolymorphism {
             type = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(types, atypeFactory, type, actualType);
             // TODO: type is null if type is an intersection type
             // assert type != null;
-            if (type == null)
+            if (type == null) {
                 return Collections.emptyMap();
+            }
 
             AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
 
@@ -466,11 +473,13 @@ public class QualifierPolymorphism {
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visitArray(
                 AnnotatedArrayType type, AnnotatedTypeMirror actualType) {
 
-            if (actualType.getKind() == TypeKind.DECLARED)
+            if (actualType.getKind() == TypeKind.DECLARED) {
                 return visit(AnnotatedTypes.asSuper(types, atypeFactory, type, actualType), actualType);
+            }
             if (actualType.getKind() == TypeKind.TYPEVAR) {
-                if (visited.contains(actualType.getUnderlyingType()))
+                if (visited.contains(actualType.getUnderlyingType())) {
                     return Collections.emptyMap();
+                }
                 visited.add(actualType.getUnderlyingType());
                 Map<AnnotationMirror, Set<? extends AnnotationMirror>> result =
                         visit(type, ((AnnotatedTypeVariable)actualType).getUpperBound());
@@ -478,8 +487,9 @@ public class QualifierPolymorphism {
                 return result;
             }
             if (actualType.getKind() == TypeKind.WILDCARD) {
-                if (visited.contains(actualType.getUnderlyingType()))
+                if (visited.contains(actualType.getUnderlyingType())) {
                     return Collections.emptyMap();
+                }
                 visited.add(actualType.getUnderlyingType());
                 Map<AnnotationMirror, Set<? extends AnnotationMirror>> result =
                         visit(type, ((AnnotatedWildcardType)actualType).getExtendsBound());
@@ -518,13 +528,15 @@ public class QualifierPolymorphism {
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visitTypeVariable(
                 AnnotatedTypeVariable type, AnnotatedTypeMirror actualType) {
 
-            if (actualType.getKind() == TypeKind.WILDCARD)
+            if (actualType.getKind() == TypeKind.WILDCARD) {
                 // give up
                 return Collections.emptyMap();
+            }
 
             AnnotatedTypeMirror typeSuper = findType(type, actualType);
-            if (typeSuper.getKind() != TypeKind.TYPEVAR)
+            if (typeSuper.getKind() != TypeKind.TYPEVAR) {
                 return visit(typeSuper, actualType);
+            }
 
             if (typeSuper.getKind() == actualType.getKind()
              && type.getKind() == actualType.getKind()) {
@@ -532,8 +544,9 @@ public class QualifierPolymorphism {
                 //however, please see the else case as to where it fails
 
                 AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
-                if (visited.contains(actualType.getUnderlyingType()))
+                if (visited.contains(actualType.getUnderlyingType())) {
                     return Collections.emptyMap();
+                }
                 visited.add(type.getUnderlyingType());
                 // a type variable cannot be annotated
                 Map<AnnotationMirror, Set<? extends AnnotationMirror>> result =
@@ -578,12 +591,13 @@ public class QualifierPolymorphism {
             }
             visited.add(type.getUnderlyingType());
             Map<AnnotationMirror, Set<? extends AnnotationMirror>> result;
-            if (type.getExtendsBound() != null && wcType.getExtendsBound() != null)
+            if (type.getExtendsBound() != null && wcType.getExtendsBound() != null) {
                 result = visit(type.getExtendsBound(), wcType.getExtendsBound());
-            else if (type.getSuperBound() != null && wcType.getSuperBound() != null)
+            } else if (type.getSuperBound() != null && wcType.getSuperBound() != null) {
                 result = visit(type.getSuperBound(), wcType.getSuperBound());
-            else
+            } else {
                 result = new HashMap<AnnotationMirror, Set<? extends AnnotationMirror>>();
+            }
 
             visited.remove(type.getUnderlyingType());
             return result;

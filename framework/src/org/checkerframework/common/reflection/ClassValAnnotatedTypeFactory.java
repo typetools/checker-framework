@@ -125,7 +125,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a2;
             } else if (isSubtype(a2, a1)) {
                 return a1;
-            } else  {
+            } else {
                 List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
                 List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
                 Set<String> lubClassNames = new TreeSet<String>();
@@ -150,7 +150,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a1;
             } else if (isSubtype(a2, a1)) {
                 return a2;
-            } else  {
+            } else {
                 List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
                 List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
                 Set<String> glbClassNames = new TreeSet<String>();
@@ -309,8 +309,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     while (classType.getEnclosingType().getKind() != TypeKind.NONE) {
                         classType = classType.getEnclosingType();
                         int last = className.lastIndexOf(".");
-                        if (last > -1)
+                        if (last > -1) {
                             className.replace(last, last + 1, "$");
+                        }
                     }
                 }
                 return className.toString();

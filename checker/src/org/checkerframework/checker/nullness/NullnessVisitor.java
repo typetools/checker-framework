@@ -212,8 +212,9 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         boolean isType = node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE;
-        if (!TreeUtils.isSelfAccess(node) && !isType)
+        if (!TreeUtils.isSelfAccess(node) && !isType) {
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
+        }
         return super.visitMemberSelect(node, p);
     }
 
@@ -337,8 +338,7 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
 
         if (checker.hasOption("assumeAssertionsAreEnabled") || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, node)) {
             doVisitAssert = true;
-        }
-        else if (checker.hasOption("assumeAssertionsAreDisabled")) {
+        } else if (checker.hasOption("assumeAssertionsAreDisabled")) {
             doVisitAssert = false;
         }
 
@@ -447,8 +447,9 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
     private void checkForNullability(ExpressionTree tree,
             /*@CompilerMessageKey*/ String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
-        if (!type.hasEffectiveAnnotation(NONNULL))
+        if (!type.hasEffectiveAnnotation(NONNULL)) {
             checker.report(Result.failure(errMsg, tree), tree);
+        }
     }
 
     @Override

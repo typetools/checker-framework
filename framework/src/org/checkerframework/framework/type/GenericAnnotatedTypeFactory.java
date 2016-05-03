@@ -309,8 +309,9 @@ public abstract class GenericAnnotatedTypeFactory<
                     classToLoad,
                     new Class<?>[] { BaseTypeChecker.class, this.getClass(), List.class },
                     new Object[] { checker, this, fieldValues });
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 
@@ -353,8 +354,9 @@ public abstract class GenericAnnotatedTypeFactory<
             TransferFunction result = BaseTypeChecker.invokeConstructorFor(
                     classToLoad, new Class<?>[] { analysis.getClass() },
                     new Object[] { analysis });
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 
@@ -371,9 +373,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * Subclasses should override {@link GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)}
      * or {@link GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)}
      * to add more defaults or use different defaults.
-     *
      * @return the QualifierDefaults object
      */
+    // TODO: When changing this method, also look into
+    // {@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesHelper#shouldIgnore}.
+    // Both methods should have some functionality merged into a single location.
+    // See Issue 683
+    // https://github.com/typetools/checker-framework/issues/683
     protected final QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
         addCheckedCodeDefaults(defs);

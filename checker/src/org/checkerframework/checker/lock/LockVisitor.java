@@ -345,8 +345,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             case NEW_ARRAY:
                 // Avoid issuing warnings for: @GuardedBy(<something>) Object o = new Object();
                 // Do NOT do this if the LHS is @GuardedByBottom.
-                if (!varType.hasAnnotation(GuardedByBottom.class))
+                if (!varType.hasAnnotation(GuardedByBottom.class)) {
                     return;
+                }
                 break;
             case INT_LITERAL:
             case LONG_LITERAL:
@@ -357,8 +358,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             case STRING_LITERAL:
                 // Avoid issuing warnings for: @GuardedBy(<something>) Object o; o = <some literal>;
                 // Do NOT do this if the LHS is @GuardedByBottom.
-                if (!varType.hasAnnotation(GuardedByBottom.class))
+                if (!varType.hasAnnotation(GuardedByBottom.class)) {
                     return;
+                }
                 break;
             default:
         }

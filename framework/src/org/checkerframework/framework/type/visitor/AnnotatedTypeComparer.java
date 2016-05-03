@@ -26,8 +26,9 @@ public abstract class AnnotatedTypeComparer<R> extends AnnotatedTypeScanner<R, A
 
     protected R scan(Iterable<? extends AnnotatedTypeMirror> types,
                      Iterable<? extends AnnotatedTypeMirror> p) {
-        if (types == null)
+        if (types == null) {
             return null;
+        }
         R r = null;
         boolean first = true;
         Iterator<? extends AnnotatedTypeMirror> tIter = types.iterator(),

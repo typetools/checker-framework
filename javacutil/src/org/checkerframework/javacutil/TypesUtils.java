@@ -101,8 +101,9 @@ public final class TypesUtils {
     }
 
     public static boolean isBoxedPrimitive(TypeMirror type) {
-        if (type.getKind() != TypeKind.DECLARED)
+        if (type.getKind() != TypeKind.DECLARED) {
             return false;
+        }
 
         String qualifiedName = getQualifiedName((DeclaredType)type).toString();
 
@@ -122,8 +123,9 @@ public final class TypesUtils {
             DeclaredType dt = (DeclaredType) type;
             TypeElement elem = (TypeElement) dt.asElement();
             Name name = elem.getQualifiedName();
-            if ("java.lang.Throwable".contentEquals(name))
+            if ("java.lang.Throwable".contentEquals(name)) {
                 return true;
+            }
             type = elem.getSuperclass();
         }
         return false;
@@ -312,8 +314,7 @@ public final class TypesUtils {
             } else {
                 return wildUpperBound(env, w.type);
             }
-        }
-        else {
+        } else {
             return TypeAnnotationUtils.unannotatedType(t);
         }
     }
@@ -327,8 +328,9 @@ public final class TypesUtils {
             Symtab syms = Symtab.instance(context);
             Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
             return w.isExtendsBound() ? syms.botType : wildLowerBound(env, w.type);
+        } else {
+            return t.unannotatedType();
         }
-        else return t.unannotatedType();
     }
     /**
      * Returns the {@link TypeMirror} for a given {@link Class}.

@@ -318,9 +318,7 @@ public void testMethodAnnotations() {
   if (r.nextBoolean()) {
     lockTheLock();
     requiresLockHeldMethod();
-  }
-  else
-  {
+  } else {
     //:: error: (contracts.precondition.not.satisfied)
     requiresLockHeldMethod();
   }
@@ -333,16 +331,14 @@ public void testMethodAnnotations() {
 
     //:: error: (contracts.precondition.not.satisfied.field)
     foo.field.toString();
-  }
-  else {
+  } else {
     //:: error: (contracts.precondition.not.satisfied.field)
     foo.field.toString();
   }
 
   if (tryToLockTheLock()) {
     foo.field.toString();
-  }
-  else {
+  } else {
     //:: error: (contracts.precondition.not.satisfied.field)
     foo.field.toString();
   }
@@ -358,8 +354,7 @@ public void testMethodAnnotations() {
     lockTheLock();
     sideEffectFreeMethod();
     foo.field.toString();
-  }
-  else {
+  } else {
     lockTheLock();
     nonSideEffectFreeMethod();
     //:: error: (contracts.precondition.not.satisfied.field)
@@ -378,8 +373,7 @@ public void testMethodAnnotations() {
     lockTheLock();
     lockingFreeMethod();
     foo.field.toString();
-  }
-  else {
+  } else {
     lockTheLock();
     nonSideEffectFreeMethod();
     //:: error: (contracts.precondition.not.satisfied.field)

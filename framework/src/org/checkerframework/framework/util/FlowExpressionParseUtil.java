@@ -206,8 +206,7 @@ public class FlowExpressionParseUtil {
             // "this" literal, even after the call above to set s = context.receiver.toString();
             if (context.receiver == null || context.receiver.containsUnknown()) {
                 return new ThisReference(context.receiver == null ? null : context.receiver.getType());
-            }
-            else { // If we already know the receiver, return it.
+            } else { // If we already know the receiver, return it.
                 return context.receiver;
             }
         } else if (superMatcher.matches() && allowSelf) {
@@ -285,8 +284,7 @@ public class FlowExpressionParseUtil {
                     if (originalReceiver) {
                         return new FieldAccess(context.receiver,
                                 fieldType, fieldElem);
-                    }
-                    else {
+                    } else {
                         return new FieldAccess(FlowExpressions.internalReprOf(context.checkerContext.getAnnotationProvider(), new ImplicitThisLiteralNode(receiverType)),
                                 fieldType, fieldElem);
                     }
@@ -755,8 +753,7 @@ public class FlowExpressionParseUtil {
 
         if (enclosingMethod != null && !enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
             receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(enclosingClass));
-        }
-        else {
+        } else {
             receiver = new ClassNameNode(enclosingClass);
         }
 

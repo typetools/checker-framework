@@ -311,8 +311,9 @@ public class TypeArgInferenceUtil {
 
         @Override
         protected Boolean scan(Iterable<? extends AnnotatedTypeMirror> types, List<TypeVariable> typeVars) {
-            if (types == null)
+            if (types == null) {
                 return false;
+            }
             Boolean result = false;
             Boolean first = true;
             for (AnnotatedTypeMirror type : types) {
