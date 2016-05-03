@@ -211,7 +211,7 @@ public class BoundsInitializer {
 
         @Override
         public Void visitArray(AnnotatedArrayType type, Void aVoid) {
-            if(!TypesUtils.isPrimitive(type.getComponentType().getUnderlyingType())) {
+            if (!TypesUtils.isPrimitive(type.getComponentType().getUnderlyingType())) {
                 // Only recur on component type if it's not a primitive.
                 // Array component types are the only place a primitive is allowed in bounds
                 final BoundPathNode componentNode = addPathNode(new ArrayComponentNode());
