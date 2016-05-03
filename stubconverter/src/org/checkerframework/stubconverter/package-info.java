@@ -1,0 +1,4 @@
+/**
+ * @author dbro
+ */
+package stubconverter;
