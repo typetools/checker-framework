@@ -72,7 +72,7 @@ public class WholeProgramInferenceScenesHelper {
      * Directory where .jaif files will be written to and read from.
      * This directory is relative to where the CF's javac command is executed.
      */
-    private final String jaifFilesPath = "build" + File.separator +
+    public static final String jaifFilesPath = "build" + File.separator +
             "whole-program-inference" + File.separator;
 
     /**
