@@ -33,6 +33,10 @@ class Issue557a {
     MyOpt<String> opt2() {
       return MyOpt.empty();
     }
+
+    MyOpt<String> opt3(boolean flag) {
+      return flag ? MyOpt.of("Hello") : (flag ? MyOpt.empty() : MyOpt.empty());
+    }
 }
 
 class Issue557b {
