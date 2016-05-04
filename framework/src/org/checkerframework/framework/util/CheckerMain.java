@@ -404,8 +404,7 @@ public class CheckerMain {
                             writer.print(" ");
                         }
                         br.close();
-                    }
-                    else {
+                    } else {
                         writer.print(arg);
                         writer.print(" ");
                     }
@@ -544,8 +543,9 @@ public class CheckerMain {
     // in fullyQualifiedCheckerNames.
     // processorString must be the name of a single processor, not a comma-separated list of processors.
     public static boolean matchesCheckerOrSubcheckerFromList(final String processorString, List<String> fullyQualifiedCheckerNames) {
-        if (processorString.contains(","))
+        if (processorString.contains(",")) {
             return false; // Do not process strings containing multiple processors.
+        }
 
         return fullyQualifiedCheckerNames.contains(asCheckerFrameworkProcessors(processorString, fullyQualifiedCheckerNames, true));
     }

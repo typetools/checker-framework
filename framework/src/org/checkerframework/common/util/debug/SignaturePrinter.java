@@ -132,14 +132,16 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         }
 
         public void printTypeParams(List<? extends AnnotatedTypeVariable> params) {
-            if (params.isEmpty())
+            if (params.isEmpty()) {
                 return;
+            }
 
             out.print("<");
             boolean isntFirst = false;
             for (AnnotatedTypeMirror param : params) {
-                if (isntFirst)
+                if (isntFirst) {
                     out.print(", ");
+                }
                 isntFirst = true;
                 out.print(param);
             }
@@ -151,8 +153,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
             out.print("(");
             for (int i = 0; i < type.getParameterTypes().size(); ++i) {
-                if (i != 0)
+                if (i != 0) {
                     out.print(", ");
+                }
                 printVariable(type.getParameterTypes().get(i),
                         elem.getParameters().get(i).getSimpleName());
             }
@@ -160,23 +163,26 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         }
 
         public void printThrows(AnnotatedExecutableType type) {
-            if (type.getThrownTypes().isEmpty())
+            if (type.getThrownTypes().isEmpty()) {
                 return;
+            }
 
             out.print(" throws ");
 
             boolean isntFirst = false;
             for (AnnotatedTypeMirror thrown : type.getThrownTypes()) {
-                if (isntFirst)
+                if (isntFirst) {
                     out.print(", ");
+                }
                 isntFirst = true;
                 out.print(thrown);
             }
         }
         public void printVariable(AnnotatedTypeMirror type, Name name, boolean isVarArg) {
             out.print(type);
-            if (isVarArg)
+            if (isVarArg) {
                 out.println("...");
+            }
             out.print(' ');
             out.print(name);
         }
@@ -242,8 +248,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
                 indent += INDENTION;
 
-                for (Element enclosed : e.getEnclosedElements())
+                for (Element enclosed : e.getEnclosedElements()) {
                     this.visit(enclosed);
+                }
 
                 indent = prevIndent;
                 out.print(indent);
@@ -253,15 +260,17 @@ public class SignaturePrinter extends AbstractTypeProcessor {
         }
 
         private void printSupers(AnnotatedDeclaredType dt) {
-            if (dt.directSuperTypes().isEmpty())
+            if (dt.directSuperTypes().isEmpty()) {
                 return;
+            }
 
             out.print("extends ");
 
             boolean isntFirst = false;
             for (AnnotatedDeclaredType st : dt.directSuperTypes()) {
-                if (isntFirst)
+                if (isntFirst) {
                     out.print(", ");
+                }
                 isntFirst = true;
                 out.print(st);
             }
@@ -275,8 +284,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
         @Override
         public Void visitVariable(VariableElement e, Void p) {
-            if (!e.getKind().isField())
+            if (!e.getKind().isField()) {
                 throw new IllegalStateException("can only process fields, received " + e.getKind());
+            }
 
             out.print(indent);
             AnnotatedTypeMirror type = factory.getAnnotatedType(e);
@@ -303,8 +313,9 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
         // process arguments
         String checkerName = "";
-        if (args[0].startsWith(CHECKER_ARG))
+        if (args[0].startsWith(CHECKER_ARG)) {
             checkerName = args[0].substring(CHECKER_ARG.length());
+        }
 
         // Setup compiler environment
         Context context = new Context();

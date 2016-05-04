@@ -33,12 +33,13 @@ public final class Result {
          * @return whichever of the given types is most serious
          */
         public static final Type merge(Type a, Type b) {
-            if (a == FAILURE || b == FAILURE)
+            if (a == FAILURE || b == FAILURE) {
                 return FAILURE;
-            else if (a == WARNING || b == WARNING)
+            } else if (a == WARNING || b == WARNING) {
                 return WARNING;
-            else
+            } else {
                 return SUCCESS;
+            }
         }
     }
 
@@ -84,13 +85,15 @@ public final class Result {
     private Result(Type type, Collection<DiagMessage> messagePairs) {
         this.type = type;
         this.messages = new LinkedList<DiagMessage>();
-        if (messagePairs != null)
-        for (DiagMessage msg : messagePairs) {
-            String message = msg.getMessageKey();
-            /*@Nullable*/ Object[] args = msg.getArgs();
-            if (args != null)
-                args = Arrays.copyOf(msg.getArgs(), args.length);
-            this.messages.add(new DiagMessage(message, args));
+        if (messagePairs != null) {
+            for (DiagMessage msg : messagePairs) {
+                String message = msg.getMessageKey();
+                /*@Nullable*/ Object[] args = msg.getArgs();
+                if (args != null) {
+                    args = Arrays.copyOf(msg.getArgs(), args.length);
+                }
+                this.messages.add(new DiagMessage(message, args));
+            }
         }
     }
 
@@ -105,11 +108,13 @@ public final class Result {
      *         the message keys of both this result and {@code r}
      */
     public Result merge(Result r) {
-        if (r == null)
+        if (r == null) {
             return this;
+        }
 
-        if (r.isSuccess() && this.isSuccess())
+        if (r.isSuccess() && this.isSuccess()) {
             return SUCCESS;
+        }
 
         List<DiagMessage> messages = new LinkedList<DiagMessage>();
         messages.addAll(this.messages);
@@ -144,8 +149,9 @@ public final class Result {
      */
     public List<String> getMessageKeys() {
         List<String> msgKeys = new LinkedList<String>();
-        for (DiagMessage msg : getDiagMessages())
+        for (DiagMessage msg : getDiagMessages()) {
             msgKeys.add(msg.getMessageKey());
+        }
 
         return Collections.</*@NonNull*/ String>unmodifiableList(msgKeys);
     }
@@ -210,8 +216,9 @@ public final class Result {
 
         @Override
         public boolean equals(Object obj) {
-            if (!(obj instanceof DiagMessage))
+            if (!(obj instanceof DiagMessage)) {
                 return false;
+            }
 
             DiagMessage other = (DiagMessage) obj;
 
@@ -228,8 +235,9 @@ public final class Result {
         @SideEffectFree
         @Override
         public String toString() {
-            if (args.length == 0)
+            if (args.length == 0) {
                 return message;
+            }
 
             return message + " : " + Arrays.toString(args);
         }

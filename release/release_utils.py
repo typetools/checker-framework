@@ -441,6 +441,8 @@ def clone(src_repo, dst_repo, bareflag):
     if "http" in src_repo:
         if "git" in src_repo:
             isGitRepo = True
+    elif "git@github.com:" in src_repo:
+        isGitRepo = True
     elif is_git(src_repo):
         isGitRepo = True
 

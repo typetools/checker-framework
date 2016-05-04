@@ -125,8 +125,9 @@ public class ControlFlowGraph {
 
         // traverse the whole control flow graph
         while (true) {
-            if (cur == null)
+            if (cur == null) {
                 break;
+            }
 
             Queue<Block> succs = new LinkedList<>();
             if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {

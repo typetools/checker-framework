@@ -516,8 +516,7 @@ public class KeyForAnnotatedTypeFactory extends
                   if (!newValue.equals(s)) {
                       valuesChanged = true;
                   }
-              }
-              else {
+              } else {
                   newValues.add(s); // This will get ignored if valuesChanged is false after exiting the for loop
               }
           }
@@ -630,8 +629,7 @@ public class KeyForAnnotatedTypeFactory extends
               Node receiver = null;
               if (enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
                   receiver = new ClassNameNode(enclosingClass);
-              }
-              else {
+              } else {
                   receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(enclosingClass));
               }
 
@@ -656,8 +654,7 @@ public class KeyForAnnotatedTypeFactory extends
               // Create the Flow Expression context in terms of the receiver and parameters.
 
               flowExprContextValueType = new FlowExpressionContext(internalReceiver, internalArguments, getContext());
-          }
-          else {
+          } else {
 
               // If there is no enclosing method, then we are probably dealing with a field initializer.
               // In that case, we do not need to worry about transforming parameter numbers such as #1
@@ -703,8 +700,7 @@ public class KeyForAnnotatedTypeFactory extends
 
       if (var == null && val == null) {
           return true;
-      }
-      else if (var == null || val == null) {
+      } else if (var == null || val == null) {
           return false;
       }
 
@@ -829,17 +825,19 @@ public class KeyForAnnotatedTypeFactory extends
 
               Map<? extends ExecutableElement, ? extends AnnotationValue> valMap = lhs.getElementValues();
 
-              if (valMap.isEmpty())
+              if (valMap.isEmpty()) {
                   lhsValues = new ArrayList<String>();
-              else
+              } else {
                   lhsValues = AnnotationUtils.getElementValueArray(lhs, "value", String.class, true);
+              }
 
               valMap = rhs.getElementValues();
 
-              if (valMap.isEmpty())
+              if (valMap.isEmpty()) {
                   rhsValues = new ArrayList<String>();
-              else
+              } else {
                   rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", String.class, true);
+              }
 
               return rhsValues.containsAll(lhsValues);
           }

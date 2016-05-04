@@ -21,8 +21,9 @@ public class InterningExample {
     @Interned String foo = "foo";
     @Interned String bar = "bar";
 
-    if (foo == bar)
+    if (foo == bar) {
         System.out.println("foo == bar");
+    }
 
   }
 

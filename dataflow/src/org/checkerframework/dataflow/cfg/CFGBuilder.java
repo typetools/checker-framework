@@ -1127,8 +1127,9 @@ public class CFGBuilder {
                     // ensure linking between e and next block (normal edge)
                     // Note: do not link to the next block for throw statements
                     // (these throw exceptions for sure)
-                    if (!node.getTerminatesExecution())
+                    if (!node.getTerminatesExecution()) {
                         missingEdges.add(new Tuple<>(e, i + 1));
+                    }
 
                     // exceptional edges
                     for (Entry<TypeMirror, Set<Label>> entry : en.getExceptions()
@@ -1308,12 +1309,6 @@ public class CFGBuilder {
          * one for continue.
          */
         protected Map<Name, Label> continueLabels;
-
-        /**
-         * Node yielding the value for the lexically enclosing synchronized statement,
-         * or null if there is no such statement.
-         */
-        protected Node synchronizedExpr;
 
         /**
          * Maps from AST {@link Tree}s to {@link Node}s.  Every Tree that produces
@@ -1611,6 +1606,22 @@ public class CFGBuilder {
             }
             if (index != -1) {
                 nodeList.add(index + 1, n);
+                // update bindings
+                for (Entry<Label, Integer> e : bindings.entrySet()) {
+                    if (e.getValue() >= index+1) {
+                        bindings.put(e.getKey(), e.getValue() + 1);
+                    }
+                }
+                // update leaders
+                Set<Integer> newLeaders = new HashSet<>();
+                for (Integer l : leaders) {
+                    if (l >= index+1) {
+                        newLeaders.add(l+1);
+                    } else {
+                        newLeaders.add(l);
+                    }
+                }
+                leaders = newLeaders;
             } else {
                 nodeList.add(n);
             }
@@ -3680,10 +3691,11 @@ public class CFGBuilder {
                     break;
                 case FIELD:
                     // Note that "this"/"super" is a field, but not a field access.
-                    if (element.getSimpleName().contentEquals("this"))
+                    if (element.getSimpleName().contentEquals("this")) {
                         node = new ExplicitThisLiteralNode(tree);
-                    else
+                    } else {
                         node = new SuperNode(tree);
+                    }
                     break;
                 case EXCEPTION_PARAMETER:
                 case LOCAL_VARIABLE:
@@ -3982,7 +3994,7 @@ public class CFGBuilder {
         public Node visitSynchronized(SynchronizedTree tree, Void p) {
             // see JLS 14.19
 
-            synchronizedExpr = scan(tree.getExpression(), p);
+            Node synchronizedExpr = scan(tree.getExpression(), p);
             SynchronizedNode synchronizedStartNode = new SynchronizedNode(tree, synchronizedExpr, true, env.getTypeUtils());
             extendWithNode(synchronizedStartNode);
             scan(tree.getBlock(), p);

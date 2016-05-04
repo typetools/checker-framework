@@ -250,8 +250,8 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
      * on the contents of a tree.
      *
-     * Subclasses may override this method to specify more appropriate
-     * {@link TreeAnnotator}
+     * Subclasses may override this method to specify a more appropriate
+     * {@link TreeAnnotator}.
      *
      * @return a tree annotator
      */
@@ -309,8 +309,9 @@ public abstract class GenericAnnotatedTypeFactory<
                     classToLoad,
                     new Class<?>[] { BaseTypeChecker.class, this.getClass(), List.class },
                     new Object[] { checker, this, fieldValues });
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 
@@ -353,8 +354,9 @@ public abstract class GenericAnnotatedTypeFactory<
             TransferFunction result = BaseTypeChecker.invokeConstructorFor(
                     classToLoad, new Class<?>[] { analysis.getClass() },
                     new Object[] { analysis });
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 
@@ -371,9 +373,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * Subclasses should override {@link GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)}
      * or {@link GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)}
      * to add more defaults or use different defaults.
-     *
      * @return the QualifierDefaults object
      */
+    // TODO: When changing this method, also look into
+    // {@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesHelper#shouldIgnore}.
+    // Both methods should have some functionality merged into a single location.
+    // See Issue 683
+    // https://github.com/typetools/checker-framework/issues/683
     protected final QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
         addCheckedCodeDefaults(defs);
@@ -644,6 +650,17 @@ public abstract class GenericAnnotatedTypeFactory<
             // be the best possible.
             return null;
         }
+        return getStoreBefore(node);
+    }
+
+    /**
+     * @return The store immediately before a given {@link Node}.
+     */
+    public Store getStoreBefore(Node node) {
+        if (analyses == null || analyses.isEmpty()) {
+            return flowResult.getStoreBefore(node);
+        }
+        FlowAnalysis analysis = analyses.getFirst();
         TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
         if (prevStore == null) {
             return null;
@@ -855,12 +872,12 @@ public abstract class GenericAnnotatedTypeFactory<
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(fieldValues);
+        TransferFunction transfer = newAnalysis.getTransferFunction();
         if (emptyStore == null) {
-            emptyStore = newAnalysis.createEmptyStore(!checker.hasOption("concurrentSemantics"));
+            emptyStore = newAnalysis.createEmptyStore(transfer.usesSequentialSemantics());
         }
         analyses.addFirst(newAnalysis);
         if (lambdaStore != null) {
-            TransferFunction transfer = newAnalysis.getTransferFunction();
             transfer.setFixedInitialStore(lambdaStore);
         } else {
             Store initStore = !isStatic ? initializationStore : initializationStaticStore;
@@ -869,7 +886,6 @@ public abstract class GenericAnnotatedTypeFactory<
                     // we have already seen initialization code and analyzed it, and
                     // the analysis ended with the store initStore.
                     // use it to start the next analysis.
-                    TransferFunction transfer = newAnalysis.getTransferFunction();
                     transfer.setFixedInitialStore(initStore);
                 }
             }
@@ -1010,15 +1026,21 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * This method is final. Override
+     * This method is final; override
      * {@link #annotateImplicit(Tree, AnnotatedTypeMirror, boolean)}
      * instead.
+     *
+     * {@inheritDoc}
      */
     @Override
     protected final void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
         annotateImplicit(tree, type, this.useFlow);
     }
 
+    /**
+     * Like {#annotateImplicit(Tree, AnnotatedTypeMirror)}.
+     * Overriding implementations typically simply pass the boolean to calls to super.
+     */
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
                 " root needs to be set when used on trees; factory: " + this.getClass();

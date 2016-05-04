@@ -103,6 +103,8 @@ checker/tests/nullness-temp/*.class
 
 checker/jtreg/multipleexecutions/Main.class
 
+framework/tests/whole-program-inference/annotated/*.java
+
 tutorial/eclipse-projects.zip
 tutorial/eclipse-projects/README.txt
 tutorial/eclipse-projects/personalblog-demo/bin/net/eyde/personalblog/service/PersonalBlogService.class

@@ -53,8 +53,9 @@ public class ReferenceInfoUtil {
         String properName = "L" + name + ";";
         for (Annotation anno : annotations) {
             String actualName = cf.constant_pool.getUTF8Value(anno.type_index);
-            if (properName.equals(actualName))
+            if (properName.equals(actualName)) {
                 return anno;
+            }
         }
         return null;
     }

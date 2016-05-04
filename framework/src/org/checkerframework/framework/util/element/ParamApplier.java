@@ -75,7 +75,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
             isLambdaParam = false;
             lambdaParamIndex = null;
 
-        } else  {
+        } else {
             Pair<VariableTree, LambdaExpressionTree> paramToEnclosingLambda =
                 ElementAnnotationApplier.getParamAndLambdaTree((VariableElement) element, typeFactory);
 

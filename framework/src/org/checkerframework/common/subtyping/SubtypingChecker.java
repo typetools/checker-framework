@@ -33,13 +33,15 @@ public final class SubtypingChecker extends BaseTypeChecker {
     @Override
     public Collection<String> getSuppressWarningsKeys() {
         Set<Class<? extends Annotation>> annos = ((BaseTypeVisitor<?>)visitor).getTypeFactory().getSupportedTypeQualifiers();
-        if (annos.isEmpty())
+        if (annos.isEmpty()) {
             return super.getSuppressWarningsKeys();
+        }
 
         Set<String> swKeys = new HashSet<>();
         swKeys.add(SUPPRESS_ALL_KEY);
-        for (Class<? extends Annotation> anno : annos)
+        for (Class<? extends Annotation> anno : annos) {
             swKeys.add(anno.getSimpleName().toLowerCase());
+        }
 
         return swKeys;
     }

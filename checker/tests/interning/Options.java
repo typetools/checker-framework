@@ -40,8 +40,9 @@ class Options {
     //:: error: (assignment.type.incompatible)
     @Interned String arg2 = arg;
 
-    if (!arg.equals(""))
+    if (!arg.equals("")) {
       arg_list.add(arg);
+    }
 
     String[] argsArray = arg_list.toArray(new String[arg_list.size()]);
     return null;
@@ -69,8 +70,9 @@ class Options {
         arg = "";
         while ((ii < args.length()) && Character.isWhitespace(args.charAt(ii)))
           ii++;
-        if (ii < args.length())
+        if (ii < args.length()) {
           ii--;
+        }
       } else { // must be part of current argument
         arg += ch;
       }
@@ -78,8 +80,9 @@ class Options {
     //:: error: (assignment.type.incompatible)
     @Interned String arg2 = arg;
 
-    if (!arg.equals (""))
+    if (!arg.equals ("")) {
       arg_list.add (arg);
+    }
 
     String[] argsArray = arg_list.toArray (new String[arg_list.size()]);
     return null;

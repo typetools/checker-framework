@@ -120,19 +120,22 @@ public final class TreeUtils {
     public static boolean isSelfAccess(final ExpressionTree tree) {
         ExpressionTree tr = TreeUtils.skipParens(tree);
         // If method invocation check the method select
-        if (tr.getKind() == Tree.Kind.ARRAY_ACCESS)
+        if (tr.getKind() == Tree.Kind.ARRAY_ACCESS) {
             return false;
+        }
 
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             tr = ((MethodInvocationTree)tree).getMethodSelect();
         }
         tr = TreeUtils.skipParens(tr);
-        if (tr.getKind() == Tree.Kind.TYPE_CAST)
+        if (tr.getKind() == Tree.Kind.TYPE_CAST) {
             tr = ((TypeCastTree)tr).getExpression();
+        }
         tr = TreeUtils.skipParens(tr);
 
-        if (tr.getKind() == Tree.Kind.IDENTIFIER)
+        if (tr.getKind() == Tree.Kind.IDENTIFIER) {
             return true;
+        }
 
         if (tr.getKind() == Tree.Kind.MEMBER_SELECT) {
             tr = ((MemberSelectTree)tr).getExpression();
@@ -170,8 +173,9 @@ public final class TreeUtils {
         while (p != null) {
             Tree leaf = p.getLeaf();
             assert leaf != null; /*nninvariant*/
-            if (kinds.contains(leaf.getKind()))
+            if (kinds.contains(leaf.getKind())) {
                 return leaf;
+            }
             p = p.getParentPath();
         }
 
@@ -213,8 +217,9 @@ public final class TreeUtils {
         while (p != null) {
             Tree leaf = p.getLeaf();
             assert leaf != null; /*nninvariant*/
-            if (kinds.contains(leaf.getKind()))
+            if (kinds.contains(leaf.getKind())) {
                 return p;
+            }
             p = p.getParentPath();
         }
 
@@ -233,8 +238,9 @@ public final class TreeUtils {
 
         while (p != null) {
             Tree leaf = p.getLeaf();
-            if (treeClass.isInstance(leaf))
+            if (treeClass.isInstance(leaf)) {
                 return treeClass.cast(leaf);
+            }
             p = p.getParentPath();
         }
 
@@ -333,8 +339,9 @@ public final class TreeUtils {
     public static Tree getAssignmentContext(final TreePath treePath) {
         TreePath path = treePath.getParentPath();
 
-        if (path == null)
+        if (path == null) {
             return null;
+        }
         Tree node = path.getLeaf();
         if ((node instanceof AssignmentTree) ||
                 (node instanceof CompoundAssignmentTree) ||
@@ -429,10 +436,11 @@ public final class TreeUtils {
      */
     public static final Name methodName(MethodInvocationTree node) {
         ExpressionTree expr = node.getMethodSelect();
-        if (expr.getKind() == Tree.Kind.IDENTIFIER)
+        if (expr.getKind() == Tree.Kind.IDENTIFIER) {
             return ((IdentifierTree)expr).getName();
-        else if (expr.getKind() == Tree.Kind.MEMBER_SELECT)
+        } else if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree)expr).getIdentifier();
+        }
         ErrorReporter.errorAbort("TreeUtils.methodName: cannot be here: " + node);
         return null; // dead code
     }
@@ -461,10 +469,11 @@ public final class TreeUtils {
         Tree first;
         if (tree.getKind() == Tree.Kind.BLOCK) {
             BlockTree block = (BlockTree)tree;
-            if (block.getStatements().isEmpty())
+            if (block.getStatements().isEmpty()) {
                 first = block;
-            else
+            } else {
                 first = block.getStatements().iterator().next();
+            }
         } else {
             first = tree;
         }
@@ -537,8 +546,9 @@ public final class TreeUtils {
      */
     public static boolean isCompileTimeString(ExpressionTree node) {
         ExpressionTree tree = TreeUtils.skipParens(node);
-        if (tree instanceof LiteralTree)
+        if (tree instanceof LiteralTree) {
             return true;
+        }
 
         if (TreeUtils.isUseOfElement(tree)) {
             Element elt = TreeUtils.elementFromUse(tree);
@@ -656,8 +666,9 @@ public final class TreeUtils {
      * of any method that overrides that one.
      */
     public static boolean isMethodInvocation(Tree tree, ExecutableElement method, ProcessingEnvironment env) {
-        if (!(tree instanceof MethodInvocationTree))
+        if (!(tree instanceof MethodInvocationTree)) {
             return false;
+        }
         MethodInvocationTree methInvok = (MethodInvocationTree)tree;
         ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
         return isMethod(invoked, method, env);

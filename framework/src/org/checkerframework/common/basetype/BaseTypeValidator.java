@@ -181,8 +181,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
          */
         List<? extends AnnotatedTypeMirror> tatypes = type.getTypeArguments();
 
-        if (tatypes == null)
+        if (tatypes == null) {
             return null;
+        }
 
         // May be zero for a "diamond" (inferred type args in constructor
         // invocation).
@@ -282,8 +283,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     @Override
     public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
-        if (checker.shouldSkipUses(type.getUnderlyingType().toString()))
+        if (checker.shouldSkipUses(type.getUnderlyingType().toString())) {
             return super.visitPrimitive(type, tree);
+        }
 
         if (!visitor.isValidUse(type, tree)) {
             reportError(type, tree);
@@ -328,12 +330,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s\n",
         // type, tree);
 
-        if (TreeUtils.isDiamondTree(tree))
+        if (TreeUtils.isDiamondTree(tree)) {
             return null;
+        }
 
         final TypeElement element = (TypeElement) type.getUnderlyingType().asElement();
-        if (checker.shouldSkipUses(element))
+        if (checker.shouldSkipUses(element)) {
             return null;
+        }
 
         List<AnnotatedTypeParameterBounds> bounds = atypeFactory.typeVariablesFromUse(type, element);
 

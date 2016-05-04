@@ -30,6 +30,8 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
+import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.StringConversionNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
@@ -74,6 +76,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 
 /**
  * The default analysis transfer function for the Checker Framework propagates
@@ -110,9 +113,40 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     protected final boolean sequentialSemantics;
 
+    /**
+     * Indicates that the whole-program inference is on.
+     */
+    private final boolean infer;
+
+    protected static final Pattern thisPattern = Pattern.compile("^(this)$");
+
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
+        this.infer = analysis.checker.hasOption("infer");
+    }
+
+    /**
+     * Constructor that allows forcing concurrent semantics to be on for this instance of CFAbstractTransfer.
+     *
+     * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on.
+     * If false, concurrent semantics are turned off by default, but the user can
+     * still turn them on via -AconcurrentSemantics.
+     * If true, the user cannot turn off concurrent semantics.
+     */
+    public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis, boolean forceConcurrentSemantics) {
+        this.analysis = analysis;
+        this.sequentialSemantics = !(forceConcurrentSemantics || analysis.checker.hasOption("concurrentSemantics"));
+        this.infer = analysis.checker.hasOption("infer");
+    }
+
+    /**
+     * @return true if the transfer function uses sequential semantics, false if it uses concurrent semantics.
+     * Useful when creating an empty store, since a store makes different decisions depending on whether
+     * sequential or concurrent semantics are used.
+     */
+    public boolean usesSequentialSemantics() {
+        return sequentialSemantics;
     }
 
     /**
@@ -532,7 +566,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S store = p.getRegularStore();
         V storeValue = store.getValue(n);
         // look up value in factory, and take the more specific one
-        // TODO: handle cases, where this is not allowed (e.g. contructors in
+        // TODO: handle cases, where this is not allowed (e.g. constructors in
         // non-null type systems)
         V factoryValue = getValueFromFactory(n.getTree(), n);
         V value = moreSpecificValue(factoryValue, storeValue);
@@ -577,8 +611,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         if (valueFromFactory == null) {
             value = valueFromStore;
-        }
-        else {
+        } else {
             value = moreSpecificValue(valueFromFactory, valueFromStore);
         }
 
@@ -723,9 +756,39 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         S info = in.getRegularStore();
         V rhsValue = in.getValueOfSubNode(rhs);
+        if (shouldPerformWholeProgramInference(n.getTree(), lhs.getTree())) {
+            if (lhs instanceof FieldAccessNode) {
+                // Updates inferred field type
+                analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
+                        (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()),
+                        analysis.getTypeFactory());
+            } else if (lhs instanceof LocalVariableNode &&
+                    ((LocalVariableNode)lhs).getElement().getKind() == ElementKind.PARAMETER) {
+                analysis.atypeFactory.getWholeProgramInference().updateInferredParameterType(
+                        (LocalVariableNode)lhs, rhs, analysis.getContainingClass(n.getTree()),
+                        analysis.getContainingMethod(n.getTree()), analysis.getTypeFactory());
+            }
+        }
+
         processCommonAssignment(in, lhs, rhs, info, rhsValue);
 
         return new RegularTransferResult<>(finishValue(rhsValue, info), info);
+    }
+
+    @Override
+    public TransferResult<V, S> visitReturn(ReturnNode n, TransferInput<V, S> p) {
+        if (shouldPerformWholeProgramInference(n.getTree())) {
+            // Retrieves class containing the method
+            ClassTree classTree = analysis.getContainingClass(n.getTree());
+            ClassSymbol classSymbol = (ClassSymbol) InternalUtils.symbol(
+                    classTree);
+            // Updates the inferred return type of the method
+            analysis.atypeFactory.getWholeProgramInference().updateInferredMethodReturnType(
+                    n, classSymbol,
+                    analysis.getContainingMethod(n.getTree()),
+                    analysis.getTypeFactory());
+        }
+        return super.visitReturn(n, p);
     }
 
     @Override
@@ -742,6 +805,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         S info = result.getRegularStore();
         // ResultValue is the type of LHS + RHS
         V resultValue = result.getResultValue();
+
+        if (lhs instanceof FieldAccessNode &&
+                shouldPerformWholeProgramInference(
+                        n.getTree(),lhs.getTree())) {
+            // Updates inferred field type
+            analysis.atypeFactory.getWholeProgramInference().updateInferredFieldType(
+                    (FieldAccessNode) lhs, rhs, analysis.getContainingClass(n.getTree()),
+                    analysis.getTypeFactory());
+        }
+
         processCommonAssignment(in, lhs, rhs, info, resultValue);
 
         return new RegularTransferResult<>(finishValue(resultValue, info), info);
@@ -756,6 +829,18 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         // update information in the store
         info.updateForAssignment(lhs, rhsValue);
+    }
+
+    @Override
+    public TransferResult<V, S> visitObjectCreation(ObjectCreationNode n,
+            TransferInput<V, S> p) {
+        if (shouldPerformWholeProgramInference(n.getTree())) {
+            ExecutableElement constructorElt = analysis.getTypeFactory().
+                    constructorFromUse(n.getTree()).first.getElement();
+            analysis.atypeFactory.getWholeProgramInference()
+                    .updateInferredConstructorParameterTypes(n, constructorElt, analysis.getTypeFactory());
+        }
+        return super.visitObjectCreation(n, p);
     }
 
     @Override
@@ -787,8 +872,56 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         // add new information based on conditional postcondition
         processConditionalPostconditions(n, method, tree, thenStore, elseStore);
 
+        if (shouldPerformWholeProgramInference(n.getTree(), method)) {
+            // Finds the receiver's type
+            Tree receiverTree = n.getTarget().getReceiver().getTree();
+            if (receiverTree == null) {
+                // If there is no receiver, then get the class being visited.
+                // This happens when the receiver corresponds to "this".
+                receiverTree = analysis.getContainingClass(n.getTree());
+                // receiverTree could still be null after the call above. That
+                // happens when the method is called from a static context.
+            }
+            // Updates the inferred parameter type of the invoked method
+            analysis.atypeFactory.getWholeProgramInference().updateInferredMethodParameterTypes(
+                    n, receiverTree, method, analysis.getTypeFactory());
+        }
+
         return new ConditionalTransferResult<>(finishValue(resValue, thenStore,
                 elseStore), thenStore, elseStore);
+    }
+
+    /**
+     * Returns true if whole-program inference should be performed.
+     * If the tree is in the scope of a @SuppressWarning,
+     * then this method returns false.
+     */
+    private boolean shouldPerformWholeProgramInference(Tree tree) {
+        return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, null));
+    }
+
+    /**
+     * Returns true if whole-program inference should be performed.
+     * If the expressionTree or lhsTree is in the scope of a @SuppressWarning,
+     * then this method returns false.
+     */
+    private boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
+        // Check that infer is true and the tree isn't in scope of a @SuppressWarning
+        // before calling  InternalUtils.symbol(lhs)
+        if (!shouldPerformWholeProgramInference(expressionTree)) {
+            return false;
+        }
+        Element elt = InternalUtils.symbol(lhsTree);
+        return !analysis.checker.shouldSuppressWarnings(elt, null);
+    }
+
+    /**
+     * Returns true if whole-program inference should be performed.
+     * If the tree or element is in the scope of a @SuppressWarning,
+     * then this method returns false.
+     */
+    private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
+        return shouldPerformWholeProgramInference(tree) && !analysis.checker.shouldSuppressWarnings(elt, null);
     }
 
     /**
@@ -820,8 +953,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
                 String s = expression.trim();
 
-                Pattern selfPattern = Pattern.compile("^(this)$");
-                Matcher selfMatcher = selfPattern.matcher(s);
+                Matcher selfMatcher = thisPattern.matcher(s);
                 if (selfMatcher.matches()) {
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
 
@@ -908,8 +1040,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
                 String s = expression.trim();
 
-                Pattern selfPattern = Pattern.compile("^(this)$");
-                Matcher selfMatcher = selfPattern.matcher(s);
+                Matcher selfMatcher = thisPattern.matcher(s);
                 if (selfMatcher.matches()) {
                     s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
 
@@ -1069,4 +1200,5 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return analysis.getTypeFactoryOfSubchecker(checkerClass);
     }
+
 }

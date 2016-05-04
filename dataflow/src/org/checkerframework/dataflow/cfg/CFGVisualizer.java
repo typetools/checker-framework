@@ -117,7 +117,7 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * @param methodCall The pure method call.
      * @param value The value of the pure method call.
      */
-    void visualizeStoreMethodVals(FlowExpressions.PureMethodCall methodCall, A value);
+    void visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value);
 
     /**
      * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize

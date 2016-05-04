@@ -6,8 +6,9 @@ public class Heuristics implements Comparable<Heuristics> {
      // Using == is OK if it's the first statement in the compare method,
      // it's comparing the arguments, and the return value is 0.
      public int compare(String s1, String s2) {
-       if (s1 == s2)
+       if (s1 == s2) {
          return 0;
+       }
        return String.CASE_INSENSITIVE_ORDER.compare(s1, s2);
      }
    }
