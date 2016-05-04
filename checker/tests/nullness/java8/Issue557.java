@@ -37,6 +37,11 @@ class Issue557a {
     MyOpt<String> opt3(boolean flag) {
       return flag ? MyOpt.of("Hello") : (flag ? MyOpt.empty() : MyOpt.empty());
     }
+    void foo(MyOpt<String> param) {
+    }
+    void callFoo(boolean flag) {
+      foo(flag ? MyOpt.of("Hello") : (flag ? MyOpt.empty() : MyOpt.empty()));
+    }
 }
 
 class Issue557b {

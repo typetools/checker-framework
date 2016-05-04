@@ -148,19 +148,15 @@ public class TypeArgInferenceUtil {
             AnnotatedExecutableType method = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, methodElt);
             int treeIndex = -1;
             for (int i = 0; i < method.getParameterTypes().size(); ++i) {
-                Tree argumentTree = TreeUtils.skipParens(methodInvocation.getArguments().get(i));
-                if (argumentTree == path.getLeaf()) {
+                ExpressionTree argumentTree = methodInvocation.getArguments().get(i);
+                if(isArugment(path, argumentTree)) {
                     treeIndex = i;
                     break;
-                } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
-                    ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) argumentTree;
-                    if (conditionalExpressionTree.getFalseExpression() == path.getLeaf()
-                        || conditionalExpressionTree.getTrueExpression() == path.getLeaf()) {
-                        treeIndex = i;
-                        break;
-                    }
                 }
             }
+            assert treeIndex != -1 :  "Could not find path in MethodInvocationTree.\n"
+                                      + "treePath=" + path.toString() + "\n"
+                                      + "methodInvocation=" + methodInvocation;
 
             if (treeIndex == -1) {
                 return null;
@@ -197,21 +193,14 @@ public class TypeArgInferenceUtil {
             AnnotatedExecutableType constructor = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, constructorElt);
             int treeIndex = -1;
             for (int i = 0; i < constructor.getParameterTypes().size(); ++i) {
-                Tree argumentTree = TreeUtils.skipParens(newClassTree.getArguments().get(i));
-                if (argumentTree == path.getLeaf()) {
+                ExpressionTree argumentTree = newClassTree.getArguments().get(i);
+                if(isArugment(path, argumentTree)){
                     treeIndex = i;
                     break;
-                } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
-                    ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) argumentTree;
-                    if (conditionalExpressionTree.getFalseExpression() == path.getLeaf()
-                        || conditionalExpressionTree.getTrueExpression() == path.getLeaf()) {
-                        treeIndex = i;
-                        break;
-                    }
                 }
             }
 
-            assert treeIndex != -1 :  "Could not find path in NewClassTre."
+            assert treeIndex != -1 :  "Could not find path in NewClassTre.\n"
                     + "treePath=" + path.toString() + "\n"
                     + "methodInvocation=" + newClassTree;
             if (treeIndex == -1) {
@@ -239,6 +228,19 @@ public class TypeArgInferenceUtil {
         ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
         return null; // dead code
     }
+
+    private static boolean isArugment(TreePath path, ExpressionTree argumentTree) {
+        argumentTree = TreeUtils.skipParens(argumentTree);
+        if (argumentTree == path.getLeaf()) {
+            return true;
+        } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
+            ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) argumentTree;
+            return isArugment(path, conditionalExpressionTree.getTrueExpression())
+                   || isArugment(path, conditionalExpressionTree.getFalseExpression());
+        }
+        return false;
+    }
+
     /**
      * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
      * Rational:
