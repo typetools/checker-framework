@@ -40,8 +40,10 @@ import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -271,6 +273,36 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             addFieldValues(info, factory, classTree, methodTree);
 
             addFinalLocalValues(info, methodElem);
+
+            if (infer) { // This block is adapted from code in visitMethodInvocation below
+                // Find which method this overrides
+                Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods = AnnotatedTypes
+                        .overriddenMethods(analysis.atypeFactory.getElementUtils(), analysis.atypeFactory, methodElem);
+                for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair : overriddenMethods
+                        .entrySet()) {
+                    AnnotatedDeclaredType overriddenType = pair.getKey();
+                    AnnotatedExecutableType overriddenMethod = AnnotatedTypes
+                            .asMemberOf(analysis.atypeFactory.getProcessingEnv().getTypeUtils(), analysis.atypeFactory, overriddenType,
+                                    pair.getValue());
+
+                // Finds the receiver's type
+                /*Tree receiverTree = n.getTarget().getReceiver().getTree();
+                if (receiverTree == null) {
+                    // If there is no receiver, then get the class being visited.
+                    // This happens when the receiver corresponds to "this".
+                    receiverTree = analysis.getContainingClass(n.getTree());
+                    // receiverTree could still be null after the call above. That
+                    // happens when the method is called from a static context.
+                }*/
+                // Updates the inferred parameter type of the invoked method
+                    analysis.atypeFactory.getWholeProgramInference().updateInferredMethodParameterTypes(
+                		methodTree,
+                		methodElem, overriddenMethod, analysis.getTypeFactory());
+                    analysis.atypeFactory.getWholeProgramInference().updateInferredMethodReceiverType(
+                		methodTree,
+                		methodElem, overriddenMethod, analysis.getTypeFactory());
+	            }
+	        }
 
             return info;
 

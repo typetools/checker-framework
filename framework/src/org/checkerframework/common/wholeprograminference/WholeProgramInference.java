@@ -9,6 +9,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
@@ -53,6 +54,18 @@ public interface WholeProgramInference {
     void updateInferredMethodParameterTypes(
             MethodInvocationNode methodInvNode, Tree receiverTree,
             ExecutableElement methodElt, AnnotatedTypeFactory atf);
+
+    void updateInferredMethodParameterTypes(
+    		MethodTree methodTree,
+            ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod,
+            AnnotatedTypeFactory atf);
+
+    void updateInferredMethodReceiverType(
+    		MethodTree methodTree,
+            ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod,
+            AnnotatedTypeFactory atf);
 
     /**
      * Updates the type of {@code parameter} base on an assignment of
