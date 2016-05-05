@@ -44,7 +44,7 @@ enum AtmKind {
     UNION(AnnotatedUnionType.class),
     WILDCARD(AnnotatedWildcardType.class);
 
-    //The AnnotatedTypeMirror subclass that represents types of this kind
+    // The AnnotatedTypeMirror subclass that represents types of this kind
     public final Class<? extends AnnotatedTypeMirror> atmClass;
 
     AtmKind(Class<? extends AnnotatedTypeMirror> atmClass) {
@@ -65,7 +65,7 @@ enum AtmKind {
         }
 
         ErrorReporter.errorAbort("Unhandled AnnotatedTypeMirror ( " + atm.getClass() + " )");
-        return null; //dead code
+        return null; // dead code
     }
 }
 
@@ -652,7 +652,7 @@ public enum AtmCombo {
             default:
                 // Reaching this point indicates that there is an AtmCombo missing
                 ErrorReporter.errorAbort("Unhandled AtmCombo ( " + combo + " ) " );
-                return null; //dead code
+                return null; // dead code
         }
     }
 }

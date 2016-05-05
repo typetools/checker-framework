@@ -293,7 +293,7 @@ public class WholeProgramInferenceScenesHelper {
             updatesATMWithLUB(atf, ((AnnotatedArrayType) sourceCodeATM).getComponentType(),
                               ((AnnotatedArrayType) jaifATM).getComponentType());
             break;
-        //case DECLARED:
+        // case DECLARED:
         // inferring annotations on type arguments is not supported, so no need to recur on
         // generic types. If this was every implemented, this method would need VisitHistory
         // object to prevent infinite recursion on types such as T extends List<T>.

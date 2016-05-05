@@ -17,10 +17,10 @@ abstract class Ordering<T> implements Comparator<T> {
 }
 
 class PolyCollectorTypeVars {
-  //Both of these come from the extends Comparable on line 9
+  // Both of these come from the extends Comparable on line 9
   @SuppressWarnings({"rawtypes","type.argument.type.incompatible"})
   public static List<Comparable> treeKeys2() {
-      //See Limitation in DefaultTypeArgumentInference on interdependent methods
+      // See Limitation in DefaultTypeArgumentInference on interdependent methods
       return treeKeys(Ordering.natural());
   }
 

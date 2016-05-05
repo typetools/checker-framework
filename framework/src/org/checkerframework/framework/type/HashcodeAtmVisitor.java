@@ -46,8 +46,8 @@ public class HashcodeAtmVisitor extends AnnotatedTypeScanner<Integer, Void> {
      * @param type The type
      */
     private Integer generateHashcode(AnnotatedTypeMirror type) {
-        //To differentiate between partially initialized type's (which may have null components)
-        //and fully initialized types, null values are allowed
+        // To differentiate between partially initialized type's (which may have null components)
+        // and fully initialized types, null values are allowed
         if (type == null) {
             return null;
         }

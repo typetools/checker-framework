@@ -809,7 +809,7 @@ public class QualifierDefaults {
                         doApply(t, qual);
                         if (t.getKind() == TypeKind.UNION) {
                             AnnotatedUnionType aut = (AnnotatedUnionType) t;
-                            //Also apply the default to the alternative types
+                            // Also apply the default to the alternative types
                             for (AnnotatedDeclaredType anno : aut
                                     .getAlternatives()) {
                                 doApply(anno, qual);
@@ -928,13 +928,13 @@ public class QualifierDefaults {
                 impl.boundType = BoundType.UNBOUND;
             }
 
-            //are we currently defaulting the lower bound of a type variable or wildcard
+            // are we currently defaulting the lower bound of a type variable or wildcard
             private boolean isLowerBound = false;
 
-            //are we currently defaulting the upper bound of a type variable or wildcard
+            // are we currently defaulting the upper bound of a type variable or wildcard
             private boolean isUpperBound  = false;
 
-            //the bound type of the current wildcard or type variable being defaulted
+            // the bound type of the current wildcard or type variable being defaulted
             private BoundType boundType = BoundType.UNBOUND;
 
             @Override
@@ -1046,7 +1046,7 @@ public class QualifierDefaults {
         }
 
         ErrorReporter.errorAbort("Unexpected type kind: type=" + type);
-        return null; //dead code
+        return null; // dead code
     }
 
     /**
@@ -1090,7 +1090,7 @@ public class QualifierDefaults {
                 ErrorReporter.errorAbort("Unexpected tree type for typeVar Element:\n"
                                        + "typeParamElem=" + typeParamElem + "\n"
                                        + typeParamDecl);
-                boundType = null; //dead code
+                boundType = null; // dead code
             }
         }
 
@@ -1112,7 +1112,7 @@ public class QualifierDefaults {
             boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement(), typeFactory);
 
         } else {
-            //note: isSuperBound will be true for unbounded and lowers, but the unbounded case is already handled
+            // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is already handled
             boundType = wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
         }
 

@@ -111,12 +111,12 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     /**
-     * Sets the method's element, annotates it's return type, parameters, type parameters, and throws
+     * Sets the method's element, annotates its return type, parameters, type parameters, and throws
      * annotations.
      */
     @Override
     public void extractAndApply() {
-        methodType.setElement(methodSymbol); //Preserves previous behavior
+        methodType.setElement(methodSymbol); // Preserves previous behavior
 
         // Add declaration annotations to the return type if
         if (methodType.getReturnType() instanceof AnnotatedTypeVariable) {
@@ -130,14 +130,14 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
             addAnnotationsFromElement(params.get(i), methodSymbol.getParameters().get(i).getAnnotationMirrors());
         }
 
-        //ensures that we check that there are only valid target types on this class, there are no "invalid" locations
+        // ensures that we check that there are only valid target types on this class, there are no "invalid" locations
         super.extractAndApply();
 
         applyAllElementAnnotations( methodType.getParameterTypes(), methodSymbol.getParameters(),     typeFactory );
         applyAllElementAnnotations( methodType.getTypeVariables(),  methodSymbol.getTypeParameters(), typeFactory );
     }
 
-    //NOTE that these are the only locations not handled elsewhere, otherwise we call apply
+    // NOTE that these are the only locations not handled elsewhere, otherwise we call apply
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
         final List<TypeCompound> unmatched = new ArrayList<>();

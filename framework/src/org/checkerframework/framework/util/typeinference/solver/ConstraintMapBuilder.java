@@ -92,8 +92,8 @@ public class ConstraintMapBuilder {
                                 uAnnos.add(tAnno);
 
                             } else {
-                                //This tells us nothing, they both should be equal but either way
-                                //we gain no information if both type vars have annotations
+                                // This tells us nothing, they both should be equal but either way
+                                // we gain no information if both type vars have annotations
                             }
                         }
                     }

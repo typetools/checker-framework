@@ -49,7 +49,7 @@ import javax.lang.model.util.Types;
  * }</pre>
  * would have an empty map as a result:
  * <pre>{@code
- *      Map() //there are no type argument relationships between the two types
+ *      Map() // there are no type argument relationships between the two types
  * }</pre>
  */
 public class TypeArgumentMapper {
@@ -132,11 +132,11 @@ public class TypeArgumentMapper {
             final Set<TypeParameterElement> currentTypeParams = new HashSet<>();
 
 
-            //takes a type records of the form:
+            // takes a type records of the form:
             //  TypeRecord(element = MyMap<Y1,Y2>, type = null)
             //  TypeRecord(element = AbstractMap<A1,A2>, type = AbstractMap<Y1,Y2>)
             //  TypeRecord(element = Map<M1,M2>, type = AbstractMap<A1,A2>)
-            //And makes a map:
+            // And makes a map:
             //   Map(Y1 -> [A1], Y2 -> [A2], A1 -> [M1], A2 -> M2]
             Iterator<TypeRecord> path = pathToSupertype.iterator();
             TypeRecord current = path.next();
@@ -162,8 +162,8 @@ public class TypeArgumentMapper {
 
             List<? extends TypeParameterElement> supertypeParams = supertype.getTypeParameters();
 
-            //You can think of the map above as a set of links from SubtypeParameter -> Supertype Parameter
-            //e.g. in Map(Y1 -
+            // You can think of the map above as a set of links from SubtypeParameter -> Supertype Parameter
+            // e.g. in Map(Y1 -
             for (TypeParameterElement subtypeParam : subtype.getTypeParameters()) {
                 Set<TypeParameterElement> subtypePath = flattenPath(intermediate.get(subtypeParam), intermediate);
                 subtypePath.retainAll(supertypeParams);

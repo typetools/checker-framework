@@ -552,7 +552,7 @@ public class ValueTransfer extends CFTransfer {
                 p);
         if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
                 || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
-            //At least one must be a primitive otherwise reference equality is used.
+            // At least one must be a primitive otherwise reference equality is used.
             List<Boolean> resultValues = calcutateBinaryComparison(
                     n.getLeftOperand(), n.getRightOperand(),
                     ComparisonOperators.EQUAL, p);

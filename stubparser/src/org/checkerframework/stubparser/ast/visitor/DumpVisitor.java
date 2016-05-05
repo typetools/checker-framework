@@ -174,7 +174,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
 
     private final SourcePrinter printer = new SourcePrinter();
 
-    // Return buffered contents of SourcePrinter.
+    /** Return buffered contents of SourcePrinter. */
     public String getSource() {
         return printer.getSource();
     }

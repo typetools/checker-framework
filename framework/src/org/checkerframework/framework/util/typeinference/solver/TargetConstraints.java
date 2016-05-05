@@ -15,18 +15,24 @@ import java.util.Set;
  * @see org.checkerframework.framework.util.typeinference.solver.ConstraintMap
  */
 public class TargetConstraints {
-    //The type parameter for which we are inferring a type argument.  All constraints in this
-    //object are related to this target.
+    /**
+     * The type parameter for which we are inferring a type argument.  All constraints in this
+     * object are related to this target.
+     */
     public final TypeVariable target;
 
     public final Equalities equalities;
 
-    //the target is the supertype in this case, that these are supertype constraints in which target is
-    //the supertype.  These are NOT supertypes of the target
+    /**
+     * The target is the supertype in this case, that these are supertype constraints in which target is
+     * the supertype.  These are NOT supertypes of the target.
+     */
     public final Supertypes supertypes;
 
-    //the target is the supertype in this case, that these are subtype constraints in which target is
-    //the subtype.  These are NOT subtypes of the target
+    /**
+     * The target is the supertype in this case, that these are subtype constraints in which target is
+     * the subtype.  These are NOT subtypes of the target.
+     */
     public final Subtypes subtypes;
 
     public TargetConstraints(final TypeVariable target) {
@@ -37,15 +43,15 @@ public class TargetConstraints {
     }
 
     protected class Equalities {
-        //Map( hierarchy top -> exact annotation in hierarchy)
+        // Map( hierarchy top -> exact annotation in hierarchy)
         public Map<AnnotationMirror, AnnotationMirror> primaries = new LinkedHashMap<>();
 
-        //Map( type -> hierarchy top for which the primary annotation of type is equal to the primary annotation of the target)
-        //note all components and underlying types are EXACTLY equal to the key to this map
+        // Map( type -> hierarchy top for which the primary annotation of type is equal to the primary annotation of the target)
+        // note all components and underlying types are EXACTLY equal to the key to this map
         public final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> types = new LinkedHashMap<>();
 
-        //Map( type -> hierarchy top for which the primary annotation of target is equal to the primary annotaiton of the target)
-        //note all components and underlying types are EXACTLY equal to the key to this map
+        // Map( type -> hierarchy top for which the primary annotation of target is equal to the primary annotaiton of the target)
+        // note all components and underlying types are EXACTLY equal to the key to this map
         public final Map<TypeVariable, Set<AnnotationMirror>> targets = new LinkedHashMap<>();
 
         public void clear() {
@@ -55,17 +61,17 @@ public class TargetConstraints {
         }
     }
 
-    //remember these are constraint in which target is the supertype
+    // remember these are constraint in which target is the supertype
     protected class Supertypes {
-        //Map( hierarchy top -> annotations that are subtypes to target in hierarchy)
+        // Map( hierarchy top -> annotations that are subtypes to target in hierarchy)
         public Map<AnnotationMirror, Set<AnnotationMirror>> primaries = new LinkedHashMap<>();
 
-        //Map( type -> hierarchy tops for which the primary annotations of type are subtypes of the primary annotations of the target)
-        //note all components and underlying types must uphold the supertype relationship in all hierarchies
+        // Map( type -> hierarchy tops for which the primary annotations of type are subtypes of the primary annotations of the target)
+        // note all components and underlying types must uphold the supertype relationship in all hierarchies
         public final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> types = new LinkedHashMap<>();
 
-        //Map( otherTarget -> hierarchy tops for which the primary annotations of otherTarget are subtypes of the primary annotations of the target)
-        //note all components and underlying types must uphold the subtype relationship in all hierarchies
+        // Map( otherTarget -> hierarchy tops for which the primary annotations of otherTarget are subtypes of the primary annotations of the target)
+        // note all components and underlying types must uphold the subtype relationship in all hierarchies
         public final Map<TypeVariable, Set<AnnotationMirror>> targets = new LinkedHashMap<>();
 
         public void clear() {
@@ -75,17 +81,17 @@ public class TargetConstraints {
         }
     }
 
-    //remember these are constraint in which target is the subtype
+    // remember these are constraint in which target is the subtype
     protected class Subtypes {
-        //Map( hierarchy top -> annotations that are supertypes to target in hierarchy)
+        // Map( hierarchy top -> annotations that are supertypes to target in hierarchy)
         public Map<AnnotationMirror, Set<AnnotationMirror>> primaries = new LinkedHashMap<>();
 
-        //Map( type -> hierarchy tops for which the primary annotations of type are supertypes of the primary annotations of the target)
-        //note all components and underlying types must uphold the supertype relationship in all hierarchies
+        // Map( type -> hierarchy tops for which the primary annotations of type are supertypes of the primary annotations of the target)
+        // note all components and underlying types must uphold the supertype relationship in all hierarchies
         public final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> types = new LinkedHashMap<>();
 
-        //Map( otherTarget -> hierarchy tops for which the primary annotations of otherTarget are supertypes of the primary annotations of the target)
-        //note all components and underlying types must uphold the subtype relationship in all hierarchies
+        // Map( otherTarget -> hierarchy tops for which the primary annotations of otherTarget are supertypes of the primary annotations of the target)
+        // note all components and underlying types must uphold the subtype relationship in all hierarchies
         public final Map<TypeVariable, Set<AnnotationMirror>> targets = new LinkedHashMap<>();
 
         public void clear() {

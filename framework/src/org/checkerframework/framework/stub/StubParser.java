@@ -300,7 +300,7 @@ public class StubParser {
         return result;
     }
 
-    // The main entry point.  Side-effects the arguments.
+    /** The main entry point.  Side-effects the arguments. */
     public void parse(Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         parse(this.index, atypes, declAnnos);
     }

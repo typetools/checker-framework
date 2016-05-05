@@ -9,7 +9,7 @@ public class StaticExTest {
         String s = "helloworlod";
         @StringVal({"o","l"}) String subString = flag?"o":"l";
         @IntVal({5,0,9}) int start = flag?9:flag?5:0;
-        //flag?1:flag?6:
+        // flag?1:flag?6:
         @IntVal({-1, 8, 9, 2, 4, 6}) int result = s.indexOf(subString, start);
     }
 
@@ -17,7 +17,7 @@ public class StaticExTest {
         String s = flag?"helloworlod":"lololxxolxxxol";
         @StringVal({"o","l"}) String subString = flag?"o":"l";
         @IntVal({0,9}) int start = flag?9:0;
-        //flag?1:flag?6:
+        // flag?1:flag?6:
         @IntVal({-1, 0, 1, 2, 4, 9, 12, 13}) int result3 = s.indexOf(subString, start);
     }
 

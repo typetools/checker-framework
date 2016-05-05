@@ -18,7 +18,7 @@ import com.sun.tools.javac.code.TargetType;
 /**
  * TargetedElementAnnotationApplier filters annotations for an element into 3 groups.
  * TARGETED annotations are those we wish to apply in this ElementAnnotationApplier. VALID annotations
- * are those that are valid on the current element (or it's enclosure, see getRawTypeAttributes)
+ * are those that are valid on the current element (or its enclosure, see getRawTypeAttributes)
  * but should not be applied to the given type.  Invalid annotations are those that should NEVER appear
  * for the given element.  Invalid annotations are reported as errors by default in the handleInvalid method.
  * See method extractAndApply.  Please read getRawTypeAttributes for an idea of what types of annotations

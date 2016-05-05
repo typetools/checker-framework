@@ -16,9 +16,9 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     private QualifierHierarchy<Wildcard<Q>> containmentHierarchy;
     private List<Pair<Wildcard<Q>, Wildcard<Q>>> constraintTarget = null;
 
-    // The bottom QualParams in the QualifierHierarchy
+    /** The bottom QualParams in the QualifierHierarchy */
     public QualParams<Q> PARAMS_BOTTOM;
-    // The top QualParams in the QualifierHierarchy
+    /** The top QualParams in the QualifierHierarchy */
     public QualParams<Q> PARAMS_TOP;
 
     public QualifierParameterHierarchy(QualifierHierarchy<Wildcard<Q>> containmentHierarchy,

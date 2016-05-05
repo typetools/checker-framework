@@ -32,15 +32,17 @@ public class FrequencyRelations implements UnitsRelations {
         return this;
     }
 
-    // No multiplications yield Hertz.
+    /** No multiplications yield Hertz. */
     public /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
         // return null so the default units relations can process multiplcations of other units
         return null;
     }
 
-    // Division of a scalar by seconds yields Hertz
-    // Division of a scalar by milliseconds yields Kilohertz
-    // Other divisions yield an unannotated value.
+    /**
+     * Division of a scalar by seconds yields Hertz.
+     * Division of a scalar by milliseconds yields Kilohertz.
+     * Other divisions yield an unannotated value.
+     */
     public /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
         if (UnitsRelationsTools.hasNoUnits(lht)) {
             // scalar / millisecond => kilohertz

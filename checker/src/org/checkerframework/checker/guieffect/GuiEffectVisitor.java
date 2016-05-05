@@ -133,7 +133,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         }
 
         Effect targetEffect = atypeFactory.getDeclaredEffect(methodElt);
-        //System.err.println("Dispatching method "+node+"on "+node.getMethodSelect());
+        // System.err.println("Dispatching method "+node+"on "+node.getMethodSelect());
         if (targetEffect.isPoly()) {
             AnnotatedTypeMirror srcType = null;
             assert (node.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER ||
@@ -224,7 +224,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // We hang onto the current method here for ease.  We back up the old
         // current method because this code is reentrant when we traverse methods of an inner class
         currentMethods.push(node);
-        //effStack.push(targetSafeP != null ? new Effect(AlwaysSafe.class) :
+        // effStack.push(targetSafeP != null ? new Effect(AlwaysSafe.class) :
         //                (targetPolyP != null ? new Effect(PolyUI.class) :
         //                   (targetUIP != null ? new Effect(UI.class) :
         //                      (range != null ? range.min : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? new Effect(UI.class) : new Effect(AlwaysSafe.class))))));

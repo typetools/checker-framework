@@ -142,7 +142,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
             }
 
             return null;
-        } //else
+        } // else
 
         return (InferredType) inferred;
     }

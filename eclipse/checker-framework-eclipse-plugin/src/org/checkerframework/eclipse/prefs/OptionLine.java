@@ -76,21 +76,21 @@ public class OptionLine {
             for (final String classDef : findClassDefs("OptionLine", option) ) {
                 options.add(new OptionLine(classDef));
             }
-        } else { //Just make it one big option so people don't get interrupted
+        } else { // Just make it one big option so people don't get interrupted
             options.add(new OptionLine(option.trim(), true));
         }
 
         return options;
     }
 
-    //expected value format: [className(.*),className(.*),...,className(.*)]
+    // expected value format: [className(.*),className(.*),...,className(.*)]
     public static List<String> findClassDefs(final String className, final String value) {
         String remaining = value;
         final List<String> matches = new ArrayList<String>();
 
         int charPos = 0;
         if (remaining.startsWith("[") || ! remaining.endsWith("]")) {
-            remaining = remaining.substring(1).substring(0, remaining.length() - 2); //strip off []
+            remaining = remaining.substring(1).substring(0, remaining.length() - 2); // strip off []
         } else {
             throw new RuntimeException("Invalid option collection " + value);
         }
