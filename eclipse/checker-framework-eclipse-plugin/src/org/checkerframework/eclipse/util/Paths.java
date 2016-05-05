@@ -54,7 +54,7 @@ public class Paths
             }
         }
 
-        //C up front, a in the back, everything else is equal
+        // C up front, a in the back, everything else is equal
         Collections.sort(driveRoots, new Comparator<File>() {
             @Override
             public int compare(File o1, File o2) {

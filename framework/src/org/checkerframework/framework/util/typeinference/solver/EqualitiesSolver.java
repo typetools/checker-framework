@@ -269,7 +269,7 @@ public class EqualitiesSolver {
         //the first set of annotations and show an error for the argument/return type that caused the second
         //differing constraint
         //3. Finally, we expect the following types to be involved in equality constraints:
-        //AnnotatedDeclaredTypes, AnnotatedTypeVariables, and AnnotatedArrayTypes
+        // AnnotatedDeclaredTypes, AnnotatedTypeVariables, and AnnotatedArrayTypes
         while (entryIterator.hasNext() && !missingAnnos.isEmpty()) {
             final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> current = entryIterator.next();
             final AnnotatedTypeMirror currentType = current.getKey();
@@ -342,16 +342,16 @@ public class EqualitiesSolver {
         } //else
 
 
-        //We did not have enough information to infer an annotation in all hierarchies for one concrete type.
-        //However, we have a "partial solution", one in which we know the type in some but not all qualifier hierarchies
-        //Update our set of constraints with this information
+        // We did not have enough information to infer an annotation in all hierarchies for one concrete type.
+        // However, we have a "partial solution", one in which we know the type in some but not all qualifier hierarchies
+        // Update our set of constraints with this information
         dirty |= updateTargetsWithPartiallyInferredType(equalities, constraintMap, typeFactory);
         inferred = findEqualTarget(equalities, tops);
 
         return inferred;
     }
 
-    //If we determined that this target T1 is equal to a type ATM in hierarchies @A,@B,@C
+    // If we determined that this target T1 is equal to a type ATM in hierarchies @A,@B,@C
     //for each of those hierarchies, if a target is equal to T1 in that hierarchy it is also equal to ATM
     // e.g.
     //   if : T1 == @A @B @C ATM in only the A,B hierarchies
@@ -412,7 +412,7 @@ public class EqualitiesSolver {
             final TypeVariable equalTarget = targetToHierarchies.getKey();
             final Set<AnnotationMirror> hierarchies = targetToHierarchies.getValue();
 
-            //Now see if target is equal to equalTarget in all hierarchies
+            // Now see if target is equal to equalTarget in all hierarchies
             boolean targetIsEqualInAllHierarchies = hierarchies.size() == tops.size();
             if (targetIsEqualInAllHierarchies) {
                 return new InferredTarget(equalTarget, new HashSet<AnnotationMirror>());

@@ -2177,9 +2177,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             AnnotatedExecutableType constructor, Tree src) {
         AnnotatedDeclaredType ret = (AnnotatedDeclaredType) constructor.getReturnType();
 
-        //When an interface is used as the identifier in an anonymous class (e.g. new Comparable() {})
+        // When an interface is used as the identifier in an anonymous class (e.g. new Comparable() {})
         //the constructor method will be Object.init() {} which has an Object return type
-        //When TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will return
+        // When TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will return
         //null from asSuper and return false for the check.  Instead, copy the primary annotations
         //to the declared type and then do a subtyping check
         if (dt.getUnderlyingType().asElement().getKind().isInterface() &&
@@ -2738,7 +2738,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
                 success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
 
-                //If both the overridden method have type variables as return types and both types were
+                // If both the overridden method have type variables as return types and both types were
                 //defined in their respective methods then, they can be covariant or invariant
                 //use super/subtypes for the overrides locations
                 if (!success) {

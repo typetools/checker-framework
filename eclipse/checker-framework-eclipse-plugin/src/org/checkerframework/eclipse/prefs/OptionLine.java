@@ -76,7 +76,7 @@ public class OptionLine {
             for (final String classDef : findClassDefs("OptionLine", option) ) {
                 options.add(new OptionLine(classDef));
             }
-        } else { //Just make it one big option so people don't get interrupted
+        } else { // Just make it one big option so people don't get interrupted
             options.add(new OptionLine(option.trim(), true));
         }
 

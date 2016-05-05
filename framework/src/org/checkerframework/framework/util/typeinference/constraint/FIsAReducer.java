@@ -80,7 +80,7 @@ public class FIsAReducer implements AFReducer {
                  + "constraints=[\n" + PluginUtil.join(", ", afConstraints) + "\n]";
         }
         //------------------------------------------------------------------------
-        //Arrays as arguments
+        // Arrays as arguments
 
         @Override
         public Void visitArray_Array(AnnotatedArrayType parameter, AnnotatedArrayType argument, Set<AFConstraint> constraints) {
@@ -105,7 +105,7 @@ public class FIsAReducer implements AFReducer {
         }
 
         //------------------------------------------------------------------------
-        //Declared as argument
+        // Declared as argument
         @Override
         public Void visitDeclared_Array(AnnotatedDeclaredType parameter, AnnotatedArrayType argument, Set<AFConstraint> constraints) {
             //should this be Array<String> - T[] the new A2F(String, T)
@@ -181,7 +181,7 @@ public class FIsAReducer implements AFReducer {
         }
 
         //------------------------------------------------------------------------
-        //Primitive as argument
+        // Primitive as argument
         @Override
         public Void visitPrimitive_Declared(AnnotatedPrimitiveType parameter, AnnotatedDeclaredType argument, Set<AFConstraint> constraints) {
             //we may be able to eliminate this case, since I believe the corresponding constraint will just be discarded

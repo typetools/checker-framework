@@ -9,7 +9,7 @@ class MyExplicitArray<MEA extends String>{}
 
 public class LowerBoundDefaulting {
 
-    //IMP1 is of type IMP1 [extends @LB_TOP super @LB_IMPLICIT]
+    // IMP1 is of type IMP1 [extends @LB_TOP super @LB_IMPLICIT]
     public <IMP1 extends String> void implicitsTypeVar() {
 
         //should fail because @LB_IMPLICIT is below @LB_TOP

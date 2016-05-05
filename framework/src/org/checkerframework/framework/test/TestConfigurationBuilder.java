@@ -26,8 +26,8 @@ import java.util.Set;
  */
 public class TestConfigurationBuilder {
 
-    //Presented first are static helper methods that reduce configuration building to a method call
-    //However, if you need more complex configuration or custom configuration, use the
+    // Presented first are static helper methods that reduce configuration building to a method call
+    // However, if you need more complex configuration or custom configuration, use the
     //constructors provided below
 
     /**

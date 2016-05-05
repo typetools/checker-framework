@@ -163,7 +163,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
             Wildcard<Q> newWild = newParams.get(name);
             Wildcard<Q> combinedWild = oldWild.combineWith(newWild, lowerOp, upperOp);
 
-            //System.err.printf("COMBINE[%s]: %s + %s = %s\n", name, oldWild, newWild, combinedWild);
+            // System.err.printf("COMBINE[%s]: %s + %s = %s\n", name, oldWild, newWild, combinedWild);
             params.put(name, combinedWild);
         }
     }

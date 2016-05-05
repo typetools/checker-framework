@@ -63,7 +63,7 @@ public class TestSuite extends Suite {
         FrameworkMethod method = getParametersMethod(klass);
 
         List<File> javaFiles;
-        //We will have either a method getTestDirs which returns String [] or getTestFiles
+        // We will have either a method getTestDirs which returns String [] or getTestFiles
         //which returns List<Object []> or getParametersMethod would fail
         if (method.getReturnType().isArray()) {
             String [] dirs = (String[]) method.invokeExplosively(null);

@@ -215,7 +215,7 @@ public class CheckerPreferencePage extends PreferencePage implements
 
         group.setLayout(layout);
 
-        //Make Processor table
+        // Make Processor table
         procTable = new Table(group, SWT.CHECK | SWT.MULTI | SWT.BORDER);
 
         //layout data within the group
@@ -235,7 +235,7 @@ public class CheckerPreferencePage extends PreferencePage implements
             column.setText (header);
         }
 
-        //Add built-in checkers to the table
+        // Add built-in checkers to the table
         for ( final CheckerInfo checkerInfo : CheckerManager.getCheckerInfos() ) {
             addProcTableItem(checkerInfo, true);
         }
@@ -248,7 +248,7 @@ public class CheckerPreferencePage extends PreferencePage implements
             columns.pack();
         }
 
-        //Make the add/remove controls for the table
+        // Make the add/remove controls for the table
 
         final Button addButton = new Button(group, SWT.PUSH);
         addButton.setText("Add");
@@ -313,7 +313,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         final Group group = new Group(tableComposite, SWT.None);
         group.setText("Additional compiler parameters");
 
-        //Layout info for tableComposite's layout
+        // Layout info for tableComposite's layout
         GridData groupGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         group.setLayoutData(groupGridData);
 
@@ -323,7 +323,7 @@ public class CheckerPreferencePage extends PreferencePage implements
 
         group.setLayout(layout);
 
-        //Make Processor table
+        // Make Processor table
         optTable = new Table(group, SWT.CHECK | SWT.MULTI | SWT.BORDER);
 
         //layout data within the group
@@ -340,7 +340,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         final TableColumn column = new TableColumn (optTable, SWT.NONE);
         column.setText ("Option");
 
-        //Add existing op;tions to the table
+        // Add existing op;tions to the table
         for ( final OptionLine optionInfo : getMiscParams() ) {
             addOptTableItem(optionInfo);
         }

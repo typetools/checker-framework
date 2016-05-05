@@ -34,11 +34,11 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
 
     @Override
     public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
-        //NOTE: This may be insufficient for multi-rooted qualifier hierarchies.  David McArthur and
-        //Jonathan Burke have had a discussion on this.  This method will work for single-root hierarchies
+        // NOTE: This may be insufficient for multi-rooted qualifier hierarchies.  David McArthur and
+        // Jonathan Burke have had a discussion on this.  This method will work for single-root hierarchies
         //which are the only ones that have a Qual implementation at the moment.  We will take this up again
         //before expanding to multi-rooted type systems (e.g. NullnessInitialization)
-        //The reason we have this particular method in the first place is because the appropriate location
+        // The reason we have this particular method in the first place is because the appropriate location
         //to check for an Annotation may be different between two type systems, that is:
         // For a declaration:
         //
@@ -52,7 +52,7 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
         // hierarchies individually.  However, for the qualifier system there is only 1 qualifier for both
         // hierarchies.  So QualifiedTypeMirrors would not be able to model the above situation.
 
-        //One alternative to this approach is to always move the primary annotation to the bounds and
+        // One alternative to this approach is to always move the primary annotation to the bounds and
         //then remove the actual qualifiers.  This would mean, the primary annotations are always pushed to
         //a concrete type where there must be one annotation in each hierarchy. E.g.
         // <@Initialized T extends @UnknownInitialization Object>

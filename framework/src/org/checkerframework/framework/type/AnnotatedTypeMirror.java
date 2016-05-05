@@ -1013,9 +1013,9 @@ public abstract class AnnotatedTypeMirror {
             } else if ((getEnclosingType() != null) &&
                        (getEnclosingType().getKind() != TypeKind.NONE)) {
                 // Handle case 2
-                //Shallow copy provides a fresh type when there are no type arguments
+                // Shallow copy provides a fresh type when there are no type arguments
                 //and we set the enclosing type
-                //Therefore, we do not need to use deepCopy
+                // Therefore, we do not need to use deepCopy
                 AnnotatedDeclaredType rType = shallowCopy();
                 AnnotatedDeclaredType et = getEnclosingType();
                 rType.setEnclosingType(et.getErased());
@@ -1112,17 +1112,17 @@ public abstract class AnnotatedTypeMirror {
          *
         @Override
         public void addAnnotations(Iterable<? extends AnnotationMirror> annotations) {
-            //Thread.dumpStack();
+            // Thread.dumpStack();
             super.addAnnotations(annotations);
         }
         @Override
         public void addAnnotation(AnnotationMirror a) {
-            //Thread.dumpStack();
+            // Thread.dumpStack();
             super.addAnnotation(a);
         }
         @Override
         public void addAnnotation(Class<? extends Annotation> a) {
-            //Thread.dumpStack();
+            // Thread.dumpStack();
             super.addAnnotation(a);
         }
 
@@ -1417,7 +1417,7 @@ public abstract class AnnotatedTypeMirror {
 
         @Override
         public AnnotatedArrayType getErased() {
-            //IMPORTANT NOTE: The returned type is a fresh Object because
+            // IMPORTANT NOTE: The returned type is a fresh Object because
             //the componentType is the only component of arrays and the
             //call to getErased will return a fresh object.
             // | T[ ] | = |T| [ ]
@@ -1564,7 +1564,7 @@ public abstract class AnnotatedTypeMirror {
         // because otherwise the annotations are inconsistent.
         private void fixupBoundAnnotations() {
 
-            //We allow the above replacement first because primary annotations might not have annotations for
+            // We allow the above replacement first because primary annotations might not have annotations for
             //all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
             //don't have a qualifier in primaryAnnotations
             if (!this.getAnnotationsField().isEmpty()) {
@@ -1572,7 +1572,7 @@ public abstract class AnnotatedTypeMirror {
                     replaceUpperBoundAnnotations();
                 }
 
-                //Note:
+                // Note:
                 // if the lower bound is a type variable
                 // then when we place annotations on the primary annotation
                 //   this will actually cause the type variable to be exact and

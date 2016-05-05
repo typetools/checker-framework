@@ -44,7 +44,7 @@ enum AtmKind {
     UNION(AnnotatedUnionType.class),
     WILDCARD(AnnotatedWildcardType.class);
 
-    //The AnnotatedTypeMirror subclass that represents types of this kind
+    // The AnnotatedTypeMirror subclass that represents types of this kind
     public final Class<? extends AnnotatedTypeMirror> atmClass;
 
     AtmKind(Class<? extends AnnotatedTypeMirror> atmClass) {

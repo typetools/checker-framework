@@ -170,7 +170,7 @@ public class ElementAnnotationUtil {
 
         //indicates that this is an annotation in front of an unbounded wildcard
         //e.g.  < @A ? >
-        //For each annotation in this set, if there is no annotation in upperBoundAnnos
+        // For each annotation in this set, if there is no annotation in upperBoundAnnos
         //that is in the same hierarchy then the annotation will be applied to both bounds
         //otherwise the annotation applies to the lower bound only
         public final Set<AnnotationMirror> possiblyBoth;
@@ -204,7 +204,7 @@ public class ElementAnnotationUtil {
                 possiblyBoth.add(anno);
 
             } else {
-                //A TypePathEntry of WILDCARD indicates that is is placed on the bound
+                // A TypePathEntry of WILDCARD indicates that is is placed on the bound
                 //use the type of the wildcard bound to determine which set to put it in
 
                 if (isInFrontOfWildcard) {

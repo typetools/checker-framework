@@ -42,7 +42,7 @@ import javax.lang.model.type.WildcardType;
  */
 public class BoundsInitializer {
     //==================================================================================================================
-    //Static helper methods called from AnnotatedTypeMirror to initialize bounds of wildcards or type variables
+    // Static helper methods called from AnnotatedTypeMirror to initialize bounds of wildcards or type variables
     //==================================================================================================================
 
     /**
@@ -124,7 +124,7 @@ public class BoundsInitializer {
     }
 
     //==================================================================================================================
-    //Classes and methods used to make the above static helper methods work
+    // Classes and methods used to make the above static helper methods work
     //==================================================================================================================
 
     /**
@@ -154,7 +154,7 @@ public class BoundsInitializer {
         }
 
         //--------------------------------------------------------------------------------------------------------------
-        //Visit methods that keep track of the path traversed through type variable bounds, and the
+        // Visit methods that keep track of the path traversed through type variable bounds, and the
         //wildcards/intersections that have been encountered.  A summary of the algorithm used by this visitor
         //is given at: <need to create document>
         //--------------------------------------------------------------------------------------------------------------
@@ -676,7 +676,7 @@ public class BoundsInitializer {
         }
     }
 
-    //BoundPathNode's are a step in a "type path" that are used to
+    // BoundPathNode's are a step in a "type path" that are used to
     private static abstract class BoundPathNode {
         enum Kind {
             Extends,

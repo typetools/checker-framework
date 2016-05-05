@@ -8,7 +8,7 @@ class Issue457<T extends Number> {
 
         Float objFloat = (obj instanceof Float) ? (Float) obj : null;
 
-        //An error will be emitted on this line before the fix for Issue457
+        // An error will be emitted on this line before the fix for Issue457
         t = obj;
     }
 }

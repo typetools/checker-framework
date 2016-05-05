@@ -405,7 +405,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         return arePrimeAnnosEqual(type1, type2);
     }
 
-    //The following methods are because we use WILDCARDS instead of TYPEVARS for capture converted wildcards
+    // The following methods are because we use WILDCARDS instead of TYPEVARS for capture converted wildcards
     //TODO: REMOVE THE METHOD BELOW WHEN CAPTURE CONVERSION IS IMPLEMENTED
     /**
      * Since the Checker Framework doesn't engage in capture conversion, and since sometimes type variables

@@ -163,7 +163,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         } //else
 
 
-        //We put this here because we don't want to put it in visitedNodes before calling
+        // We put this here because we don't want to put it in visitedNodes before calling
         //super (in the else branch) because that would cause the super implementation
         //to detect that we've already visited type and to immediately return
         visitedNodes.put(type, null);

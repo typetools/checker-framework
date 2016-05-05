@@ -112,7 +112,7 @@ public class VisitHistory {
                     //TODO: Investigate WHY we get wildcards that are essentially recursive since I
                     //TODO: don't think we can write these wildcards. Perhaps it is related to our lack of
                     //TODO: capture conversion or inferring void methods
-                    return true;  //Handles the case of recursive wildcard types
+                    return true;  // Handles the case of recursive wildcard types
                 }
                 if (!AnnotationUtils.areSame(thisType.getAnnotations(), thatType.getAnnotations())) {
                     return false;

@@ -98,7 +98,7 @@ public class ElementAnnotationApplier {
             ParamApplier.apply(type, element, typeFactory);
 
         } else if ( isCaptureConvertedTypeVar(element) ) {
-            //Types resulting from capture conversion cannot have explicit annotations
+            // Types resulting from capture conversion cannot have explicit annotations
 
         } else {
             ErrorReporter.errorAbort("ElementAnnotationUtil.apply: illegal argument: " +

@@ -97,7 +97,7 @@ public class SupertypesSolver {
                 if (!equalityAnnos.contains(top)) {
                     final AnnotationMirror lubAnno = lub.getAnnotationInHierarchy(top);
                     if (lubAnno == null) {
-                        //If the LUB and the Equality were the SAME typevar, and the lub was unannotated
+                        // If the LUB and the Equality were the SAME typevar, and the lub was unannotated
                         //then "NO ANNOTATION" is the correct choice
                         if (lub.getKind() == TypeKind.TYPEVAR
                          && equalityType.getUnderlyingType().equals(lub.getUnderlyingType())) {
@@ -205,7 +205,7 @@ public class SupertypesSolver {
         List<TypeVariable> targetsSupertypesLast = new ArrayList<>(remainingTargets);
 
         final Types types = typeFactory.getProcessingEnv().getTypeUtils();
-        //If we have two type variables <A, A extends B> order them B then A
+        // If we have two type variables <A, A extends B> order them B then A
         //this is required because we will use the fact that A must be above B
         //when determining the LUB of A
         Collections.sort(targetsSupertypesLast, new Comparator<TypeVariable>() {

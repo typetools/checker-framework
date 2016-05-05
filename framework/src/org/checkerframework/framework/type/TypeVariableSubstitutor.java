@@ -79,7 +79,7 @@ public class TypeVariableSubstitutor {
             maybeCopyPrimaryAnnotations(original, copy);
             originalToCopy.put(original, copy);
 
-            //Substitution (along with any other operation that changes the component types of an AnnotatedTypeMirror)
+            // Substitution (along with any other operation that changes the component types of an AnnotatedTypeMirror)
             //may change the underlying Java type of components without updating the underlying Java
             //type of the parent type.  We use the underlying type for various purposes (including equals/hashcode)
             //so this can lead to unpredictable behavior.  Currently, we update the underlying type when
@@ -110,10 +110,10 @@ public class TypeVariableSubstitutor {
                 IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
 
             if (visitingExecutableTypeParam) {
-                //AnnotatedExecutableType differs from AnnotatedDeclaredType in that its list of
+                // AnnotatedExecutableType differs from AnnotatedDeclaredType in that its list of
                 //type parameters cannot be adapted in place since the AnnotatedExecutable.typeVarTypes
                 //field is of type AnnotatedTypeVariable and not AnnotatedTypeMirror.
-                //When substituting, all component types that contain a use of the executable's type parameters
+                // When substituting, all component types that contain a use of the executable's type parameters
                 //will be substituted.  The executable's type parameters will have their bounds substituted
                 //but the top-level AnnotatedTypeVariable's will remain
                 visitingExecutableTypeParam = false;

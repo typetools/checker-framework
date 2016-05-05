@@ -809,7 +809,7 @@ public class QualifierDefaults {
                         doApply(t, qual);
                         if (t.getKind() == TypeKind.UNION) {
                             AnnotatedUnionType aut = (AnnotatedUnionType) t;
-                            //Also apply the default to the alternative types
+                            // Also apply the default to the alternative types
                             for (AnnotatedDeclaredType anno : aut
                                     .getAlternatives()) {
                                 doApply(anno, qual);

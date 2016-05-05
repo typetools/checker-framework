@@ -87,9 +87,9 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
-//The following imports are from com.sun, but they are all
+// The following imports are from com.sun, but they are all
 //@jdk.Exported and therefore somewhat safe to use.
-//Try to avoid using non-@jdk.Exported classes.
+// Try to avoid using non-@jdk.Exported classes.
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
@@ -1309,7 +1309,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         assert targs.size() == tvars.size() : "Mismatch in type argument size between " + type + " and " + generic;
 
-        //System.err.printf("TVFU\n  type: %s\n  generic: %s\n", type, generic);
+        // System.err.printf("TVFU\n  type: %s\n  generic: %s\n", type, generic);
 
         Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
 
@@ -1828,7 +1828,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         //usually, the only locations that will add annotations to the return type are getClass in stub files
         //defaults and propagation tree annotator.  Since getClass is final they cannot come from source code.
-        //Also, since the newBound is an erased type we have no type arguments.  So, we just copy the annotations
+        // Also, since the newBound is an erased type we have no type arguments.  So, we just copy the annotations
         //from the bound of the declared type to the new bound.
         final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
         newBound.replaceAnnotations(classWildcardArg.getExtendsBound().getAnnotations());
@@ -3160,7 +3160,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 final AnnotatedTypeMirror falseType = getAnnotatedType(conditionalExpressionTree.getFalseExpression());
                 final AnnotatedTypeMirror trueType = getAnnotatedType(conditionalExpressionTree.getTrueExpression());
 
-                //Known cases where we must use LUB because falseType/trueType will not be equal:
+                // Known cases where we must use LUB because falseType/trueType will not be equal:
                 // a) when one of the types is a type variable that extends a functional interface
                 //    or extends a type variable that extends a functional interface
                 // b) When one of the two sides of the expression is a reference to a sub-interface.
@@ -3233,8 +3233,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                         //checkTypeArgs now enforces that wildcard annotation bounds MUST be within
                         //the bounds of the type parameter.  Therefore, the wildcard's upper bound
                         //should ALWAYS be more specific than the upper bound of the type parameter
-                        //That said, the Java type does NOT have to be.
-                        //Add the annotations from the wildcard to the lub type.
+                        // That said, the Java type does NOT have to be.
+                        // Add the annotations from the wildcard to the lub type.
                         final AnnotatedTypeMirror newArg;
                         if (types.isSameType(wilcardUbType, glbType)) {
                             newArg = wildcardType.getExtendsBound().deepCopy();

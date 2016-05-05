@@ -23,7 +23,7 @@ import polyall.quals.*;
 })
 public class IncompatibleBounds {
 
-    //The bounds below are valid
+    // The bounds below are valid
     class TopToBottom<@H1Bot T extends @H1Top Object> {}
     class TopToH1S1<@H1S1 TT extends @H1Top Object> {}
     class H1S1ToBot<@H1Bot TTT extends @H1S1 Object> {}

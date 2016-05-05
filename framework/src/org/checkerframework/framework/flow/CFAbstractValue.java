@@ -402,7 +402,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         final AnnotatedTypeMirror source = findSourceAtm(types, qualifierHierarchy, result, mostSpecific, top);
         final AnnotationMirror sourcePrimaryAnno = source.getAnnotationInHierarchy(top);
 
-        //Indicates that source is a non-primary-annotated type variable declared by the same type parameter of result
+        // Indicates that source is a non-primary-annotated type variable declared by the same type parameter of result
         //in this case, source is equivalent to the declared type of that type variable and we copy its bounds
         if (types.isSameType(source.getUnderlyingType(), result.getUnderlyingType()) && sourcePrimaryAnno == null) {
             final AnnotatedTypeVariable resultDecl = (AnnotatedTypeVariable) source;

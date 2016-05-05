@@ -1,5 +1,5 @@
 class BasicTest {
-    //Random code just to make sure that the compound design pattern
+    // Random code just to make sure that the compound design pattern
     //does not throw any exceptions
     Object field = new Object();
     String[] array = {"hello", "world"};

@@ -30,11 +30,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
  *   the correct inference would be @Nullable String and both arguments would be valid.
  */
 public abstract class TUConstraint {
-    //An AnnotatedTypeVariable representing a target type parameter for which we are inferring a type argument
+    // An AnnotatedTypeVariable representing a target type parameter for which we are inferring a type argument
     //this is the T in the TUConstraints
     public final AnnotatedTypeVariable typeVariable;
 
-    //A type used to infer an argument for the typeVariable T, this would be the U in the TUConstraints
+    // A type used to infer an argument for the typeVariable T, this would be the U in the TUConstraints
     public final AnnotatedTypeMirror relatedType;
     public final int hashcodeBase;
 

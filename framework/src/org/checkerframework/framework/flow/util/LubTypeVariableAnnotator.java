@@ -133,7 +133,7 @@ public class LubTypeVariableAnnotator {
                     final AnnotationMirror subAnno =
                         (subPrimary != null) ? subPrimary : findEffectiveAnnotationInHierarchy(qualHierarchy, subAsLub, top);
 
-                    //It is a conservative lub to place a primary annotation rather than choosing a more specific bound
+                    // It is a conservative lub to place a primary annotation rather than choosing a more specific bound
                     //set that would be a supertype of both the ranges of the subtype/supertype
                     lub.replaceAnnotation(qualHierarchy.leastUpperBound(lubAnno, subAnno));
 

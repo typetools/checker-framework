@@ -221,7 +221,7 @@ public class ElementUtils {
         if (elt instanceof Symbol.ClassSymbol) {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if (null != clss.classfile) {
-                //The class file could be a .java file
+                // The class file could be a .java file
                 return clss.classfile.getName().endsWith(".class");
             } else {
                 return false;

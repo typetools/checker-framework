@@ -540,7 +540,7 @@ public class QualifierPolymorphism {
 
             if (typeSuper.getKind() == actualType.getKind()
              && type.getKind() == actualType.getKind()) {
-                //I've preserved the old logic here, I am not sure the actual reasoning
+                // I've preserved the old logic here, I am not sure the actual reasoning
                 //however, please see the else case as to where it fails
 
                 AnnotatedTypeVariable tvType = (AnnotatedTypeVariable)typeSuper;
@@ -555,11 +555,11 @@ public class QualifierPolymorphism {
                 return result;
 
             } else {
-                //When using the polyCollector we compare the formal parameters to the actual
+                // When using the polyCollector we compare the formal parameters to the actual
                 //arguments but, when the formal parameters are uses of method type parameters
                 //then the declared formal parameters may not actually be supertypes of their arguments
                 // (though they should be if we substituted them for the method call's type arguments)
-                //For an example of this see framework/tests/all-system/PolyCollectorTypeVars.java
+                // For an example of this see framework/tests/all-system/PolyCollectorTypeVars.java
                 return visit(type.getUpperBound(), actualType);
             }
 

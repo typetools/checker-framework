@@ -30,8 +30,8 @@ import java.util.*;
  */
 public class PropagationTypeAnnotator extends TypeAnnotator {
 
-    //The PropagationTypeAnnotator is called recursively via TypeAnnotatorUtil.eraseBoundsThenAnnotate
-    //This flag prevents infinite recursion
+    // The PropagationTypeAnnotator is called recursively via TypeAnnotatorUtil.eraseBoundsThenAnnotate
+    // This flag prevents infinite recursion
     private boolean pause  = false;
     private Stack<AnnotatedDeclaredType> parents = new Stack<>();
 
@@ -136,8 +136,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     /** Take the primary annotations from typeParamBound and place them as primary annotations on wildcard bound */
     private void applyAnnosFromBound(final AnnotatedTypeMirror wildcardBound, final AnnotatedTypeMirror typeParamBound,
                                      final Set<? extends AnnotationMirror> tops) {
-        //Type variables do not need primary annotations.
-        //The type variable will have annotations placed on its
+        // Type variables do not need primary annotations.
+        // The type variable will have annotations placed on its
         //bounds via its declaration or defaulting rules
         if (wildcardBound.getKind() == TypeKind.TYPEVAR
          || typeParamBound.getKind() == TypeKind.TYPEVAR) {

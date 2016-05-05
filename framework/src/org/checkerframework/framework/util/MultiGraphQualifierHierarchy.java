@@ -625,7 +625,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
                     AnnotationUtils.updateMappingToImmutableSet(fullMap, bottom, Collections.singleton(polyQualifier));
                 } else {
                     // TODO: in a type system with a single qualifier this check will fail.
-                    //ErrorReporter.errorAbort("MultiGraphQualifierHierarchy.addPolyRelations: " +
+                    // ErrorReporter.errorAbort("MultiGraphQualifierHierarchy.addPolyRelations: " +
                     //        "incorrect top qualifier given in polymorphic qualifier: " + polyQualifier +
                     //        " could not find bottom for: " + polyTop);
                 }

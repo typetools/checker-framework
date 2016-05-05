@@ -40,14 +40,14 @@ public class CustomCheckersMenu extends ContributionItem {
                 .getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES);
 		
 		
-		//Here you could get selection and decide what to do
-		//You can also simply return if you do not want to show a menu
+		/ /Here you could get selection and decide what to do
+		/ /You can also simply return if you do not want to show a menu
 
 		//create the menu item
 		MenuItem menuItem = new MenuItem(menu, SWT.CASCADE, index);
 		menuItem.setText("Run Custom Checker");
 	
-		//Menu menu = new Menu(menu, SWT.)
+		/ /Menu menu = new Menu(menu, SWT.)
 		/*menuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				

@@ -47,7 +47,7 @@ public class SubtypesSolver {
 
         List<TypeVariable> targetsSubtypesLast = new ArrayList<>(remainingTargets);
 
-        //If we have two type variables <A, A extends B> order them A then B
+        // If we have two type variables <A, A extends B> order them A then B
         //this is required because we will use the fact that B must be below A
         //when determining the glb of B
         Collections.sort(targetsSubtypesLast, new Comparator<TypeVariable>() {
@@ -98,7 +98,7 @@ public class SubtypesSolver {
 
             }  else {
 
-                //GLB all of the types than combine this with the GLB of primary annotation constraints
+                // GLB all of the types than combine this with the GLB of primary annotation constraints
                 final AnnotatedTypeMirror glbType = GlbUtil.glbAll(subtypes.types, typeFactory);
                 if (glbType != null) {
                     if (!primaries.isEmpty()) {

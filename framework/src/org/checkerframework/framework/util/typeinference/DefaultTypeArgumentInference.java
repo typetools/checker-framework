@@ -214,7 +214,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                                                          final Set<TypeVariable> targets) {
 
         //1.  Step 1 - Build up argument constraints
-        //The AFConstraints for arguments are used also in the
+        // The AFConstraints for arguments are used also in the
         Set<AFConstraint> afArgumentConstraints = createArgumentAFConstraints(typeFactory, argumentTypes, methodType, targets);
 
         //2. Step 2 - Solve the constraints.
@@ -256,12 +256,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             fromArgEqualities.mergeSubordinate(combinedSupertypesAndAssignment);
 
             //if we don't have a result for all type arguments
-            //Step 6 - Infer the type arguments from the greatest-lower-bounds of all "subtype" constraints
+            // Step 6 - Infer the type arguments from the greatest-lower-bounds of all "subtype" constraints
             if (!fromArguments.isComplete(targets)) {
                 InferenceResult fromAssignment = inferFromAssignment(assignedTo, boxedReturnType, methodType, afArgumentConstraints,
                         fromArguments, targets, typeFactory);
 
-                //Step 7 - Merge the argument and the assignment constraints
+                // Step 7 - Merge the argument and the assignment constraints
                 fromArguments.mergeSubordinate(fromAssignment);
             }
 
@@ -283,11 +283,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *   <@Initialized T extends @Initialized Object> void id(T t) { return t; }
      *   id(null);
      *
-     *   //The invocation of id will result in a type argument with primary annotations of @FBCBottom @Nullable
+     *   // The invocation of id will result in a type argument with primary annotations of @FBCBottom @Nullable
      *   //but this is below the lower bound of T in the initialization hierarchy so instead replace
      *   //@FBCBottom with @Initialized
      *
-     *   //This should happen ONLY with supertype constraints because raising the primary annotation would still
+     *   // This should happen ONLY with supertype constraints because raising the primary annotation would still
      *   //be valid for these constraints (since we just LUB the arguments involved) but would violate any
      *   //equality constraints
      * }

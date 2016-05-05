@@ -394,7 +394,7 @@ public class AnnotatedTypes {
             return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) t).getExtendsBound().deepCopy(), elem);
         }
 
-        //Method references like String[]::clone should have a return type of String[] rather than Object
+        // Method references like String[]::clone should have a return type of String[] rather than Object
         if (SyntheticArrays.isArrayClone(t, elem)) {
             return SyntheticArrays.replaceReturnType(elem, (AnnotatedArrayType) t);
         }
@@ -795,7 +795,7 @@ public class AnnotatedTypes {
             }
             if (subtypes.size() > 0) {
                 if (!findEffectiveAnnotations(atypeFactory.getQualifierHierarchy(), lub).isEmpty()) {
-                    //I believe the only place this can happen is within recursive types and
+                    // I believe the only place this can happen is within recursive types and
                     //if we already have annotations than the type has been visited
                     return;
                 }
@@ -1877,7 +1877,7 @@ public class AnnotatedTypes {
         return result;
     }
 
-    //For Wildcards, isSuperBound and isExtendsBound will return true if isUnbound does.
+    // For Wildcards, isSuperBound and isExtendsBound will return true if isUnbound does.
 
     public static boolean isExplicitlySuperBounded(final AnnotatedWildcardType wildcardType) {
         return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound() &&

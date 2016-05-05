@@ -7,7 +7,7 @@ import polyall.quals.*;
 
 class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     //----------------------------------------------------------
-    //Test Case - A
+    // Test Case - A
     <A> A methodA(@H2Top A a1, @H2Top A a2) {
         return null;
     }
@@ -18,7 +18,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     }
 
     //----------------------------------------------------------
-    //Test Case - B
+    // Test Case - B
     <B> B methodB(List<@H2S2 B> b1, List<@H1S2 B> b2) {
         return null;
     }
@@ -28,7 +28,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     }
 
     //----------------------------------------------------------
-    //Test Case - C
+    // Test Case - C
     <C extends List<? extends Object>> C methodC(C c1, C c2) { return null;}
 
     void contextC(List<@H1S1 @H2S2 ? extends @H1S1 @H2S2 String> l1, List<@H1S1 @H2S2 String> l2) {
@@ -36,7 +36,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     }
 
     //----------------------------------------------------------
-    //Test Case - D
+    // Test Case - D
 
     <D extends OUTER_SCOPE_TV, DD> D methodD(D d1, D d2, DD dd)  { return null;}
     <D extends OUTER_SCOPE_TV, DD> DD methodD2(D d1, D d2, DD dd) { return null;}
@@ -44,12 +44,12 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     void contextD(OUTER_SCOPE_TV os1, @H1S1 @H2S1 OUTER_SCOPE_TV os2) {
         OUTER_SCOPE_TV osNaked1 = methodD(os1, os1, os2);
 
-        //So for the next failure we correctly infer that for methodD to take both os1 and os2 as arguments
-        //D must be @H1Top @H2Top OUTER_SCOPE_TV.
-        //However, the UPPER_BOUND of D is <@H1Bottom @H2Bottom OUTER_SCOPE_TV extends @H1Top @H2Top Object>
+        // So for the next failure we correctly infer that for methodD to take both os1 and os2 as arguments
+        // D must be @H1Top @H2Top OUTER_SCOPE_TV.
+        // However, the UPPER_BOUND of D is <@H1Bottom @H2Bottom OUTER_SCOPE_TV extends @H1Top @H2Top Object>
         //notice that our inferred type for D is above this bound.
         //
-        //A similar, more useful example in the Nullness type system would be:
+        // A similar, more useful example in the Nullness type system would be:
         /*
             class Gen<OUTER> {
                public List<OUTER> listo;
@@ -60,7 +60,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
                }
 
                void launder(@NonNull OUTER arg1, @Nullable OUTER arg2) {
-                   addToListo(arg1, arg2); //T is inferred to be <@Nullable OUTER>
+                   addToListo(arg1, arg2); // T is inferred to be <@Nullable OUTER>
                                            //if we did not mark this as type.argument.type.incompatible
                                            //then we would have no idea that in the last
                                            //line of this example we are putting a null value into
@@ -85,7 +85,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     }
 
     //----------------------------------------------------------
-    //Test Case - E
+    // Test Case - E
     <E> E methodE(E e1, E[] aos2) {
         return null;
     } //pass an array to one of these to cover A2FReducer.visitArray_Typevar
@@ -97,7 +97,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
 
     //----------------------------------------------------------
-    //Test Case - C
+    // Test Case - C
     <F> List<? super F> methodF(List<? extends F> lExtF, List<? super F> lSupF) { return null;}
 
     void contextF(List<@H1Bot @H2Bot? extends @H1Top @H2S1  String> l1, List<? super @H1S1 @H2S2 String> l2,
@@ -146,7 +146,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     }
 
     void contextOP(@H1S1 @H2S1 String s1, @H1Bot @H2Bot String s2) {
-        //This test is actually here to test that the constraint P :> O is implied on p
+        // This test is actually here to test that the constraint P :> O is implied on p
         //:: error: (assignment.type.incompatible)
         @H1Bot @H2Bot String loc = methodOP(s1, s2);
     }

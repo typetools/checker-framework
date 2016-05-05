@@ -22,7 +22,7 @@ public class TestDiagnosticUtils {
     public static final String STUB_PARSER_STRING = "warning: StubParser";
     public static final String STUB_PARSER_COMMENT = "//" + STUB_PARSER_STRING;
 
-    //This is SPARTA specific and should be removed, we need to create a more general way to handle these special
+    // This is SPARTA specific and should be removed, we need to create a more general way to handle these special
     //diagnostics, perhaps by moving away from static state
     public static final String FLOW_POLICY_STRING = "warning: FlowPolicy:";
     public static final String FLOW_POLICY_COMMENT = "//" + FLOW_POLICY_STRING;
@@ -73,11 +73,11 @@ public class TestDiagnosticUtils {
      * is never fixable and always has parentheses
      */
     public static TestDiagnostic fromJavaxToolsDiagnostic(String diagnosticString, boolean noMsgText) {
-        //It would be nice not to parse this from the diagnostic string
+        // It would be nice not to parse this from the diagnostic string
         //however, the interface provides no way to know when an [unchecked] or similar
         //message is added to the reported error.  That is, when doing diagnostic.toString
         //the message may contain an [unchecked] even though getMessage does not report one
-        //Since we want to match the error messages reported by javac exactly, we must parse
+        // Since we want to match the error messages reported by javac exactly, we must parse
         String trimmed = formatJavaxToolString(diagnosticString, noMsgText);
         return fromPatternMatching(DIAGNOSTIC_PATTERN, DIAGNOSTIC_WARNING_PATTERN, null, trimmed);
     }
@@ -241,7 +241,7 @@ public class TestDiagnosticUtils {
         Set<TestDiagnostic> diagnostics = new LinkedHashSet<>(javaxDiagnostics.size());
 
         for (Diagnostic<? extends JavaFileObject> diagnostic : javaxDiagnostics) {
-            //See TestDiagnosticUtils as to why we use diagnostic.toString rather
+            // See TestDiagnosticUtils as to why we use diagnostic.toString rather
             //than convert from the diagnostic itself
             final String diagnosticString = diagnostic.toString();
 

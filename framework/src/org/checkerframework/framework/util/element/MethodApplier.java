@@ -116,7 +116,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
      */
     @Override
     public void extractAndApply() {
-        methodType.setElement(methodSymbol); //Preserves previous behavior
+        methodType.setElement(methodSymbol); // Preserves previous behavior
 
         // Add declaration annotations to the return type if
         if (methodType.getReturnType() instanceof AnnotatedTypeVariable) {
@@ -137,7 +137,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         applyAllElementAnnotations( methodType.getTypeVariables(),  methodSymbol.getTypeParameters(), typeFactory );
     }
 
-    //NOTE that these are the only locations not handled elsewhere, otherwise we call apply
+    // NOTE that these are the only locations not handled elsewhere, otherwise we call apply
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
         final List<TypeCompound> unmatched = new ArrayList<>();

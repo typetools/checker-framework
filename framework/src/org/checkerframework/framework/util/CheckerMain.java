@@ -308,8 +308,8 @@ public class CheckerMain {
             }
         }
 
-        //The logic below is exactly what the javac script does
-        //If it's empty use the current directory AND the "CLASSPATH" environment variable
+        // The logic below is exactly what the javac script does
+        // If it's empty use the current directory AND the "CLASSPATH" environment variable
         if (path == null) {
             final String systemClassPath = System.getenv("CLASSPATH");
             if (systemClassPath != null && !systemClassPath.trim().isEmpty()) {
@@ -318,7 +318,7 @@ public class CheckerMain {
 
             actualArgs.add(".");
         } else {
-            //Every classpath entry overrides the one before it and CLASSPATH
+            // Every classpath entry overrides the one before it and CLASSPATH
             actualArgs.add(path);
         }
 
@@ -375,7 +375,7 @@ public class CheckerMain {
             }
         }
 
-        //Actually invoke the compiler
+        // Actually invoke the compiler
         return ExecUtil.execute(args.toArray(new String[args.size()]), System.out, System.err);
     }
 
