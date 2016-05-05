@@ -141,8 +141,7 @@ public class AnnotationConverter {
      * @param obj is the value of the field
      * @param builder is the AnnotationBuilder
      */
-    @SuppressWarnings("unchecked") // This is actually checked in the first
-    // instanceOf call below.
+    @SuppressWarnings("unchecked") // This is actually checked in the first instanceOf call below.
     protected static void addFieldToAnnotationBuilder(String fieldKey, Object obj,
             AnnotationBuilder builder) {
         if (obj instanceof List<?>) {

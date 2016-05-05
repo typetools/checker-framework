@@ -157,14 +157,14 @@ public class KeyForAnnotatedTypeFactory extends
 
       final AnnotatedTypeMirror returnType = result.first.getReturnType();
 
-      //Can we square this with the KEyForPropagationTreeAnnotator
+      // Can we square this with the KEyForPropagationTreeAnnotator
       Pair<Tree, AnnotatedTypeMirror> context = getVisitorState().getAssignmentContext();
 
       if (returnType.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
           AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(this, getPath(tree));
 
           if (assignedTo != null) {
-              //array types and boxed primitives etc don't require propagation
+              // array types and boxed primitives etc don't require propagation
               if (assignedTo.getKind() == TypeKind.DECLARED) {
                   final AnnotatedDeclaredType newClassType = (AnnotatedDeclaredType) returnType;
                   keyForPropagator.propagate(newClassType, (AnnotatedDeclaredType) assignedTo,
@@ -531,7 +531,7 @@ public class KeyForAnnotatedTypeFactory extends
       return null;
   }
 
-  // Returns null if the AnnotationMirror did not change.
+  /** Returns null if the AnnotationMirror did not change. */
   private AnnotationMirror canonicalizeKeyForValuesGetAnnotationMirror(AnnotationMirror anno,
           FlowExpressionContext flowExprContext, TreePath path, Tree t) {
       LinkedHashSet<String> newValues = canonicalizeKeyForValues(anno, flowExprContext, path, t, true);
@@ -773,7 +773,7 @@ public class KeyForAnnotatedTypeFactory extends
     @Override
     protected Void scan(AnnotatedTypeMirror type, Void v) {
       if (type == null) {
-          return null;             //handles non-existent receivers
+          return null;             // handles non-existent receivers
       }
 
       canonicalizeKeyForValues(type, context, path, leaf);
@@ -914,12 +914,12 @@ public class KeyForAnnotatedTypeFactory extends
       TreePath enclosingMethodPath = TreeUtils.pathTillOfKind(path, Kind.METHOD);
 
       if (path == null || enclosingMethodPath == null) {
-          return; //this seems to happen for cases of desugaring from Data Flow
+          return; // this seems to happen for cases of desugaring from Data Flow
       }
 
       Node node = getNodeForTree(path.getLeaf());
 
-      //node == null means we are still performing flow
+      // node == null means we are still performing flow
       if (node == null || node instanceof FunctionalInterfaceNode) {
           return;
       }

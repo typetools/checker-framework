@@ -94,18 +94,18 @@ public class TestHashCodeEquals {
     private final String source_with_comment = //
     "package org.checkerframework.stubparser.javacc;\n" + //
             "public class Teste {\n" + //
-            "//line comment\n" + //
+            "// line comment\n" + //
             "int a = 0;" + //
-            "//line comment\r\n" + //
+            "// line comment\r\n" + //
             "int b = 0;" + //
-            "//line comment\r" + //
+            "// line comment\r" + //
             "int c = 0;" + //
             "/* multi-line\n comment\n*/" + //
             "int d = 0;" + //
             "/** multi-line\r\n javadoc\n*/" + //
             "int e = 0;" + //
             "}\n" + //
-            "//final comment" + //
+            "// final comment" + //
             "";
 
     private final String source_without_comment = //

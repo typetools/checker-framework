@@ -168,11 +168,11 @@ public class ElementAnnotationUtil {
         public final Set<AnnotationMirror> upperBoundAnnos;
         public final Set<AnnotationMirror> lowerBoundAnnos;
 
-        //indicates that this is an annotation in front of an unbounded wildcard
-        //e.g.  < @A ? >
-        //For each annotation in this set, if there is no annotation in upperBoundAnnos
-        //that is in the same hierarchy then the annotation will be applied to both bounds
-        //otherwise the annotation applies to the lower bound only
+        // indicates that this is an annotation in front of an unbounded wildcard
+        // e.g.  < @A ? >
+        // For each annotation in this set, if there is no annotation in upperBoundAnnos
+        // that is in the same hierarchy then the annotation will be applied to both bounds
+        // otherwise the annotation applies to the lower bound only
         public final Set<AnnotationMirror> possiblyBoth;
 
         /**
@@ -196,16 +196,16 @@ public class ElementAnnotationUtil {
         }
 
         void addAnnotation(final TypeCompound anno) {
-            //if the typepath entry ends in Wildcard then the annotation should go on a bound
-            //otherwise, the annotation is in front of the wildcard
+            // if the typepath entry ends in Wildcard then the annotation should go on a bound
+            // otherwise, the annotation is in front of the wildcard
             // e.g. @HERE ? extends Object
             final boolean isInFrontOfWildcard = anno.getPosition().location.last() != TypePathEntry.WILDCARD;
             if (isInFrontOfWildcard && isUnbounded) {
                 possiblyBoth.add(anno);
 
             } else {
-                //A TypePathEntry of WILDCARD indicates that is is placed on the bound
-                //use the type of the wildcard bound to determine which set to put it in
+                // A TypePathEntry of WILDCARD indicates that is is placed on the bound
+                // use the type of the wildcard bound to determine which set to put it in
 
                 if (isInFrontOfWildcard) {
                     if (isSuperBounded) {
@@ -213,7 +213,7 @@ public class ElementAnnotationUtil {
                     } else {
                         lowerBoundAnnos.add(anno);
                     }
-                } else { //it's on the bound
+                } else { // it's on the bound
                     if (isSuperBounded) {
                         lowerBoundAnnos.add(anno);
                     } else {
@@ -242,9 +242,9 @@ public class ElementAnnotationUtil {
             for (AnnotationMirror anno : possiblyBoth) {
                 superBound.addAnnotation(anno);
 
-                //this will be false if we've defaulted the bounds and are reading them again
-                //in that case, we will have already created an annotation for the extends bound
-                //that should be honored and NOT overwritten
+                // this will be false if we've defaulted the bounds and are reading them again
+                // in that case, we will have already created an annotation for the extends bound
+                // that should be honored and NOT overwritten
                 if (extendsBound.getAnnotationInHierarchy(anno) == null) {
                     extendsBound.addAnnotation(anno);
                 }
@@ -441,13 +441,13 @@ public class ElementAnnotationUtil {
 
         ErrorReporter.errorAbort("ElementAnnotationUtil.getLocationTypeANT: " +
                                  "invalid location " + location + " for type: " + type);
-        return null; //dead code
+        return null; // dead code
     }
 
     private static AnnotatedTypeMirror getLocationTypeAWT(final AnnotatedWildcardType type,
                                                           final List<TypeAnnotationPosition.TypePathEntry> location) {
 
-        //the last step into the Wildcard type is handled in WildcardToBoundAnnos.addAnnotation
+        // the last step into the Wildcard type is handled in WildcardToBoundAnnos.addAnnotation
         if (location.size() == 1) {
             return type;
         }

@@ -115,7 +115,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                         "Type is not bounded. \n"
                       + "type=" + type + "\n"
                       + "tree=" + tree);
-                label = null; //dead code
+                label = null; // dead code
                 upperBound = null;
                 lowerBound = null;
         }
@@ -160,12 +160,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
         if (typeArgTree == null) {
             return super.visitDeclared(type, tree);
-        } //else
+        } // else
 
 
-        //We put this here because we don't want to put it in visitedNodes before calling
-        //super (in the else branch) because that would cause the super implementation
-        //to detect that we've already visited type and to immediately return
+        // We put this here because we don't want to put it in visitedNodes before calling
+        // super (in the else branch) because that would cause the super implementation
+        // to detect that we've already visited type and to immediately return
         visitedNodes.put(type, null);
 
         // We have a ParameterizedTypeTree -> visit it.
@@ -478,7 +478,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
             return qualifierHierarchy.isSubtype(lowerBoundAnnos, upperBoundAnnos);
 
-        } //else
+        } // else
           //  When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
           //  be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
           //  a bound.type.incompatible

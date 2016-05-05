@@ -20,7 +20,7 @@ public class ValueChecker extends BaseTypeChecker {
     }
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-        //Don't call super otherwise MethodVal will be added as a subChecker
+        // Don't call super otherwise MethodVal will be added as a subChecker
         // which creates a circular dependency.
         return new LinkedHashSet<Class<? extends BaseTypeChecker>>();
     }

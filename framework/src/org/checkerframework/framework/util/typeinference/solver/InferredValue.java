@@ -37,8 +37,10 @@ public class InferredValue {
     public static class InferredTarget extends InferredValue {
         public final TypeVariable target;
 
-        //indicates that the inferred type should have these primary annotations and the remainder
-        //should come from the annotations inferred for target
+        /**
+         * Indicates that the inferred type should have these primary annotations and the remainder
+         * should come from the annotations inferred for target.
+         */
         public final Set<AnnotationMirror> additionalAnnotations;
 
         public InferredTarget(final TypeVariable target,

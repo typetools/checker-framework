@@ -27,7 +27,7 @@ public abstract class CheckerHandler extends AbstractHandler {
      */
     protected /*@Nullable*/
     List<IJavaElement> selectionToJavaElements(final ISelection selection) {
-        //ITreeSelection
+        // ITreeSelection
 
         final List<IJavaElement> elements;
         if (selection instanceof IStructuredSelection) {
@@ -46,7 +46,7 @@ public abstract class CheckerHandler extends AbstractHandler {
         IJavaProject project = null;
         for (final Object element : elements) {
             if (element instanceof IJavaProject) {
-                //If the project is in the selection return only it
+                // If the project is in the selection return only it
                 if (project == null || element.equals(project)) {
                     javaElements.clear();
                     javaElements.add((IJavaProject) element);
@@ -60,7 +60,7 @@ public abstract class CheckerHandler extends AbstractHandler {
                     project = jEl.getJavaProject();
                     javaElements.add(jEl);
 
-                //Only add those elements that are in project
+                // Only add those elements that are in project
                 } else if (!projectsEqual(jEl.getJavaProject(), project)) {
                     javaElements.add(jEl);
                 }

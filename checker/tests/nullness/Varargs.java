@@ -43,7 +43,7 @@ public class Varargs {
         String s = null;
         printf("%s", s);
         // tests do not use annotated jdk
-        //System.out.printf ("%s", s);
+        // System.out.printf ("%s", s);
     }
 
     // printf declaration is taken from PrintStream

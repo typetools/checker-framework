@@ -1085,8 +1085,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             case TYPE_PARAMETER:
             // TODO: visitAnnotation does not currently visit annotations on wildcard bounds.
             // Address this for the Lock Checker somehow and enable these, as well as the corresponding test cases in ChapterExamples.java
-            //case EXTENDS_WILDCARD:
-            //case SUPER_WILDCARD:
+            // case EXTENDS_WILDCARD:
+            // case SUPER_WILDCARD:
                 return path;
             default:
                 return null;

@@ -40,18 +40,18 @@ public class CustomCheckersMenu extends ContributionItem {
                 .getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES);
 		
 		
-		//Here you could get selection and decide what to do
-		//You can also simply return if you do not want to show a menu
+		// Here you could get selection and decide what to do
+		// You can also simply return if you do not want to show a menu
 
-		//create the menu item
+		// create the menu item
 		MenuItem menuItem = new MenuItem(menu, SWT.CASCADE, index);
 		menuItem.setText("Run Custom Checker");
 	
-		//Menu menu = new Menu(menu, SWT.)
+		// Menu menu = new Menu(menu, SWT.)
 		/*menuItem.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				
-				//what to do when menu is subsequently selected.
+				// what to do when menu is subsequently selected.
 				System.err.println("Dynamic menu selected");
 			}
 		});*/
@@ -62,7 +62,7 @@ public class CustomCheckersMenu extends ContributionItem {
 			Menu checkersMenu = new Menu(menuItem);
 			final String [] customCheckers = customClasses.split(",");
 			for (int i = 0; i < customCheckers.length; i++) {
-				//final String text = customCheckers[i];
+				// final String text = customCheckers[i];
 				final CheckerInfo checkerInfo = CheckerInfo.fromClassPath(customCheckers[i], null);
 				MenuItem runCustomChecker = new MenuItem(checkersMenu, SWT.CHECK, i);
 				runCustomChecker.setText(checkerInfo.getLabel());
@@ -80,12 +80,12 @@ public class CustomCheckersMenu extends ContributionItem {
                         	
                         	handlerService.executeCommand(pCmd, null);
                         	
-							//handlerService.executeCommand("checkers.eclipse.runnullness", new Event() );
+							// handlerService.executeCommand("checkers.eclipse.runnullness", new Event() );
 						} catch (Exception e1) {
 							throw new RuntimeException(e1);
 						}
 						
-						//what to do when menu is subsequently selected.
+						// what to do when menu is subsequently selected.
 						System.err.println("Dynamic menu selected");
 					}
 				});

@@ -59,7 +59,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     protected StringBuilder sbStore;
     protected StringBuilder sbBlock;
 
-    // Mapping from class/method representation to generated dot file.
+    /** Mapping from class/method representation to generated dot file. */
     protected Map<String, String> generated;
 
     public void init(Map<String, Object> args) {

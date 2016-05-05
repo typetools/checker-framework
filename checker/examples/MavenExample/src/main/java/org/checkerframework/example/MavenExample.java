@@ -23,7 +23,7 @@ public class MavenExample {
 
         StrBuilder stb = new StrBuilder();
 
-        @NonNull Object nn = nullable;  //error on this line
+        @NonNull Object nn = nullable;  // error on this line
         System.out.println(nn);
     }
 

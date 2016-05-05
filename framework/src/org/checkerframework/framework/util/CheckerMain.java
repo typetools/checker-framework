@@ -308,8 +308,8 @@ public class CheckerMain {
             }
         }
 
-        //The logic below is exactly what the javac script does
-        //If it's empty use the current directory AND the "CLASSPATH" environment variable
+        // The logic below is exactly what the javac script does
+        // If it's empty use the current directory AND the "CLASSPATH" environment variable
         if (path == null) {
             final String systemClassPath = System.getenv("CLASSPATH");
             if (systemClassPath != null && !systemClassPath.trim().isEmpty()) {
@@ -318,7 +318,7 @@ public class CheckerMain {
 
             actualArgs.add(".");
         } else {
-            //Every classpath entry overrides the one before it and CLASSPATH
+            // Every classpath entry overrides the one before it and CLASSPATH
             actualArgs.add(path);
         }
 
@@ -330,7 +330,7 @@ public class CheckerMain {
     }
 
     /**
-     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on it's classpath or boot classpath
+     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot classpath
      */
     public List<String> getExecArguments() {
         List<String> args = new ArrayList<String>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 5);
@@ -359,7 +359,7 @@ public class CheckerMain {
     }
 
     /**
-     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on it's classpath or boot classpath
+     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot classpath
      */
     public int invokeCompiler() {
         List<String> args = getExecArguments();
@@ -375,7 +375,7 @@ public class CheckerMain {
             }
         }
 
-        //Actually invoke the compiler
+        // Actually invoke the compiler
         return ExecUtil.execute(args.toArray(new String[args.size()]), System.out, System.err);
     }
 
@@ -481,7 +481,7 @@ public class CheckerMain {
         }
 
         int idx = uri.indexOf('!');
-        //As far as I know, the if statement below can't ever trigger, so it's more of a sanity check thing.
+        // Sanity check
         if (idx == -1) throw new IllegalStateException("You appear to have loaded this class from a local jar file, but I can't make sense of the URL!");
 
         try {
@@ -539,9 +539,10 @@ public class CheckerMain {
     protected static final String SUBTYPING_CHECKER_NAME =
             org.checkerframework.common.subtyping.SubtypingChecker.class.getSimpleName();
 
-    // Returns true if processorString, once transformed into fully qualified form, is present
-    // in fullyQualifiedCheckerNames.
-    // processorString must be the name of a single processor, not a comma-separated list of processors.
+    /**
+     * Returns true if processorString, once transformed into fully qualified form, is present
+     * in fullyQualifiedCheckerNames.
+     *  processorString must be the name of a single processor, not a comma-separated list of processors. */
     public static boolean matchesCheckerOrSubcheckerFromList(final String processorString, List<String> fullyQualifiedCheckerNames) {
         if (processorString.contains(",")) {
             return false; // Do not process strings containing multiple processors.
@@ -550,10 +551,12 @@ public class CheckerMain {
         return fullyQualifiedCheckerNames.contains(asCheckerFrameworkProcessors(processorString, fullyQualifiedCheckerNames, true));
     }
 
-    // Returns the list of fully qualified names of the checkers found in checker.jar
-    // This covers only checkers with the name ending in "Checker"
-    // Checkers with a name ending in "Subchecker" are not included in the returned list,
-    // Note however that it is possible for a checker with the name ending in "Checker" to be used as a subchecker.
+    /**
+     * Returns the list of fully qualified names of the checkers found in checker.jar
+     * This covers only checkers with the name ending in "Checker".
+     * Checkers with a name ending in "Subchecker" are not included in the returned list.
+     * Note however that it is possible for a checker with the name ending in "Checker" to be used as a subchecker.
+     */
     private List<String> getCheckerClassNames() {
         ArrayList<String> checkerClassNames = new ArrayList<String>();
         try {

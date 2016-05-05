@@ -21,8 +21,10 @@ import com.sun.source.util.TreeScanner;
 public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 
     private final Map<Tree, TreePath> foundPaths = new HashMap<>();
-    // The TreePath of the previous tree scanned.
-    // It is always set back to null after a scan has completed.
+    /**
+     * The TreePath of the previous tree scanned.
+     * It is always set back to null after a scan has completed.
+     */
     private TreePath path;
 
     /**

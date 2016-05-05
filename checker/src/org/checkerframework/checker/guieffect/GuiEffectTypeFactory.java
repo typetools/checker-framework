@@ -277,7 +277,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
                     // directSuperTypes() method all I need? Or should I be
                     // using that utility method that returns a set of
                     // annodecl-method pairs given a method that overrides stuff
-                    //if (isUI && issueConflictWarning) {
+                    // if (isUI && issueConflictWarning) {
                     //    AnnotatedTypeMirror.AnnotatedDeclaredType supdecl = fromElement((TypeElement)(((DeclaredType)superclass).asElement()));//((DeclaredType)superclass).asElement());
                     //    // Need to special case an anonymous class with @UI on the decl, because "new @UI Runnable {...}" parses as @UI on an anon class decl extending Runnable
                     //    boolean isAnonInstantiation = TypesUtils.isAnonymousType(ElementUtils.getType(declaringType)) && getDeclAnnotation(declaringType, UI.class) != null;

@@ -46,13 +46,13 @@ class ArrayInit {
         int @ArrayLen(3) [] ints2 = {2,2,2};
     }
     public void vargsTest() {
-        //type of arg should be @UnknownValue Object @BottomVal[]
+        // type of arg should be @UnknownValue Object @BottomVal[]
         vargs((Object[])null);
 
-        //type of arg should be @UnknownValue int @BottomVal[]
+        // type of arg should be @UnknownValue int @BottomVal[]
         vargs((int[]) null);
 
-        //type of arg is, but maybe shouldn't be @UnknownVal byte @StringVal("null") []
+        // type of arg is, but maybe shouldn't be @UnknownVal byte @StringVal("null") []
         //:: error: (argument.type.incompatible)
         vargs((byte[]) null);
     }

@@ -33,7 +33,10 @@ public abstract class AFConstraint {
     public final AnnotatedTypeMirror argument;
     public final AnnotatedTypeMirror formalParameter;
 
-    //used to compute hashcodes, this value should be unique for every subclass of AFConstraints
+    /**
+     * Used to compute hashcodes.
+     * This value should be unique for every subclass of AFConstraints.
+     */
     protected final int hashcodeBase;
 
     public AFConstraint(final AnnotatedTypeMirror argument, final AnnotatedTypeMirror formalParameter,
@@ -59,7 +62,7 @@ public abstract class AFConstraint {
     public boolean equals(Object thatObject) {
         if (this == thatObject) {
             return true;
-        } //else
+        } // else
 
         if (thatObject == null || this.getClass() != thatObject.getClass()) {
             return false;

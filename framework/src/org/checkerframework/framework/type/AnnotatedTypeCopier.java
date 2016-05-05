@@ -28,7 +28,7 @@ import java.util.List;
  *
  * In general, AnnotatedTypeMirrors should be copied via AnnotatedTypeMirror#deepCopy and AnnotatedTypeMirror#shallowCopy.
  * AnnotatedTypeMirror#deepCopy makes use of AnnotatedTypeCopier under the covers.  However, this visitor and
- * it's subclasses can be invoked as follows:
+ * its subclasses can be invoked as follows:
  *
  * new AnnotatedTypeCopier().visit(myTypeVar);
  *
