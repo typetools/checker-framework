@@ -415,9 +415,9 @@ feature.  Here are more detailed justifications:
 
 \item
   Different annotations might be inherited from a supertype and an
-  interface, or from two interfaces.  Presumably, the subtype's annotations
-  would be stronger than either (the greatest lower bound in the type
-  system), or an error would be thrown if no such annotations existed.
+  interface, or from two interfaces.  The inheritance mechanism would need
+  to compute the greatest lower bound in the type system of all annotations
+  on supertypes, or an error would be thrown if no such annotations existed.
 
 \end{itemize}
 
