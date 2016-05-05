@@ -284,7 +284,7 @@ public class TypeArgInferenceUtil {
             typeVars.add(annotatedTypeVar.getUnderlyingType());
         }
 
-        //note NULL values creep in because the underlying visitor uses them in various places
+        // note NULL values creep in because the underlying visitor uses them in various places
         final Boolean result = type.accept(new TypeVariableFinder(), typeVars);
         return result != null && result;
     }
@@ -353,7 +353,7 @@ public class TypeArgInferenceUtil {
     private final static TypeVariableSubstitutor substitutor = new TypeVariableSubstitutor();
 
     // Substituter requires an input map that the substitute methods build.  We just reuse the same map rather than
-    //recreate it each time.
+    // recreate it each time.
     private final static Map<TypeVariable, AnnotatedTypeMirror> substituteMap = new HashMap<>(5);
 
     /**

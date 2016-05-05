@@ -93,7 +93,7 @@ public class ConstraintMapBuilder {
 
                             } else {
                                 // This tells us nothing, they both should be equal but either way
-                                //we gain no information if both type vars have annotations
+                                // we gain no information if both type vars have annotations
                             }
                         }
                     }

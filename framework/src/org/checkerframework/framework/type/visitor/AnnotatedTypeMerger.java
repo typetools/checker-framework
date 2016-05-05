@@ -36,7 +36,7 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
         new AnnotatedTypeMerger(top).visit(from, to);
     }
 
-    //if top != null we replace only the annotations in the hierarchy of top
+    // If top != null we replace only the annotations in the hierarchy of top.
     private final AnnotationMirror top;
 
     public AnnotatedTypeMerger() {

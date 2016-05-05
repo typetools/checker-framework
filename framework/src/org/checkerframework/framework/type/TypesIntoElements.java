@@ -252,7 +252,7 @@ public class TypesIntoElements {
         sym.appendUniqueTypeAttributes(res);
     }
 
-    // return List.nil() not null if there are no TypeCompounds to return.
+    // Do not return null.  Return List.nil() if there are no TypeCompounds to return.
     private static List<Attribute.TypeCompound> generateTypeCompounds(ProcessingEnvironment processingEnv,
             AnnotatedTypeMirror type, TypeAnnotationPosition tapos) {
         return new TCConvert(processingEnv).scan(type, tapos);
@@ -334,8 +334,8 @@ public class TypesIntoElements {
 
             res = directAnnotations(type, tapos);
 
-            //we sometimes fix-up raw types with wildcards, do not write these into the bytecode as there are
-            //no corresponding type arguments and therefore no location to actually add them to
+            // we sometimes fix-up raw types with wildcards, do not write these into the bytecode as there are
+            // no corresponding type arguments and therefore no location to actually add them to
             if (!type.wasRaw()) {
                 int arg = 0;
                 for (AnnotatedTypeMirror ta : type.getTypeArguments()) {

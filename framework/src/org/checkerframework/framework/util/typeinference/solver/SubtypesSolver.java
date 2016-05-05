@@ -48,8 +48,8 @@ public class SubtypesSolver {
         List<TypeVariable> targetsSubtypesLast = new ArrayList<>(remainingTargets);
 
         // If we have two type variables <A, A extends B> order them A then B
-        //this is required because we will use the fact that B must be below A
-        //when determining the glb of B
+        // this is required because we will use the fact that B must be below A
+        // when determining the glb of B
         Collections.sort(targetsSubtypesLast, new Comparator<TypeVariable>() {
             @Override
             public int compare(TypeVariable o1, TypeVariable o2) {
@@ -72,8 +72,8 @@ public class SubtypesSolver {
 
             propagatePreviousGlbs(subtypes, inferenceResult, subtypes.types);
 
-            //if the subtypes size is only 1 then we need not do any GLBing on the underlying types
-            //but we may have primary annotations that need to be GLBed
+            // if the subtypes size is only 1 then we need not do any GLBing on the underlying types
+            // but we may have primary annotations that need to be GLBed
             Map<AnnotationMirror, Set<AnnotationMirror>> primaries = subtypes.primaries;
             if (subtypes.types.size() == 1) {
                 final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> entry = subtypes.types.entrySet().iterator().next();
@@ -81,7 +81,7 @@ public class SubtypesSolver {
 
                 for (AnnotationMirror top : entry.getValue()) {
                     final Set<AnnotationMirror> superAnnos = primaries.get(top);
-                    if (superAnnos != null) { //if it is null we're just going to use the anno already on supertype
+                    if (superAnnos != null) { // if it is null we're just going to use the anno already on supertype
                         final AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(top);
                         superAnnos.add(supertypeAnno);
                     }
@@ -138,8 +138,8 @@ public class SubtypesSolver {
                 final AnnotatedTypeMirror subtargetGlbType = ((InferredType)subtargetInferredGlb).type;
                 Set<AnnotationMirror> subtargetAnnos = subtypesOfTarget.get(subtargetGlbType);
                 if (subtargetAnnos != null) {
-                    //there is already an equivalent type in the list of subtypes, just add
-                    //any hierarchies that are not in its list but are in the supertarget's list
+                    // there is already an equivalent type in the list of subtypes, just add
+                    // any hierarchies that are not in its list but are in the supertarget's list
                     subtargetAnnos.addAll(subtypeTarget.getValue());
                 } else {
                     subtypesOfTarget.put(subtargetGlbType, subtypeTarget.getValue());

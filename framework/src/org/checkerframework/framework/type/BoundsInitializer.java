@@ -139,10 +139,10 @@ public class BoundsInitializer {
         private BoundStructure currentStructure = null;
 
         private final Map<TypeVariable, TypeVariableStructure> typeVarToStructure = new HashMap<>();
-        //private final Map<TypeVariable, TypeVariableRecord> typeVarToRecord = new HashMap<>();
+        // private final Map<TypeVariable, TypeVariableRecord> typeVarToRecord = new HashMap<>();
         private final Map<WildcardType, AnnotatedWildcardType> wildcards = new HashMap<>();
         private final Map<IntersectionType, AnnotatedIntersectionType> intersections = new HashMap<>();
-        //need current bound path
+        // need current bound path
 
         public InitializerVisitor(final BoundStructure boundStructure) {
             this.topLevelStructure = boundStructure;
@@ -155,8 +155,8 @@ public class BoundsInitializer {
 
         //--------------------------------------------------------------------------------------------------------------
         // Visit methods that keep track of the path traversed through type variable bounds, and the
-        //wildcards/intersections that have been encountered.  A summary of the algorithm used by this visitor
-        //is given at: <need to create document>
+        // wildcards/intersections that have been encountered.  A summary of the algorithm used by this visitor
+        // is given at: <need to create document>
         //--------------------------------------------------------------------------------------------------------------
 
         @Override
@@ -399,7 +399,7 @@ public class BoundsInitializer {
             ErrorReporter.errorAbort("Unexpected type in Wildcard bound:\n"
                                    + "kind=" + atm.getKind() + "\n"
                                    + "atm="  + atm);
-            return null; //dead code
+            return null; // dead code
         }
 
         public BoundPathNode addPathNode(final BoundPathNode node) {
@@ -412,7 +412,7 @@ public class BoundsInitializer {
                 ErrorReporter.errorAbort("Cannot remove node: " + node + " It is not the last item.\n"
                         +  "node=" + node + "\n"
                         +  "currentPath=" + currentStructure.currentPath );
-            } //else
+            } // else
 
            currentStructure.currentPath.removeLast();
            return node;
@@ -440,7 +440,7 @@ public class BoundsInitializer {
                 ErrorReporter.errorAbort("Trying to pop WildcardStructure!\n"
                                        + "typeVar=" + typeVar + "\n"
                                        + "currentStucture=" + currentStructure + "\n");
-            } //else
+            } // else
 
             final TypeVariableStructure toPop = (TypeVariableStructure) this.currentStructure;
             if (toPop.typeVar != typeVar) {
@@ -466,7 +466,7 @@ public class BoundsInitializer {
         public void addImmediateTypeVarPaths(ReferenceMap refMap, BoundPath basePath,
                                              TypeVariableStructure targetStruct) {
 
-            //explain typevar sleds
+            // explain typevar sleds
             for (BoundPath path : targetStruct.immediateBoundTypeVars) {
                 final BoundPath newPath = basePath.copy();
                 newPath.add(path.getFirst());
@@ -576,7 +576,7 @@ public class BoundsInitializer {
                     return true;
 
                 default:
-                    //do nothing
+                    // do nothing
             }
         }
 

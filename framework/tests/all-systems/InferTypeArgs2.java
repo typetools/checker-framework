@@ -1,9 +1,9 @@
 
 class CFAbstractValue<V extends CFAbstractValue<V>> {}
 
-//having a concrete extension of CFAbstractValue is the key difference between this and
+// having a concrete extension of CFAbstractValue is the key difference between this and
 // InferTypeArgs1.java.  In this case we end up comparing CFValue with V extends CFAbstractValue<V>
-//which kicks off the DefaultRawnessComparer.  Before I fixed it, it then blew the stack
+// which kicks off the DefaultRawnessComparer.  Before I fixed it, it then blew the stack
 class CFValue extends CFAbstractValue<CFValue> {
     public CFValue(CFAbstractAnalysis<CFValue, ?, ?> analysis) {
     }

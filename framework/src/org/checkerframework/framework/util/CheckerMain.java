@@ -539,9 +539,10 @@ public class CheckerMain {
     protected static final String SUBTYPING_CHECKER_NAME =
             org.checkerframework.common.subtyping.SubtypingChecker.class.getSimpleName();
 
-    // Returns true if processorString, once transformed into fully qualified form, is present
-    // in fullyQualifiedCheckerNames.
-    // processorString must be the name of a single processor, not a comma-separated list of processors.
+    /**
+     * Returns true if processorString, once transformed into fully qualified form, is present
+     * in fullyQualifiedCheckerNames.
+     *  processorString must be the name of a single processor, not a comma-separated list of processors. */
     public static boolean matchesCheckerOrSubcheckerFromList(final String processorString, List<String> fullyQualifiedCheckerNames) {
         if (processorString.contains(",")) {
             return false; // Do not process strings containing multiple processors.
@@ -550,10 +551,12 @@ public class CheckerMain {
         return fullyQualifiedCheckerNames.contains(asCheckerFrameworkProcessors(processorString, fullyQualifiedCheckerNames, true));
     }
 
-    // Returns the list of fully qualified names of the checkers found in checker.jar
-    // This covers only checkers with the name ending in "Checker"
-    // Checkers with a name ending in "Subchecker" are not included in the returned list,
-    // Note however that it is possible for a checker with the name ending in "Checker" to be used as a subchecker.
+    /**
+     * Returns the list of fully qualified names of the checkers found in checker.jar
+     * This covers only checkers with the name ending in "Checker".
+     * Checkers with a name ending in "Subchecker" are not included in the returned list.
+     * Note however that it is possible for a checker with the name ending in "Checker" to be used as a subchecker.
+     */
     private List<String> getCheckerClassNames() {
         ArrayList<String> checkerClassNames = new ArrayList<String>();
         try {

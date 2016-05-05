@@ -29,11 +29,13 @@ import java.util.Set;
  */
 public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements QualifierParameterAnnotationConverter<Q> {
 
-    // The default "Target" in an annotation is the primary qualifier
-    // We can't use null in the annotation, so we use this special value
+    /**
+     * The default "Target" in an annotation is the primary qualifier.
+     * We can't use null in the annotation, so we use this special value.
+     */
     public static final String PRIMARY_TARGET="_primary";
     public static final String TARGET_PARAM_NAME = "param";
-    // The name of the qualifier parameter to use for polymorphic qualifiers.
+    /** The name of the qualifier parameter to use for polymorphic qualifiers. */
     public static final String POLY_NAME = "_poly";
 
     // Annotation field names

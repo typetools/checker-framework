@@ -65,7 +65,7 @@ enum AtmKind {
         }
 
         ErrorReporter.errorAbort("Unhandled AnnotatedTypeMirror ( " + atm.getClass() + " )");
-        return null; //dead code
+        return null; // dead code
     }
 }
 
@@ -652,7 +652,7 @@ public enum AtmCombo {
             default:
                 // Reaching this point indicates that there is an AtmCombo missing
                 ErrorReporter.errorAbort("Unhandled AtmCombo ( " + combo + " ) " );
-                return null; //dead code
+                return null; // dead code
         }
     }
 }

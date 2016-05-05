@@ -796,7 +796,7 @@ public class AnnotatedTypes {
             if (subtypes.size() > 0) {
                 if (!findEffectiveAnnotations(atypeFactory.getQualifierHierarchy(), lub).isEmpty()) {
                     // I believe the only place this can happen is within recursive types and
-                    //if we already have annotations than the type has been visited
+                    // if we already have annotations than the type has been visited
                     return;
                 }
             }
@@ -856,8 +856,8 @@ public class AnnotatedTypes {
                 final Set<? extends AnnotationMirror>  annos = findEffectiveLowerBoundAnnotations(qualifierHierarchy, type);
                 if (lowerBounds.isEmpty()) {
                     lowerBounds = annos;
-                } else if (!annos.isEmpty()) { //for some reason this algorithm some times adds the lub itself
-                                               //into the list of type which may lead to an empty annos set
+                } else if (!annos.isEmpty()) { // for some reason this algorithm some times adds the lub itself
+                                               // into the list of type which may lead to an empty annos set
                     lowerBounds = qualifierHierarchy.greatestLowerBounds(lowerBounds, annos);
                 }
             }
@@ -890,7 +890,7 @@ public class AnnotatedTypes {
                 return;
 
             } else {
-                //old behavior
+                // old behavior
                 alub = ((AnnotatedWildcardType) alub).getExtendsBound();
             }
 
@@ -1703,7 +1703,7 @@ public class AnnotatedTypes {
                     break;
 
                 case INTERSECTION:
-                    //if there are multiple conflicting annotations, choose the lowest
+                    // if there are multiple conflicting annotations, choose the lowest
                     final AnnotationMirror glb = glbOfBoundsInHierarchy((AnnotatedIntersectionType) source, top, qualifierHierarchy);
 
                     if (glb == null) {
@@ -1754,7 +1754,7 @@ public class AnnotatedTypes {
                     break;
 
                 case INTERSECTION:
-                    //if there are multiple conflicting annotations, choose the lowest
+                    // if there are multiple conflicting annotations, choose the lowest
                     final Set<AnnotationMirror> glb = glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
                     return glb;
 
@@ -1795,7 +1795,7 @@ public class AnnotatedTypes {
                     break;
 
                 case INTERSECTION:
-                    //if there are multiple conflicting annotations, choose the lowest
+                    // if there are multiple conflicting annotations, choose the lowest
                     final Set<AnnotationMirror> glb = glbOfBounds((AnnotatedIntersectionType) source, qualifierHierarchy);
                     return glb;
 
@@ -1831,7 +1831,7 @@ public class AnnotatedTypes {
                 final AnnotationMirror prevGlb = intermediate.get(top);
                 if (newAnno == null) {
                     continue;
-                } //else
+                } // else
                 if (prevGlb == null) {
                     intermediate.put(top, newAnno);
                 } else {

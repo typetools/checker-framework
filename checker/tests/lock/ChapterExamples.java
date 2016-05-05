@@ -116,7 +116,7 @@ class ChapterExamples {
 
   void guardedByItselfOnReceiver(@GuardedBy("itself") ChapterExamples this) {
     synchronized(this) { // Tests translation of 'itself' to 'this' by the LockVisitor for this scenario.
-      //myField = new MyClass();
+      // myField = new MyClass();
       myField.toString();
       this.myField = new MyClass();
       this.myField.toString();

@@ -160,7 +160,7 @@ public class UnitsRelationsTools {
         }
     }
 
-    // given an Annotation, returns the prefix (eg kilo) as an AnnotationValue if there is any, otherwise returns null
+    /** Given an Annotation, returns the prefix (eg kilo) as an AnnotationValue if there is any, otherwise returns null. */
     private static /*@Nullable*/ AnnotationValue getAnnotationMirrorPrefix(/*@Nullable*/ final AnnotationMirror unitsAnnotation) {
         if (unitsAnnotation == null) {
             return null;
@@ -238,7 +238,7 @@ public class UnitsRelationsTools {
      * Checks to see if a particular Annotated Type has no units, such as scalar constants in calculations.
      *
      * Any number that isn't assigned a unit will automatically get the Annotation UnknownUnits.
-     * eg: int x = 5; //x has @UnknownUnits
+     * eg: int x = 5; // x has @UnknownUnits
      *
      * @param annoType An AnnotatedTypeMirror representing a Units Annotated Type
      * @return true if the Type has no units, false otherwise

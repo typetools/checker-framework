@@ -715,12 +715,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return null;
     }
 
-    // sees if a particular annotation mirror is a polymorphic qualifier
+    /** Sees if a particular annotation mirror is a polymorphic qualifier. */
     private boolean isPolymorphicQualifier(AnnotationMirror qual) {
         return AnnotationUtils.containsSame(polyQualifiers.values(), qual);
     }
 
-    // remove all supertypes of elements contained in the set
+    /** Remove all supertypes of elements contained in the set. */
     private Set<AnnotationMirror> findSmallestTypes(Set<AnnotationMirror> inset) {
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
         outset.addAll(inset);
@@ -818,7 +818,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         return null;
     }
 
-    // remove all subtypes of elements contained in the set
+    /** Remove all subtypes of elements contained in the set. */
     private Set<AnnotationMirror> findGreatestTypes(Set<AnnotationMirror> inset) {
         Set<AnnotationMirror> outset = AnnotationUtils.createAnnotationSet();
         outset.addAll(inset);

@@ -46,8 +46,8 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
 
         final int paramIndex = getElementIndex();
 
-        //filter out annotations in targeted that don't have the correct parameter index. (i.e the one's that
-        //are on the same method but don't pertain to the parameter element being processed, see class comments ).
+        // filter out annotations in targeted that don't have the correct parameter index. (i.e the one's that
+        // are on the same method but don't pertain to the parameter element being processed, see class comments ).
         // Place these annotations into the valid list.
         int i = 0;
         while (i < targeted.size()) {

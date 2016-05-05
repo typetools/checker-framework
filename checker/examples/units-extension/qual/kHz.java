@@ -15,7 +15,6 @@ import org.checkerframework.framework.qual.*;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Frequency.class)
 @UnitsRelations(FrequencyRelations.class)
-// declares it to be an alias of @Hz(Prefix.kilo)
-@UnitsMultiple(quantity=Hz.class, prefix=Prefix.kilo)
-// No prefix defined in the annotation itself
-public @interface kHz {}
+@UnitsMultiple(quantity=Hz.class, prefix=Prefix.kilo) // alias of @Hz(Prefix.kilo)
+public @interface kHz {} // No prefix defined in the annotation itself
+

@@ -167,7 +167,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
             AnnotatedArrayType a = (AnnotatedArrayType) type;
             makeTop(a.getComponentType(), tops);
         } else if (kind == TypeKind.TYPEVAR) {
-            //just set the primary to top, this will override the upper/lower bounds
+            // just set the primary to top, this will override the upper/lower bounds
 
         } else if (kind == TypeKind.WILDCARD) {
             AnnotatedWildcardType a = (AnnotatedWildcardType) type;

@@ -16,7 +16,7 @@ import polyall.quals.*;
  * annotations.
  */
 
-//set the defaults in the H2 hierarchy such that do not report errors in this test
+// set the defaults in the H2 hierarchy such that do not report errors in this test
 @DefaultQualifiers({
         @DefaultQualifier(value=H2Top.class, locations={ TypeUseLocation.UPPER_BOUND }),
         @DefaultQualifier(value=H2Bot.class, locations={ TypeUseLocation.LOWER_BOUND })
@@ -36,7 +36,7 @@ public class IncompatibleBounds {
         H1S1ToH1S1<@H1S1 ? extends @H1S1 Object> h1S1ToH1S1;
     }
 
-    //invalid combinations
+    // invalid combinations
     //:: error: (bound.type.incompatible)
     class BottomToTop<@H1Top U extends @H1Bot Object> {}
     //:: error: (bound.type.incompatible)

@@ -2178,10 +2178,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedDeclaredType ret = (AnnotatedDeclaredType) constructor.getReturnType();
 
         // When an interface is used as the identifier in an anonymous class (e.g. new Comparable() {})
-        //the constructor method will be Object.init() {} which has an Object return type
+        // the constructor method will be Object.init() {} which has an Object return type
         // When TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will return
-        //null from asSuper and return false for the check.  Instead, copy the primary annotations
-        //to the declared type and then do a subtyping check
+        // null from asSuper and return false for the check.  Instead, copy the primary annotations
+        // to the declared type and then do a subtyping check
         if (dt.getUnderlyingType().asElement().getKind().isInterface() &&
             TypesUtils.isObject(ret.getUnderlyingType())) {
 
@@ -2739,14 +2739,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
 
                 // If both the overridden method have type variables as return types and both types were
-                //defined in their respective methods then, they can be covariant or invariant
-                //use super/subtypes for the overrides locations
+                // defined in their respective methods then, they can be covariant or invariant
+                // use super/subtypes for the overrides locations
                 if (!success) {
                     success = testTypevarContainment(overridingReturnType, overriddenReturnType);
 
-                    //sometimes when using a Java 8 compiler (not JSR308) the overridden return type of a method reference
-                    //becomes a captured type.  This leads to defaulting that often makes the overriding return type
-                    //invalid.  We ignore these.  This happens in Issue403/Issue404 when running without JSR308 Langtools
+                    // sometimes when using a Java 8 compiler (not JSR308) the overridden return type of a method reference
+                    // becomes a captured type.  This leads to defaulting that often makes the overriding return type
+                    // invalid.  We ignore these.  This happens in Issue403/Issue404 when running without JSR308 Langtools
                     if (!success && methodReference) {
 
                         boolean isCaptureConverted =

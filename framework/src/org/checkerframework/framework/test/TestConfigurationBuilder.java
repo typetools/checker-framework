@@ -28,7 +28,7 @@ public class TestConfigurationBuilder {
 
     // Presented first are static helper methods that reduce configuration building to a method call
     // However, if you need more complex configuration or custom configuration, use the
-    //constructors provided below
+    // constructors provided below
 
     /**
      * This creates a builder for the default configuration used by Checker Framework JUnit tests.
@@ -56,7 +56,7 @@ public class TestConfigurationBuilder {
                 .addOption("-Xmaxerrs", "9999")
                 .addOption("-g")
                 .addOption("-Xlint:unchecked")
-                .addOption("-XDrawDiagnostics")  //use short javac diagnostics
+                .addOption("-XDrawDiagnostics")  // use short javac diagnostics
                 .addOption("-AprintErrorStack")
                 .addSourceFiles(testSourceFiles);
 
@@ -153,19 +153,19 @@ public class TestConfigurationBuilder {
         return builder.validateThenBuild(true);
     }
 
-    //the list of files that contain Java diagnostics to compare against
+    /** The list of files that contain Java diagnostics to compare against */
     private List<File> diagnosticFiles;
 
-    //the set of Java files to test against
+    /** The set of Java files to test against */
     private List<File> testSourceFiles;
 
-    //the set of Checker Framework processors to test with
+    /** The set of Checker Framework processors to test with */
     private Set<String> processors;
 
-    //the set of options to the Javac command line used to run the test
+    /** The set of options to the Javac command line used to run the test */
     private SimpleOptionMap options;
 
-    //should the Javac options be output before running the test
+    /** Should the Javac options be output before running the test */
     private boolean shouldEmitDebugInfo;
 
     /**

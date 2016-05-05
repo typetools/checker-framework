@@ -24,9 +24,9 @@ import java.util.Set;
  *    E.g.
  *      AnnotatedWildcardType wc = ...
  *      wc.getEffectiveSuperBound().equals(wc.getEffectiveSuperBound())
- *      //the above line will return false if the super bound is a wildcard
- *      //because two wildcards are .equals only if they are also referentially (==) equal
- *      //and each call to getEffectiveSuperBound returns a copy of the original bound
+ *      // the above line will return false if the super bound is a wildcard
+ *      // because two wildcards are .equals only if they are also referentially (==) equal
+ *      // and each call to getEffectiveSuperBound returns a copy of the original bound
  *
  * When we encounter types with property 1, property 2 ensures we cannot stop recursively comparing
  * the bounds because the equals method will not return true when we encounter a copy of a bound we have

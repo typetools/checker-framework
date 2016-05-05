@@ -64,7 +64,7 @@ public class TestSuite extends Suite {
 
         List<File> javaFiles;
         // We will have either a method getTestDirs which returns String [] or getTestFiles
-        //which returns List<Object []> or getParametersMethod would fail
+        // which returns List<Object []> or getParametersMethod would fail
         if (method.getReturnType().isArray()) {
             String [] dirs = (String[]) method.invokeExplosively(null);
             javaFiles = TestUtilities.findNestedJavaTestFiles(dirs);
@@ -107,7 +107,7 @@ public class TestSuite extends Suite {
                                      + "testClass=" + testClass.getName() + "\n"
                                      + "parameterMethods=" + methods.toString()
             );
-        } //else
+        } // else
 
         FrameworkMethod method = parameterMethods.get(0);
 
@@ -125,8 +125,8 @@ public class TestSuite extends Suite {
                 break;
 
             case "getTestFiles":
-                //we'll force people to return a List for now but enforcing exactl List<File> or a
-                //subtype thereof is not easy
+                // we'll force people to return a List for now but enforcing exactl List<File> or a
+                // subtype thereof is not easy
                 if (!returnType.getCanonicalName().equals(List.class.getCanonicalName())) {
                     throw new RuntimeException("getTestFiles must return a List<File>, found "
                                               + returnType.toString()

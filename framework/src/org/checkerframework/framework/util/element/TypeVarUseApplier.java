@@ -105,15 +105,15 @@ public class TypeVarUseApplier {
      */
     public void extractAndApply() {
 
-        //apply declaration annotations
+        // apply declaration annotations
         ElementAnnotationApplier.apply(typeVariable, declarationElem, typeFactory);
 
         final List<Attribute.TypeCompound> annotations = getAnnotations( useElem, declarationElem );
 
         final List<Attribute.TypeCompound> typeVarAnnotations;
         if (arrayType != null) {
-            //if the outer-most type is an array type then we want to ensure the outer annotations
-            //are not applied as the type variables primary annotation
+            // if the outer-most type is an array type then we want to ensure the outer annotations
+            // are not applied as the type variables primary annotation
             typeVarAnnotations = removeComponentAnnotations(arrayType, annotations);
             annotateViaTypeAnnoPosition(arrayType, annotations);
 
@@ -192,7 +192,7 @@ public class TypeVarUseApplier {
                         "Unhandled element kind " + useElem.getKind() +
                         "useElem ( " + useElem + " ) "                +
                         "declarationElem ( " + declarationElem + " ) ");
-                annotations = null; //dead code
+                annotations = null; // dead code
         }
 
         return annotations;

@@ -8,7 +8,7 @@ import java.util.Set;
 abstract class InitCheckAssertionFailure {
     public static <F extends Enum<F>> void noneOf(F[] array) {
         Enum<?>[] universe = array;
-        //Accessing universe on this line causes the error.
+        // Accessing universe on this line causes the error.
         int len = universe.length;
     }
 }

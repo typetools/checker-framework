@@ -47,7 +47,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         // So for the next failure we correctly infer that for methodD to take both os1 and os2 as arguments
         // D must be @H1Top @H2Top OUTER_SCOPE_TV.
         // However, the UPPER_BOUND of D is <@H1Bottom @H2Bottom OUTER_SCOPE_TV extends @H1Top @H2Top Object>
-        //notice that our inferred type for D is above this bound.
+        // notice that our inferred type for D is above this bound.
         //
         // A similar, more useful example in the Nullness type system would be:
         /*
@@ -61,17 +61,17 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
                void launder(@NonNull OUTER arg1, @Nullable OUTER arg2) {
                    addToListo(arg1, arg2); // T is inferred to be <@Nullable OUTER>
-                                           //if we did not mark this as type.argument.type.incompatible
-                                           //then we would have no idea that in the last
-                                           //line of this example we are putting a null value into
-                                           //a List of @NonNull Strings
+                                           // if we did not mark this as type.argument.type.incompatible
+                                           // then we would have no idea that in the last
+                                           // line of this example we are putting a null value into
+                                           // a List of @NonNull Strings
                }
 
             }
 
             Gen<@NonNull String> g = ...;
             g.listo = new ArrayList<@NonNull String>();
-            g.launder("", null);    //during this method call null would be added to g.listo
+            g.launder("", null);    // during this method call null would be added to g.listo
          */
         //:: error: (type.argument.type.incompatible)
         OUTER_SCOPE_TV osNaked2 = methodD(os1, os2, "");
@@ -88,7 +88,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     // Test Case - E
     <E> E methodE(E e1, E[] aos2) {
         return null;
-    } //pass an array to one of these to cover A2FReducer.visitArray_Typevar
+    } // pass an array to one of these to cover A2FReducer.visitArray_Typevar
 
     void contextE(String [] strArr, String [][] strArrArr, OUTER_SCOPE_TV os, OUTER_SCOPE_TV [] aos) {
         String [] strArrLocal = methodE(strArr, strArrArr);
@@ -120,8 +120,8 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         List<@H1Top @H2Top NodeList> a = methodG(l1, l2);
     }
 
-    //add test case for Array<String> vs. String[]
-    //add test case of E extends F, F extends G, H extends List<? super E> and other craziness
+    // add test case for Array<String> vs. String[]
+    // add test case of E extends F, F extends G, H extends List<? super E> and other craziness
 
     <M, N extends M> Map<M,N> method() {
         return null;
@@ -129,10 +129,10 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
     void contextMN() {
 
-        //so I am not exactly sure how to create a meaningful test for this case
-        //what occurs is the SubtypeSolver.propagateGlbs forces N to be a subtype of M
-        //and it works (at least while I was debugging) but I don't know how to create
-        //a check that fails or succeeds because of this
+        // so I am not exactly sure how to create a meaningful test for this case
+        // what occurs is the SubtypeSolver.propagateGlbs forces N to be a subtype of M
+        // and it works (at least while I was debugging) but I don't know how to create
+        // a check that fails or succeeds because of this
         Map<? super @H1S1 @H2S2 CharSequence, @H1Top @H2Top ? super String> mnl = method();
     }
 

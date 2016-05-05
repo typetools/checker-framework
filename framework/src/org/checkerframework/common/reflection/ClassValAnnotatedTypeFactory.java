@@ -193,8 +193,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return false;
             }
 
-            //if super: ClassVal && sub is ClassVal
-            //if super: ClassBound && (sub is ClassBound or ClassVal)
+            // if super: ClassVal && sub is ClassVal
+            // if super: ClassBound && (sub is ClassBound or ClassVal)
 
             List<String> supValues = getClassNamesFromAnnotation(sup);
             List<String> subValues = getClassNamesFromAnnotation(sub);

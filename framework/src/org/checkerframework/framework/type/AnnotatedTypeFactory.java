@@ -566,7 +566,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the {@link QualifierHierarchy} for this checker
      */
     public final QualifierHierarchy getQualifierHierarchy() {
-        //if (qualHierarchy == null)
+        // if (qualHierarchy == null)
         //    qualHierarchy = createQualifierHierarchy();
         return qualHierarchy;
     }
@@ -1826,10 +1826,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         final AnnotatedDeclaredType returnAdt = (AnnotatedDeclaredType) getClassType.getReturnType();
         final List<AnnotatedTypeMirror> typeArgs = returnAdt.getTypeArguments();
 
-        //usually, the only locations that will add annotations to the return type are getClass in stub files
-        //defaults and propagation tree annotator.  Since getClass is final they cannot come from source code.
+        // usually, the only locations that will add annotations to the return type are getClass in stub files
+        // defaults and propagation tree annotator.  Since getClass is final they cannot come from source code.
         // Also, since the newBound is an erased type we have no type arguments.  So, we just copy the annotations
-        //from the bound of the declared type to the new bound.
+        // from the bound of the declared type to the new bound.
         final AnnotatedWildcardType classWildcardArg = (AnnotatedWildcardType) typeArgs.get(0);
         newBound.replaceAnnotations(classWildcardArg.getExtendsBound().getAnnotations());
 
@@ -3230,9 +3230,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             InternalUtils.greatestLowerBound(this.checker.getProcessingEnvironment(),
                                                              typeParamUbType, wilcardUbType);
 
-                        //checkTypeArgs now enforces that wildcard annotation bounds MUST be within
-                        //the bounds of the type parameter.  Therefore, the wildcard's upper bound
-                        //should ALWAYS be more specific than the upper bound of the type parameter
+                        // checkTypeArgs now enforces that wildcard annotation bounds MUST be within
+                        // the bounds of the type parameter.  Therefore, the wildcard's upper bound
+                        // should ALWAYS be more specific than the upper bound of the type parameter
                         // That said, the Java type does NOT have to be.
                         // Add the annotations from the wildcard to the lub type.
                         final AnnotatedTypeMirror newArg;

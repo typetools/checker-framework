@@ -23,7 +23,7 @@ class Defaulting {
                          @DefaultQualifier(value = H1S2.class, locations = { TypeUseLocation.OTHERWISE })
     })
     // Type of x is <@H1S2 X extends @H1S1 Object>, these annotations are siblings
-    //and should not be in the same bound
+    // and should not be in the same bound
     //:: error: (bound.type.incompatible)
     class TestUpperBound<X extends Object> {
         void m(X p) {

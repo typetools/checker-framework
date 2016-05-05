@@ -89,10 +89,10 @@ public class AnnotationClassLoader {
      */
     protected final ProcessingEnvironment processingEnv;
 
-    // Stores the resource URL of the qual directory of a checker class
+    /** The resource URL of the qual directory of a checker class */
     private final URL resourceURL;
 
-    // Stores set of the loaded annotation classes
+    /** The loaded annotation classes */
     private final Set<Class<? extends Annotation>> loadedAnnotations;
 
     /**

@@ -11,7 +11,7 @@ class Explosion {
     final String m_astring;
 
     Explosion() {
-        //m_nni = 1;\
+        // m_nni = 1;\
         m_astring = "hi";
         try {
             throw new RuntimeException();
@@ -37,7 +37,7 @@ class Explosion {
         System.out.println("Possibly cause null pointer with this: " + s2.length());
         //:: warning: (known.nonnull)
         if (s2 == null) {
-            ;//do nothing
+            ;// do nothing
         } else {
             System.out.println("Can't cause null pointer here: " + s2.length());
             s = s2;
@@ -55,9 +55,9 @@ class Explosion {
             try {
                 throw new ExplosiveException();
             } finally {
-                //break;
+                // break;
                 return 1;
-                //throw new RuntimeException();
+                // throw new RuntimeException();
             }
         }
 
@@ -72,7 +72,7 @@ class Explosion {
         try {
             x = 3;
             x = 5;
-            //y = z;
+            // y = z;
             nnz = z;
             z = null;
             //:: error: (assignment.type.incompatible)
@@ -84,25 +84,25 @@ class Explosion {
             //:: error: (assignment.type.incompatible)
             nnz = z;
             while (z == null) {
-                ; //do nothing
+                ; // do nothing
             }
             nnz = z;
-            //v = 1;
+            // v = 1;
             return 1;
-            //v = 2;
-            //throw new RuntimeException ();
+            // v = 2;
+            // throw new RuntimeException ();
         } catch (NullPointerException e) {
             e.printStackTrace();
-            //e = null;
-            //v = 1;
+            // e = null;
+            // v = 1;
         } catch (RuntimeException e) {
-            //nnz = z;
-            //v = 2;
+            // nnz = z;
+            // v = 2;
         } finally {
-            //v = 1 + x;
+            // v = 1 + x;
         }
         return 1;
-        //return v + x;
+        // return v + x;
     }
 
     private void bar(List<@NonNull String> ss, String b, String c) {

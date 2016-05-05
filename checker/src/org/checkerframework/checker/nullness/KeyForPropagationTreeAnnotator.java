@@ -25,7 +25,7 @@ import com.sun.source.tree.VariableTree;
  * 1. If a keySet is being saved to a newly declared set, we transfer the annotations from the
  * keySet to the lhs. e.g.,
  * <pre>{@code
- * //Previously, the user would be required to annotate the LHS's type argument with @KeyFor("m")
+ * // Previously, the user would be required to annotate the LHS's type argument with @KeyFor("m")
  * Set<String> keySet = m.keySet();
  * }</pre>
  *
@@ -33,7 +33,7 @@ import com.sun.source.tree.VariableTree;
  * is a new class tree with corresponding type arguments that have an @UknownKeyFor primary annotation
  * we transfer from the LHS to RHS.  e.g.,
  * <pre>{@code
- * //normally a user would have to write the @KeyFor("m") on both sides
+ * // normally a user would have to write the @KeyFor("m") on both sides
  * List<@KeyFor("m") String> keys = new ArrayList<String>();
  * }</pre>
  *
@@ -76,7 +76,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     public Void visitVariable(VariableTree variableTree, AnnotatedTypeMirror type) {
         super.visitVariable(variableTree, type);
 
-        //This should only happen on map.keySet();
+        // This should only happen on map.keySet();
         if (type.getKind() == TypeKind.DECLARED) {
             final ExpressionTree initializer = variableTree.getInitializer();
 
@@ -84,7 +84,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
                 final AnnotatedDeclaredType variableType = (AnnotatedDeclaredType) type;
                 final AnnotatedTypeMirror initializerType = atypeFactory.getAnnotatedType(initializer);
 
-                //array types and boxed primitives etc don't require propagation
+                // array types and boxed primitives etc don't require propagation
                 if (variableType.getKind() == TypeKind.DECLARED) {
                     keyForPropagator.propagate((AnnotatedDeclaredType) initializerType, variableType, PropagationDirection.TO_SUPERTYPE, atypeFactory);
                 }
@@ -105,7 +105,7 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
 
             if (assignedTo != null) {
 
-                //array types and boxed primitives etc don't require propagation
+                // array types and boxed primitives etc don't require propagation
                 if (assignedTo.getKind() == TypeKind.DECLARED) {
                     final AnnotatedDeclaredType newClassType = (AnnotatedDeclaredType) type;
                     keyForPropagator.propagate(newClassType, (AnnotatedDeclaredType) assignedTo, PropagationDirection.TO_SUBTYPE, atypeFactory);

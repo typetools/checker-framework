@@ -101,7 +101,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
     /**
      * Returns the annotations on the upper bound of type {@code t}.
-     */  //TODO_JB: INTERSECTIONS AREN'T TAKEN CARE OF
+     */
+    //TODO_JB: INTERSECTIONS AREN'T TAKEN CARE OF
     private static Collection<AnnotationMirror> getUpperBound(
             AnnotatedTypeMirror t) {
         if (t.getKind() == TypeKind.WILDCARD) {
@@ -350,7 +351,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         AnnotatedTypeMerger.merge(declaredType, result);
 
 
-        //see issue422: Intersections can happen when we have a
+        // see issue422: Intersections can happen when we have a
         // if ( T instanceof String && T instanceof Integer )
         AnnotatedTypeMirror fixedType1;
         if (type1.getKind() == TypeKind.INTERSECTION) {
@@ -403,7 +404,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
         final AnnotationMirror sourcePrimaryAnno = source.getAnnotationInHierarchy(top);
 
         // Indicates that source is a non-primary-annotated type variable declared by the same type parameter of result
-        //in this case, source is equivalent to the declared type of that type variable and we copy its bounds
+        // in this case, source is equivalent to the declared type of that type variable and we copy its bounds
         if (types.isSameType(source.getUnderlyingType(), result.getUnderlyingType()) && sourcePrimaryAnno == null) {
             final AnnotatedTypeVariable resultDecl = (AnnotatedTypeVariable) source;
 

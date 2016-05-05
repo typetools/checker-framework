@@ -1,6 +1,6 @@
 package defaulting.upperbound;
 
-//this tests sole purpose is to check that implicit and explicit LOWER_BOUND defaulting work as expected
+// this tests sole purpose is to check that implicit and explicit LOWER_BOUND defaulting work as expected
 
 import tests.defaulting.UpperBoundQual.*;
 
@@ -21,7 +21,7 @@ public class UpperBoundDefaulting {
 
     public void implicitsWildcard(MyArrayList<?> myArrayList) {
 
-        //should fail because @LB_IMPLICIT is below @UB_TOP
+        // should fail because @LB_IMPLICIT is below @UB_TOP
         //:: error: (type.argument.type.incompatible)
         @UB_TOP MyArrayList<@UB_BOTTOM ? extends @UB_TOP String> iwLowerBoundIncompatible = myArrayList;
 
@@ -34,7 +34,7 @@ public class UpperBoundDefaulting {
 
     public void implicitExtendBoundedWildcard(MyArrayList<? extends String> iebList) {
 
-        //should fail because @LB_IMPLICIT is below @UB_TOP
+        // should fail because @LB_IMPLICIT is below @UB_TOP
         //:: error: (type.argument.type.incompatible)
         @UB_TOP MyArrayList<@UB_BOTTOM ? extends @UB_TOP String> iebLowerBoundIncompatible = iebList;
 
@@ -45,7 +45,7 @@ public class UpperBoundDefaulting {
     }
 
     public void explicitLowerBoundedWildcard(MyArrayList<? super String> elbList) {
-        //should fail because @UB_EXPLICIT is below UB_TOP
+        // should fail because @UB_EXPLICIT is below UB_TOP
         //:: error: (type.argument.type.incompatible)
         @UB_TOP MyArrayList<@UB_TOP ? super @UB_BOTTOM String> iebLowerBoundIncompatible = elbList;
 

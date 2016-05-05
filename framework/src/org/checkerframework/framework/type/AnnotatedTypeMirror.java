@@ -1014,7 +1014,7 @@ public abstract class AnnotatedTypeMirror {
                        (getEnclosingType().getKind() != TypeKind.NONE)) {
                 // Handle case 2
                 // Shallow copy provides a fresh type when there are no type arguments
-                //and we set the enclosing type
+                // and we set the enclosing type
                 // Therefore, we do not need to use deepCopy
                 AnnotatedDeclaredType rType = shallowCopy();
                 AnnotatedDeclaredType et = getEnclosingType();
@@ -1418,8 +1418,8 @@ public abstract class AnnotatedTypeMirror {
         @Override
         public AnnotatedArrayType getErased() {
             // IMPORTANT NOTE: The returned type is a fresh Object because
-            //the componentType is the only component of arrays and the
-            //call to getErased will return a fresh object.
+            // the componentType is the only component of arrays and the
+            // call to getErased will return a fresh object.
             // | T[ ] | = |T| [ ]
             AnnotatedArrayType at = shallowCopy();
             AnnotatedTypeMirror ct = at.getComponentType().getErased();
@@ -1565,8 +1565,8 @@ public abstract class AnnotatedTypeMirror {
         private void fixupBoundAnnotations() {
 
             // We allow the above replacement first because primary annotations might not have annotations for
-            //all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
-            //don't have a qualifier in primaryAnnotations
+            // all hierarchies, so we don't want to avoid placing bottom on the lower bound for those hierarchies that
+            // don't have a qualifier in primaryAnnotations
             if (!this.getAnnotationsField().isEmpty()) {
                 if (upperBound != null) {
                     replaceUpperBoundAnnotations();

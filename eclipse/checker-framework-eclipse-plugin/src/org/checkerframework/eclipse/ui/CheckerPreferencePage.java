@@ -59,7 +59,7 @@ public class CheckerPreferencePage extends PreferencePage implements
     private Button optVerbose;
 
     private Text optJDKPath;
-    //private Button optAutoBuild;
+    // private Button optAutoBuild;
     private Button optWarning;
     private Button optFilenames;
     private Button optNoMsgText;
@@ -93,8 +93,8 @@ public class CheckerPreferencePage extends PreferencePage implements
         uiLayout.marginWidth = uiLayout.marginHeight = 5;
         uiGroup.setLayout(uiLayout);
 
-        //optAutoBuild = new Button(uiGroup, SWT.CHECK);
-        //optAutoBuild.setText("Automatically run type-checkers");
+        // optAutoBuild = new Button(uiGroup, SWT.CHECK);
+        // optAutoBuild.setText("Automatically run type-checkers");
 
         final Label filterLabel = new Label(uiGroup, SWT.None);
         filterLabel.setText("Regex for warning/error filter:");
@@ -191,7 +191,7 @@ public class CheckerPreferencePage extends PreferencePage implements
                 false);
         procGroup.setLayoutData(procGridData);
 
-        //argText = new Text(javacGroup, SWT.SINGLE | SWT.BORDER);
+        // argText = new Text(javacGroup, SWT.SINGLE | SWT.BORDER);
         makeCompilerParameters(tableComposite);
 
         initValues();
@@ -205,11 +205,11 @@ public class CheckerPreferencePage extends PreferencePage implements
         final Group group = new Group(tableComposite, SWT.None);
         group.setText("Checkers");
 
-        //Layout info for tableComposite's layout
+        // Layout info for tableComposite's layout
         GridData groupGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         group.setLayoutData(groupGridData);
 
-        //group's layout
+        // group's layout
         final GridLayout layout = new GridLayout();
         layout.numColumns = 2;
 
@@ -218,7 +218,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         // Make Processor table
         procTable = new Table(group, SWT.CHECK | SWT.MULTI | SWT.BORDER);
 
-        //layout data within the group
+        // layout data within the group
         final GridData procTableData = new GridData( SWT.FILL, SWT.TOP, true, false );
         procTableData.heightHint = 200;
         procTableData.horizontalSpan = 2;
@@ -281,9 +281,9 @@ public class CheckerPreferencePage extends PreferencePage implements
         removeGd.horizontalAlignment = SWT.END;
         removeButton.setLayoutData(removeGd);
 
-        //enable/disable the remove button (enabled only there are NO
-        //built-in checkers enabled and when at least 1 custom checker is
-        //selected)
+        // enable/disable the remove button (enabled only there are NO
+        // built-in checkers enabled and when at least 1 custom checker is
+        // selected)
 
         procTable.addSelectionListener(new SelectionListener() {
             public void widgetSelected(SelectionEvent event)        { setRemoveState(); }
@@ -317,7 +317,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         GridData groupGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         group.setLayoutData(groupGridData);
 
-        //group's layout
+        // group's layout
         final GridLayout layout = new GridLayout();
         layout.numColumns = 2;
 
@@ -326,7 +326,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         // Make Processor table
         optTable = new Table(group, SWT.CHECK | SWT.MULTI | SWT.BORDER);
 
-        //layout data within the group
+        // layout data within the group
         final GridData optTableData = new GridData( SWT.FILL, SWT.TOP, true, false );
         optTableData.heightHint = 100;
         optTableData.horizontalSpan = 2;
@@ -380,9 +380,9 @@ public class CheckerPreferencePage extends PreferencePage implements
         removeGd.horizontalAlignment = SWT.END;
         removeButton.setLayoutData(removeGd);
 
-        //enable/disable the remove button (enabled only there are NO
-        //built-in checkers enabled and when at least 1 custom checker is
-        //selected)
+        // enable/disable the remove button (enabled only there are NO
+        // built-in checkers enabled and when at least 1 custom checker is
+        // selected)
 
         optTable.addSelectionListener(new SelectionListener() {
             public void widgetSelected(SelectionEvent event)        { setRemoveState(); }

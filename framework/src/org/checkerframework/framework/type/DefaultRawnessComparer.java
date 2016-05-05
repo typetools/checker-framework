@@ -57,7 +57,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
             return AnnotationUtils.areSame(
                     subtype.getAnnotationInHierarchy(currentTop),
                     supertype.getAnnotationInHierarchy(currentTop));
-        } //else
+        } // else
 
         return AnnotationUtils.areSame(subtype.getAnnotations(), supertype.getAnnotations());
     }

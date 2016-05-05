@@ -108,7 +108,7 @@ public class FIsAReducer implements AFReducer {
         // Declared as argument
         @Override
         public Void visitDeclared_Array(AnnotatedDeclaredType parameter, AnnotatedArrayType argument, Set<AFConstraint> constraints) {
-            //should this be Array<String> - T[] the new A2F(String, T)
+            // should this be Array<String> - T[] the new A2F(String, T)
             return null;
         }
 
@@ -175,8 +175,8 @@ public class FIsAReducer implements AFReducer {
 
         @Override
         public Void visitNull_Null(AnnotatedNullType parameter, AnnotatedNullType argument, Set<AFConstraint> afConstraints) {
-            //we sometimes get these when we have captured types passed as arguments
-            //regardless they don't give any information
+            // we sometimes get these when we have captured types passed as arguments
+            // regardless they don't give any information
             return null;
         }
 
@@ -184,8 +184,8 @@ public class FIsAReducer implements AFReducer {
         // Primitive as argument
         @Override
         public Void visitPrimitive_Declared(AnnotatedPrimitiveType parameter, AnnotatedDeclaredType argument, Set<AFConstraint> constraints) {
-            //we may be able to eliminate this case, since I believe the corresponding constraint will just be discarded
-            //as the parameter must be a boxed primitive
+            // we may be able to eliminate this case, since I believe the corresponding constraint will just be discarded
+            // as the parameter must be a boxed primitive
             constraints.add(new FIsA(typeFactory.getBoxedType(parameter), argument));
             return null;
         }
@@ -197,8 +197,8 @@ public class FIsAReducer implements AFReducer {
 
         @Override
         public Void visitTypevar_Typevar(AnnotatedTypeVariable parameter, AnnotatedTypeVariable argument, Set<AFConstraint> constraints) {
-            //if we've reached this point and the two are corresponding type variables, then they are NOT ones that
-            //may have a type variable we are inferring types for and therefore we can discard this constraint
+            // if we've reached this point and the two are corresponding type variables, then they are NOT ones that
+            // may have a type variable we are inferring types for and therefore we can discard this constraint
             return null;
         }
 

@@ -300,8 +300,10 @@ public final class TypesUtils {
         return (TypeParameterElement) typeParamElement;
     }
 
-    // Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
-    // that works with both jdk8 (called upperBound there) and jdk8u.
+    /**
+     * Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
+     * that works with both jdk8 (called upperBound there) and jdk8u.
+     */
     // TODO: contrast to upperBound.
     public static Type wildUpperBound(ProcessingEnvironment env, TypeMirror tm) {
         Type t = (Type) tm;
@@ -319,8 +321,10 @@ public final class TypesUtils {
         }
     }
 
-    // Version of com.sun.tools.javac.code.Types.wildLowerBound(Type)
-    // that works with both jdk8 (called upperBound there) and jdk8u.
+    /**
+     * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type)
+     * that works with both jdk8 (called upperBound there) and jdk8u.
+     */
     public static Type wildLowerBound(ProcessingEnvironment env, TypeMirror tm) {
         Type t = (Type) tm;
         if (t.hasTag(WILDCARD)) {
