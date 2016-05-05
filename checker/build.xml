@@ -982,9 +982,9 @@
 
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
       <get
-        src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
+        src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/.." />
-      <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
+      <untar src="${jtreg.home}/../jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/../"
         compression="gzip" />
     </target>
@@ -1056,6 +1056,9 @@
             <attribute name="jpda.jvmargs" default=""/>
 
             <sequential>
+                <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
+                <mkdir dir="${build}/jtreg/all/report/html"/>
+
                 <property name="coverage.options" value=""/>    <!-- default -->
                 <property name="coverage.classpath" value=""/>  <!-- default -->
                 <property name="checker.classpath" value="${build}:${javac.lib}:${javap.lib}:${checker.lib}"/>
