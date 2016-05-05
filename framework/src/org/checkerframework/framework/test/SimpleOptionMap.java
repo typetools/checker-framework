@@ -24,7 +24,7 @@ import java.util.Map;
  * lot of sugar would be needed to make this class usable from the command line.
  */
 public class SimpleOptionMap {
-    /** A Map (optionName -> arg) where arg is null if the option doesn't require any args. */
+    /** A Map (optionName &rarr; arg) where arg is null if the option doesn't require any args. */
     private final Map<String, String> options = new LinkedHashMap<>();
 
     /**
