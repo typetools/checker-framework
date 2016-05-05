@@ -198,7 +198,7 @@ public class TestDiagnosticUtils {
 
         //TODO: see comments on FLOW_POLICY_COMMENT
         final boolean normalDiagnostic = trimmedLine.startsWith("//::");
-        if (normalDiagnostic || trimmedLine.startsWith("// warning:")) {
+        if (normalDiagnostic || trimmedLine.startsWith("//warning:")) {
 
             String[] diagnosticStrs;
             if (normalDiagnostic) {
