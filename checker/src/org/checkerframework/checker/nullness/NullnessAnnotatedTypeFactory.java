@@ -87,7 +87,7 @@ public class NullnessAnnotatedTypeFactory
      */
     protected final GeneralAnnotatedTypeFactory generalFactory;
 
-    // Cache for the nullness annotations
+    /** Cache for the nullness annotations */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
 

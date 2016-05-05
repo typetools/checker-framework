@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  *
  * If you change this file be sure to copy the exact file (including this comment,
  * but excluding the package line) to the other projects.  During release this file
- * and all its copies will be diffed (excluding any line starting with "package ")
+ * and all its copies will be diffed (excluding any line starting with "package ").
  *
  * There is a script at checker-framework/release/syncPluginUtil.sh
  * that syncs these files programatically.

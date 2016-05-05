@@ -61,7 +61,7 @@ public class NonNullMapValue {
     }
     for (Iterator<@KeyFor("myMap") String> iter = myMap.keySet().iterator(); iter.hasNext();) {
       String keyInMap = iter.next();
-      //value = myMap.get(keyInMap);
+      // value = myMap.get(keyInMap);
     }
     value = myMap.containsKey(key) ? myMap.get(key) : "hello";
   }

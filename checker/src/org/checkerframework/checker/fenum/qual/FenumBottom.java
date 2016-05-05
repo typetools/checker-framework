@@ -23,8 +23,8 @@ import java.lang.annotation.Target;
 @TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND,
     TypeUseLocation.EXPLICIT_UPPER_BOUND })
 @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-@SubtypeOf({}) //subtype relationships are set up by passing this class as a bottom
-               //to the multigraph hierarchy constructor
+@SubtypeOf({}) // subtype relationships are set up by passing this class as a bottom
+               // to the multigraph hierarchy constructor
 @Retention(RetentionPolicy.RUNTIME)
 @ImplicitFor(literals = { LiteralKind.NULL },
              typeNames = {java.lang.Void.class})

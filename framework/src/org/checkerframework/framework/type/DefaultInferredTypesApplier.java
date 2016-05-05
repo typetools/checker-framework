@@ -11,9 +11,9 @@ import javax.lang.model.element.AnnotationMirror;
  */
 public class DefaultInferredTypesApplier {
 
-    //At the moment, only Inference uses the omitSubtypingCheck option
-    //in actuality the subtyping check should be unnecessary since inferred
-    //types should be subtypes of their declaration
+    // At the moment, only Inference uses the omitSubtypingCheck option.
+    // In actuality the subtyping check should be unnecessary since inferred
+    // types should be subtypes of their declaration.
     private final boolean omitSubtypingCheck;
 
     public DefaultInferredTypesApplier() {

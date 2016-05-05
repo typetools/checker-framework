@@ -347,8 +347,10 @@ public class CFGBuilder {
     protected static class NodeWithExceptionsHolder extends ExtendedNode {
 
         protected Node node;
-        // Map from exception type to labels of successors that may
-        // be reached as a result of that exception.
+        /**
+         * Map from exception type to labels of successors that may
+         * be reached as a result of that exception.
+         */
         protected Map<TypeMirror, Set<Label>> exceptions;
 
         public NodeWithExceptionsHolder(Node node,
@@ -508,7 +510,7 @@ public class CFGBuilder {
     protected static class TryCatchFrame implements TryFrame {
         protected Types types;
 
-        // An ordered list of pairs because catch blocks are ordered.
+        /** An ordered list of pairs because catch blocks are ordered. */
         protected List<Pair<TypeMirror, Label>> catchLabels;
 
         public TryCatchFrame(Types types, List<Pair<TypeMirror, Label>> catchLabels) {

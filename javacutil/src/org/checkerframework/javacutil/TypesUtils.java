@@ -300,8 +300,10 @@ public final class TypesUtils {
         return (TypeParameterElement) typeParamElement;
     }
 
-    // Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
-    // that works with both jdk8 (called upperBound there) and jdk8u.
+    /**
+     * Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
+     * that works with both jdk8 (called upperBound there) and jdk8u.
+     */
     // TODO: contrast to upperBound.
     public static Type wildUpperBound(ProcessingEnvironment env, TypeMirror tm) {
         Type t = (Type) tm;
@@ -319,8 +321,10 @@ public final class TypesUtils {
         }
     }
 
-    // Version of com.sun.tools.javac.code.Types.wildLowerBound(Type)
-    // that works with both jdk8 (called upperBound there) and jdk8u.
+    /**
+     * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type)
+     * that works with both jdk8 (called upperBound there) and jdk8u.
+     */
     public static Type wildLowerBound(ProcessingEnvironment env, TypeMirror tm) {
         Type t = (Type) tm;
         if (t.hasTag(WILDCARD)) {
@@ -389,7 +393,7 @@ public final class TypesUtils {
     }
 
     /**
-     * Given a bounded type (wildcard or typevar) get the concrete type of it's upper bound.  If
+     * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound.  If
      * the bounded type extends other bounded types, this method will iterate through their bounds
      * until a class, interface, or intersection is found.
      * @return A type that is not a wildcard or typevar, or null if this type is an unbounded wildcard

@@ -28,8 +28,8 @@ import java.lang.annotation.Target;
         /* null should be the bottom type */
         LiteralKind.NULL
 
-        //CHAR_LITERAL,
-        //STRING_LITERAL,
+        // CHAR_LITERAL,
+        // STRING_LITERAL,
     }
 )
 @Documented

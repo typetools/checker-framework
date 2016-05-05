@@ -11,7 +11,7 @@ class RandomTests {
     }
 
     RandomTests(String s) throws Exception{
-        //this();
+        // this();
         a = 2;
         if (a > 1) {
             throw new Exception("dude");
@@ -22,7 +22,7 @@ class RandomTests {
     // initializer block
     {
         c = 4;
-        //throw new Exception("dude");
+        // throw new Exception("dude");
     }
 
 }

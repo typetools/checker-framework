@@ -42,7 +42,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     private final DefaultRawnessComparer fallback;
 
 
-    //explain this one
+    // explain this one
     private AnnotationMirror currentTop = null;
 
     public StructuralEqualityComparer() {
@@ -114,7 +114,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             return AnnotationUtils.areSame(
                     type1.getAnnotationInHierarchy(currentTop),
                     type2.getAnnotationInHierarchy(currentTop));
-        } //else
+        } // else
 
         return AnnotationUtils.areSame(type1.getAnnotations(), type2.getAnnotations());
     }
@@ -384,8 +384,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
             && areEqual(type1.getSuperBound(),   type2.getSuperBound(),   visited);
     }
 
-    //since we don't do a boxing conversion between primitive and declared types in some cases
-    //we must compare primitives with their boxed counterparts
+    // since we don't do a boxing conversion between primitive and declared types in some cases
+    // we must compare primitives with their boxed counterparts
     @Override
     public Boolean visitDeclared_Primitive(AnnotatedDeclaredType type1, AnnotatedPrimitiveType type2, VisitHistory visitHistory) {
         if (!TypesUtils.isBoxOf(type1.getUnderlyingType(), type2.getUnderlyingType())) {
@@ -405,7 +405,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         return arePrimeAnnosEqual(type1, type2);
     }
 
-    //The following methods are because we use WILDCARDS instead of TYPEVARS for capture converted wildcards
+    // The following methods are because we use WILDCARDS instead of TYPEVARS for capture converted wildcards
     //TODO: REMOVE THE METHOD BELOW WHEN CAPTURE CONVERSION IS IMPLEMENTED
     /**
      * Since the Checker Framework doesn't engage in capture conversion, and since sometimes type variables

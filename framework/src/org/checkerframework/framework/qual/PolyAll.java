@@ -50,5 +50,5 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
 @PolymorphicQualifier
 public @interface PolyAll {
     // TODO: support multiple variables using an id, then uncomment some Javadoc
-    //int value() default 0;
+    // int value() default 0;
 }

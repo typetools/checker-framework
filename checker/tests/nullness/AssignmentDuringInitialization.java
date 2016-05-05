@@ -14,26 +14,26 @@ public class AssignmentDuringInitialization {
         //:: error:  (assignment.type.incompatible)
         f1 = f2;
         f2 = f1;
-        f2.toString();   //Null pointer exception here
+        f2.toString();   // Null pointer exception here
     }
 
     public AssignmentDuringInitialization() {
         //:: error:  (assignment.type.incompatible)
         f3 = f4;
         f4 = f3;
-        f4.toString();   //Null pointer exception here
+        f4.toString();   // Null pointer exception here
 
         f5 = "hello";
         f6 = f5;
     }
 
     public void goodBehavior() {
-        //this isn't a constructor or initializer
-        //the receiver of this method should already be initialized
-        //and therefore f1 and f2 should already be initialized
+        // this isn't a constructor or initializer
+        // the receiver of this method should already be initialized
+        // and therefore f1 and f2 should already be initialized
         f5 = f6;
         f6 = f5;
-        f6.toString();   //No exception here
+        f6.toString();   // No exception here
     }
 
     public static void main(String [] args) {

@@ -6,7 +6,7 @@ class UniqueAnnoTest {
     public @Unique UniqueAnnoTest() {}
 
     //@Unique constructor leaking the "this" reference.
-    //Each unique.leaked error is a leak.
+    // Each unique.leaked error is a leak.
     public @Unique UniqueAnnoTest(int i) {
         notLeaked(this);
         leakedToResult(this);
@@ -23,7 +23,7 @@ class UniqueAnnoTest {
 
     }
 
-    //Not @Unique constructor. No warnings.
+    // Not @Unique constructor. No warnings.
     public UniqueAnnoTest(int i1, int i2) {
         UniqueAnnoTest other = new UniqueAnnoTest();
         other = this;

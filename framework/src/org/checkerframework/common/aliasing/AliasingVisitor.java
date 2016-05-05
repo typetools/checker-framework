@@ -122,7 +122,7 @@ public class AliasingVisitor extends
                         isUniqueCheck(node, parentIsStatement, hasNonLeaked,
                                 hasLeakedToResult);
                     } else {
-                        //Not possible to leak reference here (case 1. from the javadoc).
+                        // Not possible to leak reference here (case 1. from the javadoc).
                     }
                 }
 

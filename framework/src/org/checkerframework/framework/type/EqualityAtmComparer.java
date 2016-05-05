@@ -54,7 +54,7 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
 
     @Override
     protected Boolean scanWithNull(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void aVoid) {
-        //one of them should be null, therefore they are only equal if they other is null
+        // one of them should be null, therefore they are only equal if they other is null
         return type1 == type2;
     }
 

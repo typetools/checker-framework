@@ -58,7 +58,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
         return sb.toString();
     }
 
-    // A helper method to output a single AnnotationMirror, without showing full package names.
+    /** A helper method to output a single AnnotationMirror, without showing full package names. */
     protected void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
         sb.append("@");
         sb.append(am.getAnnotationType().asElement().getSimpleName());

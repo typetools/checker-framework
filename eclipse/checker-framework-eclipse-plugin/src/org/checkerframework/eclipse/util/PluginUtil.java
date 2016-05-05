@@ -158,8 +158,9 @@ public class PluginUtil {
 
         boolean isntFirst = false;
         for (Object value : values) {
-            if (isntFirst)
+            if (isntFirst) {
                 sb.append(delimiter);
+            }
             sb.append(value);
             isntFirst = true;
         }
