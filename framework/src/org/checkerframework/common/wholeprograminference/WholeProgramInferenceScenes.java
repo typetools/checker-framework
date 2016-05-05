@@ -19,6 +19,8 @@ import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -202,6 +204,105 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
 
         List<Node> arguments = methodInvNode.getArguments();
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
+
+        AnnotatedTypeMirror argATM = atf.getReceiverType(methodInvNode.getTree());
+        if (argATM != null) {
+	        AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodElt).getReceiverType();
+	        if (paramATM != null) {
+		        AField receiver = method.receiver;
+		        helper.updateAnnotationSetInScene(
+		        		receiver.type, atf, jaifPath, argATM, paramATM,
+		        		TypeUseLocation.RECEIVER);
+	        }
+        }
+    }
+
+    @Override
+    public void updateInferredMethodParameterTypes(
+    		MethodTree methodTree,
+            ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod,
+            AnnotatedTypeFactory atf) {
+        /*if (receiverTree == null) {
+            // TODO: Method called from static context.
+            // I struggled to obtain the ClassTree of a method called
+            // from a static context and currently I'm ignoring it.
+            // See Issue 682
+            // https://github.com/typetools/checker-framework/issues/682
+            return;
+        }*/
+        ClassSymbol classSymbol = getEnclosingClassSymbol(methodTree);
+        if (classSymbol == null) {
+            // TODO: Handle anonymous classes.
+            // Also struggled to obtain the ClassTree from an anonymous class.
+            // Ignoring it for now.
+            // See Issue 682
+            // https://github.com/typetools/checker-framework/issues/682
+            return;
+        }
+        /*// TODO: We must handle cases where the method is declared on a superclass.
+        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
+        if (!classSymbol.getEnclosedElements().contains(methodElt)) return;*/
+
+        String className = classSymbol.flatname.toString();
+        String jaifPath = helper.getJaifPath(className);
+        AClass clazz = helper.getAClass(className, jaifPath);
+
+        String methodName = JVMNames.getJVMMethodName(methodElt);
+        AMethod method = clazz.methods.vivify(methodName);
+
+        for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
+            VariableElement ve = methodElt.getParameters().get(i);
+            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
+
+            AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
+            AField param = method.parameters.vivify(i);
+            helper.updateAnnotationSetInScene(
+                    param.type, atf, jaifPath, argATM, paramATM,
+                    TypeUseLocation.PARAMETER);
+        }
+    }
+
+    @Override
+    public void updateInferredMethodReceiverType(
+    		MethodTree methodTree,
+            ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod,
+            AnnotatedTypeFactory atf) {
+        ClassSymbol classSymbol = getEnclosingClassSymbol(methodTree);
+        if (classSymbol == null) {
+            // TODO: Handle anonymous classes.
+            // Also struggled to obtain the ClassTree from an anonymous class.
+            // Ignoring it for now.
+            // See Issue 682
+            // https://github.com/typetools/checker-framework/issues/682
+            return;
+        }
+        /*// TODO: We must handle cases where the method is declared on a superclass.
+        // Currently we are ignoring them. See ElementUtils#getSuperTypes.
+        // See Issue 682
+        // https://github.com/typetools/checker-framework/issues/682
+        if (!classSymbol.getEnclosedElements().contains(methodElt)) return;*/
+
+        String className = classSymbol.flatname.toString();
+        String jaifPath = helper.getJaifPath(className);
+        AClass clazz = helper.getAClass(className, jaifPath);
+
+        String methodName = JVMNames.getJVMMethodName(methodElt);
+        AMethod method = clazz.methods.vivify(methodName);
+
+        AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
+        if (argADT != null) {
+	        AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodTree).getReceiverType();
+	        if (paramATM != null) {
+		        AField receiver = method.receiver;
+		        helper.updateAnnotationSetInScene(
+		        		receiver.type, atf, jaifPath, argADT, paramATM,
+		                TypeUseLocation.RECEIVER);
+	        }
+        }
     }
 
     /**
