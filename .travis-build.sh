@@ -29,7 +29,8 @@ ant javadoc-private
 (cd framework && ant all-tests-nojtreg-nobuild)
 # Subset of all-tests
 # Also runs framework jtreg-tests
-(cd checker && ant jtreg-tests)
+# Temporarily disable jtreg-tests
+#(cd checker && ant jtreg-tests)
 (cd checker && ant command-line-tests)
 (cd checker && ant example-tests-nobuildjdk)
 (cd checker && ant check-tutorial)
