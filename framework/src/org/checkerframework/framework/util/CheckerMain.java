@@ -330,7 +330,7 @@ public class CheckerMain {
     }
 
     /**
-     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on it's classpath or boot classpath
+     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot classpath
      */
     public List<String> getExecArguments() {
         List<String> args = new ArrayList<String>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 5);
@@ -359,7 +359,7 @@ public class CheckerMain {
     }
 
     /**
-     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on it's classpath or boot classpath
+     * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot classpath
      */
     public int invokeCompiler() {
         List<String> args = getExecArguments();
@@ -481,7 +481,7 @@ public class CheckerMain {
         }
 
         int idx = uri.indexOf('!');
-        //As far as I know, the if statement below can't ever trigger, so it's more of a sanity check thing.
+        // Sanity check
         if (idx == -1) throw new IllegalStateException("You appear to have loaded this class from a local jar file, but I can't make sense of the URL!");
 
         try {

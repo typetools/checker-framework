@@ -781,7 +781,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     /**
-     * A type variable is a subtype if it's upper bounds is below the supertype.  Note: When comparing two type variables
+     * A type variable is a subtype if its upper bounds is below the supertype.  Note: When comparing two type variables
      * this method and visitTypevarSupertype will combine to isValid the subtypes upper bound against the supertypes
      * lower bound.
      */
@@ -790,7 +790,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     /**
-     * A union is a supertype if ONE of it's alternatives is a supertype of subtype
+     * A union is a supertype if ONE of its alternatives is a supertype of subtype
      */
     protected boolean visitUnionSupertype(AnnotatedTypeMirror subtype, AnnotatedUnionType supertype, VisitHistory visited) {
         return isSubtypeOfAny(subtype, supertype.getAlternatives(), visited);

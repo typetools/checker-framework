@@ -112,7 +112,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
     }
     // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
     // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
-    // TODO: TypeArgumentInference should only have an infer method (it's sole responsibility)
+    // TODO: TypeArgumentInference should only have an infer method (its sole responsibility)
     // TODO: Subclasses should NOT be able to call adaptMethodType and getArgumentTypes (getArgumentTypes should be inlined)
     protected List<AnnotatedTypeMirror> getArgumentTypes(final ExpressionTree expression,
                                                          final AnnotatedTypeFactory typeFactory) {

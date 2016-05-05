@@ -111,7 +111,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     /**
-     * Sets the method's element, annotates it's return type, parameters, type parameters, and throws
+     * Sets the method's element, annotates its return type, parameters, type parameters, and throws
      * annotations.
      */
     @Override

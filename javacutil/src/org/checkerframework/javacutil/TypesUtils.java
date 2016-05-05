@@ -389,7 +389,7 @@ public final class TypesUtils {
     }
 
     /**
-     * Given a bounded type (wildcard or typevar) get the concrete type of it's upper bound.  If
+     * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound.  If
      * the bounded type extends other bounded types, this method will iterate through their bounds
      * until a class, interface, or intersection is found.
      * @return A type that is not a wildcard or typevar, or null if this type is an unbounded wildcard

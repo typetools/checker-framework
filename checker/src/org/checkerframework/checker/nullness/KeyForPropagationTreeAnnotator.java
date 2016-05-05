@@ -29,7 +29,7 @@ import com.sun.source.tree.VariableTree;
  * Set<String> keySet = m.keySet();
  * }</pre>
  *
- * 2. If a variable declaration contains type arguments with an @KeyFor annotation and it's initializer
+ * 2. If a variable declaration contains type arguments with an @KeyFor annotation and its initializer
  * is a new class tree with corresponding type arguments that have an @UknownKeyFor primary annotation
  * we transfer from the LHS to RHS.  e.g.,
  * <pre>{@code

@@ -272,7 +272,7 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     @Override
     public Void visitNull_Typevar(AnnotatedNullType subtype, AnnotatedTypeVariable supertype, Set<AFConstraint> constraints) {
         //Note: We would expect that parameter is not one of the targets or else it would already be removed
-        //NOTE: Therefore we compare NULL against it's bound
+        //NOTE: Therefore we compare NULL against its bound
         addConstraint(subtype, supertype.getLowerBound(), constraints);
         return null;
     }

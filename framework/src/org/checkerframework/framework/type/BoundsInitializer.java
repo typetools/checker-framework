@@ -36,7 +36,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 
 /**
- * BoundsInitializer creates the bounds for type variables and wildcards.  It's static helper methods
+ * BoundsInitializer creates the bounds for type variables and wildcards.  Its static helper methods
  * are called from AnnotatedTypeMirror.  When an initializer method is called for a particular bound,
  * the entirety of that bound, including circular references, will be created.
  */

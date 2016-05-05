@@ -865,7 +865,7 @@ public class AnnotatedTypes {
             ((AnnotatedWildcardType)alub).getSuperBound().replaceAnnotations(lowerBounds);
 
 
-            //TODO: AGAIN, ALL LUB CODE SHOULD BE EXTRACTED OUT TO IT'S OWN CLASS OR THE TYPE HIERARCHY
+            //TODO: AGAIN, ALL LUB CODE SHOULD BE EXTRACTED OUT TO ITS OWN CLASS OR THE TYPE HIERARCHY
             //TODO: AND REWRITTEN
             boolean allWildcards = true;
             for (int i = 0; i < types.size() && allWildcards; i++) {
