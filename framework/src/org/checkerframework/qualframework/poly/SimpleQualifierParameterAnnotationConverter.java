@@ -300,7 +300,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     /**
-     * @return true if type has a polymorphic qualifier.
+     * @return true if type has a polymorphic qualifier
      */
     private boolean hasPolyAnnotation(ExtendedExecutableType type) {
         if (hasPolyAnnotationCheck(type.getReturnType())) {
@@ -318,7 +318,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q> implements 
     }
 
     /**
-     * @return true if type has a polymorphic qualifier.
+     * @return true if type has a polymorphic qualifier
      */
     protected boolean hasPolyAnnotationCheck(ExtendedTypeMirror type) {
         if (type == null) {

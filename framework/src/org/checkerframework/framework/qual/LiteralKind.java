@@ -57,7 +57,7 @@ public enum LiteralKind {
     /**
      * Returns all LiteralKinds except for ALL and PRIMITIVE
      *
-     * @return List of LiteralKinds except for ALL and PRIMITIVE
+     * @return list of LiteralKinds except for ALL and PRIMITIVE
      */
     public static List<LiteralKind> allLiteralKinds() {
         List<LiteralKind> list = new ArrayList<>(Arrays.asList(values()));
@@ -70,7 +70,7 @@ public enum LiteralKind {
      * Returns the primitive {@code LiteralKind}s:
      * INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR
      *
-     * @return List of LiteralKinds except for ALL
+     * @return list of LiteralKinds except for ALL
      */
     public static List<LiteralKind> primitiveLiteralKinds() {
         return new ArrayList<>(Arrays.asList(INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR));

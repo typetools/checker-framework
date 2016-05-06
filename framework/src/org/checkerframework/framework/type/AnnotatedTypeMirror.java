@@ -231,8 +231,8 @@ public abstract class AnnotatedTypeMirror {
      * It doesn't account for annotations in deep types (type arguments,
      * array components, etc).
      *
-     * @param p The qualifier hierarchy to check for.
-     * @return True iff an annotation from the same hierarchy as p is present.
+     * @param p the qualifier hierarchy to check for
+     * @return true iff an annotation from the same hierarchy as p is present
      */
     public boolean isAnnotatedInHierarchy(AnnotationMirror p) {
         return getAnnotationInHierarchy(p) != null;
@@ -245,8 +245,8 @@ public abstract class AnnotatedTypeMirror {
      * It doesn't account for annotations in deep types (type arguments,
      * array components, etc).
      *
-     * @param p The qualifier hierarchy to check for.
-     * @return An annotation from the same hierarchy as p if present.
+     * @param p the qualifier hierarchy to check for
+     * @return an annotation from the same hierarchy as p if present
      */
     public AnnotationMirror getAnnotationInHierarchy(AnnotationMirror p) {
         AnnotationMirror aliased = p;
@@ -271,8 +271,8 @@ public abstract class AnnotatedTypeMirror {
      * It doesn't account for annotations in deep types (type arguments,
      * array components, etc).
      *
-     * @param p The qualifier hierarchy to check for.
-     * @return An annotation from the same hierarchy as p if present.
+     * @param p the qualifier hierarchy to check for
+     * @return an annotation from the same hierarchy as p if present
      */
     public AnnotationMirror getEffectiveAnnotationInHierarchy(AnnotationMirror p) {
         AnnotationMirror aliased = p;
@@ -382,7 +382,7 @@ public abstract class AnnotatedTypeMirror {
      * This is useful to check the validity of annotations explicitly present on a type,
      * as flow inference might add annotations that were not previously present.
      *
-     * @return The set of explicitly written annotations supported by this checker.
+     * @return the set of explicitly written annotations supported by this checker
      */
     public Set<AnnotationMirror> getExplicitAnnotations() {
         // TODO JSR 308: The explicit type annotations should be always present
@@ -663,8 +663,8 @@ public abstract class AnnotatedTypeMirror {
     /**
      * Remove any annotation that is in the same qualifier hierarchy as the parameter.
      *
-     * @param a An annotation from the same qualifier hierarchy
-     * @return If an annotation was removed
+     * @param a an annotation from the same qualifier hierarchy
+     * @return if an annotation was removed
      */
     public boolean removeAnnotationInHierarchy(AnnotationMirror a) {
         AnnotationMirror prev = this.getAnnotationInHierarchy(a);
@@ -678,8 +678,8 @@ public abstract class AnnotatedTypeMirror {
      * Remove an annotation that is in the same qualifier hierarchy as the parameter,
      * unless it's the top annotation.
      *
-     * @param a An annotation from the same qualifier hierarchy
-     * @return If an annotation was removed
+     * @param a an annotation from the same qualifier hierarchy
+     * @return if an annotation was removed
      */
     public boolean removeNonTopAnnotationInHierarchy(AnnotationMirror a) {
         AnnotationMirror prev = this.getAnnotationInHierarchy(a);
@@ -824,7 +824,7 @@ public abstract class AnnotatedTypeMirror {
          * Constructor for this type
          *
          * @param type  underlying kind of this type
-         * @param atypeFactory The AnnotatedTypeFactory used to create this type
+         * @param atypeFactory the AnnotatedTypeFactory used to create this type
          */
         private AnnotatedDeclaredType(DeclaredType type,
                 AnnotatedTypeFactory atypeFactory, boolean declaration) {
@@ -994,7 +994,7 @@ public abstract class AnnotatedTypeMirror {
         /**
          * Return the declared type with its type arguments removed.  This
          * also replaces the underlying type with its erasure.
-         * @return A fresh copy of the declared type with no type arguments
+         * @return a fresh copy of the declared type with no type arguments
          */
         @Override
         public AnnotatedDeclaredType getErased() {
@@ -1529,7 +1529,7 @@ public abstract class AnnotatedTypeMirror {
          * This method is necessary to prevent infinite recursions in initialization.
          * In general, prefer getLowerBound.
          *
-         * @return the lower bound field.
+         * @return the lower bound field
          */
         public AnnotatedTypeMirror getLowerBoundField() {
             return lowerBound;
@@ -1630,7 +1630,7 @@ public abstract class AnnotatedTypeMirror {
          * This method is necessary to prevent infinite recursions in initialization.
          * In general, prefer getUpperBound.
          *
-         * @return the upper bound field.
+         * @return the upper bound field
          */
         public AnnotatedTypeMirror getUpperBoundField() {
             return upperBound;
@@ -1708,7 +1708,7 @@ public abstract class AnnotatedTypeMirror {
          * e.g.
          * &lt;E extends T&gt;, T extends S, S extends List&lt;String&gt;&gt;
          * A call to getErased will return the type List
-         * @return The erasure of the upper bound of this type
+         * @return the erasure of the upper bound of this type
          *
          * IMPORTANT NOTE: getErased should always return a FRESH object.  This will
          * occur for type variables if all other getErased methods are implemented appropriately.
@@ -2044,7 +2044,7 @@ public abstract class AnnotatedTypeMirror {
          * with direct supertypes [MyObject, Serializable, Comparable]
          *
          * @param type  underlying kind of this type
-         * @param atypeFactory The factory used to construct this intersection type
+         * @param atypeFactory the factory used to construct this intersection type
          */
         private AnnotatedIntersectionType(IntersectionType type,
                 AnnotatedTypeFactory atypeFactory) {

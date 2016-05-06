@@ -240,13 +240,13 @@ public enum AtmCombo {
      * visitor method, and call that method with type1, type2 and initial param as arguments to
      * the visit method.
      *
-     * @param type1 First argument to the called visit method
-     * @param type2 Second argument to the called visit method
-     * @param initialParam The parameter passed to the called visit method
-     * @param visitor The visitor that is visiting the given types
+     * @param type1 first argument to the called visit method
+     * @param type2 second argument to the called visit method
+     * @param initialParam the parameter passed to the called visit method
+     * @param visitor the visitor that is visiting the given types
      * @param <RETURN_TYPE> The return type of the visitor's visit methods
      * @param <PARAM> The parameter type of the visitor's visit methods
-     * @return The return value of the visit method called
+     * @return the return value of the visit method called
      */
     public static <RETURN_TYPE, PARAM> RETURN_TYPE accept(final AnnotatedTypeMirror type1,
                                                           final AnnotatedTypeMirror type2,

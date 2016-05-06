@@ -99,8 +99,8 @@ public class TypeVisualizer {
     /**
      * Converts the given dot file to a png file at the specified location.  This method
      * calls the program "dot" from Runtime.exec and will fail if "dot" is not on your class path.
-     * @param dotFile The dot file to convert
-     * @param pngFile The destination of the resultant png file
+     * @param dotFile the dot file to convert
+     * @param pngFile the destination of the resultant png file
      */
     public static void execDotToPng(final File dotFile, final File pngFile) {
         String [] cmd = new String[] {

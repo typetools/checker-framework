@@ -90,8 +90,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
      * This method has to be called for every explicit or implicit use of a type,
      * most cases are simply covered by the type validator.
      *
-     * @param node The tree for error reporting only.
-     * @param member The element from which to start looking.
+     * @param node the tree for error reporting only
+     * @param member the element from which to start looking
      */
     private void checkReportUse(Tree node, Element member) {
         Element loop = member;

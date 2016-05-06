@@ -46,13 +46,13 @@ abstract class TargetedElementAnnotationApplier {
     protected final Element element;
 
     /**
-     * @return The TargetTypes that identify annotations we wish to apply with this object.  Any annotations
+     * @return the TargetTypes that identify annotations we wish to apply with this object.  Any annotations
      * that have these target types will be passed to handleTargeted.
      */
     protected abstract TargetType[] annotatedTargets();
 
     /**
-     * @return The TargetTypes that identify annotations that are valid but we wish to ignore.  Any annotations
+     * @return the TargetTypes that identify annotations that are valid but we wish to ignore.  Any annotations
      * that have these target types will be passed to handleValid, providing they aren't also in annotatedTargets.
      */
     protected abstract TargetType [] validTargets();
@@ -67,7 +67,7 @@ abstract class TargetedElementAnnotationApplier {
      * addressed by first getting all annotations on a method or class and the picking out only the ones we wish to
      * target (see extractAndApply).
      *
-     * @return The annotations that we MAY wish to apply to the given type.
+     * @return the annotations that we MAY wish to apply to the given type
      */
     protected abstract Iterable<Attribute.TypeCompound> getRawTypeAttributes();
 
@@ -80,8 +80,8 @@ abstract class TargetedElementAnnotationApplier {
     protected abstract boolean isAccepted();
 
     /**
-     * @param type The type to annotate
-     * @param element An element identifying type
+     * @param type the type to annotate
+     * @param element an element identifying type
      */
     TargetedElementAnnotationApplier(final AnnotatedTypeMirror type, final Element element) {
         this.type = type;
@@ -90,20 +90,20 @@ abstract class TargetedElementAnnotationApplier {
 
     /**
      * This method should apply all annotations that are handled by this object.
-     * @param targeted The list of annotations that were returned by getRawTypeAttributes and had a TargetType
+     * @param targeted the list of annotations that were returned by getRawTypeAttributes and had a TargetType
      *                 contained by annotatedTargets
      */
     protected abstract void handleTargeted(List<Attribute.TypeCompound> targeted);
 
     /**
      * The default implementation of this method does nothing.
-     * @param valid The list of annotations that were returned by getRawTypeAttributes and had a TargetType
+     * @param valid the list of annotations that were returned by getRawTypeAttributes and had a TargetType
      *              contained by valid and NOT annotatedTargets
      */
     protected void handleValid(List<Attribute.TypeCompound> valid) { }
 
     /**
-     * @param invalid The list of annotations that were returned by getRawTypeAttributes and were not
+     * @param invalid the list of annotations that were returned by getRawTypeAttributes and were not
      *                handled by handleTargeted or handleValid
      */
     protected void handleInvalid(List<Attribute.TypeCompound> invalid) {
@@ -120,8 +120,8 @@ abstract class TargetedElementAnnotationApplier {
     /**
      * Separate the input annotations into a Map of TargetClass (TARGETED, VALID, INVALID) to the annotations
      * that fall into each of those categories.
-     * @param typeCompounds Annotations to sift through, should be those returned by getRawTypeAttributes
-     * @return A {@literal Map<TargetClass -> Annotations>.}
+     * @param typeCompounds annotations to sift through, should be those returned by getRawTypeAttributes
+     * @return a {@literal Map<TargetClass -> Annotations>.}
      */
     protected Map<TargetClass, List<Attribute.TypeCompound>> sift(final Iterable<Attribute.TypeCompound> typeCompounds) {
 

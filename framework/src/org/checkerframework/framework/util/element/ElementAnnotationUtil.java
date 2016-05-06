@@ -43,9 +43,9 @@ public class ElementAnnotationUtil {
     /**
      * For each type/element pair, add all of the annotations stored in Element to type.
      * See apply for more details.
-     * @param types The types to which we wish to apply element annotations.
-     * @param elements The elements that may contain annotations to apply.  elements.size must == types.size
-     * @param typeFactory The type factory used to create the AnnotatedTypeMirrors contained by types
+     * @param types the types to which we wish to apply element annotations
+     * @param elements the elements that may contain annotations to apply.  elements.size must == types.size
+     * @param typeFactory the type factory used to create the AnnotatedTypeMirrors contained by types
      */
     public static void applyAllElementAnnotations(final List<? extends AnnotatedTypeMirror> types,
                                                   final List<? extends Element> elements,
@@ -73,8 +73,8 @@ public class ElementAnnotationUtil {
      * and type annotations differs, in particular for arrays and inner
      * types. See the manual for a discussion.
      *
-     * @param type The type to annotate
-     * @param annotations The annotations to add
+     * @param type the type to annotate
+     * @param annotations the annotations to add
      */
     static void addAnnotationsFromElement(final AnnotatedTypeMirror type,
                                           final List<? extends AnnotationMirror> annotations) {
@@ -85,8 +85,8 @@ public class ElementAnnotationUtil {
 
     /**
      * Does expectedValues contain enumValue.  This is just a linear search.
-     * @param enumValue Value to search for, a needle
-     * @param expectedValues Values to search through, a haystack
+     * @param enumValue value to search for, a needle
+     * @param expectedValues values to search through, a haystack
      * @return true if enumValue is in expectedValues, false otherwise
      */
     static boolean contains(Object enumValue, Object[] expectedValues) {
@@ -103,10 +103,10 @@ public class ElementAnnotationUtil {
      * Use a map to partition annotations with the given TargetTypes into Lists,
      * where each target type is a key in the output map.  Any annotation that
      * does not have one of these target types will be added to unmatched
-     * @param annos The collection of annotations to partition
-     * @param unmatched A list to add annotations with unmatched target types to
-     * @param targetTypes A list of target types to partition annos with
-     * @return A map from targetType &rarr; List of Annotations that have that targetType
+     * @param annos the collection of annotations to partition
+     * @param unmatched a list to add annotations with unmatched target types to
+     * @param targetTypes a list of target types to partition annos with
+     * @return a map from targetType &rarr; List of Annotations that have that targetType
      */
     static Map<TargetType, List<TypeCompound>> partitionByTargetType(Collection<TypeCompound> annos,
                                                                      List<TypeCompound> unmatched,
@@ -264,8 +264,8 @@ public class ElementAnnotationUtil {
      * only the super bound or both the super bound and the extends bound.
      * @see org.checkerframework.framework.util.element.ElementAnnotationUtil.WildcardBoundAnnos
      *
-     * @param type The type in which annos should be placed
-     * @param annos All of the element annotations, TypeCompounds, for type
+     * @param type the type in which annos should be placed
+     * @param annos all of the element annotations, TypeCompounds, for type
      */
     static void annotateViaTypeAnnoPosition(final AnnotatedTypeMirror type, final Collection<TypeCompound> annos) {
         final Map<AnnotatedWildcardType, WildcardBoundAnnos> wildcardToAnnos = new IdentityHashMap<>();
@@ -307,7 +307,7 @@ public class ElementAnnotationUtil {
      * any type that is not the root.  E.g. {@code @T List< @N String>},  @T is on a top-level NON-nested type where as
      * the annotation @N is on a nested type.
      *
-     * @param typeCompound The type compound to inspect
+     * @param typeCompound the type compound to inspect
      * @return true if typeCompound is placed on a nested type, false otherwise
      */
     static boolean isOnComponentType( final Attribute.TypeCompound typeCompound ) {
@@ -327,8 +327,8 @@ public class ElementAnnotationUtil {
      *
      * Reminder: There will only be multiple bound types if the upperBound is an intersection.
      *
-     * @param upperBoundTypes The list of upperBounds for the type with bound positions you wish to offset.
-     * @return The bound offset for all TypeAnnotationPositions of TypeCompounds targeting these bounds.
+     * @param upperBoundTypes the list of upperBounds for the type with bound positions you wish to offset
+     * @return the bound offset for all TypeAnnotationPositions of TypeCompounds targeting these bounds
      */
     static int getBoundIndexOffset( final List<? extends AnnotatedTypeMirror> upperBoundTypes ) {
         final int boundIndexOffset;
@@ -343,9 +343,9 @@ public class ElementAnnotationUtil {
 
     /**
      * Given a TypePath into a type, return the component type that is located at the end of the TypePath
-     * @param type A type containing the type specified by location
-     * @param location A type path into type
-     * @return The type specified by location
+     * @param type a type containing the type specified by location
+     * @param location a type path into type
+     * @return the type specified by location
      */
     static AnnotatedTypeMirror getTypeAtLocation(AnnotatedTypeMirror type, List<TypeAnnotationPosition.TypePathEntry> location) {
 
@@ -369,9 +369,9 @@ public class ElementAnnotationUtil {
 
     /**
      * Given a TypePath into a declared type, return the component type that is located at the end of the TypePath
-     * @param type A type containing the type specified by location
-     * @param location A type path into type
-     * @return The type specified by location
+     * @param type a type containing the type specified by location
+     * @param location a type path into type
+     * @return the type specified by location
      */
     private static AnnotatedTypeMirror getLocationTypeADT(AnnotatedDeclaredType type,  List<TypeAnnotationPosition.TypePathEntry> location) {
 

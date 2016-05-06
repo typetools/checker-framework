@@ -267,7 +267,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Look for an @UnitsRelations annotation on the qualifier and
      * add it to the list of UnitsRelations.
      *
-     * @param qual The qualifier to investigate.
+     * @param qual the qualifier to investigate
      */
     private void addUnitsRelations(Class<? extends Annotation> qual) {
         AnnotationMirror am = AnnotationUtils.fromClass(elements, qual);

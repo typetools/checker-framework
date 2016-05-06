@@ -48,7 +48,7 @@ public class ConstraintMap {
     }
 
     /**
-     * @return The set of all targets passed to the constructor of this constraint map (a target will
+     * @return the set of all targets passed to the constructor of this constraint map (a target will
      * appear in this list whether or not it has any constraints added)
      */
     public Set<TypeVariable> getTargets() {

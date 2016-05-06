@@ -335,7 +335,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
     /**
      * Refines the result annotated type variable with the most specific of type1 and type2.
-     * @return True if the result was annotated in all hierarchy, false if the result could not be
+     * @return true if the result was annotated in all hierarchy, false if the result could not be
      *         annotated in one or more annotation hierarchies
      */
     public static boolean mostSpecificTypeVariable(final AnnotatedTypeFactory typeFactory,
@@ -434,7 +434,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * we will want to annotate the result with the same primary annotation or, if the primary annotation
      * is not present, the same bounds.
      *
-     * @return The annotated type mirror that contains the upper bound primary annotation of toSearch
+     * @return the annotated type mirror that contains the upper bound primary annotation of toSearch
      */
     private static AnnotatedTypeMirror findSourceAtm(final Types types,
                                                      final QualifierHierarchy qualifierHierarchy,
@@ -513,7 +513,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
     }
 
     /**
-     * @return The string representation as a comma-separated list.
+     * @return the string representation as a comma-separated list
      */
     @SideEffectFree
     @Override

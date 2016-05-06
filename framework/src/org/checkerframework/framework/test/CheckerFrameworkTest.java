@@ -105,9 +105,9 @@ public abstract class CheckerFrameworkTest {
      * a particular checker, then pass it to the {@link #CheckerFrameworkTest}
      * constructor.
      *
-     * @param previousOptions The options specified in the constructor of the test
+     * @param previousOptions the options specified in the constructor of the test
      *                        previousOptions is unmodifiable
-     * @return A new list of options or the original passed through
+     * @return a new list of options or the original passed through
      */
     public List<String> customizeOptions(List<String> previousOptions) {
         return previousOptions;

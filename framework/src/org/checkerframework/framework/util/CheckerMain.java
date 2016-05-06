@@ -144,8 +144,8 @@ public class CheckerMain {
     /**
      * Record (but don't remove) the arguments that start with @ and therefore
      * are files that contain javac arguments
-     * @param args A list of command line arguments
-     * @return A List of files representing all arguments that started with @
+     * @param args a list of command line arguments
+     * @return a List of files representing all arguments that started with @
      */
     protected List<File> collectArgLists(final List<String> args) {
         final List<File> argListFiles = new ArrayList<File>();
@@ -161,10 +161,10 @@ public class CheckerMain {
     /**
      * Remove the argument given by argumentName and the subsequent value from the list args if present.
      * Return the subsequent value.
-     * @param argumentName Argument to extract
-     * @param alternative  Value to return if argumentName is not found in args
-     * @param args The current list of arguments
-     * @return The string that follows argumentName if argumentName is in args or alternative if
+     * @param argumentName argument to extract
+     * @param alternative  value to return if argumentName is not found in args
+     * @param args the current list of arguments
+     * @return the string that follows argumentName if argumentName is in args or alternative if
      * argumentName is not present in args
      */
     protected static String extractArg(final String argumentName, final String alternative, final List<String> args) {
@@ -185,10 +185,10 @@ public class CheckerMain {
     /**
      * Remove the argument given by argumentName and the subsequent value from the list args if present.
      * Return the subsequent value wrapped as a File.
-     * @param argumentName Argument to extract
-     * @param alternative  File to return if argumentName is not found in args
-     * @param args The current list of arguments
-     * @return The string that follows argumentName wrapped as a File if argumentName is in args or alternative if
+     * @param argumentName argument to extract
+     * @param alternative  file to return if argumentName is not found in args
+     * @param args the current list of arguments
+     * @return the string that follows argumentName wrapped as a File if argumentName is in args or alternative if
      * argumentName is not present in args
      */
     protected static File extractFileArg(final String argumentName, final File alternative, final List<String> args) {
@@ -202,8 +202,8 @@ public class CheckerMain {
 
     /**
      * Construct a file path from files and prepend it to previous (if previous is not null)
-     * @param previous The previous file path to append to (can be null)
-     * @param files    The files used to construct a path using File.pathSeparator
+     * @param previous the previous file path to append to (can be null)
+     * @param files    the files used to construct a path using File.pathSeparator
      * @return previous with the conjoined file path appended to it or just the conjoined file path if previous is null
      */
 
@@ -227,10 +227,10 @@ public class CheckerMain {
     /**
      * Find all args that match the given pattern and extract their index 1 group.  Add all the index 1 groups to the
      * returned list.   Remove all matching args from the input args list.
-     * @param pattern      A pattern with at least one matching group
-     * @param allowEmpties Whether or not to add empty group(1) matches to the returned list
-     * @param args         The arguments to extract from
-     * @return A list of arguments from the first group that matched the pattern for each input args or the empty list
+     * @param pattern      a pattern with at least one matching group
+     * @param allowEmpties whether or not to add empty group(1) matches to the returned list
+     * @param args         the arguments to extract from
+     * @return a list of arguments from the first group that matched the pattern for each input args or the empty list
      *         if there were none
      */
     protected static List<String> extractOptWPattern(final Pattern pattern, boolean allowEmpties, final List<String> args) {
@@ -262,8 +262,8 @@ public class CheckerMain {
 
     /**
      * Remove all -Xbootclasspath/p: or -J-Xbootclasspath/p: arguments from args and add them to the returned list
-     * @param args The arguments to extract from
-     * @return All non-empty arguments matching BOOT_CLASS_PATH_REGEX or an empty list if there were none
+     * @param args the arguments to extract from
+     * @return all non-empty arguments matching BOOT_CLASS_PATH_REGEX or an empty list if there were none
      */
     protected static List<String> extractBootClassPath(final List<String> args) {
         return extractOptWPattern(BOOT_CLASS_PATH_REGEX, false, args);
@@ -276,8 +276,8 @@ public class CheckerMain {
 
     /**
      * Remove all -J arguments from args and add them to the returned list
-     * @param args The arguments to extract from
-     * @return All -j arguments (without the -J prefix) or an empty list if there were none
+     * @param args the arguments to extract from
+     * @return all -j arguments (without the -J prefix) or an empty list if there were none
      */
     protected static List<String> extractJvmOpts(final List<String> args) {
         return extractOptWPattern(JVM_OPTS_REGEX, false, args);
@@ -287,8 +287,8 @@ public class CheckerMain {
      * Extract the -cp and -classpath arguments and there immediate predecessors in args.  Return a list of the
      * predecessors.  If NO -cp or -classpath arguments were present then use the current directory and the
      * CLASSPATH environment variable
-     * @param args A list of arguments to extract from
-     * @return The arguments that should be put on the classpath when calling javac.jar
+     * @param args a list of arguments to extract from
+     * @return the arguments that should be put on the classpath when calling javac.jar
      */
     protected static List<String> extractCpOpts(final List<String> args) {
         List<String> actualArgs = new ArrayList<String>();
@@ -434,8 +434,8 @@ public class CheckerMain {
     /**
      * Iterate through the arguments and, for every argument that starts with an @, replace it
      * with the lines contained by that file.
-     * @param args A list of arguments, which may or may not be prefixed with an @
-     * @return A list of args with no @ symbols, where every argument that started with an @
+     * @param args a list of arguments, which may or may not be prefixed with an @
+     * @return a list of args with no @ symbols, where every argument that started with an @
      * symbol has been replaced with the list of lines of the files content
      */
     protected static List<String> expandArgs(final List<File> args)  {
@@ -452,8 +452,8 @@ public class CheckerMain {
 
     /**
      * Find the jar file or directory containing the .class file from which context was loaded
-     * @param context The class whose .class file we wish to locate
-     * @param directory Whether to throw an exception if the file was loaded from a directory
+     * @param context the class whose .class file we wish to locate
+     * @param directory whether to throw an exception if the file was loaded from a directory
      */
     public static String findPathTo(Class<?> context, boolean directory) throws IllegalStateException {
         if (context == null) context = CheckerMain.class;
@@ -496,7 +496,7 @@ public class CheckerMain {
      * Assert that all files in the list exist and if they don't, throw a RuntimeException with a list of the files
      * that do not exist
      *
-     * @param expectedFiles Files that must exist
+     * @param expectedFiles files that must exist
      */
     private static void assertFilesExist(final List<File> expectedFiles) {
         final List<File> missingFiles = new ArrayList<File>();
@@ -593,9 +593,9 @@ public class CheckerMain {
      *
      * Note, a processor entry only gets replaced if it contains NO "." (i.e. is not qualified by the
      * package name) and can be found under the package org.checkerframework.checker in the checker.jar.
-     * @param processorsString A string identifying processors
-     * @param fullyQualifiedCheckerNames A list of fully-qualified checker names to match processorsString against.
-     * @param allowSubcheckers Whether to match against fully qualified checker names ending with "Subchecker".
+     * @param processorsString a string identifying processors
+     * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match processorsString against
+     * @param allowSubcheckers whether to match against fully qualified checker names ending with "Subchecker"
      * @return processorsString where all unqualified references to Checker Framework built-in checkers
      * are replaced with fully-qualified references
      */
@@ -656,9 +656,9 @@ public class CheckerMain {
      *
      * Does not match multiple processors - a single processor name must be given.
      *
-     * @param processor A string identifying one processor.
-     * @param fullyQualifiedCheckerNames A list of fully-qualified checker names to match processor against.
-     * @param allowSubcheckers Whether to match against fully qualified checker names ending with "Subchecker".
+     * @param processor a string identifying one processor
+     * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match processor against
+     * @param allowSubcheckers whether to match against fully qualified checker names ending with "Subchecker"
      */
     public static boolean matchesFullyQualifiedProcessor(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
         for (final String name : fullyQualifiedCheckerNames) {

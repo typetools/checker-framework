@@ -32,7 +32,7 @@ public abstract class UnderlyingAST {
     }
 
     /**
-     * @return The code that corresponds to the CFG.
+     * @return the code that corresponds to the CFG
      */
     abstract public Tree getCode();
 

@@ -37,8 +37,8 @@ public class SimpleOptionMap {
 
     /**
      * A method to easily add Strings to an option that takes a filepath as an argument
-     * @param key An option with an argument of the form "arg1[path-separator]arg2..." e.g., "-cp myDir:myDir2:myDir3"
-     * @param toAppend A string to append onto the path or, if the path is null/empty, the argument to the option
+     * @param key an option with an argument of the form "arg1[path-separator]arg2..." e.g., "-cp myDir:myDir2:myDir3"
+     * @param toAppend a string to append onto the path or, if the path is null/empty, the argument to the option
      *                 indicated by key
      */
     public void addToPathOption(String key, String toAppend) {

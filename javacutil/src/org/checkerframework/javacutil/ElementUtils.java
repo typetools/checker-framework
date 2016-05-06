@@ -160,7 +160,7 @@ public class ElementUtils {
      * @param element
      *            an element enclosed by a class, or a
      *            {@code TypeElement}
-     * @return The qualified {@code Name} of the innermost class
+     * @return the qualified {@code Name} of the innermost class
      *         enclosing the element
      */
     public static /*@Nullable*/ Name getQualifiedClassName(Element element) {
@@ -282,8 +282,8 @@ public class ElementUtils {
      * Does the given element need a receiver for accesses?
      * For example, an access to a local variable does not require a receiver.
      *
-     * @param element The element to test.
-     * @return whether the element requires a receiver for accesses.
+     * @param element the element to test
+     * @return whether the element requires a receiver for accesses
      */
     public static boolean hasReceiver(Element element) {
         return (element.getKind().isField() ||

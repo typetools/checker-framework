@@ -31,8 +31,8 @@ public class DeclarationsIntoElements {
     /**
      * The entry point.
      *
-     * @param atypeFactory The type factory.
-     * @param tree The ClassTree to process.
+     * @param atypeFactory the type factory
+     * @param tree the ClassTree to process
      */
     public static void store(ProcessingEnvironment env,
             AnnotatedTypeFactory atypeFactory, ClassTree tree) {
@@ -47,8 +47,8 @@ public class DeclarationsIntoElements {
      * Add inherited declaration annotations from overridden methods into
      * the corresponding Elements so they are written into bytecode.
      * @param env ProcessingEnvironment
-     * @param atypeFactory The type factory
-     * @param meth The MethodTree to add the annotations.
+     * @param atypeFactory the type factory
+     * @param meth the MethodTree to add the annotations
      */
     private static void storeMethod(ProcessingEnvironment env,
             AnnotatedTypeFactory atypeFactory, MethodTree meth) {

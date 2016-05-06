@@ -91,24 +91,24 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     }
 
     /**
-     * @return The transfer function to be used by the analysis.
+     * @return the transfer function to be used by the analysis
      */
     public T createTransferFunction() {
         return atypeFactory.createFlowTransferFunction(this);
     }
 
     /**
-     * @return An empty store of the appropriate type.
+     * @return an empty store of the appropriate type
      */
     public abstract S createEmptyStore(boolean sequentialSemantics);
 
     /**
-     * @return An identical copy of the store {@code s}.
+     * @return an identical copy of the store {@code s}.
      */
     public abstract S createCopiedStore(S s);
 
     /**
-     * @return An abstract value containing the given annotated {@code type}.
+     * @return an abstract value containing the given annotated {@code type}.
      */
     public abstract /*@Nullable*/ V createAbstractValue(AnnotatedTypeMirror type);
 

@@ -65,7 +65,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
      * Sometimes the underlying type parameters of AnnotatedWildcardTypes are not available
      * on the wildcards themselves.  Instead, record enclosing class to find the type parameter
      * to use as a backup in visitWildcards.
-     * @param declaredType Type to record
+     * @param declaredType type to record
      */
     @Override
     public Void visitDeclared(AnnotatedDeclaredType declaredType, Void aVoid) {
