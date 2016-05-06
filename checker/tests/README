@@ -187,3 +187,14 @@ Annotated JDK
 =============
 
 The tests run with the annotated JDK.  Keep this in mind when writing tests.
+
+
+Seeing the javac commands that are run
+======================================
+
+To see the exact javac commands that the Checker Framework test framework
+runs, use
+  -Demit.test.debug=true
+For example:
+  ant stubfile-tests -Demit.test.debug=true
+This may be helpful during debugging.
