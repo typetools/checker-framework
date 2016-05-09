@@ -4,15 +4,17 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
 /**
- * Subclasses of TUConstraint represent constraints between type parameter whose type arguments
- * are being inferred and the types used to do that inference.  These constraints are used by
+ * Subclasses of TUConstraint represent constraints between a type parameter, whose type arguments
+ * are being inferred, and the types used to do that inference.  These constraints are used by
  * the TASolver to infer arguments.
- *
- * TU constraints come in the classic form of subtype, supertype, and equality constraints.
- * {@code T <: U}  - implies T is a subtype of U, it is represented by TSubU
- * {@code T >: U}  - implies T is a supertype of U, it is represented by TSuperU
- * {@code T = U}   - implies T is equal to U, it is represented by TIsU
- *
+ * <p>
+ * TU constraints come in the classic form of subtype, supertype, and equality constraints.<br>
+ * <ul>
+ * <li>{@code T <: U}  - implies T is a subtype of U, it is represented by TSubU <br>
+ * <li>{@code T >: U}  - implies T is a supertype of U, it is represented by TSuperU <br>
+ * <li>{@code T = U}   - implies T is equal to U, it is represented by TIsU <br>
+ * </ul>
+ * <p>
  * Note, it is important that the type parameter is represented by an AnnotatedTypeVariable
  * because if a use of the type parameter has a primary annotation, then the two types
  * represented in by a TUConstraint are NOT constrained in the hierarchy of that annotation.
