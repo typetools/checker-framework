@@ -20,7 +20,10 @@ import java.util.zip.ZipEntry;
 /**
  * This class functions essentially the same as the jsr308-langtools javac
  * script EXCEPT that it adds the appropriate jdk.jar to the bootclasspath and
- * adds checker.jar to the classpath passed to javac.
+ * adds checker.jar to the processor passed to javac.
+ * <p>
+ *
+ * To debug it, use the -AoutputArgsToFile=... command-line argument.
  */
 public class CheckerMain {
 
@@ -72,12 +75,16 @@ public class CheckerMain {
      */
     public CheckerMain(final File checkersJar, final String [] args) {
 
-        final File searchPath = checkersJar.getParentFile();
         this.checkersJar   = checkersJar;
+        final File searchPath = checkersJar.getParentFile();
 
-        final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+        final List<String> argsList = new ArrayList<String>(args.length);
+        for (String arg : args) {
+            argsList.add(arg.trim());
+        }
+
         replaceShorthandProcessor(argsList);
-        argListFiles = collectArgLists(argsList);
+        argListFiles = collectArgFiles(argsList);
 
         this.javacJar = extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), argsList);
 
@@ -96,24 +103,6 @@ public class CheckerMain {
 
     protected void assertValidState() {
         assertFilesExist(Arrays.asList(javacJar, jdkJar, checkersJar));
-    }
-
-    /**
-     * For every "-processor" argument in args, replace its immediate successor argument using
-     * asCheckerFrameworkProcessors
-     */
-    protected void replaceShorthandProcessor(final List<String> args) {
-        for (int i = 0; i < args.size(); i++) {
-            final int nextIndex = i + 1;
-            if (args.size() > nextIndex) {
-                if (args.get(i).equals("-processor")) {
-                    final String replacement = asCheckerFrameworkProcessors(args.get(nextIndex),
-                                                   getCheckerClassNames(), false);
-                    args.remove(nextIndex);
-                    args.add(nextIndex, replacement);
-                }
-            }
-        }
     }
 
     public void addToClasspath(List<String> cpOpts) {
@@ -142,12 +131,12 @@ public class CheckerMain {
     }
 
     /**
-     * Record (but don't remove) the arguments that start with @ and therefore
-     * are files that contain javac arguments
-     * @param args a list of command line arguments
+     * Return the arguments that start with @ and therefore
+     * are files that contain javac arguments.
+     * @param args a list of command-line arguments; is not modified
      * @return a List of files representing all arguments that started with @
      */
-    protected List<File> collectArgLists(final List<String> args) {
+    protected List<File> collectArgFiles(final List<String> args) {
         final List<File> argListFiles = new ArrayList<File>();
         for (final String arg : args) {
             if (arg.startsWith("@")) {
@@ -161,25 +150,22 @@ public class CheckerMain {
     /**
      * Remove the argument given by argumentName and the subsequent value from the list args if present.
      * Return the subsequent value.
-     * @param argumentName argument to extract
-     * @param alternative  value to return if argumentName is not found in args
+     * @param argumentName a command-line option name whose argument to extract
+     * @param alternative  default value to return if argumentName does not appear in args
      * @param args the current list of arguments
-     * @return the string that follows argumentName if argumentName is in args or alternative if
+     * @return the string that follows argumentName if argumentName is in args, or alternative if
      * argumentName is not present in args
      */
     protected static String extractArg(final String argumentName, final String alternative, final List<String> args) {
-        for (int i = 0; i < args.size(); i++) {
-            if (args.get(i).trim().equals(argumentName)) {
-                if (i == args.size() - 1) {
-                    throw new RuntimeException("Argument " + argumentName + " specified but given no value!");
-                } else {
-                    args.remove(i);
-                    return args.remove(i);
-                }
-            }
+        int i = args.indexOf(argumentName);
+        if (i == -1) {
+            return alternative;
+        } else if (i == args.size() - 1) {
+            throw new RuntimeException("Argument " + argumentName + " specified but given no value!");
+        } else {
+            args.remove(i);
+            return args.remove(i);
         }
-
-        return alternative;
     }
 
     /**
@@ -209,7 +195,7 @@ public class CheckerMain {
      * @return a list of arguments from the first group that matched the pattern for each input args or the empty list
      *         if there were none
      */
-    protected static List<String> extractOptWPattern(final Pattern pattern, boolean allowEmpties, final List<String> args) {
+    protected static List<String> extractOptWithPattern(final Pattern pattern, boolean allowEmpties, final List<String> args) {
         final List<String> matchedArgs = new ArrayList<String>();
 
         int i = 0;
@@ -232,9 +218,9 @@ public class CheckerMain {
     }
 
     /**
-     * A pattern to catch bootclasspath prepend entries, used to construct one -Xbootclasspath/p: argument
+     * A pattern to match bootclasspath prepend entries, used to construct one -Xbootclasspath/p: argument
      */
-    protected static final Pattern BOOT_CLASS_PATH_REGEX = Pattern.compile("^(?:-J){0,1}-Xbootclasspath/p:(.*)$");
+    protected static final Pattern BOOT_CLASS_PATH_REGEX = Pattern.compile("^(?:-J)?-Xbootclasspath/p:(.*)$");
 
     /**
      * Remove all -Xbootclasspath/p: or -J-Xbootclasspath/p: arguments from args and add them to the returned list
@@ -242,7 +228,7 @@ public class CheckerMain {
      * @return all non-empty arguments matching BOOT_CLASS_PATH_REGEX or an empty list if there were none
      */
     protected static List<String> extractBootClassPath(final List<String> args) {
-        return extractOptWPattern(BOOT_CLASS_PATH_REGEX, false, args);
+        return extractOptWithPattern(BOOT_CLASS_PATH_REGEX, false, args);
     }
 
     /**
@@ -253,16 +239,18 @@ public class CheckerMain {
     /**
      * Remove all -J arguments from args and add them to the returned list
      * @param args the arguments to extract from
-     * @return all -j arguments (without the -J prefix) or an empty list if there were none
+     * @return all -J arguments (without the -J prefix) or an empty list if there were none
      */
     protected static List<String> extractJvmOpts(final List<String> args) {
-        return extractOptWPattern(JVM_OPTS_REGEX, false, args);
+        return extractOptWithPattern(JVM_OPTS_REGEX, false, args);
     }
 
     /**
-     * Extract the -cp and -classpath arguments and there immediate predecessors in args.  Return a list of the
-     * predecessors.  If NO -cp or -classpath arguments were present then use the current directory and the
-     * CLASSPATH environment variable
+     * Remove the -cp and -classpath options and their arguments from args.
+     * Return the last argument.  If no -cp or -classpath arguments were
+     * present then return the CLASSPATH environment variable followed by
+     * the current directory.
+     *
      * @param args a list of arguments to extract from
      * @return the arguments that should be put on the classpath when calling javac.jar
      */
@@ -278,14 +266,14 @@ public class CheckerMain {
                 if (args.size() > i) {
                     args.remove(i);
                     path = args.remove(i);
-                } // else loop ends and we have a dangling -cp
+                } // else loop ends and we have a dangling -cp.  javac will issue a warning.
             } else {
                 i++;
             }
         }
 
-        // The logic below is exactly what the javac script does
-        // If it's empty use the current directory AND the "CLASSPATH" environment variable
+        // The logic below is exactly what the javac script does.
+        // If it's empty use the "CLASSPATH" environment variable followed by the current directory.
         if (path == null) {
             final String systemClassPath = System.getenv("CLASSPATH");
             if (systemClassPath != null && !systemClassPath.trim().isEmpty()) {
@@ -294,7 +282,7 @@ public class CheckerMain {
 
             actualArgs.add(".");
         } else {
-            // Every classpath entry overrides the one before it and CLASSPATH
+            // Every classpath entry overrides the one before it and CLASSPATH.
             actualArgs.add(path);
         }
 
@@ -397,9 +385,13 @@ public class CheckerMain {
         }
     }
 
+    /**
+     * Returns true if some @arglist file sets the classpath.
+     * @param argListFiles command-line argument files (specified with @ on the command line)
+     */
     private static boolean argsListHasClassPath(final List<File> argListFiles) {
-        for (final String arg : expandArgs(argListFiles)) {
-            if (arg.contains("-classpath ") || arg.contains("-cp ")) {
+        for (final String arg : expandArgFiles(argListFiles)) {
+            if (arg.contains("-classpath") || arg.contains("-cp")) {
                 return true;
             }
         }
@@ -408,42 +400,42 @@ public class CheckerMain {
     }
 
     /**
-     * Iterate through the arguments and, for every argument that starts with an @, replace it
-     * with the lines contained by that file.
-     * @param args a list of arguments, which may or may not be prefixed with an @
-     * @return a list of args with no @ symbols, where every argument that started with an @
-     * symbol has been replaced with the list of lines of the files content
+     * Return all the lines in all the files.
+     * @param files a list of files
+     * @return a list of all the lines in all the files
      */
-    protected static List<String> expandArgs(final List<File> args)  {
-        final List<String> actualArgs = new ArrayList<String>();
-        for (final File latest : args) {
+    protected static List<String> expandArgFiles(final List<File> files)  {
+        final List<String> content = new ArrayList<String>();
+        for (final File file : files) {
             try {
-                actualArgs.addAll(PluginUtil.readArgFile(latest));
+                content.addAll(PluginUtil.readFile(file));
             } catch (final IOException exc) {
-                throw new RuntimeException("Could not open file: " + latest.getAbsolutePath(), exc);
+                throw new RuntimeException("Could not open file: " + file.getAbsolutePath(), exc);
             }
         }
-        return actualArgs;
+        return content;
     }
 
     /**
-     * Find the jar file or directory containing the .class file from which context was loaded
-     * @param context the class whose .class file we wish to locate
-     * @param directory whether to throw an exception if the file was loaded from a directory
+     * Find the jar file or directory containing the .class file from which cls was loaded
+     * @param cls the class whose .class file we wish to locate; if null, CheckerMain.class.
+     * @param errIfFromDirectory If false, throw an exception if the file was loaded from a directory
      */
-    public static String findPathTo(Class<?> context, boolean directory) throws IllegalStateException {
-        if (context == null) context = CheckerMain.class;
-        String rawName = context.getName();
+    public static String findPathTo(Class<?> cls, boolean errIfFromDirectory) throws IllegalStateException {
+        if (cls == null) {
+            cls = CheckerMain.class;
+        }
+        String name = cls.getName();
         String classFileName;
-        /* rawName is something like package.name.ContainingClass$ClassName. We need to turn this into ContainingClass$ClassName.class. */
+        /* name is something like package.name.ContainingClass$ClassName. We need to turn this into ContainingClass$ClassName.class. */
         {
-            int idx = rawName.lastIndexOf('.');
-            classFileName = (idx == -1 ? rawName : rawName.substring(idx+1)) + ".class";
+            int idx = name.lastIndexOf('.');
+            classFileName = (idx == -1 ? name : name.substring(idx+1)) + ".class";
         }
 
-        String uri = context.getResource(classFileName).toString();
+        String uri = cls.getResource(classFileName).toString();
         if (uri.startsWith("file:")) {
-            if (directory) {
+            if (errIfFromDirectory) {
                 return uri;
             } else {
                 throw new IllegalStateException("This class has been loaded from a directory and not from a jar file.");
@@ -464,46 +456,54 @@ public class CheckerMain {
             String fileName = URLDecoder.decode(uri.substring("jar:file:".length(), idx), Charset.defaultCharset().name());
             return new File(fileName).getAbsolutePath();
         } catch (UnsupportedEncodingException e) {
-            throw new InternalError("default charset doesn't exist. Your VM is borked.");
+            throw new InternalError("Default charset doesn't exist. Your VM is borked.");
         }
     }
 
     /**
      * Assert that all files in the list exist and if they don't, throw a RuntimeException with a list of the files
-     * that do not exist
+     * that do not exist.
      *
      * @param expectedFiles files that must exist
      */
     private static void assertFilesExist(final List<File> expectedFiles) {
         final List<File> missingFiles = new ArrayList<File>();
         for (final File file : expectedFiles) {
-            if (file == null || !file.exists()) {
+            if (file == null) {
+                throw new RuntimeException("Null passed to assertFilesExist");
+            }
+            if (!file.exists()) {
                 missingFiles.add(file);
             }
         }
 
         if (!missingFiles.isEmpty()) {
-            final File firstMissing = missingFiles.remove(0);
-            String message = "The following files could not be located: " + firstMissing.getAbsolutePath();
-
-            for (final File missing : missingFiles) {
-                message += ", " + missing.getAbsolutePath();
+            List<String> missingAbsoluteFilenames = new ArrayList<String>(missingFiles.size());
+            for (File missingFile : missingFiles) {
+                missingAbsoluteFilenames.add(missingFile.getAbsolutePath());
             }
-
-            throw new RuntimeException(message);
+            throw new RuntimeException("The following files could not be located: "
+                                       + PluginUtil.join(", ", missingAbsoluteFilenames));
         }
     }
 
     private static String quote(final String str) {
         if (str.contains(" ")) {
+            if (str.contains("\"")) {
+                throw new RuntimeException("Don't know how to quote " + str);
+            }
             return "\"" + str + "\"";
         }
         return str;
     }
 
+    ///////////////////////////////////////////////////////////////////////////
+    /// Shorthand checker names
+    ///
+
     /**
-     * All "built-in" Checker Framework checkers, except SubtypingChecker, start with this package file path
-     * Framework Checkers, except for SubtypingChecker are excluded from processor shorthand
+     * All "built-in" Checker Framework checkers, except SubtypingChecker, start with this package file path.
+     * Framework Checkers, except for SubtypingChecker, are excluded from processor shorthand.
      */
     protected static final String CHECKER_BASE_PACKAGE = "org.checkerframework.checker";
     // Forward slash is used instead of File.separator because checker.jar uses / as the separator.
@@ -516,24 +516,47 @@ public class CheckerMain {
             org.checkerframework.common.subtyping.SubtypingChecker.class.getSimpleName();
 
     /**
-     * Returns true if processorString, once transformed into fully qualified form, is present
-     * in fullyQualifiedCheckerNames.
-     *  processorString must be the name of a single processor, not a comma-separated list of processors. */
+     * Returns true if processorString, once transformed into
+     * fully-qualified form, is present in fullyQualifiedCheckerNames.
+     * Used by SourceChecker to determine whether a class is annotated for
+     * any processor that is being run.
+     *
+     * @param processorString the name of a single processor, not a comma-separated list of processors
+     * @param fullyQualifiedCheckerNames a list of fully-qualified checker names
+     */
     public static boolean matchesCheckerOrSubcheckerFromList(final String processorString, List<String> fullyQualifiedCheckerNames) {
         if (processorString.contains(",")) {
             return false; // Do not process strings containing multiple processors.
         }
 
-        return fullyQualifiedCheckerNames.contains(asCheckerFrameworkProcessors(processorString, fullyQualifiedCheckerNames, true));
+        return fullyQualifiedCheckerNames.contains(unshorthandProcessorNames(processorString, fullyQualifiedCheckerNames, true));
     }
 
     /**
-     * Returns the list of fully qualified names of the checkers found in checker.jar
+     * For every "-processor" argument in args, replace its immediate successor argument using
+     * unabbreviateProcessorNames
+     */
+    protected void replaceShorthandProcessor(final List<String> args) {
+        for (int i = 0; i < args.size(); i++) {
+            final int nextIndex = i + 1;
+            if (args.size() > nextIndex) {
+                if (args.get(i).equals("-processor")) {
+                    final String replacement = unshorthandProcessorNames(args.get(nextIndex),
+                                                   getAllCheckerClassNames(), false);
+                    args.remove(nextIndex);
+                    args.add(nextIndex, replacement);
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns the list of fully qualified names of the checkers found in checker.jar.
      * This covers only checkers with the name ending in "Checker".
      * Checkers with a name ending in "Subchecker" are not included in the returned list.
      * Note however that it is possible for a checker with the name ending in "Checker" to be used as a subchecker.
      */
-    private List<String> getCheckerClassNames() {
+    private List<String> getAllCheckerClassNames() {
         ArrayList<String> checkerClassNames = new ArrayList<String>();
         try {
             final JarInputStream checkerJarIs = new JarInputStream(new FileInputStream(checkersJar));
@@ -547,42 +570,40 @@ public class CheckerMain {
             }
             checkerJarIs.close();
         } catch (IOException e) {
-            throw new RuntimeException("Could not read checker.jar", e);
+            throw new RuntimeException("Could not read " + checkersJar, e);
         }
 
         return checkerClassNames;
     }
 
     /**
-     * Takes a processor string of the form
-     * NullnessChecker
-     * or
-     * nullness
-     * and returns:
-     * org.checkerframework.checker.nullness.NullnessChecker
-     * if the latter is found in the fullyQualifiedCheckerNames list. Also fully qualifies the subtyping checker.
+     * Takes a string of comma-separated processor names, and
+     * expands any shorthands to fully-qualified names from the
+     * fullyQualifiedCheckerNames list.  For example:
      *
-     * asCheckerFrameworkProcessors will handle processor strings with multiple processors, e.g:
-     * NullnessChecker,RegexChecker
-     * becomes:
-     * org.checkerframework.checker.nullness.NullnessChecker,org.checkerframework.checker.regex.RegexChecker
+     * <pre>
+     * NullnessChecker &rarr; org.checkerframework.checker.nullness.NullnessChecker
+     * nullness &rarr; org.checkerframework.checker.nullness.NullnessChecker
+     * NullnessChecker,RegexChecker &rarr; org.checkerframework.checker.nullness.NullnessChecker,org.checkerframework.checker.regex.RegexChecker
+     * </pre>
      *
-     * Note, a processor entry only gets replaced if it contains NO "." (i.e. is not qualified by the
-     * package name) and can be found under the package org.checkerframework.checker in the checker.jar.
-     * @param processorsString a string identifying processors
+     * Note, a processor entry only gets replaced if it contains NO "." (i.e., it is not qualified by a
+     * package name) and can be found under the package org.checkerframework.checker in checker.jar.
+     *
+     * @param processorsString a comma-separated string identifying processors
      * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match processorsString against
      * @param allowSubcheckers whether to match against fully qualified checker names ending with "Subchecker"
-     * @return processorsString where all unqualified references to Checker Framework built-in checkers
+     * @return processorsString where all shorthand references to Checker Framework built-in checkers
      * are replaced with fully-qualified references
      */
-    protected static String asCheckerFrameworkProcessors(final String processorsString, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
+    protected static String unshorthandProcessorNames(final String processorsString, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
         final String[] processors = processorsString.split(",");
         for (int i = 0; i < processors.length; i++) {
             if (processors[i].equals(SUBTYPING_CHECKER_NAME)) { // Allow "subtyping" as well.
                 processors[i] = FULLY_QUALIFIED_SUBTYPING_CHECKER;
             } else {
                 if (!processors[i].contains(".")) { // Not already fully qualified
-                    processors[i] = fullyQualifyProcessor(processors[i], fullyQualifiedCheckerNames, allowSubcheckers);
+                    processors[i] = unshorthandProcessorName(processors[i], fullyQualifiedCheckerNames, allowSubcheckers);
                 }
             }
         }
@@ -591,10 +612,14 @@ public class CheckerMain {
         return PluginUtil.join(",", processors);
     }
 
-    private static String fullyQualifyProcessor(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
+    /**
+     * Given a processor name, tries to expand it to a checker in the fullyQualifiedCheckerNames list.
+     * Returns that expansion, or the argument itself if the expansion fails.
+     */
+    private static String unshorthandProcessorName(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
         for (final String name : fullyQualifiedCheckerNames) {
             boolean tryMatch = false;
-            String [] checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
+            String[] checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
             String checkerNameShort = checkerPath[checkerPath.length - 1];
             String checkerName = checkerNameShort + "Checker";
 
@@ -622,47 +647,14 @@ public class CheckerMain {
     }
 
     /**
-     * Takes a processor string of the form
-     * "NullnessChecker"
-     * or
-     * "nullness"
-     * and returns true
-     * if it is found in the fullyQualifiedCheckerNames list.
+     * Given a shorthand processor name, returns true if it can be expanded to a checker in the fullyQualifiedCheckerNames list.
      * Does not match the subtyping checker.
-     *
-     * Does not match multiple processors - a single processor name must be given.
      *
      * @param processor a string identifying one processor
      * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match processor against
      * @param allowSubcheckers whether to match against fully qualified checker names ending with "Subchecker"
      */
     public static boolean matchesFullyQualifiedProcessor(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
-        for (final String name : fullyQualifiedCheckerNames) {
-            boolean tryMatch = false;
-            String [] checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
-            String checkerNameShort = checkerPath[checkerPath.length - 1];
-            String checkerName = checkerNameShort + "Checker";
-
-            if (name.endsWith("Checker")) {
-                checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
-                checkerNameShort = checkerPath[checkerPath.length - 1];
-                checkerName = checkerNameShort + "Checker";
-                tryMatch = true;
-            } else if (allowSubcheckers && name.endsWith("Subchecker")) {
-                checkerPath = name.substring(0, name.length() - "Subchecker".length()).split("\\.");
-                checkerNameShort = checkerPath[checkerPath.length - 1];
-                checkerName = checkerNameShort + "Subchecker";
-                tryMatch = true;
-            }
-
-            if (tryMatch) {
-                if (processor.equalsIgnoreCase(checkerName) ||
-                    processor.equalsIgnoreCase(checkerNameShort)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return !processor.equals(unshorthandProcessorName(processor, fullyQualifiedCheckerNames, allowSubcheckers));
     }
 }
