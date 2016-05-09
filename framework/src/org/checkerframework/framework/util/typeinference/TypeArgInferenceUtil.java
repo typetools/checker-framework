@@ -149,7 +149,7 @@ public class TypeArgInferenceUtil {
             int treeIndex = -1;
             for (int i = 0; i < method.getParameterTypes().size(); ++i) {
                 ExpressionTree argumentTree = methodInvocation.getArguments().get(i);
-                if(isArugment(path, argumentTree)) {
+                if (isArgument(path, argumentTree)) {
                     treeIndex = i;
                     break;
                 }
@@ -194,13 +194,13 @@ public class TypeArgInferenceUtil {
             int treeIndex = -1;
             for (int i = 0; i < constructor.getParameterTypes().size(); ++i) {
                 ExpressionTree argumentTree = newClassTree.getArguments().get(i);
-                if(isArugment(path, argumentTree)){
+                if (isArgument(path, argumentTree)) {
                     treeIndex = i;
                     break;
                 }
             }
 
-            assert treeIndex != -1 :  "Could not find path in NewClassTre.\n"
+            assert treeIndex != -1 :  "Could not find path in NewClassTree.\n"
                     + "treePath=" + path.toString() + "\n"
                     + "methodInvocation=" + newClassTree;
             if (treeIndex == -1) {
@@ -229,14 +229,19 @@ public class TypeArgInferenceUtil {
         return null; // dead code
     }
 
-    private static boolean isArugment(TreePath path, ExpressionTree argumentTree) {
+    /**
+     * Returns whether argumentTree is the tree at the leaf of path.
+     * if tree is a conditional expression, isArgument is called recursively on the true
+     * and false expressions.
+     */
+    private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
         argumentTree = TreeUtils.skipParens(argumentTree);
         if (argumentTree == path.getLeaf()) {
             return true;
         } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
             ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) argumentTree;
-            return isArugment(path, conditionalExpressionTree.getTrueExpression())
-                   || isArugment(path, conditionalExpressionTree.getFalseExpression());
+            return isArgument(path, conditionalExpressionTree.getTrueExpression())
+                   || isArgument(path, conditionalExpressionTree.getFalseExpression());
         }
         return false;
     }
