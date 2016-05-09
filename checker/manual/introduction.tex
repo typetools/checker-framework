@@ -704,10 +704,11 @@ Progress tracing; see Section~\ref{debugging-options-progress}
 
 \item
 \<-AoutputArgsToFile>
-Output the compiler command-line arguments to a file.  Useful when the command line is generated and executed by a tool and is not
-fully under your control.  A standalone command line that can be executed
-independently of the tool that generated it can make it easier to reproduce
-and debug issues.  For example, the command line can be modified to enable
+Output the compiler command-line arguments to a file.  Useful when the
+command line is generated and executed by a tool, such as a build system.
+This produces a standalone command line that can be executed independently
+of the tool that generated it can make it easier to reproduce, report, and
+debug issues.  For example, the command line can be modified to enable
 attaching a debugger.
 See Section~\ref{debugging-options-output-args}
 
