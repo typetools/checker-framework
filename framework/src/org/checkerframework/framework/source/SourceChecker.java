@@ -452,6 +452,10 @@ public abstract class SourceChecker
         this.parentChecker = parentChecker;
     }
 
+    /**
+     * Return a list containing this checker name and all checkers it is a
+     * part of (that is, checkers that called it).
+     */
     public List<String> getUpstreamCheckerNames() {
         if (upstreamCheckerNames == null) {
             upstreamCheckerNames = new ArrayList<String>();
