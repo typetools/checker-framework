@@ -403,12 +403,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
                     return;
                 }
-            } else if (!atypeFactory.getTypeHierarchy().isSubtype(valueType, varType)) {
+            } else if (!atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(valueType, varType)) {
                 // Special case: replace the @GuardSatisfied primary annotation on the LHS with @GuardedBy({}) and see if it type checks.
 
                 AnnotatedTypeMirror varType2 = varType.deepCopy(); // TODO: Would shallowCopy be sufficient?
                 varType2.replaceAnnotation(atypeFactory.GUARDEDBY);
-                if (atypeFactory.getTypeHierarchy().isSubtype(valueType, varType2)) {
+                if (atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(valueType, varType2)) {
                     return;
                 }
             }

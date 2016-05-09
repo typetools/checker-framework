@@ -45,7 +45,7 @@ import static org.checkerframework.framework.util.AnnotatedTypes.isEnum;
  * http://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.10
  *
  * Note: The visit methods of this class must be public but it is intended to be used through
- * a TypeHierarchy interface reference which will only allow isSubtype to be called.  It does
+ * a TypeHierarchy interface reference which will only allow isSubtypeOrConvertible to be called.  It does
  * not make sense to call the visit methods on their own.
  */
 public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, VisitHistory> implements TypeHierarchy {
@@ -98,7 +98,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     // To typecheck "t1 = t2;" in the hierarchy topped by @A1, we need to descend into the bounds of t1 and t2 (where
     // t1's bounds will be overridden by @A1).  However, for hierarchy B we need only recognize that
     // since neither variable has a primary annotation, the types are equivalent and no traversal is needed.
-    // If we tried to do these two actions simultaneously, in every visit and isSubtype call, we would have to
+    // If we tried to do these two actions simultaneously, in every visit and isSubtypeOrConvertible call, we would have to
     // check to see that the @B hierarchy has been handled and ignore those annotations.
     //
     // Solutions:
@@ -146,9 +146,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * @return true if subtype is actually a subtype of supertype
      */
     @Override
-    public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
+    public boolean isSubtypeOrConvertible(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype) {
         for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-            if (!isSubtype(subtype, supertype, top)) {
+            if (!isSubtypeOrConvertible(subtype, supertype, top)) {
                 return false;
             }
         }
@@ -164,10 +164,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * @return true if subtype is actually a subtype of supertype
      */
     @Override
-    public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype,
-                             final AnnotationMirror top) {
+    public boolean isSubtypeOrConvertible(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype,
+                                          final AnnotationMirror top) {
         currentTop = top;
-        return isSubtype(subtype, supertype, new VisitHistory());
+        return isSubtypeOrConvertible(subtype, supertype, new VisitHistory());
     }
 
     /**
@@ -184,7 +184,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
             final AnnotatedTypeMirror subtype = subtypeIterator.next();
             final AnnotatedTypeMirror supertype = supertypesIterator.next();
 
-            if (!isSubtype(subtype, supertype)) {
+            if (!isSubtypeOrConvertible(subtype, supertype)) {
                 return false;
             }
         }
@@ -210,13 +210,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     /**
-     * Returns true if subtype {@literal <:} supertype. The only difference between this and isSubtype(subtype, supertype) is
+     * Returns true if subtype {@literal <:} supertype. The only difference between this and isSubtypeOrConvertible(subtype, supertype) is
      * that this method passes a pre-existing visited
      * @param subtype expected subtype
      * @param supertype expected supertype
      * @return true if subtype is actually a subtype of supertype
      */
-    public boolean isSubtype(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype, VisitHistory visited) {
+    public boolean isSubtypeOrConvertible(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype, VisitHistory visited) {
         return AtmCombo.accept(subtype, supertype, visited, this);
     }
 
@@ -299,14 +299,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         }
 
         visited.add(subtype, supertype);
-        return isSubtype(subtype, supertype, visited);
+        return isSubtypeOrConvertible(subtype, supertype, visited);
     }
 
     protected boolean isSubtypeOfAll(final AnnotatedTypeMirror subtype,
                                      final Iterable<? extends AnnotatedTypeMirror> supertypes,
                                      final VisitHistory visited) {
         for (final AnnotatedTypeMirror supertype : supertypes) {
-            if (!isSubtype(subtype, supertype, visited)) {
+            if (!isSubtypeOrConvertible(subtype, supertype, visited)) {
                 return false;
             }
         }
@@ -318,7 +318,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                                      final Iterable<? extends AnnotatedTypeMirror> supertypes,
                                      final VisitHistory visited ) {
         for (final AnnotatedTypeMirror supertype : supertypes) {
-            if (isSubtype(subtype, supertype, visited)) {
+            if (isSubtypeOrConvertible(subtype, supertype, visited)) {
                 return true;
             }
         }
@@ -330,7 +330,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                                      final AnnotatedTypeMirror supertype,
                                      final VisitHistory visited) {
         for (final AnnotatedTypeMirror subtype : subtypes) {
-            if (!isSubtype(subtype, supertype, visited)) {
+            if (!isSubtypeOrConvertible(subtype, supertype, visited)) {
                 return false;
             }
         }
@@ -342,7 +342,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                                      final AnnotatedTypeMirror supertype,
                                      final VisitHistory visited) {
         for (final AnnotatedTypeMirror subtype : subtypes) {
-            if (isSubtype(subtype, supertype, visited)) {
+            if (isSubtypeOrConvertible(subtype, supertype, visited)) {
                 return true;
             }
         }
@@ -374,7 +374,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      */
     protected boolean isContainedBy(final AnnotatedTypeMirror inside, final AnnotatedTypeMirror outside,
                                     VisitHistory visited, boolean canBeCovariant) {
-        if (canBeCovariant && isSubtype(inside, outside, visited)) {
+        if (canBeCovariant && isSubtypeOrConvertible(inside, outside, visited)) {
             return true;
         }
 
@@ -403,7 +403,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public Boolean visitArray_Array(AnnotatedArrayType subtype, AnnotatedArrayType supertype, VisitHistory visited) {
         return isPrimarySubtype(subtype, supertype)
                && (invariantArrayComponents ? areEqualInHierarchy(subtype.getComponentType(), supertype.getComponentType(), currentTop)
-                : isSubtype(subtype.getComponentType(), supertype.getComponentType(), visited));
+                : isSubtypeOrConvertible(subtype.getComponentType(), supertype.getComponentType(), visited));
     }
 
     @Override
@@ -805,14 +805,14 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     protected boolean visitWildcardSupertype(AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
         if (supertype.isTypeArgHack()) { //TODO: REMOVE WHEN WE FIX TYPE ARG INFERENCE
-            return isSubtype(subtype, supertype.getExtendsBound());
+            return isSubtypeOrConvertible(subtype, supertype.getExtendsBound());
         }
-        return isSubtype( subtype, supertype.getSuperBound(), visited);
+        return isSubtypeOrConvertible(subtype, supertype.getSuperBound(), visited);
     }
 
 
     protected boolean visitWildcardSubtype(AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
-        return isSubtype(subtype.getExtendsBound(), supertype, visited);
+        return isSubtypeOrConvertible(subtype.getExtendsBound(), supertype, visited);
     }
 
     /**

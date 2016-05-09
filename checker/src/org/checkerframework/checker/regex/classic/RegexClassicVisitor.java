@@ -124,7 +124,7 @@ public class RegexClassicVisitor extends BaseTypeVisitor<RegexClassicAnnotatedTy
         if (!useType.getExplicitAnnotations().isEmpty()) {
             Types typeUtils = env.getTypeUtils();
             for (TypeMirror type : legalReferenceTypes) {
-                if (typeUtils.isSubtype(declarationType.getUnderlyingType(), type)) {
+                if (typeUtils.isSubtypeOrConvertible(declarationType.getUnderlyingType(), type)) {
                     return true;
                 }
             }

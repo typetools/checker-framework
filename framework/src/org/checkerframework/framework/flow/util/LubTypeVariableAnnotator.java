@@ -112,9 +112,9 @@ public class LubTypeVariableAnnotator {
 
             } else {
                 final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
-                if (typeHierarchy.isSubtype(subAsLub, lub, top)) {
+                if (typeHierarchy.isSubtypeOrConvertible(subAsLub, lub, top)) {
                     // do nothing lub is already above top
-                } else if (typeHierarchy.isSubtype(lub, subAsLub, top)) {
+                } else if (typeHierarchy.isSubtypeOrConvertible(lub, subAsLub, top)) {
                     if (lubPrimary != null) { //&& subPrimary == null
                         // since primary annotations are added to the bounds
                         // we need to replace the upper/lower bound annotations

@@ -26,14 +26,14 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
 
 
     @Override
-    public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+    public boolean isSubtypeOrConvertible(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
         return underlying.isSubtype(
                 converter.getQualifiedType(subtype),
                 converter.getQualifiedType(supertype));
     }
 
     @Override
-    public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
+    public boolean isSubtypeOrConvertible(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
         // NOTE: This may be insufficient for multi-rooted qualifier hierarchies.  David McArthur and
         // Jonathan Burke have had a discussion on this.  This method will work for single-root hierarchies
         // which are the only ones that have a Qual implementation at the moment.  We will take this up again
@@ -48,7 +48,7 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
         //                    // tq varies by qualifier hierarchy.  In the Nullness hierarchy, it is the primary
         //                    // annotation.  In the initialization hierarchy, it is the lower bound.
         //
-        // To deal with this issue, this method isSubtype(subtype, supertype, top) handles these
+        // To deal with this issue, this method isSubtypeOrConvertible(subtype, supertype, top) handles these
         // hierarchies individually.  However, for the qualifier system there is only 1 qualifier for both
         // hierarchies.  So QualifiedTypeMirrors would not be able to model the above situation.
 
@@ -73,7 +73,7 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
     }
 
     boolean superIsSubtype(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {
-        return super.isSubtype(
+        return super.isSubtypeOrConvertible(
                 converter.getAnnotatedType(subtype),
                 converter.getAnnotatedType(supertype),
                 qualifierHierarchy.getTopAnnotations().iterator().next());

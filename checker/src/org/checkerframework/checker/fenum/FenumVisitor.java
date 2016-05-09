@@ -31,8 +31,8 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
 
             AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getLeftOperand());
             AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getRightOperand());
-            if (!(atypeFactory.getTypeHierarchy().isSubtype(lhs, rhs)
-                  || atypeFactory.getTypeHierarchy().isSubtype(rhs, lhs))) {
+            if (!(atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(lhs, rhs)
+                  || atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(rhs, lhs))) {
                 checker.report(Result.failure("binary.type.incompatible", lhs, rhs), node);
             }
         }

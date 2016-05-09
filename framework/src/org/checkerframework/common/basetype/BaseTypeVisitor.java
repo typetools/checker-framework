@@ -130,7 +130,7 @@ import com.sun.tools.javac.tree.TreeInfo;
  * invoke this factory on parts of the AST to determine the "annotated type" of
  * an expression. Then, the visitor methods will check the types in assignments
  * and pseudo-assignments using {@link #commonAssignmentCheck}, which ultimately
- * calls the {@link TypeHierarchy#isSubtype} method and reports errors that
+ * calls the {@link TypeHierarchy#isSubtypeOrConvertible} method and reports errors that
  * violate Java's rules of assignment.
  *
  * <p>
@@ -146,7 +146,7 @@ import com.sun.tools.javac.tree.TreeInfo;
  * This implementation does the following checks:
  * 1. <b>Assignment and Pseudo-Assignment Check</b>:
  *    It verifies that any assignment type-checks, using
- *    {@code TypeHierarchy.isSubtype} method. This includes method invocation and
+ *    {@code TypeHierarchy.isSubtypeOrConvertible} method. This includes method invocation and
  *    method overriding checks.
  *
  * 2. <b>Type Validity Check</b>:
@@ -158,7 +158,7 @@ import com.sun.tools.javac.tree.TreeInfo;
  *    {@code Checker.isAssignable} method.
  *
  * @see "JLS $4"
- * @see TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
+ * @see TypeHierarchy#isSubtypeOrConvertible(AnnotatedTypeMirror, AnnotatedTypeMirror)
  * @see AnnotatedTypeFactory
  */
 /*
@@ -191,7 +191,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * @param checker
      *            the type-checker associated with this visitor (for callbacks to
-     *            {@link TypeHierarchy#isSubtype})
+     *            {@link TypeHierarchy#isSubtypeOrConvertible})
      */
     public BaseTypeVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -1571,7 +1571,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     newExprType = exprType;
                 }
 
-                isSubtype = atypeFactory.getTypeHierarchy().isSubtype(newExprType, newCastType);
+                isSubtype = atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(newExprType, newCastType);
                 if (isSubtype) {
                     if (newCastType.getKind() == TypeKind.ARRAY &&
                             newExprType.getKind() != TypeKind.ARRAY) {
@@ -1906,7 +1906,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     varType.getKind(), varTypeString);
         }
 
-        boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
+        boolean success = atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(valueType, varType);
 
         // TODO: integrate with subtype test.
         if (success) {
@@ -2011,7 +2011,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         "type.argument.type.incompatible");
             }
 
-            if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
+            if (!atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(bounds.getLowerBound(), typeArg)) {
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
                     checker.report(Result.failure("type.argument.type.incompatible",
@@ -2166,7 +2166,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         treeReceiver.addAnnotations(rcv.getEffectiveAnnotations());
 
         if (!skipReceiverSubtypeCheck(node, methodReceiver, rcv) &&
-            !atypeFactory.getTypeHierarchy().isSubtype(treeReceiver, methodReceiver)) {
+            !atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(treeReceiver, methodReceiver)) {
             checker.report(Result.failure("method.invocation.invalid",
                 TreeUtils.elementFromUse(node),
                 treeReceiver.toString(), methodReceiver.toString()), node);
@@ -2190,8 +2190,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             ret = retAsDt;
         }
 
-        boolean b = atypeFactory.getTypeHierarchy().isSubtype(dt, ret) ||
-                atypeFactory.getTypeHierarchy().isSubtype(ret, dt);
+        boolean b = atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(dt, ret) ||
+                    atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(ret, dt);
 
         if (!b) {
             checker.report(Result.failure("constructor.invocation.invalid",
@@ -2250,8 +2250,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             if (AnnotatedTypes.areCorrespondingTypeVariables(elements, innerAtv, outerAtv)) {
                 final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
-                return typeHierarchy.isSubtype(innerAtv.getUpperBound(), outerAtv.getUpperBound())
-                        && typeHierarchy.isSubtype(outerAtv.getLowerBound(), innerAtv.getLowerBound());
+                return typeHierarchy.isSubtypeOrConvertible(innerAtv.getUpperBound(), outerAtv.getUpperBound())
+                        && typeHierarchy.isSubtypeOrConvertible(outerAtv.getLowerBound(), innerAtv.getLowerBound());
             }
         }
 
@@ -2607,7 +2607,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (memberTree.kind == JCTree.JCMemberReference.ReferenceKind.UNBOUND) {
                 AnnotatedTypeMirror overriderReceiver = overrider.getReceiverType();
                 AnnotatedTypeMirror overriddenReceiver = overridden.getParameterTypes().get(0);
-                boolean success = atypeFactory.getTypeHierarchy().isSubtype(overriddenReceiver, overriderReceiver);
+                boolean success = atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(overriddenReceiver, overriderReceiver);
                 if (!success) {
                     checker.report(Result.failure("methodref.receiver.invalid",
                                     overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
@@ -2649,7 +2649,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     return true;
             }
 
-            boolean success = atypeFactory.getTypeHierarchy().isSubtype(receiverArg, receiverDecl);
+            boolean success = atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(receiverArg, receiverDecl);
             if (!success) {
                 checker.report(Result.failure("methodref.receiver.bound.invalid",
                                 receiverArg, overriderMeth, overriderTyp,
@@ -2663,15 +2663,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         private boolean checkReceiverOverride() {
             // Check the receiver type.
-            // isSubtype() requires its arguments to be actual subtypes with
+            // isSubtypeOrConvertible() requires its arguments to be actual subtypes with
             // respect to JLS, but overrider receiver is not a subtype of the
             // overridden receiver.  Hence copying the annotations.
             // TODO: this will need to be improved for generic receivers.
             AnnotatedTypeMirror overriddenReceiver =
                     overrider.getReceiverType().getErased().shallowCopy(false);
             overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
-            if (!atypeFactory.getTypeHierarchy().isSubtype(overriddenReceiver,
-                    overrider.getReceiverType().getErased())) {
+            if (!atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(overriddenReceiver,
+                                                                        overrider.getReceiverType().getErased())) {
                 checker.report(Result.failure("override.receiver.invalid",
                                 overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                                 overrider.getReceiverType(),
@@ -2696,7 +2696,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 overriddenParams.remove(0);
             }
             for (int i = 0; i < overriderParams.size(); ++i) {
-                boolean success = atypeFactory.getTypeHierarchy().isSubtype(overriddenParams.get(i), overriderParams.get(i));
+                boolean success = atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(overriddenParams.get(i), overriderParams.get(i));
                 if (!success) {
                     success = testTypevarContainment(overriddenParams.get(i), overriderParams.get(i));
                 }
@@ -2736,7 +2736,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // Check the return value.
             if ((overridingReturnType.getKind() != TypeKind.VOID)) {
                 final TypeHierarchy typeHierarchy = atypeFactory.getTypeHierarchy();
-                success = typeHierarchy.isSubtype(overridingReturnType, overriddenReturnType);
+                success = typeHierarchy.isSubtypeOrConvertible(overridingReturnType, overriddenReturnType);
 
                 // If both the overridden method have type variables as return types and both types were
                 // defined in their respective methods then, they can be covariant or invariant
@@ -2761,7 +2761,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                             if (isFunctionApply) {
                                 AnnotatedTypeMirror overridingUpperBound = ((AnnotatedTypeVariable) overriddenReturnType).getUpperBound();
-                                success = typeHierarchy.isSubtype(overridingReturnType, overridingUpperBound);
+                                success = typeHierarchy.isSubtypeOrConvertible(overridingReturnType, overridingUpperBound);
                             }
                         }
                     }
@@ -3022,7 +3022,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     public boolean isValidUse(AnnotatedDeclaredType declarationType,
             AnnotatedDeclaredType useType, Tree tree) {
-        return atypeFactory.getTypeHierarchy().isSubtype(useType.getErased(), declarationType.getErased());
+        return atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(useType.getErased(), declarationType.getErased());
     }
 
     /**

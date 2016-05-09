@@ -220,7 +220,7 @@ public class LockAnnotatedTypeFactory
 
             if ((isGuardedBy(a1) && isGuardedBy(a2)) ||
                 (isGuardSatisfied(a1) && isGuardSatisfied(a2))) {
-                // isSubtype(a1, a2) is symmetrical to isSubtype(a2, a1) since two
+                // isSubtypeOrConvertible(a1, a2) is symmetrical to isSubtypeOrConvertible(a2, a1) since two
                 // @GuardedBy annotations are considered subtypes of each other
                 // if and only if their values match exactly, and two @GuardSatisfied
                 // annotations are considered subtypes of each other if and only if
