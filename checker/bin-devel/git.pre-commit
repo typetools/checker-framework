@@ -4,3 +4,5 @@
 # However, it should be edited as checker/bin-devel/git.pre-commit.
 
 ant -e check-style
+
+release/checkPluginUtil.sh
