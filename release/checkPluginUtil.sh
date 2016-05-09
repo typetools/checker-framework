@@ -1,6 +1,6 @@
 #!/bin/sh
-# Ensures that all copies of the PluginUtil are synchronized. See syncPluginUtil.sh
-# diffs the different versions of the PluginUtil.java excluding the package declarations of these files
+# The Checker Framework contains three identical copeis of PluginUtil.java.
+# This script exits with non-zero status if the copies differ.
 
 myDir="`dirname $0`"
 case `uname -s` in
