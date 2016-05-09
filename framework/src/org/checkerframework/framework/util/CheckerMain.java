@@ -201,30 +201,6 @@ public class CheckerMain {
     }
 
     /**
-     * Construct a file path from files and prepend it to previous (if previous is not null)
-     * @param previous the previous file path to append to (can be null)
-     * @param files    the files used to construct a path using File.pathSeparator
-     * @return previous with the conjoined file path appended to it or just the conjoined file path if previous is null
-     */
-
-    protected static String prepFilePath(final String previous, File... files) {
-        if (files == null || files.length == 0) {
-            throw new RuntimeException("Prepending empty or null array to file path! files == " + (files == null ? " null" : " Empty"));
-        } else {
-            String path = files[0].getAbsolutePath();
-            for (int i = 1; i < files.length; i++) {
-                path += File.pathSeparator + files[i].getAbsolutePath();
-            }
-
-            if (previous == null || previous.isEmpty()) {
-                return path;
-            } else {
-                return path + File.pathSeparator + previous;
-            }
-        }
-    }
-
-    /**
      * Find all args that match the given pattern and extract their index 1 group.  Add all the index 1 groups to the
      * returned list.   Remove all matching args from the input args list.
      * @param pattern      a pattern with at least one matching group
