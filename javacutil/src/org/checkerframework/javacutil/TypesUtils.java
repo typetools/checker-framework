@@ -286,7 +286,7 @@ public final class TypesUtils {
     /**
      * Get the type parameter for this wildcard from the underlying type's bound field
      * This field is sometimes null, in that case this method will return null
-     * @return The TypeParameterElement the wildcard is an argument to
+     * @return the TypeParameterElement the wildcard is an argument to
      */
     public static TypeParameterElement wildcardToTypeParam(final Type.WildcardType wildcard) {
 
@@ -396,7 +396,7 @@ public final class TypesUtils {
      * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound.  If
      * the bounded type extends other bounded types, this method will iterate through their bounds
      * until a class, interface, or intersection is found.
-     * @return A type that is not a wildcard or typevar, or null if this type is an unbounded wildcard
+     * @return a type that is not a wildcard or typevar, or null if this type is an unbounded wildcard
      */
     public static TypeMirror findConcreteUpperBound(final TypeMirror boundedType) {
         TypeMirror effectiveUpper = boundedType;

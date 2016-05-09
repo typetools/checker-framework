@@ -51,7 +51,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 public class FlowExpressions {
 
     /**
-     * @return The internal representation (as {@link FieldAccess}) of a
+     * @return the internal representation (as {@link FieldAccess}) of a
      *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
      */
     public static FieldAccess internalReprOfFieldAccess(
@@ -67,7 +67,7 @@ public class FlowExpressions {
     }
 
     /**
-     * @return The internal representation (as {@link FieldAccess}) of a
+     * @return the internal representation (as {@link FieldAccess}) of a
      *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
      */
     public static ArrayAccess internalReprOfArrayAccess(
@@ -81,7 +81,7 @@ public class FlowExpressions {
      * We ignore operations such as widening and
      * narrowing when computing the internal representation.
      *
-     * @return The internal representation (as {@link Receiver}) of any
+     * @return the internal representation (as {@link Receiver}) of any
      *         {@link Node}. Might contain {@link Unknown}.
      */
     public static Receiver internalReprOf(AnnotationProvider provider,
@@ -93,7 +93,7 @@ public class FlowExpressions {
      * We ignore operations such as widening and
      * narrowing when computing the internal representation.
      *
-     * @return The internal representation (as {@link Receiver}) of any
+     * @return the internal representation (as {@link Receiver}) of any
      *         {@link Node}. Might contain {@link Unknown}.
      */
     public static Receiver internalReprOf(AnnotationProvider provider,
@@ -216,15 +216,15 @@ public class FlowExpressions {
         public abstract boolean isUnmodifiableByOtherCode();
 
         /**
-         * @return True if and only if the two receiver are syntactically
-         *         identical.
+         * @return true if and only if the two receiver are syntactically
+         *         identical
          */
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
 
         /**
-         * @return True if and only if this receiver contains a receiver that is
+         * @return true if and only if this receiver contains a receiver that is
          *         syntactically equal to {@code other}.
          */
         public boolean containsSyntacticEqualReceiver(Receiver other) {
@@ -637,21 +637,21 @@ public class FlowExpressions {
         }
 
         /**
-         * @return the method call receiver (for inspection only - do not modify).
+         * @return the method call receiver (for inspection only - do not modify)
          */
         public Receiver getReceiver() {
             return receiver;
         }
 
         /**
-         * @return the method call parameters (for inspection only - do not modify any of the parameters).
+         * @return the method call parameters (for inspection only - do not modify any of the parameters)
          */
         public List<Receiver> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
 
         /**
-         * @return the Element for the method call.
+         * @return the Element for the method call
          */
         public Element getElement() {
             return method;

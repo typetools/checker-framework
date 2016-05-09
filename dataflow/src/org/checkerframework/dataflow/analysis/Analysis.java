@@ -575,7 +575,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
-     * @return The transfer input corresponding to the location right before the basic
+     * @return the transfer input corresponding to the location right before the basic
      *         block <code>b</code>.
      */
     protected /*@Nullable*/ TransferInput<A, S> getInputBefore(Block b) {
@@ -583,7 +583,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
-     * @return The store corresponding to the location right before the basic
+     * @return the store corresponding to the location right before the basic
      *         block <code>b</code>.
      */
     protected /*@Nullable*/ S getStoreBefore(Block b, Store.Kind kind) {
@@ -613,7 +613,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
-     * @return The abstract value for {@link Node} {@code n}, or {@code null} if
+     * @return the abstract value for {@link Node} {@code n}, or {@code null} if
      *         no information is available. Note that if the analysis has not
      *         finished yet, this value might not represent the final value for
      *         this node.
@@ -639,7 +639,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
-     * @return The abstract value for {@link Tree} {@code t}, or {@code null} if
+     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if
      *         no information is available. Note that if the analysis has not
      *         finished yet, this value might not represent the final value for
      *         this node.
@@ -696,7 +696,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
-     * @return The regular exit store, or {@code null}, if there is no such
+     * @return the regular exit store, or {@code null}, if there is no such
      *         store (because the method cannot exit through the regular exit
      *         block).
      */

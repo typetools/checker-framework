@@ -31,7 +31,7 @@ import com.sun.tools.javac.code.TargetType;
 abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotationApplier {
 
     /**
-     * @return True if element is a TYPE_PARAMETER
+     * @return true if element is a TYPE_PARAMETER
      */
     public static boolean accepts(AnnotatedTypeMirror typeMirror, Element element) {
         return element.getKind() == ElementKind.TYPE_PARAMETER;
@@ -41,12 +41,12 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     protected final AnnotatedTypeFactory typeFactory;
 
     /**
-     * @return Target type that represents the location of the lower bound of element
+     * @return target type that represents the location of the lower bound of element
      */
     abstract protected TargetType lowerBoundTarget();
 
     /**
-     * @return Target type that represents the location of the upper bound of element
+     * @return target type that represents the location of the upper bound of element
      */
     abstract protected TargetType upperBoundTarget();
 
@@ -59,7 +59,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     }
 
     /**
-     * @return The lower bound and upper bound targets
+     * @return the lower bound and upper bound targets
      */
     @Override
     protected TargetType[] annotatedTargets() {
@@ -67,7 +67,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     }
 
     /**
-     * @return The parameter_index of anno's TypeAnnotationPosition which will actually
+     * @return the parameter_index of anno's TypeAnnotationPosition which will actually
      * point to the type parameter's index in its enclosing type parameter list
      */
     @Override
@@ -76,7 +76,7 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     }
 
     /**
-     * @param targeted The list of annotations that were on the lower/upper bounds of the type parameter
+     * @param targeted the list of annotations that were on the lower/upper bounds of the type parameter
      *
      * Note: When handling type parameters we NEVER add primary annotations to the type parameter.
      * Primary annotations are reserved for the use of a type parameter (e.g. @Nullable T t; )

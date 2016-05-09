@@ -208,7 +208,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         this.sbDigraph.append("\n");
     }
 
-    /** @return The file name used for DOT output. */
+    /** @return the file name used for DOT output. */
     protected String dotOutputFileName(UnderlyingAST ast) {
         StringBuilder srcloc = new StringBuilder();
 
@@ -275,7 +275,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     /**
      * Produce a representation of the contests of a basic block.
      *
-     * @param bb Basic block to visualize.
+     * @param bb basic block to visualize
      */
     @Override
     public void visualizeBlock(Block bb,

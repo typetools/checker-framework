@@ -440,8 +440,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * with values, a2, then a1 is a subtype of all instances of a2 regardless
      * of a2 values.
      *
-     * @param rhs The right-hand side, i.e. the sub qualifier
-     * @param lhs The left-hand side, i.e. the super qualifier
+     * @param rhs the right-hand side, i.e. the sub qualifier
+     * @param lhs the left-hand side, i.e. the super qualifier
      */
     @Override
     public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {

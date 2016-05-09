@@ -132,7 +132,7 @@
   </target>
 
   <property name="style.args1" value="-r -n -e"/>
-  <property name="style.args2" value="--exclude-dir=.git --exclude-dir=api --exclude-dir=bootstrap --exclude-dir=build --exclude-dir=jdk --exclude-dir=stubparser --exclude='*.aux' --exclude='*.class' --exclude='*.dvi' --exclude='*.jar' --exclude='*.jtr' --exclude='*.log' --exclude='*.patch' --exclude='*.pdf' --exclude='*.png' --exclude='*.sty' --exclude='*~' --exclude='CFLogo.ai' --exclude='logfile.log.rec.index' --exclude='manual.html' ."/>
+  <property name="style.args2" value="--exclude-dir=.git --exclude-dir=api --exclude-dir=bootstrap --exclude-dir=build --exclude-dir=jdk --exclude-dir=stubparser --exclude='*.aux' --exclude='*.class' --exclude='*.dvi' --exclude='*.jar' --exclude='*.jtr' --exclude='*.log' --exclude='*.patch' --exclude='*.pdf' --exclude='*.png' --exclude='*.sty' --exclude='*~' --exclude='CFLogo.ai' --exclude='logfile.log.rec.index' --exclude='manual.html' --exclude='junit*.properties' ."/>
 
   <target name="check-style"
 	  description="Check basic style guidelines">

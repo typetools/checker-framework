@@ -85,14 +85,14 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * @return The value of effectively final local variables.
+     * @return the value of effectively final local variables
      */
     public HashMap<Element, A> getFinalLocalValues() {
         return finalLocalValues;
     }
 
     /**
-     * @return The abstract value for {@link Node} {@code n}, or {@code null} if
+     * @return the abstract value for {@link Node} {@code n}, or {@code null} if
      *         no information is available.
      */
     public /*@Nullable*/ A getValue(Node n) {
@@ -100,7 +100,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * @return The abstract value for {@link Tree} {@code t}, or {@code null} if
+     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if
      *         no information is available.
      */
     public /*@Nullable*/ A getValue(Tree t) {
@@ -109,14 +109,14 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * @return The {@link Node} for a given {@link Tree}.
+     * @return the {@link Node} for a given {@link Tree}.
      */
     public /*@Nullable*/ Node getNodeForTree(Tree tree) {
         return treeLookup.get(tree);
     }
 
     /**
-     * @return The store immediately before a given {@link Tree}.
+     * @return the store immediately before a given {@link Tree}.
      */
     public S getStoreBefore(Tree tree) {
         Node node = getNodeForTree(tree);
@@ -127,14 +127,14 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * @return The store immediately before a given {@link Node}.
+     * @return the store immediately before a given {@link Node}.
      */
     public S getStoreBefore(Node node) {
         return runAnalysisFor(node, true);
     }
 
     /**
-     * @return The store immediately after a given {@link Tree}.
+     * @return the store immediately after a given {@link Tree}.
      */
     public S getStoreAfter(Tree tree) {
         Node node = getNodeForTree(tree);

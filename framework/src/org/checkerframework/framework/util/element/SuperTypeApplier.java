@@ -20,8 +20,8 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
 
     /**
      * Annotates each supertype with annotations from subtypeElement's extends/implements clauses.
-     * @param supertypes Supertypes to annotate
-     * @param subtypeElement Element that may have annotations to apply to supertypes
+     * @param supertypes supertypes to annotate
+     * @param subtypeElement element that may have annotations to apply to supertypes
      */
     public static void annotateSupers(List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes, TypeElement subtypeElement) {
 
@@ -67,7 +67,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @return The type_index that should represent supertype
+     * @return the type_index that should represent supertype
      */
     @Override
     public int getElementIndex() {
@@ -75,7 +75,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @return The type_index of anno's TypeAnnotationPosition
+     * @return the type_index of anno's TypeAnnotationPosition
      */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
@@ -100,7 +100,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @return The TypeCompounds (annotations) of the subclass
+     * @return the TypeCompounds (annotations) of the subclass
      */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {

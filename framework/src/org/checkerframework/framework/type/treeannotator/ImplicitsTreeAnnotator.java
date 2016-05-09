@@ -116,7 +116,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
 
     /**
      * Added an implicit rule for a particular {@link Tree} class
-     * @param treeClass Tree class that should be implicited to {@code theQual}
+     * @param treeClass tree class that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeClass}
      */
     public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {

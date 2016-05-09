@@ -84,7 +84,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * <code>@ClassBound</code> or <code>@ClassVal</code>, otherwise returns an empty list
      *
      * @param anno any AnnotationMirror
-     * @return List of classnames in anno
+     * @return list of classnames in anno
      */
     public static List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByClass(anno, ClassBound.class)

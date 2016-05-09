@@ -77,7 +77,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     /**
-     * @return Receiver, returns, and throws.  See extract and apply as we also annotate type params.
+     * @return receiver, returns, and throws.  See extract and apply as we also annotate type params.
      */
     @Override
     protected TargetType[] annotatedTargets() {
@@ -85,7 +85,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     /**
-     * @return All possible annotation positions for a method except those in annotatedTargets
+     * @return all possible annotation positions for a method except those in annotatedTargets
      */
     @Override
     protected TargetType[] validTargets() {
@@ -98,7 +98,7 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     /**
-     * @return The annotations on the method symbol (element)
+     * @return the annotations on the method symbol (element)
      */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {

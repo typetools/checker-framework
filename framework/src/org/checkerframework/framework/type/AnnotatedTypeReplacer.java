@@ -11,9 +11,9 @@ public class AnnotatedTypeReplacer {
 
     /**
      * Return a copy of type after making the specified replacements.
-     * @param type The type that will be copied with replaced components.
-     * @param replacementMap A mapping of {@literal referenceToReplace -> referenceOfReplacement}
-     * @return A duplicate of type in which every reference that was a key in replacementMap
+     * @param type the type that will be copied with replaced components
+     * @param replacementMap a mapping of {@literal referenceToReplace -> referenceOfReplacement}
+     * @return a duplicate of type in which every reference that was a key in replacementMap
      * has been replaced by its corresponding value
      */
     public static AnnotatedTypeMirror replace(

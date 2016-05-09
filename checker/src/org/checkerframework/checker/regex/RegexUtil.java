@@ -93,9 +93,9 @@ public final class RegexUtil {
     /**
      * Constructs a new CheckedPatternSyntaxException.
      *
-     * @param desc A description of the error
-     * @param regex The erroneous pattern
-     * @param index The approximate index in the pattern of the error,
+     * @param desc a description of the error
+     * @param regex the erroneous pattern
+     * @param index the approximate index in the pattern of the error,
      *              or {@code -1} if the index is not known
      */
     public CheckedPatternSyntaxException(String desc, String regex, int index) {
@@ -105,7 +105,7 @@ public final class RegexUtil {
     /**
      * Retrieves the description of the error.
      *
-     * @return The description of the error
+     * @return the description of the error
      */
     public String getDescription() {
       return pse.getDescription();
@@ -114,7 +114,7 @@ public final class RegexUtil {
     /**
      * Retrieves the error index.
      *
-     * @return The approximate index in the pattern of the error, or {@code -1}
+     * @return the approximate index in the pattern of the error, or {@code -1}
      *         if the index is not known
      */
     public int getIndex() {
@@ -126,7 +126,7 @@ public final class RegexUtil {
      * error and its index, the erroneous regular-expression pattern, and a
      * visual indication of the error index within the pattern.
      *
-     * @return The full detail message
+     * @return the full detail message
      */
     @Override
     /*@Pure*/
@@ -137,7 +137,7 @@ public final class RegexUtil {
     /**
      * Retrieves the erroneous regular-expression pattern.
      *
-     * @return The erroneous pattern
+     * @return the erroneous pattern
      */
     public String getPattern() {
       return pse.getPattern();
@@ -199,7 +199,7 @@ public final class RegexUtil {
    * expression. Otherwise returns a string describing why the argument is
    * not a regex.
    * @param s string to check for being a regular expression
-   * @return null, or a string describing why the argument is not a regex.
+   * @return null, or a string describing why the argument is not a regex
    */
   @SuppressWarnings("regex") // RegexUtil
   /*@SideEffectFree*/
@@ -213,7 +213,7 @@ public final class RegexUtil {
    * a string describing why the argument is not a regex.
    * @param s string to check for being a regular expression
    * @param groups number of groups expected
-   * @return null, or a string describing why the argument is not a regex.
+   * @return null, or a string describing why the argument is not a regex
    */
   @SuppressWarnings({"regex", "not.sef"}) // RegexUtil;
   /*@SideEffectFree*/
@@ -235,7 +235,7 @@ public final class RegexUtil {
    * expression. Otherwise returns a PatternSyntaxException describing
    * why the argument is not a regex.
    * @param s string to check for being a regular expression
-   * @return null, or a PatternSyntaxException describing why the argument is not a regex.
+   * @return null, or a PatternSyntaxException describing why the argument is not a regex
    */
   @SuppressWarnings("regex") // RegexUtil
   /*@SideEffectFree*/
@@ -249,7 +249,7 @@ public final class RegexUtil {
    * PatternSyntaxException describing why the argument is not a regex.
    * @param s string to check for being a regular expression
    * @param groups number of groups expected
-   * @return null, or a PatternSyntaxException describing why the argument is not a regex.
+   * @return null, or a PatternSyntaxException describing why the argument is not a regex
    */
   @SuppressWarnings("regex") // RegexUtil
   /*@SideEffectFree*/

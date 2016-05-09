@@ -158,7 +158,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * or receiver (explicitly or implicitly) annotated with @GuardSatisfied. Also issues an error if a synchronized
      * method has a @LockingFree, @SideEffectFree or @Pure annotation.
      *
-     * @param node the MethodTree of the method definition to visit.
+     * @param node the MethodTree of the method definition to visit
      */
     @Override
     public Void visitMethod(MethodTree node, Void p) {
@@ -251,10 +251,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * If the receiver actual parameter has type @GuardSatisfied, this method simply returns true without
      * performing any other actions. The method returns false otherwise.
      *
-     * @param node the MethodInvocationTree of the method being called.
-     * @param methodDefinitionReceiver the ATM of the formal receiver parameter of the method being called.
-     * @param methodCallReceiver the ATM of the receiver argument of the method call.
-     * @return whether the caller can skip the receiver subtype check.
+     * @param node the MethodInvocationTree of the method being called
+     * @param methodDefinitionReceiver the ATM of the formal receiver parameter of the method being called
+     * @param methodCallReceiver the ATM of the receiver argument of the method call
+     * @return whether the caller can skip the receiver subtype check
      */
     @Override
     protected boolean skipReceiverSubtypeCheck(MethodInvocationTree node,
@@ -310,7 +310,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * Returns an empty set if no such expressions are found.
      *
      * @param atm the AnnotatedTypeMirror containing the @GuardedBy annotation with the lock expression preconditions.
-     * @return a set of lock expression preconditions that can be processed by checkPreconditions.
+     * @return a set of lock expression preconditions that can be processed by checkPreconditions
      */
     private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
         Set<AnnotationMirror> amList = atm.getAnnotations();
@@ -492,8 +492,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * in the access's expression are held.
      *
      * @param accessTree field or array access tree to check (may be an identifier tree of a field)
-     * @param treeToReportErrorAt Tree whose location is used to report the error
-     * @param expressionNode Node of the field or array access's expression
+     * @param treeToReportErrorAt tree whose location is used to report the error
+     * @param expressionNode node of the field or array access's expression
      */
     private void checkFieldOrArrayAccess(ExpressionTree accessTree, Tree treeToReportErrorAt, Node expressionNode) {
         AnnotatedTypeMirror atmOfReceiver = atypeFactory.getReceiverType(accessTree);
@@ -552,7 +552,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * Also check that matching @GuardSatisfied(index) on a method's formal receiver/parameters matches
      * those in corresponding locations on the method call site.
      *
-     * @param node the MethodInvocationTree of the method call being visited.
+     * @param node the MethodInvocationTree of the method call being visited
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -770,7 +770,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * Additionally, a synchronized block may not be present in a method that has a @LockingFree
      * guarantee or stronger. An error is issued in this case.
      *
-     * @param node the SynchronizedTree for the synchronized block being visited.
+     * @param node the SynchronizedTree for the synchronized block being visited
      */
     @Override
     public Void visitSynchronized(SynchronizedTree node, Void p) {
@@ -818,7 +818,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * var1, var2, field1 and field2 are enforced to be final or effectively final, and
      * method1 and method2 are enforced to be @Deterministic.
      *
-     * @param lockExpressionTree the expression tree of a synchronized block.
+     * @param lockExpressionTree the expression tree of a synchronized block
      */
     private void ensureExpressionIsEffectivelyFinal(final ExpressionTree lockExpressionTree) {
         // This functionality could be implemented using a visitor instead,
@@ -988,7 +988,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     /**
      * Issues an error if a GuardSatisfied annotation is found in a location other than a method return type, receiver or parameter.
      * @param annotationTree AnnotationTree used for error reporting and to help determine that an array parameter has no GuardSatisfied
-     * annotations except on the array type.
+     * annotations except on the array type
      */
     // TODO: Remove this method once @TargetLocations are enforced (i.e. once
     // issue https://github.com/typetools/checker-framework/issues/515 is closed).
@@ -1046,8 +1046,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      *
      * Only call this method from visitAnnotation.
      *
-     * @param path the TreePath whose leaf is an AnnotationTree.
-     * @return a TreePath that can be passed to methods in the Resolver class to locate local variables.
+     * @param path the TreePath whose leaf is an AnnotationTree
+     * @return a TreePath that can be passed to methods in the Resolver class to locate local variables
      */
     private TreePath getPathForLocalVariableRetrieval(TreePath path) {
         assert path.getLeaf() instanceof AnnotationTree;
@@ -1241,7 +1241,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * Only call this method from visitBinary and visitCompoundAssignment.
      *
      * @param tree the Tree corresponding to the expression that is known to be the receiver
-     * of an implicit toString() call.
+     * of an implicit toString() call
      */
     // TODO: If and when the de-sugared .toString() tree is accessible from BaseTypeVisitor,
     // the toString() method call should be visited instead of doing this. This would result

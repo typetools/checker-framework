@@ -166,8 +166,8 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
 
     /**
-     * @return The list of annotations that is forbidden for the constructor
-     *         return type.
+     * @return the list of annotations that is forbidden for the constructor
+     *         return type
      */
     public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
         return getInitializationAnnotations();

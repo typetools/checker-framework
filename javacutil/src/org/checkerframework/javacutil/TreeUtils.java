@@ -255,7 +255,7 @@ public final class TreeUtils {
      *
      * @param path the path defining the tree node
      * @return the enclosing class (or interface) as given by the path, or null
-     *         if one does not exist.
+     *         if one does not exist
      */
     public static /*@Nullable*/ ClassTree enclosingClass(final /*@Nullable*/ TreePath path) {
         return (ClassTree) enclosingOfKind(path, classTreeKinds());
@@ -334,7 +334,7 @@ public final class TreeUtils {
      *
      * Otherwise, null is returned.
      *
-     * @return  the assignment context as described.
+     * @return  the assignment context as described
      */
     public static Tree getAssignmentContext(final TreePath treePath) {
         TreePath path = treePath.getParentPath();
@@ -420,7 +420,7 @@ public final class TreeUtils {
      * Determine whether the given ExpressionTree has an underlying element.
      *
      * @param node the ExpressionTree to test
-     * @return whether the tree refers to an identifier, member select, or method invocation.
+     * @return whether the tree refers to an identifier, member select, or method invocation
      */
     public static final boolean isUseOfElement(ExpressionTree node) {
         node = TreeUtils.skipParens(node);
@@ -487,8 +487,8 @@ public final class TreeUtils {
     /**
      * Determine whether the given class contains an explicit constructor.
      *
-     * @param node A class tree.
-     * @return True, iff there is an explicit constructor.
+     * @param node a class tree
+     * @return true, iff there is an explicit constructor
      */
     public static boolean hasExplicitConstructor(ClassTree node) {
         TypeElement elem = TreeUtils.elementFromDeclaration(node);
@@ -756,7 +756,7 @@ public final class TreeUtils {
      * </pre>
      *
      * @return true iff if tree is a field access expression (implicit or
-     *         explicit).
+     *         explicit)
      */
     public static boolean isFieldAccess(Tree tree) {
         if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
@@ -779,7 +779,7 @@ public final class TreeUtils {
      * accesses. Requires <code>tree</code> to be a field access, as determined
      * by <code>isFieldAccess</code>.
      *
-     * @return The name of the field accessed by <code>tree</code>.
+     * @return the name of the field accessed by <code>tree</code>.
      */
     public static String getFieldName(Tree tree) {
         assert isFieldAccess(tree);
@@ -802,7 +802,7 @@ public final class TreeUtils {
      * </pre>
      *
      * @return true iff if tree is a method access expression (implicit or
-     *         explicit).
+     *         explicit)
      */
     public static boolean isMethodAccess(Tree tree) {
         if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
@@ -831,7 +831,7 @@ public final class TreeUtils {
      * accesses. Requires <code>tree</code> to be a method access, as determined
      * by <code>isMethodAccess</code>.
      *
-     * @return The name of the method accessed by <code>tree</code>.
+     * @return the name of the method accessed by <code>tree</code>.
      */
     public static String getMethodName(Tree tree) {
         assert isMethodAccess(tree);
@@ -876,9 +876,9 @@ public final class TreeUtils {
     /**
      * Returns the VariableElement for a field declaration.
      *
-     * @param typeName the class where the field is declared.
-     * @param fieldName the name of the field.
-     * @param env the processing environment.
+     * @param typeName the class where the field is declared
+     * @param fieldName the name of the field
+     * @param env the processing environment
      * @return the VariableElement for typeName.fieldName
      */
     public static VariableElement getField(String typeName, String fieldName, ProcessingEnvironment env) {
@@ -896,7 +896,7 @@ public final class TreeUtils {
      *
      * TODO: is there a nicer way than an instanceof?
      *
-     * @param tree the Tree to test.
+     * @param tree the Tree to test
      * @return whether the tree is an ExpressionTree
      */
     public static boolean isExpressionTree(Tree tree) {
@@ -939,7 +939,7 @@ public final class TreeUtils {
 
     /**
      * @see Object#getClass()
-     * @return True iff invocationTree is an instance of getClass()
+     * @return true iff invocationTree is an instance of getClass()
      */
     public static boolean isGetClassInvocation(MethodInvocationTree invocationTree) {
         final Element declarationElement = elementFromUse(invocationTree);

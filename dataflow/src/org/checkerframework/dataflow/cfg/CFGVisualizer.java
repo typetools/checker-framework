@@ -29,7 +29,7 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * Initialization method guaranteed to be called once before the
      * first invocation of {@link visualize}.
      *
-     * @param args Implementation-dependent options.
+     * @param args implementation-dependent options
      */
     void init(Map<String, Object> args);
 
@@ -52,7 +52,7 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      *            from <code>entry</code> and per-node information for value
      *            producing {@link Node}s. Can also be <code>null</code> to
      *            indicate that this information should not be output.
-     * @return Possible analysis results, e.g. generated file names.
+     * @return possible analysis results, e.g. generated file names.
      */
     /*@Nullable*/ Map<String, Object> visualize(ControlFlowGraph cfg, Block entry,
             /*@Nullable*/ Analysis<A, S, T> analysis);
@@ -62,7 +62,7 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * to the passed {@link Store} instance, which will call back to this
      * visualizer instance for sub-components.
      *
-     * @param store The store to visualize.
+     * @param store the store to visualize
      */
     void visualizeStore(S store);
 
@@ -71,7 +71,7 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * the class name before calling the
      * <code>CFAbstractStore#internalVisualize()</code> method.
      *
-     * @param classCanonicalName The canonical name of the class.
+     * @param classCanonicalName the canonical name of the class
      */
     void visualizeStoreHeader(String classCanonicalName);
 
@@ -79,8 +79,8 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
      * a local variable.
      *
-     * @param localVar The local variable.
-     * @param value The value of the local variable.
+     * @param localVar the local variable
+     * @param value the value of the local variable
      */
     void visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value);
 
@@ -88,7 +88,7 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
      * the value of the current object <code>this</code> in this Store.
      *
-     * @param value The value of the current object this.
+     * @param value the value of the current object this
      */
     void visualizeStoreThisVal(A value);
 
@@ -96,8 +96,8 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
      * the value of fields collected by this Store.
      *
-     * @param fieldAccess The field.
-     * @param value The value of the field.
+     * @param fieldAccess the field
+     * @param value the value of the field
      */
     void visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, A value);
 
@@ -105,8 +105,8 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
      * the value of arrays collected by this Store.
      *
-     * @param arrayValue The array.
-     * @param value The value of the array.
+     * @param arrayValue the array
+     * @param value the value of the array
      */
     void visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value);
 
@@ -114,8 +114,8 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
      * the value of pure method calls collected by this Store.
      *
-     * @param methodCall The pure method call.
-     * @param value The value of the pure method call.
+     * @param methodCall the pure method call
+     * @param value the value of the pure method call
      */
     void visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value);
 
@@ -123,8 +123,8 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * Called by <code>CFAbstractStore#internalVisualize()</code> to visualize
      * the value of class names collected by this Store.
      *
-     * @param className The class name.
-     * @param value The value of the class name.
+     * @param className the class name
+     * @param value the value of the class name
      */
     void visualizeStoreClassVals(FlowExpressions.ClassName className, A value);
 
@@ -135,8 +135,8 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      * <code>NullnessStore</code>, and <code>InitializationStore</code> to visualize additional
      * information.
      *
-     * @param keyName The name of the specific information to be visualized.
-     * @param value The value of the specific information to be visualized.
+     * @param keyName the name of the specific information to be visualized
+     * @param value the value of the specific information to be visualized
      */
     void visualizeStoreKeyVal(String keyName, Object value);
 
@@ -149,31 +149,31 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
     /**
      * Visualize a block based on the analysis.
      *
-     * @param bb The block.
-     * @param analysis The current analysis.
+     * @param bb the block
+     * @param analysis the current analysis
      */
     void visualizeBlock(Block bb, /*@Nullable*/ Analysis<A, S, T> analysis);
 
     /**
      * Visualize a SpecialBlock.
      *
-     * @param sbb The special block.
+     * @param sbb the special block
      */
     void visualizeSpecialBlock(SpecialBlock sbb);
 
     /**
      * Visualize the transferInput of a Block based on the analysis.
      *
-     * @param bb The block.
-     * @param analysis The current analysis.
+     * @param bb the block
+     * @param analysis the current analysis
      */
     void visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis);
 
     /**
      * Visualize a Node based on the analysis.
      *
-     * @param t The node.
-     * @param analysis The current analysis.
+     * @param t the node
+     * @param analysis the current analysis
      */
     void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis);
 

@@ -90,7 +90,7 @@ public class TypeArgumentMapper {
     }
 
     /**
-     * @return A Map(type parameter symbol &rarr; index in type parameter list)
+     * @return a Map(type parameter symbol &rarr; index in type parameter list)
      */
     private static Map<TypeParameterElement, Integer> getElementToIndex(TypeElement typeElement) {
         Map<TypeParameterElement, Integer> result = new LinkedHashMap<>();
@@ -236,7 +236,7 @@ public class TypeArgumentMapper {
      * listing it in the implements clause.  We prioritize finding a path through the list of interfaces first
      * since this will be the shorter path.
      *
-     * @return A set of type records that represents the sequence of directSupertypes between
+     * @return a set of type records that represents the sequence of directSupertypes between
      * subtype and target
      */
     private static List<TypeRecord> depthFirstSearchForSupertype(final TypeElement subtype,

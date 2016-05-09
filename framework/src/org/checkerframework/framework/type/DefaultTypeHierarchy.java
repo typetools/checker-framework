@@ -200,7 +200,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     /**
-     * @return Error message for the case when two types shouldn't be compared
+     * @return error message for the case when two types shouldn't be compared
      */
     @Override
     protected String defaultErrorMessage(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype,
@@ -230,7 +230,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     /**
      * Compare the primary annotations of subtype and supertype.
-     * @param annosCanBeEmtpy Indicates that annotations may be missing from the typemirror.
+     * @param annosCanBeEmtpy indicates that annotations may be missing from the typemirror
      * @return true if the primary annotation on subtype {@literal <:} primary annotation on supertype for the current top or
      * both annotations are null.  False is returned if one annotation is null and the other is not.
      */
@@ -247,7 +247,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * Compare the primary annotations of subtype and supertype.
      * @param subtypeAnno annotation we expect to be a subtype
      * @param supertypeAnno annotation we expect to be a supertype of subtype
-     * @param annosCanBeEmtpy Indicates that annotations may be missing from the typemirror.
+     * @param annosCanBeEmtpy indicates that annotations may be missing from the typemirror
      * @return true if subtype {@literal <:} supertype or both annotations are null.
      *         False is returned if one annotation is null and the other is not.
      */
@@ -365,11 +365,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * Containment is described in the JLS section 4.5.1 "Type Arguments of Parameterized Types",
      * http://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.5.1
      *
-     * @param inside The "subtype" type argument
-     * @param outside The "supertype" type argument
-     * @param visited A history of type pairs that have been visited, used to halt on recursive bounds
-     * @param canBeCovariant Whether or not type arguments are allowed to be covariant
-     * @return True if inside is contained by outside OR, if canBeCovariant == true, inside is a
+     * @param inside the "subtype" type argument
+     * @param outside the "supertype" type argument
+     * @param visited a history of type pairs that have been visited, used to halt on recursive bounds
+     * @param canBeCovariant whether or not type arguments are allowed to be covariant
+     * @return true if inside is contained by outside OR, if canBeCovariant == true, inside is a
      *         subtype of outside
      */
     protected boolean isContainedBy(final AnnotatedTypeMirror inside, final AnnotatedTypeMirror outside,
@@ -817,8 +817,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     /**
      * Calls asSuper and casts the result to the same type as the input supertype
-     * @param subtype Subtype to be transformed to supertype
-     * @param supertype Supertype that subtype is transformed to
+     * @param subtype subtype to be transformed to supertype
+     * @param supertype supertype that subtype is transformed to
      * @param <T> The type of supertype and return type
      * @return subtype as an instance of supertype
      */
@@ -867,10 +867,10 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * the type argument of W to A.
      * A becomes {@code List<? extends Object>}
      *
-     * @param originalSubtype The subtype before being converted by asSuper
+     * @param originalSubtype the subtype before being converted by asSuper
      * @param asSuperType he subtype after being converted by asSuper
-     * @param supertype The supertype for which asSuperType should have the same underlying type
-     * @param types The types utility
+     * @param supertype the supertype for which asSuperType should have the same underlying type
+     * @param types the types utility
      */
     private static void fixUpRawTypes(final AnnotatedTypeMirror originalSubtype, final AnnotatedTypeMirror asSuperType,
                                       final AnnotatedTypeMirror supertype, final Types types) {

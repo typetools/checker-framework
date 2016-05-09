@@ -732,7 +732,7 @@ public class QualifierDefaults {
          * Returns true if the given qualifier should be applied to the given type.  Currently we do not
          * apply defaults to void types, packages, wildcards, and type variables.
          *
-         * @param type Type to which qual would be applied
+         * @param type type to which qual would be applied
          * @return true if this application should proceed
          */
         private static boolean shouldBeAnnotated(final AnnotatedTypeMirror type, final boolean applyToTypeVar) {
@@ -1031,9 +1031,9 @@ public class QualifierDefaults {
     }
 
     /**
-     * @param type The type whose boundType is returned.
+     * @param type the type whose boundType is returned.
      *             type must be an AnnotatedWildcardType or AnnotatedTypeVariable
-     * @return The boundType for type
+     * @return the boundType for type
      */
     private static BoundType getBoundType(final AnnotatedTypeMirror type,
                                           final AnnotatedTypeFactory typeFactory) {
@@ -1058,7 +1058,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * @return The boundType (UPPER, UNBOUND, or UNKNOWN) of the declaration of typeParamElem.
+     * @return the boundType (UPPER, UNBOUND, or UNKNOWN) of the declaration of typeParamElem
      */
     private static BoundType getTypeVarBoundType(final TypeParameterElement typeParamElem,
                                                  final AnnotatedTypeFactory typeFactory) {

@@ -757,7 +757,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            a varargs array of explicitly listed annotation classes to be
      *            added to the returned set. For example, it is used frequently
      *            to add Bottom qualifiers.
-     * @return an immutable set of the loaded, and listed annotation classes.
+     * @return an immutable set of the loaded, and listed annotation classes
      */
     @SafeVarargs
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithoutPolyAll(Class<? extends Annotation>... explicitlyListedAnnotations) {
@@ -801,7 +801,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Creates the AnnotatedTypeFormatter used by this type factory and all AnnotatedTypeMirrors
      * it creates.  The AnnotatedTypeFormatter is used in AnnotatedTypeMirror.toString and
      * will affect the error messages printed for checkers that use this type factory.
-     * @return The AnnotatedTypeFormatter to pass to all instantiated AnnotatedTypeMirrors
+     * @return the AnnotatedTypeFormatter to pass to all instantiated AnnotatedTypeMirrors
      */
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
         return new DefaultAnnotatedTypeFormatter(checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
@@ -1296,9 +1296,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * TODO: ensure that this method is consistently used instead
      * of directly querying the type variables.
      *
-     * @param type The use of the type
-     * @param element The corresponding element
-     * @return The adapted bounds of the type parameters
+     * @param type the use of the type
+     * @param element the corresponding element
+     * @return the adapted bounds of the type parameters
      */
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
             AnnotatedDeclaredType type, TypeElement element) {
@@ -1351,7 +1351,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates and returns an AnnotatedNullType qualified with {@code annotations}.
-     * @param annotations Set of AnnotationMirrors to qualify the returned type with
+     * @param annotations set of AnnotationMirrors to qualify the returned type with
      * @return AnnotatedNullType qualified with {@code annotations}
      */
     public AnnotatedNullType getAnnotatedNullType(Set<? extends AnnotationMirror> annotations) {
@@ -1448,8 +1448,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * The result is null for expressions that don't have a receiver,
      * e.g. for a local variable or method parameter access.
      *
-     * @param tree The expression that might have an implicit receiver.
-     * @return The type of the receiver.
+     * @param tree the expression that might have an implicit receiver
+     * @return the type of the receiver
      */
     /*
      * TODO: receiver annotations on outer this.
@@ -1546,9 +1546,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * an access "this.f.g" or whether e.g. f is a field of an outer class or
      * e.g. f is a local variable.
      *
-     * @param tree The tree to check.
-     * @return True, iff the tree is an explicit or implicit reference to the
-     *         most enclosing "this".
+     * @param tree the tree to check
+     * @return true, iff the tree is an explicit or implicit reference to the
+     *         most enclosing "this"
      */
     public final boolean isMostEnclosingThisDeref(ExpressionTree tree) {
         if (!isAnyEnclosingThisDeref(tree)) {
@@ -1571,8 +1571,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Does this expression have (the innermost or an outer) "this" as receiver?
      * Note that the receiver can be either explicit or implicit.
      *
-     * @param tree The tree to test.
-     * @return True, iff the expression uses (the innermost or an outer) "this" as receiver.
+     * @param tree the tree to test
+     * @return true, iff the expression uses (the innermost or an outer) "this" as receiver
      */
     public final boolean isAnyEnclosingThisDeref(ExpressionTree tree) {
         if (!TreeUtils.isUseOfElement(tree)) {
@@ -1709,7 +1709,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *  <li> Member Select Trees
      * </ul>
      *
-     * @param expression The expression for which to determine the receiver type
+     * @param expression the expression for which to determine the receiver type
      * @return  the type of the receiver of this expression
      */
     public final AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
@@ -1806,9 +1806,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * x.getClass() has the type {@code Class< ? extends erasure_of_x >}
      * someInteger.getClass() has the type {@code Class< ? extends Integer >}
      *
-     * @param getClassType This must be a type representing a call to Object.getClass otherwise
+     * @param getClassType this must be a type representing a call to Object.getClass otherwise
      *                     a runtime exception will be thrown
-     * @param receiverType The receiver type of the method invocation (not the declared receiver type)
+     * @param receiverType the receiver type of the method invocation (not the declared receiver type)
      */
     protected static void adaptGetClassReturnTypeToReceiver(final AnnotatedExecutableType getClassType,
                                                             final AnnotatedTypeMirror receiverType) {
@@ -2323,7 +2323,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * The method uses the parameter only if the most enclosing method cannot
      * be found directly.
      *
-     * @return receiver type of the most enclosing method being visited.
+     * @return receiver type of the most enclosing method being visited
      */
     protected final /*@Nullable*/ AnnotatedDeclaredType getCurrentMethodReceiver(Tree tree) {
         AnnotatedDeclaredType res = visitorState.getMethodReceiver();
@@ -2874,7 +2874,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            The element for which to determine annotations.
      * @param metaAnnotation
      *            The meta-annotation that needs to be present.
-     * @return A list of pairs {@code (anno, metaAnno)} where {@code anno} is
+     * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is
      *         the annotation mirror at {@code element}, and {@code metaAnno} is
      *         the annotation mirror used to annotate {@code anno}.
      */
@@ -2916,7 +2916,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            The element at which to look for annotations.
      * @param metaAnnotation
      *            The meta-annotation that needs to be present.
-     * @return A list of pairs {@code (anno, metaAnno)} where {@code anno} is
+     * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is
      *         the annotation mirror at {@code element}, and {@code metaAnno} is
      *         the annotation mirror used to annotate {@code anno}.
      */
@@ -3079,7 +3079,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * The assignment context is not always correct, so we must search up the AST. It will recursively search
      * for lambdas nested in lambdas.
      *
-     * @param lambdaTree the tree of the lambda or method reference.
+     * @param lambdaTree the tree of the lambda or method reference
      * @return the functional interface type
      */
     private AnnotatedDeclaredType getFunctionalInterfaceType(Tree lambdaTree,

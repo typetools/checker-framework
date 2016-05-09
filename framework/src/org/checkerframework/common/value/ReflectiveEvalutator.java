@@ -50,7 +50,7 @@ public class ReflectiveEvalutator {
      *            method has no receiver
      * @param tree
      *            location to report any errors
-     * @return all possible values that the method may return.
+     * @return all possible values that the method may return
      */
     public List<?> evaluteMethodCall(List<List<?>> allArgValues,
             List<?> receiverValues, MethodInvocationTree tree) {

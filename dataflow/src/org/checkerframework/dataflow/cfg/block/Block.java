@@ -25,12 +25,12 @@ public interface Block {
     }
 
     /**
-     * @return The type of this basic block.
+     * @return the type of this basic block
      */
     BlockType getType();
 
     /**
-     * @return The unique identifier of this block.
+     * @return the unique identifier of this block
      */
     long getId();
 

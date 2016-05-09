@@ -640,13 +640,13 @@ public class AnnotatedTypes {
      *
      * @param atypeFactory the annotated type factory
      * @param expr the method or constructor invocation tree; the passed argument
-     *   has to be a subtype of MethodInvocationTree or NewClassTree.
-     * @param elt the element corresponding to the tree.
+     *   has to be a subtype of MethodInvocationTree or NewClassTree
+     * @param elt the element corresponding to the tree
      * @param preType the (partially annotated) type corresponding to the tree -
      *   the result of AnnotatedTypes.asMemberOf with the receiver and elt.
      *
      * @return the mapping of the type variables to type arguments for
-     *   this method or constructor invocation.
+     *   this method or constructor invocation
      */
     public static Map<TypeVariable, AnnotatedTypeMirror>
     findTypeArguments(final ProcessingEnvironment processingEnv,
@@ -1270,7 +1270,7 @@ public class AnnotatedTypes {
      *
      * @param methodType AnnotatedExecutableType of method or constructor containing parameter to return
      * @param index position of parameter type to return
-     * @return If that parameter is a varArgs, return the component of the var args and NOT the array type.
+     * @return if that parameter is a varArgs, return the component of the var args and NOT the array type.
      *         Otherwise, return the exact type of the parameter in the index position
      */
     public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(AnnotatedExecutableType methodType, int index) {
@@ -1293,9 +1293,9 @@ public class AnnotatedTypes {
      * Return a list of the AnnotatedTypeMirror of the passed
      * expression trees, in the same order as the trees.
      *
-     * @param paramTypes The parameter types to use as assignment context
+     * @param paramTypes the parameter types to use as assignment context
      * @param trees the AST nodes
-     * @return  a list with the AnnotatedTypeMirror of each tree in trees.
+     * @return  a list with the AnnotatedTypeMirror of each tree in trees
      */
     public static List<AnnotatedTypeMirror> getAnnotatedTypes(AnnotatedTypeFactory atypeFactory,
                                                               List<AnnotatedTypeMirror> paramTypes, List<? extends ExpressionTree> trees) {
@@ -1353,9 +1353,9 @@ public class AnnotatedTypes {
      * it corresponds to a "deep" version of
      * {@link AnnotatedTypeMirror#hasAnnotation(AnnotationMirror)}.
      *
-     * @param type the type to search.
-     * @param modifier the modifier to search for.
-     * @return whether the type contains the modifier.
+     * @param type the type to search
+     * @param modifier the modifier to search for
+     * @return whether the type contains the modifier
      */
     public static boolean containsModifier(AnnotatedTypeMirror type, AnnotationMirror modifier) {
         return containsModifierImpl(type, modifier, new LinkedList<AnnotatedTypeMirror>());
@@ -1637,7 +1637,7 @@ public class AnnotatedTypes {
      *    One of the two methods overrides the other
      *    Within their method declaration, both types have the same type parameter index
      *
-     * @return  returns true if type1 and type2 are corresponding type variables (that is, either one "overrides" the other).
+     * @return  returns true if type1 and type2 are corresponding type variables (that is, either one "overrides" the other)
      */
     public static boolean areCorrespondingTypeVariables(Elements elements, AnnotatedTypeVariable type1, AnnotatedTypeVariable type2) {
         final TypeParameterElement type1ParamElem   = (TypeParameterElement) type1.getUnderlyingType().asElement();
@@ -1668,8 +1668,8 @@ public class AnnotatedTypes {
      * When comparing types against the bounds of a type variable, we may encounter other
      * type variables, wildcards, and intersections in those bounds.  This method traverses
      * the bounds until it finds a concrete type from which it can pull an annotation.
-     * @param top The top of the hierarchy for which you are searching.
-     * @return The AnnotationMirror that represents the type of toSearch in the hierarchy of top
+     * @param top the top of the hierarchy for which you are searching
+     * @return the AnnotationMirror that represents the type of toSearch in the hierarchy of top
      */
     public static AnnotationMirror findEffectiveAnnotationInHierarchy(final QualifierHierarchy qualifierHierarchy,
                                                                       final AnnotatedTypeMirror toSearch,
@@ -1680,11 +1680,11 @@ public class AnnotatedTypes {
      * When comparing types against the bounds of a type variable, we may encounter other
      * type variables, wildcards, and intersections in those bounds.  This method traverses
      * the bounds until it finds a concrete type from which it can pull an annotation.
-     * @param top The top of the hierarchy for which you are searching.
-     * @param canBeEmpty Whether or not the effective type can have NO annotation in the hierarchy specified by top
+     * @param top the top of the hierarchy for which you are searching
+     * @param canBeEmpty whether or not the effective type can have NO annotation in the hierarchy specified by top
      *                   If this param is false, an exception will be thrown if no annotation is found
      *                   Otherwise the result is null
-     * @return The AnnotationMirror that represents the type of toSearch in the hierarchy of top
+     * @return the AnnotationMirror that represents the type of toSearch in the hierarchy of top
      */
     public static AnnotationMirror findEffectiveAnnotationInHierarchy(final QualifierHierarchy qualifierHierarchy,
                                                                       final AnnotatedTypeMirror toSearch,
@@ -1734,7 +1734,7 @@ public class AnnotatedTypes {
      * type variables, wildcards, and intersections in those bounds.  This method traverses
      * the lower bounds until it finds a concrete type from which it can pull an annotation.
      * This occurs for every hierarchy in QualifierHierarchy
-     * @return The set of effective annotation mirrors in all hierarchies
+     * @return the set of effective annotation mirrors in all hierarchies
      */
     public static Set<AnnotationMirror> findEffectiveLowerBoundAnnotations(final QualifierHierarchy qualifierHierarchy,
                                                                            final AnnotatedTypeMirror toSearch) {
@@ -1775,7 +1775,7 @@ public class AnnotatedTypes {
      * type variables, wildcards, and intersections in those bounds.  This method traverses
      * the bounds until it finds a concrete type from which it can pull an annotation.
      * This occurs for every hierarchy in QualifierHierarchy
-     * @return The set of effective annotation mirrors in all hierarchies
+     * @return the set of effective annotation mirrors in all hierarchies
      */
     public static Set<AnnotationMirror> findEffectiveAnnotations(final QualifierHierarchy qualifierHierarchy,
                                                                  final AnnotatedTypeMirror toSearch) {
@@ -1812,7 +1812,7 @@ public class AnnotatedTypes {
     }
 
     /**
-     * @return The greatest lower bound of the primary annotations on the input types
+     * @return the greatest lower bound of the primary annotations on the input types
      */
     private static Set<? extends AnnotationMirror> glbAll(final QualifierHierarchy qualifierHierarchy,
                                                           final Collection<AnnotatedTypeMirror> types) {
@@ -1860,9 +1860,9 @@ public class AnnotatedTypes {
 
     /**
      * Get's the lowest primary annotation of all bounds in the intersection
-     * @param isect The intersection for which we are glbing bounds
-     * @param qualifierHierarchy The qualifier used to get the hierarchies in which to glb
-     * @return A set of annotations representing the glb of the intersection's bounds
+     * @param isect the intersection for which we are glbing bounds
+     * @param qualifierHierarchy the qualifier used to get the hierarchies in which to glb
+     * @return a set of annotations representing the glb of the intersection's bounds
      */
     public static Set<AnnotationMirror> glbOfBounds(final AnnotatedIntersectionType isect,
                                                      final QualifierHierarchy qualifierHierarchy) {
@@ -1914,7 +1914,7 @@ public class AnnotatedTypes {
      *
      * @param atypeFactory type factory
      * @param returnType return type to copy annotations to
-     * @param constructor The ATM for the constructor.
+     * @param constructor the ATM for the constructor
      */
     public static void copyOnlyExplicitConstructorAnnotations(AnnotatedTypeFactory atypeFactory,
                                                               AnnotatedDeclaredType returnType,

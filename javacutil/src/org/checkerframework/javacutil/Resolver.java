@@ -97,7 +97,7 @@ public class Resolver {
      *            the field).
      * @param path
      *            The tree path to the local scope.
-     * @return The element for the field.
+     * @return the element for the field
      */
     public VariableElement findField(String name, TypeMirror type, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler =
@@ -125,7 +125,7 @@ public class Resolver {
      *            The name of the local variable.
      * @param path
      *            The tree path to the local scope.
-     * @return The element for the local variable.
+     * @return the element for the local variable
      */
     public VariableElement findLocalVariableOrParameter(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler =
@@ -158,7 +158,7 @@ public class Resolver {
      *            The name of the class.
      * @param path
      *            The tree path to the local scope.
-     * @return The element for the class.
+     * @return the element for the class
      */
     public Element findClass(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler =
@@ -186,7 +186,7 @@ public class Resolver {
      *            Type of the receiver of the method
      * @param path
      *            Tree path.
-     * @return The method element (if found).
+     * @return the method element (if found)
      */
     public Element findMethod(String methodName, TypeMirror receiverType,
             TreePath path, java.util.List<TypeMirror> argumentTypes) {

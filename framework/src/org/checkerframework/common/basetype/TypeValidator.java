@@ -12,13 +12,13 @@ public interface TypeValidator {
     /** The entry point to the type validator.
      * Validate the type against the given tree.
      *
-     * @param type The type to validate.
-     * @param tree The tree from which the type originated.
+     * @param type the type to validate
+     * @param tree the tree from which the type originated.
      *   Note that the tree might be a method tree - the
      *     return type should then be validated.
      *   Note that the tree might be a variable tree - the
      *     field type should then be validated.
-     * @return True, iff the type is valid.
+     * @return true, iff the type is valid
      */
     public boolean isValid(AnnotatedTypeMirror type, Tree tree);
 }

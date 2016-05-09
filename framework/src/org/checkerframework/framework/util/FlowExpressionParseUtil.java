@@ -618,7 +618,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return The list of parameters that occur in {@code s}, identified by the
+     * @return the list of parameters that occur in {@code s}, identified by the
      *         number of the parameter (starting at 1).
      */
     public static List<Integer> parameterIndices(String s) {
@@ -650,7 +650,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     * @return a {@link FlowExpressionContext} for the method {@code node} as
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
@@ -670,7 +670,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     * @return a {@link FlowExpressionContext} for the method {@code node} as
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
@@ -689,7 +689,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     * @return a {@link FlowExpressionContext} for the method {@code node} as
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
@@ -699,7 +699,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the class {@code classTree} as
+     * @return a {@link FlowExpressionContext} for the class {@code classTree} as
      *         seen at the class declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
@@ -715,7 +715,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code n}
+     * @return a {@link FlowExpressionContext} for the method {@code n}
      *         (represented as a {@link Node} as seen at the method use (i.e.,
      *         at a method call site).
      */
@@ -734,7 +734,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the constructor {@code n}
+     * @return a {@link FlowExpressionContext} for the constructor {@code n}
      *         (represented as a {@link Node} as seen at the method use (i.e.,
      *         at a method call site).
      */
