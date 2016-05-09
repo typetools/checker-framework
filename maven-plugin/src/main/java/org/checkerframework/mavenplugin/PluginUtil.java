@@ -30,13 +30,6 @@ import java.util.regex.Pattern;
  *     org.checkerframework.framework.util.PluginUtil
  *
  * These files MUST be IDENTICAL after the package descriptor.
- *
- * If you change this file be sure to copy the exact file (including this comment,
- * but excluding the package line) to the other projects.  During release this file
- * and all its copies will be diffed (excluding any line starting with "package ").
- *
- * There is a script at checker-framework/release/syncPluginUtil.sh
- * that syncs these files programatically.
  */
 public class PluginUtil {
 
@@ -104,20 +97,28 @@ public class PluginUtil {
         return tmpFile;
     }
 
-    public static File writeTmpArgFile(final String prefix, final String suffix, final boolean deleteOnExit,
+    /**
+     * Write the strings to a temporary file.
+     * @param deleteOnExit if true, delete the file on program exit
+     */
+    public static File writeTmpFile(final String prefix, final String suffix, final boolean deleteOnExit,
                                        final List<String> args) throws IOException {
         final File tmpFile = File.createTempFile(prefix, suffix);
         if (deleteOnExit) {
             tmpFile.deleteOnExit();
         }
-        writeArgFile(tmpFile, args);
+        writeFile(tmpFile, args);
         return tmpFile;
     }
 
-    public static void writeArgFile(final File destination, final List<String> args) throws IOException {
+    /** Write the strings to the file, one per line. */
+    public static void writeFile(final File destination, final List<String> contents) throws IOException {
         final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
         try {
-            bw.write(join(" ", args));
+            for (String line : contents) {
+                bw.write(line);
+                bw.newLine();
+            }
             bw.flush();
         } finally {
             bw.close();
@@ -125,7 +126,8 @@ public class PluginUtil {
     }
 
 
-    public static List<String> readArgFile(final File argFile) throws IOException {
+    /** Return a list of Strings, one per line of the file. */
+    public static List<String> readFile(final File argFile) throws IOException {
         final BufferedReader br = new BufferedReader(new FileReader(argFile));
         String line;
 
@@ -281,7 +283,7 @@ public class PluginUtil {
 
     public static File writeTmpCpFile(final String prefix, final boolean deleteOnExit,
                                       final String classpath) throws IOException {
-        return writeTmpArgFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", wrapArg(classpath)));
+        return writeTmpFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", wrapArg(classpath)));
     }
 
     public static boolean isWindows() {
