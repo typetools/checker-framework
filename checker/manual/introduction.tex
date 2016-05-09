@@ -800,9 +800,8 @@ annotation processing including all pluggable type-checking.
 % TODO: this feature only works for our javac script, not when using
 % the standard javac. Should this be explained?
 
-Ordinarily, the \code{-processor} flag expects fully-qualified class names.
-For checkers that are packaged with the Checker Framework, the fully-qualified
-name can be quite long.  Therefore, when running a built-in checker, you may
+Ordinarily, javac's \code{-processor} flag requires fully-qualified class names.
+When running a built-in checker, you may
 omit the package name and the \<Checker> suffix.
 The following three commands are equivalent:
 
