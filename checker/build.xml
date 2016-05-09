@@ -981,8 +981,9 @@
     </target>
 
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
+      <!-- The last successful artifact includes Java 8 class files, so use the last build that does not. -->
       <get
-        src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz"
+        src="https://adopt-openjdk.ci.cloudbees.com/job/jtreg/545/artifact/jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/.." />
       <untar src="${jtreg.home}/../jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/../"
