@@ -9,12 +9,27 @@ import javax.lang.model.element.AnnotationMirror;
 public interface TypeHierarchy {
 
     /**
-     * @return true if subtype {@literal <:} supertype for all qualifier hierarchies in the type system
+     * Returns true if {@code subtype} is a subtype of or convertible to {@code supertype}
+     * for all hierarchies present.  The underlying Java type of {@code subtype} must be a subtype of
+     * or convertible to the underlying Java type of {@code supertype}.
+     *
+     * @param subtype   possible subtype
+     * @param supertype possible supertype
+     * @return true if {@code subtype} is a subtype of {@code supertype} for all hierarchies present.
      */
-    public boolean isSubtypeOrConvertible(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
+    boolean isSubtypeOrConvertible(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
 
     /**
-     * @return true  if subtype {@literal <:} supertype in the qualifier hierarchy rooted by the top annotation
+     * Returns true if {@code subtype} is a subtype of {@code supertype} in the qualifier hierarchy
+     * whose top is {@code top} The underlying Java type of {@code subtype} must be a subtype of
+     * or convertible to the underlying Java type of {@code supertype}.
+     *
+     * @param subtype   possible subtype
+     * @param supertype possible supertype
+     * @param top       the qualifier at the top of the heirarchy for which the subtype check should be preformed.
+     * @return Returns true if {@code subtype} is a subtype of {@code supertype} in the qualifier hierarchy
+     * whose top is {@code top}
      */
-    public boolean isSubtypeOrConvertible(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top);
+    boolean isSubtypeOrConvertible(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top);
+
 }
