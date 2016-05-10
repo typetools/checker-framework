@@ -33,7 +33,6 @@ import javax.lang.model.util.Types;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -148,15 +147,11 @@ public class TypeArgInferenceUtil {
             AnnotatedExecutableType method = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, methodElt);
             int treeIndex = -1;
             for (int i = 0; i < method.getParameterTypes().size(); ++i) {
-                ExpressionTree argumentTree = methodInvocation.getArguments().get(i);
-                if (isArgument(path, argumentTree)) {
+                if (TreeUtils.skipParens(methodInvocation.getArguments().get(i)) == path.getLeaf()) {
                     treeIndex = i;
                     break;
                 }
             }
-            assert treeIndex != -1 :  "Could not find path in MethodInvocationTree.\n"
-                                      + "treePath=" + path.toString() + "\n"
-                                      + "methodInvocation=" + methodInvocation;
 
             if (treeIndex == -1) {
                 return null;
@@ -193,14 +188,13 @@ public class TypeArgInferenceUtil {
             AnnotatedExecutableType constructor = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, constructorElt);
             int treeIndex = -1;
             for (int i = 0; i < constructor.getParameterTypes().size(); ++i) {
-                ExpressionTree argumentTree = newClassTree.getArguments().get(i);
-                if (isArgument(path, argumentTree)) {
+                if (TreeUtils.skipParens(newClassTree.getArguments().get(i)) == path.getLeaf()) {
                     treeIndex = i;
                     break;
                 }
             }
 
-            assert treeIndex != -1 :  "Could not find path in NewClassTree.\n"
+            assert treeIndex != -1 :  "Could not find path in NewClassTre."
                     + "treePath=" + path.toString() + "\n"
                     + "methodInvocation=" + newClassTree;
             if (treeIndex == -1) {
@@ -228,24 +222,6 @@ public class TypeArgInferenceUtil {
         ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
         return null; // dead code
     }
-
-    /**
-     * Returns whether argumentTree is the tree at the leaf of path.
-     * if tree is a conditional expression, isArgument is called recursively on the true
-     * and false expressions.
-     */
-    private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
-        argumentTree = TreeUtils.skipParens(argumentTree);
-        if (argumentTree == path.getLeaf()) {
-            return true;
-        } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
-            ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) argumentTree;
-            return isArgument(path, conditionalExpressionTree.getTrueExpression())
-                   || isArgument(path, conditionalExpressionTree.getFalseExpression());
-        }
-        return false;
-    }
-
     /**
      * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
      * Rational:
