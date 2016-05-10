@@ -20,5 +20,4 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf( { } )
 @DefaultQualifierInHierarchy
-@ImplicitFor(types = {TypeKind.BOOLEAN})
 public @interface UnknownSignedness { }

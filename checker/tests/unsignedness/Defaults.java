@@ -182,7 +182,9 @@ public class Defaults {
 
         //:: error: (assignment.type.incompatible)
         sinObj = testObj;
-        
-        //boolean testBool = unsigned == 1 || signed > 1;
+    }
+    
+    public void booleanProblem(@Unsigned int unsigned, @Signed int signed) {
+        boolean testBool = unsigned == 1 || signed > 1;
     }
 }
