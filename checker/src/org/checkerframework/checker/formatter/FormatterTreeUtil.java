@@ -386,12 +386,17 @@ public class FormatterTreeUtil {
 
     /**
      * Takes a syntax tree element that represents a {@link Format} annotation,
-     * and returns its value.
+     * and returns its value. Returns null (instead of an empty array) if the
+     * {@code Format} annotation's value is empty.
      */
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
+        AnnotationValue av = AnnotationUtils.getElementValuesWithDefaults(anno).get(formatArgTypesElement);
+        if (av == null) {
+        	return null;
+        }
+
         @SuppressWarnings("unchecked")
-        List<? extends AnnotationValue> vals = (List<? extends AnnotationValue>)
-        AnnotationUtils.getElementValuesWithDefaults(anno).get(formatArgTypesElement).getValue();
+        List<? extends AnnotationValue> vals = (List<? extends AnnotationValue>) av.getValue();
 
         ConversionCategory[] argTypes = new ConversionCategory[vals.size()];
         for (int i = 0; i < vals.size(); ++i) {

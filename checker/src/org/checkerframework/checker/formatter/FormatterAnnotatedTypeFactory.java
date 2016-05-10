@@ -114,14 +114,18 @@ public class FormatterAnnotatedTypeFactory extends
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (AnnotationUtils.areSameIgnoringValues(rhs, FORMAT) &&
-                AnnotationUtils.areSameIgnoringValues(lhs, FORMAT))
-            {
+                AnnotationUtils.areSameIgnoringValues(lhs, FORMAT)) {
                 ConversionCategory[] rhsArgTypes =
                         treeUtil.formatAnnotationToCategories(rhs);
                 ConversionCategory[] lhsArgTypes =
                         treeUtil.formatAnnotationToCategories(lhs);
 
-                if (rhsArgTypes.length != lhsArgTypes.length) {
+                if (rhsArgTypes == null && lhsArgTypes == null) {
+                	return true;
+                }
+
+                if (rhsArgTypes == null || lhsArgTypes == null ||
+                    rhsArgTypes.length != lhsArgTypes.length) {
                     return false;
                 }
 
@@ -146,6 +150,52 @@ public class FormatterAnnotatedTypeFactory extends
             }
 
             return super.isSubtype(rhs, lhs);
+        }
+
+        @Override
+        public AnnotationMirror greatestLowerBound(AnnotationMirror anno1,
+                AnnotationMirror anno2) {
+            if (AnnotationUtils.areSameIgnoringValues(anno1, FORMAT) &&
+                AnnotationUtils.areSameIgnoringValues(anno2, FORMAT)) {
+                ConversionCategory[] anno1ArgTypes =
+                        treeUtil.formatAnnotationToCategories(anno1);
+                ConversionCategory[] anno2ArgTypes =
+                        treeUtil.formatAnnotationToCategories(anno2);
+
+                if (anno1ArgTypes == null && anno2ArgTypes == null) {
+                	return FORMAT;
+                }
+
+                if (anno1ArgTypes == null || anno2ArgTypes == null) {
+                    return FORMATBOTTOM; // TODO: Should this be InvalidFormat instead?
+                }
+
+
+                if (anno1ArgTypes.length != anno2ArgTypes.length) {
+                    return FORMATBOTTOM; // TODO: Should this be InvalidFormat instead? (Different situation from the if statement above)
+                }
+
+                ConversionCategory[] anno3ArgTypes =
+                        new ConversionCategory[anno2ArgTypes.length];
+
+                for (int i = 0; i < anno2ArgTypes.length; ++i) {
+                	anno3ArgTypes[i] = ConversionCategory.union(anno1ArgTypes[i], anno2ArgTypes[i]);
+                }
+                return treeUtil.categoriesToFormatAnnotation(anno3ArgTypes);
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno1, FORMAT)) {
+            	anno1 = FORMAT;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno2, FORMAT)) {
+            	anno2 = FORMAT;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT)) {
+            	anno1 = INVALIDFORMAT;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
+            	anno2 = INVALIDFORMAT;
+            }
+            return super.greatestLowerBound(anno1, anno2);
         }
     }
 }

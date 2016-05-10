@@ -850,6 +850,14 @@
         </antcall>
     </target>
 
+    <target name="formatter-glb-tests" depends="jar,build-tests"
+            description="Run test to ensure that the Formatter Checker computes GLB correctly">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FormatterGlbCheckerTest"/>
+        </antcall>
+    </target>
+
+
     <target name="i18n-formatter-tests" depends="jar,build-tests"
             description="Run tests for the Internationalization Formatter checker">
         <antcall target="-run-tests">
