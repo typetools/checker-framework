@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 /**
- * An ordered set of Defaults (see {@link org.checkerframework.framework.util.defaults.Default}
+ * An ordered set of Defaults (see {@link org.checkerframework.framework.util.defaults.Default}).
  * This class provides a little syntactic sugar and a better toString over TreeSet.
  */
 @SuppressWarnings("serial")
