@@ -2671,7 +2671,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     overrider.getReceiverType().getErased().shallowCopy(false);
             overriddenReceiver.addAnnotations(overridden.getReceiverType().getAnnotations());
             if (!atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(overriddenReceiver,
-                                                                        overrider.getReceiverType().getErased())) {
+                    overrider.getReceiverType().getErased())) {
+
                 checker.report(Result.failure("override.receiver.invalid",
                                 overriderMeth, overriderTyp, overriddenMeth, overriddenTyp,
                                 overrider.getReceiverType(),

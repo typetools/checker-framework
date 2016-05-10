@@ -165,7 +165,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      */
     @Override
     public boolean isSubtypeOrConvertible(final AnnotatedTypeMirror subtype, final AnnotatedTypeMirror supertype,
-                                          final AnnotationMirror top) {
+                          final AnnotationMirror top) {
         currentTop = top;
         return isSubtypeOrConvertible(subtype, supertype, new VisitHistory());
     }
