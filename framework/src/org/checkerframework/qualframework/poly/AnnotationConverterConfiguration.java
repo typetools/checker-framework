@@ -25,19 +25,19 @@ public class AnnotationConverterConfiguration<Q> {
     /**
      * Construct a configuration object
      *
-     * @param lowerOp The operation to perform on the lower bound when combining annotations
-     * @param upperOp The operation to perform on the upper bound when combining annotations
-     * @param multiAnnoNamePrefix The package and class name prefix for repeatable annotations
-     * @param supportedAnnotationNames A list of supported annotations specific to the type system
-     * @param specialCaseAnnotations A list of annotations to be processed solely by the specialCaseProcess method
-     * @param classAnno The annotation for class parameter declaration
-     * @param methodAnno The annotation for method parameter declaration
-     * @param polyAnno The poly annotation for the type system
-     * @param varAnno The polymorphic qualifier use variable
-     * @param wildAnno The annotation for specifying a wildcard
-     * @param top The top qualifier in the system
-     * @param bottom The bottom qualifier in the system
-     * @param defaultQual The qualifier to use if no annotations result in a qualifier.
+     * @param lowerOp the operation to perform on the lower bound when combining annotations
+     * @param upperOp the operation to perform on the upper bound when combining annotations
+     * @param multiAnnoNamePrefix the package and class name prefix for repeatable annotations
+     * @param supportedAnnotationNames a list of supported annotations specific to the type system
+     * @param specialCaseAnnotations a list of annotations to be processed solely by the specialCaseProcess method
+     * @param classAnno the annotation for class parameter declaration
+     * @param methodAnno the annotation for method parameter declaration
+     * @param polyAnno the poly annotation for the type system
+     * @param varAnno the polymorphic qualifier use variable
+     * @param wildAnno the annotation for specifying a wildcard
+     * @param top the top qualifier in the system
+     * @param bottom the bottom qualifier in the system
+     * @param defaultQual the qualifier to use if no annotations result in a qualifier
      */
     public AnnotationConverterConfiguration(CombiningOperation<Q> lowerOp,
             CombiningOperation<Q> upperOp,

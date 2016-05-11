@@ -48,7 +48,7 @@ public class BoundsInitializer {
     /**
      * Create the entire lower bound and upper bound, with no missing information, for typeVar.  If a typeVar is recursive
      * the appropriate cycles will be introduced in the type
-     * @param typeVar The type variable whose lower bound is being initialized
+     * @param typeVar the type variable whose lower bound is being initialized
      */
     public static void initializeBounds(final AnnotatedTypeVariable typeVar) {
         final Set<AnnotationMirror> annos = saveAnnotations(typeVar);
@@ -96,7 +96,7 @@ public class BoundsInitializer {
     /**
      * Create the entire super bound, with no missing information, for wildcard.  If a wildcard is recursive
      * the appropriate cycles will be introduced in the type
-     * @param wildcard The wildcard whose lower bound is being initialized
+     * @param wildcard the wildcard whose lower bound is being initialized
      */
     public static void initializeSuperBound( final AnnotatedWildcardType wildcard ) {
         final Set<AnnotationMirror> annos = saveAnnotations(wildcard);
@@ -112,7 +112,7 @@ public class BoundsInitializer {
     /**
      * Create the entire extends bound, with no missing information, for wildcard.  If a wildcard is recursive
      * the appropriate cycles will be introduced in the type
-     * @param wildcard The wildcard whose extends bound is being initialized
+     * @param wildcard the wildcard whose extends bound is being initialized
      */
     public static void initializeExtendsBound( final AnnotatedWildcardType wildcard ) {
         final Set<AnnotationMirror> annos = saveAnnotations(wildcard);

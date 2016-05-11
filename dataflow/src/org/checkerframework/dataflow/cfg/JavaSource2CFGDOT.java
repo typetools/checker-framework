@@ -188,8 +188,8 @@ public class JavaSource2CFGDOT {
     }
 
     /**
-     * @return The AST of a specific method in a specific class in a specific
-     *         file (or null if no such method exists).
+     * @return the AST of a specific method in a specific class in a specific
+     *         file (or null if no such method exists)
      */
     public static /*@Nullable*/ MethodTree getMethodTree(String file,
             final String method, String clas) {
@@ -197,7 +197,7 @@ public class JavaSource2CFGDOT {
     }
 
     /**
-     * @return The AST of a specific method in a specific class as well as the
+     * @return the AST of a specific method in a specific class as well as the
      *         {@link CompilationUnitTree} in a specific file (or null they do
      *         not exist).
      */

@@ -43,17 +43,17 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     }
 
     /**
-     * @param printVerboseGenerics For type parameters, their uses, and wildcards, print more information
-     * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
+     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more information
+     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
     public DefaultAnnotatedTypeFormatter(boolean printVerboseGenerics, boolean defaultPrintInvisibleAnnos) {
         this(new DefaultAnnotationFormatter(), printVerboseGenerics, defaultPrintInvisibleAnnos);
     }
 
     /**
-     * @param formatter An object that converts annotation mirrors to strings
-     * @param printVerboseGenerics For type parameters, their uses, and wildcards, print more information
-     * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
+     * @param formatter an object that converts annotation mirrors to strings
+     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more information
+     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
     public DefaultAnnotatedTypeFormatter(AnnotationFormatter formatter, boolean printVerboseGenerics,
                                          boolean defaultPrintInvisibleAnnos) {

@@ -284,7 +284,7 @@ public class AnnotationUtils {
      * Using Collection.contains does not always work, because it
      * does not use areSame for comparison.
      *
-     * @return true iff c contains anno, according to areSame.
+     * @return true iff c contains anno, according to areSame
      */
     public static boolean containsSame(Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
@@ -300,7 +300,7 @@ public class AnnotationUtils {
      * Using Collection.contains does not always work, because it
      * does not use areSame for comparison.
      *
-     * @return true iff c contains anno, according to areSameByClass.
+     * @return true iff c contains anno, according to areSameByClass
      */
     public static boolean containsSameByClass(Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
         for (AnnotationMirror an : c) {
@@ -316,7 +316,7 @@ public class AnnotationUtils {
      * Using Collection.contains does not always work, because it
      * does not use areSameIgnoringValues for comparison.
      *
-     * @return true iff c contains anno, according to areSameIgnoringValues.
+     * @return true iff c contains anno, according to areSameIgnoringValues
      */
     public static boolean containsSameIgnoringValues(Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
@@ -451,7 +451,7 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param name the name of the attribute to access
      * @param expectedType the expected type used to cast the return type
-     * @param useDefaults whether to apply default values to the attribute.
+     * @param useDefaults whether to apply default values to the attribute
      * @return the value of the attribute with the given name
      */
     public static <T> T getElementValue(AnnotationMirror anno, CharSequence name,
@@ -495,7 +495,7 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param name the name of the attribute to access
      * @param expectedType the expected type used to cast the return type
-     * @param useDefaults whether to apply default values to the attribute.
+     * @param useDefaults whether to apply default values to the attribute
      * @return the value of the attribute with the given name
      */
     public static <T> List<T> getElementValueArray(AnnotationMirror anno,
@@ -582,7 +582,7 @@ public class AnnotationUtils {
      * Callers should check that {@code constructorDeclaration} is in fact a declaration
      * of a constructor.
      *
-     * @param constructorDeclaration Declaration tree of constructor
+     * @param constructorDeclaration declaration tree of constructor
      * @return set of annotations explicit on the resulting type of the constructor
      */
     public static Set<AnnotationMirror> getExplicitAnnotationsOnConstructorResult(MethodTree constructorDeclaration) {

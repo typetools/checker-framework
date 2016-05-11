@@ -206,8 +206,8 @@ Here is an example of one good way to proceed.
   void foo(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
-    @NonNegative int c = us;
-    @NonNegative int d = nn;  // expected error on this line
+    @NonNegative int c = us;  // expected error on this line
+    @NonNegative int d = nn;
   }
 \end{Verbatim}
 

@@ -61,13 +61,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * Neither this method nor visit should be called directly by a visitor,
      * only use {@link BaseTypeVisitor#validateTypeOf(Tree)}.
      *
-     * @param type The type to validate.
-     * @param tree The tree from which the type originated.
+     * @param type the type to validate
+     * @param tree the tree from which the type originated.
      *   Note that the tree might be a method tree - the
      *     return type should then be validated.
      *   Note that the tree might be a variable tree - the
      *     field type should then be validated.
-     * @return True, iff the type is valid.
+     * @return true, iff the type is valid
      */
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
@@ -488,7 +488,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     /**
      * Determines if there are multiple qualifiers from a single hierarchy in type's
-     * primary annotations.  If so, report an error
+     * primary annotations.  If so, report an error.
      * @param type the type to check
      * @param tree tree on which an error is reported
      * @return true if an error was reported

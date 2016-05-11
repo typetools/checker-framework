@@ -81,7 +81,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * @return The {@link Node} to which the {@link Tree} <code>t</code>
+     * @return the {@link Node} to which the {@link Tree} <code>t</code>
      *         corresponds.
      */
     public Node getNodeCorrespondingToTree(Tree t) {
@@ -92,7 +92,7 @@ public class ControlFlowGraph {
         }
     }
 
-    /** @return The entry block of the control flow graph. */
+    /** @return the entry block of the control flow graph. */
     public SpecialBlock getEntryBlock() {
         return entryBlock;
     }
@@ -109,13 +109,13 @@ public class ControlFlowGraph {
         return exceptionalExitBlock;
     }
 
-    /** @return The AST this CFG corresponds to. */
+    /** @return the AST this CFG corresponds to. */
     public UnderlyingAST getUnderlyingAST() {
         return underlyingAST;
     }
 
     /**
-     * @return The set of all basic block in this control flow graph.
+     * @return the set of all basic block in this control flow graph
      */
     public Set<Block> getAllBlocks() {
         Set<Block> visited = new HashSet<>();
@@ -163,7 +163,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * @return The list of all basic block in this control flow graph
+     * @return the list of all basic block in this control flow graph
      * in reversed depth-first postorder sequence.
      *
      * Blocks may appear more than once in the sequence.
@@ -218,7 +218,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * @return The tree-lookup map.
+     * @return the tree-lookup map
      */
     public IdentityHashMap<Tree, Node> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);

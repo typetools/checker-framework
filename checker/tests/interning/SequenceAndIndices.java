@@ -16,7 +16,7 @@ public final class SequenceAndIndices<T extends @Interned Object> {
   public int end;
 
   /**
-   * @param seqpar An interned array
+   * @param seqpar an interned array
    */
   public SequenceAndIndices (T seqpar, int start, int end) {
     this.seq = seqpar;

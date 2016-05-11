@@ -49,9 +49,9 @@ public class TypesIntoElements {
     /**
      * The entry point.
      *
-     * @param processingEnv The environment.
-     * @param atypeFactory The type factory.
-     * @param tree The ClassTree to process.
+     * @param processingEnv the environment
+     * @param atypeFactory the type factory
+     * @param tree the ClassTree to process
      */
     public static void store(ProcessingEnvironment processingEnv, AnnotatedTypeFactory atypeFactory, ClassTree tree) {
         Symbol.ClassSymbol csym = (Symbol.ClassSymbol) TreeUtils.elementFromDeclaration(tree);

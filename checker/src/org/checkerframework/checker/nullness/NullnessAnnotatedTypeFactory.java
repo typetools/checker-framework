@@ -217,8 +217,8 @@ public class NullnessAnnotatedTypeFactory
      * }
      * </pre>
      *
-     * @param lhsType  Type to replace whose polymorphic qualifier will be replaced
-     * @param context Tree used to get dataflow value
+     * @param lhsType  type to replace whose polymorphic qualifier will be replaced
+     * @param context tree used to get dataflow value
      */
     protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
         if (lhsType.hasAnnotation(PolyNull.class)
@@ -481,7 +481,7 @@ public class NullnessAnnotatedTypeFactory
 
 
     /**
-     * @return The list of annotations of the non-null type system.
+     * @return the list of annotations of the non-null type system
      */
     public Set<Class<? extends Annotation>> getNullnessAnnotations() {
         return nullnessAnnos;

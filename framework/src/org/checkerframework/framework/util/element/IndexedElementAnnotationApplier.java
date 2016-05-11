@@ -31,8 +31,8 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
      * A TypeAnnotationPosition has a number of different indexes (type_index, bound_index, param_index)
      * Return the index we are interested in.  If offsetting needs to be done it should be done in getElementIndex
      * not here. (see ElementAnnotationUtils.getBoundIndexOffset )
-     * @param anno An annotation we might wish to apply
-     * @return The index value this applier compares against the getElementIndex
+     * @param anno an annotation we might wish to apply
+     * @return the index value this applier compares against the getElementIndex
      */
     public abstract int getTypeCompoundIndex(final Attribute.TypeCompound anno);
 

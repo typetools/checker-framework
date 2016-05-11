@@ -37,9 +37,9 @@ public class SupertypesSolver {
 
     /**
      * Infers type arguments using supertype constraints.
-     * @param remainingTargets Targets for which we still need to infer a value.
-     * @param constraintMap The set of constraints for all targets.
-     * @return A mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
+     * @param remainingTargets targets for which we still need to infer a value
+     * @param constraintMap the set of constraints for all targets
+     * @return a mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
      *         and will not infer that the target is equivalent to another target
      */
     public InferenceResult solveFromSupertypes(final Set<TypeVariable> remainingTargets,
@@ -188,9 +188,9 @@ public class SupertypesSolver {
 
     /**
      * For each target, lub all of the types/annotations in its supertypes constraints and return the lubs
-     * @param remainingTargets Targets that do not already have an inferred type argument
-     * @param constraintMap The set of constraints for all targets.
-     * @return The lub determined for each target that has at least 1 supertype constraint
+     * @param remainingTargets targets that do not already have an inferred type argument
+     * @param constraintMap the set of constraints for all targets
+     * @return the lub determined for each target that has at least 1 supertype constraint
      */
     private Lubs targetToTypeLubs(Set<TypeVariable> remainingTargets,
                                   ConstraintMap constraintMap,
@@ -373,9 +373,9 @@ public class SupertypesSolver {
     }
 
     /**
-     * @param annos A set of annotations in the same annotation hierarchy
-     * @param qualifierHierarchy The qualifier hierarchy that contains each annotation
-     * @return The lub of all the annotations in annos
+     * @param annos a set of annotations in the same annotation hierarchy
+     * @param qualifierHierarchy the qualifier hierarchy that contains each annotation
+     * @return the lub of all the annotations in annos
      */
     private final static AnnotationMirror leastUpperBound(final Iterable<? extends AnnotationMirror> annos,
                                                            QualifierHierarchy qualifierHierarchy) {

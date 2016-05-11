@@ -628,7 +628,7 @@ public abstract class QualifiedTypeMirror<Q> {
 
         /**
          * @return if the primary qualifier in this QualifiedTypeVariable is valid
-         *      and should be used.
+         *      and should be used
          */
         public boolean isPrimaryQualifierValid() {
             return getUnderlyingType().getAnnotationMirrors().size() > 0;

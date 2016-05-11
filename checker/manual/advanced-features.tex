@@ -403,26 +403,23 @@ superclass member to be automatically inherited by subclasses that override
 it.  This feature would reduce both annotation effort and program
 comprehensibility.  In general, a program is read more often than it is
 edited/annotated, so the Checker Framework does not currently support this
-feature.  Here are more detailed justifications:
+feature.
 
-\begin{itemize}
+Currently, a user can determine the annotation on a parameter or return
+value by looking at a single file.  If annotations could be inherited from
+supertypes, then a user would have to examine all supertypes, and do
+computations over them, to understand the meaning of an unannotated type in
+a given file.
 
-\item
-  Currently, a user can determine the annotation on a parameter or return
-  value by looking at a single file.  If annotations could be inherited
-  from supertypes, then a user would have to examine all supertypes to
-  understand the meaning of an unannotated type in a given file.
+Computation is necessary because different annotations might be inherited
+from a supertype and an interface, or from two interfaces.  For return
+types, the inherited type should be the least upper bound of all
+annotations on overridden implementations in supertypes.  For method
+parameters, the inherited type should be the greatest lower bound of all
+annotations on overridden implementations in supertypes.  In each case, an
+error would be thrown if no such annotations existed.
 
-\item
-  Different annotations might be inherited from a supertype and an
-  interface, or from two interfaces.  The inheritance mechanism would need
-  to compute the greatest lower bound in the type system of all annotations
-  on supertypes, or an error would be thrown if no such annotations existed.
-
-\end{itemize}
-
-If these issues can be resolved, then the feature may be added in the
-future.  Or, it may be added optionally, and each type-checker
+In the future, this feature may be added optionally, and each type-checker
 implementation can enable it if desired.
 
 

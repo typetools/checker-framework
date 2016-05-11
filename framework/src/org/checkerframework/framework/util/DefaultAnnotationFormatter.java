@@ -17,7 +17,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     /**
      * Returns true if, by default, anno should not be printed
      * @see org.checkerframework.framework.qual.InvisibleQualifier
-     * @return True if anno's declaration was qualified by InvisibleQualifier.
+     * @return true if anno's declaration was qualified by InvisibleQualifier
      */
     public static boolean isInvisibleQualified(AnnotationMirror anno) {
         return ((TypeElement)anno.getAnnotationType().asElement()).getAnnotation(InvisibleQualifier.class) != null;
@@ -26,9 +26,9 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     /**
      * Creates a space String of each annotation in annos separated by a single space character,
      * obeying the printInvisible parameter.
-     * @param annos A collection of annotations to print
-     * @param printInvisible Whether or not to print "invisible" annotation mirrors
-     * @return The list of annotations converted to a String
+     * @param annos a collection of annotations to print
+     * @param printInvisible whether or not to print "invisible" annotation mirrors
+     * @return the list of annotations converted to a String
      */
     @SideEffectFree
     public String formatAnnotationString(Collection<? extends AnnotationMirror> annos, boolean printInvisible) {
@@ -48,7 +48,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
 
     /**
      *
-     * @param anno The annotation mirror to convert
+     * @param anno the annotation mirror to convert
      * @return the string representation of a single AnnotationMirror, without showing full package names
      */
     @SideEffectFree

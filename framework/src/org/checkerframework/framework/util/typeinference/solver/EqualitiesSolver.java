@@ -42,9 +42,9 @@ public class EqualitiesSolver {
      * We do this iteratively until NO new inferred type argument is found
      *
      *
-     * @param targets The list of type parameters for which we are inferring type arguments
-     * @param constraintMap The set of constraints over the set of targets
-     * @return A Map( {@code target -> inferred type or target })
+     * @param targets the list of type parameters for which we are inferring type arguments
+     * @param constraintMap the set of constraints over the set of targets
+     * @return a Map( {@code target -> inferred type or target })
      */
     public InferenceResult solveEqualities(Set<TypeVariable> targets, ConstraintMap constraintMap, AnnotatedTypeFactory typeFactory) {
         final InferenceResult solution = new InferenceResult();
@@ -90,7 +90,7 @@ public class EqualitiesSolver {
      * To do this, we find the TargetConstraints for Tj and add these constraints to the appropriate map
      * in TargetConstraints.  We can then clear the constraints for the current target since we have inferred a type.
      *
-     * @param target The target for which we have inferred a concrete type argument
+     * @param target the target for which we have inferred a concrete type argument
      * @param type the type inferred
      */
     private void rewriteWithInferredType(final TypeVariable target, final AnnotatedTypeMirror type, final ConstraintMap constraints) {
@@ -163,7 +163,7 @@ public class EqualitiesSolver {
      *
      * We then clear the constraints for Ti.
      *
-     * @param target The target for which we know another target is exactly equal to this target
+     * @param target the target for which we know another target is exactly equal to this target
      * @param inferredTarget the other target inferred to be equal
      */
     private void rewriteWithInferredTarget(final TypeVariable target, final TypeVariable inferredTarget, final ConstraintMap constraints,
@@ -238,12 +238,12 @@ public class EqualitiesSolver {
 
     /**
      *
-     * @param typesToHierarchies A mapping of (types &rarr; hierarchies) that indicate that the argument being inferred
+     * @param typesToHierarchies a mapping of (types &rarr; hierarchies) that indicate that the argument being inferred
      *                           is equal to the types in each of the hierarchies
-     * @param primaries A map (hierarchy &rarr; annotation in hierarchy) where the annotation in hierarchy is equal to
+     * @param primaries a map (hierarchy &rarr; annotation in hierarchy) where the annotation in hierarchy is equal to
      *                  the primary annotation on the argument being inferred
-     * @param tops The set of top annotations in the qualifier hierarchy
-     * @return A concrete type argument or null if there was not enough information to infer one
+     * @param tops the set of top annotations in the qualifier hierarchy
+     * @return a concrete type argument or null if there was not enough information to infer one
      */
     private InferredType mergeTypesAndPrimaries(
             Map<AnnotatedTypeMirror, Set<AnnotationMirror>> typesToHierarchies,

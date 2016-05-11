@@ -25,7 +25,7 @@ public abstract class BlockImpl implements Block {
     protected Set<BlockImpl> predecessors;
 
     /**
-     * @return A fresh identifier.
+     * @return a fresh identifier
      */
     private static long uniqueID() {
         return lastId++;
@@ -46,7 +46,7 @@ public abstract class BlockImpl implements Block {
     }
 
     /**
-     * @return The list of predecessors of this basic block.
+     * @return the list of predecessors of this basic block
      */
     public Set<BlockImpl> getPredecessors() {
         return Collections.unmodifiableSet(predecessors);

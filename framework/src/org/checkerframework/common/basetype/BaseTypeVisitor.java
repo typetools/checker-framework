@@ -959,8 +959,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Checks that all the given {@code preconditions} hold true immediately prior to
      * the method invocation or variable access at {@code tree}.
      *
-     * @param tree the Tree immediately prior to which the preconditions must hold true.
-     * @param preconditions the preconditions to be checked.
+     * @param tree the Tree immediately prior to which the preconditions must hold true
+     * @param preconditions the preconditions to be checked
      */
     protected void checkPreconditions(Tree tree, Set<Pair<String, String>> preconditions) {
         // This check is needed for the GUI effects and Units Checkers tests to pass.
@@ -978,8 +978,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * with respect to {@code treeForErrorReporting}, which does not need to correspond to {@code node}.
      *
      * @param treeForErrorReporting the Tree used to report the error via checker.report.
-     * @param node the Node immediately prior to which the preconditions must hold true.
-     * @param preconditions the preconditions to be checked.
+     * @param node the Node immediately prior to which the preconditions must hold true
+     * @param preconditions the preconditions to be checked
      */
     protected void checkPreconditions(Tree treeForErrorReporting,
             Node node, Set<Pair<String, String>> preconditions) {
@@ -1086,11 +1086,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * It can be used by an overriding method for special handling of expressions
      * such as "itself" which may indicate a reference to {@code node}.
      *
-     * @param expression the flow expression string to be parsed.
-     * @param flowExprContext the flow expression context with respect to which the expression string is to be evaluated.
+     * @param expression the flow expression string to be parsed
+     * @param flowExprContext the flow expression context with respect to which the expression string is to be evaluated
      * @param node the Node immediately prior to which the preconditions checked by the calling method must hold true.
      * Used by overriding implementations. Allowed to be null.
-     * @param path the TreePath from which to obtain the scope relative to which local variables are parsed.
+     * @param path the TreePath from which to obtain the scope relative to which local variables are parsed
      * @param treeForErrorReporting the Tree used to report parsing errors via checker.report.
      * Used by overriding implementations.
      */
@@ -1717,7 +1717,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * (Default is top)
      *
-     * @return Set of annotation mirrors, one per hierarchy, that from a lower
+     * @return set of annotation mirrors, one per hierarchy, that from a lower
      *         bound of annotations that can be written on an exception
      *         parameter
      */
@@ -1806,8 +1806,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      *
      * (Default is top)
      *
-     * @return Set of annotation mirrors, one per hierarchy, that form an upper
-     *         bound of thrown expressions.
+     * @return set of annotation mirrors, one per hierarchy, that form an upper
+     *         bound of thrown expressions
      */
     protected Set<? extends AnnotationMirror> getThrowUpperBoundAnnotations() {
         return getExceptionParameterLowerBoundAnnotations();
@@ -2263,10 +2263,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Type checks that a method may override another method.
      * Uses the OverrideChecker class.
      *
-     * @param overriderTree Declaration tree of overriding method
-     * @param overridingType Type of overriding class
-     * @param overridden Type of overridden method
-     * @param overriddenType Type of overridden class
+     * @param overriderTree declaration tree of overriding method
+     * @param overridingType type of overriding class
+     * @param overridden type of overridden method
+     * @param overriddenType type of overridden class
      * @return true if the override is allowed
      */
     protected boolean checkOverride(MethodTree overriderTree,
@@ -2300,7 +2300,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that a method reference is allowed.
      * Using the OverrideChecker class.
      *
-     * @param memberReferenceTree The tree for the method reference
+     * @param memberReferenceTree the tree for the method reference
      * @return true if the method reference is allowed
      */
     protected boolean checkMethodReferenceAsOverride(MemberReferenceTree memberReferenceTree, Void p) {

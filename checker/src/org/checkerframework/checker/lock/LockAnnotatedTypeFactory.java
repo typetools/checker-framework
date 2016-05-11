@@ -346,8 +346,8 @@ public class LockAnnotatedTypeFactory
      * If no annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS
      * as the default for unchecked code.
      *
-     * @param element The method element.
-     * @param issueErrorIfMoreThanOnePresent Whether to issue an error if more than one side effect annotation is present on the method.
+     * @param element the method element
+     * @param issueErrorIfMoreThanOnePresent whether to issue an error if more than one side effect annotation is present on the method
      */
     // package-private
     SideEffectAnnotation methodSideEffectAnnotation(Element element, boolean issueErrorIfMoreThanOnePresent) {
@@ -391,8 +391,8 @@ public class LockAnnotatedTypeFactory
      * Returns the index on the GuardSatisfied annotation in the given AnnotatedTypeMirror.
      * Assumes atm is non-null and contains a GuardSatisfied annotation.
      *
-     * @param atm AnnotatedTypeMirror containing a GuardSatisfied annotation.
-     * @return The index on the GuardSatisfied annotation.
+     * @param atm AnnotatedTypeMirror containing a GuardSatisfied annotation
+     * @return the index on the GuardSatisfied annotation
      */
     // package-private
     int getGuardSatisfiedIndex(AnnotatedTypeMirror atm) {
@@ -403,8 +403,8 @@ public class LockAnnotatedTypeFactory
      * Returns the index on the given GuardSatisfied annotation.
      * Assumes am is non-null and is a GuardSatisfied annotation.
      *
-     * @param am AnnotationMirror for a GuardSatisfied annotation.
-     * @return The index on the GuardSatisfied annotation.
+     * @param am AnnotationMirror for a GuardSatisfied annotation
+     * @return the index on the GuardSatisfied annotation
      */
     // package-private
     int getGuardSatisfiedIndex(AnnotationMirror am) {
@@ -489,7 +489,7 @@ public class LockAnnotatedTypeFactory
      * in {@code atm} must have in order for the replacement to occur.
      * @param annotationInGuardedByHierarchy if the replacement occurs, the annotation in the {@code @GuardedBy}
      *  hierarchy in this parameter will be used for the replacement.
-     * @return true if the replacement occurred, false otherwise.
+     * @return true if the replacement occurred, false otherwise
      */
     private boolean replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(
             AnnotatedTypeMirror methodReturnAtm,

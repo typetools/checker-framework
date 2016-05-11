@@ -28,9 +28,9 @@ public class SubtypesSolver {
 
     /**
      * Infers type arguments using subtype constraints.
-     * @param remainingTargets Targets for which we still need to infer a value.
-     * @param constraints The set of constraints for all targets.
-     * @return A mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
+     * @param remainingTargets targets for which we still need to infer a value
+     * @param constraints the set of constraints for all targets
+     * @return a mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
      *         and will not infer that the target is equivalent to another target
      */
     public InferenceResult solveFromSubtypes(final Set<TypeVariable> remainingTargets, final ConstraintMap constraints,
@@ -151,9 +151,9 @@ public class SubtypesSolver {
 
 
     /**
-     * @param annos A set of annotations in the same annotation hierarchy
-     * @param qualifierHierarchy The qualifier of the annotation hierarchy
-     * @return The GLB of annos
+     * @param annos a set of annotations in the same annotation hierarchy
+     * @param qualifierHierarchy the qualifier of the annotation hierarchy
+     * @return the GLB of annos
      */
     private final AnnotationMirror greatestLowerBound(final Iterable<? extends AnnotationMirror> annos,
                                                       QualifierHierarchy qualifierHierarchy) {

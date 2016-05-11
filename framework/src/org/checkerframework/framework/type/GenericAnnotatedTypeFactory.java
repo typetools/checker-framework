@@ -404,7 +404,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * checker's supported qualifier set. The names are alphabetically sorted.
      *
      * @return a string containing the number of qualifiers and canonical names
-     *         of each qualifier.
+     *         of each qualifier
      */
     protected final String getSortedQualifierNames() {
         // Create a list of the supported qualifiers and sort the list
@@ -618,7 +618,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the regular exit store for a method or another code block (such as static initializers).
      *
-     * @return The regular exit store, or {@code null}, if there is no such
+     * @return the regular exit store, or {@code null}, if there is no such
      *         store (because the method cannot exit through the regular exit
      *         block).
      */
@@ -627,7 +627,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @return All return node and store pairs for a given method.
+     * @return all return node and store pairs for a given method
      */
     public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
             MethodTree methodTree) {
@@ -636,7 +636,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @return The store immediately before a given {@link Tree}.
+     * @return the store immediately before a given {@link Tree}.
      */
     public Store getStoreBefore(Tree tree) {
         if (analyses == null || analyses.isEmpty()) {
@@ -654,7 +654,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @return The store immediately before a given {@link Node}.
+     * @return the store immediately before a given {@link Node}.
      */
     public Store getStoreBefore(Node node) {
         if (analyses == null || analyses.isEmpty()) {
@@ -670,7 +670,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @return The store immediately after a given {@link Tree}.
+     * @return the store immediately after a given {@link Tree}.
      */
     public Store getStoreAfter(Tree tree) {
         if (analyses == null || analyses.isEmpty()) {
@@ -683,14 +683,14 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @return The {@link Node} for a given {@link Tree}.
+     * @return the {@link Node} for a given {@link Tree}.
      */
     public Node getNodeForTree(Tree tree) {
         return flowResult.getNodeForTree(tree);
     }
 
     /**
-     * @return The value of effectively final local variables.
+     * @return the value of effectively final local variables
      */
     public HashMap<Element, Value> getFinalLocalValues() {
         return flowResult.getFinalLocalValues();
@@ -849,8 +849,8 @@ public abstract class GenericAnnotatedTypeFactory<
      *            The abstract values for all fields of the same class.
      * @param ast
      *            The AST to analyze.
-     * @param currentClass The class we are currently looking at.
-     * @param isInitializationCode Are we analyzing a (non-static) initializer block of a class.
+     * @param currentClass the class we are currently looking at
+     * @param isInitializationCode are we analyzing a (non-static) initializer block of a class
      */
     protected void analyze(Queue<ClassTree> queue,
             Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
@@ -1075,7 +1075,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *     <li>tree is a {@link ClassTree}</li>
      *     <li>Flow analysis has not already been performed on tree</li>
      * </ul>
-     * @param tree the tree to check and possibly perform flow analysis on.
+     * @param tree the tree to check and possibly perform flow analysis on
      */
     protected void checkAndPerformFlowAnalysis(Tree tree) {
         // For performance reasons, we require that getAnnotatedType is called

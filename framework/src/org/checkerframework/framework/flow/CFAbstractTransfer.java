@@ -171,7 +171,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     }
 
     /**
-     * @return The abstract value of a non-leaf tree {@code tree}, as computed
+     * @return the abstract value of a non-leaf tree {@code tree}, as computed
      *         by the {@link AnnotatedTypeFactory}.
      */
     protected V getValueFromFactory(Tree tree, Node node) {
@@ -215,7 +215,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     }
 
     /**
-     * @return An abstract value with the given {@code type} and the annotations
+     * @return an abstract value with the given {@code type} and the annotations
      *         from {@code annotatedValue}.
      */
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
@@ -701,7 +701,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      *            If true, indicates that the logic is flipped (i.e., the
      *            information is added to the {@code elseStore} instead of the
      *            {@code thenStore}) for a not-equal comparison.
-     * @return The conditional transfer result (if information has been added),
+     * @return the conditional transfer result (if information has been added),
      *         or {@code null}.
      */
     protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
