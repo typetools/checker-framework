@@ -651,7 +651,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     @Override
     public Boolean visitUnion_Intersection(AnnotatedUnionType subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
-        // <T extends Throwable & Cloneable> void method(T param){}
+        // <T extends Throwable & Cloneable> void method(T param) {}
         // ...
         // catch (Exception1 | Exception2 union) { // Assuming Exception1 and Exception2 implement Cloneable
         //   method(union);
@@ -662,7 +662,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     @Override
     public Boolean visitUnion_Union(AnnotatedUnionType subtype, AnnotatedUnionType supertype, VisitHistory visited) {
-        // <T> void method(T param){}
+        // <T> void method(T param) {}
         // ...
         // catch (Exception1 | Exception2 union) {
         //   method(union);
