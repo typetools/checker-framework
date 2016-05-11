@@ -2808,12 +2808,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 AnnotatedTypes.overriddenMethods(elements, this, elt);
 
         if (overriddenMethods != null) {
-            for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair : overriddenMethods.entrySet()) {
-                // Getting annotations from super implementation.
-                AnnotatedDeclaredType overriddenType = pair.getKey();
-                AnnotatedExecutableType overriddenMethod =
-                        AnnotatedTypes.asMemberOf(types, this, overriddenType, pair.getValue());
-                ExecutableElement superElt = overriddenMethod.getElement();
+            for ( ExecutableElement superElt : overriddenMethods.values()) {
                 Set<AnnotationMirror> superAnnos = getDeclAnnotations(superElt);
 
                 for (AnnotationMirror annotation : superAnnos) {
