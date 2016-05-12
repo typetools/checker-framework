@@ -409,7 +409,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
         return null;
       }
-  
+
       @Override
       public Void visit(ReferenceType type, InnerTypeLocation loc) {
         InnerTypeLocation ext = loc;
@@ -424,7 +424,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
         return null;
       }
-  
+
       @Override
       public Void visit(WildcardType type, InnerTypeLocation loc) {
         ReferenceType lower = type.getExtends();
@@ -439,7 +439,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
         return null;
       }
-  
+
       private void visitInnerType(Type type, InnerTypeLocation loc) {
         visitInnerType(type, loc, type.getAnnotations());
       }
@@ -488,7 +488,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
         return "L" + typeName + ";";
       }
-  
+
       @Override
       public String visit(PrimitiveType type, Void v) {
         switch (type.getType()) {
@@ -513,7 +513,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
               "baseTypeName(): unknown primitive type " + type);
         }
       }
-  
+
       @Override
       public String visit(ReferenceType type, Void v) {
         String typeName = type.getType().accept(this, null);
@@ -523,12 +523,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         sb.append(typeName);
         return sb.toString();
       }
-  
+
       @Override
       public String visit(VoidType type, Void v) {
         return "V";
       }
-  
+
       @Override
       public String visit(WildcardType type, Void v) {
         return "Ljava/lang/Object;";
