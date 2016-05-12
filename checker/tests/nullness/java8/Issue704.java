@@ -2,8 +2,6 @@
 // https://github.com/typetools/checker-framework/issues/704
 // @below-java8-jdk-skip-test
 
-// @skip-test
-
 import java.util.function.IntSupplier;
 
 interface Issue704 {

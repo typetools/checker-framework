@@ -164,6 +164,28 @@
     </fail>
   </target>
 
+  <fileset id="formatted.java.files" dir="." includes="**/*.java" excludes="**/checker/jdk/,**/stubparser/,**/eclipse/"/>
+
+  <!-- Allow 30 seconds for either formatting task to complete. -->
+
+  <target name="reformat"
+	  description="Reformat Java code">
+    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true"/>
+    <apply executable="python" parallel="true" failonerror="true">
+      <arg value="./checker/bin-devel/run-google-java-format.py"/>
+      <fileset refid="formatted.java.files"/>
+    </apply>
+  </target>
+
+  <target name="check-format"
+	  description="Check Java code formatting">
+    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true"/>
+    <apply executable="python" parallel="true" failonerror="true">
+      <arg value="./checker/bin-devel/check-google-java-format.py"/>
+      <fileset refid="formatted.java.files"/>
+    </apply>
+  </target>
+
   <target name="tags"
           description="Generate TAGS file">
     <ant dir="checker">
