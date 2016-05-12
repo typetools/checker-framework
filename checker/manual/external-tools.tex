@@ -787,11 +787,12 @@ documentation at \myurl{http://tide.olympe.in/}.
 \end{sloppypar}
 
 
-\section{Type inference tools\label{type-inference-tools}}
-
-\subsection{Varieties of type inference\label{type-inference-varieties}}
+\section{Type inference tools\label{type-inference-varieties}}
 
 There are two different tasks that are commonly called ``type inference''.
+You are probably interested in type inference to annotate a program's
+source code; see Section~\ref{type-inference-to-annotate}.  This section
+expalins the two different varieties of type inference.
 
 \begin{enumerate}
 \item
@@ -872,25 +873,6 @@ The programmer still has to
 put in some effort, but much less than without inference:  typically, a
 programmer does not have to write any qualifiers
 inside the body of a method.
-
-
-\subsection{Type inference to annotate a program\label{type-inference-to-annotate}}
-
-This section lists tools that take a program and output a set of
-annotations for it.
-
-Section~\ref{nullness-inference} lists several tools that infer
-annotations for the Nullness Checker.
-
-\href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
-is an Eclipse plugin that implements interactive type qualifier inference.
-Cascade is interactive rather than fully-automated:  it makes it easier for
-a developer to insert annotations.
-Cascade starts with an unannotated program and runs a type-checker.  For each
-warning it suggests multiple fixes, the developer chooses a fix, and
-Cascade applies it.  Cascade works with any checker built on the Checker
-Framework.
-You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
 
 
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
