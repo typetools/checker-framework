@@ -119,6 +119,10 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     delete_path(path_to_artifacts)
 
 def check_results(title, output_log, expected_errors):
+    """Verify the given actual output of a sanity check against the given expected output."
+    "If the sanity check passed, print the given title of the sanity check and a success message."
+    "If the sanity check failed, raise an exception whose text contains the given title of"
+    "the sanity check and the actual and expected output."""
     found_errors = are_in_file(output_log, expected_errors)
 
     if not found_errors:
