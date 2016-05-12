@@ -588,7 +588,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         int n = a0.length-1;
         String[] a = Arrays.copyOf(a0, n + a1.length);
         for (int i = 0; i < a1.length; i++) { a[n+i] = a1[i]; }
-        return String.join(".", a);
+        // In Java 8, can write: return String.join(".", a);
+        StringBuilder sb = new StringBuilder(a[0]);
+        for (int i = 1; i < a1.length; i++) {
+          sb.append(".");
+          sb.append(a[i]);
+        }
+        return sb.toString();
       } else {
         int i = a0.length;
         int n = i - a1.length;
