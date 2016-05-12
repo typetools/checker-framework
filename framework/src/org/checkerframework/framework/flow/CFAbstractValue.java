@@ -131,7 +131,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
             // 'null' is 'top'
             return true;
         }
-        return typeHierarchy.isSubtype(type, other.getType());
+        return typeHierarchy.isSubtypeOrConvertible(type, other.getType());
     }
 
     /**
@@ -143,7 +143,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
      * <p>
      * If neither of the two is more specific for one of the hierarchies (i.e.,
      * if the two are incomparable as determined by
-     * {@link TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}
+     * {@link TypeHierarchy#isSubtypeOrConvertible(AnnotatedTypeMirror, AnnotatedTypeMirror)}
      * , then the respective value from {@code backup} is used.
      *
      * <p>
@@ -372,10 +372,10 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements
 
         boolean annotated = true;
         for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-            if (typeHierarchy.isSubtype(fixedType1, fixedType2, top)) {
+            if (typeHierarchy.isSubtypeOrConvertible(fixedType1, fixedType2, top)) {
                 annotateTypeVarResult(qualifierHierarchy, types, result, fixedType1, top);
 
-            } else if (typeHierarchy.isSubtype(fixedType2, fixedType1, top)) {
+            } else if (typeHierarchy.isSubtypeOrConvertible(fixedType2, fixedType1, top)) {
                 annotateTypeVarResult(qualifierHierarchy, types, result, fixedType2, top);
 
             } else {

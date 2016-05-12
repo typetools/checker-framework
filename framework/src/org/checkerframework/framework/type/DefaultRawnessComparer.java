@@ -103,10 +103,10 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
         }
 
         if (currentTop == null) {
-            return typeHierarchy.isSubtype(subtypeUpper, supertypeUpper);
+            return typeHierarchy.isSubtypeOrConvertible(subtypeUpper, supertypeUpper);
         }
 
-        return typeHierarchy.isSubtype(subtypeUpper, supertypeUpper, currentTop);
+        return typeHierarchy.isSubtypeOrConvertible(subtypeUpper, supertypeUpper, currentTop);
     }
 
     @Override

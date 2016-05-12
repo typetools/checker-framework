@@ -452,7 +452,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
         for (AnnotationMirror top : tops) {
             System.out.println("Looking at top: " + tops + " and " + anno1);
             // We cannot use getRootAnnotation, as that would use subtyping and recurse
-            if (isSubtype(anno1, top) && AnnotationUtils.areSame(top, anno2)) {
+            if (isSubtypeOrConvertible(anno1, top) && AnnotationUtils.areSame(top, anno2)) {
             return true;
             }
         }*/

@@ -350,7 +350,7 @@ public class KeyForAnnotatedTypeFactory extends
       }
 
       @Override
-      public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
+      public boolean isSubtypeOrConvertible(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
 
           //TODO: THIS IS FROM THE OLD TYPE HIERARCHY.  WE SHOULD FIX DATA-FLOW/PROPAGATION TO DO THE RIGHT THING
           if (supertype.getKind() == TypeKind.TYPEVAR &&
@@ -366,7 +366,7 @@ public class KeyForAnnotatedTypeFactory extends
           if (subtype.hasAnnotation(KeyForBottom.class)) {
               return true;
           }
-          return super.isSubtype(subtype, supertype, visited);
+          return super.isSubtypeOrConvertible(subtype, supertype, visited);
       }
 
 

@@ -385,7 +385,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
                 for (AnnotationMirror aOnVar : onVar) {
                     if (upper.isAnnotatedInHierarchy(aOnVar) &&
-                            !checker.getQualifierHierarchy().isSubtype(aOnVar,
+                            !checker.getQualifierHierarchy().isSubtypeOrConvertible(aOnVar,
                                     upper.getAnnotationInHierarchy(aOnVar))) {
                         this.reportError(type, tree);
                     }
@@ -432,7 +432,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                 AnnotatedTypeMirror upper = type.getExtendsBoundField();
                 for (AnnotationMirror aOnVar : onVar) {
                     if (upper.isAnnotatedInHierarchy(aOnVar) &&
-                            !atypeFactory.getQualifierHierarchy().isSubtype(aOnVar,
+                            !atypeFactory.getQualifierHierarchy().isSubtypeOrConvertible(aOnVar,
                                     upper.getAnnotationInHierarchy(aOnVar))) {
                         this.reportError(type, tree);
                     }

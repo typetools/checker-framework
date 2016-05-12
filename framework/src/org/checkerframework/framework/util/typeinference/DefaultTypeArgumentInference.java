@@ -515,7 +515,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             if (equalityInferred != null && equalityInferred instanceof InferredType) {
 
                 if (supertypeInferred != null && supertypeInferred instanceof InferredType) {
-                    if (typeHierarchy.isSubtype(((InferredType) supertypeInferred).type, ((InferredType) equalityInferred).type)) {
+                    if (typeHierarchy.isSubtypeOrConvertible(((InferredType) supertypeInferred).type, ((InferredType) equalityInferred).type)) {
                         outputValue = equalityInferred;
                     } else {
                         outputValue = supertypeInferred;

@@ -1988,11 +1988,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
                 type.setTypeArguments(newArgs);
 
-                /* It would be nice to call isSubtype for a basic sanity check.
+                /* It would be nice to call isSubtypeOrConvertible for a basic sanity check.
                  * However, the type might not have been completely initialized yet,
-                 * so isSubtype might fail.
+                 * so isSubtypeOrConvertible might fail.
                  *
-                if (!typeHierarchy.isSubtype(type, ctxtype)) {
+                if (!typeHierarchy.isSubtypeOrConvertible(type, ctxtype)) {
                     // Simply taking the newArgs didn't result in a valid subtype.
                     // Give up and simply use the inferred types.
                     type.setTypeArguments(oldArgs);

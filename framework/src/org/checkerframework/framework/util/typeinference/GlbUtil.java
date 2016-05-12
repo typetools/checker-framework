@@ -96,7 +96,7 @@ public class GlbUtil {
         // there are two types  in glbTypes that are incomparable and we need to use bottom (AnnotatedNullType)
         boolean incomparable = false;
         for (final AnnotatedTypeMirror type : glbTypes) {
-            if (!incomparable && !typeHierarchy.isSubtype(glbType, type) && type.getKind() != TypeKind.NULL) {
+            if (!incomparable && !typeHierarchy.isSubtypeOrConvertible(glbType, type) && type.getKind() != TypeKind.NULL) {
                 incomparable = true;
             }
         }

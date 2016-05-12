@@ -30,7 +30,7 @@ public class UnitsVisitor extends BaseTypeVisitor<UnitsAnnotatedTypeFactory> {
         Kind kind = node.getKind();
 
         if ( (kind == Kind.PLUS_ASSIGNMENT || kind == Kind.MINUS_ASSIGNMENT)) {
-            if (!atypeFactory.getTypeHierarchy().isSubtype(exprType, varType)) {
+            if (!atypeFactory.getTypeHierarchy().isSubtypeOrConvertible(exprType, varType)) {
                 checker.report(Result.failure("compound.assignment.type.incompatible",
                         varType, exprType), node);
             }
