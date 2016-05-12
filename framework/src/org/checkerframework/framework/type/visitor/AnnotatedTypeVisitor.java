@@ -13,17 +13,17 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 
 /**
- * A Visitor class of annotated types, in the style of the visitor
- * design pattern.
+ * A visitor of annotated types, in the style of the visitor design pattern.
+ * <p>
  *
- * A visitor of types, in the style of the visitor design pattern.
  * Classes implementing this interface are used to operate on a type
  * when the kind of type is unknown at compile time. When a visitor is
  * passed to a type's accept method, the visitXYZ method most
  * applicable to that type is invoked.
+ * <p>
  *
  * Classes implementing this interface may or may not throw a
- * NullPointerException if the additional parameter p is null; see
+ * NullPointerException if the additional parameter p is {@code null}; see
  * documentation of the implementing class for details.
  *
  * @param <R>
