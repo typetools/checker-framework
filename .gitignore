@@ -38,6 +38,8 @@ checker/jdk/**/*.class
 *.pyc
 checker/build-temp
 checker/examples/**/*.class
+checker/bin-devel/check-google-java-format.py
+checker/bin-devel/run-google-java-format.py
 
 # manual files
 bib
