@@ -5,6 +5,10 @@ import org.checkerframework.checker.interning.qual.*;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+// The imports from com.sun, but they are all
+// @jdk.Exported and therefore somewhat safe to use.
+// Try to avoid using non-@jdk.Exported classes.
+
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
@@ -87,9 +91,6 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 
-// The following imports are from com.sun, but they are all
-//@jdk.Exported and therefore somewhat safe to use.
-// Try to avoid using non-@jdk.Exported classes.
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
