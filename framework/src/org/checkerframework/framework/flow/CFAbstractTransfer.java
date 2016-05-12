@@ -291,14 +291,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
             CFGLambda lambda = (CFGLambda) underlyingAST;
             Tree enclosingTree = TreeUtils.enclosingOfKind(factory.getPath(lambda.getLambdaTree()),
-                    new HashSet<>(Arrays.asList(Tree.Kind.METHOD, Tree.Kind.CLASS)));
+                    new HashSet<>(Arrays.asList(Tree.Kind.METHOD,
+                            // Tree.Kind for which TreeUtils.isClassTree is true
+                            Tree.Kind.CLASS, Tree.Kind.INTERFACE, Tree.Kind.ANNOTATION_TYPE, Tree.Kind.ENUM)));
 
             Element enclosingElement = null;
             if (enclosingTree.getKind() == Tree.Kind.METHOD) {
                 // If it is in an initializer, we need to use locals from the initializer.
                 enclosingElement = InternalUtils.symbol(enclosingTree);
 
-            } else if (enclosingTree.getKind() == Tree.Kind.CLASS) {
+            } else if (TreeUtils.isClassTree(enclosingTree)) {
 
                 // Try to find an enclosing initializer block
                 // Would love to know if there was a better way
