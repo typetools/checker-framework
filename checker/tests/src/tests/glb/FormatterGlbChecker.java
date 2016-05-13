@@ -1,4 +1,4 @@
-package tests;
+package tests.glb;
 
 // Test case for issue 691.
 // https://github.com/typetools/checker-framework/issues/691

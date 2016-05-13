@@ -10,10 +10,12 @@ import java.io.File;
 
 import org.junit.runners.Parameterized.Parameters;
 
+import tests.glb.FormatterGlbChecker;
+
 public class FormatterGlbCheckerTest extends CheckerFrameworkTest {
 
     public FormatterGlbCheckerTest(File testFile) {
-        super(testFile, FormatterGlbChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
+        super(testFile, glb.FormatterGlbChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
     }
 
     @Parameters
