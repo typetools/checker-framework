@@ -18,6 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.IllegalFormatException;
@@ -392,7 +393,7 @@ public class FormatterTreeUtil {
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
         AnnotationValue av = AnnotationUtils.getElementValuesWithDefaults(anno).get(formatArgTypesElement);
         if (av == null) {
-        	return null;
+        	ErrorReporter.errorAbort("Expected: a @Format annotation with a non-null value. Actual: " + anno.toString());
         }
 
         @SuppressWarnings("unchecked")

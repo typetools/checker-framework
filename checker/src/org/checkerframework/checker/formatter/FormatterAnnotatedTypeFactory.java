@@ -40,6 +40,7 @@ import com.sun.source.tree.Tree;
 public class FormatterAnnotatedTypeFactory extends
         GenericAnnotatedTypeFactory<CFValue, CFStore, FormatterTransfer, FormatterAnalysis> {
 
+    private final AnnotationMirror UNKNOWNFORMAT;
     private final AnnotationMirror FORMAT;
     private final AnnotationMirror INVALIDFORMAT;
     private final AnnotationMirror FORMATBOTTOM;
@@ -49,6 +50,7 @@ public class FormatterAnnotatedTypeFactory extends
     public FormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
+        UNKNOWNFORMAT = AnnotationUtils.fromClass(elements, UnknownFormat.class);
         FORMAT = AnnotationUtils.fromClass(elements, Format.class);
         INVALIDFORMAT = AnnotationUtils.fromClass(elements, InvalidFormat.class);
         FORMATBOTTOM = AnnotationUtils.fromClass(elements, FormatBottom.class);
@@ -120,12 +122,7 @@ public class FormatterAnnotatedTypeFactory extends
                 ConversionCategory[] lhsArgTypes =
                         treeUtil.formatAnnotationToCategories(lhs);
 
-                if (rhsArgTypes == null && lhsArgTypes == null) {
-                	return true;
-                }
-
-                if (rhsArgTypes == null || lhsArgTypes == null ||
-                    rhsArgTypes.length != lhsArgTypes.length) {
+                if (rhsArgTypes.length != lhsArgTypes.length) {
                     return false;
                 }
 
@@ -155,26 +152,21 @@ public class FormatterAnnotatedTypeFactory extends
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror anno1,
                 AnnotationMirror anno2) {
+            if (AnnotationUtils.areSameIgnoringValues(anno1, UNKNOWNFORMAT)) {
+            	return anno2;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno2, UNKNOWNFORMAT)) {
+            	return anno1;
+            }
             if (AnnotationUtils.areSameIgnoringValues(anno1, FORMAT) &&
                 AnnotationUtils.areSameIgnoringValues(anno2, FORMAT)) {
                 ConversionCategory[] anno1ArgTypes =
                         treeUtil.formatAnnotationToCategories(anno1);
                 ConversionCategory[] anno2ArgTypes =
                         treeUtil.formatAnnotationToCategories(anno2);
-
-                if (anno1ArgTypes == null && anno2ArgTypes == null) {
-                	return FORMAT;
-                }
-
-                if (anno1ArgTypes == null || anno2ArgTypes == null) {
-                    return FORMATBOTTOM; // TODO: Should this be InvalidFormat instead?
-                }
-
-
                 if (anno1ArgTypes.length != anno2ArgTypes.length) {
-                    return FORMATBOTTOM; // TODO: Should this be InvalidFormat instead? (Different situation from the if statement above)
+                    return FORMATBOTTOM;
                 }
-
                 ConversionCategory[] anno3ArgTypes =
                         new ConversionCategory[anno2ArgTypes.length];
 
@@ -183,19 +175,15 @@ public class FormatterAnnotatedTypeFactory extends
                 }
                 return treeUtil.categoriesToFormatAnnotation(anno3ArgTypes);
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, FORMAT)) {
-            	anno1 = FORMAT;
+            if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT) &&
+                AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
+            	if (AnnotationUtils.areSame(anno1, anno2)) {
+            		return anno1;
+            	}
+            	return INVALIDFORMAT;
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno2, FORMAT)) {
-            	anno2 = FORMAT;
-            }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT)) {
-            	anno1 = INVALIDFORMAT;
-            }
-            if (AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
-            	anno2 = INVALIDFORMAT;
-            }
-            return super.greatestLowerBound(anno1, anno2);
+
+            return FORMATBOTTOM;
         }
     }
 }
