@@ -7,6 +7,9 @@ public class UnionCrash {
             try {
                 bar();
             } catch (SubMyExceptionA | MyExceptionB ex2) {
+// This call cause a crash because of bugs in asSuper
+// See issue 717
+// https://github.com/typetools/checker-framework/issues/717
                 typeVar(ex1, ex2);
             }
         }
