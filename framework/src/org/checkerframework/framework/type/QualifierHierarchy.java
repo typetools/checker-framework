@@ -215,7 +215,7 @@ public abstract class QualifierHierarchy {
         }
 
         assert result.size() == annos1.size() : "QualifierHierarchy.greatestLowerBounds: resulting set has incorrect number of annotations!\n" +
-                "    Set 1: " + annos1 + " Set 2: " + annos2 + " LUB: " + result;
+                "    Set 1: " + annos1 + " Set 2: " + annos2 + " GLB: " + result;
 
         return result;
     }
