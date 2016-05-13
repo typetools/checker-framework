@@ -18,7 +18,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.IllegalFormatException;
@@ -27,10 +26,8 @@ import java.util.Locale;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.NullType;
@@ -390,21 +387,9 @@ public class FormatterTreeUtil {
      * and returns its value.
      */
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        AnnotationValue av = AnnotationUtils.getElementValuesWithDefaults(anno).get(formatArgTypesElement);
-        if (av == null) {
-            ErrorReporter.errorAbort("Expected: a @Format annotation with a non-null value. Actual: " + anno.toString());
-        }
-
-        @SuppressWarnings("unchecked")
-        List<? extends AnnotationValue> vals = (List<? extends AnnotationValue>) av.getValue();
-
-        ConversionCategory[] argTypes = new ConversionCategory[vals.size()];
-        for (int i = 0; i < vals.size(); ++i) {
-            VariableElement ve = (VariableElement) vals.get(i).getValue();
-            argTypes[i] = ConversionCategory.valueOf(ve.getSimpleName().toString());
-        }
-
-        return argTypes;
+        List<ConversionCategory> list =
+                AnnotationUtils.getElementValueEnumArray(anno, "value", ConversionCategory.class, false);
+        return list.toArray(new ConversionCategory[] {});
     }
 
     private final Class<? extends Object> typeMirrorToClass(final TypeMirror type) {
