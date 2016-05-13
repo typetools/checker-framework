@@ -847,6 +847,7 @@
             description="Run tests for the Formatter Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.FormatterTest"/>
+            <param name="param" value="tests.FormatterGlbCheckerTest"/>
         </antcall>
     </target>
 
