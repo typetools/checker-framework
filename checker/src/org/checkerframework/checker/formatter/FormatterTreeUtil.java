@@ -387,13 +387,12 @@ public class FormatterTreeUtil {
 
     /**
      * Takes a syntax tree element that represents a {@link Format} annotation,
-     * and returns its value. Returns null (instead of an empty array) if the
-     * {@code Format} annotation's value is empty.
+     * and returns its value.
      */
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
         AnnotationValue av = AnnotationUtils.getElementValuesWithDefaults(anno).get(formatArgTypesElement);
         if (av == null) {
-        	ErrorReporter.errorAbort("Expected: a @Format annotation with a non-null value. Actual: " + anno.toString());
+            ErrorReporter.errorAbort("Expected: a @Format annotation with a non-null value. Actual: " + anno.toString());
         }
 
         @SuppressWarnings("unchecked")
