@@ -379,7 +379,7 @@ public class BoundsInitializer {
                         removePathNode(node);
                     }
                 }
-                declaredType.typeArgs = Collections.unmodifiableList(typeArgs);
+                declaredType.setTypeArguments(typeArgs);
             } else {
 
                 final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(declaredType.getTypeArguments());
@@ -391,7 +391,7 @@ public class BoundsInitializer {
                     removePathNode(node);
                 }
 
-                declaredType.typeArgs = Collections.unmodifiableList(typeArgReplacements);
+                declaredType.setTypeArguments(typeArgReplacements);
             }
         }
 
@@ -983,7 +983,7 @@ public class BoundsInitializer {
             }
             typeArgs.add(argIndex, replacement);
             typeArgs.remove(argIndex + 1);
-            parentAdt.typeArgs = typeArgs;
+            parentAdt.setTypeArguments(typeArgs);
         }
 
         @Override
