@@ -1,5 +1,7 @@
 // Test case for Issue 691:
 // https://github.com/typetools/checker-framework/issues/691
+// Skipping the test until issues 688 and 723 are also closed.
+// @skip-test
 
 interface MyInterface<T> {
 }
