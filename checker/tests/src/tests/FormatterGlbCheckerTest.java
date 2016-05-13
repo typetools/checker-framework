@@ -15,7 +15,7 @@ import tests.glb.FormatterGlbChecker;
 public class FormatterGlbCheckerTest extends CheckerFrameworkTest {
 
     public FormatterGlbCheckerTest(File testFile) {
-        super(testFile, glb.FormatterGlbChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
+        super(testFile, FormatterGlbChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
     }
 
     @Parameters
