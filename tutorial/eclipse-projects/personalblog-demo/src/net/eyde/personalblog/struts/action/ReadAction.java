@@ -10,11 +10,10 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
 
-/*>>>import org.checkerframework.checker.tainting.qual.Untainted;*/
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/*>>>import org.checkerframework.checker.tainting.qual.Untainted;*/
 
 /**
  * Description of the Class

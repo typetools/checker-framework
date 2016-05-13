@@ -339,10 +339,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then
                 // the LUB is
                 // UnknownVal
-                if (!(AnnotationUtils.areSameByClass(a1, IntVal.class)
-                        || AnnotationUtils.areSameByClass(a1, DoubleVal.class)
-                        || AnnotationUtils.areSameByClass(a2, IntVal.class)
-                        || AnnotationUtils.areSameByClass(a2, DoubleVal.class))) {
+                if (!((AnnotationUtils.areSameByClass(a1, IntVal.class)
+                       || AnnotationUtils.areSameByClass(a1, DoubleVal.class))
+                      && (AnnotationUtils.areSameByClass(a2, IntVal.class)
+                            || AnnotationUtils.areSameByClass(a2, DoubleVal.class)))) {
                     return UNKNOWNVAL;
                 } else {
                     // At this point one of them must be a DoubleVal and one an

@@ -488,7 +488,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     /**
      * Determines if there are multiple qualifiers from a single hierarchy in type's
-     * primary annotations.  If so, report an error
+     * primary annotations.  If so, report an error.
      * @param type the type to check
      * @param tree tree on which an error is reported
      * @return true if an error was reported

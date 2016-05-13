@@ -1052,31 +1052,12 @@ documentation for a detailed discussion of related work.
 
 
 
-\section{Credits, changelog, and license\label{credits}}
+\section{Credits and changelog\label{credits}}
 
 Differences from previous versions of the checkers and framework can be found
 in the \code{changelog.txt} file.  This file is included in the
 Checker Framework distribution and is also available on the web at
 \myurl{http://types.cs.washington.edu/checker-framework/current/changelog.txt}.
-
-Two different licenses apply to different parts of the Checker Framework.
-\begin{itemize}
-\item
-The Checker Framework itself is licensed under the GNU General Public License
-(GPL), version 2.  The GPL is the same license that OpenJDK is licensed
-under.  Just as compiling your code with javac does not infect your code
-with the GPL, type-checking your code with the Checker Framework does not
-infect your code with the GPL\@.  Running the Checker Framework during
-development has no effect on your intellectual property or licensing.  If
-you want to ship the Checker Framework as part of your product, then your
-product must be licensed under the GPL\@.
-\item
-The more permissive MIT License applies
-to code that you might want to include in your own
-program, such as the annotations.
-\end{itemize}
-\noindent
-For details, see file \<LICENSE.txt>.
 
 Developers who have contributed code to the Checker Framework include
 %
@@ -1118,6 +1099,30 @@ Werner Dietl.
 In addition, too many users to list have provided valuable feedback, which
 has improved the toolset's design and implementation.
 Thanks for your help!
+
+
+\section{License\label{license}}
+
+Two different licenses apply to different parts of the Checker Framework.
+\begin{itemize}
+\item
+The Checker Framework itself is licensed under the GNU General Public License
+(GPL), version 2, with the classpath exception.
+The GPL is the same license that OpenJDK is licensed
+under.  Just as compiling your code with javac does not infect your code
+with the GPL, type-checking your code with the Checker Framework does not
+infect your code with the GPL\@.  Running the Checker Framework during
+development has no effect on your intellectual property or licensing.  If
+you want to ship the Checker Framework as part of your product, then your
+product must be licensed under the GPL\@.
+\item
+The more permissive MIT License applies
+to code that you might want to include in your own
+program, such as the annotations and run-time utility classes.
+\end{itemize}
+\noindent
+For details, see file
+\ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt}{\<LICENSE.txt>}.
 
 
 
