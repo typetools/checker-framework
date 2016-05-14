@@ -848,6 +848,9 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.FormatterTest"/>
         </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FormatterGlbCheckerTest"/>
+        </antcall>
     </target>
 
     <target name="i18n-formatter-tests" depends="jar,build-tests"

@@ -21,21 +21,25 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * of a particular type, just override the corresponding visitXYZ
  * method. Inside your method, call super.visitXYZ to visit descendant
  * nodes.
+ * <p>
  *
  * The default implementation of the visitXYZ methods will determine a
  * result as follows:
  *
- * If the node being visited has no children, the result will be null.
- * If the node being visited has one child, the result will be the
- * result of calling scan on that child. The child may be a simple
- * node or itself a list of nodes. If the node being visited has more
- * than one child, the result will be determined by calling scan each
- * child in turn, and then combining the result of each scan after the
- * first with the cumulative result so far, as determined by the
- * reduce(R, R) method. Each child may be either a simple node of a
- * list of nodes. The default behavior of the reduce method is such
- * that the result of the visitXYZ method will be the result of the
- * last child scanned.
+ * <ul>
+ *   <li>If the node being visited has no children, the result will be null.</li>
+ *   <li>If the node being visited has one child, the result will be the
+ *     result of calling scan on that child. The child may be a simple
+ *     node or itself a list of nodes.</li>
+ *   <li>If the node being visited has more
+ *     than one child, the result will be determined by calling scan each
+ *     child in turn, and then combining the result of each scan after the
+ *     first with the cumulative result so far, as determined by the
+ *     reduce(R, R) method. Each child may be either a simple node or a
+ *     list of nodes. The default behavior of the reduce method is such
+ *     that the result of the visitXYZ method will be the result of the
+ *     last child scanned.</li>
+ * </ul>
  *
  * Here is an example to count the parameter types number of nodes in
  * a tree:
