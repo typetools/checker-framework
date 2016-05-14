@@ -376,6 +376,7 @@
 
     <target name="loader-dir-test" depends="build-tests"
             description="Run tests for the annotation class loader by loading from build directories">
+        <fail unless="env.JAVA_HOME" message="Environment variable JAVA_HOME is not set."/>
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
             <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
@@ -386,6 +387,7 @@
 
     <target name="loader-jar-test" depends="jar"
             description="Run tests for the annotation class loader by loading from jar file">
+        <fail unless="env.JAVA_HOME" message="Environment variable JAVA_HOME is not set."/>
         <exec executable="make" failonerror="${halt.on.test.failure}">
             <env key="JAVAC" value="${env.JAVA_HOME}/bin/javac"/>
             <env key="JAVACJAR" value="${jsr308.langtools.dist}/lib/javac.jar"/>
