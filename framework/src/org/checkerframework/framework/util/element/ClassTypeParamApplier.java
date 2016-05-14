@@ -23,7 +23,7 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
     }
 
     /**
-     * @return True if element represents a type parameter for a class.
+     * @return true if element represents a type parameter for a class
      */
     public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
         return element.getKind() == ElementKind.TYPE_PARAMETER &&
@@ -63,7 +63,7 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
     }
 
     /**
-     * @return The index of element in the type parameter list of its enclosing class
+     * @return the index of element in the type parameter list of its enclosing class
      */
     @Override
     public int getElementIndex() {
@@ -76,7 +76,7 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
     }
 
     /**
-     * @return The raw type attributes of the enclosing class
+     * @return the raw type attributes of the enclosing class
      */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {

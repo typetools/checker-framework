@@ -101,8 +101,9 @@ public final class TypesUtils {
     }
 
     public static boolean isBoxedPrimitive(TypeMirror type) {
-        if (type.getKind() != TypeKind.DECLARED)
+        if (type.getKind() != TypeKind.DECLARED) {
             return false;
+        }
 
         String qualifiedName = getQualifiedName((DeclaredType)type).toString();
 
@@ -122,8 +123,9 @@ public final class TypesUtils {
             DeclaredType dt = (DeclaredType) type;
             TypeElement elem = (TypeElement) dt.asElement();
             Name name = elem.getQualifiedName();
-            if ("java.lang.Throwable".contentEquals(name))
+            if ("java.lang.Throwable".contentEquals(name)) {
                 return true;
+            }
             type = elem.getSuperclass();
         }
         return false;
@@ -284,7 +286,7 @@ public final class TypesUtils {
     /**
      * Get the type parameter for this wildcard from the underlying type's bound field
      * This field is sometimes null, in that case this method will return null
-     * @return The TypeParameterElement the wildcard is an argument to
+     * @return the TypeParameterElement the wildcard is an argument to
      */
     public static TypeParameterElement wildcardToTypeParam(final Type.WildcardType wildcard) {
 
@@ -298,8 +300,10 @@ public final class TypesUtils {
         return (TypeParameterElement) typeParamElement;
     }
 
-    // Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
-    // that works with both jdk8 (called upperBound there) and jdk8u.
+    /**
+     * Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
+     * that works with both jdk8 (called upperBound there) and jdk8u.
+     */
     // TODO: contrast to upperBound.
     public static Type wildUpperBound(ProcessingEnvironment env, TypeMirror tm) {
         Type t = (Type) tm;
@@ -312,14 +316,15 @@ public final class TypesUtils {
             } else {
                 return wildUpperBound(env, w.type);
             }
-        }
-        else {
+        } else {
             return TypeAnnotationUtils.unannotatedType(t);
         }
     }
 
-    // Version of com.sun.tools.javac.code.Types.wildLowerBound(Type)
-    // that works with both jdk8 (called upperBound there) and jdk8u.
+    /**
+     * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type)
+     * that works with both jdk8 (called upperBound there) and jdk8u.
+     */
     public static Type wildLowerBound(ProcessingEnvironment env, TypeMirror tm) {
         Type t = (Type) tm;
         if (t.hasTag(WILDCARD)) {
@@ -327,8 +332,9 @@ public final class TypesUtils {
             Symtab syms = Symtab.instance(context);
             Type.WildcardType w = (Type.WildcardType) TypeAnnotationUtils.unannotatedType(t);
             return w.isExtendsBound() ? syms.botType : wildLowerBound(env, w.type);
+        } else {
+            return t.unannotatedType();
         }
-        else return t.unannotatedType();
     }
     /**
      * Returns the {@link TypeMirror} for a given {@link Class}.
@@ -387,10 +393,10 @@ public final class TypesUtils {
     }
 
     /**
-     * Given a bounded type (wildcard or typevar) get the concrete type of it's upper bound.  If
+     * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound.  If
      * the bounded type extends other bounded types, this method will iterate through their bounds
      * until a class, interface, or intersection is found.
-     * @return A type that is not a wildcard or typevar, or null if this type is an unbounded wildcard
+     * @return a type that is not a wildcard or typevar, or null if this type is an unbounded wildcard
      */
     public static TypeMirror findConcreteUpperBound(final TypeMirror boundedType) {
         TypeMirror effectiveUpper = boundedType;

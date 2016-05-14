@@ -47,7 +47,7 @@ public class F2AReducer implements AFReducer {
      *  Sprinkled throughout this class are comments of the form:
      *
      * <pre>{@code
-     *  //If F has the form G<..., Yk-1, ? super U, Yk+1, ...>, where U involves Tj
+     *  // If F has the form G<..., Yk-1, ? super U, Yk+1, ...>, where U involves Tj
      * }</pre>
      *
      *  These are excerpts from the JLS, if you search for them you will find the corresponding

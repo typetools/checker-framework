@@ -2,7 +2,7 @@ package org.checkerframework.eclipse.util;
 
 import java.io.*;
 
-//AK: XXX This code is copied and modified from somewhere. I don't remember from where.
+// AK: XXX This code is copied and modified from somewhere. I don't remember from where.
 /**
  * The important method in this class is <code>exec(String[])</code>. It
  * executes its argument and pipes both stdout and stderr to System.out. Each

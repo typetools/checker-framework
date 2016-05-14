@@ -18,9 +18,10 @@ class Arrays {
         VarInfo v2 = null;
         VarInfo[] vis = null;
 
-        if (v2 == null)
+        if (v2 == null) {
             vis = new VarInfo[] {v1};
-        else
+        } else {
             vis = new VarInfo[] {v1, v2};
+        }
     }
 }

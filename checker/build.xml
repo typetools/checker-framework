@@ -277,7 +277,7 @@
         <echo message="${src.files.spaceseparated}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
+              classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <arg value="-g"/>
@@ -349,12 +349,12 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}" destdir="${api.doc}"
+        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}" destdir="${api.doc}"
                  private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
-                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}"
+                 classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">
 
@@ -395,8 +395,9 @@
     <target name="jar" depends="build,checker-qual-jar,checker-compat-qual-jar"
             description="Create checker.jar file">
 
-        <!-- Only unjar the stubparser - everything else is recompiled. -->
+        <!-- Only unjar the stubparser and afu - everything else is recompiled. -->
         <unjar src="${stubparser.lib}" dest="${build}" />
+        <unjar src="${annotation-file-utilities.lib}" dest="${build}" />
 
         <mkdir dir="dist" />
 
@@ -671,6 +672,13 @@
         </antcall>
     </target>
 
+    <target name="lock-safedefaults-tests" depends="jar,build-tests"
+            description="Run tests for the Lock Checker with unchecked code defaults turned on for source code">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.LockSafeDefaultsTest"/>
+        </antcall>
+    </target>
+
     <target name="lubglb-tests" depends="jar,build-tests"
             description="Run tests for the Lubglb Checker">
         <antcall target="-run-tests">
@@ -824,6 +832,9 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.FormatterTest"/>
         </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FormatterGlbCheckerTest"/>
+        </antcall>
     </target>
 
     <target name="i18n-formatter-tests" depends="jar,build-tests"
@@ -953,10 +964,11 @@
     </target>
 
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
+      <!-- The last successful artifact includes Java 8 class files, so use the last build that does not. -->
       <get
-        src="https://adopt-openjdk.ci.cloudbees.com/view/OpenJDK/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.1-b12.tar.gz"
+        src="https://adopt-openjdk.ci.cloudbees.com/job/jtreg/545/artifact/jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/.." />
-      <untar src="${jtreg.home}/../jtreg-4.1-b12.tar.gz"
+      <untar src="${jtreg.home}/../jtreg-4.2.0-tip.tar.gz"
         dest="${jtreg.home}/../"
         compression="gzip" />
     </target>
@@ -1028,6 +1040,9 @@
             <attribute name="jpda.jvmargs" default=""/>
 
             <sequential>
+                <!--As of version 4.2-b02, a NullPointerException is thrown without making this dir-->
+                <mkdir dir="${build}/jtreg/all/report/html"/>
+
                 <property name="coverage.options" value=""/>    <!-- default -->
                 <property name="coverage.classpath" value=""/>  <!-- default -->
                 <property name="checker.classpath" value="${build}:${javac.lib}:${javap.lib}:${checker.lib}"/>
@@ -1104,7 +1119,7 @@
         <echo message="${src.files}" file="${tmpdir}/srcfiles-checker.txt"/>
         <java fork="true"
               failonerror="true"
-              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
+              classpath="${build}:${javac.lib}:${checker.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
               classname="com.sun.tools.javac.Main">
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
             <jvmarg line="${maybeDebug}"/>
@@ -1280,7 +1295,7 @@
     <target name="-jdk.8">
       <property name="afu.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="afu.exist" file="${afu.jar}" />
-      <fail unless="afu.exist" message="Could not find annotation-file-utilities.jar: ${afu.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#build-source" />
+      <fail unless="afu.exist" message="Could not find annotation-file-utilities.jar: ${afu.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#build-source" />
 
       <exec executable="bash" failonerror="true">
          <arg value="jdk/build8.sh"/>

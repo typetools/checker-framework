@@ -435,7 +435,7 @@ public class TypeMirrorConverter<Q> {
         return watm.accept(defaultFactory.getTypeAnnotator(), null);
         // UPDATED_QTM_BUILDER was deleted in the same commit that added the
         // workaround.
-        //return watm.accept(UPDATED_QTM_BUILDER, getQualifier(watm.unwrap()));
+        // return watm.accept(UPDATED_QTM_BUILDER, getQualifier(watm.unwrap()));
     }
 
     /* Conversion functions between qualifiers and @Key AnnotationMirrors */

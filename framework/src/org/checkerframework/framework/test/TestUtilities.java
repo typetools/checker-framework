@@ -86,10 +86,12 @@ public class TestUtilities {
      * Returns all the java files that are descendants of the given directory
      */
     public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
-        if (!directory.exists())
+        if (!directory.exists()) {
             throw new IllegalArgumentException("directory does not exist: " + directory);
-        if (!directory.isDirectory())
+        }
+        if (!directory.isDirectory()) {
             throw new IllegalArgumentException("found file instead of directory: " + directory);
+        }
 
         List<File> javaFiles = new ArrayList<File>();
 
@@ -101,10 +103,11 @@ public class TestUtilities {
             }
         });
         for (File file : in) {
-            if (file.isDirectory())
+            if (file.isDirectory()) {
                 javaFiles.addAll(deeplyEnclosedJavaTestFiles(file));
-            else if (isJavaTestFile(file))
+            } else if (isJavaTestFile(file)) {
                 javaFiles.add(file);
+            }
         }
 
         return javaFiles;
@@ -115,8 +118,9 @@ public class TestUtilities {
     }
 
     public static boolean isJavaTestFile(File file) {
-        if (!isJavaFile(file))
+        if (!isJavaFile(file)) {
             return false;
+        }
 
         // We could implement special filtering based on directory names,
         // but I prefer using @below-java8-jdk-skip-test

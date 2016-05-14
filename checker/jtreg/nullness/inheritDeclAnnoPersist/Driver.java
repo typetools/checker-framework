@@ -40,10 +40,12 @@ public class Driver {
         // Find methods
         for (Method method : clazz.getMethods()) {
             List<String> expected = expectedOf(method);
-            if (expected == null)
+            if (expected == null) {
                 continue;
-            if (method.getReturnType() != String.class)
+            }
+            if (method.getReturnType() != String.class) {
                 throw new IllegalArgumentException("Test method needs to return a string: " + method);
+            }
             String testClass = PersistUtil.testClassOf(method);
 
             try {
@@ -67,21 +69,24 @@ public class Driver {
 
         out.flush();
 
-        if (failed != 0)
+        if (failed != 0) {
             throw new RuntimeException(failed + " tests failed");
+        }
     }
 
     private List<String> expectedOf(Method m) {
         ADescription ta = m.getAnnotation(ADescription.class);
         ADescriptions tas = m.getAnnotation(ADescriptions.class);
 
-        if (ta == null && tas == null)
+        if (ta == null && tas == null) {
             return null;
+        }
 
         List<String> result = new ArrayList<String>();
 
-        if (ta != null)
+        if (ta != null) {
             result.add(expectedOf(ta));
+        }
 
         if (tas != null) {
             for (ADescription a : tas.value()) {

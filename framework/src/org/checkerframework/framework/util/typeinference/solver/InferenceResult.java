@@ -16,7 +16,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
     private static final long serialVersionUID = 6911459752070485818L;
 
     /**
-     * @return The set of targets that still don't have an inferred argument
+     * @return the set of targets that still don't have an inferred argument
      */
     public Set<TypeVariable> getRemainingTargets(final Set<TypeVariable> allTargets, boolean inferredTypesOnly) {
         final LinkedHashSet<TypeVariable> remainingTargets = new LinkedHashSet<>(allTargets);
@@ -38,7 +38,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
     }
 
     /**
-     * @return True if we have inferred a concrete type for all targets
+     * @return true if we have inferred a concrete type for all targets
      */
     public boolean isComplete(final Set<TypeVariable> targets) {
         for (final TypeVariable target : targets) {
@@ -103,7 +103,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
     /**
      * Merges values in subordinate into this result, keeping the results form any
      * type arguments that were already contained by this InferenceResult
-     * @param subordinate A result which we wish to merge into this result
+     * @param subordinate a result which we wish to merge into this result
      */
     public void mergeSubordinate(final InferenceResult subordinate) {
         final LinkedHashSet<TypeVariable> previousKeySet = new LinkedHashSet<>(this.keySet());
@@ -142,7 +142,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
             }
 
             return null;
-        } //else
+        } // else
 
         return (InferredType) inferred;
     }

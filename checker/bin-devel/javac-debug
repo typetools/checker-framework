@@ -33,9 +33,10 @@ fi
 jdkPaths="${mydir}"/../jdk/annotated
 
 cfDir="${mydir}"/../..
+annoToolsDir="${cfDir}"/../annotation-tools
 # Put "checker" last, as "ant bindist" puts other projects
 # into the checker/build directory.
-buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build
+buildDirs="${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar:"${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.

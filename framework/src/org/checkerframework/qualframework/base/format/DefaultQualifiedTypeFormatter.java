@@ -52,7 +52,7 @@ public class DefaultQualifiedTypeFormatter<Q, QUAL_FORMATTER extends QualFormatt
      * should use formatter as its AnnotationFormatter.
      *
      * @param annotationFormatter an AnnotationFormatter that is configured to printout qualifiers using
-     *                            qualFormatter.
+     *                            qualFormatter
      * @return the AnnotatedTypeFormatter
      */
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter(AnnotationFormatter annotationFormatter) {

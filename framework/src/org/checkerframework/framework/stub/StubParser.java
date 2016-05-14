@@ -300,7 +300,7 @@ public class StubParser {
         return result;
     }
 
-    // The main entry point.  Side-effects the arguments.
+    /** The main entry point.  Side-effects the arguments. */
     public void parse(Map<Element, AnnotatedTypeMirror> atypes, Map<String, Set<AnnotationMirror>> declAnnos) {
         parse(this.index, atypes, declAnnos);
     }
@@ -539,8 +539,8 @@ public class StubParser {
      * needs to be able to remove an existing annotation, leaving no annotation on
      * the type variable. This method achieves this by calling {@code clearAnnotations}.
      *
-     * @param atype The type to modify.
-     * @param typeDef The type from the stub file, for warnings.
+     * @param atype the type to modify
+     * @param typeDef the type from the stub file, for warnings
      */
     private void handleExistingAnnotations(AnnotatedTypeMirror atype, Type typeDef) {
         Set<AnnotationMirror> annos = atype.getAnnotations();

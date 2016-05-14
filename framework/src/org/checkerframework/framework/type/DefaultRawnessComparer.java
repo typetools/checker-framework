@@ -57,7 +57,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
             return AnnotationUtils.areSame(
                     subtype.getAnnotationInHierarchy(currentTop),
                     supertype.getAnnotationInHierarchy(currentTop));
-        } //else
+        } // else
 
         return AnnotationUtils.areSame(subtype.getAnnotations(), supertype.getAnnotations());
     }
@@ -185,7 +185,7 @@ public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, Vis
         return visitTypevarSupertype(subtype, supertype, visited);
     }
 
-    //See FromApac5Tests - iterator for when this would occur
+    // See FromApac5Tests - iterator for when this would occur
     @Override
     public Boolean visitWildcard_Array(AnnotatedWildcardType subtype, AnnotatedArrayType supertype, VisitHistory visited) {
         return arePrimaryAnnotationsEqual(subtype.getExtendsBound(), supertype);

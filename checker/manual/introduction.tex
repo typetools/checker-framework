@@ -178,6 +178,8 @@ This section describes how to install the Checker Framework.
 (If you wish to use the Checker Framework from Eclipse, see the Checker
 Framework Eclipse Plugin webpage instead:
 \url{http://types.cs.washington.edu/checker-framework/eclipse/}.)
+(If you wish to try the Checker Framework without installing it, use the
+\href{http://eisop.uwaterloo.ca/live/}{Checker Framework Live Demo} webpage.)
 \end{sloppypar}
 
 The Checker Framework release contains everything that you need, both to
@@ -202,7 +204,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-1.9.13.zip}
+  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-2.0.0.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -434,7 +436,8 @@ Additional topics that apply to all checkers are covered later in the manual:
 Finally, there is a
 \ahreforurl{http://types.cs.washington.edu/checker-framework/tutorial/}{tutorial}
 that walks you through using the Checker Framework in Eclipse or on the
-command line, and a separate <a href="https://github.com/glts/safer-spring-petclinic/wiki">Nullness Checker tutorial</a>.
+command line, and a separate
+\ahreforurl{https://github.com/glts/safer-spring-petclinic/wiki}{Nullness Checker tutorial}.
 
 % The annotations have to be on your classpath even when you are not using
 % the -processor, because of the existence of the import statement for
@@ -599,7 +602,7 @@ Unsound checking: ignore some errors
   bytecode; see
   Section~\ref{defaults-classfile}.
   Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source`` specifies whether unchecked code
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source'' specifies whether unchecked code
   default annotations are applied to source code and suppress all type-checking warnings; see
   Section~\ref{compiling-libraries}.
 \end{itemize}
@@ -669,6 +672,16 @@ Partially-annotated libraries
   Section~\ref{compiling-libraries}.
 \end{itemize}
 
+Inference
+\begin{itemize}
+\item \<-Ainfer>
+  Output suggested annotations for method signatures and fields.
+  These annotations may reduce the number of type-checking
+  errors when running type-checking in the future; see
+  Section~\ref{whole-program-inference}.
+
+\end{itemize}
+
 Debugging
 \begin{itemize}
 \item
@@ -691,10 +704,11 @@ Progress tracing; see Section~\ref{debugging-options-progress}
 
 \item
 \<-AoutputArgsToFile>
-Output the compiler command-line arguments to a file.  Useful when the command line is generated and executed by a tool and is not
-fully under your control.  A standalone command line that can be executed
-independently of the tool that generated it can make it easier to reproduce
-and debug issues.  For example, the command line can be modified to enable
+Output the compiler command-line arguments to a file.  Useful when the
+command line is generated and executed by a tool, such as a build system.
+This produces a standalone command line that can be executed independently
+of the tool that generated it can make it easier to reproduce, report, and
+debug issues.  For example, the command line can be modified to enable
 attaching a debugger.
 See Section~\ref{debugging-options-output-args}
 
@@ -786,9 +800,8 @@ annotation processing including all pluggable type-checking.
 % TODO: this feature only works for our javac script, not when using
 % the standard javac. Should this be explained?
 
-Ordinarily, the \code{-processor} flag expects fully-qualified class names.
-For checkers that are packaged with the Checker Framework, the fully-qualified
-name can be quite long.  Therefore, when running a built-in checker, you may
+Ordinarily, javac's \code{-processor} flag requires fully-qualified class names.
+When running a built-in checker, you may
 omit the package name and the \<Checker> suffix.
 The following three commands are equivalent:
 

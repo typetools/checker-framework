@@ -206,8 +206,8 @@ Here is an example of one good way to proceed.
   void foo(@UnknownSign int us, @NonNegative int nn) {
     @UnknownSign int a = us;
     @UnknownSign int b = nn;
-    @NonNegative int c = us;
-    @NonNegative int d = nn;  // expected error on this line
+    @NonNegative int c = us;  // expected error on this line
+    @NonNegative int d = nn;
   }
 \end{Verbatim}
 
@@ -589,7 +589,8 @@ Java syntax trees as provided by Oracle's
 \href{http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/}{Tree
 API},
 and it issues a warning (by calling
-\refmethod{framework/source}{SourceChecker}{report})
+\refmethod{framework/source}{SourceChecker}{report}
+{-org.checkerframework.framework.source.Result-java.lang.Object-})
 whenever the type system is violated.
 
 A checker's visitor overrides one method in the base visitor for each special
@@ -826,8 +827,7 @@ The Regex Checker's dataflow customization for the
 run-time check is used as an example throughout the steps.
 
 
-\subsection{Create required classes and configure their
-  use\label{dataflow-create-classes}}
+\subsection{Create required classes and configure their use\label{dataflow-create-classes}}
 
 The following classes must be created to customize dataflow. These classes must
 be included on the classpath like other components of your checker.
@@ -903,8 +903,7 @@ of the extended \refclass{framework/flow}{CFAbstractAnalysis}.
 
 \end{enumerate}
 
-\subsection{Override methods that handle Nodes of
-interest\label{dataflow-override-methods}}
+\subsection{Override methods that handle Nodes of interest\label{dataflow-override-methods}}
 
 At this point, your checker is configured to use your extended
 \refclass{framework/flow}{CFAbstractAnalysis}, but it uses only the default
@@ -961,8 +960,7 @@ The Regex Checker refines the type of a run-time test method call, so
 \end{smaller}
 %END LATEX
 
-\subsection{Determine the expressions to refine the types
-of\label{dataflow-determine-expressions}}
+\subsection{Determine the expressions to refine the types of\label{dataflow-determine-expressions}}
 
 There are usually multiple expressions used in a run-time check or run-time
 operation; determine which expression the customization will refine.  This is

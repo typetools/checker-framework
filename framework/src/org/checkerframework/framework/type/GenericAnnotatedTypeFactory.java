@@ -309,8 +309,9 @@ public abstract class GenericAnnotatedTypeFactory<
                     classToLoad,
                     new Class<?>[] { BaseTypeChecker.class, this.getClass(), List.class },
                     new Object[] { checker, this, fieldValues });
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 
@@ -353,8 +354,9 @@ public abstract class GenericAnnotatedTypeFactory<
             TransferFunction result = BaseTypeChecker.invokeConstructorFor(
                     classToLoad, new Class<?>[] { analysis.getClass() },
                     new Object[] { analysis });
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 
@@ -371,9 +373,13 @@ public abstract class GenericAnnotatedTypeFactory<
      * Subclasses should override {@link GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults defs)}
      * or {@link GenericAnnotatedTypeFactory#addUncheckedCodeDefaults(QualifierDefaults defs)}
      * to add more defaults or use different defaults.
-     *
      * @return the QualifierDefaults object
      */
+    // TODO: When changing this method, also look into
+    // {@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesHelper#shouldIgnore}.
+    // Both methods should have some functionality merged into a single location.
+    // See Issue 683
+    // https://github.com/typetools/checker-framework/issues/683
     protected final QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
         addCheckedCodeDefaults(defs);
@@ -398,7 +404,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * checker's supported qualifier set. The names are alphabetically sorted.
      *
      * @return a string containing the number of qualifiers and canonical names
-     *         of each qualifier.
+     *         of each qualifier
      */
     protected final String getSortedQualifierNames() {
         // Create a list of the supported qualifiers and sort the list
@@ -612,7 +618,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Returns the regular exit store for a method or another code block (such as static initializers).
      *
-     * @return The regular exit store, or {@code null}, if there is no such
+     * @return the regular exit store, or {@code null}, if there is no such
      *         store (because the method cannot exit through the regular exit
      *         block).
      */
@@ -621,7 +627,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @return All return node and store pairs for a given method.
+     * @return all return node and store pairs for a given method
      */
     public List<Pair<ReturnNode, TransferResult<Value, Store>>> getReturnStatementStores(
             MethodTree methodTree) {
@@ -630,7 +636,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @return The store immediately before a given {@link Tree}.
+     * @return the store immediately before a given {@link Tree}.
      */
     public Store getStoreBefore(Tree tree) {
         if (analyses == null || analyses.isEmpty()) {
@@ -644,6 +650,17 @@ public abstract class GenericAnnotatedTypeFactory<
             // be the best possible.
             return null;
         }
+        return getStoreBefore(node);
+    }
+
+    /**
+     * @return the store immediately before a given {@link Node}.
+     */
+    public Store getStoreBefore(Node node) {
+        if (analyses == null || analyses.isEmpty()) {
+            return flowResult.getStoreBefore(node);
+        }
+        FlowAnalysis analysis = analyses.getFirst();
         TransferInput<Value, Store> prevStore = analysis.getInput(node.getBlock());
         if (prevStore == null) {
             return null;
@@ -653,7 +670,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @return The store immediately after a given {@link Tree}.
+     * @return the store immediately after a given {@link Tree}.
      */
     public Store getStoreAfter(Tree tree) {
         if (analyses == null || analyses.isEmpty()) {
@@ -666,14 +683,14 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
-     * @return The {@link Node} for a given {@link Tree}.
+     * @return the {@link Node} for a given {@link Tree}.
      */
     public Node getNodeForTree(Tree tree) {
         return flowResult.getNodeForTree(tree);
     }
 
     /**
-     * @return The value of effectively final local variables.
+     * @return the value of effectively final local variables
      */
     public HashMap<Element, Value> getFinalLocalValues() {
         return flowResult.getFinalLocalValues();
@@ -832,8 +849,8 @@ public abstract class GenericAnnotatedTypeFactory<
      *            The abstract values for all fields of the same class.
      * @param ast
      *            The AST to analyze.
-     * @param currentClass The class we are currently looking at.
-     * @param isInitializationCode Are we analyzing a (non-static) initializer block of a class.
+     * @param currentClass the class we are currently looking at
+     * @param isInitializationCode are we analyzing a (non-static) initializer block of a class
      */
     protected void analyze(Queue<ClassTree> queue,
             Queue<Pair<LambdaExpressionTree, Store>> lambdaQueue,
@@ -855,12 +872,12 @@ public abstract class GenericAnnotatedTypeFactory<
         CFGBuilder builder = new CFCFGBuilder(checker, this);
         ControlFlowGraph cfg = builder.run(root, processingEnv, ast);
         FlowAnalysis newAnalysis = createFlowAnalysis(fieldValues);
+        TransferFunction transfer = newAnalysis.getTransferFunction();
         if (emptyStore == null) {
-            emptyStore = newAnalysis.createEmptyStore(!checker.hasOption("concurrentSemantics"));
+            emptyStore = newAnalysis.createEmptyStore(transfer.usesSequentialSemantics());
         }
         analyses.addFirst(newAnalysis);
         if (lambdaStore != null) {
-            TransferFunction transfer = newAnalysis.getTransferFunction();
             transfer.setFixedInitialStore(lambdaStore);
         } else {
             Store initStore = !isStatic ? initializationStore : initializationStaticStore;
@@ -869,7 +886,6 @@ public abstract class GenericAnnotatedTypeFactory<
                     // we have already seen initialization code and analyzed it, and
                     // the analysis ended with the store initStore.
                     // use it to start the next analysis.
-                    TransferFunction transfer = newAnalysis.getTransferFunction();
                     transfer.setFixedInitialStore(initStore);
                 }
             }
@@ -1059,7 +1075,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *     <li>tree is a {@link ClassTree}</li>
      *     <li>Flow analysis has not already been performed on tree</li>
      * </ul>
-     * @param tree the tree to check and possibly perform flow analysis on.
+     * @param tree the tree to check and possibly perform flow analysis on
      */
     protected void checkAndPerformFlowAnalysis(Tree tree) {
         // For performance reasons, we require that getAnnotatedType is called

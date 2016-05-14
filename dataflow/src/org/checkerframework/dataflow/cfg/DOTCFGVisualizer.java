@@ -59,7 +59,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     protected StringBuilder sbStore;
     protected StringBuilder sbBlock;
 
-    // Mapping from class/method representation to generated dot file.
+    /** Mapping from class/method representation to generated dot file. */
     protected Map<String, String> generated;
 
     public void init(Map<String, Object> args) {
@@ -124,8 +124,9 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         visited.add(entry);
         // traverse control flow graph and define all arrows
         while (true) {
-            if (cur == null)
+            if (cur == null) {
                 break;
+            }
 
             if (cur.getType() == BlockType.CONDITIONAL_BLOCK) {
                 ConditionalBlock ccur = ((ConditionalBlock) cur);
@@ -207,7 +208,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         this.sbDigraph.append("\n");
     }
 
-    /** @return The file name used for DOT output. */
+    /** @return the file name used for DOT output. */
     protected String dotOutputFileName(UnderlyingAST ast) {
         StringBuilder srcloc = new StringBuilder();
 
@@ -274,7 +275,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     /**
      * Produce a representation of the contests of a basic block.
      *
-     * @param bb Basic block to visualize.
+     * @param bb basic block to visualize
      */
     @Override
     public void visualizeBlock(Block bb,
@@ -450,7 +451,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     }
 
     @Override
-    public void visualizeStoreMethodVals(FlowExpressions.PureMethodCall methodCall, A value) {
+    public void visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value) {
         this.sbStore.append("  " + methodCall.toString().replace("\"", "\\\"") + " > " +
                 value + "\\n");
     }

@@ -351,8 +351,8 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     /**
      * Create the {@link TransferFunction} to be used.
      *
-     * @param analysis The {@link CFAbstractAnalysis} that the checker framework will actually use
-     * @return The {@link CFTransfer} to be used
+     * @param analysis the {@link CFAbstractAnalysis} that the checker framework will actually use
+     * @return the {@link CFTransfer} to be used
      */
     @Override
     public CFTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {

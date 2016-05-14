@@ -11,12 +11,12 @@ import java.lang.annotation.Annotation;
  */
 public @interface UnitsMultiple {
     /**
-     * @return The base unit to use.
+     * @return the base unit to use
      */
     Class<? extends Annotation> quantity();
 
     /**
-     * @return The scaling prefix.
+     * @return the scaling prefix
      */
     Prefix prefix() default Prefix.one;
 }

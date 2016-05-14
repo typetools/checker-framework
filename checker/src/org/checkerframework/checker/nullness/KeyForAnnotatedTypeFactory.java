@@ -157,14 +157,14 @@ public class KeyForAnnotatedTypeFactory extends
 
       final AnnotatedTypeMirror returnType = result.first.getReturnType();
 
-      //Can we square this with the KEyForPropagationTreeAnnotator
+      // Can we square this with the KEyForPropagationTreeAnnotator
       Pair<Tree, AnnotatedTypeMirror> context = getVisitorState().getAssignmentContext();
 
       if (returnType.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
           AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(this, getPath(tree));
 
           if (assignedTo != null) {
-              //array types and boxed primitives etc don't require propagation
+              // array types and boxed primitives etc don't require propagation
               if (assignedTo.getKind() == TypeKind.DECLARED) {
                   final AnnotatedDeclaredType newClassType = (AnnotatedDeclaredType) returnType;
                   keyForPropagator.propagate(newClassType, (AnnotatedDeclaredType) assignedTo,
@@ -516,8 +516,7 @@ public class KeyForAnnotatedTypeFactory extends
                   if (!newValue.equals(s)) {
                       valuesChanged = true;
                   }
-              }
-              else {
+              } else {
                   newValues.add(s); // This will get ignored if valuesChanged is false after exiting the for loop
               }
           }
@@ -532,7 +531,7 @@ public class KeyForAnnotatedTypeFactory extends
       return null;
   }
 
-  // Returns null if the AnnotationMirror did not change.
+  /** Returns null if the AnnotationMirror did not change. */
   private AnnotationMirror canonicalizeKeyForValuesGetAnnotationMirror(AnnotationMirror anno,
           FlowExpressionContext flowExprContext, TreePath path, Tree t) {
       LinkedHashSet<String> newValues = canonicalizeKeyForValues(anno, flowExprContext, path, t, true);
@@ -630,8 +629,7 @@ public class KeyForAnnotatedTypeFactory extends
               Node receiver = null;
               if (enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
                   receiver = new ClassNameNode(enclosingClass);
-              }
-              else {
+              } else {
                   receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(enclosingClass));
               }
 
@@ -656,8 +654,7 @@ public class KeyForAnnotatedTypeFactory extends
               // Create the Flow Expression context in terms of the receiver and parameters.
 
               flowExprContextValueType = new FlowExpressionContext(internalReceiver, internalArguments, getContext());
-          }
-          else {
+          } else {
 
               // If there is no enclosing method, then we are probably dealing with a field initializer.
               // In that case, we do not need to worry about transforming parameter numbers such as #1
@@ -703,8 +700,7 @@ public class KeyForAnnotatedTypeFactory extends
 
       if (var == null && val == null) {
           return true;
-      }
-      else if (var == null || val == null) {
+      } else if (var == null || val == null) {
           return false;
       }
 
@@ -777,7 +773,7 @@ public class KeyForAnnotatedTypeFactory extends
     @Override
     protected Void scan(AnnotatedTypeMirror type, Void v) {
       if (type == null) {
-          return null;             //handles non-existent receivers
+          return null;             // handles non-existent receivers
       }
 
       canonicalizeKeyForValues(type, context, path, leaf);
@@ -829,17 +825,19 @@ public class KeyForAnnotatedTypeFactory extends
 
               Map<? extends ExecutableElement, ? extends AnnotationValue> valMap = lhs.getElementValues();
 
-              if (valMap.isEmpty())
+              if (valMap.isEmpty()) {
                   lhsValues = new ArrayList<String>();
-              else
+              } else {
                   lhsValues = AnnotationUtils.getElementValueArray(lhs, "value", String.class, true);
+              }
 
               valMap = rhs.getElementValues();
 
-              if (valMap.isEmpty())
+              if (valMap.isEmpty()) {
                   rhsValues = new ArrayList<String>();
-              else
+              } else {
                   rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", String.class, true);
+              }
 
               return rhsValues.containsAll(lhsValues);
           }
@@ -916,12 +914,12 @@ public class KeyForAnnotatedTypeFactory extends
       TreePath enclosingMethodPath = TreeUtils.pathTillOfKind(path, Kind.METHOD);
 
       if (path == null || enclosingMethodPath == null) {
-          return; //this seems to happen for cases of desugaring from Data Flow
+          return; // this seems to happen for cases of desugaring from Data Flow
       }
 
       Node node = getNodeForTree(path.getLeaf());
 
-      //node == null means we are still performing flow
+      // node == null means we are still performing flow
       if (node == null || node instanceof FunctionalInterfaceNode) {
           return;
       }

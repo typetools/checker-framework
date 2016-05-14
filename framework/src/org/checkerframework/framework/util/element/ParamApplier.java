@@ -75,7 +75,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
             isLambdaParam = false;
             lambdaParamIndex = null;
 
-        } else  {
+        } else {
             Pair<VariableTree, LambdaExpressionTree> paramToEnclosingLambda =
                 ElementAnnotationApplier.getParamAndLambdaTree((VariableElement) element, typeFactory);
 
@@ -94,7 +94,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @return The index of element its parent method's parameter list.
+     * @return the index of element its parent method's parameter list.
      * Integer.MIN_VALUE if the element is the receiver parameter.
      */
     @Override
@@ -133,7 +133,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @return Any annotation TargetType that can be found on a method
+     * @return any annotation TargetType that can be found on a method
      */
     @Override
     protected TargetType[] validTargets() {
@@ -146,7 +146,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @return The TypeCompounds (annotations) of the enclosing method for this parameter
+     * @return the TypeCompounds (annotations) of the enclosing method for this parameter
      */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
@@ -155,14 +155,14 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
 
     @Override
     protected Map<TargetClass, List<TypeCompound>> sift(Iterable<Attribute.TypeCompound> typeCompounds) {
-        //this will sift out the annotations that do not have the right position index
+        // this will sift out the annotations that do not have the right position index
         final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnnos = super.sift(typeCompounds);
 
         final List<Attribute.TypeCompound> targeted = targetClassToAnnos.get(TargetClass.TARGETED);
         final List<Attribute.TypeCompound> valid    = targetClassToAnnos.get(TargetClass.VALID);
 
-        //if this is a lambdaParam, filter out from targeted those annos that apply to method formal parameters
-        //if this is a method formal param, filter out from targeted those annos that apply to lambdas
+        // if this is a lambdaParam, filter out from targeted those annos that apply to method formal parameters
+        // if this is a method formal param, filter out from targeted those annos that apply to lambdas
         int i = 0;
         while (i < targeted.size()) {
             final Tree onLambda = targeted.get(i).position.onLambda;
@@ -187,7 +187,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @param targeted Type compounds with formal method parameter target types with parameter_index == getIndex
+     * @param targeted type compounds with formal method parameter target types with parameter_index == getIndex
      */
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
@@ -205,7 +205,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @return True if element represents the receiver parameter of a method
+     * @return true if element represents the receiver parameter of a method
      */
     private boolean isReceiver(final Element element) {
         return element.getKind() == ElementKind.PARAMETER && element.getSimpleName().contentEquals("this");
@@ -220,8 +220,8 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     /**
      * Return the enclosing MethodSymbol of the given element, throwing an exception of the symbol's enclosing
      * element is not a MethodSymbol
-     * @param methodChildElem Some element that is a child of a method typeDeclaration (e.g. a parameter or return type)
-     * @return The MethodSymbol of the method containing methodChildElem
+     * @param methodChildElem some element that is a child of a method typeDeclaration (e.g. a parameter or return type)
+     * @return the MethodSymbol of the method containing methodChildElem
      */
     public static Symbol.MethodSymbol getParentMethod(final Element methodChildElem) {
         if (!( methodChildElem.getEnclosingElement() instanceof Symbol.MethodSymbol)) {

@@ -285,7 +285,7 @@ public class CFGBuilder {
         }
 
         /**
-         * @return The node contained in this extended node (only applicable if
+         * @return the node contained in this extended node (only applicable if
          *         the type is {@code NODE} or {@code EXCEPTION_NODE}).
          */
         public Node getNode() {
@@ -294,7 +294,7 @@ public class CFGBuilder {
         }
 
         /**
-         * @return The label associated with this extended node (only applicable
+         * @return the label associated with this extended node (only applicable
          *         if type is {@link ExtendedNodeType#CONDITIONAL_JUMP} or
          *         {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
          */
@@ -347,8 +347,10 @@ public class CFGBuilder {
     protected static class NodeWithExceptionsHolder extends ExtendedNode {
 
         protected Node node;
-        // Map from exception type to labels of successors that may
-        // be reached as a result of that exception.
+        /**
+         * Map from exception type to labels of successors that may
+         * be reached as a result of that exception.
+         */
         protected Map<TypeMirror, Set<Label>> exceptions;
 
         public NodeWithExceptionsHolder(Node node,
@@ -508,7 +510,7 @@ public class CFGBuilder {
     protected static class TryCatchFrame implements TryFrame {
         protected Types types;
 
-        // An ordered list of pairs because catch blocks are ordered.
+        /** An ordered list of pairs because catch blocks are ordered. */
         protected List<Pair<TypeMirror, Label>> catchLabels;
 
         public TryCatchFrame(Types types, List<Pair<TypeMirror, Label>> catchLabels) {
@@ -693,7 +695,7 @@ public class CFGBuilder {
          *            The control flow graph. Ownership is transfered to this
          *            method and the caller is not allowed to read or modify
          *            {@code cfg} after the call to {@code process} any more.
-         * @return The resulting control flow graph.
+         * @return the resulting control flow graph
          */
         public static ControlFlowGraph process(ControlFlowGraph cfg) {
             Set<Block> worklist = cfg.getAllBlocks();
@@ -793,7 +795,7 @@ public class CFGBuilder {
          * @param predecessors
          *            An empty set to be filled by this method with all
          *            predecessors.
-         * @return The single successor of the set of the empty basic blocks.
+         * @return the single successor of the set of the empty basic blocks
          */
         protected static BlockImpl computeNeighborhoodOfEmptyBlock(
                 RegularBlockImpl start, Set<RegularBlockImpl> empty,
@@ -953,7 +955,7 @@ public class CFGBuilder {
         }
 
         /**
-         * @return A {@link PredecessorHolder} that sets the successor of a
+         * @return a {@link PredecessorHolder} that sets the successor of a
          *         single successor block {@code s}.
          */
         protected static PredecessorHolder singleSuccessorHolder(
@@ -1008,10 +1010,10 @@ public class CFGBuilder {
          *
          * @param in
          *            The result of phase one.
-         * @return A control flow graph that might still contain degenerate
+         * @return a control flow graph that might still contain degenerate
          *         basic block (such as empty regular basic blocks or
          *         conditional blocks with the same block as 'then' and 'else'
-         *         sucessor).
+         *         sucessor)
          */
         public ControlFlowGraph process(PhaseOneResult in) {
 
@@ -1127,8 +1129,9 @@ public class CFGBuilder {
                     // ensure linking between e and next block (normal edge)
                     // Note: do not link to the next block for throw statements
                     // (these throw exceptions for sure)
-                    if (!node.getTerminatesExecution())
+                    if (!node.getTerminatesExecution()) {
                         missingEdges.add(new Tuple<>(e, i + 1));
+                    }
 
                     // exceptional edges
                     for (Entry<TypeMirror, Set<Label>> entry : en.getExceptions()
@@ -1310,12 +1313,6 @@ public class CFGBuilder {
         protected Map<Name, Label> continueLabels;
 
         /**
-         * Node yielding the value for the lexically enclosing synchronized statement,
-         * or null if there is no such statement.
-         */
-        protected Node synchronizedExpr;
-
-        /**
          * Maps from AST {@link Tree}s to {@link Node}s.  Every Tree that produces
          * a value will have at least one corresponding Node.  Trees
          * that undergo conversions, such as boxing or unboxing, can map to two
@@ -1368,7 +1365,7 @@ public class CFGBuilder {
          *            builder for new AST nodes
          * @param annotationProvider
          *            extracts annotations from AST nodes
-         * @return The result of phase one.
+         * @return the result of phase one
          */
         public PhaseOneResult process(
                 TreePath bodyPath, ProcessingEnvironment env,
@@ -1486,7 +1483,7 @@ public class CFGBuilder {
          *
          * @param node
          *            The node to add.
-         * @return The same node (for convenience).
+         * @return the same node (for convenience)
          */
         protected <T extends Node> T extendWithNode(T node) {
             addToLookupMap(node);
@@ -1502,7 +1499,7 @@ public class CFGBuilder {
          *            The node to add.
          * @param cause
          *            An exception that the node might throw.
-         * @return The node holder.
+         * @return the node holder
          */
         protected NodeWithExceptionsHolder extendWithNodeWithException(Node node, TypeMirror cause) {
             addToLookupMap(node);
@@ -1518,7 +1515,7 @@ public class CFGBuilder {
          *            The node to add.
          * @param causes
          *            Set of exceptions that the node might throw.
-         * @return The node holder.
+         * @return the node holder
          */
         protected NodeWithExceptionsHolder extendWithNodeWithExceptions(Node node,
                 Set<TypeMirror> causes) {
@@ -1542,7 +1539,7 @@ public class CFGBuilder {
          *            The node to add.
          * @param pred
          *            The desired predecessor of node.
-         * @return The node holder.
+         * @return the node holder
          */
         protected <T extends Node> T insertNodeAfter(T node, Node pred) {
             addToLookupMap(node);
@@ -1562,7 +1559,7 @@ public class CFGBuilder {
          *            Set of exceptions that the node might throw.
          * @param pred
          *            The desired predecessor of node.
-         * @return The node holder.
+         * @return the node holder
          */
         protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(Node node,
                 Set<TypeMirror> causes, Node pred) {
@@ -2572,7 +2569,7 @@ public class CFGBuilder {
          *            the field access tree containing the receiver
          * @param classTree
          *            the ClassTree enclosing the field access
-         * @return The receiver of the field access.
+         * @return the receiver of the field access
          */
         private Node getReceiver(Tree tree, ClassTree classTree) {
             assert TreeUtils.isFieldAccess(tree)
@@ -3696,10 +3693,11 @@ public class CFGBuilder {
                     break;
                 case FIELD:
                     // Note that "this"/"super" is a field, but not a field access.
-                    if (element.getSimpleName().contentEquals("this"))
+                    if (element.getSimpleName().contentEquals("this")) {
                         node = new ExplicitThisLiteralNode(tree);
-                    else
+                    } else {
                         node = new SuperNode(tree);
+                    }
                     break;
                 case EXCEPTION_PARAMETER:
                 case LOCAL_VARIABLE:
@@ -3998,7 +3996,7 @@ public class CFGBuilder {
         public Node visitSynchronized(SynchronizedTree tree, Void p) {
             // see JLS 14.19
 
-            synchronizedExpr = scan(tree.getExpression(), p);
+            Node synchronizedExpr = scan(tree.getExpression(), p);
             SynchronizedNode synchronizedStartNode = new SynchronizedNode(tree, synchronizedExpr, true, env.getTypeUtils());
             extendWithNode(synchronizedStartNode);
             scan(tree.getBlock(), p);

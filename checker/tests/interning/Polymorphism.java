@@ -33,11 +33,12 @@ public class Polymorphism {
 
     // Test assinging interned to PolyInterned
     public @PolyInterned String always(@PolyInterned String s) {
-        if (s.equals("n"))
+        if (s.equals("n")) {
             return "m";
-        else
+        } else {
             //:: error: (return.type.incompatible)
             return new String("m"); // invalid
+        }
     }
 
     public static @PolyInterned Object[] id(@PolyInterned Object[] a) {

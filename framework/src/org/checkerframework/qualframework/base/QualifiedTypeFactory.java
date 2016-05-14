@@ -107,14 +107,14 @@ public interface QualifiedTypeFactory<Q> {
     /**
      * Create the {@link Analysis} to configure dataflow.
      *
-     * @param fieldValues The initial field values
-     * @return The {@link QualAnalysis} to use
+     * @param fieldValues the initial field values
+     * @return the {@link QualAnalysis} to use
      */
     QualAnalysis<Q> createFlowAnalysis(List<Pair<VariableElement, QualValue<Q>>> fieldValues);
 
     /**
-     * @param node The @{@link Tree} to look up the {@link TreePath} for
-     * @return The {@link TreePath}
+     * @param node the @{@link Tree} to look up the {@link TreePath} for
+     * @return the {@link TreePath}
      */
     TreePath getPath(Tree node);
 
@@ -129,7 +129,7 @@ public interface QualifiedTypeFactory<Q> {
      *  <li> MemberSelectTree
      * </ul>
      *
-     * @param expression The expression for which to determine the receiver type
+     * @param expression the expression for which to determine the receiver type
      * @return  the type of the receiver of this expression
      */
     QualifiedTypeMirror<Q> getReceiverType(ExpressionTree expression);
@@ -138,8 +138,8 @@ public interface QualifiedTypeFactory<Q> {
      * Get an {@link ExtendedTypeMirror} for an {@link Element} that has all the Annotations
      * that were located on the element in source code or in stub files.
      *
-     * @param element The {@link Element}
-     * @return The {@link ExtendedTypeMirror}
+     * @param element the {@link Element}
+     * @return the {@link ExtendedTypeMirror}
      */
     ExtendedTypeMirror getDecoratedElement(Element element);
 

@@ -7,21 +7,24 @@ public class Primitives {
     void test() {
         int a = 3;
 
-        if (a == 3)
+        if (a == 3) {
             System.out.println("yes");
-        else
+        } else {
             System.out.println("no");
+        }
 
-        if (a != 2)
+        if (a != 2) {
             System.out.println("yes");
-        else
+        } else {
             System.out.println("no");
+        }
 
         String name = "Interning";
-        if ((name.indexOf('[') == -1) && (name.indexOf('(') == -1))
+        if ((name.indexOf('[') == -1) && (name.indexOf('(') == -1)) {
             System.out.println("has no open punctuation");
-        else
+        } else {
             System.out.println("has open punctuation");
+        }
 
         Number n = new Integer(22);
         boolean is_double = (n instanceof Double); // valid
@@ -38,14 +41,16 @@ public class Primitives {
     }
 
   public static int pow_fast(int base, int expt) throws ArithmeticException {
-    if (expt < 0)
+    if (expt < 0) {
       throw new ArithmeticException("Negative base passed to pow");
+    }
 
     int this_square_pow = base;
     int result = 1;
     while (expt>0) {
-      if ((expt & 1) != 0)
+      if ((expt & 1) != 0) {
         result *= this_square_pow;
+      }
       expt >>= 1;
       this_square_pow *= this_square_pow;
     }
@@ -56,8 +61,9 @@ public class Primitives {
   public static int gcd(int a, int b) {
 
     // Euclid's method
-    if (b == 0)
+    if (b == 0) {
       return (Math.abs(a));
+    }
     a = Math.abs(a);
     b = Math.abs(b);
     while (b != 0) {
@@ -77,8 +83,9 @@ public class Primitives {
     int result = a[0];
     for (int i=1; i<a.length; i++) {
       result = gcd(a[i], result);
-      if ((result == 1) || (result == 0))
+      if ((result == 1) || (result == 0)) {
         return result;
+      }
     }
     return result;
   }
@@ -95,8 +102,9 @@ public class Primitives {
     int result = a[1] - a[0];
     for (int i=2; i<a.length; i++) {
       result = gcd(a[i] - a[i-1], result);
-      if ((result == 1) || (result == 0))
+      if ((result == 1) || (result == 0)) {
         return result;
+      }
     }
     return result;
   }

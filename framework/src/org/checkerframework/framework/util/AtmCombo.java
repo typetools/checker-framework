@@ -44,7 +44,7 @@ enum AtmKind {
     UNION(AnnotatedUnionType.class),
     WILDCARD(AnnotatedWildcardType.class);
 
-    //The AnnotatedTypeMirror subclass that represents types of this kind
+    // The AnnotatedTypeMirror subclass that represents types of this kind
     public final Class<? extends AnnotatedTypeMirror> atmClass;
 
     AtmKind(Class<? extends AnnotatedTypeMirror> atmClass) {
@@ -65,7 +65,7 @@ enum AtmKind {
         }
 
         ErrorReporter.errorAbort("Unhandled AnnotatedTypeMirror ( " + atm.getClass() + " )");
-        return null; //dead code
+        return null; // dead code
     }
 }
 
@@ -240,13 +240,13 @@ public enum AtmCombo {
      * visitor method, and call that method with type1, type2 and initial param as arguments to
      * the visit method.
      *
-     * @param type1 First argument to the called visit method
-     * @param type2 Second argument to the called visit method
-     * @param initialParam The parameter passed to the called visit method
-     * @param visitor The visitor that is visiting the given types
+     * @param type1 first argument to the called visit method
+     * @param type2 second argument to the called visit method
+     * @param initialParam the parameter passed to the called visit method
+     * @param visitor the visitor that is visiting the given types
      * @param <RETURN_TYPE> The return type of the visitor's visit methods
      * @param <PARAM> The parameter type of the visitor's visit methods
-     * @return The return value of the visit method called
+     * @return the return value of the visit method called
      */
     public static <RETURN_TYPE, PARAM> RETURN_TYPE accept(final AnnotatedTypeMirror type1,
                                                           final AnnotatedTypeMirror type2,
@@ -652,7 +652,7 @@ public enum AtmCombo {
             default:
                 // Reaching this point indicates that there is an AtmCombo missing
                 ErrorReporter.errorAbort("Unhandled AtmCombo ( " + combo + " ) " );
-                return null; //dead code
+                return null; // dead code
         }
     }
 }

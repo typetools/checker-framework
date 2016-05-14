@@ -116,7 +116,7 @@ class Arrays {
 //      @Odd String [] ara1 = { null, null };
         @Odd String [] ara2 = new @Odd String [] { null, null };
 
-//        //xx:: error: (assignment.type.incompatible)
+//         //xx:: error: (assignment.type.incompatible)
 //        @Odd String [] arb1 = { null, "m" };
         //:: error: (array.initializer.type.incompatible)
         @Odd String [] arb2 = new @Odd String [] { null, "m" };

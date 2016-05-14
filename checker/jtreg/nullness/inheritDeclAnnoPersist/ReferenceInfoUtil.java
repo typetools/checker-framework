@@ -33,8 +33,10 @@ public class ReferenceInfoUtil {
         }
     }
 
-    // test the result of Attributes.getIndex according to expectations
-    // encoded in the method's name
+    /**
+     * Test the result of Attributes.getIndex according to expectations
+     * encoded in the method's name.
+     */
     private static void findAnnotations(ClassFile cf, Method m, String name, List<Annotation> annos) {
         int index = m.attributes.getIndex(cf.constant_pool, name);
         if (index != -1) {
@@ -53,8 +55,9 @@ public class ReferenceInfoUtil {
         String properName = "L" + name + ";";
         for (Annotation anno : annotations) {
             String actualName = cf.constant_pool.getUTF8Value(anno.type_index);
-            if (properName.equals(actualName))
+            if (properName.equals(actualName)) {
                 return anno;
+            }
         }
         return null;
     }

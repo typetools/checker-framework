@@ -27,8 +27,8 @@ class TypeFromTree {
     private static final TypeFromExpressionVisitor expressionVisitor = new TypeFromExpressionVisitor();
 
     /**
-     * @param tree Must be an ExpressionTree
-     * @return An AnnotatedTypeMirror representing the input expression tree.
+     * @param tree must be an ExpressionTree
+     * @return an AnnotatedTypeMirror representing the input expression tree
      */
     public static AnnotatedTypeMirror fromExpression(final AnnotatedTypeFactory typeFactory, final ExpressionTree tree) {
         abortIfTreeIsNull(typeFactory, tree);
@@ -40,8 +40,8 @@ class TypeFromTree {
     }
 
     /**
-     * @param tree Must represent a class member
-     * @return An AnnotatedTypeMirror representing the input tree
+     * @param tree must represent a class member
+     * @return an AnnotatedTypeMirror representing the input tree
      */
     public static AnnotatedTypeMirror fromMember(final AnnotatedTypeFactory typeFactory, final Tree tree) {
         abortIfTreeIsNull(typeFactory, tree);
@@ -52,8 +52,8 @@ class TypeFromTree {
     }
 
     /**
-     * @param tree Must be a type tree
-     * @return An AnnotatedTypeMirror representing the input type tree
+     * @param tree must be a type tree
+     * @return an AnnotatedTypeMirror representing the input type tree
      */
     public static AnnotatedTypeMirror fromTypeTree(final AnnotatedTypeFactory typeFactory, final Tree tree) {
         abortIfTreeIsNull(typeFactory, tree);
@@ -64,7 +64,7 @@ class TypeFromTree {
     }
 
     /**
-     * @return An AnnotatedDeclaredType representing the input ClassTree
+     * @return an AnnotatedDeclaredType representing the input ClassTree
      */
     public static AnnotatedDeclaredType fromClassTree(final AnnotatedTypeFactory typeFactory, final ClassTree tree) {
         abortIfTreeIsNull(typeFactory, tree);

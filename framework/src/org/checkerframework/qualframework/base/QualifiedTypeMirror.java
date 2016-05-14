@@ -221,8 +221,9 @@ public abstract class QualifiedTypeMirror<Q> {
         if (qualified == null || unqualified == null) {
             return false;
         }
-        if (unqualified.size() != qualified.size())
+        if (unqualified.size() != qualified.size()) {
             return false;
+        }
 
         for (int i = 0; i < qualified.size(); ++i) {
             if (!typeMirrorsMatch(qualified.get(i), unqualified.get(i))) {
@@ -291,8 +292,9 @@ public abstract class QualifiedTypeMirror<Q> {
 
         @Override
         public boolean equals(Object obj) {
-            if (!super.equals(obj))
+            if (!super.equals(obj)) {
                 return false;
+            }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
             QualifiedArrayType<Q> other = (QualifiedArrayType<Q>)obj;
@@ -349,8 +351,9 @@ public abstract class QualifiedTypeMirror<Q> {
 
         @Override
         public boolean equals(Object obj) {
-            if (!super.equals(obj))
+            if (!super.equals(obj)) {
                 return false;
+            }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
             QualifiedDeclaredType<Q> other = (QualifiedDeclaredType<Q>)obj;
@@ -455,8 +458,9 @@ public abstract class QualifiedTypeMirror<Q> {
 
         @Override
         public boolean equals(Object obj) {
-            if (!super.equals(obj))
+            if (!super.equals(obj)) {
                 return false;
+            }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
             QualifiedExecutableType<Q> other = (QualifiedExecutableType<Q>)obj;
@@ -516,8 +520,9 @@ public abstract class QualifiedTypeMirror<Q> {
 
         @Override
         public boolean equals(Object obj) {
-            if (!super.equals(obj))
+            if (!super.equals(obj)) {
                 return false;
+            }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
             QualifiedIntersectionType<Q> other = (QualifiedIntersectionType<Q>)obj;
@@ -623,7 +628,7 @@ public abstract class QualifiedTypeMirror<Q> {
 
         /**
          * @return if the primary qualifier in this QualifiedTypeVariable is valid
-         *      and should be used.
+         *      and should be used
          */
         public boolean isPrimaryQualifierValid() {
             return getUnderlyingType().getAnnotationMirrors().size() > 0;
@@ -692,8 +697,9 @@ public abstract class QualifiedTypeMirror<Q> {
 
         @Override
         public boolean equals(Object obj) {
-            if (!super.equals(obj))
+            if (!super.equals(obj)) {
                 return false;
+            }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
             QualifiedUnionType<Q> other = (QualifiedUnionType<Q>)obj;
@@ -754,8 +760,9 @@ public abstract class QualifiedTypeMirror<Q> {
 
         @Override
         public boolean equals(Object obj) {
-            if (!super.equals(obj))
+            if (!super.equals(obj)) {
                 return false;
+            }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
             QualifiedWildcardType<Q> other = (QualifiedWildcardType<Q>)obj;
@@ -816,8 +823,9 @@ public abstract class QualifiedTypeMirror<Q> {
 
         @Override
         public boolean equals(Object obj) {
-            if (!super.equals(obj))
+            if (!super.equals(obj)) {
                 return false;
+            }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
             QualifiedTypeDeclaration<Q> other = (QualifiedTypeDeclaration<Q>)obj;

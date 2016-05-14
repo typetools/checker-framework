@@ -1,8 +1,8 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.initialization.qual.*;
 
-// this example is taken from the FBC paper, figure 1 (and has some additional code in main below)
-// we made the list generic
+// This example is taken from the FBC paper, figure 1 (and has some additional code in main below).
+// We made the list generic.
 public class List<T> {
     @NotOnlyInitialized
     Node<T> sentinel;

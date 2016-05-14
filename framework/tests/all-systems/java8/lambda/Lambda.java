@@ -42,8 +42,9 @@ class Lambda {
       if (true) return 12;
       else {
         int result = 15;
-        for (int i = 1; i < 10; i++)
+        for (int i = 1; i < 10; i++) {
           result *= i;
+        }
         Consumer<String> consumer = result > 100 ? Lambda::consumeStr : Lambda::consumeStr; // conditional expression
         return result;
       }

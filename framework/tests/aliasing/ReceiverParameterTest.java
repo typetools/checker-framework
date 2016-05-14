@@ -28,7 +28,7 @@ class ReceiverParameterTest {
     }
 
     void stubFileReceiverTest() {
-        //StringBuffer append(String s) @LeakedToResult;
+        // StringBuffer append(String s) @LeakedToResult;
         StringBuffer sb = new StringBuffer();
         isUnique(sb);
         sb.append("something");

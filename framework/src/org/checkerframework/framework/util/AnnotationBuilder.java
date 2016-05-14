@@ -126,8 +126,9 @@ public class AnnotationBuilder {
                         buf.append('(');
                         boolean first = true;
                         for (Map.Entry<ExecutableElement, AnnotationValue> pair : elementValues.entrySet()) {
-                            if (!first)
+                            if (!first) {
                                 buf.append(", ");
+                            }
                             first = false;
 
                             String name = pair.getKey().getSimpleName().toString();
@@ -363,8 +364,9 @@ public class AnnotationBuilder {
                 enumClass);
         assert enumClassElt != null;
         for (Element enumElt : enumClassElt.getEnclosedElements()) {
-            if (enumElt.getSimpleName().contentEquals(value.name()))
+            if (enumElt.getSimpleName().contentEquals(value.name())) {
                 return (VariableElement) enumElt;
+            }
         }
         ErrorReporter.errorAbort("cannot be here");
         return null; // dead code
@@ -393,8 +395,9 @@ public class AnnotationBuilder {
     // TODO: this method always returns true and no-one ever looks at the return
     // value.
     private boolean checkSubtype(TypeMirror expected, Object givenValue) {
-        if (expected.getKind().isPrimitive())
+        if (expected.getKind().isPrimitive()) {
             expected = types.boxedClass((PrimitiveType) expected).asType();
+        }
 
         if (expected.getKind() == TypeKind.DECLARED
                 && TypesUtils.isClass(expected)
@@ -467,8 +470,9 @@ public class AnnotationBuilder {
                     sb.append('{');
                     boolean isFirst = true;
                     for (Object o : list) {
-                        if (!isFirst)
+                        if (!isFirst) {
                             sb.append(", ");
+                        }
                         isFirst = false;
                         sb.append(o.toString());
                     }
@@ -493,31 +497,31 @@ public class AnnotationBuilder {
             @SuppressWarnings("unchecked")
             @Override
             public <R, P> R accept(AnnotationValueVisitor<R, P> v, P p) {
-                if (value instanceof AnnotationMirror)
+                if (value instanceof AnnotationMirror) {
                     return v.visitAnnotation((AnnotationMirror) value, p);
-                else if (value instanceof List)
+                } else if (value instanceof List) {
                     return v.visitArray((List<? extends AnnotationValue>) value, p);
-                else if (value instanceof Boolean)
+                } else if (value instanceof Boolean) {
                     return v.visitBoolean((Boolean) value, p);
-                else if (value instanceof Character)
+                } else if (value instanceof Character) {
                     return v.visitChar((Character) value, p);
-                else if (value instanceof Double)
+                } else if (value instanceof Double) {
                     return v.visitDouble((Double) value, p);
-                else if (value instanceof VariableElement)
+                } else if (value instanceof VariableElement) {
                     return v.visitEnumConstant((VariableElement) value, p);
-                else if (value instanceof Float)
+                } else if (value instanceof Float) {
                     return v.visitFloat((Float) value, p);
-                else if (value instanceof Integer)
+                } else if (value instanceof Integer) {
                     return v.visitInt((Integer) value, p);
-                else if (value instanceof Long)
+                } else if (value instanceof Long) {
                     return v.visitLong((Long) value, p);
-                else if (value instanceof Short)
+                } else if (value instanceof Short) {
                     return v.visitShort((Short) value, p);
-                else if (value instanceof String)
+                } else if (value instanceof String) {
                     return v.visitString((String) value, p);
-                else if (value instanceof TypeMirror)
+                } else if (value instanceof TypeMirror) {
                     return v.visitType((TypeMirror) value, p);
-                else {
+                } else {
                     assert false : " unknown type : " + v.getClass();
                     return v.visitUnknown(this, p);
                 }
