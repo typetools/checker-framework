@@ -36,9 +36,9 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 
 /**
- * BoundsInitializer creates the bounds for type variables and wildcards.  Its static helper methods
- * are called from AnnotatedTypeMirror.  When an initializer method is called for a particular bound,
- * the entirety of that bound, including circular references, will be created.
+ * BoundsInitializer creates AnnotatedTypeMirrors (without annotations) for the bounds of type variables and wildcards.
+ * Its static helper methods are called from AnnotatedTypeMirror.  When an initializer method is called for a particular
+ * bound, the entirety of that bound, including circular references, will be created.
  */
 public class BoundsInitializer {
     //==================================================================================================================
@@ -128,7 +128,9 @@ public class BoundsInitializer {
     //==================================================================================================================
 
     /**
-     * InitializerVisitor
+     * Creates the AnnotatedTypeMirrors (without annotations) for the bounds of all type variables and wildcards in a
+     * given type.  If the type is recursive, {@code T extends Comparable<T>}, then all references to the same type
+     * variable are references to the same AnnotatedTypeMirror.
      */
     private static class InitializerVisitor implements AnnotatedTypeVisitor<Void,Void> {
         /**
@@ -155,8 +157,7 @@ public class BoundsInitializer {
 
         //--------------------------------------------------------------------------------------------------------------
         // Visit methods that keep track of the path traversed through type variable bounds, and the
-        // wildcards/intersections that have been encountered.  A summary of the algorithm used by this visitor
-        // is given at: <need to create document>
+        // wildcards/intersections that have been encountered.
         //--------------------------------------------------------------------------------------------------------------
 
         @Override
