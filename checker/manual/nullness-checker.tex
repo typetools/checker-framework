@@ -823,9 +823,9 @@ powerful analysis that can warn you about more null pointer errors in your
 code.
 
 If your code is already annotated with a different nullness
-annotation, you can reuse that effort.  The Checker Framework comes with
-cleanroom re-implementations of annotations from other tools.  It treats
-them exactly as if you had written the corresponding annotation from the
+annotation, the Checker Framework can type-check your code.
+It treats annotations from other tools
+exactly as if you had written the corresponding annotation from the
 Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
 
 
@@ -915,13 +915,6 @@ $\Rightarrow$
 %    its nullness annotations.
 % \end{enumerate}
 
-
-Alternately, the Checker Framework can process those other annotations (as
-well as its own, if they also appear in your program).  The Checker
-Framework has its own definition of the annotations on the left side of
-Figure~\ref{fig-nullness-refactoring}, so that they can be used as type
-qualifiers.  The Checker Framework interprets them according to the right
-side of Figure~\ref{fig-nullness-refactoring}.
 
 The Checker Framework may issue more or fewer errors than another tool.
 This is expected, since each tool uses a different analysis.  Remember that
