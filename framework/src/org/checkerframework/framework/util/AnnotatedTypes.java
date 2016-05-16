@@ -247,32 +247,35 @@ public class AnnotatedTypes {
 
 
     /**
-     * Return the base type of t or any of its outer types that starts
+     * Return the base type of type or any of its outer types that starts
      * with the given type. If none exists, return null.
      *
-     * @param t     a type
-     * @param elem   a type
+     * @param type     a type
+     * @param superType   a type
      */
-    private static AnnotatedTypeMirror asOuterSuper(Types types, AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror t,
-                                                    AnnotatedTypeMirror elem) {
-        switch (t.getKind()) {
+    private static AnnotatedTypeMirror asOuterSuper(Types types, AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type,
+                                                    AnnotatedTypeMirror superType) {
+        switch (type.getKind()) {
             case DECLARED:
-                AnnotatedDeclaredType dt = (AnnotatedDeclaredType) t;
+                AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) type;
                 do {
                     // Search among supers for a desired supertype
-                    AnnotatedTypeMirror s = asSuper(types, atypeFactory, dt, elem);
+                    AnnotatedTypeMirror s = asSuper(types, atypeFactory, declaredType, superType);
                     if (s != null) {
                         return s;
                     }
                     // if not found immediately, try enclosing type
                     // like A in A.B
-                    dt = dt.getEnclosingType();
-                } while (dt != null);
+                    // TODO: AnnotatedDeclaredType.getEnclosingType() return an ATM with missing annotations.
+                    // See Issue 724:
+                    // https://github.com/typetools/checker-framework/issues/724
+                    declaredType = declaredType.getEnclosingType();
+                } while (declaredType != null);
                 return null;
             case ARRAY:     // intentional follow-through
             case TYPEVAR:   // intentional follow-through
             case WILDCARD:
-                return asSuper(types, atypeFactory, t, elem);
+                return asSuper(types, atypeFactory, type, superType);
             default:
                 return null;
         }
@@ -381,111 +384,106 @@ public class AnnotatedTypes {
     }
 
     private static AnnotatedTypeMirror asMemberOfImpl(final Types types, final AnnotatedTypeFactory atypeFactory,
-                                                      final AnnotatedTypeMirror t, final Element elem) {
-        if (ElementUtils.isStatic(elem)) {
-            return atypeFactory.getAnnotatedType(elem);
+                                                      final AnnotatedTypeMirror of, final Element member) {
+        final AnnotatedTypeMirror memberType = atypeFactory.getAnnotatedType(member);
+
+        if (ElementUtils.isStatic(member)) {
+            return memberType;
         }
 
-        // For type variables and wildcards, operate on the upper bound
-        if (t.getKind() == TypeKind.TYPEVAR) {
-            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) t).getUpperBound(), elem);
+        switch (of.getKind()) {
+        case ARRAY:
+            // Method references like String[]::clone should have a return type of String[] rather than Object
+            if (SyntheticArrays.isArrayClone(of, member)) {
+                return SyntheticArrays.replaceReturnType(member, (AnnotatedArrayType) of);
+            }
+            return memberType;
+        case TYPEVAR:
+            return asMemberOf(types, atypeFactory, ((AnnotatedTypeVariable) of).getUpperBound(), member);
+        case WILDCARD:
+            return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) of).getExtendsBound().deepCopy(), member);
+        case INTERSECTION:
+        case UNION:
+        case DECLARED:
+            return substituteTypeVariables(types, atypeFactory, of, member, memberType);
+        default:
+            ErrorReporter.errorAbort("asMemberOf called on unexpected type.\nt: " + of);
+            return memberType; // dead code
         }
-        if (t.getKind() == TypeKind.WILDCARD) {
-            return asMemberOf(types, atypeFactory, ((AnnotatedWildcardType) t).getExtendsBound().deepCopy(), elem);
-        }
+    }
 
-        // Method references like String[]::clone should have a return type of String[] rather than Object
-        if (SyntheticArrays.isArrayClone(t, elem)) {
-            return SyntheticArrays.replaceReturnType(elem, (AnnotatedArrayType) t);
-        }
-
-        final AnnotatedTypeMirror elemType = atypeFactory.getAnnotatedType(elem);
-
-        // t.getKind() may be a TypeKind.ARRAY for Array.length calls.
-        // We don't _think_ there are any other cases where t.getKind() != TypeKind.DECLARED
-        if (t.getKind() != TypeKind.DECLARED) {
-            return elemType;
-        }
+    private static AnnotatedTypeMirror substituteTypeVariables(Types types, AnnotatedTypeFactory atypeFactory,
+                                                               AnnotatedTypeMirror of, Element member, AnnotatedTypeMirror memberType) {
 
         // Basic Algorithm:
-        // 1. Find the owner of the element
-        // 2. Find the base type of owner (e.g. type of owner as supertype
+        // 1. Find the enclosingClassOfMember of the element
+        // 2. Find the base type of enclosingClassOfMember (e.g. type of enclosingClassOfMember as supertype
         //      of passed type)
         // 3. Substitute for type variables if any exist
-        TypeElement owner = ElementUtils.enclosingClass(elem);
-        // Is the owner or any enclosing class generic?
-        boolean ownerGeneric = false;
-        {
-            TypeElement encl = owner;
-            while (encl != null) {
-                if (!encl.getTypeParameters().isEmpty()) {
-                    ownerGeneric = true;
-                    break;
-                }
-                encl = ElementUtils.enclosingClass(encl.getEnclosingElement());
-            }
+        TypeElement enclosingClassOfMember = ElementUtils.enclosingClass(member);
+        final Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
+
+        // Look for all enclosing classes that have type variables
+        // and collect type to be substituted for those type variables
+        while (enclosingClassOfMember != null) {
+            addTypeVarMappings(types, atypeFactory, of, enclosingClassOfMember, mappings);
+            enclosingClassOfMember = ElementUtils.enclosingClass(enclosingClassOfMember.getEnclosingElement());
         }
 
-        // TODO: Potential bug if Raw type is used
-        if (!ownerGeneric) {
-            return elemType;
+        if (!mappings.isEmpty()) {
+            return atypeFactory.getTypeVarSubstitutor().substitute(mappings, memberType);
         }
 
-        AnnotatedDeclaredType ownerType = atypeFactory.getAnnotatedType(owner);
-        AnnotatedDeclaredType base =
-                (AnnotatedDeclaredType) asOuterSuper(types, atypeFactory, t, ownerType);
+        return memberType;
+    }
+
+    private static void addTypeVarMappings(Types types, AnnotatedTypeFactory atypeFactory,
+                                           AnnotatedTypeMirror t, TypeElement enclosingClassOfElem,
+                                           Map<TypeVariable, AnnotatedTypeMirror> mappings) {
+        if (enclosingClassOfElem.getTypeParameters().isEmpty()) {
+            return;
+        }
+        AnnotatedDeclaredType enclosingType = atypeFactory.getAnnotatedType(enclosingClassOfElem);
+        AnnotatedDeclaredType base = (AnnotatedDeclaredType) asOuterSuper(types, atypeFactory, t, enclosingType);
 
         if (base == null) {
-            return elemType;
+            // asSuper should not return null, but currently does in some cases.
+            // See Issue 717
+            // https://github.com/typetools/checker-framework/issues/717
+            return;
         }
 
-        final List<AnnotatedTypeVariable> ownerParams = new ArrayList<>(ownerType.getTypeArguments().size());
-        for (final AnnotatedTypeMirror typeParam : ownerType.getTypeArguments()) {
+        final List<AnnotatedTypeVariable> ownerParams = new ArrayList<>(enclosingType.getTypeArguments().size());
+        for (final AnnotatedTypeMirror typeParam : enclosingType.getTypeArguments()) {
             if (typeParam.getKind() != TypeKind.TYPEVAR) {
                 ErrorReporter.errorAbort("Type arguments of a declaration should be type variables\n"
-                                       + "owner=" + owner + "\n"
-                                       + "ownerType=" + ownerType + "\n"
-                                       + "typeMirror=" + t + "\n"
-                                       + "element=" + elem);
+                                         + "enclosingClassOfElem=" + enclosingClassOfElem + "\n"
+                                         + "enclosingType=" + enclosingType + "\n"
+                                         + "typeMirror=" + t);
             }
             ownerParams.add((AnnotatedTypeVariable) typeParam);
         }
 
-        final List<? extends AnnotatedTypeMirror> baseParams = base.getTypeArguments();
-        if (!ownerParams.isEmpty()) {
-            if (baseParams.isEmpty()) {
-                List<AnnotatedTypeMirror> baseParamsEr = new ArrayList<>();
-                for (AnnotatedTypeMirror arg : ownerParams) {
-                    baseParamsEr.add(arg.getErased());
-                }
-                return subst(atypeFactory, elemType, ownerParams, baseParamsEr);
+        List<AnnotatedTypeMirror> baseParams = base.getTypeArguments();
+        if (ownerParams.size() != baseParams.size() && !base.wasRaw()) {
+            ErrorReporter.errorAbort("Unexpected number of parameters.\n"
+                                     + "enclosingType=" + enclosingType + "\n"
+                                     + "baseType=" + base);
+        }
+        if (!ownerParams.isEmpty() && baseParams.isEmpty() && base.wasRaw()) {
+            List<AnnotatedTypeMirror> newBaseParams = new ArrayList<>();
+            for (AnnotatedTypeVariable arg : ownerParams) {
+                // If base type was raw and the type arguments are missing,
+                // set them to the erased type of the type variable.
+                // (which is the erased type of the upper bound.)
+                newBaseParams.add(arg.getErased());
             }
-            return subst(atypeFactory, elemType, ownerParams, baseParams);
+            baseParams = newBaseParams;
         }
 
-        return elemType;
-    }
-
-    /**
-     * Returns a new type, a copy of the passed {@code t}, with all
-     * instances of {@code from} type substituted with their correspondents
-     * in {@code to}.
-     *
-     * @param t     the type
-     * @param from  the from types
-     * @param to    the to types
-     * @return  the new type after substitutions
-     */
-    private static AnnotatedTypeMirror subst(AnnotatedTypeFactory atypeFactory,
-                                             AnnotatedTypeMirror t,
-                                             List<? extends AnnotatedTypeVariable> from,
-                                             List<? extends AnnotatedTypeMirror> to) {
-        final Map<TypeVariable, AnnotatedTypeMirror> mappings = new HashMap<>();
-
-        for (int i = 0; i < from.size(); ++i) {
-            mappings.put(from.get(i).getUnderlyingType(), to.get(i));
+        for (int i = 0; i < ownerParams.size(); ++i) {
+            mappings.put(ownerParams.get(i).getUnderlyingType(), baseParams.get(i));
         }
-        return atypeFactory.getTypeVarSubstitutor().substitute(mappings, t);
     }
 
     /**
