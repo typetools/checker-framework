@@ -16,10 +16,15 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 
 public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
 
     private final AnnotationMirror UNKNOWN_SIGNEDNESS;
+    private final String JAVA_LANG_BYTE = "java.lang.Byte";
+    private final String JAVA_LANG_SHORT = "java.lang.Short";
+    private final String JAVA_LANG_INTEGER = "java.lang.Integer";
+    private final String JAVA_LANG_LONG = "java.lang.Long";
     
     public UnsignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -63,7 +68,18 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
             defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
             defaults.annotate(tree, type);
         }
-
+        
+        
+        /*switch (type.getUnderlyingType().toString()) {
+        case JAVA_LANG_BYTE:
+        case JAVA_LANG_SHORT:
+        case JAVA_LANG_INTEGER:
+        case JAVA_LANG_LONG:
+            QualifierDefaults defaults = new QualifierDefaults(elements, this);
+            defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
+            defaults.annotate(tree, type);
+        }*/
+        
     }
     
     @Override

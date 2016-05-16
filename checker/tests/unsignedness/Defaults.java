@@ -127,13 +127,14 @@ public class Defaults {
         //:: error: (assignment.type.incompatible)
         conChar = testChar;
         
+        /*
         //Test boxed bytes
         @Signed Byte sinBoxedByte;
         @Constant Byte conBoxedByte;
         
         sinBoxedByte = testBoxedByte;
         
-        //:: error: (assignment.type.incompatible)
+        ////:: error: (assignment.type.incompatible)
         conBoxedByte = testBoxedByte;
         
         //Test boxed shorts
@@ -142,7 +143,7 @@ public class Defaults {
         
         sinBoxedShort = testBoxedShort;
         
-        //:: error: (assignment.type.incompatible)
+        ////:: error: (assignment.type.incompatible)
         conBoxedShort = testBoxedShort;
         
         //Test boxed Integers
@@ -151,7 +152,7 @@ public class Defaults {
         
         sinBoxedInteger = testBoxedInteger;
         
-        //:: error: (assignment.type.incompatible)
+        ////:: error: (assignment.type.incompatible)
         conBoxedInteger = testBoxedInteger;
         
         //Test boxed Longs
@@ -160,8 +161,9 @@ public class Defaults {
         
         sinBoxedLong = testBoxedLong;
         
-        //:: error: (assignment.type.incompatible)
+        ////:: error: (assignment.type.incompatible)
         conBoxedLong = testBoxedLong;
+        */
     }
 
     public void UnsignednessBottom() {

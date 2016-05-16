@@ -27,11 +27,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
         TypeKind.FLOAT,
         TypeKind.DOUBLE,
         TypeKind.CHAR
-    },
+    }/*,
     typeNames = {
         java.lang.Byte.class,
         java.lang.Short.class,
         java.lang.Integer.class,
         java.lang.Long.class
-    } )
+    }*/ )
 public @interface Signed { }
