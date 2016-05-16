@@ -10,16 +10,17 @@ import javax.lang.model.element.AnnotationMirror;
  */
 public interface TypeHierarchy {
 
-
     /**
      * Returns true if {@code subtype} is a subtype of or convertible to {@code supertype}
-     * for all hierarchies present.  If the underlying Java type of {@code subtype} must be a subtype of
+     * for all hierarchies present.  If the underlying Java type of {@code subtype} is not a subtype of
      * or convertible to the underlying Java type of {@code supertype}, then the behavior of this method is undefined.
-     *
+     * <p>
      * Ideally, types that require conversions would be converted before isSubtype is called, but instead, isSubtype
      * performs some of these conversions.
-     *
-     * JLS 5.1 specifies 13 categories of conversions.  4 categories are converted in isSubtype:
+     * <p>
+     * JLS 5.1 specifies 13 categories of conversions.
+     * <p>
+     * 4 categories are converted in isSubtype:
      *
      * <ul>
      * <li> Boxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper}
@@ -30,7 +31,7 @@ public interface TypeHierarchy {
      * <li> String conversions: Any type to String. Special case in {@link DefaultTypeHierarchy#visitDeclared_Declared}.
      * </ul>
      *
-     *  1 happens else where:
+     * 1 happens elsewhere:
      * <ul>
      * <li> Unchecked conversions: Generic type to raw type.  Raw types are instantiated with bounds in
      *      {@link AnnotatedTypeFactory#fromTypeTree} before is subtype is called
@@ -39,8 +40,8 @@ public interface TypeHierarchy {
      * 7 are not explicitly converted and are treated as though the types are actually subtypes.
      * <ul>
      * <li> Identity conversions: type to same type
-     * <li> Widening primitive conversions: primitive to primitive (no lose of information, byte to short for example)
-     * <li> Narrowing primitive conversions: primitive to primitive (possibly lose information, short to byte for example)
+     * <li> Widening primitive conversions: primitive to primitive (no loss of information, byte to short for example)
+     * <li> Narrowing primitive conversions: primitive to primitive (possibly loss information, short to byte for example)
      * <li> Widening and Narrowing Primitive Conversion: byte to char
      * <li> Widening reference conversions: Upcast
      * <li> Narrowing reference conversions: Downcast
@@ -51,7 +52,7 @@ public interface TypeHierarchy {
      * @param supertype possible supertype
      * @return true if {@code subtype} is a subtype of {@code supertype} for all hierarchies present.
      */
-     boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
+    boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
 
     /**
      * The same as {@link #isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)}, but only for the hierarchy of which
@@ -63,5 +64,5 @@ public interface TypeHierarchy {
      * @return Returns true if {@code subtype} is a subtype of {@code supertype} in the qualifier hierarchy
      * whose top is {@code top}
      */
-     boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top);
+    boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top);
 }
