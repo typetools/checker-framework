@@ -182,7 +182,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             sb.append(annoFormatter.formatAnnotationString(type.getAnnotations(), currentPrintInvisibleSetting));
             sb.append(smpl);
 
-            if(type.typeArgs != null) {
+            if (type.typeArgs != null) {
                 // getTypeArguments sets the field if it does not already exist.
                 final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
                 if (!typeArgs.isEmpty()) {
