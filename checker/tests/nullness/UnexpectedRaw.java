@@ -17,10 +17,10 @@ class Utils {
     // null for simplicity, but could be anything
     Consumer<@Nullable Object> nullConsumer = null;
 
-    //Previous reasoning for this to generate an (argument.type.incompatible) error was:
+    // Previous reasoning for this to generate an (argument.type.incompatible) error was:
     // C could be @NonNull Object, so argument is incompatible?
     //
-    //This is poor reasoning, however, because the type of the formal parameter should be:
+    // This is poor reasoning, however, because the type of the formal parameter should be:
     // @Nullable Consumer< ? [
     //                         super C[ extends @Nullable Object
     //                                  super @NonNull  Void
@@ -54,7 +54,7 @@ class Utils {
     // should NOT report an error
     Consumer<C> result = Utils.<C>cast(nullConsumer);
 
-    //on a side note, I am not sure why this is called unexpected raw
+    // on a side note, I am not sure why this is called unexpected raw
     return result;
   }
 }

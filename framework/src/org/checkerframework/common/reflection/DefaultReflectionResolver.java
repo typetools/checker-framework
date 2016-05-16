@@ -331,7 +331,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * @param tree
      *            The MethodInvocationTree node that is to be resolved
      *            (Method.invoke)
-     * @return A (potentially empty) list of all resolved MethodInvocationTrees
+     * @return a (potentially empty) list of all resolved MethodInvocationTrees
      */
     private List<MethodInvocationTree> resolveReflectiveMethod(
             MethodInvocationTree tree, AnnotatedTypeFactory reflectionFactory) {
@@ -439,7 +439,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * @param tree
      *            The MethodInvocationTree node that is to be resolved
      *            (Constructor.newInstance)
-     * @return A (potentially empty) list of all resolved MethodInvocationTrees
+     * @return a (potentially empty) list of all resolved MethodInvocationTrees
      */
     private List<JCNewClass> resolveReflectiveConstructor(
             MethodInvocationTree tree, AnnotatedTypeFactory reflectionFactory) {
@@ -506,7 +506,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * Get set of MethodSymbols based on class name, method name, and parameter
      * length.
      *
-     * @return The (potentially empty) set of corresponding method Symbol(s).
+     * @return the (potentially empty) set of corresponding method Symbol(s)
      */
     private List<Symbol> getMethodSymbolsfor(String className,
             String methodName, int paramLength, Env<AttrContext> env) {
@@ -539,16 +539,19 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                         }
                     }
                 }
-                if (result.size() != 0)
+                if (result.size() != 0) {
                     break;
+                }
                 Type t = classSym.getSuperclass();
-                if (!t.hasTag(CLASS) || t.isErroneous())
+                if (!t.hasTag(CLASS) || t.isErroneous()) {
                     break;
+                }
                 classSym = (ClassSymbol) t.tsym;
             }
-            if (result.size() == 0)
+            if (result.size() == 0) {
                 debugReflection("Unable to resolve method: " + className + "@"
                         + methodName);
+            }
         } catch (SecurityException | NoSuchMethodException
                 | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {
@@ -563,8 +566,8 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * Get set of Symbols for constructors based on class name and parameter
      * length.
      *
-     * @return The (potentially empty) set of corresponding constructor
-     *         Symbol(s).
+     * @return the (potentially empty) set of corresponding constructor
+     *         Symbol(s)
      */
     private List<Symbol> getConstructorSymbolsfor(String className,
             int paramLength, Env<AttrContext> env) {
@@ -596,8 +599,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
                     }
                 }
             }
-            if (result.size() == 0)
+            if (result.size() == 0) {
                 debugReflection("Unable to resolve constructor!");
+            }
         } catch (SecurityException | NoSuchMethodException
                 | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException e) {

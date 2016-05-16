@@ -56,8 +56,10 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror TOP = AnnotationUtils.fromClass(elements, UnknownUnits.class);
     protected final AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, UnitsBottom.class);
 
-    // Map from canonical class name to the corresponding UnitsRelations instance.
-    // We use the string to prevent instantiating the UnitsRelations multiple times.
+    /**
+     * Map from canonical class name to the corresponding UnitsRelations instance.
+     * We use the string to prevent instantiating the UnitsRelations multiple times.
+     */
     private Map<String, UnitsRelations> unitsRel;
 
     private static final Map<String, Class<? extends Annotation>> externalQualsMap = new HashMap<String, Class<? extends Annotation>>();
@@ -176,14 +178,14 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    // loads and processes a single external units qualifier
+    /** Loads and processes a single external units qualifier. */
     private void loadExternalUnit(String annoName) {
         Class<? extends Annotation> annoClass = loader.loadExternalAnnotationClass(annoName);
 
         addUnitToExternalQualMap(annoClass);
     }
 
-    // loads and processes the units qualifiers from a single external directory
+    /** Loads and processes the units qualifiers from a single external directory. */
     private void loadExternalDirectory(String directoryName) {
         Set<Class<? extends Annotation>> annoClassSet = loader.loadExternalAnnotationClassesFromDirectory(directoryName);
 
@@ -192,7 +194,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    // adds the annotation class to the external qualifier map if it is not an alias annotation
+    /** Adds the annotation class to the external qualifier map if it is not an alias annotation. */
     private void addUnitToExternalQualMap(final Class<? extends Annotation> annoClass) {
         AnnotationMirror mirror = UnitsRelationsTools.buildAnnoMirrorWithNoPrefix(processingEnv, annoClass);
 
@@ -217,8 +219,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // then add the aliased annotation to the alias map
                 // TODO: refactor so we can directly add to alias map, skipping the assert check in aliasedAnnotation
                 aliasedAnnotation(mirror);
-            }
-            else {
+            } else {
                 // error: somehow the aliased annotation has @UnitsMultiple meta annotation, but no base class defined in that meta annotation
                 // TODO: error abort
             }
@@ -266,7 +267,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Look for an @UnitsRelations annotation on the qualifier and
      * add it to the list of UnitsRelations.
      *
-     * @param qual The qualifier to investigate.
+     * @param qual the qualifier to investigate
      */
     private void addUnitsRelations(Class<? extends Annotation> qual) {
         AnnotationMirror am = AnnotationUtils.fromClass(elements, qual);

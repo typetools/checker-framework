@@ -59,8 +59,9 @@ class LambdaNullness {
        if (true) return 12;
        else {
          int result = 15;
-         for (int i = 1; i < 10; i++)
+         for (int i = 1; i < 10; i++) {
            result *= i;
+         }
          //:: error: (return.type.incompatible)
          return null;
        }

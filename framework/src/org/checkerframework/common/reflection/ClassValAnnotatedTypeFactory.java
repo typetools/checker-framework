@@ -84,7 +84,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * <code>@ClassBound</code> or <code>@ClassVal</code>, otherwise returns an empty list
      *
      * @param anno any AnnotationMirror
-     * @return List of classnames in anno
+     * @return list of classnames in anno
      */
     public static List<String> getClassNamesFromAnnotation(AnnotationMirror anno) {
         if (AnnotationUtils.areSameByClass(anno, ClassBound.class)
@@ -125,14 +125,14 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a2;
             } else if (isSubtype(a2, a1)) {
                 return a1;
-            } else  {
+            } else {
                 List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
                 List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
                 Set<String> lubClassNames = new TreeSet<String>();
                 lubClassNames.addAll(a1ClassNames);
                 lubClassNames.addAll(a2ClassNames);
 
-                //If either annotation is a ClassBound, the lub must also be a class bound.
+                // If either annotation is a ClassBound, the lub must also be a class bound.
                 if (AnnotationUtils.areSameByClass(a1, ClassBound.class) ||
                         AnnotationUtils.areSameByClass(a2, ClassBound.class)) {
                     return createClassBound(new ArrayList<>(lubClassNames));
@@ -150,7 +150,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a1;
             } else if (isSubtype(a2, a1)) {
                 return a2;
-            } else  {
+            } else {
                 List<String> a1ClassNames = getClassNamesFromAnnotation(a1);
                 List<String> a2ClassNames = getClassNamesFromAnnotation(a2);
                 Set<String> glbClassNames = new TreeSet<String>();
@@ -193,8 +193,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return false;
             }
 
-            //if super: ClassVal && sub is ClassVal
-            //if super: ClassBound && (sub is ClassBound or ClassVal)
+            // if super: ClassVal && sub is ClassVal
+            // if super: ClassBound && (sub is ClassBound or ClassVal)
 
             List<String> supValues = getClassNamesFromAnnotation(sup);
             List<String> subValues = getClassNamesFromAnnotation(sub);
@@ -244,7 +244,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror type) {
 
             if (isForNameMethodInovaction(tree)) {
-                //Class.forName(name): @ClassVal("name")
+                // Class.forName(name): @ClassVal("name")
                 ExpressionTree arg = tree.getArguments().get(0);
                 List<String> classNames = getStringValues(arg);
                 if (classNames != null) {
@@ -309,8 +309,9 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     while (classType.getEnclosingType().getKind() != TypeKind.NONE) {
                         classType = classType.getEnclosingType();
                         int last = className.lastIndexOf(".");
-                        if (last > -1)
+                        if (last > -1) {
                             className.replace(last, last + 1, "$");
+                        }
                     }
                 }
                 return className.toString();

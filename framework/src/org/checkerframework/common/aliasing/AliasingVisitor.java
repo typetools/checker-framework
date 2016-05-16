@@ -122,7 +122,7 @@ public class AliasingVisitor extends
                         isUniqueCheck(node, parentIsStatement, hasNonLeaked,
                                 hasLeakedToResult);
                     } else {
-                        //Not possible to leak reference here (case 1. from the javadoc).
+                        // Not possible to leak reference here (case 1. from the javadoc).
                     }
                 }
 
@@ -269,8 +269,9 @@ public class AliasingVisitor extends
     private boolean isInUniqueConstructor(Tree tree) {
         MethodTree enclosingMethod = TreeUtils
                 .enclosingMethod(getCurrentPath());
-        if (enclosingMethod == null)
+        if (enclosingMethod == null) {
             return false; // No enclosing method.
+        }
         return TreeUtils.isConstructor(enclosingMethod)
                 && atypeFactory.getAnnotatedType(enclosingMethod)
                         .getReturnType().hasAnnotation(Unique.class);

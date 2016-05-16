@@ -11,5 +11,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/dataflow"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/javacutil"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/annotation-file-utilities"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/scene-lib"/>
 	<classpathentry kind="output" path="build"/>
 </classpath>

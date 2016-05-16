@@ -26,7 +26,7 @@ class TypeRefinement {
         // unique is refined to @Unique here, according to the definition.
         isUnique(unique);
 
-        String notUnique = unique; //unique loses its refinement.
+        String notUnique = unique; // unique loses its refinement.
 
         //:: error: (argument.type.incompatible)
         isUnique(unique);

@@ -1,7 +1,6 @@
 <project name="personalblog-demo" default="check-tainting">
 <property environment="env"/>
 
-  <!-- <property name="checker-framework" value="${env.CHECKERFRAMEWORK}"/> -->
   <property name="checker-framework" value="../../.."/>
 
   <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->

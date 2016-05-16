@@ -1,17 +1,65 @@
 ---------------------------------------------------------------------------
 
-Version 2.0.0, 1 May 2016
+Version 2.0.1, 1 June 2016
 
-The IGJ, OIGJ, and Javari Checkers are no longer distributed with the
-Checker Framework.  If you wish to use them, install version 1.9.13 of the
-Checker Framework.  They have been removed because they were not being
-maintained; as a result, they often caused false positive test failures.
-The type systems are valuable, but the best way to get to a good
-implementation of them is to rewrite the type-checker from scratch, which
-will lead to a smaller, simpler, more correct implementation.
+Closed issues:
+704
 
-New manual section "Tips for creating a checker" shows how to break down
-the implementation of a type system into small, manageable pieces.
+---------------------------------------------------------------------------
+
+Version 2.0.0, 2 May 2016
+
+Inference:
+
+ * The infer-and-annotate.sh script infers annotations and inserts them in
+   your source code.  This can reduce the burden of writing annotations and
+   let you get started using a type system more quickly.  See the
+   "Whole-program inference" section in the manual for details.
+
+Type systems:
+
+ * The Lock Checker has been replaced by a new implementation that provides
+   a stronger guarantee.  The old Lock Checker prevented two threads from
+   simultaneously using a given variable, but race conditions were still
+   possible due to aliases.  The new Lock Checker prevents two threads from
+   simultaneously dereferencing a given value, and thus prevents race
+   conditions.  For details, see the "Lock Checker" chapter in the manual,
+   which has been rewritten to describe the new semantics.
+
+ * The top type qualifier for the Signature String type system has been
+   renamed from @UnannotatedString to @SignatureUnknown.  You shouldn't
+   ever write this annotation, but if you perform separate compilation (for
+   instance, if you do type-checking with the Signature String Checker
+   against a library that is annotated with Signature String annotations),
+   then you need to re-compile the library.
+
+ * The IGJ, OIGJ, and Javari Checkers are no longer distributed with the
+   Checker Framework.  If you wish to use them, install version 1.9.13 of
+   the Checker Framework.  The implementations have been removed because
+   they were not being maintained.  The type systems are valuable, but the
+   type-checkers should be rewritten from scratch.
+
+Documentation improvements:
+
+ * New manual section "Tips for creating a checker" shows how to break down
+   the implementation of a type system into small, manageable pieces.
+
+ * Improved instructions for using Maven and Gradle, including for Android
+   code.
+
+Tool changes:
+
+ * The Checker Framework Live Demo webpage lets you try the Checker
+   Framework without installing it:  http://eisop.uwaterloo.ca/live/
+
+ * New command-line arguments -Acfgviz and -Averbosecfg enable better
+   debugging of the control-flow-graph generation step of type-checking.
+
+ * New command-line argument -Ainfer is used by the infer-and-annotate.sh
+   script that performs type inference.
+
+Closed issues:
+69, 86, 199, 299, 329, 421, 428, 557, 564, 573, 579, 665, 668, 669, 670, 671.
 
 ---------------------------------------------------------------------------
 

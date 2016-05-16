@@ -92,11 +92,13 @@ public class AnnotationUtils {
      * @return an {@link AnnotationMirror} of type {@code} name
      */
     public static AnnotationMirror fromName(Elements elements, CharSequence name) {
-        if (annotationsFromNames.containsKey(name))
+        if (annotationsFromNames.containsKey(name)) {
             return annotationsFromNames.get(name);
+        }
         final DeclaredType annoType = typeFromName(elements, name);
-        if (annoType == null)
+        if (annoType == null) {
             return null;
+        }
         if (annoType.asElement().getKind() != ElementKind.ANNOTATION_TYPE) {
             ErrorReporter.errorAbort(annoType + " is not an annotation");
             return null; // dead code
@@ -145,8 +147,9 @@ public class AnnotationUtils {
      */
     private static DeclaredType typeFromName(Elements elements, CharSequence name) {
         /*@Nullable*/ TypeElement typeElt = elements.getTypeElement(name);
-        if (typeElt == null)
+        if (typeElt == null) {
             return null;
+        }
 
         return (DeclaredType) typeElt.asType();
     }
@@ -159,17 +162,26 @@ public class AnnotationUtils {
     // **********************************************************************
 
     /**
-     * @return the fully-qualified name of an annotation as a Name
+     * @return the fully-qualified name of an annotation as a String
      */
     public static final /*@Interned*/ String annotationName(AnnotationMirror annotation) {
-        if (annotationMirrorNames.containsKey(annotation))
+        if (annotationMirrorNames.containsKey(annotation)) {
             return annotationMirrorNames.get(annotation);
+        }
 
         final DeclaredType annoType = annotation.getAnnotationType();
         final TypeElement elm = (TypeElement) annoType.asElement();
         /*@Interned*/ String name = elm.getQualifiedName().toString().intern();
         annotationMirrorNames.put(annotation, name);
         return name;
+    }
+
+    /**
+     * @return the simple name of an annotation as a String
+     */
+    public static String annotationSimpleName(AnnotationMirror annotation) {
+        String annotationName = annotationName(annotation);
+        return annotationName.substring(annotationName.lastIndexOf('.') + 1 /* +1 to skip the last . as well */);
     }
 
     /**
@@ -204,8 +216,9 @@ public class AnnotationUtils {
      * @return true iff a1 and a2 have the same annotation type
      */
     public static boolean areSameIgnoringValues(AnnotationMirror a1, AnnotationMirror a2) {
-        if (a1 != null && a2 != null)
+        if (a1 != null && a2 != null) {
             return annotationName(a1) == annotationName(a2);
+        }
         return a1 == a2;
     }
 
@@ -240,10 +253,12 @@ public class AnnotationUtils {
      * @return true iff c1 and c2 contain the same annotations
      */
     public static boolean areSame(Collection<? extends AnnotationMirror> c1, Collection<? extends AnnotationMirror> c2) {
-        if (c1.size() != c2.size())
+        if (c1.size() != c2.size()) {
             return false;
-        if (c1.size() == 1)
+        }
+        if (c1.size() == 1) {
             return areSame(c1.iterator().next(), c2.iterator().next());
+        }
 
         Set<AnnotationMirror> s1 = createAnnotationSet();
         Set<AnnotationMirror> s2 = createAnnotationSet();
@@ -257,8 +272,9 @@ public class AnnotationUtils {
         while (iter1.hasNext()) {
             AnnotationMirror anno1 = iter1.next();
             AnnotationMirror anno2 = iter2.next();
-            if (!areSame(anno1, anno2))
+            if (!areSame(anno1, anno2)) {
                 return false;
+            }
         }
         return true;
     }
@@ -268,7 +284,7 @@ public class AnnotationUtils {
      * Using Collection.contains does not always work, because it
      * does not use areSame for comparison.
      *
-     * @return true iff c contains anno, according to areSame.
+     * @return true iff c contains anno, according to areSame
      */
     public static boolean containsSame(Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
@@ -284,7 +300,7 @@ public class AnnotationUtils {
      * Using Collection.contains does not always work, because it
      * does not use areSame for comparison.
      *
-     * @return true iff c contains anno, according to areSameByClass.
+     * @return true iff c contains anno, according to areSameByClass
      */
     public static boolean containsSameByClass(Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
         for (AnnotationMirror an : c) {
@@ -300,7 +316,7 @@ public class AnnotationUtils {
      * Using Collection.contains does not always work, because it
      * does not use areSameIgnoringValues for comparison.
      *
-     * @return true iff c contains anno, according to areSameIgnoringValues.
+     * @return true iff c contains anno, according to areSameIgnoringValues
      */
     public static boolean containsSameIgnoringValues(Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
@@ -391,8 +407,9 @@ public class AnnotationUtils {
         for (ExecutableElement meth :
             ElementFilter.methodsIn(ad.getAnnotationType().asElement().getEnclosedElements())) {
             AnnotationValue defaultValue = meth.getDefaultValue();
-            if (defaultValue != null && !valMap.containsKey(meth))
+            if (defaultValue != null && !valMap.containsKey(meth)) {
                 valMap.put(meth, defaultValue);
+            }
         }
         return valMap;
     }
@@ -434,7 +451,7 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param name the name of the attribute to access
      * @param expectedType the expected type used to cast the return type
-     * @param useDefaults whether to apply default values to the attribute.
+     * @param useDefaults whether to apply default values to the attribute
      * @return the value of the attribute with the given name
      */
     public static <T> T getElementValue(AnnotationMirror anno, CharSequence name,
@@ -478,7 +495,7 @@ public class AnnotationUtils {
      * @param anno the annotation to disassemble
      * @param name the name of the attribute to access
      * @param expectedType the expected type used to cast the return type
-     * @param useDefaults whether to apply default values to the attribute.
+     * @param useDefaults whether to apply default values to the attribute
      * @return the value of the attribute with the given name
      */
     public static <T> List<T> getElementValueArray(AnnotationMirror anno,
@@ -565,7 +582,7 @@ public class AnnotationUtils {
      * Callers should check that {@code constructorDeclaration} is in fact a declaration
      * of a constructor.
      *
-     * @param constructorDeclaration Declaration tree of constructor
+     * @param constructorDeclaration declaration tree of constructor
      * @return set of annotations explicit on the resulting type of the constructor
      */
     public static Set<AnnotationMirror> getExplicitAnnotationsOnConstructorResult(MethodTree constructorDeclaration) {

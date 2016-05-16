@@ -355,16 +355,18 @@ public class I18nFormatUtil {
 
         private static final int findKeyword(String s, String[] list) {
             for (int i = 0; i < list.length; ++i) {
-                if (s.equals(list[i]))
+                if (s.equals(list[i])) {
                     return i;
+                }
             }
 
             // Try trimmed lowercase.
             String ls = s.trim().toLowerCase(Locale.ROOT);
             if (ls != s) {
                 for (int i = 0; i < list.length; ++i) {
-                    if (ls.equals(list[i]))
+                    if (ls.equals(list[i])) {
                         return i;
+                    }
                 }
             }
             return -1;

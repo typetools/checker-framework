@@ -21,9 +21,9 @@ public interface AFReducer {
      * Return false (indicating that some other reducer needs to handle this constraint)
      *     If false is returned, the reducer should NOT place any constraints in newConstraints or finished
      *
-     * @param constraint The constraint to reduce
-     * @param newConstraints The new constraints that may still need to be reduced
-     * @return True if the input constraint was handled by this reducer, false otherwise
+     * @param constraint the constraint to reduce
+     * @param newConstraints the new constraints that may still need to be reduced
+     * @return true if the input constraint was handled by this reducer, false otherwise
      */
     public boolean reduce(AFConstraint constraint, Set<AFConstraint> newConstraints);
 }

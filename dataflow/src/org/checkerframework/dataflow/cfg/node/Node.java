@@ -74,7 +74,7 @@ public abstract class Node {
     }
 
     /**
-     * @return The basic block this node belongs to (or {@code null} if it
+     * @return the basic block this node belongs to (or {@code null} if it
      *         represents the parameter of a method).
      */
     public /*@Nullable*/ Block getBlock() {
@@ -91,7 +91,7 @@ public abstract class Node {
      * <code>null</code> if no corresponding tree exists. For instance, this is
      * the case for an {@link ImplicitThisLiteralNode}.
      *
-     * @return The corresponding {@link Tree} or <code>null</code>.
+     * @return the corresponding {@link Tree} or <code>null</code>.
      */
     abstract public /*@Nullable*/ Tree getTree();
 
@@ -99,7 +99,7 @@ public abstract class Node {
      * Returns a {@link TypeMirror} representing the type of a {@link Node} A
      * {@link Node} will always have a type even when it has no {@link Tree}.
      *
-     * @return A {@link TypeMirror} representing the type of this {@link Node}.
+     * @return a {@link TypeMirror} representing the type of this {@link Node}.
      */
     public TypeMirror getType() {
         return type;
@@ -147,13 +147,13 @@ public abstract class Node {
     }
 
     /**
-     * @return A collection containing all of the operand {@link Node}s of this
+     * @return a collection containing all of the operand {@link Node}s of this
      *         {@link Node}.
      */
     public abstract Collection<Node> getOperands();
 
     /**
-     * @return A collection containing all of the operand {@link Node}s of this
+     * @return a collection containing all of the operand {@link Node}s of this
      *         {@link Node}, as well as (transitively) the operands of its
      *         operands.
      */

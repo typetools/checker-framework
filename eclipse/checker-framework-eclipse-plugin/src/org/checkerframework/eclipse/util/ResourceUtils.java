@@ -121,7 +121,7 @@ public class ResourceUtils {
      * Collects and combines the selection which may contain sources from
      * different projects and / or multiple sources from same project.
      * <p>
-     * If selection contains hierarchical data (like file and it's parent
+     * If selection contains hierarchical data (like file and its parent
      * directory), the only topmost element is returned (same for directories
      * from projects).
      * <p>

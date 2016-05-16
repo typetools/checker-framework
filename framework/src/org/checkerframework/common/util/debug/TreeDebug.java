@@ -58,15 +58,17 @@ public class TreeDebug extends AbstractProcessor {
 
             // Indent according to subtrees.
             if (getCurrentPath() != null) {
-                for (TreePath tp = getCurrentPath(); tp != null; tp = tp.getParentPath())
+                for (TreePath tp = getCurrentPath(); tp != null; tp = tp.getParentPath()) {
                     buf.append("  ");
+                }
             }
 
             // Add node kind to the buffer.
-            if (node == null)
+            if (node == null) {
                 buf.append("null");
-            else
+            } else {
                 buf.append(node.getKind());
+            }
             buf.append(LINE_SEPARATOR);
 
             // Visit subtrees.

@@ -8,6 +8,11 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+import lubglb.quals.B;
+import lubglb.quals.C;
+import lubglb.quals.D;
+import lubglb.quals.E;
+
 // Type hierarchy:
 //    A       <-- @DefaultQualifierInHierarchy
 //   / \
@@ -16,10 +21,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 //    D   E
 //     \ /
 //      F
-import lubglb.quals.B;
-import lubglb.quals.C;
-import lubglb.quals.D;
-import lubglb.quals.E;
 
 public class LubGlbChecker extends BaseTypeChecker {
 

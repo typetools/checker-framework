@@ -77,7 +77,7 @@ public class JavacRunner implements CheckersRunner
         // The following code uses the compiler's internal APIs, which are
         // volatile. (see warning in JavacTool source)
         JavacTool tool = JavacTool.create();
-        JavacFileManager manager = null; //tool.getStandardFileManager(collector, null, null);
+        JavacFileManager manager = null; // tool.getStandardFileManager(collector, null, null);
 
         Iterable<? extends JavaFileObject> fileObjs = manager.getJavaFileObjectsFromStrings(fileNames);
 

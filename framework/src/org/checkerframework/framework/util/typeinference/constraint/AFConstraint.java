@@ -33,7 +33,10 @@ public abstract class AFConstraint {
     public final AnnotatedTypeMirror argument;
     public final AnnotatedTypeMirror formalParameter;
 
-    //used to compute hashcodes, this value should be unique for every subclass of AFConstraints
+    /**
+     * Used to compute hashcodes.
+     * This value should be unique for every subclass of AFConstraints.
+     */
     protected final int hashcodeBase;
 
     public AFConstraint(final AnnotatedTypeMirror argument, final AnnotatedTypeMirror formalParameter,
@@ -45,8 +48,8 @@ public abstract class AFConstraint {
 
     /**
      *
-     * @param targets The type parameters whose arguments we are trying to solve for
-     * @return Returns true if this constraint can't be broken up into other constraints or further simplified
+     * @param targets the type parameters whose arguments we are trying to solve for
+     * @return true if this constraint can't be broken up into other constraints or further simplified
      * In general, if either argument or formal parameter is a use of the type parameters we are inferring over
      * then the constraint cannot be reduced further
      */
@@ -59,7 +62,7 @@ public abstract class AFConstraint {
     public boolean equals(Object thatObject) {
         if (this == thatObject) {
             return true;
-        } //else
+        } // else
 
         if (thatObject == null || this.getClass() != thatObject.getClass()) {
             return false;
@@ -81,7 +84,7 @@ public abstract class AFConstraint {
     /**
      * Once AFConstraints are irreducible it can be converted to a TU constraint, constraints between
      * individual type parameters for which we are inferring an argument (T) and Java types (U).
-     * @return A TUConstraint that represents this AFConstraint
+     * @return a TUConstraint that represents this AFConstraint
      */
     public abstract TUConstraint toTUConstraint();
 
@@ -107,8 +110,8 @@ public abstract class AFConstraint {
      * {@code A0 << T1}
      *
      *
-     * @param substitutions A mapping of target type parameter to the type argument to
-     * @return A new constraint that contains no use of the keys in substitutions
+     * @param substitutions a mapping of target type parameter to the type argument to
+     * @return a new constraint that contains no use of the keys in substitutions
      */
     public AFConstraint substitute(final Map<TypeVariable, AnnotatedTypeMirror> substitutions) {
         final AnnotatedTypeMirror newArgument = TypeArgInferenceUtil.substitute(substitutions, argument);

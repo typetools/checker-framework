@@ -41,9 +41,9 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
     /**
      * In an AnnotatedTypeScanner a null type is encounter than null is returned.  A user may want to customize
      * the behavior of this scanner depending on whether or not one or both types is null.
-     * @param type1 A nullable AnnotatedTypeMirror
-     * @param type2 A nullable AnnotatedTypeMirror
-     * @param param The visitor param
+     * @param type1 a nullable AnnotatedTypeMirror
+     * @param type2 a nullable AnnotatedTypeMirror
+     * @param param the visitor param
      * @return a subclass specific return type/value
      */
     protected abstract RETURN_TYPE scanWithNull(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param);
@@ -87,8 +87,9 @@ public abstract class EquivalentAtmComboScanner<RETURN_TYPE, PARAM> extends Abst
     }
 
     protected RETURN_TYPE reduce(RETURN_TYPE r1, RETURN_TYPE r2) {
-        if (r1 == null)
+        if (r1 == null) {
             return r2;
+        }
         return r1;
     }
 

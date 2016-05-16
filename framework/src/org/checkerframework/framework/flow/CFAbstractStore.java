@@ -8,7 +8,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.PureMethodCall;
+import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.Store;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
@@ -78,10 +78,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected Map<FlowExpressions.ArrayAccess, V> arrayValues;
 
     /**
-     * Information collected about pure method calls, using the internal
-     * representation {@link PureMethodCall}.
+     * Information collected about method calls, using the internal
+     * representation {@link MethodCall}.
      */
-    protected Map<FlowExpressions.PureMethodCall, V> methodValues;
+    protected Map<FlowExpressions.MethodCall, V> methodValues;
 
     protected Map<FlowExpressions.ClassName, V> classValues;
 
@@ -270,7 +270,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         if (r instanceof FlowExpressions.FieldAccess
                 || r instanceof FlowExpressions.ThisReference
                 || r instanceof FlowExpressions.LocalVariable
-                || r instanceof FlowExpressions.PureMethodCall
+                || r instanceof FlowExpressions.MethodCall
                 || r instanceof FlowExpressions.ArrayAccess) {
             return !r.containsUnknown();
         }
@@ -322,8 +322,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     fieldValues.put(fieldAcc, newValue);
                 }
             }
-        } else if (r instanceof FlowExpressions.PureMethodCall) {
-            FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) r;
+        } else if (r instanceof FlowExpressions.MethodCall) {
+            FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
             // Don't store any information if concurrent semantics are enabled.
             if (sequentialSemantics) {
                 V oldValue = methodValues.get(method);
@@ -359,18 +359,21 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                     classValues.put(className, newValue);
                 }
             }
-        }
-        else {
+        } else {
             // No other types of expressions need to be stored.
         }
     }
 
     /**
      * @return true if fieldAcc is an update of a monotonic qualifier to its target qualifier.
-     * (e.g. @MonotonicNonNull to @NonNull)
+     * (e.g. @MonotonicNonNull to @NonNull). Always returns false if sequentialSemantics is true.
      */
-    private boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {
+    protected boolean isMonotonicUpdate(FieldAccess fieldAcc, V value) {
         boolean isMonotonic = false;
+        // TODO: this check for !sequentialSemantics is an optimization that breaks the contract of the method,
+        // since the method name and documentation say nothing about sequential semantics.
+        // This check should be performed by callers of this method when needed.
+        // TODO: Update the javadoc of this method when the above to-do item is addressed.
         if (!sequentialSemantics) { // only compute if necessary
             AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
             List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
@@ -439,8 +442,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             fieldValues.remove(fieldAcc);
-        } else if (r instanceof FlowExpressions.PureMethodCall) {
-            PureMethodCall method = (PureMethodCall) r;
+        } else if (r instanceof FlowExpressions.MethodCall) {
+            MethodCall method = (MethodCall) r;
             methodValues.remove(method);
         } else if (r instanceof FlowExpressions.ArrayAccess) {
             ArrayAccess a = (ArrayAccess) r;
@@ -454,7 +457,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * @return Current abstract value of a flow expression, or {@code null} if
+     * @return current abstract value of a flow expression, or {@code null} if
      *         no information is available.
      */
     public /*@Nullable*/ V getValue(FlowExpressions.Receiver expr) {
@@ -466,8 +469,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (expr instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
             return fieldValues.get(fieldAcc);
-        } else if (expr instanceof FlowExpressions.PureMethodCall) {
-            FlowExpressions.PureMethodCall method = (FlowExpressions.PureMethodCall) expr;
+        } else if (expr instanceof FlowExpressions.MethodCall) {
+            FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) expr;
             return methodValues.get(method);
         } else if (expr instanceof FlowExpressions.ArrayAccess) {
             FlowExpressions.ArrayAccess a = (FlowExpressions.ArrayAccess) expr;
@@ -482,7 +485,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * @return Current abstract value of a field access, or {@code null} if no
+     * @return current abstract value of a field access, or {@code null} if no
      *         information is available.
      */
     public /*@Nullable*/ V getValue(FieldAccessNode n) {
@@ -492,7 +495,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * @return Current abstract value of a method call, or {@code null} if no
+     * @return current abstract value of a method call, or {@code null} if no
      *         information is available.
      */
     public /*@Nullable*/ V getValue(MethodInvocationNode n) {
@@ -505,7 +508,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     }
 
     /**
-     * @return Current abstract value of a field access, or {@code null} if no
+     * @return current abstract value of a field access, or {@code null} if no
      *         information is available.
      */
     public /*@Nullable*/ V getValue(ArrayAccessNode n) {
@@ -766,10 +769,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
         arrayValues = newArrayValues;
 
-        Map<FlowExpressions.PureMethodCall, V> newMethodValues = new HashMap<>();
-        for (Entry<FlowExpressions.PureMethodCall, V> e : methodValues
+        Map<FlowExpressions.MethodCall, V> newMethodValues = new HashMap<>();
+        for (Entry<FlowExpressions.MethodCall, V> e : methodValues
                 .entrySet()) {
-            FlowExpressions.PureMethodCall otherMethodAccess = e.getKey();
+            FlowExpressions.MethodCall otherMethodAccess = e.getKey();
             // case 3:
             if (otherMethodAccess.containsSyntacticEqualReceiver(var)
                     || otherMethodAccess.containsSyntacticEqualParameter(var)) {
@@ -799,7 +802,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /* --------------------------------------------------------- */
 
     /**
-     * @return Current abstract value of a local variable, or {@code null} if no
+     * @return current abstract value of a local variable, or {@code null} if no
      *         information is available.
      */
     public /*@Nullable*/ V getValue(LocalVariableNode n) {
@@ -812,7 +815,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /* --------------------------------------------------------- */
 
     /**
-     * @return Current abstract value of the current object, or {@code null} if no
+     * @return current abstract value of the current object, or {@code null} if no
      *         information is available.
      */
     public /*@Nullable*/ V getValue(ThisLiteralNode n) {
@@ -888,11 +891,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
             }
         }
-        for (Entry<PureMethodCall, V> e : other.methodValues.entrySet()) {
+        for (Entry<MethodCall, V> e : other.methodValues.entrySet()) {
             // information about methods that are only part of one store, but
             // not the other are discarded, as one store implicitly contains
             // 'top' for that field.
-            FlowExpressions.PureMethodCall el = e.getKey();
+            FlowExpressions.MethodCall el = e.getKey();
             if (methodValues.containsKey(el)) {
                 V otherVal = e.getValue();
                 V thisVal = methodValues.get(el);
@@ -948,8 +951,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 return false;
             }
         }
-        for (Entry<PureMethodCall, V> e : other.methodValues.entrySet()) {
-            FlowExpressions.PureMethodCall key = e.getKey();
+        for (Entry<MethodCall, V> e : other.methodValues.entrySet()) {
+            FlowExpressions.MethodCall key = e.getKey();
             if (!methodValues.containsKey(key)
                     || !methodValues.get(key).equals(e.getValue())) {
                 return false;
@@ -1012,7 +1015,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         for (Entry<FlowExpressions.ArrayAccess, V> entry : arrayValues.entrySet()) {
             viz.visualizeStoreArrayVal(entry.getKey(), entry.getValue());
         }
-        for (Entry<PureMethodCall, V> entry : methodValues.entrySet()) {
+        for (Entry<MethodCall, V> entry : methodValues.entrySet()) {
             viz.visualizeStoreMethodVals(entry.getKey(), entry.getValue());
         }
         for (Entry<FlowExpressions.ClassName, V> entry : classValues.entrySet()) {

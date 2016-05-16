@@ -49,9 +49,9 @@ public class TypesIntoElements {
     /**
      * The entry point.
      *
-     * @param processingEnv The environment.
-     * @param atypeFactory The type factory.
-     * @param tree The ClassTree to process.
+     * @param processingEnv the environment
+     * @param atypeFactory the type factory
+     * @param tree the ClassTree to process
      */
     public static void store(ProcessingEnvironment processingEnv, AnnotatedTypeFactory atypeFactory, ClassTree tree) {
         Symbol.ClassSymbol csym = (Symbol.ClassSymbol) TreeUtils.elementFromDeclaration(tree);
@@ -199,7 +199,7 @@ public class TypesIntoElements {
                 tapos = TypeAnnotationUtils.methodTypeParameterTAPosition(tpidx, ((JCTree) tp).pos);
             }
 
-            { //This block is essentially direct annotations, perhaps we should refactor that method out
+            { // This block is essentially direct annotations, perhaps we should refactor that method out
                 List<Attribute.TypeCompound> res = List.nil();
                 for (AnnotationMirror am : typeVar.getLowerBound().getAnnotations()) {
                     Attribute.TypeCompound tc = TypeAnnotationUtils.createTypeCompoundFromAnnotationMirror(processingEnv, am, tapos);
@@ -253,7 +253,7 @@ public class TypesIntoElements {
         sym.appendUniqueTypeAttributes(res);
     }
 
-    // return List.nil() not null if there are no TypeCompounds to return.
+    // Do not return null.  Return List.nil() if there are no TypeCompounds to return.
     private static List<Attribute.TypeCompound> generateTypeCompounds(ProcessingEnvironment processingEnv,
             AnnotatedTypeMirror type, TypeAnnotationPosition tapos) {
         return new TCConvert(processingEnv).scan(type, tapos);
@@ -286,18 +286,21 @@ public class TypesIntoElements {
 
         @Override
         protected List<TypeCompound> scan(Iterable<? extends AnnotatedTypeMirror> types, TypeAnnotationPosition pos) {
-            if (types == null)
+            if (types == null) {
                 return List.nil();
+            }
             return super.scan(types, pos);
         }
 
         @Override
         public List<TypeCompound> reduce(List<TypeCompound> r1,
                 List<TypeCompound> r2) {
-            if (r1 == null)
+            if (r1 == null) {
                 return r2;
-            if (r2 == null)
+            }
+            if (r2 == null) {
                 return r1;
+            }
             return r1.appendList(r2);
         }
 
@@ -306,7 +309,7 @@ public class TypesIntoElements {
 
             for (AnnotationMirror am : type.getAnnotations()) {
 //TODO: I BELIEVE THIS ISN'T TRUE BECAUSE PARAMETERS MAY HAVE ANNOTATIONS THAT CAME FROM THE ELEMENT OF THE CLASS
-//WHICH PREVIOUSLY WAS WRITTEN OUT BY TYPESINTOELEMENT
+// WHICH PREVIOUSLY WAS WRITTEN OUT BY TYPESINTOELEMENT
 //                if (am instanceof Attribute.TypeCompound) {
 //                    // If it is a TypeCompound it was already present in source (right?),
 //                    // so there is nothing to do.
@@ -332,8 +335,8 @@ public class TypesIntoElements {
 
             res = directAnnotations(type, tapos);
 
-            //we sometimes fix-up raw types with wildcards, do not write these into the bytecode as there are
-            //no corresponding type arguments and therefore no location to actually add them to
+            // we sometimes fix-up raw types with wildcards, do not write these into the bytecode as there are
+            // no corresponding type arguments and therefore no location to actually add them to
             if (!type.wasRaw()) {
                 int arg = 0;
                 for (AnnotatedTypeMirror ta : type.getTypeArguments()) {
@@ -392,7 +395,7 @@ public class TypesIntoElements {
             visitedNodes.put(type, List.<TypeCompound>nil());
             List<Attribute.TypeCompound> res;
 
-            //Note: By default, an Unbound wildcard will return true for both isExtendsBound and isSuperBound
+            // Note: By default, an Unbound wildcard will return true for both isExtendsBound and isSuperBound
             if (((Type.WildcardType)type.getUnderlyingType()).isExtendsBound()) {
                 res = directAnnotations(type.getSuperBound(), tapos);
 

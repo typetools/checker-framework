@@ -8,11 +8,11 @@ class HR {}
 // Crazy: remove the "extends HR" and it compiles
 public class Bug103 extends HR {
 
- //Crazy: add a 23th element as for example "hello" and it compiles
- //Crazy: replace IG.C with IG.C+"" and it compiles
- //Crazy: remove final and it compiles
- //Crazy: replace with new String[22] and it compiles
- //Crazy: reduce to less than 5 distinct values and it compiles  (replace IG.D with IG.C)
+ // Crazy: add a 23th element as for example "hello" and it compiles
+ // Crazy: replace IG.C with IG.C+"" and it compiles
+ // Crazy: remove final and it compiles
+ // Crazy: replace with new String[22] and it compiles
+ // Crazy: reduce to less than 5 distinct values and it compiles  (replace IG.D with IG.C)
   final String[] ids = {
      IG.C,
      IG.C,
@@ -40,9 +40,9 @@ public class Bug103 extends HR {
   };
 
 
-  //Crazy: remove arg u ant it compiles
-  //Crazy: remove any line of m1 and it compiles
-  //Crazy: replace two o args by null and it compiles
+  // Crazy: remove arg u ant it compiles
+  // Crazy: remove any line of m1 and it compiles
+  // Crazy: replace two o args by null and it compiles
   void m1( CC o, Object u ) {
     String cc = m2(o);
     String dd = m2(o);
@@ -53,15 +53,15 @@ public class Bug103 extends HR {
      return "a";
   }
 
-  //Crazy: remove ids.length and it compiles
+  // Crazy: remove ids.length and it compiles
   // replace return type List with ArrayList and it compiles
   List<CC> m3( CC c ) {
       ArrayList<CC> lc = new ArrayList<CC>(ids.length);
       return  lc;
   }
 
-  //Crazy: comment out the whole unused LV class and it compiles
-  //Crazy: comment one of the following 4 lines out and it compiles
+  // Crazy: comment out the whole unused LV class and it compiles
+  // Crazy: comment one of the following 4 lines out and it compiles
   static class LV {
      static String a = "a";
      static String b = "a";
@@ -70,7 +70,7 @@ public class Bug103 extends HR {
   }
 
   class IG {
-     //Crazy: comment one of the following 8 lines out and it compiles
+     // Crazy: comment one of the following 8 lines out and it compiles
      String C1 = "1";
      String C2 = "1";
      String C3 = "1";
@@ -85,7 +85,7 @@ public class Bug103 extends HR {
      static final String E = C;
      static final String F = C;
 
-     //Crazy: comment one of the following 18 lines out and it compiles
+     // Crazy: comment one of the following 18 lines out and it compiles
      static final String G = C;
      static final String H = C;
      static final String I = C;

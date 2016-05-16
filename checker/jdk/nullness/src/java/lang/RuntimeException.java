@@ -1,12 +1,12 @@
 /*
- * Copyright 1995-2000 Sun Microsystems, Inc.  All Rights Reserved.
+ * Copyright (c) 1995, 2011, Oracle and/or its affiliates. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License version 2 only, as
- * published by the Free Software Foundation.  Sun designates this
+ * published by the Free Software Foundation.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
- * by Sun in the LICENSE file that accompanied this code.
+ * by Oracle in the LICENSE file that accompanied this code.
  *
  * This code is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -18,9 +18,9 @@
  * 2 along with this work; if not, write to the Free Software Foundation,
  * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Please contact Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
- * CA 95054 USA or visit www.sun.com if you need additional information or
- * have any questions.
+ * Please contact Oracle, 500 Oracle Parkway, Redwood Shores, CA 94065 USA
+ * or visit www.oracle.com if you need additional information or have any
+ * questions.
  */
 
 package java.lang;
@@ -28,22 +28,24 @@ package java.lang;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * <code>RuntimeException</code> is the superclass of those
+ * {@code RuntimeException} is the superclass of those
  * exceptions that can be thrown during the normal operation of the
  * Java Virtual Machine.
- * <p>
- * A method is not required to declare in its <code>throws</code>
- * clause any subclasses of <code>RuntimeException</code> that might
- * be thrown during the execution of the method but not caught.
  *
+ * <p>{@code RuntimeException} and its subclasses are <em>unchecked
+ * exceptions</em>.  Unchecked exceptions do <em>not</em> need to be
+ * declared in a method or constructor's {@code throws} clause if they
+ * can be thrown by the execution of the method or constructor and
+ * propagate outside the method or constructor boundary.
  *
  * @author  Frank Yellin
+ * @jls 11.2 Compile-Time Checking of Exceptions
  * @since   JDK1.0
  */
 public class RuntimeException extends Exception {
     static final long serialVersionUID = -7034897190745766939L;
 
-    /** Constructs a new runtime exception with <code>null</code> as its
+    /** Constructs a new runtime exception with {@code null} as its
      * detail message.  The cause is not initialized, and may subsequently be
      * initialized by a call to {@link #initCause}.
      */
@@ -65,7 +67,7 @@ public class RuntimeException extends Exception {
     /**
      * Constructs a new runtime exception with the specified detail message and
      * cause.  <p>Note that the detail message associated with
-     * <code>cause</code> is <i>not</i> automatically incorporated in
+     * {@code cause} is <i>not</i> automatically incorporated in
      * this runtime exception's detail message.
      *
      * @param  message the detail message (which is saved for later retrieval
@@ -94,5 +96,26 @@ public class RuntimeException extends Exception {
      */
     public RuntimeException(@Nullable Throwable cause) {
         super(cause);
+    }
+
+    /**
+     * Constructs a new runtime exception with the specified detail
+     * message, cause, suppression enabled or disabled, and writable
+     * stack trace enabled or disabled.
+     *
+     * @param  message the detail message.
+     * @param cause the cause.  (A {@code null} value is permitted,
+     * and indicates that the cause is nonexistent or unknown.)
+     * @param enableSuppression whether or not suppression is enabled
+     *                          or disabled
+     * @param writableStackTrace whether or not the stack trace should
+     *                           be writable
+     *
+     * @since 1.7
+     */
+    protected RuntimeException(@Nullable String message, @Nullable Throwable cause,
+                               boolean enableSuppression,
+                               boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }

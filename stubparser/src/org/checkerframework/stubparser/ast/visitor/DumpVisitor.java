@@ -174,7 +174,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
 
     private final SourcePrinter printer = new SourcePrinter();
 
-    // Return buffered contents of SourcePrinter.
+    /** Return buffered contents of SourcePrinter. */
     public String getSource() {
         return printer.getSource();
     }
@@ -182,7 +182,7 @@ public final class DumpVisitor implements VoidVisitor<Object> {
     /**
      * Print Java modifiers indicated by the bit flags in the argument.
      *
-     * @param modifiers Java modifiers represented as a set of bit flags
+     * @param modifiers the Java modifiers represented as a set of bit flags
      */
     private void printModifiers(int modifiers) {
         if (ModifierSet.isPrivate(modifiers)) {
