@@ -1179,7 +1179,7 @@ public abstract class GenericAnnotatedTypeFactory<
         } else if (checker.hasOption("cfgviz")) {
             String cfgviz = checker.getOption("cfgviz");
             if (cfgviz == null) {
-                throw new Error("-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
+                ErrorReporter.errorAbort("-Acfgviz specified without arguments, should be -Acfgviz=VizClassName[,opts,...]");
             }
             String[] opts = cfgviz.split(",");
 
