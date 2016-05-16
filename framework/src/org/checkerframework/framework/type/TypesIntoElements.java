@@ -239,18 +239,19 @@ public class TypesIntoElements {
         addUniqueTypeCompounds(types, sym, tcs);
     }
 
+    // This method adds new TypeCompounds, overwriting previous values with the same name
     private static void addUniqueTypeCompounds(Types types, Symbol sym, List<TypeCompound> tcs) {
         List<TypeCompound> raw = sym.getRawTypeAttributes();
-        List<Attribute.TypeCompound> res = List.nil();
+        List<TypeCompound> res = List.nil();
 
-        for (Attribute.TypeCompound tc : tcs) {
-            // Don't insert an annotation if one with the same name already exists.
-            if (!TypeAnnotationUtils.isTypeCompoundContainedByName(types, raw, tc)) {
+        for (Attribute.TypeCompound tc : raw) {
+            // Don't insert an annotation if one with the same name will be added.
+            if (!TypeAnnotationUtils.isTypeCompoundContainedByName(types, tcs, tc)) {
                 res = res.append(tc);
             }
         }
-        // That method only uses reference equality. isTypeCompoundContained does a deep comparison.
-        sym.appendUniqueTypeAttributes(res);
+        res = res.appendList(tcs);
+        sym.setTypeAttributes(res);
     }
 
     // Do not return null.  Return List.nil() if there are no TypeCompounds to return.
