@@ -40,8 +40,10 @@ import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -272,6 +274,30 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
             addFinalLocalValues(info, methodElem);
 
+            if (infer) {
+                Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
+                        AnnotatedTypes.overriddenMethods(
+                                analysis.atypeFactory.getElementUtils(),
+                                analysis.atypeFactory, methodElem);
+                for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
+                        overriddenMethods.entrySet()) {
+                    AnnotatedExecutableType overriddenMethod =
+                            AnnotatedTypes.asMemberOf(
+                                    analysis.atypeFactory.getProcessingEnv().getTypeUtils(),
+                                    analysis.atypeFactory, pair.getKey(), pair.getValue());
+
+                    // Infers parameter and receiver types of the method based
+                    // on the overridden method.
+                    analysis.atypeFactory.getWholeProgramInference().
+                            updateInferredMethodParameterTypes(
+                                    methodTree, methodElem, overriddenMethod,
+                                    analysis.getTypeFactory());
+                    analysis.atypeFactory.getWholeProgramInference().
+                            updateInferredMethodReceiverType(
+                                    methodTree, methodElem, overriddenMethod,
+                                    analysis.getTypeFactory());
+                }
+            }
             return info;
 
         } else if (underlyingAST.getKind() == Kind.LAMBDA) {

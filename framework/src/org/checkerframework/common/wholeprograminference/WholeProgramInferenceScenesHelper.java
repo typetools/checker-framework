@@ -228,6 +228,9 @@ public class WholeProgramInferenceScenesHelper {
                 // Return type
                 removeIgnoredAnnosFromATypeElement(
                         method.returnType, TypeUseLocation.RETURN);
+                // Receiver type
+                removeIgnoredAnnosFromATypeElement(
+                        method.receiver.type, TypeUseLocation.RECEIVER);
                 // Parameter type
                 for (AField param : method.parameters.values()) {
                     removeIgnoredAnnosFromATypeElement(
