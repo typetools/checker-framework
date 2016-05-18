@@ -274,7 +274,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
             addFinalLocalValues(info, methodElem);
 
-            if (infer) {
+            if (shouldPerformWholeProgramInference(methodTree, methodElem)) {
                 Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
                         AnnotatedTypes.overriddenMethods(
                                 analysis.atypeFactory.getElementUtils(),
