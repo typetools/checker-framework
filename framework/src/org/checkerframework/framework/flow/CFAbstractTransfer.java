@@ -1113,39 +1113,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     // }
 
     /**
-     * Refine the operand of an instanceof check with more specific annotations
-     * if possible.
-     */
-    @Override
-    public TransferResult<V, S> visitInstanceOf(InstanceOfNode n,
-            TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitInstanceOf(n, p);
-
-        // Look at the annotations from the type of the instanceof check
-        // (provided by the factory)
-        V factoryValue = getValueFromFactory(n.getTree().getType(), null);
-
-        // Look at the value from the operand.
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-
-        // Combine the two.
-        V mostPreciseValue = moreSpecificValue(operandValue, factoryValue);
-
-        // Insert into the store if possible.
-        Receiver operandInternal = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), n.getOperand());
-        if (CFAbstractStore.canInsertReceiver(operandInternal)) {
-            S thenStore = result.getThenStore();
-            S elseStore = result.getElseStore();
-            thenStore.insertValue(operandInternal, mostPreciseValue);
-            return new ConditionalTransferResult<>(result.getResultValue(),
-                    thenStore, elseStore);
-        }
-
-        return result;
-    }
-
-    /**
      * Returns the abstract value of {@code (value1, value2)} that is more
      * specific. If the two are incomparable, then {@code value1} is returned.
      */
