@@ -163,7 +163,8 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * <p>
      * @param methodTree the tree of the method that contains the parameter.
      * @param methodElt the element of the method.
-     * @param overriddenMethod the overridden method.
+     * @param overriddenMethod the AnnotatedExecutableType of the overridden
+     * method.
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the parameter type.
      */
@@ -346,7 +347,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * of the method's enclosing class based on the overridden method
      * {@code overriddenMethod} receiver type.
      * <p>
-     * For each method parameter in methodElt:
+     * For the receiver in methodElt:
      *   <ul>
      *     <li>If the Scene does not contain an annotated type for the
      *     receiver, then the type of the receiver on the overridden method will
@@ -360,7 +361,7 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
      * @param methodElt the element of the method.
      * @param overriddenMethod the overridden method.
      * @param atf the annotated type factory of a given type system, whose
-     * type hierarchy will be used to update the parameter type.
+     * type hierarchy will be used to update the receiver type.
      */
     @Override
     public void updateInferredMethodReceiverType(

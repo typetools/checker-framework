@@ -58,9 +58,10 @@ public interface WholeProgramInference {
     /**
      * Updates the parameter types of the method {@code methodTree} based on the
      * parameter types of the overridden method {@code overriddenMethod}.
-     * @param methodTree the tree of the method that contains the parameter.
+     * @param methodTree the tree of the method that contains the parameter(s).
      * @param methodElt the element of the method.
-     * @param overriddenMethod the overridden method.
+     * @param overriddenMethod the AnnotatedExecutableType of the overridden
+     * method.
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the parameter type.
      */
@@ -73,9 +74,10 @@ public interface WholeProgramInference {
      * receiver type of the overridden method {@code overriddenMethod}.
      * @param methodTree the tree of the method that contains the receiver.
      * @param methodElt the element of the method.
-     * @param overriddenMethod the overridden method.
+     * @param overriddenMethod the AnnotatedExecutableType of the overridden
+     * method.
      * @param atf the annotated type factory of a given type system, whose
-     * type hierarchy will be used to update the parameter type.
+     * type hierarchy will be used to update the receiver type.
      */
     void updateInferredMethodReceiverType(
             MethodTree methodTree, ExecutableElement methodElt,
