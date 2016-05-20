@@ -858,6 +858,9 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.I18nFormatterTest"/>
         </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.I18nFormatterGlbCheckerTest"/>
+        </antcall>
     </target>
 
     <target name="regex-tests" depends="jar,build-tests"
