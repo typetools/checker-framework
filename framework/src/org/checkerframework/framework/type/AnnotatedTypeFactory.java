@@ -1934,16 +1934,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected final AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         AnnotatedDeclaredType type;
-        if (!TreeUtils.isDiamondTree(newClassTree)) {
-            // If newClassTree does not create anonymous class,
-            // newClassTree.getIdentifier includes the explicit annotations in this location:
-            //   new @HERE Class()
-            type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
-        } else {
-            type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(newClassTree), false);
-        }
 
         if (newClassTree.getClassBody() != null) {
+            type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(newClassTree), false);
             // If newClassTree creates an anonymous class, then annotations in this location:
             //   new @HERE Class() {}
             // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
@@ -1951,6 +1944,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // Replace the annotation because a different annotation could have been
             // inherited from the class declaration.
             type.replaceAnnotations(InternalUtils.annotationsFromTypeAnnotationTrees(annos));
+        } else if (!TreeUtils.isDiamondTree(newClassTree)) {
+            // If newClassTree does not create anonymous class,
+            // newClassTree.getIdentifier includes the explicit annotations in this location:
+            //   new @HERE Class()
+            type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
+        } else {
+            type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(newClassTree), false);
         }
 
         if (TreeUtils.isDiamondTree(newClassTree)) {
