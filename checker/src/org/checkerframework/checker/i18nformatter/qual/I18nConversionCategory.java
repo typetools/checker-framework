@@ -138,6 +138,30 @@ public enum I18nConversionCategory {
     }
 
     /**
+     * Returns the union of the two given I18nConversionCategories
+     *
+     * <blockquote>
+     *
+     * <pre>
+     * I18nConversionCategory.intersect(DATE, NUMBER) == DATE;
+     * </pre>
+     *
+     * </blockquote>
+     */
+    public static I18nConversionCategory union(I18nConversionCategory a, I18nConversionCategory b) {
+        if (a == UNUSED || b == UNUSED) {
+            return UNUSED;
+        }
+        if (a == GENERAL || b == GENERAL) {
+            return GENERAL;
+        }
+        if (a == DATE || b == DATE) {
+            return DATE;
+        }
+        return NUMBER;
+    }
+
+    /**
      * Returns a pretty printed {@link I18nConversionCategory}.
      */
     @Override

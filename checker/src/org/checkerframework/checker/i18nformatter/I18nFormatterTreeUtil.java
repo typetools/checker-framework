@@ -35,7 +35,6 @@ import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -65,14 +64,10 @@ import com.sun.source.util.SimpleTreeVisitor;
 public class I18nFormatterTreeUtil {
     public final BaseTypeChecker checker;
     public final ProcessingEnvironment processingEnv;
-    private final ExecutableElement formatArgTypesElement;
 
     public I18nFormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
-        this.formatArgTypesElement = TreeUtils.getMethod(
-                org.checkerframework.checker.i18nformatter.qual.I18nFormat.class.getCanonicalName(), "value", 0,
-                processingEnv);
     }
 
     /**
@@ -111,17 +106,9 @@ public class I18nFormatterTreeUtil {
      * annotation, and returns its value.
      */
     public I18nConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        @SuppressWarnings("unchecked")
-        List<? extends AnnotationValue> vals = (List<? extends AnnotationValue>) AnnotationUtils
-                .getElementValuesWithDefaults(anno).get(formatArgTypesElement).getValue();
-
-        I18nConversionCategory[] argTypes = new I18nConversionCategory[vals.size()];
-        for (int i = 0; i < vals.size(); ++i) {
-            VariableElement ve = (VariableElement) vals.get(i).getValue();
-            argTypes[i] = I18nConversionCategory.valueOf(ve.getSimpleName().toString());
-        }
-
-        return argTypes;
+    	List<I18nConversionCategory> list =
+                AnnotationUtils.getElementValueEnumArray(anno, "value", I18nConversionCategory.class, false);
+        return list.toArray(new I18nConversionCategory[] {});
     }
 
     public boolean isHasFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
