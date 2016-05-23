@@ -23,8 +23,9 @@ from release_vars  import *
 #=========================================================================================
 # Parse Args Utils # TODO: Perhaps use argparse module
 def match_arg(arg):
-    """Check if the given command-line argument matches one of the following strings, and returns the matching project if it does:"
-    "langtools, annotation-file-utilities, checker-framework, lt, afu, cf"""
+    """Check if the given command-line argument matches one of the following
+    strings, and returns the matching project if it does:
+    langtools, annotation-file-utilities, checker-framework, lt, afu, cf"""
     matched_project = None
     for project in PROJECTS_TO_SHORTNAMES:
         if arg == project[0] or arg == project[1]:
@@ -32,9 +33,11 @@ def match_arg(arg):
     return matched_project
 
 def read_projects(argv, error_call_back):
-    """Determine which of the jsr308-langtools, AFU and Checker Framework projects to build based on"
-    "the command-line arguments to release_build. \"all\" indicates that all 3 projects are to be built."
-    "If the arguments are incorrect, the error_call_back function is called and the script execution is terminated."""
+    """Determine which of the jsr308-langtools, AFU and Checker Framework
+    projects to build based on the command-line arguments to release_build.
+    \"all\" indicates that all 3 projects are to be built. If the arguments
+    are incorrect, the error_call_back function is called and  the script
+    execution is terminated."""
     matched_projects = {
         LT_OPT  : False,
         AFU_OPT : False,
@@ -71,10 +74,11 @@ def read_projects(argv, error_call_back):
     return matched_projects
 
 def add_project_dependencies(matched_projects):
-    """Given the projects the user indicated need to be build, ensure that any projects it depends on"
-    "are also built. That is:"
-    "If building the Checker Framework release, ensure that the AFU and jsr308-langtools are also built."
-    "If building the AFU, ensure that jsr308-langtools is also built."""
+    """Given the projects the user indicated need to be build, ensure that any
+    projects it depends on are also built. That is:
+    If building the Checker Framework release, ensure that the AFU and
+    jsr308-langtools are also built.
+    If building the AFU, ensure that jsr308-langtools is also built."""
     if matched_projects[CF_OPT]:
         matched_projects[AFU_OPT] = True
         matched_projects[LT_OPT] = True
@@ -98,19 +102,22 @@ def print_projects(indent_level, indent_size):
     print indentation + ALL_OPT
 
 def duplicate(string, times):
-    "Returns a string that is the concatenation of the given string repeated the given number of times."
+    """Returns a string that is the concatenation of the given string repeated the
+    given number of times."""
     result = ""
     for dummy in range(0, times):
         result += string
     return result
 
 def pad_to(original_str, filler, size):
-    "Return a string of the given size that is the given string padded with 0 or more repetitions of the given filler character."
+    """Return a string of the given size that is the given string padded with 0 or
+    more repetitions of the given filler character."""
     missing = size - len(original_str)
     return original_str + duplicate(filler, missing)
 
 def read_command_line_option(argv, argument):
-    "Returns True if the given command line arguments contain the specified argument, False otherwise."
+    """Returns True if the given command line arguments contain the specified
+    argument, False otherwise."""
     for index in range(1, len(argv)):
         if argv[index] == argument:
             return True
@@ -156,15 +163,16 @@ def execute_write_to_file(command_args, output_file_path, halt_if_fail=True, wor
         raise Exception('Error %s while executing %s' % (process.returncode, command_args))
 
 def check_command(command):
-    "Executes the UNIX \"which\" command to determine whether the given command is installed and on the PATH."
+    """Executes the UNIX \"which\" command to determine whether the given command
+    is installed and on the PATH."""
     p = execute(['which', command], False)
     if p:
         raise AssertionError('command not found: %s' % command)
     print ''
 
 def prompt_yes_no(msg, default=False):
-    """Prints the given message and continually prompts the user until they answer yes or no."
-    "Returns true if the answer was yes, false otherwise."""
+    """Prints the given message and continually prompts the user until they
+    answer yes or no. Returns true if the answer was yes, false otherwise."""
     default_str = "no"
     if default:
         default_str = "yes"
@@ -176,8 +184,8 @@ def prompt_yes_no(msg, default=False):
     return False
 
 def prompt_yn(msg):
-    """Prints the given message and continually prompts the user until they answer y or n."
-    "Returns true if the answer was y, false otherwise."""
+    """Prints the given message and continually prompts the user until they
+    answer y or n. Returns true if the answer was y, false otherwise."""
     y_or_n = 'z'
     while y_or_n != 'y' and y_or_n != 'n':
         print msg + " [y|n]"
@@ -212,7 +220,8 @@ def prompt_w_suggestion(msg, suggestion, valid_regex=None):
     return answer
 
 def check_tools(tools):
-    "Given an array specifying a set of tools, verify that the tools are installed and on the PATH."
+    """Given an array specifying a set of tools, verify that the tools are
+    installed and on the PATH."""
     print "\nChecking to make sure the following programs are installed:"
     print ', '.join(tools)
     print('Note: If you are NOT working on buffalo.cs.washington.edu then you ' +
@@ -230,13 +239,15 @@ def version_number_to_array(version_num):
     return [int(x) for x in version_num.split(".")]
 
 def version_array_to_string(version_array):
-    "Given an array of numbers representing a version, such as [1,2,3], returns a string representation of the version, such as \"1.2.3\""
+    """Given an array of numbers representing a version, such as [1,2,3], returns
+    a string representation of the version, such as \"1.2.3\" """
     return ".".join(str(x) for x in version_array)
 
 # From http://stackoverflow.com/a/1714190/173852
 def compare_version_numbers(version1, version2):
-    """Given two versions in string form, returns a negative value if version1 < version2,"
-    "0 if version1 == version2 and a strictly positive value if version1 > version2."""
+    """Given two versions in string form, returns a negative value if
+    version1 < version2, 0 if version1 == version2 and a strictly positive
+    value if version1 > version2."""
     return cmp(version_number_to_array(version1), version_number_to_array(version2))
 
 def increment_version(version_num, single_digits=False):
@@ -252,10 +263,10 @@ def increment_version(version_num, single_digits=False):
     return version_array_to_string(version_array)
 
 def test_increment_version():
-    """Run test cases to ensure that increment_version works correctly."
-    "This is critical since running release_build.py with the --auto switch"
-    "will automatically increment the release versions without prompting the"
-    "user to verify the new versions."""
+    """Run test cases to ensure that increment_version works correctly.
+    This is critical since running release_build.py with the --auto switch
+    will automatically increment the release versions without prompting the
+    user to verify the new versions."""
     assert increment_version('1.0.3') == '1.0.4'
     assert increment_version('1.0.9') == '1.0.10'
     assert increment_version('1.1.9') == '1.1.10'
@@ -323,7 +334,8 @@ def extract_from_site(site, open_tag, close_tag):
 
 
 def get_afu_version_from_html(html_file_path):
-    "Retrieve the AFU version from within the afu-version tags in the given HTML file on the filesystem."
+    """Retrieve the AFU version from within the afu-version tags in the given HTML
+    file on the filesystem."""
     version_regex = "<!-- afu-version -->(\\d+\\.\\d+\\.?\\d*),.*<!-- /afu-version -->"
     version = find_first_instance(version_regex, html_file_path)
     if version is None:
@@ -335,20 +347,26 @@ def get_afu_version_from_html(html_file_path):
 # Git/Mercurial Utils
 
 def is_git(repo_root):
-    """Returns true if a (bare or non-bare) git repo exists at the given filesystem path, false if a Mercurial repo exists at that path."
-    "Throws an exception if neither a git not a Mercurial repository exists at the given path."""
+    """Returns true if a (bare or non-bare) git repo exists at the given
+    filesystem path, false if a Mercurial repo exists at that path. Throws an
+    exception if neither a git not a Mercurial repository exists at the given
+    path."""
     return is_git_private(repo_root, True)
 
 def is_git_not_bare(repo_root):
-    """Returns true if a non-bare git repo exists at the given filesystem path, false if a bare git or a Mercurial repo exists at that path."
-    "Throws an exception if neither a git not a Mercurial repository exists at the given path."""
+    """Returns true if a non-bare git repo exists at the given filesystem path,
+    false if a bare git or a Mercurial repo exists at that path. Throws an
+    exception if neither a git not a Mercurial repository exists at the given
+    path."""
     return is_git_private(repo_root, False)
 
 def is_git_private(repo_root, return_value_on_bare):
-    """If a git bare repo exists at the given filesystem path, returns the value specified in the return_value_on_bare parameter."
-    "Returns true if a non-bare git repo exists at the given path, and false if a Mercurial repo exists at that path."
-    "Throws an exception if neither a git not a Mercurial repository exists at the given path."
-    "Not meant to be called directly - use is_git or is_git_not_bare instead."""
+    """If a git bare repo exists at the given filesystem path, returns the value
+    specified in the return_value_on_bare parameter. Returns true if a non-bare
+    git repo exists at the given path, and false if a Mercurial repo exists at
+    that path. Throws an exception if neither a git not a Mercurial repository
+    exists at the given path.
+    Not meant to be called directly - use is_git or is_git_not_bare instead."""
     if git_bare_repo_exists_at_path(repo_root):
         return return_value_on_bare
     if git_repo_exists_at_path(repo_root):
@@ -364,17 +382,20 @@ def git_bare_repo_exists_at_path(repo_root): # Bare git repos have no .git direc
     return False
 
 def git_repo_exists_at_path(repo_root):
-    "Returns whether a (bare or non-bare) git repository exists at the given filesystem path."
+    """Returns whether a (bare or non-bare) git repository exists at the given
+    filesystem path."""
     return os.path.isdir(repo_root + "/.git") or git_bare_repo_exists_at_path(repo_root)
 
 def hg_repo_exists_at_path(repo_root):
-    "Returns whether a Mercurial repository exists at the given filesystem path."
+    """Returns whether a Mercurial repository exists at the given filesystem
+    path."""
     return os.path.isdir(repo_root + "/.hg")
 
 def push_changes_prompt_if_fail(repo_root):
-    """Attempt to push changes, including tags, that were committed to the repository at the given filesystem path."
-    "In case of failure, ask the user if they would like to try again. Loop until pushing changes succeeds or"
-    "the user answers opts to not try again."""
+    """Attempt to push changes, including tags, that were committed to the
+    repository at the given filesystem path. In case of failure, ask the user
+    if they would like to try again. Loop until pushing changes succeeds or the
+    user answers opts to not try again."""
     while True:
         if is_git(repo_root):
             cmd = 'git -C %s push --tags' % repo_root
@@ -398,7 +419,8 @@ def push_changes_prompt_if_fail(repo_root):
                 break
 
 def push_changes(repo_root):
-    "Pushes changes, including tags, that were committed to the repository at the given filesystem path."
+    """Pushes changes, including tags, that were committed to the repository at
+    the given filesystem path."""
     if is_git(repo_root):
         execute('git -C %s push --tags' % repo_root)
         execute('git -C %s push' % repo_root)
@@ -406,8 +428,8 @@ def push_changes(repo_root):
         execute('hg -R %s push' % repo_root)
 
 def update_repo(path, bareflag):
-    """Pull the latest changes to the given repo and update. The bareflag parameter indicates whether the updated"
-    "repo must be a bare git repo."""
+    """Pull the latest changes to the given repo and update. The bareflag
+    parameter indicates whether the updated repo must be a bare git repo."""
     if is_git(path):
         if bareflag:
             execute('git -C %s fetch origin master:master' % path)
@@ -417,7 +439,8 @@ def update_repo(path, bareflag):
         execute('hg -R %s pull -u' % path)
 
 def commit_tag_and_push(version, path, tag_prefix):
-    """Commit the changes made for this release, add a tag for this release, and push these changes"""
+    """Commit the changes made for this release, add a tag for this release, and
+    push these changes."""
     if is_git(path):
         execute('git -C %s commit -a -m "new release %s"' % (path, version))
         execute('git -C %s tag %s%s' % (path, tag_prefix, version))
@@ -427,17 +450,19 @@ def commit_tag_and_push(version, path, tag_prefix):
     push_changes(path)
 
 def clone_or_update(src_repo, dst_repo, bareflag):
-    """If a repo exists at the filesystem path given by dst_repo, pull the latest changes to it and update it."
-    "If the repo does not exist, clone it from scratch. The bareflag parameter indicates whether the cloned/updated"
-    "repo must be a bare git repo."""
+    """If a repo exists at the filesystem path given by dst_repo, pull the
+    latest changes to it and update it. If the repo does not exist, clone it
+    from scratch. The bareflag parameter indicates whether the cloned/updated
+    repo must be a bare git repo."""
     if os.path.exists(dst_repo):
         update_repo(dst_repo, bareflag)
     else:
         clone(src_repo, dst_repo, bareflag)
 
 def clone(src_repo, dst_repo, bareflag):
-    """Clone the given git or Mercurial repo from scratch into the filesystem path specified by dst_repo."
-    "The bareflag parameter indicates whether the cloned repo must be a bare git repo."""
+    """Clone the given git or Mercurial repo from scratch into the filesystem
+    path specified by dst_repo. The bareflag parameter indicates whether the
+    cloned repo must be a bare git repo."""
     isGitRepo = False
     if "http" in src_repo:
         if "git" in src_repo:
@@ -456,11 +481,13 @@ def clone(src_repo, dst_repo, bareflag):
         execute('hg clone --quiet %s %s' % (src_repo, dst_repo))
 
 def is_repo_cleaned_and_updated(repo):
-    """IMPORTANT: this function is not known to be fully reliable in ensuring that a repo is fully clean of all changes,
-    "such as committed tags. To be certain of success throughout the release_build and release_push process, the best"
-    "option is to clone repositories from scratch."
-    "Returns whether the repository at the given filesystem path is clean (i.e. there are no committed"
-    "changes and no untracked files in the working tree) and up-to-date with respect to the repository it was cloned from."""
+    """IMPORTANT: this function is not known to be fully reliable in ensuring
+    that a repo is fully clean of all changes, such as committed tags. To be
+    certain of success throughout the release_build and release_push process,
+    the best option is to clone repositories from scratch.
+    Returns whether the repository at the given filesystem path is clean (i.e.
+    there are no committed changes and no untracked files in the working tree)
+    and up-to-date with respect to the repository it was cloned from."""
     if is_git(repo):
         # The idiom "not execute(..., capture_output=True)" evaluates to True when the captured output is empty.
         if git_bare_repo_exists_at_path(repo):
@@ -484,7 +511,8 @@ def is_repo_cleaned_and_updated(repo):
         return True
 
 def repo_exists(repo_root):
-    "Returns whether a (bare or non-bare) git repository or a Mercurial repository exists at the given filesystem path."
+    """Returns whether a (bare or non-bare) git repository or a Mercurial
+    repository exists at the given filesystem path."""
     return git_repo_exists_at_path(repo_root) or hg_repo_exists_at_path(repo_root)
 
 def check_repos(repos, fail_on_error, is_intermediate_repo_list):
@@ -502,10 +530,11 @@ def check_repos(repos, fail_on_error, is_intermediate_repo_list):
                         raise Exception('%s is not clean and up to date! Halting!' % repo)
 
 def get_tag_line(lines, revision, tag_prefixes):
-    """Get the revision hash for the tag matching the given project revision in the given lines containing revision hashes."
-    "Uses the given array of tag prefix strings if provided. For example, given an array of tag prefixes"
-    "[\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the tags named \"checker-framework-2.0.0\""
-    "and \"checkers-2.0.0\" are sought."""
+    """Get the revision hash for the tag matching the given project revision in
+    the given lines containing revision hashes. Uses the given array of tag
+    prefix strings if provided. For example, given an array of tag prefixes
+    [\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the
+    tags named \"checker-framework-2.0.0\" and \"checkers-2.0.0\" are sought."""
     for line in lines:
         for prefix in tag_prefixes:
             full_tag = prefix + revision
@@ -514,10 +543,11 @@ def get_tag_line(lines, revision, tag_prefixes):
     return None
 
 def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
-    """Get the commit hash for the tag matching the given project revision of the Git repository at the given filesystem path."
-    "Uses the given array of tag prefix strings if provided. For example, given an array of tag prefixes"
-    "[\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the tags named \"checker-framework-2.0.0\""
-    "and \"checkers-2.0.0\" are sought."""
+    """Get the commit hash for the tag matching the given project revision of
+    the Git repository at the given filesystem path. Uses the given array of
+    tag prefix strings if provided. For example, given an array of tag prefixes
+    [\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the
+    tags named \"checker-framework-2.0.0\" and \"checkers-2.0.0\" are sought."""
     if not is_git(repo_file_path):
         raise Exception("get_commit_for_tag is only defined for git repositories")
 
@@ -534,10 +564,12 @@ def get_commit_for_tag(revision, repo_file_path, tag_prefixes):
 
 
 def get_hash_for_tag(revision, repo_file_path, tag_prefixes):
-    """Get the revision hash for the tag matching the given project revision of the Mercurial repository at the given filesystem path."
-    "Uses the given array of tag prefix strings if provided. For example, given an array of tag prefixes"
-    "[\"checker-framework-\", \"checkers-\"] and project revision \"2.0.0\", the tags named \"checker-framework-2.0.0\""
-    "and \"checkers-2.0.0\" are sought."""
+    """Get the revision hash for the tag matching the given project revision of
+    the Mercurial repository at the given filesystem path. Uses the given array
+    of tag prefix strings if provided. For example, given an array of tag
+    prefixes [\"checker-framework-\", \"checkers-\"] and project revision
+    \"2.0.0\", the tags named \"checker-framework-2.0.0\" and \"checkers-2.0.0\"
+    are sought."""
     if is_git(repo_file_path):
         raise Exception("get_hash_for_tag is not defined for git repositories")
     tags = execute("hg tags -R " + repo_file_path, True, True)
@@ -553,16 +585,19 @@ def get_hash_for_tag(revision, repo_file_path, tag_prefixes):
     return result
 
 def get_tip_hash(repository):
-    "Get the revision hash for the \"tip\" tag of the Mercurial repository at the given filesystem path."
+    """Get the revision hash for the \"tip\" tag of the Mercurial repository at
+    the given filesystem path."""
     return get_hash_for_tag("tip", repository, [""])
 
 def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, outfile):
-    """Retrieves the changes under the given directory/path for the project"
-    "at the given repository path since the given old version. The changes are"
-    "saved to the given output file."
-    "Uses the given array of tag prefix strings if provided. For example, given an array of tag prefixes"
-    "[\"checker-framework-\", \"checkers-\"] and old version of the project \"2.0.0\", the tags named \"checker-framework-2.0.0\""
-    "and \"checkers-2.0.0\" are sought, and changes made since the located tag was pushed are retrieved."""
+    """Retrieves the changes under the given directory/path for the project
+    at the given repository path since the given old version. The changes are
+    saved to the given output file.
+    Uses the given array of tag prefix strings if provided. For example, given
+    an array of tag prefixes [\"checker-framework-\", \"checkers-\"] and old
+    version of the project \"2.0.0\", the tags named \"checker-framework-2.0.0\"
+    and \"checkers-2.0.0\" are sought, and changes made since the located tag
+    was pushed are retrieved."""
     if is_git(repository):
         old_tag = get_commit_for_tag(old_version, repository, tag_prefixes)
         cmd = "git -C %s diff -w %s.. %s" % (repository, old_tag, dir_path)
@@ -574,13 +609,13 @@ def write_diff_to_file(old_version, repository, tag_prefixes, dir_path, outfile)
 
 def propose_documentation_change_review(dir_title, old_version, repository_path, tag_prefixes,
                           dir_path, diff_output_file):
-    """
-    Asks the user if they would like to review the documentation changes for the project at the given repository path
-    that have been pushed since the given old version of that project. Also takes as parameters: the title of the
-    project to display to the user when asking whether to proceed, the tag prefixes for the project (see the docstring
-    for get_tag_line for a description of tag prefixes), the path to the manual/documentation for the project,
-    and the file to output the documentation changes to.
-    """
+    """Asks the user if they would like to review the documentation changes for
+    the project at the given repository path that have been pushed since the
+    given old version of that project. Also takes as parameters: the title of
+    the project to display to the user when asking whether to proceed, the tag
+    prefixes for the project (see the docstring for get_tag_line for a
+    description of tag prefixes), the path to the manual/documentation for the
+    project, and the file to output the documentation changes to."""
     if prompt_yes_no("Review %s?" %dir_title, True):
         write_diff_to_file(old_version, repository_path, tag_prefixes, dir_path, diff_output_file)
         # A side effect here is that the user will see updated version numbers in this diff that won't
@@ -597,14 +632,15 @@ def propose_documentation_change_review(dir_title, old_version, repository_path,
 # File Utils
 
 def wget_file(source_url, destination_dir):
-    """Download a file from the source URL to the given destination directory."
-    "Useful since download_binary does not seem to work on source files."""
+    """Download a file from the source URL to the given destination directory.
+    Useful since download_binary does not seem to work on source files."""
     print "DEST DIR: " + destination_dir
     execute("wget %s" % source_url, True, False, destination_dir)
 
 def download_binary(source_url, destination, max_size):
-    """Download a file from the given URL and save its contents to the destination filename."
-    "Raise an exception if the source file is larger than max_size."""
+    """Download a file from the given URL and save its contents to the
+    destination filename. Raise an exception if the source file is larger than
+    max_size."""
     http_response = urllib2.urlopen(url=source_url)
     content_length = http_response.headers['content-length']
 
@@ -640,8 +676,9 @@ def set_umask():
     os.umask(os.umask(0) & 0b001111)
 
 def find_first_instance(regex, infile):
-    """Find the first line in the given file that matches the given regular expression and return"
-    "the string concatenation of the result strings corresponding to the matching groups."""
+    """Find the first line in the given file that matches the given regular
+    expression and return the string concatenation of the result strings
+    corresponding to the matching groups."""
     with open(infile, 'r') as f:
         pattern = re.compile(regex)
         for line in f:
@@ -671,13 +708,15 @@ def delete_path(path):
     shutil.rmtree(path)
 
 def delete_path_if_exists(path):
-    "Check if the specified path exists, and if so, delete all files and directories under it."
+    """Check if the specified path exists, and if so, delete all files and
+    directories under it."""
     if os.path.exists(path):
         delete_path(path)
 
 def prompt_or_auto_delete(path, auto):
-    """If auto is false, delete the given file/directory if it exists. Otherwise, ask the user"
-    "if they wish the file/directory to be deleted, and if they answer yes, delete it."""
+    """If auto is false, delete the given file/directory if it exists.
+    Otherwise, ask the user if they wish the file/directory to be deleted, and
+    if they answer yes, delete it."""
     if not auto:
         prompt_to_delete(path)
     else:
@@ -685,15 +724,17 @@ def prompt_or_auto_delete(path, auto):
         delete_path_if_exists(path)
 
 def prompt_to_delete(path):
-    "Ask the user if the specified file/directory should be deleted, and if they answer yes, delete it."
+    """Ask the user if the specified file/directory should be deleted, and if
+    they answer yes, delete it."""
     if os.path.exists(path):
         result = prompt_w_suggestion("Delete the following file/directory:\n %s [Yes|No]" % path, "yes", "^(Yes|yes|No|no)$")
         if result == "Yes" or result == "yes":
             delete_path(path)
 
 def force_symlink(target_of_link, path_to_symlink):
-    """Forces the creation of a symlink to the given path at the given target location. That is, if a file"
-    "or symlink exists at the target location, it is deleted and the symlink is then created."""
+    """Forces the creation of a symlink to the given path at the given target
+    location. That is, if a file or symlink exists at the target location, it
+    is deleted and the symlink is then created."""
     try:
         os.symlink(target_of_link, path_to_symlink)
     except OSError, e:
@@ -702,8 +743,9 @@ def force_symlink(target_of_link, path_to_symlink):
             os.symlink(target_of_link, path_to_symlink)
 
 def are_in_file(file_path, strs_to_find):
-    """Returns true if every string in the given strs_to_find array is found in at least one line in the given file."
-    "In particular, returns true if strs_to_find is empty. Note that the strs_to_find parameter is mutated."""
+    """Returns true if every string in the given strs_to_find array is found in
+    at least one line in the given file. In particular, returns true if
+    strs_to_find is empty. Note that the strs_to_find parameter is mutated."""
     infile = open(file_path)
 
     for line in infile:
@@ -720,7 +762,8 @@ def are_in_file(file_path, strs_to_find):
     return len(strs_to_find) == 0
 
 def insert_before_line(to_insert, file_path, line):
-    "Insert the given line to the given file before the given 0-indexed line number."
+    """Insert the given line to the given file before the given 0-indexed line
+    number."""
     mid_line = line - 1
 
     with open(file_path) as infile:
@@ -803,7 +846,8 @@ def print_step(step):
     print  dashStr
 
 def get_announcement_email(version):
-    "Return the template for the e-mail announcing a new release of the Checker Framework."
+    """Return the template for the e-mail announcing a new release of the
+    Checker Framework."""
     return """
     To:  checker-framework-discuss@googlegroups.com
     Subject: Release %s of the Checker Framework

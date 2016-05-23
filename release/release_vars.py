@@ -22,9 +22,10 @@ import pwd
 # variables.  All other methods that aid in release should go in release_utils.py
 
 def getAndAppend(name, append):
-    """Retrieves the given environment variable and appends the given string to its value and returns the new value."
-    "The environment variable is not modified."
-    "Returns an empty string if the environment variable does not exist."""
+    """Retrieves the given environment variable and appends the given string to
+    its value and returns the new value. The environment variable is not
+    modified. Returns an empty string if the environment variable does not
+    exist."""
     if os.environ.has_key(name):
         return os.environ[name] + append
 
@@ -32,8 +33,8 @@ def getAndAppend(name, append):
         return ""
 
 def append_to_PATH(paths):
-    """Retrieves the PATH environment variable, appends the given paths to it, and sets the PATH"
-    "environment variable to the new value."""
+    """Retrieves the PATH environment variable, appends the given paths to it,
+    and sets the PATH environment variable to the new value."""
     current_PATH = os.getenv('PATH')
     new_PATH = current_PATH + ':' + ':'.join(paths)
     os.environ['PATH'] = new_PATH

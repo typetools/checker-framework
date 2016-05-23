@@ -16,14 +16,17 @@ from release_utils import *
 from sanity_checks import *
 
 def check_release_version(previous_release, new_release):
-    "Ensure that the given new release version is greater than the given previous one."
+    """Ensure that the given new release version is greater than the given
+    previous one."""
     if compare_version_numbers(previous_release, new_release) >= 0:
         raise Exception("Previous release version (" + previous_release + ") should be less than " +
                         "the new release version (" + new_release + ")")
 
 def copy_release_dir(path_to_dev, path_to_live, release_version):
-    """Copy a release directory with the given release version from the dev site to the live site. For example,"
-    "/cse/www2/types/dev/checker-framework/releases/2.0.0 -> /cse/www2/types/checker-framework/releases/2.0.0"""
+    """Copy a release directory with the given release version from the dev
+    site to the live site. For example,
+    /cse/www2/types/dev/checker-framework/releases/2.0.0 ->
+    /cse/www2/types/checker-framework/releases/2.0.0"""
     source_location = os.path.join(path_to_dev, release_version)
     dest_location = os.path.join(path_to_live, release_version)
 
@@ -47,14 +50,16 @@ def copy_htaccess():
     ensure_group_access(LIVE_HTACCESS)
 
 def copy_releases_to_live_site(checker_version, afu_version):
-    "Copy the new releases of jsr308-langtools, the AFU and the Checker Framework from the dev site to the live site."
+    """Copy the new releases of jsr308-langtools, the AFU and the Checker
+    Framework from the dev site to the live site."""
     copy_release_dir(JSR308_INTERM_RELEASES_DIR, JSR308_LIVE_RELEASES_DIR, checker_version)
     copy_release_dir(CHECKER_INTERM_RELEASES_DIR, CHECKER_LIVE_RELEASES_DIR, checker_version)
     copy_release_dir(AFU_INTERM_RELEASES_DIR, AFU_LIVE_RELEASES_DIR, afu_version)
 
 def update_release_symlinks(checker_version, afu_version):
-    """Update the \"current\" subdirectories of the jsr308-langtools, the AFU and the Checker Framework live sites"
-    "to point to the new releases of each project."""
+    """Update the \"current\" subdirectories of the jsr308-langtools, the AFU
+    and the Checker Framework live sites to point to the new releases of each
+    project."""
     afu_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, afu_version)
     checker_and_jsr308_relative_latest_release_dir = os.path.join(RELEASES_SUBDIR, checker_version)
 
@@ -63,18 +68,20 @@ def update_release_symlinks(checker_version, afu_version):
     force_symlink(afu_relative_latest_release_dir, os.path.join(AFU_LIVE_SITE, CURRENT_SUBDIR))
 
 def ensure_group_access_to_releases():
-    """Gives group access to all files and directories in the \"releases\" subdirectories on the live web site for"
-    "jsr308-langtools, the AFU and the Checker Framework."""
+    """Gives group access to all files and directories in the \"releases\"
+    subdirectories on the live web site for jsr308-langtools, the AFU and the
+    Checker Framework."""
     ensure_group_access(JSR308_LIVE_RELEASES_DIR)
     ensure_group_access(AFU_LIVE_RELEASES_DIR)
     ensure_group_access(CHECKER_LIVE_RELEASES_DIR)
 
 def stage_maven_artifacts_in_maven_central(new_checker_version):
-    """Stages the Checker Framework artifacts on Maven Central. After the artifacts"
-    "are staged, the user can then close them, which makes them available for"
-    "testing purposes but does not yet release them on Maven Central."
-    "This is a reversible step, since artifacts that have not been released can be dropped,"
-    "which for our purposes is equivalent to never having staged them."""
+    """Stages the Checker Framework artifacts on Maven Central. After the
+    artifacts are staged, the user can then close them, which makes them
+    available for testing purposes but does not yet release them on Maven
+    Central. This is a reversible step, since artifacts that have not been
+    released can be dropped, which for our purposes is equivalent to never
+    having staged them."""
     pgp_user = "checker-framework-dev@googlegroups.com"
     pgp_passphrase = read_first_line(PGP_PASSPHRASE_FILE)
 
@@ -140,8 +147,9 @@ def is_file_empty(filename):
     return os.path.getsize(filename) == 0
 
 def run_link_checker(site, output, additional_param=""):
-    """Runs the link checker on the given web site and saves the output to the given file."
-    "Additional parameters (if given) are passed directly to the link checker script."""
+    """Runs the link checker on the given web site and saves the output to the
+    given file. Additional parameters (if given) are passed directly to the
+    link checker script."""
     delete_if_exists(output)
     check_links_script = os.path.join(SCRIPTS_DIR, "checkLinks.sh")
     cmd = ["sh", check_links_script, additional_param, site]
@@ -164,11 +172,14 @@ def run_link_checker(site, output, additional_param=""):
     return output
 
 def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_mode, checker_version_of_broken_link_to_suppress=""):
-    """Checks all links on the given web sites for jsr308-langtools, the AFU and the Checker Framework."
-    "The suffix parameter should be \"dev\" for the dev web site and \"live\" for the live web site."
-    "test_mode indicates whether this script is being run in release or in test mode."
-    "The checker_version_of_broken_link_to_suppress parameter should be set to the new Checker Framework version and should only"
-    "be passed when checking links for the dev web site (to prevent reporting of a broken link to the not-yet-live zip file for the new release)."""
+    """Checks all links on the given web sites for jsr308-langtools, the AFU
+    and the Checker Framework. The suffix parameter should be \"dev\" for the
+    dev web site and \"live\" for the live web site. test_mode indicates
+    whether this script is being run in release or in test mode. The
+    checker_version_of_broken_link_to_suppress parameter should be set to the
+    new Checker Framework version and should only be passed when checking links
+    for the dev web site (to prevent reporting of a broken link to the
+    not-yet-live zip file for the new release)."""
     jsr308Check = run_link_checker(jsr308_website, TMP_DIR + "/jsr308." + suffix + ".check")
     afuCheck = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
     additional_param = ""
@@ -198,7 +209,9 @@ def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_m
                         "(in order to update the development site), and running \"python release_push" + release_option + "\" again.")
 
 def push_interm_to_release_repos():
-    "Push the release to the GitHub/Bitbucket repositories for jsr308-langtools, the AFU and the Checker Framework. This is an irreversible step."
+    """Push the release to the GitHub/Bitbucket repositories for
+    jsr308-langtools, the AFU and the Checker Framework. This is an
+    irreversible step."""
     push_changes_prompt_if_fail(INTERM_JSR308_REPO)
     push_changes_prompt_if_fail(INTERM_ANNO_REPO)
     push_changes_prompt_if_fail(INTERM_CHECKER_REPO)
@@ -210,7 +223,8 @@ def continue_or_exit(msg):
         raise Exception("User elected NOT to continue at prompt: " + msg)
 
 def validate_args(argv):
-    "Validate the command-line arguments to ensure that they meet the criteria issued in print_usage."
+    """Validate the command-line arguments to ensure that they meet the
+    criteria issued in print_usage."""
     if len(argv) > 3:
         print_usage()
         raise Exception("Invalid arguments. " + ",".join(argv))
@@ -220,19 +234,24 @@ def validate_args(argv):
             raise Exception("Invalid arguments. " + ",".join(argv))
 
 def print_usage():
-    "Print instructions on how to use this script, and in particular how to set test or release mode."
+    """Print instructions on how to use this script, and in particular how to
+    set test or release mode."""
     print ("Usage: python release_build.py [release] [--auto]\n" +
            "If the \"release\" argument is " +
            "NOT specified then the script will execute all steps that checking and prompting " +
            "steps but will NOT actually perform a release.  This is for testing the script.")
 
 def main(argv):
-    """The release_push script is mainly responsible for taking the artifacts for jsr308-langtools, the AFU and the Checker Framework"
-    "from the development web site and staging them on Maven Central and releasing them on the live site."
-    "It also performs link checking on the live site, pushes the release to GitHub/Bitbucket repositories, and guides"
-    "the user to perform manual steps such as building the Eclipse plug-in and sending the release announcement e-mail."""
+    """The release_push script is mainly responsible for taking the artifacts
+    for jsr308-langtools, the AFU and the Checker Framework from the
+    development web site and staging them on Maven Central and releasing them
+    on the live site. It also performs link checking on the live site, pushes
+    the release to GitHub/Bitbucket repositories, and guides the user to
+    perform manual steps such as building the Eclipse plug-in and sending the
+    release announcement e-mail."""
     # MANUAL Indicates a manual step
-    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully automated when --auto is used.
+    # SEMIAUTO Indicates a mostly automated step with possible prompts. Most
+    # of these steps become fully automated when --auto is used.
     # AUTO Indicates the step is fully automated.
 
     set_umask()

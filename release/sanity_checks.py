@@ -119,10 +119,11 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     delete_path(path_to_artifacts)
 
 def check_results(title, output_log, expected_errors):
-    """Verify the given actual output of a sanity check against the given expected output."
-    "If the sanity check passed, print the given title of the sanity check and a success message."
-    "If the sanity check failed, raise an exception whose text contains the given title of"
-    "the sanity check and the actual and expected output."""
+    """Verify the given actual output of a sanity check against the given
+    expected output. If the sanity check passed, print the given title of the
+    sanity check and a success message. If the sanity check failed, raise an
+    exception whose text contains the given title of the sanity check and the
+    actual and expected output."""
     found_errors = are_in_file(output_log, expected_errors)
 
     if not found_errors:
@@ -134,8 +135,8 @@ def check_results(title, output_log, expected_errors):
 
 
 def add_repo_information(pom, repo_url):
-    """Adds development maven repo to pom file so that the artifacts used are the development artifacts"""
-
+    """Adds development maven repo to pom file so that the artifacts used are
+    the development artifacts"""
     to_insert = """
         <repositories>
               <repository>
