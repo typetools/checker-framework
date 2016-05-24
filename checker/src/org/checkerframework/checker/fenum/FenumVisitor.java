@@ -16,6 +16,7 @@ import org.checkerframework.javacutil.TreeUtils;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 
@@ -58,7 +59,7 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
 
     @Override
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
-            AnnotatedExecutableType constructor, Tree src) {
+            AnnotatedExecutableType constructor, NewClassTree src) {
         // Ignore the default annotation on the constructor
         return true;
     }
