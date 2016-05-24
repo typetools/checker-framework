@@ -3,6 +3,7 @@ package org.checkerframework.framework.util;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Type.AnnotatedType;
 
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
@@ -566,7 +567,8 @@ public class QualifierPolymorphism {
                 return Collections.emptyMap();
             }
 
-            AnnotatedTypeMirror typeSuper = findType(type, actualType);
+            AnnotatedTypeMirror typeSuper = AnnotatedTypes.asSuper(types, atypeFactory, type,
+                    actualType);
             if (typeSuper.getKind() != TypeKind.TYPEVAR) {
                 return visit(typeSuper, actualType);
             }
@@ -601,7 +603,8 @@ public class QualifierPolymorphism {
         @Override
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visitWildcard(
                 AnnotatedWildcardType type, AnnotatedTypeMirror actualType) {
-            AnnotatedTypeMirror typeSuper = findType(type, actualType);
+            AnnotatedTypeMirror typeSuper = AnnotatedTypes.asSuper(types, atypeFactory, type,
+                    actualType);
             if (typeSuper.getKind() != TypeKind.WILDCARD) {
                 return visit(typeSuper, actualType);
             }
@@ -634,13 +637,6 @@ public class QualifierPolymorphism {
 
             visited.remove(type.getUnderlyingType());
             return result;
-        }
-
-        private AnnotatedTypeMirror findType(AnnotatedTypeMirror type, AnnotatedTypeMirror actualType) {
-            AnnotatedTypeMirror result = AnnotatedTypes.asSuper(types, atypeFactory, type, actualType);
-            // result shouldn't be null, will test this hypothesis later
-            // assert result != null;
-            return (result != null ? result : type);
         }
     }
 
