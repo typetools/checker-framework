@@ -1,7 +1,7 @@
 // Test case for pull request 735
 // https://github.com/typetools/checker-framework/pull/735
 
-import org.checkerframework.checker.initialization.UnknownInitialization;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 class PptTopLevel {
     class Ppt {
