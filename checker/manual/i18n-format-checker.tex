@@ -146,7 +146,9 @@ It is legal to:
 
 \begin{itemize}
 \item use a format string with a weaker (less restrictive) conversion category than required.
-\item use a format string with fewer format specifiers than required, but a warning is issued.
+\item use a format string with fewer format specifiers than required.
+  Although this is legal a warning is issued because most occurrences of
+  this are due to programmer error.
 \end{itemize}
 
 The following example shows the subtyping rules in action:
