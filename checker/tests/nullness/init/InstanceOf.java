@@ -16,9 +16,11 @@ class PptTopLevel {
 
 class InstanceOf {
     void foo(PptTopLevel.@UnknownInitialization(PptTopLevel.class) Ppt ppt) {
+        //:: error: (method.invocation.invalid)
         ppt.method();
         if (ppt instanceof PptTopLevel.OtherPpt) {
             PptTopLevel.OtherPpt pslice = (PptTopLevel.OtherPpt) ppt;
+            //:: error: (method.invocation.invalid)
             String samp_str = " s" + pslice.method();
         }
     }
