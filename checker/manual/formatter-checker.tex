@@ -285,10 +285,9 @@ It is legal to:
 The following example shows the subtyping rules in action:
 
 \begin{Verbatim}
-    @Format({FLOAT, INT})
-    String f;
+    @Format({FLOAT, INT}) String f;
 
-    f = "%f %d";       // Ok
+    f = "%f %d";       // OK
     f = "%s %d";       // OK, %s is weaker than %f
     f = "%f";          // warning: last argument is ignored
     f = "%f %d %s";    // error: too many arguments

@@ -154,13 +154,15 @@ It is legal to:
 The following example shows the subtyping rules in action:
 
 \begin{Verbatim}
-  @I18nFormat({NUMBER, NUMBER}) String format;
-  // OK.
-  format = "{0, number, #.#} {1, number}";
-  // OK, GENERAL is weaker (less restrictive) than NUMBER.
-  format = "{0, number} {1}";
-  // Error, the right-hand-side is stronger (more restrictive) than the left-hand-side's type.
-  format = "{0} {1} {2}";
+  @I18nFormat({NUMBER, DATE}) String f;
+
+  f = "{0, number, #.#} {1, date}"; // OK
+  f = "{0, number} {1}";            // OK, GENERAL is weaker (less restrictive) than DATE
+  f = "{0} {1, date}";              // OK, GENERAL is weaker (less restrictive) than NUMBER
+  f = "{0, number}";                // warning: last argument is ignored
+  f = "{0}";                        // warning: last argument is ignored
+  f = "{0, number} {1, number}";    // error: NUMBER is stronger (more restrictive) than DATE
+  f = "{0} {1} {2}";                // error: too many arguments
 \end{Verbatim}
 
 The conversion categories are:
