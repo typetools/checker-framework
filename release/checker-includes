@@ -1,6 +1,10 @@
+changelog.txt
+README.html
+LICENSE.txt
 checker/bin/**
 checker/dist/**
 checker/lib/**
+checker/manual/CFLogo.png
 checker/manual/manual.html
 checker/manual/manual.pdf
 checker/manual/*.svg
@@ -21,3 +25,4 @@ checker/examples/units-extension/README
 checker/examples/MavenExample/pom.xml
 checker/examples/MavenExample/README
 checker/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java
+tutorial/**

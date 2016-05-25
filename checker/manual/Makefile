@@ -51,7 +51,7 @@ manual.pdf: bib-update figures-all check-labels
 	while grep "Rerun to get" manual.log; do pdflatex manual.tex; done
 
 html: manual.html
-manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
+manual.html: manual.pdf favicon-checkerframework.png
 	hevea -fix -exec xxdate.exe manual.tex
 	./add-favicon-to-manual
 # The following three lines are only necessary when using Hevea before version 2.04
@@ -64,9 +64,6 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 #	html-update-toc manual.html
 # Add CSS styling, since \newstyle doesn't work for me.
 	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
-
-CFLogo.png: logo/Logo/CFLogo.png
-	cp -p $< $@
 
 favicon-checkerframework.png: logo/Checkmark/CFCheckmark_favicon.png
 	cp -p $< $@
@@ -96,7 +93,7 @@ clean:
 	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc
 
 very_clean: clean
-	@\rm manual.html CFLogo.png
+	@\rm manual.html
 
 .PHONY: checklink
 checklink:
