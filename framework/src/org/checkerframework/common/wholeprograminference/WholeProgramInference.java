@@ -9,6 +9,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
@@ -55,7 +56,35 @@ public interface WholeProgramInference {
             ExecutableElement methodElt, AnnotatedTypeFactory atf);
 
     /**
-     * Updates the type of {@code parameter} base on an assignment of
+     * Updates the parameter types of the method {@code methodTree} based on the
+     * parameter types of the overridden method {@code overriddenMethod}.
+     * @param methodTree the tree of the method that contains the parameter(s).
+     * @param methodElt the element of the method.
+     * @param overriddenMethod the AnnotatedExecutableType of the overridden
+     * method.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the parameter type.
+     */
+    void updateInferredMethodParameterTypes(
+            MethodTree methodTree, ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod, AnnotatedTypeFactory atf);
+
+    /**
+     * Updates the receiver type of the method {@code methodElt} based on the
+     * receiver type of the overridden method {@code overriddenMethod}.
+     * @param methodTree the tree of the method that contains the receiver.
+     * @param methodElt the element of the method.
+     * @param overriddenMethod the AnnotatedExecutableType of the overridden
+     * method.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the receiver type.
+     */
+    void updateInferredMethodReceiverType(
+            MethodTree methodTree, ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod, AnnotatedTypeFactory atf);
+
+    /**
+     * Updates the type of {@code parameter} based on an assignment of
      * {@code rhs} to {@code parameter}.
      * @param parameter the node representing the parameter.
      * @param rhs the node being assigned to the parameter in the method body.

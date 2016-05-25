@@ -19,6 +19,8 @@ import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 
@@ -141,6 +143,52 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         List<Node> arguments = objectCreationNode.getArguments();
         updateInferredExecutableParameterTypes(constructorElt, atf, jaifPath, method, arguments);
 
+    }
+
+    /**
+     * Updates the parameter types of the method {@code methodElt} in the Scene
+     * of the method's enclosing class based on the overridden method
+     * {@code overriddenMethod} parameter types.
+     * <p>
+     * For each method parameter in methodElt:
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for that
+     *     parameter, then the type of the respective parameter on the
+     *     overridden method will be added to the parameter in the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for that
+     *     parameter, then its new type will be the LUB between the previous
+     *     type and the type of the respective parameter on the overridden
+     *     method.</li>
+     *   </ul>
+     * <p>
+     * @param methodTree the tree of the method that contains the parameter.
+     * @param methodElt the element of the method.
+     * @param overriddenMethod the AnnotatedExecutableType of the overridden
+     * method.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the parameter type.
+     */
+    @Override
+    public void updateInferredMethodParameterTypes(
+            MethodTree methodTree, ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod, AnnotatedTypeFactory atf) {
+        ClassSymbol classSymbol = getEnclosingClassSymbol(methodTree);
+        String className = classSymbol.flatname.toString();
+        String jaifPath = helper.getJaifPath(className);
+        AClass clazz = helper.getAClass(className, jaifPath);
+        String methodName = JVMNames.getJVMMethodName(methodElt);
+        AMethod method = clazz.methods.vivify(methodName);
+
+        for (int i = 0; i < overriddenMethod.getParameterTypes().size(); i++) {
+            VariableElement ve = methodElt.getParameters().get(i);
+            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(ve);
+
+            AnnotatedTypeMirror argATM = overriddenMethod.getParameterTypes().get(i);
+            AField param = method.parameters.vivify(i);
+            helper.updateAnnotationSetInScene(
+                    param.type, atf, jaifPath, argATM, paramATM,
+                    TypeUseLocation.PARAMETER);
+        }
     }
 
     /**
@@ -290,6 +338,50 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                         param.type, atf, jaifPath, argATM, paramATM,
                         TypeUseLocation.PARAMETER);
                 break;
+            }
+        }
+    }
+
+    /**
+     * Updates the receiver type of the method {@code methodElt} in the Scene
+     * of the method's enclosing class based on the overridden method
+     * {@code overriddenMethod} receiver type.
+     * <p>
+     * For the receiver in methodElt:
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for the
+     *     receiver, then the type of the receiver on the overridden method will
+     *     be added to the receiver in the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for the
+     *     receiver, then its new type will be the LUB between the previous
+     *     type and the type of the receiver on the overridden method.</li>
+     *   </ul>
+     * <p>
+     * @param methodTree the tree of the method that contains the receiver.
+     * @param methodElt the element of the method.
+     * @param overriddenMethod the overridden method.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the receiver type.
+     */
+    @Override
+    public void updateInferredMethodReceiverType(
+            MethodTree methodTree, ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod, AnnotatedTypeFactory atf) {
+        ClassSymbol classSymbol = getEnclosingClassSymbol(methodTree);
+        String className = classSymbol.flatname.toString();
+        String jaifPath = helper.getJaifPath(className);
+        AClass clazz = helper.getAClass(className, jaifPath);
+        String methodName = JVMNames.getJVMMethodName(methodElt);
+        AMethod method = clazz.methods.vivify(methodName);
+
+        AnnotatedDeclaredType argADT = overriddenMethod.getReceiverType();
+        if (argADT != null) {
+            AnnotatedTypeMirror paramATM = atf.getAnnotatedType(methodTree).getReceiverType();
+            if (paramATM != null) {
+                AField receiver = method.receiver;
+                helper.updateAnnotationSetInScene(
+                        receiver.type, atf, jaifPath, argADT, paramATM,
+                        TypeUseLocation.RECEIVER);
             }
         }
     }

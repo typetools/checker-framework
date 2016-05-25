@@ -29,6 +29,30 @@ to doing its normal processing.
 \end{itemize}
 
 
+\subsection{Unable to compile the Checker Framework\label{common-problems-compiling}}
+
+If you get the following error while compiling the Checker Framework itself:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+checker-framework/stubparser/dist/stubparser.jar(org/checkerframework/stubparser/ast/CompilationUnit.class):
+warning: [classfile] Signature attribute introduced in version 49.0 class files is ignored in version 46.0 class files
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+and you have used Eclipse to compile the Checker Framework, then probably
+you are using a very old version of Eclipse.  (If you
+install Eclipse from the Ubuntu 16.04 repository, you get Eclipse version
+3.8.  Ubuntu 16.04 was released in April 2016, and Eclipse 3.8 was released
+in June 2012, with subsequent major releases in June 2013, June 2014, and
+June 2015.)
+Install the latest version of Eclipse and use it instead.
+
 
 \subsection{Unable to run the checker, or checker crashes\label{common-problems-running}}
 
@@ -713,7 +737,8 @@ This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
-In the bash shell, the following command \emph{sometimes} works (it might
+In the bash shell, putting the following command in your \code{.bashrc} file
+\emph{sometimes} works (it might
 not because \<java> might be the version in the JDK or in the JRE):
 % Can someone give a simpler command?
 %BEGIN LATEX

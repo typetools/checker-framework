@@ -189,7 +189,7 @@ public class TypeArgInferenceUtil {
             // This need to be basically like MethodTree
             NewClassTree newClassTree = (NewClassTree) assignmentContext;
             ExecutableElement constructorElt = InternalUtils.constructor(newClassTree);
-            AnnotatedTypeMirror receiver = atypeFactory.getAnnotatedType(newClassTree.getIdentifier());
+            AnnotatedTypeMirror receiver = atypeFactory.fromNewClass(newClassTree);
             AnnotatedExecutableType constructor = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, constructorElt);
             int treeIndex = -1;
             for (int i = 0; i < constructor.getParameterTypes().size(); ++i) {
