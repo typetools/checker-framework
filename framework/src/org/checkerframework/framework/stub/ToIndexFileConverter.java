@@ -253,7 +253,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   public Void visit(FieldDeclaration decl, AElement elem) {
     for (VariableDeclarator v : decl.getVariables()) {
       AClass clazz = (AClass) elem;
-      AField field = clazz.fields.vivify(v.toString());
+      AField field = clazz.fields.vivify(v.getId().getName());
       visitDecl(decl, field);
       visitType(decl.getType(), field.type);
     }
