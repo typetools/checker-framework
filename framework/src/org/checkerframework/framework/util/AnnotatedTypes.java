@@ -4,10 +4,8 @@ package org.checkerframework.framework.util;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.util.LubTypeVariableAnnotator;
 import org.checkerframework.framework.qual.PolyAll;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -1409,14 +1407,14 @@ public class AnnotatedTypes {
 
     private static Map<TypeElement, Boolean> isTypeAnnotationCache = new IdentityHashMap<>();
 
-    public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls, BaseTypeChecker checker) {
+    public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls) {
         TypeElement elem = (TypeElement)anno.getAnnotationType().asElement();
         if (isTypeAnnotationCache.containsKey(elem)) {
             return isTypeAnnotationCache.get(elem);
         }
 
         // the annotation is a type annotation if it has the proper ElementTypes in the @Target meta-annotation
-        boolean result = hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls, checker);
+        boolean result = hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls);
         isTypeAnnotationCache.put(elem, result);
         return result;
     }
@@ -1428,12 +1426,11 @@ public class AnnotatedTypes {
      * @param elements
      *            an array of {@link ElementType} values
      * @param cls the annotation class being tested; used for diagnostic messages only
-     * @param checker the checker loading annotations; used for diagnostic messages only
      * @return true if the array only has {@link ElementType#TYPE_USE} (and
      *         optionally {@link ElementType#TYPE_PARAMETER}), false if it
      *         contains anything else
      */
-    public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls, BaseTypeChecker checker) {
+    public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
         boolean hasTypeUse = false;
         ElementType otherElementType = null;
 
@@ -1447,19 +1444,16 @@ public class AnnotatedTypes {
                 otherElementType = element;
             }
             if (hasTypeUse && otherElementType != null) {
-                checker.report(Result.warning("inconsistent.target.metaannotation", cls.getName(), otherElementType),
-                               // TODO: what should I pass as the source (an Element or Tree) here?
-                               null);
-                return false;
+                ErrorReporter.errorAbort("@Target meta-annotation should not contain both TYPE_USE and " + otherElementType + ", for annotation " + cls.getName());
             }
         }
 
         return hasTypeUse;
     }
 
-    public static boolean containsTypeAnnotation(Collection<? extends AnnotationMirror> annos, Class<?> cls, BaseTypeChecker checker) {
+    public static boolean containsTypeAnnotation(Collection<? extends AnnotationMirror> annos, Class<?> cls) {
         for (AnnotationMirror am : annos) {
-            if (isTypeAnnotation(am, cls, checker)) {
+            if (isTypeAnnotation(am, cls)) {
                 return true;
             }
         }
