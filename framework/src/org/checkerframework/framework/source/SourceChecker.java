@@ -1134,9 +1134,6 @@ public abstract class SourceChecker
         } else if (source instanceof Tree) {
             Trees.instance(processingEnv).printMessage(kind, messageText, (Tree) source,
                     currentRoot);
-        } else if (source == null) {
-            // TODO: this case is a hack
-            messager.printMessage(kind, messageText);
         } else {
             ErrorReporter.errorAbort("invalid position source: "
                     + source.getClass().getName());
