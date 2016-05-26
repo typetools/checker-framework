@@ -1932,7 +1932,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param newClassTree NewClassTree
      * @return AnnotatedDeclaredType
      */
-    protected final AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+    public final AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         if (TreeUtils.isDiamondTree(newClassTree)) {
             AnnotatedDeclaredType type = (AnnotatedDeclaredType)
                     toAnnotatedType(InternalUtils.typeOf(newClassTree), false);
