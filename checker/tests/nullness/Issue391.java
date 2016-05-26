@@ -3,9 +3,13 @@
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
+
 
 class ClassA {
     @Nullable private String value = null;
+
+    @EnsuresNonNull("value") public void ensuresNonNull() {}
 
     @RequiresNonNull("value") public String getValue() {
         return value;
@@ -19,11 +23,28 @@ public class Issue391 {
     void method() {
     }
 
+    @EnsuresNonNull("field.value")
+    void ensuresNonNull() {
+    }
+
     void method2() {
         ClassA a = new ClassA();
         //:: error: (contracts.precondition.not.satisfied)
         a.getValue();
         //:: error: (contracts.precondition.not.satisfied)
         method();
+    }
+
+    void method3() {
+        ensuresNonNull();
+        // TODO: the above method call should satisfy the condtion below
+        //:: error: (contracts.precondition.not.satisfied)
+        method();
+
+        ClassA a = new ClassA();
+        a.ensuresNonNull();
+        // TODO: the above method call should satisfy the condtion below
+        //:: error: (contracts.precondition.not.satisfied)
+        a.getValue();
     }
 }
