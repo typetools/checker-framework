@@ -1,5 +1,9 @@
 package org.checkerframework.framework.util;
 
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -17,8 +21,10 @@ import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeVisitor;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,10 +41,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 
 /**
  * Implements framework support for type qualifier polymorphism. Checkers that
@@ -192,7 +194,11 @@ public class QualifierPolymorphism {
 
         Map<AnnotationMirror, Set<? extends AnnotationMirror>> matchingMapping = collector.visit(arguments, requiredArgs);
 
-        if (type.getReceiverType() != null) {
+        // for super() and this() method calls, getReceiverType(tree) does not return the correct
+        // type. So, just skip those.  This is consistent with skipping receivers of constructors
+        // below.
+        if (type.getReceiverType() != null && !(TreeUtils.isSuperCall(tree))
+                && !TreeUtils.isThisCall(tree)) {
             matchingMapping = collector.reduce(matchingMapping,
                     collector.visit(atypeFactory.getReceiverType(tree), type.getReceiverType()));
         }
@@ -231,6 +237,13 @@ public class QualifierPolymorphism {
 
         List<AnnotatedTypeMirror> args = functionalInterface.getParameterTypes();
         List<AnnotatedTypeMirror> requiredArgs = memberReference.getParameterTypes();
+        if (args.size() == requiredArgs.size() + 1) {
+            // If the member reference is a reference to an instance method of an arbitrary
+            // object, then first parameter of the functional interface corresponds to the
+            // receiver of the member reference.
+            requiredArgs = new ArrayList<>(requiredArgs);
+            requiredArgs.add(0, memberReference.getReceiverType());
+        }
         Map<AnnotationMirror, Set<? extends AnnotationMirror>> matchingMapping = collector.visit(args, requiredArgs);
 
         if (matchingMapping != null && !matchingMapping.isEmpty()) {
@@ -353,6 +366,12 @@ public class QualifierPolymorphism {
         @Override
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visitDeclared(
                 AnnotatedDeclaredType type, AnnotatedTypeMirror actualType) {
+            if (actualType.getKind() == TypeKind.INTERSECTION) {
+                // We don't support poly annotations on intersection types
+                // See Issue 744
+                // https://github.com/typetools/checker-framework/issues/744
+                return Collections.emptyMap();
+            }
 
             if (actualType.getKind() == TypeKind.TYPEVAR) {
                 if (visited.contains(actualType.getUnderlyingType())) {
@@ -377,8 +396,14 @@ public class QualifierPolymorphism {
                 if (wctype.getUnderlyingType().getExtendsBound() != null) {
                     result = visit(type, wctype.getExtendsBound());
                 } else if (wctype.getUnderlyingType().getSuperBound() != null) {
-                    // TODO: is the logic different for super bounds?
-                    result = visit(type, wctype.getSuperBound());
+                    if (TypesUtils.isErasedSubtype(types, type.getUnderlyingType(),
+                            wctype.getSuperBound().getUnderlyingType())) {
+                        result = visit(type, wctype.getSuperBound());
+                    } else {
+                        AnnotatedTypeMirror superBoundAsSuper =
+                                AnnotatedTypes.asSuper(types, atypeFactory, wctype.getSuperBound(), type);
+                        result = visit(type, superBoundAsSuper);
+                    }
                 } else {
                     result = Collections.emptyMap();
                 }
@@ -392,11 +417,6 @@ public class QualifierPolymorphism {
 
             assert actualType.getKind() == type.getKind();
             type = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(types, atypeFactory, type, actualType);
-            // TODO: type is null if type is an intersection type
-            // assert type != null;
-            if (type == null) {
-                return Collections.emptyMap();
-            }
 
             AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
 
@@ -474,7 +494,12 @@ public class QualifierPolymorphism {
         @Override
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visitArray(
                 AnnotatedArrayType type, AnnotatedTypeMirror actualType) {
-
+            if (actualType.getKind() == TypeKind.INTERSECTION) {
+                // We don't support poly annotations on intersection types
+                // See Issue 744
+                // https://github.com/typetools/checker-framework/issues/744
+                return Collections.emptyMap();
+            }
             if (actualType.getKind() == TypeKind.DECLARED) {
                 return visit(AnnotatedTypes.asSuper(types, atypeFactory, type, actualType), actualType);
             }
