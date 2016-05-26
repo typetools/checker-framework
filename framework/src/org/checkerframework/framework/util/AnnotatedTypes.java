@@ -1426,9 +1426,9 @@ public class AnnotatedTypes {
      * @param elements
      *            an array of {@link ElementType} values
      * @param cls the annotation class being tested; used for diagnostic messages only
-     * @return true if the array only has {@link ElementType#TYPE_USE} (and
-     *         optionally {@link ElementType#TYPE_PARAMETER}), false if it
-     *         contains anything else
+     * @throws RuntimException if the array contains both
+     *         {@link ElementType#TYPE_USE} and something besides
+     *         {@link ElementType#TYPE_PARAMETER}
      */
     public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
         boolean hasTypeUse = false;
@@ -1449,15 +1449,6 @@ public class AnnotatedTypes {
         }
 
         return hasTypeUse;
-    }
-
-    public static boolean containsTypeAnnotation(Collection<? extends AnnotationMirror> annos, Class<?> cls) {
-        for (AnnotationMirror am : annos) {
-            if (isTypeAnnotation(am, cls)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
