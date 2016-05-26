@@ -45,6 +45,10 @@ public class Resolver {
     private final Method FIND_IDENT_IN_PACKAGE;
     private final Method FIND_TYPE;
 
+    private final Class<?> ACCESSERROR;
+    // Note that currently access(...) is defined in InvalidSymbolError, a superclass of AccessError
+    private final Method ACCESSERROR_ACCESS;
+
     public Resolver(ProcessingEnvironment env) {
         Context context = ((JavacProcessingEnvironment) env).getContext();
         this.resolve = Resolve.instance(context);
@@ -81,6 +85,22 @@ public class Resolver {
             err.initCause(e);
             throw err;
         }
+
+        try {
+            ACCESSERROR = Class.forName("com.sun.tools.javac.comp.Resolve$AccessError");
+            ACCESSERROR_ACCESS = ACCESSERROR.getMethod("access", Name.class, TypeSymbol.class);
+            ACCESSERROR_ACCESS.setAccessible(true);
+        } catch (ClassNotFoundException e) {
+            Error err = new AssertionError(
+                    "Compiler 'Resolve$AccessError' class could not be retrieved.");
+            err.initCause(e);
+            throw err;
+        } catch (NoSuchMethodException e) {
+            Error err = new AssertionError(
+                    "Compiler 'Resolve$AccessError' class doesn't contain required 'access' method");
+            err.initCause(e);
+            throw err;
+        }
     }
 
     /**
@@ -109,6 +129,9 @@ public class Resolver {
                     names.fromString(name), VAR);
             if (res.getKind() == ElementKind.FIELD) {
                 return (VariableElement) res;
+            } else if (res.getKind() == ElementKind.OTHER && ACCESSERROR.isInstance(res)) {
+                // Return the inaccessible field that was found
+                return (VariableElement) wrapInvocation(res, ACCESSERROR_ACCESS, null, null);
             } else {
                 // Most likely didn't find the field and the Element is a SymbolNotFoundError
                 return null;
@@ -264,8 +287,12 @@ public class Resolver {
     }
 
     private Symbol wrapInvocation(Method method, Object... args) {
+        return wrapInvocation(resolve, method, args);
+    }
+
+    private Symbol wrapInvocation(Object receiver, Method method, Object... args) {
         try {
-            return (Symbol) method.invoke(resolve, args);
+            return (Symbol) method.invoke(receiver, args);
         } catch (IllegalAccessException e) {
             Error err = new AssertionError("Unexpected Reflection error");
             err.initCause(e);
