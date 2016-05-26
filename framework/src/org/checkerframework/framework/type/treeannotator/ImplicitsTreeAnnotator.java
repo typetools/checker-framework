@@ -31,8 +31,8 @@ import com.sun.source.tree.Tree.Kind;
  * annotations specified by {@link org.checkerframework.framework.qual.ImplicitFor} for any tree whose visitor is
  * not overridden or does not call {@code super}; it is designed to be invoked
  * from
- * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#annotateImplicit(javax.lang.model.element.Element, org.checkerframework.framework.type.AnnotatedTypeMirror)}
- * and {@link org.checkerframework.framework.type.AnnotatedTypeFactory#annotateImplicit(com.sun.source.tree.Tree, org.checkerframework.framework.type.AnnotatedTypeMirror)}.
+ * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(javax.lang.model.element.Element, org.checkerframework.framework.type.AnnotatedTypeMirror)}
+ * and {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(com.sun.source.tree.Tree, org.checkerframework.framework.type.AnnotatedTypeMirror)}.
  *
  * <p>
  *

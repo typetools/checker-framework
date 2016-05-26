@@ -135,8 +135,8 @@ import com.sun.tools.javac.util.Context;
  * Type system checker writers may need to subclass this class, to add implicit
  * and default qualifiers according to the type system semantics. Subclasses
  * should especially override
- * {@link AnnotatedTypeFactory#annotateImplicit(Element, AnnotatedTypeMirror)}
- * and {@link #annotateImplicit(Tree, AnnotatedTypeMirror)}.
+ * {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Element, AnnotatedTypeMirror)}
+ * and {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
  *
  * @checker_framework.manual #writing-a-checker How to write a checker plug-in
  */
@@ -874,7 +874,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         AnnotatedTypeMirror type = fromElement(elt);
         // Implicits due to writing annotation on the class declaration.
         annotateInheritedFromClass(type);
-        annotateImplicit(elt, type);
+        addComputedTypeAnnotations(elt, type);
         return type;
     }
 
@@ -918,7 +918,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = null; // dead code
         }
 
-        annotateImplicit(tree, type);
+        addComputedTypeAnnotations(tree, type);
 
         if (TreeUtils.isClassTree(tree) ||
             tree.getKind() == Tree.Kind.METHOD) {
@@ -973,7 +973,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return null; // dead code
         }
         AnnotatedTypeMirror type = fromTypeTree(tree);
-        annotateImplicit(tree, type);
+        addComputedTypeAnnotations(tree, type);
         return type;
     }
 
@@ -1191,6 +1191,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // implicit annotations
     // **********************************************************************
 
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror} */
+    @Deprecated
+    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+        addComputedTypeAnnotations(tree, type);
+    }
+
     /**
      * Adds implicit annotations to a type obtained from a {@link Tree}. By
      * default, this method does nothing. Subclasses should use this method to
@@ -1199,9 +1205,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param tree an AST node
      * @param type the type obtained from {@code tree}
      */
-    // TODO: rename the method; it's not just implicits, but also defaulting, etc.
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
+    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type) {
         // Pass.
+    }
+
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror} */
+    @Deprecated
+    protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+        addComputedTypeAnnotations(elt, type);
     }
 
     /**
@@ -1212,7 +1223,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param elt an element
      * @param type the type obtained from {@code elt}
      */
-    protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+    protected void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         // Pass.
     }
 
@@ -1254,7 +1265,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public void postAsMemberOf(AnnotatedTypeMirror type,
             AnnotatedTypeMirror owner, Element element) {
-        annotateImplicit(element, type);
+        addComputedTypeAnnotations(element, type);
     }
 
     /**
@@ -1872,7 +1883,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(NewClassTree tree) {
         ExecutableElement ctor = InternalUtils.constructor(tree);
         AnnotatedTypeMirror type = fromNewClass(tree);
-        annotateImplicit(tree.getIdentifier(), type);
+        addComputedTypeAnnotations(tree.getIdentifier(), type);
         AnnotatedExecutableType con = AnnotatedTypes.asMemberOf(types, this, type, ctor);
 
         if (tree.getArguments().size() == con.getParameterTypes().size() + 1

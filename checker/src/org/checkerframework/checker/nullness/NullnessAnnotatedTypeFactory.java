@@ -194,10 +194,17 @@ public class NullnessAnnotatedTypeFactory
         super.setRoot(root);
     }
 
-    // handle dependent types
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean} */
+    @Deprecated
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-        super.annotateImplicit(tree, type, useFlow);
+        addComputedTypeAnnotations(tree, type, useFlow);
+    }
+
+    // handle dependent types
+    @Override
+    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+        super.addComputedTypeAnnotations(tree, type, useFlow);
         dependentTypes.handle(tree, type);
     }
 

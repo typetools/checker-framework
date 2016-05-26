@@ -515,20 +515,34 @@ public class LockAnnotatedTypeFactory
         );
     }
 
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror} */
+    @Deprecated
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        translateJcipAndJavaxAnnotations(elt, type);
-
-        super.annotateImplicit(elt, type);
+        addComputedTypeAnnotations(elt, type);
     }
 
     @Override
+    public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
+        translateJcipAndJavaxAnnotations(elt, type);
+
+        super.addComputedTypeAnnotations(elt, type);
+    }
+
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean} */
+    @Deprecated
+    @Override
     public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+        addComputedTypeAnnotations(tree, type, useFlow);
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         if (tree.getKind() == Tree.Kind.VARIABLE) {
             translateJcipAndJavaxAnnotations(InternalUtils.symbol((VariableTree) tree), type);
         }
 
-        super.annotateImplicit(tree, type, useFlow);
+        super.addComputedTypeAnnotations(tree, type, useFlow);
     }
 
     /**
