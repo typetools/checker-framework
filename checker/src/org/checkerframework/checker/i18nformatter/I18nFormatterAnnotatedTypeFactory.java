@@ -53,11 +53,11 @@ import com.sun.source.tree.Tree;
 public class I18nFormatterAnnotatedTypeFactory extends
         GenericAnnotatedTypeFactory<CFValue, CFStore, I18nFormatterTransfer, I18nFormatterAnalysis> {
 
-    private final AnnotationMirror I18NUNKNOWNFORMAT;
-    private final AnnotationMirror I18NFORMAT;
-    private final AnnotationMirror I18NINVALIDFORMAT;
-    private final AnnotationMirror I18NFORMATBOTTOM;
-    private final AnnotationMirror I18NFORMATFOR;
+    protected final AnnotationMirror I18NUNKNOWNFORMAT;
+    protected final AnnotationMirror I18NFORMAT;
+    protected final AnnotationMirror I18NINVALIDFORMAT;
+    protected final AnnotationMirror I18NFORMATBOTTOM;
+    protected final AnnotationMirror I18NFORMATFOR;
 
     public final Map<String, String> translations;
 

@@ -1,9 +1,11 @@
 package org.checkerframework.checker.i18nformatter;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
+import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.i18nformatter.I18nFormatterTreeUtil.FormatType;
 import org.checkerframework.checker.i18nformatter.I18nFormatterTreeUtil.I18nFormatCall;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
@@ -11,8 +13,11 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 
 /**
  * Whenever a method with {@link I18nFormatFor} annotation is invoked,
@@ -105,5 +110,33 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         default:
             break;
         }
+    }
+
+    @Override
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType, Tree valueTree, String errorKey) {
+        AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
+        AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
+
+        if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.I18NFORMAT) &&
+            AnnotationUtils.areSameIgnoringValues(lhs, atypeFactory.I18NFORMAT)) {
+            I18nConversionCategory[] rhsArgTypes =
+                    atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
+            I18nConversionCategory[] lhsArgTypes =
+                    atypeFactory.treeUtil.formatAnnotationToCategories(lhs);
+
+            if (rhsArgTypes.length < lhsArgTypes.length) {
+                checker.report(org.checkerframework.framework.source.Result.warning("i18nformat.missing.arguments",
+                        varType.toString(), valueType.toString()), valueTree);
+            } else if (rhsArgTypes.length > lhsArgTypes.length) {
+                checker.report(org.checkerframework.framework.source.Result.failure("i18nformat.excess.arguments",
+                        varType.toString(), valueType.toString()), valueTree);
+            }
+        }
+
+        // By calling super.commonAssignmentCheck last, any i18nformat.excess.arguments message
+        // issued for a given line of code will take precedence over the assignment.type.incompatible
+        // issued by super.commonAssignmentCheck.
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 }

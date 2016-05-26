@@ -6,10 +6,14 @@ import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 
 /**
  * Whenever a format method invocation is found in the syntax tree,
@@ -95,5 +99,28 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             }
         }
         return super.visitMethodInvocation(node, p);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType, Tree valueTree, String errorKey) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+
+        AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+        AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+
+        if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.FORMAT) &&
+            AnnotationUtils.areSameIgnoringValues(lhs, atypeFactory.FORMAT)) {
+            ConversionCategory[] rhsArgTypes =
+                    atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
+            ConversionCategory[] lhsArgTypes =
+                    atypeFactory.treeUtil.formatAnnotationToCategories(lhs);
+
+            if (rhsArgTypes.length < lhsArgTypes.length) {
+                checker.report(org.checkerframework.framework.source.Result.warning("format.missing.arguments",
+                        varType.toString(), valueType.toString()), valueTree);
+            }
+        }
+
     }
 }
