@@ -39,19 +39,13 @@ public class Resolver {
     private final Trees trees;
     private final Log log;
 
-    private final Method FIND_METHOD;
-    private final Method FIND_VAR;
-    private final Method FIND_IDENT_IN_TYPE;
-    private final Method FIND_IDENT_IN_PACKAGE;
-    private final Method FIND_TYPE;
+    private static final Method FIND_METHOD;
+    private static final Method FIND_VAR;
+    private static final Method FIND_IDENT_IN_TYPE;
+    private static final Method FIND_IDENT_IN_PACKAGE;
+    private static final Method FIND_TYPE;
 
-    public Resolver(ProcessingEnvironment env) {
-        Context context = ((JavacProcessingEnvironment) env).getContext();
-        this.resolve = Resolve.instance(context);
-        this.names = Names.instance(context);
-        this.trees = Trees.instance(env);
-        this.log = Log.instance(context);
-
+    static {
         try {
             FIND_METHOD = Resolve.class.getDeclaredMethod("findMethod",
                     Env.class, Type.class, Name.class, List.class, List.class,
@@ -81,6 +75,14 @@ public class Resolver {
             err.initCause(e);
             throw err;
         }
+}
+
+    public Resolver(ProcessingEnvironment env) {
+        Context context = ((JavacProcessingEnvironment) env).getContext();
+        this.resolve = Resolve.instance(context);
+        this.names = Names.instance(context);
+        this.trees = Trees.instance(env);
+        this.log = Log.instance(context);
     }
 
     /**
