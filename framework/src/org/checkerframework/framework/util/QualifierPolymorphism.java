@@ -418,6 +418,10 @@ public class QualifierPolymorphism {
             assert actualType.getKind() == type.getKind();
             type = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(types, atypeFactory, type, actualType);
 
+            if (type == null) {
+                return Collections.emptyMap();
+            }
+
             AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
 
             Map<AnnotationMirror, Set<? extends AnnotationMirror>> result =
