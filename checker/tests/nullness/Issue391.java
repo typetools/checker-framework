@@ -7,11 +7,15 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 
 class ClassA {
-    @Nullable private String value = null;
+    private @Nullable String value = null;
 
-    @EnsuresNonNull("value") public void ensuresNonNull() {}
+    @EnsuresNonNull("value")
+    public void ensuresNonNull() {
+        value = "";
+    }
 
-    @RequiresNonNull("value") public String getValue() {
+    @RequiresNonNull("value")
+    public String getValue() {
         return value;
     }
 }
@@ -25,6 +29,7 @@ public class Issue391 {
 
     @EnsuresNonNull("field.value")
     void ensuresNonNull() {
+        field.ensuresNonNull();
     }
 
     void method2() {
@@ -37,14 +42,10 @@ public class Issue391 {
 
     void method3() {
         ensuresNonNull();
-        // TODO: the above method call should satisfy the condtion below
-        //:: error: (contracts.precondition.not.satisfied)
         method();
 
         ClassA a = new ClassA();
         a.ensuresNonNull();
-        // TODO: the above method call should satisfy the condtion below
-        //:: error: (contracts.precondition.not.satisfied)
         a.getValue();
     }
 }

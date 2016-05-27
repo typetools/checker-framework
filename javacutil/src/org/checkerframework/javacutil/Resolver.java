@@ -91,15 +91,13 @@ public class Resolver {
             ACCESSERROR_ACCESS = ACCESSERROR.getMethod("access", Name.class, TypeSymbol.class);
             ACCESSERROR_ACCESS.setAccessible(true);
         } catch (ClassNotFoundException e) {
-            Error err = new AssertionError(
-                    "Compiler 'Resolve$AccessError' class could not be retrieved.");
-            err.initCause(e);
-            throw err;
+            ErrorReporter.errorAbort("Compiler 'Resolve$AccessError' class could not be retrieved.", e);
+            // Unreachable code - needed so the compiler does not warn about a possibly uninitialized final field.
+            throw new AssertionError();
         } catch (NoSuchMethodException e) {
-            Error err = new AssertionError(
-                    "Compiler 'Resolve$AccessError' class doesn't contain required 'access' method");
-            err.initCause(e);
-            throw err;
+            ErrorReporter.errorAbort("Compiler 'Resolve$AccessError' class doesn't contain required 'access' method", e);
+            // Unreachable code - needed so the compiler does not warn about a possibly uninitialized final field.
+            throw new AssertionError();
         }
     }
 
@@ -125,7 +123,7 @@ public class Resolver {
         try {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
-            Element res = wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
+            Element res = wrapInvocationOnResolveInstance(FIND_IDENT_IN_TYPE, env, type,
                     names.fromString(name), VAR);
             if (res.getKind() == ElementKind.FIELD) {
                 return (VariableElement) res;
@@ -156,7 +154,7 @@ public class Resolver {
         try {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
-            Element res = wrapInvocation(FIND_VAR, env,
+            Element res = wrapInvocationOnResolveInstance(FIND_VAR, env,
                     names.fromString(name));
             if (res.getKind() == ElementKind.LOCAL_VARIABLE
              || res.getKind() == ElementKind.PARAMETER) {
@@ -189,7 +187,7 @@ public class Resolver {
         try {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
-            return wrapInvocation(FIND_TYPE, env, names.fromString(name));
+            return wrapInvocationOnResolveInstance(FIND_TYPE, env, names.fromString(name));
         } finally {
             log.popDiagnosticHandler(discardDiagnosticHandler);
         }
@@ -236,7 +234,7 @@ public class Resolver {
                 Object methodContext = buildMethodContext();
                 Object oldContext = getField(resolve, "currentResolutionContext");
                 setField(resolve, "currentResolutionContext", methodContext);
-                Element result = wrapInvocation(FIND_METHOD, env, site, name, argtypes,
+                Element result = wrapInvocationOnResolveInstance(FIND_METHOD, env, site, name, argtypes,
                     typeargtypes, allowBoxing, useVarargs, operator);
                 setField(resolve, "currentResolutionContext", oldContext);
                 return result;
@@ -286,7 +284,7 @@ public class Resolver {
         return f.get(receiver);
     }
 
-    private Symbol wrapInvocation(Method method, Object... args) {
+    private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
         return wrapInvocation(resolve, method, args);
     }
 
