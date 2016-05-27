@@ -1191,12 +1191,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // implicit annotations
     // **********************************************************************
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)} */
-    @Deprecated
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        addComputedTypeAnnotations(tree, type);
-    }
-
     /**
      * Adds implicit annotations to a type obtained from a {@link Tree}. By
      * default, this method does nothing. Subclasses should use this method to
@@ -1207,12 +1201,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type) {
         // Pass.
-    }
-
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror)} */
-    @Deprecated
-    protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        addComputedTypeAnnotations(elt, type);
     }
 
     /**
