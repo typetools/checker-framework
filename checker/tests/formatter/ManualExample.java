@@ -1,14 +1,11 @@
 // Example from the manual
 
-// @skip-test Temporary until issue #740 is fixed:
-// https://github.com/typetools/checker-framework/issues/740
-
 import static org.checkerframework.checker.formatter.qual.ConversionCategory.*;
 import org.checkerframework.checker.formatter.qual.Format;
 
 public class ManualExample {
 
-  void m() {
+  void m(boolean flag) {
 
     @Format({FLOAT, INT}) String f;
 
@@ -16,6 +13,17 @@ public class ManualExample {
     f = "%s %d";       // OK, %s is weaker than %f
     //:: warning: (format.missing.arguments)
     f = "%f";          // warning: last argument is ignored
+    //:: warning: (format.missing.arguments)
+    f = flag ? "%f %d" : "%f";
+
+    if (flag) {
+        f = "%f %d";
+    } else {
+        //:: warning: (format.missing.arguments)
+        f = "%f";
+    }
+    @Format({FLOAT, INT}) String f2 = f;
+
     //:: error: (assignment.type.incompatible)
     f = "%f %d %s";    // error: too many arguments
     //:: error: (assignment.type.incompatible)
