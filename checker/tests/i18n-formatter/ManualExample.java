@@ -1,8 +1,5 @@
 // Example from the manual
 
-// @skip-test Temporary until issue #740 is fixed:
-// https://github.com/typetools/checker-framework/issues/740
-
 import org.checkerframework.checker.i18nformatter.I18nFormatUtil;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
 import static org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory.DATE;
@@ -11,7 +8,7 @@ import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 
 public class ManualExample {
 
-  void m() {
+  void m(boolean flag) {
 
     @I18nFormat({NUMBER, DATE}) String f;
 
@@ -22,6 +19,17 @@ public class ManualExample {
     f = "{0, number}";                // warning: last argument is ignored
     //:: warning: (i18nformat.missing.arguments)
     f = "{0}";                        // warning: last argument is ignored
+    //:: warning: (i18nformat.missing.arguments)
+    f = flag ? "{0, number} {1}" : "{0, number}";
+
+    if (flag) {
+        f = "{0, number} {1}";
+    } else {
+        //:: warning: (i18nformat.missing.arguments)
+        f = "{0, number}";
+    }
+    @I18nFormat({NUMBER, DATE}) String f2 = f;
+
     //:: error: (assignment.type.incompatible)
     f = "{0, number} {1, number}";    // error: NUMBER is stronger (more restrictive) than DATE
     //:: error: (i18nformat.excess.arguments)

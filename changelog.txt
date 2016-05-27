@@ -2,6 +2,11 @@
 
 Version 2.0.1, 1 June 2016
 
+We renamed method annotateImplicit to addComputedTypeAnnotations, but left
+a deprecated stub version of annotateImplicit.  If you have implemented a
+checker, you may need to update it to avoid warnings about using the
+deprecated method annotateImplicit.
+
 Closed issues:
 704
 
