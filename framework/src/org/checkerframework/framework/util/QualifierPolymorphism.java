@@ -197,7 +197,7 @@ public class QualifierPolymorphism {
         // for super() and this() method calls, getReceiverType(tree) does not return the correct
         // type. So, just skip those.  This is consistent with skipping receivers of constructors
         // below.
-        if (type.getReceiverType() != null && !(TreeUtils.isSuperCall(tree))
+        if (type.getReceiverType() != null && !TreeUtils.isSuperCall(tree)
                 && !TreeUtils.isThisCall(tree)) {
             matchingMapping = collector.reduce(matchingMapping,
                     collector.visit(atypeFactory.getReceiverType(tree), type.getReceiverType()));
@@ -241,8 +241,10 @@ public class QualifierPolymorphism {
             // If the member reference is a reference to an instance method of an arbitrary
             // object, then first parameter of the functional interface corresponds to the
             // receiver of the member reference.
-            requiredArgs = new ArrayList<>(requiredArgs);
-            requiredArgs.add(0, memberReference.getReceiverType());
+            List<AnnotatedTypeMirror> newRequiredArgs = new ArrayList<>();
+            newRequiredArgs.add(memberReference.getReceiverType());
+            newRequiredArgs.addAll(requiredArgs);
+            requiredArgs = newRequiredArgs;
         }
         Map<AnnotationMirror, Set<? extends AnnotationMirror>> matchingMapping = collector.visit(args, requiredArgs);
 
