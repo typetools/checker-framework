@@ -63,7 +63,8 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
                     thenStore.insertValue(firstParam, anno);
                 }
             } catch (FlowExpressionParseException e) {
-                // errors are reported at declaration site
+                // report errors here
+                checker.report(e.getResult(), node);
             }
             return newResult;
         }
@@ -86,7 +87,8 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
                 elseStore.insertValue(firstParam, builder.build());
 
             } catch (FlowExpressionParseException e) {
-                // errors are reported at declaration site
+                // report errors here
+                checker.report(e.getResult(), node);
             }
             return newResult;
         }

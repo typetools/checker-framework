@@ -3,6 +3,7 @@ package org.checkerframework.checker.regex.classic;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
+import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -89,6 +90,8 @@ public class RegexTransfer extends
                         thenStore.insertValue(firstParam, regexAnnotation);
                     }
                 } catch (FlowExpressionParseException e) {
+                    // report errors here
+                    ((RegexChecker) (analysis.getTypeFactory().getContext())).report(e.getResult(), n);
                     assert false;
                 }
                 return newResult;

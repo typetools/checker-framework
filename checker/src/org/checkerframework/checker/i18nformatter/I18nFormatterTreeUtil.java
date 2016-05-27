@@ -274,7 +274,8 @@ public class I18nFormatterTreeUtil {
                                 .parse(formatforArg, flowExprContext, atypeFactory.getPath(tree));
                             paramIndex = flowExprContext.arguments.indexOf(paramArg);
                         } catch (FlowExpressionParseException e) {
-                            // errors are reported at declaration site
+                            // report errors here
+                            checker.report(e.getResult(), tree);
                         }
                     }
                     break;

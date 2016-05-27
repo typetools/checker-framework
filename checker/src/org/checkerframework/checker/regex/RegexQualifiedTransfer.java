@@ -109,6 +109,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
                 firstParam = FlowExpressionParseUtil.parse("#1", context,
                         analysis.getContext().getTypeFactory().getPath(n.getTree()));
             } catch (FlowExpressionParseException e) {
+                // report errors here
+                // checker.report(e.getResult(), n);
                 firstParam = null;
                 assert false;
             }

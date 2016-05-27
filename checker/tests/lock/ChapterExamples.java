@@ -848,6 +848,8 @@ void boxingUnboxing() {
 
   // Analogous to testSynchronizedExpressionIsFinal and testGuardedByExpressionIsFinal, but for explicit locks.
   @MayReleaseLocks
+  // TODO: Remove this @SuppressWarnings once issue 753 is fixed.
+  @SuppressWarnings("flowexpr.parse.error")
   void testExplicitLockExpressionIsFinal(boolean b) {
     c2.lock();
 
@@ -869,6 +871,10 @@ void boxingUnboxing() {
     rl2 = new ReentrantLock(); // Reassignment that makes rl2 not have been effectively final earlier.
 
     // Test a tree that is not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
+    // CFAbstractTransfer cannot store the fact that the expression "c2.getFieldPure(b ? c2 : rl1, c2)" is locked.
+    // It informs the user about this by issuing a flowexpr.parse.error.
+    // TODO: once issue 753 is fixed and the @SuppressWarnings is removed from this method,
+    // add the expected flowexpr.parse.error to the line below.
     //:: error: (lock.expression.possibly.not.final)
     c2.getFieldPure(b ? c2 : rl1, c2).lock();
     //:: error: (lock.expression.possibly.not.final)

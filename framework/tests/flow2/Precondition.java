@@ -151,6 +151,7 @@ class Precondition {
         f2 = p1;
         multi();
 
+        //:: error: (flowexpr.parse.error)
         error2();
     }
 }

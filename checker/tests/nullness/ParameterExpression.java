@@ -4,6 +4,7 @@ import java.util.Map;
 
 public class ParameterExpression {
   public void m1(@Nullable Object o, @Nullable Object o1, @Nullable Object o2, @Nullable Object o3) {
+    //:: error: (flowexpr.parse.error)
     m2(o);
     //:: error: (dereference.of.nullable)
     o.toString();

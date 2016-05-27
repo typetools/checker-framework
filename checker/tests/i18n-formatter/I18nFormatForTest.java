@@ -48,7 +48,7 @@ public class I18nFormatForTest {
         //:: error: (argument.type.incompatible)
         b("{0, number}",  "a string");
 
-        //:: error: (i18nformat.invalid.formatfor)
+        //:: error: (flowexpr.parse.error) :: error: (i18nformat.invalid.formatfor)
         c("{0, number}{1}", 1, "A");
 
         //:: error: (i18nformat.invalid.formatfor)
@@ -59,7 +59,7 @@ public class I18nFormatForTest {
         //:: error: (i18nformat.invalid.formatfor)
         h("{0}", "a string");
 
-        //:: error: (i18nformat.invalid.formatfor)
+        //:: error: (flowexpr.parse.error) :: error: (i18nformat.invalid.formatfor)
         i("{0}", "a string");
 
         j("{0}");

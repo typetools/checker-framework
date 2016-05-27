@@ -82,6 +82,8 @@ public class RegexQualifiedTransfer extends QualTransfer<Regex> {
                         thenStore.insertValue(firstParam, new RegexVal(0));
                     }
                 } catch (FlowExpressionParseException e) {
+                    // report errors here
+                    // checker.report(e.getResult(), n);
                     assert false;
                 }
                 return newResult;

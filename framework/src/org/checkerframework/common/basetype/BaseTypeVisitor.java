@@ -662,6 +662,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 FlowExpressionParseUtil.parse(expression,
                         flowExprContext, getCurrentPath());
             } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
+
                 // ignore expressions that do not parse
                 continue;
             }
@@ -793,6 +796,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 FlowExpressionParseUtil.parse(expression,
                         flowExprContext, getCurrentPath());
             } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
+
                 // ignore expressions that do not parse
                 continue;
             }
@@ -1027,7 +1033,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             expr == null ? expression : expr.toString()), treeForErrorReporting);
                 }
             } catch (FlowExpressionParseException e) {
-                // errors are reported at declaration site
+                // report errors here
+                checker.report(e.getResult(), treeForErrorReporting);
             }
         }
     }
@@ -1143,6 +1150,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 FlowExpressionParseUtil.parse(expression, flowExprContext,
                         getCurrentPath());
             } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
+
                 // ignore expressions that do not parse
                 continue;
             }
@@ -2885,7 +2895,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         expression, flowExprContext, path);
                 result.add(Pair.of(expr, annotation));
             } catch (FlowExpressionParseException e) {
-                // errors are reported elsewhere + ignore this contract
+                // report errors here
+                checker.report(e.getResult(), method);
             }
         }
         return result;
