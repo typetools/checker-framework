@@ -1424,7 +1424,7 @@ public class AnnotatedTypes {
      * @param elements
      *            an array of {@link ElementType} values
      * @param cls the annotation class being tested; used for diagnostic messages only
-     * @throws RuntimException if the array contains both
+     * @throws RuntimeException if the array contains both
      *         {@link ElementType#TYPE_USE} and something besides
      *         {@link ElementType#TYPE_PARAMETER}
      */
