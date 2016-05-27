@@ -45,6 +45,8 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     int paraml = paramTypes.length;
                     int formatl = formatCats.length;
                     if (paraml < formatl) {
+                        // For assignments, format.missing.arguments is issued
+                        // from commonAssignmentCheck.
                         // II.1
                         tu.failure(invc, "format.missing.arguments", formatl, paraml);
                     } else {
@@ -109,6 +111,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
         AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
 
+        // From the manual:
+        // It is legal to use a format string with fewer format specifiers
+        // than required, but a warning is issued.
+        // The format.missing.arguments warning is issued here for assignments.
+        // For method calls, it is issued in visitMethodInvocation.
         if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.FORMAT) &&
             AnnotationUtils.areSameIgnoringValues(lhs, atypeFactory.FORMAT)) {
             ConversionCategory[] rhsArgTypes =

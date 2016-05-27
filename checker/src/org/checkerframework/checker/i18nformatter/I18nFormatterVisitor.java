@@ -70,6 +70,9 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                     int paraml = paramTypes.length;
                     int formatl = formatCats.length;
 
+                    // For assignments, i18nformat.missing.arguments and
+                    // i18nformat.excess.arguments are issued
+                    // from commonAssignmentCheck.
                     if (paraml < formatl) {
                         tu.warning(invc, "i18nformat.missing.arguments", formatl, paraml);
                     }
@@ -118,6 +121,8 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
         AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.I18NUNKNOWNFORMAT);
 
+        // i18nformat.missing.arguments and i18nformat.excess.arguments are issued here for assignments.
+        // For method calls, they are issued in checkInvocationFormatFor.
         if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.I18NFORMAT) &&
             AnnotationUtils.areSameIgnoringValues(lhs, atypeFactory.I18NFORMAT)) {
             I18nConversionCategory[] rhsArgTypes =
@@ -126,9 +131,14 @@ public class I18nFormatterVisitor extends BaseTypeVisitor<I18nFormatterAnnotated
                     atypeFactory.treeUtil.formatAnnotationToCategories(lhs);
 
             if (rhsArgTypes.length < lhsArgTypes.length) {
+                // From the manual:
+                // It is legal to use a format string with fewer format specifiers
+                // than required, but a warning is issued.
                 checker.report(org.checkerframework.framework.source.Result.warning("i18nformat.missing.arguments",
                         varType.toString(), valueType.toString()), valueTree);
             } else if (rhsArgTypes.length > lhsArgTypes.length) {
+                // Since it is known that too many conversion categories were provided,
+                // issue a more specific error message to that effect than assignment.type.incompatible.
                 checker.report(org.checkerframework.framework.source.Result.failure("i18nformat.excess.arguments",
                         varType.toString(), valueType.toString()), valueTree);
             }
