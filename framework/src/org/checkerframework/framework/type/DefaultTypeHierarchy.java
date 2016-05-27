@@ -557,6 +557,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     @Override
+    public Boolean visitIntersection_Primitive(AnnotatedIntersectionType subtype, AnnotatedPrimitiveType supertype, VisitHistory visited) {
+        return visitIntersectionSubtype(subtype, supertype, visited);
+    }
+
+    @Override
     public Boolean visitIntersection_Intersection(AnnotatedIntersectionType subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
         return visitIntersectionSubtype(subtype, supertype, visited);
     }
@@ -660,6 +665,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public Boolean visitTypevar_Intersection(AnnotatedTypeVariable subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
         // this can happen when checking type param bounds
         return visitIntersectionSupertype(subtype, supertype, visited);
+    }
+
+    @Override
+    public Boolean visitTypevar_Primitive(AnnotatedTypeVariable subtype, AnnotatedPrimitiveType supertype, VisitHistory visited) {
+        return visitTypevarSubtype(subtype, supertype, visited);
     }
 
     @Override
@@ -785,8 +795,13 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * this method and visitTypevarSupertype will combine to isValid the subtypes upper bound against the supertypes
      * lower bound.
      */
-    protected boolean visitTypevarSubtype( AnnotatedTypeVariable subtype, AnnotatedTypeMirror supertype, VisitHistory visited ) {
-        return checkAndSubtype(subtype.getUpperBound(), supertype, visited);
+    protected boolean visitTypevarSubtype(AnnotatedTypeVariable subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
+        AnnotatedTypeMirror upperBound = subtype.getUpperBound();
+        if (TypesUtils.isBoxedPrimitive(upperBound.getUnderlyingType())
+            && supertype instanceof AnnotatedPrimitiveType) {
+            upperBound = supertype.atypeFactory.getUnboxedType((AnnotatedDeclaredType) upperBound);
+        }
+        return checkAndSubtype(upperBound, supertype, visited);
     }
 
     /**

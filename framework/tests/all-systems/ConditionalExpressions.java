@@ -2,7 +2,6 @@
 // ArrayTypes.foo3() and TypeVarTypeVar.foo5() crash
 // See Issue 643
 // https://github.com/typetools/checker-framework/issues/643
-// @skip-test
 
 import java.io.Serializable;
 import java.util.List;
@@ -28,7 +27,6 @@ public class ConditionalExpressions {
         }
 
         <T extends Long, S extends Integer> void foo5(T tExtendsLong, S sExtendsInt) {
-            // causes crash
             Number o = flag ? tExtendsLong : sExtendsInt;
         }
     }
@@ -43,7 +41,6 @@ public class ConditionalExpressions {
         }
 
         <T extends Cloneable & Serializable> void foo3(T ts, Number[] numbers) {
-            // causes crash
             Cloneable o = flag ? ts : numbers;
         }
 
