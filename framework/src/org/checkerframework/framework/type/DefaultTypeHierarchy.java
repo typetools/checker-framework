@@ -654,6 +654,28 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         return visitUnionSubtype(subtype, supertype, visited);
     }
 
+    @Override
+    public Boolean visitUnion_Intersection(AnnotatedUnionType subtype, AnnotatedIntersectionType supertype, VisitHistory visited) {
+        // <T extends Throwable & Cloneable> void method(T param) {}
+        // ...
+        // catch (Exception1 | Exception2 union) { // Assuming Exception1 and Exception2 implement Cloneable
+        //   method(union);
+        // This case happens when checking that the inferred type argument is a subtype of the declared type argument of method.
+        // See org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments
+        return visitUnionSubtype(subtype, supertype, visited);
+    }
+
+    @Override
+    public Boolean visitUnion_Union(AnnotatedUnionType subtype, AnnotatedUnionType supertype, VisitHistory visited) {
+        // <T> void method(T param) {}
+        // ...
+        // catch (Exception1 | Exception2 union) {
+        //   method(union);
+        // This case happens when checking the arguments to method after type variable substitution
+        return visitUnionSubtype(subtype, supertype, visited);
+    }
+
+
     //------------------------------------------------------------------------
     // typevar as subtype
     @Override
