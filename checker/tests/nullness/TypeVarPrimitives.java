@@ -1,4 +1,4 @@
-// Unannotated version in framework/tests/all-systems/Primitives.java
+// Unannotated version in framework/tests/all-systems/TypeVarPrimitives.java
 import org.checkerframework.checker.nullness.qual.*;
 public class TypeVarPrimitives {
     <T extends @Nullable Long> void method(T tLong) {
