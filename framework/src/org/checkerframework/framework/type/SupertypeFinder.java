@@ -223,7 +223,7 @@ class SupertypeFinder {
                         final List<? extends TypeMirror> typeArgs = ((DeclaredType) st).getTypeArguments();
                         final List<AnnotatedTypeMirror> annotatedTypeArgs = ast.getTypeArguments();
                         for (int i = 0; i < typeArgs.size(); i++) {
-                            atypeFactory.annotateImplicit(types.asElement(typeArgs.get(i)), annotatedTypeArgs.get(i));
+                            atypeFactory.addComputedTypeAnnotations(types.asElement(typeArgs.get(i)), annotatedTypeArgs.get(i));
                         }
                     }
                 }

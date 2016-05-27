@@ -39,23 +39,17 @@ public class Resolver {
     private final Trees trees;
     private final Log log;
 
-    private final Method FIND_METHOD;
-    private final Method FIND_VAR;
-    private final Method FIND_IDENT_IN_TYPE;
-    private final Method FIND_IDENT_IN_PACKAGE;
-    private final Method FIND_TYPE;
+    private static final Method FIND_METHOD;
+    private static final Method FIND_VAR;
+    private static final Method FIND_IDENT_IN_TYPE;
+    private static final Method FIND_IDENT_IN_PACKAGE;
+    private static final Method FIND_TYPE;
 
-    private final Class<?> ACCESSERROR;
+    private static final Class<?> ACCESSERROR;
     // Note that currently access(...) is defined in InvalidSymbolError, a superclass of AccessError
-    private final Method ACCESSERROR_ACCESS;
+    private static final Method ACCESSERROR_ACCESS;
 
-    public Resolver(ProcessingEnvironment env) {
-        Context context = ((JavacProcessingEnvironment) env).getContext();
-        this.resolve = Resolve.instance(context);
-        this.names = Names.instance(context);
-        this.trees = Trees.instance(env);
-        this.log = Log.instance(context);
-
+    static {
         try {
             FIND_METHOD = Resolve.class.getDeclaredMethod("findMethod",
                     Env.class, Type.class, Name.class, List.class, List.class,
@@ -99,6 +93,14 @@ public class Resolver {
             // Unreachable code - needed so the compiler does not warn about a possibly uninitialized final field.
             throw new AssertionError();
         }
+    }
+
+    public Resolver(ProcessingEnvironment env) {
+        Context context = ((JavacProcessingEnvironment) env).getContext();
+        this.resolve = Resolve.instance(context);
+        this.names = Names.instance(context);
+        this.trees = Trees.instance(env);
+        this.log = Log.instance(context);
     }
 
     /**

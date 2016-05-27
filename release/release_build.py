@@ -27,11 +27,12 @@ def print_usage():
     print "\n  --review-manual  review the documentation changes only; don't perform a full build"
 
 def clone_or_update_repos(auto):
-    """If the relevant repos do not exist, clone them, otherwise, update them."""
-    message = """Before building the release, we update the release repositories (or clone them if they are not present).
+    """Clone the relevant repos from scratch or update them if they exist and
+    if directed to do so by the user."""
+    message = """Before building the release, we clone or update the release repositories.
 However, if you have had to run the script multiple times and no files have changed, you may skip this step.
 WARNING: IF THIS IS YOUR FIRST RUN OF THE RELEASE ON RELEASE DAY, DO NOT SKIP THIS STEP.
-The following repositories will be updated or cloned from their origins:
+The following repositories will be cloned or updated from their origins:
 """
     for live_to_interm in LIVE_TO_INTERM_REPOS:
         message += live_to_interm[1] + "\n"
@@ -42,21 +43,25 @@ The following repositories will be updated or cloned from their origins:
     message += PLUME_LIB + "\n"
     message += PLUME_BIB + "\n\n"
 
-    message += "Clone/update repositories?"
+    message += "Clone repositories from scratch (answer no to be given a chance to update them instead)?"
+
+    clone_from_scratch = True
 
     if not auto:
         if not prompt_yes_no(message, True):
-            print "WARNING: Continuing without refreshing repositories.\n"
-            return
+            clone_from_scratch = False
+            if not prompt_yes_no("Update the repositories without cloning them from scratch?", True):
+                print "WARNING: Continuing without refreshing repositories.\n"
+                return
 
     for live_to_interm in LIVE_TO_INTERM_REPOS:
-        clone_or_update(live_to_interm[0], live_to_interm[1], True)
+        clone_from_scratch_or_update(live_to_interm[0], live_to_interm[1], clone_from_scratch, True)
 
     for interm_to_build in INTERM_TO_BUILD_REPOS:
-        clone_or_update(interm_to_build[0], interm_to_build[1], False)
+        clone_from_scratch_or_update(interm_to_build[0], interm_to_build[1], clone_from_scratch, False)
 
-    clone_or_update(LIVE_PLUME_LIB, PLUME_LIB, False)
-    clone_or_update(LIVE_PLUME_BIB, PLUME_BIB, False)
+    clone_from_scratch_or_update(LIVE_PLUME_LIB, PLUME_LIB, clone_from_scratch, False)
+    clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
 
 def copy_cf_logo(cf_release_dir):
     """Copy CFLogo.png from the live web site to the given directory."""

@@ -44,8 +44,8 @@ import com.sun.source.tree.Tree;
  * Implements framework support for type qualifier polymorphism. Checkers that
  * wish to use it should add calls to
  * {@link #annotate(MethodInvocationTree, AnnotatedTypeMirror.AnnotatedExecutableType)} to the
- * {@link AnnotatedTypeFactory#annotateImplicit(Tree, AnnotatedTypeMirror)} and
- * {@link AnnotatedTypeFactory#annotateImplicit(Tree, AnnotatedTypeMirror)}
+ * {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)} and
+ * {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}
  * methods.
  *
  * <p>

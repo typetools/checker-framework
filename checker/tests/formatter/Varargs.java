@@ -7,7 +7,7 @@ public class Varargs {
 
         // vararg as parameter
         //:: warning: non-varargs call of varargs method with inexact argument type for last parameter; :: warning: (format.indirect.arguments)
-        f.format("Nothing", null); // eqivalent to (Object[])null
+        f.format("Nothing", null); // equivalent to (Object[])null
         //:: warning: (format.indirect.arguments)
         f.format("Nothing", (Object[])null);
         //:: warning: (format.indirect.arguments)
@@ -15,7 +15,7 @@ public class Varargs {
         //:: warning: (format.indirect.arguments)
         f.format("%s %d %x", (Object[])null);
         //:: warning: non-varargs call of varargs method with inexact argument type for last parameter; :: warning: (format.indirect.arguments)
-        f.format("%s %d %x", null); // eqivalent to (Object[])null
+        f.format("%s %d %x", null); // equivalent to (Object[])null
         //:: warning: (format.indirect.arguments)
         f.format("%d", new Object[1]);
         //:: warning: (format.indirect.arguments)

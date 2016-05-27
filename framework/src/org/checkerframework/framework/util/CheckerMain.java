@@ -222,6 +222,7 @@ public class CheckerMain {
      */
     protected static final Pattern BOOT_CLASS_PATH_REGEX = Pattern.compile("^(?:-J)?-Xbootclasspath/p:(.*)$");
 
+    // TODO: Why does this treat -J and -J-X the same?  They have different semantics, don't they?
     /**
      * Remove all -Xbootclasspath/p: or -J-Xbootclasspath/p: arguments from args and add them to the returned list
      * @param args the arguments to extract from
