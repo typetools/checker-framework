@@ -194,7 +194,7 @@ public class NullnessAnnotatedTypeFactory
         super.setRoot(root);
     }
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean} */
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)} */
     @Deprecated
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {

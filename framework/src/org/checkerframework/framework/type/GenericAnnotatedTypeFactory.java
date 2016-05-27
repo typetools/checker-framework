@@ -1025,7 +1025,7 @@ public abstract class GenericAnnotatedTypeFactory<
         return mfuPair;
     }
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror} */
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)} */
     @Deprecated
     @Override
     protected final void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
@@ -1044,7 +1044,7 @@ public abstract class GenericAnnotatedTypeFactory<
         addComputedTypeAnnotations(tree, type, this.useFlow);
     }
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean} */
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)} */
     @Deprecated
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         addComputedTypeAnnotations(tree, type, iUseFlow);
@@ -1133,7 +1133,7 @@ public abstract class GenericAnnotatedTypeFactory<
         new DefaultInferredTypesApplier().applyInferredType(getQualifierHierarchy(), type, as.getType());
     }
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror} */
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror)} */
     @Deprecated
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {

@@ -34,7 +34,7 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror} */
+    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror)} */
     @Deprecated
     @Override
     public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
