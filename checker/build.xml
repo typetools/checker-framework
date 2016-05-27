@@ -625,6 +625,7 @@
 
         <antcall target="check-tutorial"/>
         <antcall target="check-compilermsgs"/>
+        <antcall target="check-purity"/>
 
     </target>
 
