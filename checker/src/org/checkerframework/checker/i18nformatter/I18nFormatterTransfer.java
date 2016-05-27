@@ -18,6 +18,7 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  *
@@ -63,8 +64,8 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
                     thenStore.insertValue(firstParam, anno);
                 }
             } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
+                ErrorReporter.errorAbort("I18nFormatterTransfer.visitMethodInvocation: could not parse " +
+                        "flow expression \"#1\" with respect to MethodInvocationNode " + node.toString(), e);
             }
             return newResult;
         }
@@ -87,8 +88,8 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
                 elseStore.insertValue(firstParam, builder.build());
 
             } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
+                ErrorReporter.errorAbort("I18nFormatterTransfer.visitMethodInvocation: could not parse " +
+                        "flow expression \"#1\" with respect to MethodInvocationNode " + node.toString(), e);
             }
             return newResult;
         }

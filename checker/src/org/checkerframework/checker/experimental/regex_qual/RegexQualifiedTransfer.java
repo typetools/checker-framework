@@ -17,6 +17,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualStore;
@@ -82,9 +83,8 @@ public class RegexQualifiedTransfer extends QualTransfer<Regex> {
                         thenStore.insertValue(firstParam, new RegexVal(0));
                     }
                 } catch (FlowExpressionParseException e) {
-                    // report errors here
-                    // checker.report(e.getResult(), n);
-                    assert false;
+                    ErrorReporter.errorAbort("RegexQualifiedTransfer.visitMethodInvocation: could not parse " +
+                            "flow expression \"#1\" with respect to MethodInvocationNode " + n.toString(), e);
                 }
                 return newResult;
 

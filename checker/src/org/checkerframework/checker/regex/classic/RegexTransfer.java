@@ -23,6 +23,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 
 public class RegexTransfer extends
         CFAbstractTransfer<CFValue, CFStore, RegexTransfer> {
@@ -90,9 +91,8 @@ public class RegexTransfer extends
                         thenStore.insertValue(firstParam, regexAnnotation);
                     }
                 } catch (FlowExpressionParseException e) {
-                    // report errors here
-                    ((RegexChecker) (analysis.getTypeFactory().getContext())).report(e.getResult(), n);
-                    assert false;
+                    ErrorReporter.errorAbort("RegexTransfer.visitMethodInvocation: could not parse " +
+                            "flow expression \"#1\" with respect to MethodInvocationNode " + n.toString(), e);
                 }
                 return newResult;
 

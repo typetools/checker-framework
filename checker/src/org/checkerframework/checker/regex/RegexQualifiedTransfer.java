@@ -24,6 +24,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
@@ -103,16 +104,14 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
                     new ConditionalTransferResult<>(resultIn.getResultValue(), thenStore, elseStore);
             FlowExpressionContext context = FlowExpressionParseUtil.buildFlowExprContextForUse(n,
                     analysis.getContext());
-            Receiver firstParam;
+            Receiver firstParam = null;
             try {
                 // TODO: is this the easiest way to do this?
                 firstParam = FlowExpressionParseUtil.parse("#1", context,
                         analysis.getContext().getTypeFactory().getPath(n.getTree()));
             } catch (FlowExpressionParseException e) {
-                // report errors here
-                // checker.report(e.getResult(), n);
-                firstParam = null;
-                assert false;
+                ErrorReporter.errorAbort("RegexQualifiedTransfer.handleRegexUtil: could not parse " +
+                        "flow expression \"#1\" with respect to MethodInvocationNode " + n.toString(), e);
             }
 
             // add annotation with correct group count (if possible,
