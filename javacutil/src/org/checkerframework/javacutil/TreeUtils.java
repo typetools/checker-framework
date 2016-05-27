@@ -76,11 +76,28 @@ public final class TreeUtils {
      * @return true iff tree describes a call to super
      */
     public static boolean isSuperCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("super", tree);
+    }
+
+    /**
+     * Checks if the method invocation is a call to this.
+     *
+     * @param tree
+     *            a tree defining a method invocation
+     *
+     * @return true iff tree describes a call to this
+     */
+    public static boolean isThisCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("this", tree);
+
+    }
+
+    protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
         /*@Nullable*/ ExpressionTree mst = tree.getMethodSelect();
         assert mst != null; /*nninvariant*/
 
         if (mst.getKind() == Tree.Kind.IDENTIFIER ) {
-            return ((IdentifierTree)mst).getName().contentEquals("super");
+            return ((IdentifierTree)mst).getName().contentEquals(name);
         }
 
         if (mst.getKind() == Tree.Kind.MEMBER_SELECT) {
@@ -91,7 +108,7 @@ public final class TreeUtils {
             }
 
             return ((IdentifierTree) selectTree.getExpression()).getName()
-                .contentEquals("super");
+                    .contentEquals(name);
         }
 
         return false;
