@@ -624,6 +624,7 @@
         <antcall target="example-tests-nobuildjdk"/>
 
         <antcall target="check-tutorial"/>
+        <antcall target="check-compilermsgs"/>
 
     </target>
 
