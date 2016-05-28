@@ -1191,12 +1191,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // implicit annotations
     // **********************************************************************
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)} */
-    @Deprecated
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        addComputedTypeAnnotations(tree, type);
-    }
-
     /**
      * Adds implicit annotations to a type obtained from a {@link Tree}. By
      * default, this method does nothing. Subclasses should use this method to
@@ -1207,12 +1201,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type) {
         // Pass.
-    }
-
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror)} */
-    @Deprecated
-    protected void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        addComputedTypeAnnotations(elt, type);
     }
 
     /**
@@ -1944,27 +1932,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return AnnotatedDeclaredType
      */
     public final AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-        AnnotatedDeclaredType type;
-        if (!TreeUtils.isDiamondTree(newClassTree)) {
-            // If newClassTree does not create anonymous class,
-            // newClassTree.getIdentifier includes the explicit annotations in this location:
-            //   new @HERE Class()
-            type = (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
-        } else {
-            type = (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(newClassTree), false);
-        }
-
-        if (newClassTree.getClassBody() != null) {
-            // If newClassTree creates an anonymous class, then annotations in this location:
-            //   new @HERE Class() {}
-            // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
-            List<? extends AnnotationTree> annos = newClassTree.getClassBody().getModifiers().getAnnotations();
-            // Replace the annotation because a different annotation could have been
-            // inherited from the class declaration.
-            type.replaceAnnotations(InternalUtils.annotationsFromTypeAnnotationTrees(annos));
-        }
-
         if (TreeUtils.isDiamondTree(newClassTree)) {
+            AnnotatedDeclaredType type = (AnnotatedDeclaredType)
+                    toAnnotatedType(InternalUtils.typeOf(newClassTree), false);
             if (((com.sun.tools.javac.code.Type)type.actualType).tsym.getTypeParameters().nonEmpty()) {
                 Pair<Tree, AnnotatedTypeMirror> ctx = this.visitorState.getAssignmentContext();
                 if (ctx != null) {
@@ -1972,9 +1942,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     fromNewClassContextHelper(type, ctxtype);
                 }
             }
+            return type;
+        } else if (newClassTree.getClassBody() != null) {
+            AnnotatedDeclaredType type =
+                    (AnnotatedDeclaredType) toAnnotatedType(InternalUtils.typeOf(newClassTree), false);
+            // If newClassTree creates an anonymous class, then annotations in this location:
+            //   new @HERE Class() {}
+            // are on not on the identifier newClassTree, but rather on the modifier newClassTree.
+            List<? extends AnnotationTree> annos = newClassTree.getClassBody().getModifiers().getAnnotations();
+            type.addAnnotations(InternalUtils.annotationsFromTypeAnnotationTrees(annos));
+            return type;
+        } else {
+            // If newClassTree does not create anonymous class,
+            // newClassTree.getIdentifier includes the explicit annotations in this location:
+            //   new @HERE Class()
+            return (AnnotatedDeclaredType) fromTypeTree(newClassTree.getIdentifier());
         }
-
-        return type;
     }
 
     // This method extracts the ugly hacky parts.

@@ -121,10 +121,8 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
      * will not.  Canonicalize it now.
      */
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType expectedReturnType,
-                                                 AnnotatedExecutableType constructor, Tree src) {
-
-        NewClassTree invocation = (NewClassTree) src;
-        atypeFactory.canonicalizeForViewpointAdaptation(invocation, expectedReturnType);
-        return super.checkConstructorInvocation(expectedReturnType, constructor, invocation);
+                                                 AnnotatedExecutableType constructor, NewClassTree src) {
+        atypeFactory.canonicalizeForViewpointAdaptation(src, expectedReturnType);
+        return super.checkConstructorInvocation(expectedReturnType, constructor, src);
     }
 }

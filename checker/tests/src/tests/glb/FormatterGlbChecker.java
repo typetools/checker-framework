@@ -272,12 +272,12 @@ public class FormatterGlbChecker extends FormatterChecker {
         assert AnnotationUtils.areSame(qh.greatestLowerBound(FormatTwoConvCat1, FormatTwoConvCat2), FormatTwoConvCat3) :
             "GLB of @Format([CHAR_AND_INT,FLOAT]) and @Format([INT,CHAR]) is not @Format([INT,GENERAL])!";
 
-        // Test that the GLB of two ConversionCategory arrays of different sizes is @FormatBottom:
+        // Test that the GLB of two ConversionCategory arrays of different sizes is an array of the smallest size of the two:
 
-        assert AnnotationUtils.areSame(qh.greatestLowerBound(FormatTwoConvCat1, FormatUnusedAnno), FORMATBOTTOM) :
-            "GLB of @Format([CHAR_AND_INT,FLOAT]) and @Format(UNUSED) is not @FormatBottom!";
-        assert AnnotationUtils.areSame(qh.greatestLowerBound(FormatUnusedAnno, FormatTwoConvCat1), FORMATBOTTOM) :
-            "GLB of @Format(UNUSED) and @Format([CHAR_AND_INT,FLOAT]) is not @FormatBottom!";
+        assert AnnotationUtils.areSame(qh.greatestLowerBound(FormatGeneralAnno, FormatTwoConvCat1), FormatGeneralAnno) :
+            "GLB of @I18nFormat(GENERAL) and @I18nFormat([CHAR_AND_INT,FLOAT]) is not @I18nFormat(GENERAL)!";
+        assert AnnotationUtils.areSame(qh.greatestLowerBound(FormatTwoConvCat2, FormatNullAnno), FormatIntAnno) :
+            "GLB of @I18nFormat([INT,CHAR]) and @I18nFormat(NULL) is not @I18nFormat(INT)!";
 
         // GLB of @UnknownFormat and others
 

@@ -1,6 +1,5 @@
 // Testcase for Issue 696
 // https://github.com/typetools/checker-framework/issues/696
-// @skip-test
 
 import java.util.List;
 import java.util.Map.Entry;

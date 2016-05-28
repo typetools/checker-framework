@@ -87,13 +87,6 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         );
     }
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)} */
-    @Deprecated
-    @Override
-    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-        addComputedTypeAnnotations(tree, type, useFlow);
-    }
-
     @Override
     public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         Element element = InternalUtils.symbol(tree);
@@ -101,13 +94,6 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.addAnnotation(INTERNED);
         }
         super.addComputedTypeAnnotations(tree, type, useFlow);
-    }
-
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror)} */
-    @Deprecated
-    @Override
-    public void annotateImplicit(Element element, AnnotatedTypeMirror type) {
-        addComputedTypeAnnotations(element, type);
     }
 
     @Override

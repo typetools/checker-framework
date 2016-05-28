@@ -28,11 +28,8 @@ import java.util.zip.ZipEntry;
 public class CheckerMain {
 
     /**
-     * Most logic of the CheckerMain main method is delegated to the CheckerMain class.  This method
-     * just determines the relevant parameters to CheckerMain then tells it to invoke the JSR 308
-     * Type Annotations Compiler.
-     * Any exception thrown by the Checker Framework escapes to the command line
-     * @param args command-line arguments, eventually passed to the JSR 308 Type Annotations compiler
+     * Invoke the JSR 308 Type Annotations Compiler.
+     * Any exception thrown by the Checker Framework escapes to the command line.
      */
     public static void main(String[] args)  {
         final File pathToThisJar    = new File(findPathTo(CheckerMain.class, false));
@@ -52,7 +49,7 @@ public class CheckerMain {
     protected final File javacJar;
 
     /**
-     * The paths to the jar containing CheckerMain.class (i.e. checker.jar)
+     * The path to the jar containing CheckerMain.class (i.e. checker.jar)
      */
     protected final File checkersJar;
 
@@ -70,8 +67,8 @@ public class CheckerMain {
     private final List<File> argListFiles;
 
     /**
-     * Construct all the relevant file locations and java version given the path to this jar and
-     * a set of directories in which to search for jars
+     * Construct all the relevant file locations and Java version given the path to this jar and
+     * a set of directories in which to search for jars.
      */
     public CheckerMain(final File checkersJar, final String [] args) {
 

@@ -45,6 +45,10 @@ public class Resolver {
     private static final Method FIND_IDENT_IN_PACKAGE;
     private static final Method FIND_TYPE;
 
+    private static final Class<?> ACCESSERROR;
+    // Note that currently access(...) is defined in InvalidSymbolError, a superclass of AccessError
+    private static final Method ACCESSERROR_ACCESS;
+
     static {
         try {
             FIND_METHOD = Resolve.class.getDeclaredMethod("findMethod",
@@ -75,7 +79,21 @@ public class Resolver {
             err.initCause(e);
             throw err;
         }
-}
+
+        try {
+            ACCESSERROR = Class.forName("com.sun.tools.javac.comp.Resolve$AccessError");
+            ACCESSERROR_ACCESS = ACCESSERROR.getMethod("access", Name.class, TypeSymbol.class);
+            ACCESSERROR_ACCESS.setAccessible(true);
+        } catch (ClassNotFoundException e) {
+            ErrorReporter.errorAbort("Compiler 'Resolve$AccessError' class could not be retrieved.", e);
+            // Unreachable code - needed so the compiler does not warn about a possibly uninitialized final field.
+            throw new AssertionError();
+        } catch (NoSuchMethodException e) {
+            ErrorReporter.errorAbort("Compiler 'Resolve$AccessError' class doesn't contain required 'access' method", e);
+            // Unreachable code - needed so the compiler does not warn about a possibly uninitialized final field.
+            throw new AssertionError();
+        }
+    }
 
     public Resolver(ProcessingEnvironment env) {
         Context context = ((JavacProcessingEnvironment) env).getContext();
@@ -107,10 +125,13 @@ public class Resolver {
         try {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
-            Element res = wrapInvocation(FIND_IDENT_IN_TYPE, env, type,
+            Element res = wrapInvocationOnResolveInstance(FIND_IDENT_IN_TYPE, env, type,
                     names.fromString(name), VAR);
             if (res.getKind() == ElementKind.FIELD) {
                 return (VariableElement) res;
+            } else if (res.getKind() == ElementKind.OTHER && ACCESSERROR.isInstance(res)) {
+                // Return the inaccessible field that was found
+                return (VariableElement) wrapInvocation(res, ACCESSERROR_ACCESS, null, null);
             } else {
                 // Most likely didn't find the field and the Element is a SymbolNotFoundError
                 return null;
@@ -135,7 +156,7 @@ public class Resolver {
         try {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
-            Element res = wrapInvocation(FIND_VAR, env,
+            Element res = wrapInvocationOnResolveInstance(FIND_VAR, env,
                     names.fromString(name));
             if (res.getKind() == ElementKind.LOCAL_VARIABLE
              || res.getKind() == ElementKind.PARAMETER) {
@@ -168,7 +189,7 @@ public class Resolver {
         try {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
-            return wrapInvocation(FIND_TYPE, env, names.fromString(name));
+            return wrapInvocationOnResolveInstance(FIND_TYPE, env, names.fromString(name));
         } finally {
             log.popDiagnosticHandler(discardDiagnosticHandler);
         }
@@ -215,7 +236,7 @@ public class Resolver {
                 Object methodContext = buildMethodContext();
                 Object oldContext = getField(resolve, "currentResolutionContext");
                 setField(resolve, "currentResolutionContext", methodContext);
-                Element result = wrapInvocation(FIND_METHOD, env, site, name, argtypes,
+                Element result = wrapInvocationOnResolveInstance(FIND_METHOD, env, site, name, argtypes,
                     typeargtypes, allowBoxing, useVarargs, operator);
                 setField(resolve, "currentResolutionContext", oldContext);
                 return result;
@@ -265,9 +286,13 @@ public class Resolver {
         return f.get(receiver);
     }
 
-    private Symbol wrapInvocation(Method method, Object... args) {
+    private Symbol wrapInvocationOnResolveInstance(Method method, Object... args) {
+        return wrapInvocation(resolve, method, args);
+    }
+
+    private Symbol wrapInvocation(Object receiver, Method method, Object... args) {
         try {
-            return (Symbol) method.invoke(resolve, args);
+            return (Symbol) method.invoke(receiver, args);
         } catch (IllegalAccessException e) {
             Error err = new AssertionError("Unexpected Reflection error");
             err.initCause(e);
