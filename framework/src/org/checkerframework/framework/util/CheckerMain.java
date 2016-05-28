@@ -143,6 +143,9 @@ public class CheckerMain {
     protected List<String> createPpOpts(final List<String> argsList) {
         final List<String> extractedOps = extractPpOpts(argsList);
         if (extractedOps.isEmpty()) {
+            // If processorpath is not provided, then javac uses the classpath.
+            // CheckerMain always supplies a processorpath, so if the user
+            // didn't specify a processorpath, then use the classpath.
             extractedOps.addAll(this.cpOpts);
         }
         extractedOps.add(0, this.checkerJar.getAbsolutePath());
