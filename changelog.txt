@@ -7,7 +7,7 @@ have implemented a checker, you need to change occurrences of
 annotateImplicit to addComputedTypeAnnotations.
 
 Closed issues:
-704
+704, 720
 
 ---------------------------------------------------------------------------
 
