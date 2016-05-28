@@ -2342,6 +2342,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         QualifierPolymorphism poly = new QualifierPolymorphism(atypeFactory.getProcessingEnv(), atypeFactory);
         poly.annotate(overriddenMethodType, overridingMethodType);
 
+        final AnnotatedTypeMirror overriddenReturnType = overriddenMethodType.getReturnType();
+        if (overriddenReturnType.getKind() == TypeKind.VOID) {
+            // If the functional interface return type is void, the overrriding return
+            // type doesn't matter.
+            return true;
+        }
+
         AnnotatedTypeMirror overridingReturnType;
         if (overridingElement.getKind() == ElementKind.CONSTRUCTOR) {
             if (overridingType.getKind() == TypeKind.ARRAY) {
@@ -2358,7 +2365,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         OverrideChecker overrideChecker = new OverrideChecker(
                 memberReferenceTree,
                 overridingMethodType, overridingType, overridingReturnType,
-                overriddenMethodType, overriddenType, overriddenMethodType.getReturnType());
+                overriddenMethodType, overriddenType, overriddenReturnType);
         return overrideChecker.checkOverride();
     }
 
