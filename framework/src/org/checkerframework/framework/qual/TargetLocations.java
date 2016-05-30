@@ -26,6 +26,7 @@ import java.lang.annotation.Target;
  * implemented if a more fine-grained control is necessary.
  *
  */
+// TODO: Verify this meta-annotation (step 3 in https://github.com/typetools/checker-framework/issues/515).
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)

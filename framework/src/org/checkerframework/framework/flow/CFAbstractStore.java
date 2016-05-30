@@ -96,7 +96,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected Map<FlowExpressions.MethodCall, V> methodValues;
 
     /**
-     * Information collected about <class name>.class values,
+     * Information collected about &lt;class name&gt;.class values,
      * using the internal representation {@link ClassName}.
      */
     protected Map<FlowExpressions.ClassName, V> classValues;
@@ -578,7 +578,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Update the information in the store by considering an assignment with
      * target {@code n}, where the target is an array access.
      *
-     * See {@link #removeConflicting(ArrayAccess,V)}, as it is called first
+     * See {@link CFAbstractStore#removeConflicting(ArrayAccess,CFAbstractValue)}, as it is called first
      * by this method.
      */
     protected void updateForArrayAssignment(ArrayAccess arrayAccess,
