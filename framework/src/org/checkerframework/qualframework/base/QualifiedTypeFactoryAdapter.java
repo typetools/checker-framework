@@ -378,13 +378,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return adapter;
     }
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)} */
-    @Deprecated
-    @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        addComputedTypeAnnotations(tree, type, iUseFlow);
-    }
-
     /**
      * The qual framework's tree and type annotators behave differently than the
      * checker frameworks. The default of the checker framework also does not apply.
@@ -417,13 +410,6 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
             }
         }
 
-    }
-
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror)} */
-    @Deprecated
-    @Override
-    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        addComputedTypeAnnotations(elt, type);
     }
 
     @Override

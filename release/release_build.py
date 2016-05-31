@@ -225,7 +225,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
 
     if not manual_only:
         # ensure all PluginUtil.java files are identical
-        execute("sh checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
+        execute("./checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # build the checker framework binaries and documents, run checker framework tests
         ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)

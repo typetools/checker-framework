@@ -56,13 +56,6 @@ public class PolyAllAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new MultiGraphQualifierHierarchy(factory);
     }
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)} */
-    @Deprecated
-    @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        addComputedTypeAnnotations(tree, type, iUseFlow);
-    }
-
     @Override
     protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         super.addComputedTypeAnnotations(tree, type, iUseFlow);

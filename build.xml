@@ -173,6 +173,7 @@
     <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true"/>
     <apply executable="python" parallel="true" failonerror="true">
       <arg value="./checker/bin-devel/run-google-java-format.py"/>
+      <arg value="--aosp"/>    <!-- 4-space indentation -->
       <fileset refid="formatted.java.files"/>
     </apply>
   </target>
