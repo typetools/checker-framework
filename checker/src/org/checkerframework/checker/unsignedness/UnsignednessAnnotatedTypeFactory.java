@@ -18,13 +18,25 @@ import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
+/**
+ * UnsignednessAnnotatedTypeFactory removes implicit types from local variables
+ * because currently types are assigned implicitely rather than defaultly because
+ * they are linked to types, not locations. This ensures users may add @Unsigned
+ * types to local variables.
+ *
+ * Furthermore, this removes all annotations from booleans to stop @Unsigned types
+ * from bubling up through comparisons.
+ */
 public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
 
     private final AnnotationMirror UNKNOWN_SIGNEDNESS;
+    
+    /*
     private final String JAVA_LANG_BYTE = "java.lang.Byte";
     private final String JAVA_LANG_SHORT = "java.lang.Short";
     private final String JAVA_LANG_INTEGER = "java.lang.Integer";
     private final String JAVA_LANG_LONG = "java.lang.Long";
+    */
     
     public UnsignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -36,7 +48,7 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
     @Override
     protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         // When it is possible to default types based on their TypeKinds,
-        // this method will no longer be need.
+        // this method will no longer be needed.
         // Currently, it is adding the LOCAL_VARIABLE default for 
         // bytes, shorts, ints, and longs so that the implicit for 
         // those types is not applied when they are local variables.
@@ -90,7 +102,10 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         );
     }
     
-    // Do not allow Unsigned or Signed to propogate through boolean binary operations
+    /**
+     * Do not allow @Unsigned or @Signed annotations to propogate up the syntax
+     * tree through booleans. 
+     */
     private class UnsignednessTreeAnnotator extends TreeAnnotator {
         private final AnnotationMirror UNSIGNED;
         private final AnnotationMirror SIGNED;
@@ -101,6 +116,12 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
             SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
         }    
         
+        /**
+         * Remove @Unsigned and @Signed annotations from boolean binary trees.
+         * 
+         * @param tree
+         * @param type
+         */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             
@@ -113,6 +134,13 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
             return null;
         }
         
+        /**
+         * Remove @Unsigned and @Signed annotations from boolean compound assignment
+         * trees.
+         * 
+         * @param tree
+         * @param type
+         */
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
             switch (type.getKind()) {

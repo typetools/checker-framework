@@ -18,6 +18,19 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
         super(checker);
     }
 
+    /**
+     * Enforces the following rules on binary operations involving @Unsigned and
+     * @Signed types:
+     *      Do not allow any @Unsigned types in the {/, %} operations.
+     *      Do not allow the signed right shift {>>} of an @Unsigned type.
+     *      Do not allow the unsigned right shift {>>>} of a @Signed type.
+     *      Do not allow non-equality comparisons {<, <=, >, >=} on @Unsigned types.
+     *      Allow any left shift {<<}.
+     *      Do not allow the mixing of @Signed and @Unsigned types.
+     *
+     * @param node
+     * @param p
+     */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
         
@@ -95,6 +108,18 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
         return super.visitBinary(node, p);
     }
 
+    /**
+     * Enforces the following rules on compound assignments involving @Unsigned and
+     * @Signed types:
+     *      Do not allow any @Unsigned types in the {/=, %=} assignments.
+     *      Do not allow the signed right shift {>>=} to assign to an @Unsigned type.
+     *      Do not allow the unsigned right shift {>>>=} to assign to a @Signed type.
+     *      Allow any left shift {<<=} assignment.
+     *      Do not allow the mixing of @Signed and @Unsigned types.
+     *
+     * @param node
+     * @param p
+     */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
         
@@ -133,6 +158,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
             break;
 
         case LEFT_SHIFT_ASSIGNMENT:
+            break;
         default:
             if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)) {
                 checker.report(Result.failure("compound.assignment.type.incompatible.mixed.unsigned.variable",
