@@ -102,8 +102,9 @@ Java also defines other string formats for a type:  qualified names
 
 Here are examples of the supported formats:
 
+\begin{small}
 \begin{center}
-\begin{tabular}{|l|l|l|l|l|l}
+\begin{tabular}{|l|l|l|l|l|l|}
 \hline
 \multicolumn{1}{|c|}{fully-qualified name} & \multicolumn{1}{c|}{binary name} & \multicolumn{1}{c|}{Class.getName} & \multicolumn{1}{c|}{field descriptor} & \multicolumn{1}{c|}{internal form} & \multicolumn{1}{c|}{Class.getSimpleName} \\ \hline
 int                    & int                    & int                     & I                       & int                    & int            \\
@@ -116,15 +117,16 @@ MyClass[]              & MyClass[]              & [LMyClass;              & [LMy
  array of anon.~class}} & MyClass\$22[]         & [LMyClass\$22;          & [LMyClass\$22;          & MyClass\$22[]          & []             \\
 java.lang.Integer      & java.lang.Integer      & java.lang.Integer       & Ljava/lang/Integer;     & java/lang/Integer      & Integer        \\
 java.lang.Integer[]    & java.lang.Integer[]    & [Ljava.lang.Integer;    & [Ljava/lang/Integer;    & java/lang/Integer[]    & Integer[]      \\
-package.Outer.Inner    & package.Outer\$Inner   & package.Outer\$Inner    & Lpackage/Outer\$Inner;  & package/Outer\$Inner   & Inner          \\
-package.Outer.Inner[]  & package.Outer\$Inner[] & [Lpackage.Outer\$Inner; & [Lpackage/Outer\$Inner; & package/Outer\$Inner[] & Inner[]        \\
+pkg.Outer.Inner    & pkg.Outer\$Inner   & pkg.Outer\$Inner    & Lpkg/Outer\$Inner;  & pkg/Outer\$Inner   & Inner          \\
+pkg.Outer.Inner[]  & pkg.Outer\$Inner[] & [Lpkg.Outer\$Inner; & [Lpkg/Outer\$Inner; & pkg/Outer\$Inner[] & Inner[]        \\
 \emph{n/a {\smaller
- for anonymous class}} & package.Outer\$22      & package.Outer\$22       & Lpackage/Outer\$22;     & package/Outer\$22      & \emph{\smaller (empty string)} \\
+ for anonymous class}} & pkg.Outer\$22      & pkg.Outer\$22       & Lpkg/Outer\$22;     & pkg/Outer\$22      & \emph{\smaller (empty string)} \\
 \emph{n/a {\smaller for
- array of anon.~class}} & package.Outer\$22[]   & [Lpackage.Outer\$22;    & [Lpackage/Outer\$22;    & package/Outer\$22[]    & []             \\
+ array of anon.~class}} & pkg.Outer\$22[]   & [Lpkg.Outer\$22;    & [Lpkg/Outer\$22;    & pkg/Outer\$22[]    & []             \\
 \hline
 \end{tabular}
 \end{center}
+\end{small}
 
 Java defines one format for the string representation of a method signature:
 
