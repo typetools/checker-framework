@@ -1,6 +1,6 @@
 package org.checkerframework.qualframework.base;
 
-import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.Key;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -11,7 +11,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedArrayType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
@@ -35,8 +35,6 @@ import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 
@@ -61,8 +59,6 @@ public class TypeMirrorConverter<Q> {
     /** Annotation processing environment, used to construct new {@link Key}
      * {@link AnnotationMirror}s. */
     private final ProcessingEnvironment processingEnv;
-    /** The {@link Element} corresponding to the {@link Key#index()} field. */
-    private final ExecutableElement indexElement;
     /** A {@link Key} annotation with no <code>index</code> set. */
     private final AnnotationMirror blankKey;
     /** The type factory adapter, used to construct {@link
@@ -90,20 +86,10 @@ public class TypeMirrorConverter<Q> {
          }
     };
 
-    @SubtypeOf({})
-    public static @interface Key {
-        /** An index into the lookup table. */
-        int index() default -1;
-        /** A string representation of the qualifier this {@link Key}
-         * represents.  This lets us have slightly nicer error messages. */
-        String desc() default "";
-    }
-
 
     public TypeMirrorConverter(ProcessingEnvironment processingEnv, CheckerAdapter<Q> checkerAdapter) {
         this.checkerAdapter = checkerAdapter;
         this.processingEnv = processingEnv;
-        this.indexElement = TreeUtils.getMethod(Key.class.getCanonicalName(), "index", 0, processingEnv);
         this.blankKey = AnnotationUtils.fromClass(processingEnv.getElementUtils(), Key.class);
         // typeFactory will be lazily initialized, to break a circular
         // dependency between this class and QualifiedTypeFactoryAdapter.
@@ -155,21 +141,13 @@ public class TypeMirrorConverter<Q> {
     /** Returns the <code>index</code> field of a {@link Key} {@link
      * AnnotationMirror}. */
     private int getIndex(AnnotationMirror anno) {
-        return getAnnotationField(anno, indexElement);
-    }
-
-    /** Helper function to obtain an integer field value from an {@link
-     * AnnotationMirror}. */
-    private int getAnnotationField(AnnotationMirror anno, ExecutableElement element) {
-        AnnotationValue value = anno.getElementValues().get(element);
+        Integer value = AnnotationUtils.getElementValue(anno, "index", Integer.class, true);
         if (value == null) {
-            throw new IllegalArgumentException("@Key annotation contains no " + element);
+            ErrorReporter.errorAbort("@Key annotation contains no index");
+            return -1; // dead code
         }
-        assert(value.getValue() instanceof Integer);
-        Integer index = (Integer)value.getValue();
-        return index;
+        return value;
     }
-
 
     /* QTM -> ATM conversion functions */
 

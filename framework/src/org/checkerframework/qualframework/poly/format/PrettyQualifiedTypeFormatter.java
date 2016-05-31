@@ -6,6 +6,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.framework.qual.Key;
 import org.checkerframework.qualframework.base.TypeMirrorConverter;
 import org.checkerframework.qualframework.base.format.DefaultQualifiedTypeFormatter;
 import org.checkerframework.qualframework.poly.PolyQual;
@@ -93,7 +94,7 @@ public class PrettyQualifiedTypeFormatter<Q> extends DefaultQualifiedTypeFormatt
                 // Print out primary qualifiers first
                 for (AnnotationMirror anno : type.getAnnotations()) {
                     // Print out any qualifier parameters (without printing primary).
-                    if (AnnotationUtils.areSameByClass(anno, TypeMirrorConverter.Key.class)) {
+                    if (AnnotationUtils.areSameByClass(anno, Key.class)) {
                         PolyQual<Q> qual = converter.getQualifier(anno).getPrimary();
                         String result = formatter.format(qual, currentPrintInvisibleSetting);
                         if (result != null) {
@@ -109,7 +110,7 @@ public class PrettyQualifiedTypeFormatter<Q> extends DefaultQualifiedTypeFormatt
                 // Finally print out qualifier parameters
                 boolean first = true;
                 for (AnnotationMirror anno : type.getAnnotations()) {
-                    if (AnnotationUtils.areSameByClass(anno, TypeMirrorConverter.Key.class)) {
+                    if (AnnotationUtils.areSameByClass(anno, Key.class)) {
                         QualParams<Q> qual = converter.getQualifier(anno);
                         String result = formatter.format(qual, false, currentPrintInvisibleSetting);
                         if (result != null) {

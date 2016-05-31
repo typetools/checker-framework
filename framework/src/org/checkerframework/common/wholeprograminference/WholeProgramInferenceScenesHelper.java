@@ -29,7 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.qualframework.base.TypeMirrorConverter.Key;
+import org.checkerframework.framework.qual.Key;
 
 import annotations.Annotation;
 import annotations.el.AClass;
@@ -396,7 +396,7 @@ public class WholeProgramInferenceScenesHelper {
         }
 
         // Special cases that should be ignored:
-        // {@link org.checkerframework.qualframework.base.TypeMirrorConverter.Key}
+        // {@link org.checkerframework.framework.qual.Key}
         if (AnnotationUtils.areSameByClass(am, Key.class)) {
             return true;
         }

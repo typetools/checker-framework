@@ -1,5 +1,6 @@
 package org.checkerframework.qualframework.base;
 
+import org.checkerframework.framework.qual.Key;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
@@ -32,7 +33,7 @@ class TypeAnnotatorAdapter<Q> extends ImplicitsTypeAnnotator {
     public Q getExistingQualifier(ExtendedTypeMirror type) {
         if (type instanceof WrappedAnnotatedTypeMirror) {
             AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap();
-            if (atm.hasAnnotation(TypeMirrorConverter.Key.class)) {
+            if (atm.hasAnnotation(Key.class)) {
                 return converter.getQualifier(atm);
             }
         }

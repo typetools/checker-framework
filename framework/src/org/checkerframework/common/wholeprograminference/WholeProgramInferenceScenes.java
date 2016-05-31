@@ -23,6 +23,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.framework.qual.Key;
 
 import annotations.el.AClass;
 import annotations.el.AField;
@@ -79,7 +80,7 @@ import com.sun.tools.javac.code.Type.ClassType;
  *   <li>The resulting type would be defaulted or implicited &mdash; that is, if
  *       omitting it has the same effect as writing it.</li>
  *   <li>Special case: The
- *       {@link org.checkerframework.qualframework.base.TypeMirrorConverter.Key}
+ *       {@link Key}
  *       won't be written into .jaif. (This will probably change once we support
  *       type-checkers that use a CheckerAdapter.)</li>
  * </ol>

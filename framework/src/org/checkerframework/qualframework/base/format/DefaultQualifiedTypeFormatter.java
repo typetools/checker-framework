@@ -7,6 +7,7 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.framework.qual.Key;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.TypeMirrorConverter;
 import org.checkerframework.qualframework.poly.QualParams;
@@ -93,7 +94,7 @@ public class DefaultQualifiedTypeFormatter<Q, QUAL_FORMATTER extends QualFormatt
                             "when formatting annotation mirror: " + annos);
                 }
 
-                if (!AnnotationUtils.areSameByClass(obj, TypeMirrorConverter.Key.class)) {
+                if (!AnnotationUtils.areSameByClass(obj, Key.class)) {
                     ErrorReporter.errorAbort("Tried to format something other than an @Key annotation: " + obj);
                 } else {
                     Q qual = converter.getQualifier(obj);
@@ -109,7 +110,7 @@ public class DefaultQualifiedTypeFormatter<Q, QUAL_FORMATTER extends QualFormatt
 
         @Override
         protected void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
-            if (!AnnotationUtils.areSameByClass(am, TypeMirrorConverter.Key.class)) {
+            if (!AnnotationUtils.areSameByClass(am, Key.class)) {
                 ErrorReporter.errorAbort("Tried to format something other than an @Key annotation: " + am);
             } else {
                 Q qual = converter.getQualifier(am);
