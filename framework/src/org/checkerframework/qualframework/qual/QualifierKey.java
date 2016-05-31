@@ -1,4 +1,6 @@
-package org.checkerframework.framework.qual;
+package org.checkerframework.qualframework.qual;
+
+import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Annotation used internally by the qualifier framework for mapping annotations to qualifiers.
