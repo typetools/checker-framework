@@ -282,16 +282,13 @@ public class CheckerMain {
 
         String path = null;
 
-        int i = 0;
-        while (i < args.size()) {
-
-            if (args.get(i).equals("-cp") || args.get(i).equals("-classpath")) {
-                if (args.size() > i) {
-                    args.remove(i);
-                    path = args.remove(i);
-                } // else loop ends and we have a dangling -cp.  javac will issue a warning.
-            } else {
-                i++;
+        for (int i=0; i<args.size(); i++) {
+            if ((args.get(i).equals("-cp") || args.get(i).equals("-classpath"))
+                && (i + 1 < args.size())) {
+                args.remove(i);
+                path = args.remove(i);
+                // re-process whatever is currently at element i
+                i--;
             }
         }
 
@@ -324,16 +321,13 @@ public class CheckerMain {
 
         String path = null;
 
-        int i = 0;
-        while (i < args.size()) {
-
-            if (args.get(i).equals("-processorpath")) {
-                if (args.size() > i) {
-                    args.remove(i);
-                    path = args.remove(i);
-                } // else loop ends and we have a dangling -processorpath.  javac will issue a warning.
-            } else {
-                i++;
+        for (int i=0; i<args.size(); i++) {
+            if (args.get(i).equals("-processorpath")
+                && (i + 1 < args.size())) {
+                args.remove(i);
+                path = args.remove(i);
+                // re-process whatever is currently at element i
+                i--;
             }
         }
 
