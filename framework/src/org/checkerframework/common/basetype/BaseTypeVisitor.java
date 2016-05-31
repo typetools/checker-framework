@@ -629,7 +629,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks all (non-conditional) postcondition on the method {@code node}
-     * with element {@code methodElement} for consistency.
+     * with element {@code methodElement} for consistency, i.e.
+     * that no formal parameter names are mentioned in the postconditions
+     * (an index such as "#1" should be used instead), and that all
+     * formal parameters referred to by an index in the postconditions are
+     * effectively final.
      */
     protected void checkPostconditionsConsistency(MethodTree node,
             ExecutableElement methodElement, List<String> formalParamNames) {
@@ -763,7 +767,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks all conditional postcondition on the method with element
-     * {@code methodElement} for consistency.
+     * {@code methodElement} for consistency, i.e. that no formal parameter
+     * names are mentioned in the conditional postconditions (an index such
+     * as "#1" should be used instead), and that all formal parameters
+     * referred to by an index in the conditional postconditions are
+     * effectively final.
      */
     protected void checkConditionalPostconditionsConsistency(MethodTree node,
             ExecutableElement methodElement, List<String> formalParamNames) {
@@ -808,12 +816,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Check that the parameters used in {@code stringExpr} are final for method
+     * Check that the parameters used in {@code stringExpr} are effectively final for method
      * {@code method}.
      */
     protected void checkFlowExprParameters(ExecutableElement method, String stringExpr) {
         // check that all parameters used in the expression are
-        // final, so that they cannot be modified
+        // effectively final, so that they cannot be modified
         List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
         for (Integer idx : parameterIndices) {
             VariableElement parameter = method.getParameters().get(idx - 1);
@@ -1039,6 +1047,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /**
+     * Returns a flow expression context corresponding to the given {@code node}.
+     * Only handles the kinds of Nodes for which a precondition check is applicable
+     * and for which values are stored in {@link CFAbstractStore}. Returns null
+     * if the Node kind is not handled.
+     *
+     * @param node the Node to generate the flow expression context for
+     * @return the resulting flow expression context, or null if the Node kind is not handled.
+     */
     private FlowExpressionContext getFlowExpressionContextFromNode(Node node) {
         FlowExpressionContext flowExprContext = null;
 
@@ -1117,7 +1134,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks all the preconditions of the method with element
-     * {@code methodElement} for consistency.
+     * {@code methodElement} for consistency, i.e. that no formal
+     * parameter names are mentioned in the preconditions
+     * (an index such as "#1" should be used instead), and that all
+     * formal parameters referred to by an index in the preconditions are
+     * effectively final.
      */
     protected void checkPreconditionsConsistency(MethodTree node,
             ExecutableElement methodElement, List<String> formalParamNames) {
@@ -2183,31 +2204,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
-            AnnotatedExecutableType constructor, Tree src) {
-        AnnotatedDeclaredType ret = (AnnotatedDeclaredType) constructor.getReturnType();
-
+    protected boolean checkConstructorInvocation(AnnotatedDeclaredType invocation,
+            AnnotatedExecutableType constructor, NewClassTree newClassTree) {
+        AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) constructor.getReturnType();
         // When an interface is used as the identifier in an anonymous class (e.g. new Comparable() {})
         // the constructor method will be Object.init() {} which has an Object return type
         // When TypeHierarchy attempts to convert it to the supertype (e.g. Comparable) it will return
         // null from asSuper and return false for the check.  Instead, copy the primary annotations
         // to the declared type and then do a subtyping check
-        if (dt.getUnderlyingType().asElement().getKind().isInterface() &&
-            TypesUtils.isObject(ret.getUnderlyingType())) {
-
-            final AnnotatedDeclaredType retAsDt = dt.deepCopy();
-            retAsDt.replaceAnnotations(ret.getAnnotations());
-            ret = retAsDt;
+        if (invocation.getUnderlyingType().asElement().getKind().isInterface()
+                && TypesUtils.isObject(returnType.getUnderlyingType())) {
+            final AnnotatedDeclaredType retAsDt = invocation.deepCopy();
+            retAsDt.replaceAnnotations(returnType.getAnnotations());
+            returnType = retAsDt;
+        } else if (newClassTree.getClassBody() != null) {
+            // An anonymous class invokes the constructor of it's super class, so the underlying
+            // types of invocation and returnType are not the same.  Call asSuper so they are the
+            // same and the is subtype tests below work correctly
+            invocation = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(types, atypeFactory, invocation, returnType);
         }
 
-        boolean b = atypeFactory.getTypeHierarchy().isSubtype(dt, ret) ||
-                atypeFactory.getTypeHierarchy().isSubtype(ret, dt);
-
-        if (!b) {
+        // The return type of the constructor (returnType) must be comparable to the type of the
+        // constructor invocation (invocation).
+        if (!(atypeFactory.getTypeHierarchy().isSubtype(invocation, returnType)
+                || atypeFactory.getTypeHierarchy().isSubtype(returnType, invocation))) {
             checker.report(Result.failure("constructor.invocation.invalid",
-                    constructor.toString(), dt, ret), src);
+                    constructor.toString(), invocation, returnType), newClassTree);
+            return false;
         }
-        return b;
+        return true;
         // TODO: what properties should hold for constructor receivers for
         // inner type instantiations?
     }
@@ -2355,16 +2380,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 overridingReturnType = overridingType;
             } else {
                 overridingReturnType = atypeFactory.getResultingTypeOfConstructorMemberReference(memberReferenceTree, overridingMethodType);
-
             }
         } else {
             overridingReturnType = overridingMethodType.getReturnType();
         }
 
+        AnnotatedTypeMirror overriddenReturnType = overriddenMethodType.getReturnType();
+        if (overriddenReturnType.getKind() == TypeKind.VOID) {
+            // If the functional interface return type is void, the overriding return
+            // type doesn't matter.
+            overriddenReturnType = overridingReturnType;
+        }
+
         OverrideChecker overrideChecker = new OverrideChecker(
                 memberReferenceTree,
                 overridingMethodType, overridingType, overridingReturnType,
-                overriddenMethodType, overriddenType, overriddenMethodType.getReturnType());
+                overriddenMethodType, overriddenType, overriddenReturnType);
         return overrideChecker.checkOverride();
     }
 

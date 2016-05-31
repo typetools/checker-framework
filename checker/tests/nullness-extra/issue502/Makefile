@@ -5,7 +5,7 @@ all: clean
 # TODO: This test is rather unstable, as Expected.txt relies on
 # @SideEffectFree being constant #12().
 	$(JAVAP) -v Issue502 | grep "RuntimeVisibleAnnotations:" -A 2 > Out.txt 2>&1
-	diff -u Out.txt Expected.txt
+	diff -u Expected.txt Out.txt
 
 clean:
 	-rm Issue502.class Out.txt

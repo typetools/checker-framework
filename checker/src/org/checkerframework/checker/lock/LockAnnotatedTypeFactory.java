@@ -515,25 +515,11 @@ public class LockAnnotatedTypeFactory
         );
     }
 
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Element,AnnotatedTypeMirror)} */
-    @Deprecated
-    @Override
-    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
-        addComputedTypeAnnotations(elt, type);
-    }
-
     @Override
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         translateJcipAndJavaxAnnotations(elt, type);
 
         super.addComputedTypeAnnotations(elt, type);
-    }
-
-    /** @deprecated Use {@link #addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)} */
-    @Deprecated
-    @Override
-    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-        addComputedTypeAnnotations(tree, type, useFlow);
     }
 
     @Override

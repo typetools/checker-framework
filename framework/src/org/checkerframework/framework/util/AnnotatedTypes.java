@@ -1405,14 +1405,14 @@ public class AnnotatedTypes {
 
     private static Map<TypeElement, Boolean> isTypeAnnotationCache = new IdentityHashMap<>();
 
-    public static boolean isTypeAnnotation(AnnotationMirror anno) {
+    public static boolean isTypeAnnotation(AnnotationMirror anno, Class<?> cls) {
         TypeElement elem = (TypeElement)anno.getAnnotationType().asElement();
         if (isTypeAnnotationCache.containsKey(elem)) {
             return isTypeAnnotationCache.get(elem);
         }
 
         // the annotation is a type annotation if it has the proper ElementTypes in the @Target meta-annotation
-        boolean result = hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value());
+        boolean result = hasTypeQualifierElementTypes(elem.getAnnotation(Target.class).value(), cls);
         isTypeAnnotationCache.put(elem, result);
         return result;
     }
@@ -1423,13 +1423,14 @@ public class AnnotatedTypes {
      *
      * @param elements
      *            an array of {@link ElementType} values
-     * @return true if the array only has {@link ElementType#TYPE_USE} (and
-     *         optionally {@link ElementType#TYPE_PARAMETER}), false if it
-     *         contains anything else
+     * @param cls the annotation class being tested; used for diagnostic messages only
+     * @throws RuntimeException if the array contains both
+     *         {@link ElementType#TYPE_USE} and something besides
+     *         {@link ElementType#TYPE_PARAMETER}
      */
-    public static boolean hasTypeQualifierElementTypes(ElementType[] elements) {
+    public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
         boolean hasTypeUse = false;
-        boolean hasOtherElementTypes = false;
+        ElementType otherElementType = null;
 
         for (ElementType element : elements) {
             if (element.equals(ElementType.TYPE_USE)) {
@@ -1438,20 +1439,14 @@ public class AnnotatedTypes {
             } else if (!element.equals(ElementType.TYPE_PARAMETER)) {
                 // if there's an ElementType with a enumerated value of something other than
                 // TYPE_USE or TYPE_PARAMETER then it isn't a valid annotation
-                hasOtherElementTypes = true;
+                otherElementType = element;
+            }
+            if (hasTypeUse && otherElementType != null) {
+                ErrorReporter.errorAbort("@Target meta-annotation should not contain both TYPE_USE and " + otherElementType + ", for annotation " + cls.getName());
             }
         }
 
-        return (hasTypeUse && !hasOtherElementTypes);
-    }
-
-    public static boolean containsTypeAnnotation(Collection<? extends AnnotationMirror> annos) {
-        for (AnnotationMirror am : annos) {
-            if (isTypeAnnotation(am)) {
-                return true;
-            }
-        }
-        return false;
+        return hasTypeUse;
     }
 
     /**

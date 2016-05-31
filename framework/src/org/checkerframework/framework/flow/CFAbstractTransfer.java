@@ -441,7 +441,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
             Element elem = e.getKey();
 
-            // There is a design flaw where the values of final local values leaks
+            // TODO: There is a design flaw where the values of final local values leaks
             // into other methods of the same class. For example, in
             // class a { void b() {...} void c() {...} }
             // final local values from b() would be visible in the store for c(),

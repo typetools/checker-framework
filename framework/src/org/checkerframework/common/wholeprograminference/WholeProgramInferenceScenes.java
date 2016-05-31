@@ -16,6 +16,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
+import org.checkerframework.framework.qual.QualifierKey;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -79,7 +80,7 @@ import com.sun.tools.javac.code.Type.ClassType;
  *   <li>The resulting type would be defaulted or implicited &mdash; that is, if
  *       omitting it has the same effect as writing it.</li>
  *   <li>Special case: The
- *       {@link org.checkerframework.qualframework.base.TypeMirrorConverter.Key}
+ *       {@link QualifierKey}
  *       won't be written into .jaif. (This will probably change once we support
  *       type-checkers that use a CheckerAdapter.)</li>
  * </ol>
