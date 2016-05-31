@@ -106,8 +106,7 @@ public class FlowExpressionParseUtil {
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or
-     * throw an {@link FlowExpressionParseException}. The expression is assumed
-     * to be used in the context of a method.
+     * throw an {@link FlowExpressionParseException}.
      *
      * @param s
      *            The string to parse.
@@ -124,8 +123,7 @@ public class FlowExpressionParseUtil {
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or
-     * throw an {@link FlowExpressionParseException}. The expression is assumed
-     * to be used in the context of a method.
+     * throw an {@link FlowExpressionParseException}.
      * Returns null if 'itself' is passed in as the string to parse
      * and no receiver named 'itself' could be found.
      *
@@ -234,6 +232,8 @@ public class FlowExpressionParseUtil {
             Resolver resolver = new Resolver(env);
             try {
                 if (allowLocalVariables) {
+                    // Attempt to match a local variable within the scope of the
+                    // given path before attempting to match a field.
                     VariableElement varElem = resolver.findLocalVariableOrParameter(s, path);
                     if (varElem != null) {
                         return new LocalVariable(varElem);
@@ -305,7 +305,9 @@ public class FlowExpressionParseUtil {
                         // The callee knows that it passed in 'itself' and will handle the null return value.
                         // DO however throw an exception below if the call is recursive and 'itself' matches,
                         // because that might mean that the original expression was "classname.itself",
-                        // which means a field named itself was explicitly sought.
+                        // which means a field named itself was explicitly sought. (See the last recursive call
+                        // to parse in the (dotMatcher.matches() && allowDot) case below. In that recursive
+                        // call, the allowItself parameter is set to false.)
                     }
 
                     throw constructParserException(s);
@@ -392,6 +394,10 @@ public class FlowExpressionParseUtil {
                 throw constructParserException(s);
             }
             // check that the method is pure (this is no longer required)
+            // TODO: It is not clear when non-pure method calls are allowed - see the
+            // Javadoc for FlowExpressions.MethodCall and the TODO below it.
+            // Once that TODO is resolved, remove/restore/change the commented out
+            // code below.
             assert methodElement != null;
             /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
                     methodElement)) {
@@ -432,8 +438,11 @@ public class FlowExpressionParseUtil {
 
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
-            // Parameter allowItself is set to false since "itself" can only be
-            // in the receiver, not in the remaining string.
+            // Parameter allowItself is set to false since "itself" (when used
+            // to mean "the expression itself")  can only be in the receiver,
+            // not in the remaining string. Note that "itself" can still be a
+            // variable name in the remaining string, and this recursive call
+            // handles that case.
             return parse(remainingString, newContext, path, false, true, false,
                     true, true, false, false, false, false, true);
         } else if (parenthesesMatcher.matches()) {
