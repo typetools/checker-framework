@@ -14,10 +14,6 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.lang.model.element.Element;
 
 /**
  * Perform some visualization on a control flow graph.
