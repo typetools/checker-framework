@@ -4,14 +4,14 @@ package org.checkerframework.framework.qual;
  * Annotation used internally by the qualifier framework for mapping annotations to qualifiers.
  */
 @SubtypeOf({})
-public @interface Key {
+public @interface QualifierKey {
     /**
      * An index into the lookup table.
      */
     int index() default -1;
 
     /**
-     * A string representation of the qualifier this {@link Key} represents.  This lets us have
+     * A string representation of the qualifier this {@link QualifierKey} represents.  This lets us have
      * slightly nicer error messages.
      */
     String desc() default "";

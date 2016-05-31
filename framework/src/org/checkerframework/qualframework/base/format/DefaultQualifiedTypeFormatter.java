@@ -1,13 +1,13 @@
 package org.checkerframework.qualframework.base.format;
 
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.QualifierKey;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.framework.qual.Key;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.TypeMirrorConverter;
 import org.checkerframework.qualframework.poly.QualParams;
@@ -20,7 +20,7 @@ import java.util.Collection;
  * DefaultQualifiedTypeFormatter formats QualifiedTypeMirrors into Strings.
  *
  * This implementation used a component AnnotatedTypeFormatter to drive the formatting
- * and an AnnotationFormatter that converts @Key annotations to the qualifier, which
+ * and an AnnotationFormatter that converts @QualifierKey annotations to the qualifier, which
  * is then formatted by a QualFormatter.
  */
 public class DefaultQualifiedTypeFormatter<Q, QUAL_FORMATTER extends QualFormatter<Q>> implements
@@ -80,7 +80,7 @@ public class DefaultQualifiedTypeFormatter<Q, QUAL_FORMATTER extends QualFormatt
     }
 
     /**
-     * Formats an @Key annotation by looking up the corresponding {@link QualParams} and
+     * Formats an @QualifierKey annotation by looking up the corresponding {@link QualParams} and
      * formatting it using a {@link PrettyQualParamsFormatter}.
      */
     protected class AnnoToQualFormatter extends DefaultAnnotationFormatter {
@@ -94,8 +94,8 @@ public class DefaultQualifiedTypeFormatter<Q, QUAL_FORMATTER extends QualFormatt
                             "when formatting annotation mirror: " + annos);
                 }
 
-                if (!AnnotationUtils.areSameByClass(obj, Key.class)) {
-                    ErrorReporter.errorAbort("Tried to format something other than an @Key annotation: " + obj);
+                if (!AnnotationUtils.areSameByClass(obj, QualifierKey.class)) {
+                    ErrorReporter.errorAbort("Tried to format something other than an @QualifierKey annotation: " + obj);
                 } else {
                     Q qual = converter.getQualifier(obj);
                     String result = qualFormatter.format(qual, printInvisible);
@@ -110,8 +110,8 @@ public class DefaultQualifiedTypeFormatter<Q, QUAL_FORMATTER extends QualFormatt
 
         @Override
         protected void formatAnnotationMirror(AnnotationMirror am, StringBuilder sb) {
-            if (!AnnotationUtils.areSameByClass(am, Key.class)) {
-                ErrorReporter.errorAbort("Tried to format something other than an @Key annotation: " + am);
+            if (!AnnotationUtils.areSameByClass(am, QualifierKey.class)) {
+                ErrorReporter.errorAbort("Tried to format something other than an @QualifierKey annotation: " + am);
             } else {
                 Q qual = converter.getQualifier(am);
                 String result = qualFormatter.format(qual);
