@@ -1,5 +1,8 @@
 package org.checkerframework.framework.qual;
 
+/**
+ * Annotation used internally by the qualifier framework for mapping annotations to qualifiers.
+ */
 @SubtypeOf({})
 public @interface Key {
     /**
