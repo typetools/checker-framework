@@ -121,8 +121,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
         AnnotatedTypeMirror alub = f.type(node);
 
-        trueType = AnnotatedTypes.asSuper(f.types, f, trueType, alub);
-        falseType = AnnotatedTypes.asSuper(f.types, f, falseType, alub);
+        trueType = AnnotatedTypes.asSuper(f, trueType, alub);
+        falseType = AnnotatedTypes.asSuper(f, falseType, alub);
 
         if (trueType.equals(falseType)) {
             return trueType;

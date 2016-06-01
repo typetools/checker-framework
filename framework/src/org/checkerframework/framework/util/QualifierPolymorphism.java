@@ -404,7 +404,7 @@ public class QualifierPolymorphism {
                         result = visit(type, wctype.getSuperBound());
                     } else {
                         AnnotatedTypeMirror superBoundAsSuper =
-                                AnnotatedTypes.asSuper(types, atypeFactory, wctype.getSuperBound(), type);
+                                AnnotatedTypes.asSuper(atypeFactory, wctype.getSuperBound(), type);
                         result = visit(type, superBoundAsSuper);
                     }
                 } else {
@@ -419,13 +419,8 @@ public class QualifierPolymorphism {
             }
 
             assert actualType.getKind() == type.getKind();
-            type = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(types, atypeFactory, type, actualType);
-
-            if (type == null) {
-                return Collections.emptyMap();
-            }
-
-            AnnotatedDeclaredType dcType = (AnnotatedDeclaredType)actualType;
+            AnnotatedDeclaredType dcType = (AnnotatedDeclaredType) actualType;
+            type = AnnotatedTypes.asSuper(atypeFactory, type, dcType);
 
             Map<AnnotationMirror, Set<? extends AnnotationMirror>> result =
                 new HashMap<AnnotationMirror, Set<? extends AnnotationMirror>>();
@@ -508,7 +503,7 @@ public class QualifierPolymorphism {
                 return Collections.emptyMap();
             }
             if (actualType.getKind() == TypeKind.DECLARED) {
-                return visit(AnnotatedTypes.asSuper(types, atypeFactory, type, actualType), actualType);
+                return visit(AnnotatedTypes.asSuper(atypeFactory, type, actualType), actualType);
             }
             if (actualType.getKind() == TypeKind.TYPEVAR) {
                 if (visited.contains(actualType.getUnderlyingType())) {
@@ -567,8 +562,7 @@ public class QualifierPolymorphism {
                 return Collections.emptyMap();
             }
 
-            AnnotatedTypeMirror typeSuper = AnnotatedTypes.asSuper(types, atypeFactory, type,
-                    actualType);
+            AnnotatedTypeMirror typeSuper = AnnotatedTypes.asSuper(atypeFactory, type, actualType);
             if (typeSuper.getKind() != TypeKind.TYPEVAR) {
                 return visit(typeSuper, actualType);
             }
@@ -603,8 +597,7 @@ public class QualifierPolymorphism {
         @Override
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visitWildcard(
                 AnnotatedWildcardType type, AnnotatedTypeMirror actualType) {
-            AnnotatedTypeMirror typeSuper = AnnotatedTypes.asSuper(types, atypeFactory, type,
-                    actualType);
+            AnnotatedTypeMirror typeSuper = AnnotatedTypes.asSuper(atypeFactory, type, actualType);
             if (typeSuper.getKind() != TypeKind.WILDCARD) {
                 return visit(typeSuper, actualType);
             }

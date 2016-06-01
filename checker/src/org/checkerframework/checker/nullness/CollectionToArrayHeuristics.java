@@ -175,8 +175,7 @@ public class CollectionToArrayHeuristics {
     private boolean isNonNullReceiver(MethodInvocationTree tree) {
         // check receiver
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
-        AnnotatedDeclaredType collection = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(processingEnv.getTypeUtils(), atypeFactory, receiver, collectionType);
-        assert collection != null;
+        AnnotatedDeclaredType collection = AnnotatedTypes.asSuper(atypeFactory, receiver, collectionType);
 
         if (collection.getTypeArguments().isEmpty()
             || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL))

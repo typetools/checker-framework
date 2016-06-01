@@ -3060,7 +3060,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         final TypeMirror wildcardUpperBoundTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
         if (!types.isSubtype(wildcardUpperBoundTypeMirror, toModifyTypeMirror)
                 && types.isSubtype(toModifyTypeMirror, wildcardUpperBoundTypeMirror)) {
-            return AnnotatedTypes.asSuper(types, this, annotatedTypeMirror, wildcard);
+            return AnnotatedTypes.asSuper(this, annotatedTypeMirror, wildcard);
         }
 
         return annotatedTypeMirror;
