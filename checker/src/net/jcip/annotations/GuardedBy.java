@@ -1,7 +1,6 @@
 package net.jcip.annotations;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
