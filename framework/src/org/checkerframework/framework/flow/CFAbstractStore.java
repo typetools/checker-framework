@@ -50,7 +50,7 @@ import javax.lang.model.util.Types;
  * {@code clearValue}), as well as all constructors/methods in subclasses
  * of {code CFAbstractStore}. Note that this includes not only overridden
  * methods in the subclasses, but new methods in the subclasses as well.
- * Also check if {@link BaseTypeVisitor#getFlowExpressionContextFromNode(Node)}
+ * Also check if BaseTypeVisitor#getFlowExpressionContextFromNode(Node)
  * needs to be updated. Failing to do so may result in silent failures that are
  * time consuming to debug.
  *
