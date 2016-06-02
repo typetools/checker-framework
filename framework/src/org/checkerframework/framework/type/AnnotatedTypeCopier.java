@@ -110,10 +110,10 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
 
         if (original.typeArgs != null) {
             final List<AnnotatedTypeMirror> copyTypeArgs = new ArrayList<>();
-            for (final AnnotatedTypeMirror typeArg : original.typeArgs) {
+            for (final AnnotatedTypeMirror typeArg : original.getTypeArguments()) {
                 copyTypeArgs.add(visit(typeArg, originalToCopy));
             }
-            copy.typeArgs = Collections.unmodifiableList( copyTypeArgs );
+            copy.setTypeArguments(copyTypeArgs);
         }
 
         if (original.supertypes != null) {

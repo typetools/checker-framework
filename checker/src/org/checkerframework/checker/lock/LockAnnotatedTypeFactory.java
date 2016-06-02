@@ -516,19 +516,19 @@ public class LockAnnotatedTypeFactory
     }
 
     @Override
-    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+    public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         translateJcipAndJavaxAnnotations(elt, type);
 
-        super.annotateImplicit(elt, type);
+        super.addComputedTypeAnnotations(elt, type);
     }
 
     @Override
-    public void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+    public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         if (tree.getKind() == Tree.Kind.VARIABLE) {
             translateJcipAndJavaxAnnotations(InternalUtils.symbol((VariableTree) tree), type);
         }
 
-        super.annotateImplicit(tree, type, useFlow);
+        super.addComputedTypeAnnotations(tree, type, useFlow);
     }
 
     /**

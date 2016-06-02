@@ -136,7 +136,9 @@ relationship among all conversion categories.
     \label{i18n-format-category}
 \end{figure}
 
-\label{i18n-formatter-format-subtyping}
+
+\section{Subtyping rules for \<@I18nFormat>\label{i18n-formatter-format-subtyping}}
+
 Here are the subtyping rules among different
 \code{@I18nFormat}
 qualifiers.
@@ -144,19 +146,23 @@ It is legal to:
 
 \begin{itemize}
 \item use a format string with a weaker (less restrictive) conversion category than required.
-\item use a format string with fewer format specifiers than required, but a warning is issued.
+\item use a format string with fewer format specifiers than required.
+  Although this is legal a warning is issued because most occurrences of
+  this are due to programmer error.
 \end{itemize}
 
 The following example shows the subtyping rules in action:
 
 \begin{Verbatim}
-  @I18nFormat({NUMBER, NUMBER}) String format;
-  // OK.
-  format = "{0, number, #.#} {1, number}";
-  // OK, GENERAL is weaker (less restrictive) than NUMBER.
-  format = "{0, number} {1}";
-  // Error, the right-hand-side is stronger (more restrictive) than the left-hand-side's type.
-  format = "{0} {1} {2}";
+  @I18nFormat({NUMBER, DATE}) String f;
+
+  f = "{0, number, #.#} {1, date}"; // OK
+  f = "{0, number} {1}";            // OK, GENERAL is weaker (less restrictive) than DATE
+  f = "{0} {1, date}";              // OK, GENERAL is weaker (less restrictive) than NUMBER
+  f = "{0, number}";                // warning: last argument is ignored
+  f = "{0}";                        // warning: last argument is ignored
+  f = "{0, number} {1, number}";    // error: NUMBER is stronger (more restrictive) than DATE
+  f = "{0} {1} {2}";                // error: too many arguments
 \end{Verbatim}
 
 The conversion categories are:

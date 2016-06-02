@@ -237,4 +237,3 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
         return PARAMS_TOP;
     }
 }
-

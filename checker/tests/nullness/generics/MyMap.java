@@ -16,4 +16,3 @@ public abstract class MyMap<K, V> implements Map<K, V> {
     }
   }
 }
-

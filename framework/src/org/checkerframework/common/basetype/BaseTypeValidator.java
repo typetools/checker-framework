@@ -112,7 +112,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
             default:
                 ErrorReporter.errorAbort(
-                        "Type is not bounded. \n"
+                        "Type is not bounded.\n"
                       + "type=" + type + "\n"
                       + "tree=" + tree);
                 label = null; // dead code
@@ -372,7 +372,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             {
                 // Check whether multiple qualifiers from the same hierarchy
                 // appear.
-                checkConflicitingPrimaryAnnos(type, tree);
+                checkConflictingPrimaryAnnos(type, tree);
             }
 
             // TODO: because of the way AnnotatedTypeMirror fixes up the bounds,
@@ -424,7 +424,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             {
                 // Check whether multiple qualifiers from the same hierarchy
                 // appear.
-                checkConflicitingPrimaryAnnos(type, tree);
+                checkConflictingPrimaryAnnos(type, tree);
             }
 
             /* TODO: see note with visitTypeVariable
@@ -460,7 +460,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     @Override
     public Void visitNull(final AnnotatedNullType type, final Tree tree) {
-        checkConflicitingPrimaryAnnos(type, tree);
+        checkConflictingPrimaryAnnos(type, tree);
 
         return super.visitNull(type, tree);
     }
@@ -493,7 +493,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * @param tree tree on which an error is reported
      * @return true if an error was reported
      */
-    public boolean checkConflicitingPrimaryAnnos(final AnnotatedTypeMirror type, final Tree tree ) {
+    public boolean checkConflictingPrimaryAnnos(final AnnotatedTypeMirror type, final Tree tree ) {
         boolean error = false;
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror aOnVar : type.getAnnotations()) {

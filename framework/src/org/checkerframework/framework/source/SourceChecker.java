@@ -6,7 +6,6 @@ import org.checkerframework.checker.nullness.qual.*;
 */
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.wholeprograminference.WholeProgramInference;
 import org.checkerframework.framework.qual.AnnotatedFor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.util.CFContext;
@@ -852,7 +851,7 @@ public abstract class SourceChecker
      * added as a shutdownHook of the JVM.
      */
     protected boolean shouldAddShutdownHook() {
-        return getOptions().containsKey("resourceStats");
+        return hasOption("resourceStats");
     }
 
     /**
@@ -860,7 +859,7 @@ public abstract class SourceChecker
      * Checkers can override this method to customize the behavior.
      */
     protected void shutdownHook() {
-        if (getOptions().containsKey("resourceStats")) {
+        if (hasOption("resourceStats")) {
             // Check for the "resourceStats" option and don't call shouldAddShutdownHook
             // to allow subclasses to override shouldXXX and shutdownHook and simply
             // call the super implementations.

@@ -15,4 +15,3 @@ class Issue421<IE> {
         boolean bval = r.d(x);
     }
 }
-

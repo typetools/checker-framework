@@ -20,4 +20,3 @@ public interface ExtendedDeclaredType extends ExtendedReferenceType {
      */
     List<? extends ExtendedTypeMirror> getTypeArguments();
 }
-

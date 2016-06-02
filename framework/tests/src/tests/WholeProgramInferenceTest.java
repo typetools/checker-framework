@@ -1,8 +1,6 @@
 package tests;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;

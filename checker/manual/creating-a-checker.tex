@@ -756,7 +756,7 @@ Section~\ref{javac-tips} can help you get started.
 If the \<@ImplicitFor> annotation is not sufficiently expressive, then you
 can write code to set implicit annotations.  To do so, create a subclass of
 \refclass{framework/type}{AnnotatedTypeFactory} and override its
-\<annotateImplicit> methods.
+\<addComputedTypeAnnotations> methods.
 
 \<AnnotatedTypeFactory>, when given a program
 expression, returns the expression's type.  This should include not only
@@ -766,12 +766,12 @@ inference (see Section~\ref{effective-qualifier} for explanations of these
 concepts).
 
 To add implicit annotations, you should override
-\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{annotateImplicit}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{annotateImplicit(Tree,AnnotatedTypeMirror)}
+\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror)}
 (or
-\refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{annotateImplicit}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{annotateImplicit(Tree,AnnotatedTypeMirror,boolean)}
+\refmethodanchortext{framework/type}{GenericAnnotatedTypeFactory}{addComputedTypeAnnotations}{-com.sun.source.tree.Tree-org.checkerframework.framework.type.AnnotatedTypeMirror-boolean-}{addComputedTypeAnnotations(Tree,AnnotatedTypeMirror,boolean)}
 if extending \code{GenericAnnotatedTypeFactory})
 and
-\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{annotateImplicit}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{annotateImplicit(Element,AnnotatedTypeMirror)}.
+\refmethodanchortext{framework/type}{AnnotatedTypeFactory}{addComputedTypeAnnotations}{-javax.lang.model.element.Element-org.checkerframework.framework.type.AnnotatedTypeMirror-}{addComputedTypeAnnotations(Element,AnnotatedTypeMirror)}.
 The methods operate on \refclass{framework/type}{AnnotatedTypeMirror},
 which is the Checker Framework's representation of an annotated type.
 
@@ -1498,7 +1498,7 @@ Section~\ref{extending-visitor}).
 
 \item \code{-Aflowdotdir=\emph{somedir}}:
   Specify directory for \<.dot> files visualizing the CFG\@.
-  Shorthand for
+  Shorthand for\\
   \<-Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=\emph{somedir}>.
   % TODO: create the directory if it doesn't exist.
   The directory must already exist.
@@ -1922,7 +1922,7 @@ without warnings or errors.
 % LocalWords:  TypeHierarchy GraphQualifierHierarchy Foo qual
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
 % LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror
-% LocalWords:  LiteralTree ExpressionTree typeClasses annotateImplicit nullable
+% LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
 % LocalWords:  createSupportedTypeQualifiers FooChecker nullness PolyAll
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
 % LocalWords:  InterningAnnotatedTypeFactory QualifierDefaults TypeKind getKind

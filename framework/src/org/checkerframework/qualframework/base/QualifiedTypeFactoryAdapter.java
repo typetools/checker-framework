@@ -383,14 +383,14 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
      * checker frameworks. The default of the checker framework also does not apply.
      */
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
+    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        assert root != null : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: " +
                 " root needs to be set when used on trees; factory: " + this.getClass();
 
         if (iUseFlow) {
             /**
              * We perform flow analysis on each {@link ClassTree} that is
-             * passed to annotateImplicit.  This works correctly when
+             * passed to addComputedTypeAnnotations.  This works correctly when
              * a {@link ClassTree} is passed to this method before any of its
              * sub-trees.  It also helps to satisfy the requirement that a
              * {@link ClassTree} has been advanced to annotation before we
@@ -413,8 +413,9 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+    public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         defaults.annotate(elt, type);
         typeAnnotator.visit(type, null);
     }
+
 }

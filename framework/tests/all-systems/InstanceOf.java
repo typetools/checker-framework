@@ -29,5 +29,3 @@ class InstanceOf {
         return is_class;
     }
 }
-
-

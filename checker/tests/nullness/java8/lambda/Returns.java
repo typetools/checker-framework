@@ -36,4 +36,3 @@ class MetaReturn {
             return ""::toString;
         };
 }
-

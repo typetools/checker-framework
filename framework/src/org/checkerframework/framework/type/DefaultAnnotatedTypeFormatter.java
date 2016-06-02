@@ -182,17 +182,21 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             sb.append(annoFormatter.formatAnnotationString(type.getAnnotations(), currentPrintInvisibleSetting));
             sb.append(smpl);
 
-            final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
-            if (!typeArgs.isEmpty()) {
-                sb.append("<");
+            if (type.typeArgs != null) {
+                // getTypeArguments sets the field if it does not already exist.
+                final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
+                if (!typeArgs.isEmpty()) {
+                    sb.append("<");
 
-                boolean isFirst = true;
-                for (AnnotatedTypeMirror typeArg : typeArgs) {
-                    if (!isFirst) sb.append(", ");
-                    sb.append(visit(typeArg, visiting));
-                    isFirst = false;
+                    boolean isFirst = true;
+                    for (AnnotatedTypeMirror typeArg : typeArgs) {
+                        if (!isFirst)
+                            sb.append(", ");
+                        sb.append(visit(typeArg, visiting));
+                        isFirst = false;
+                    }
+                    sb.append(">");
                 }
-                sb.append(">");
             }
             return sb.toString();
         }

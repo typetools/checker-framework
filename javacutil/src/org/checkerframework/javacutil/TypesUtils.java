@@ -1,5 +1,12 @@
 package org.checkerframework.javacutil;
 
+import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.model.JavacTypes;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
@@ -13,13 +20,6 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-
-import com.sun.tools.javac.code.Symtab;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTag;
-import com.sun.tools.javac.model.JavacTypes;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
 
 import static com.sun.tools.javac.code.TypeTag.WILDCARD;
 
@@ -418,5 +418,17 @@ public final class TypesUtils {
             }
         }
         return effectiveUpper;
+    }
+
+    /**
+     * Returns true if the erased type of subtype is a subtype of the erased type of supertype.
+     *
+     * @param types     Types
+     * @param subtype   possible subtype
+     * @param supertype possible supertype
+     * @return true if the erased type of subtype is a subtype of the erased type of supertype
+     */
+    public static boolean isErasedSubtype(Types types, TypeMirror subtype, TypeMirror supertype) {
+        return types.isSubtype(types.erasure(subtype), types.erasure(supertype));
     }
 }

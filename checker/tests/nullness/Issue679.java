@@ -12,4 +12,3 @@ public class Issue679 {
     //:: error: Interface cannot be inherited with different arguments: <@NonNull Number> and <@Nullable Number>
     class A extends B implements Interface<@Nullable Number> {}
 }
-

@@ -13,5 +13,3 @@ public class DeepEquals {
         return 3;
     }
 }
-
-

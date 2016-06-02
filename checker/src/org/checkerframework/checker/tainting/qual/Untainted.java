@@ -24,4 +24,3 @@ public @interface Untainted {
      */
     Wildcard wildcard() default Wildcard.NONE;
 }
-

@@ -57,8 +57,8 @@ public class PolyAllAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        super.annotateImplicit(tree, type, iUseFlow);
+    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        super.addComputedTypeAnnotations(tree, type, iUseFlow);
         if (tree.getKind() == Kind.VARIABLE && ((VariableTree) tree).getName().toString().contains("addH1S2")) {
             type.replaceAnnotation(H1S2);
         }

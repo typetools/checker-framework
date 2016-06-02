@@ -18,12 +18,10 @@ import javax.lang.model.util.ElementFilter;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -31,12 +29,10 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
-import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -76,11 +72,28 @@ public final class TreeUtils {
      * @return true iff tree describes a call to super
      */
     public static boolean isSuperCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("super", tree);
+    }
+
+    /**
+     * Checks if the method invocation is a call to this.
+     *
+     * @param tree
+     *            a tree defining a method invocation
+     *
+     * @return true iff tree describes a call to this
+     */
+    public static boolean isThisCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("this", tree);
+
+    }
+
+    protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
         /*@Nullable*/ ExpressionTree mst = tree.getMethodSelect();
         assert mst != null; /*nninvariant*/
 
         if (mst.getKind() == Tree.Kind.IDENTIFIER ) {
-            return ((IdentifierTree)mst).getName().contentEquals("super");
+            return ((IdentifierTree)mst).getName().contentEquals(name);
         }
 
         if (mst.getKind() == Tree.Kind.MEMBER_SELECT) {
@@ -91,7 +104,7 @@ public final class TreeUtils {
             }
 
             return ((IdentifierTree) selectTree.getExpression()).getName()
-                .contentEquals("super");
+                    .contentEquals(name);
         }
 
         return false;

@@ -16,7 +16,6 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -36,9 +35,9 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 
 /**
- * BoundsInitializer creates the bounds for type variables and wildcards.  Its static helper methods
- * are called from AnnotatedTypeMirror.  When an initializer method is called for a particular bound,
- * the entirety of that bound, including circular references, will be created.
+ * BoundsInitializer creates AnnotatedTypeMirrors (without annotations) for the bounds of type variables and wildcards.
+ * Its static helper methods are called from AnnotatedTypeMirror.  When an initializer method is called for a particular
+ * bound, the entirety of that bound, including circular references, will be created.
  */
 public class BoundsInitializer {
     //==================================================================================================================
@@ -128,7 +127,9 @@ public class BoundsInitializer {
     //==================================================================================================================
 
     /**
-     * InitializerVisitor
+     * Creates the AnnotatedTypeMirrors (without annotations) for the bounds of all type variables and wildcards in a
+     * given type.  If the type is recursive, {@code T extends Comparable<T>}, then all references to the same type
+     * variable are references to the same AnnotatedTypeMirror.
      */
     private static class InitializerVisitor implements AnnotatedTypeVisitor<Void,Void> {
         /**
@@ -155,8 +156,7 @@ public class BoundsInitializer {
 
         //--------------------------------------------------------------------------------------------------------------
         // Visit methods that keep track of the path traversed through type variable bounds, and the
-        // wildcards/intersections that have been encountered.  A summary of the algorithm used by this visitor
-        // is given at: <need to create document>
+        // wildcards/intersections that have been encountered.
         //--------------------------------------------------------------------------------------------------------------
 
         @Override
@@ -211,10 +211,13 @@ public class BoundsInitializer {
 
         @Override
         public Void visitArray(AnnotatedArrayType type, Void aVoid) {
-            final BoundPathNode componentNode = addPathNode(new ArrayComponentNode());
-            type.setComponentType(replaceOrVisit(type.getComponentType()));
-            removePathNode(componentNode);
-
+            if (!TypesUtils.isPrimitive(type.getComponentType().getUnderlyingType())) {
+                // Only recur on component type if it's not a primitive.
+                // Array component types are the only place a primitive is allowed in bounds
+                final BoundPathNode componentNode = addPathNode(new ArrayComponentNode());
+                type.setComponentType(replaceOrVisit(type.getComponentType()));
+                removePathNode(componentNode);
+            }
             return null;
         }
 
@@ -379,7 +382,7 @@ public class BoundsInitializer {
                         removePathNode(node);
                     }
                 }
-                declaredType.typeArgs = Collections.unmodifiableList(typeArgs);
+                declaredType.setTypeArguments(typeArgs);
             } else {
 
                 final List<AnnotatedTypeMirror> typeArgs = new ArrayList<>(declaredType.getTypeArguments());
@@ -391,7 +394,7 @@ public class BoundsInitializer {
                     removePathNode(node);
                 }
 
-                declaredType.typeArgs = Collections.unmodifiableList(typeArgReplacements);
+                declaredType.setTypeArguments(typeArgReplacements);
             }
         }
 
@@ -983,7 +986,7 @@ public class BoundsInitializer {
             }
             typeArgs.add(argIndex, replacement);
             typeArgs.remove(argIndex + 1);
-            parentAdt.typeArgs = typeArgs;
+            parentAdt.setTypeArguments(typeArgs);
         }
 
         @Override

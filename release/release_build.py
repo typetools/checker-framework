@@ -21,17 +21,18 @@ ant_debug = ""
 def print_usage():
     """Print usage information."""
     print "Usage:    python release_build.py [projects] [options]"
-    print_projects(True, 1, 4)
+    print_projects(1, 4)
     print "\n  --auto  accepts or chooses the default for all prompts"
     print "\n  --debug  turns on debugging mode which produces verbose output"
     print "\n  --review-manual  review the documentation changes only; don't perform a full build"
 
 def clone_or_update_repos(auto):
-    """If the relevant repos do not exist, clone them, otherwise, update them."""
-    message = """Before building the release, we update the release repositories (or clone them if they are not present).
+    """Clone the relevant repos from scratch or update them if they exist and
+    if directed to do so by the user."""
+    message = """Before building the release, we clone or update the release repositories.
 However, if you have had to run the script multiple times and no files have changed, you may skip this step.
 WARNING: IF THIS IS YOUR FIRST RUN OF THE RELEASE ON RELEASE DAY, DO NOT SKIP THIS STEP.
-The following repositories will be updated or cloned from their origins:
+The following repositories will be cloned or updated from their origins:
 """
     for live_to_interm in LIVE_TO_INTERM_REPOS:
         message += live_to_interm[1] + "\n"
@@ -42,33 +43,43 @@ The following repositories will be updated or cloned from their origins:
     message += PLUME_LIB + "\n"
     message += PLUME_BIB + "\n\n"
 
-    message += "Clone/update repositories?"
+    message += "Clone repositories from scratch (answer no to be given a chance to update them instead)?"
+
+    clone_from_scratch = True
 
     if not auto:
         if not prompt_yes_no(message, True):
-            print "WARNING: Continuing without refreshing repositories.\n"
-            return
+            clone_from_scratch = False
+            if not prompt_yes_no("Update the repositories without cloning them from scratch?", True):
+                print "WARNING: Continuing without refreshing repositories.\n"
+                return
 
     for live_to_interm in LIVE_TO_INTERM_REPOS:
-        clone_or_update(live_to_interm[0], live_to_interm[1], True)
+        clone_from_scratch_or_update(live_to_interm[0], live_to_interm[1], clone_from_scratch, True)
 
     for interm_to_build in INTERM_TO_BUILD_REPOS:
-        clone_or_update(interm_to_build[0], interm_to_build[1], False)
+        clone_from_scratch_or_update(interm_to_build[0], interm_to_build[1], clone_from_scratch, False)
 
-    clone_or_update(LIVE_PLUME_LIB, PLUME_LIB, False)
-    clone_or_update(LIVE_PLUME_BIB, PLUME_BIB, False)
+    clone_from_scratch_or_update(LIVE_PLUME_LIB, PLUME_LIB, clone_from_scratch, False)
+    clone_from_scratch_or_update(LIVE_PLUME_BIB, PLUME_BIB, clone_from_scratch, False)
 
 def copy_cf_logo(cf_release_dir):
+    """Copy CFLogo.png from the live web site to the given directory."""
     dev_releases_png = os.path.join(cf_release_dir, "CFLogo.png")
     cmd = "rsync --times %s %s" % (LIVE_CF_LOGO, dev_releases_png)
     execute(cmd)
 
 def get_afu_date(building_afu):
+    """If the AFU is being built, return the current date, otherwise return the
+    date of the last AFU release as indicated in the AFU home page."""
     if building_afu:
         return get_current_date()
     else:
-        afu_site = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
-        return extract_from_site(afu_site, "<!-- afu-date -->", "<!-- /afu-date -->")
+        raise Exception("Do not know how to retrieve the AFU date if not building the AFU")
+        # TODO: these tags no longer exist in the AFU home page. Fix this to
+        # extract the date from the afu-version tags.
+        # afu_site = os.path.join(HTTP_PATH_TO_LIVE_SITE, "annotation-file-utilities")
+        # return extract_from_site(afu_site, "<!-- afu-date -->", "<!-- /afu-date -->")
 
 def get_new_version(project_name, curr_version, auto):
     "Queries the user for the new version number; returns old and new version numbers."
@@ -90,6 +101,8 @@ def get_new_version(project_name, curr_version, auto):
     return (curr_version, new_version)
 
 def create_dev_website_release_version_dir(project_name, version):
+    """Create the directory for the given version of the given project under
+    the releases directory of the dev web site."""
     interm_dir = os.path.join(FILE_PATH_TO_DEV_SITE, project_name, "releases", version)
     delete_path_if_exists(interm_dir)
 
@@ -97,6 +110,8 @@ def create_dev_website_release_version_dir(project_name, version):
     return interm_dir
 
 def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version):
+    """Create directories for the given versions of the JSR308, CF and AFU
+    projects under the releases directory of the dev web site."""
     # these directories correspond to the /cse/www2/types/dev/<project_name>/releases/<version> dirs
     jsr308_interm_dir = create_dev_website_release_version_dir("jsr308", jsr308_version)
     afu_interm_dir = create_dev_website_release_version_dir("annotation-file-utilities", afu_version)
@@ -105,6 +120,8 @@ def create_dirs_for_dev_website_release_versions(jsr308_version, afu_version):
     return (jsr308_interm_dir, afu_interm_dir, checker_framework_interm_dir)
 
 def update_project_dev_website_symlink(project_name, release_version):
+    """Update the \"current\" symlink in the dev web site for the given project
+    to point to the given release of the project on the dev web site."""
     project_dev_site = os.path.join(FILE_PATH_TO_DEV_SITE, project_name)
     link_path = os.path.join(project_dev_site, "current")
 
@@ -114,6 +131,8 @@ def update_project_dev_website_symlink(project_name, release_version):
     force_symlink(dev_website_relative_dir, link_path)
 
 def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr308_interm_dir):
+    """Build the jsr308-langtools project's artifacts and place them in the
+    development web site."""
 
     afu_build_properties = os.path.join(ANNO_FILE_UTILITIES, "build.properties")
 
@@ -151,10 +170,13 @@ def build_jsr308_langtools_release(version, afu_version, afu_release_date, jsr30
     return
 
 def get_current_date():
+    "Return today's date in a string format similar to: 02 May 2016"
     return CURRENT_DATE.strftime("%d %b %Y")
 
 
 def build_annotation_tools_release(version, afu_interm_dir):
+    """Build the Annotation File Utilities project's artifacts and place them
+    in the development web site."""
     execute('java -version', True)
 
     date = get_current_date()
@@ -189,6 +211,8 @@ def build_and_locally_deploy_maven(version):
     return
 
 def build_checker_framework_release(version, afu_version, afu_release_date, checker_framework_interm_dir, manual_only=False):
+    """Build the release files for the Checker Framework project, including the
+    manual and the zip file, and run tests on the build."""
     checker_dir = os.path.join(CHECKER_FRAMEWORK, "checker")
 
     afu_build_properties = os.path.join(ANNO_FILE_UTILITIES, "build.properties")
@@ -201,7 +225,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
 
     if not manual_only:
         # ensure all PluginUtil.java files are identical
-        execute("sh checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
+        execute("./checkPluginUtil.sh", True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # build the checker framework binaries and documents, run checker framework tests
         ant_cmd = "ant %s -Dhalt.on.test.failure=true dist-release" % (ant_debug)
@@ -255,6 +279,9 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
     return
 
 def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
+    """Commit the changes for each project from its build repo to its
+    corresponding intermediate repo in preparation for running the release_push
+    script, which does not read the build repos."""
     # Use project definition instead, see find project location find_project_locations
     if projects_to_release[LT_OPT]:
         commit_tag_and_push(jsr308_version, JSR308_LANGTOOLS, "jsr308-")
@@ -266,6 +293,10 @@ def commit_to_interm_projects(jsr308_version, afu_version, projects_to_release):
         commit_tag_and_push(jsr308_version, CHECKER_FRAMEWORK, "checker-framework-")
 
 def main(argv):
+    """The release_build script is responsible for building the release
+    artifacts for jsr308-langtools, the AFU and the Checker Framework projects
+    and placing them in the development web site. It can also be used to review
+    the documentation and changelogs for the three projects."""
     # MANUAL Indicates a manual step
     # SEMIAUTO Indicates a mostly automated step with possible prompts. Most of these steps become fully automated when --auto is used.
     # AUTO Indicates the step is fully automated.
@@ -393,12 +424,12 @@ def main(argv):
         print ""
 
         if projects_to_release[LT_OPT]:
-            propose_change_review("the JSR308 documentation updates", old_jsr308_version, JSR308_LANGTOOLS,
-                                  JSR308_TAG_PREFIXES, JSR308_LT_DOC, TMP_DIR + "/jsr308.manual")
+            propose_documentation_change_review("the JSR308 documentation updates", old_jsr308_version, JSR308_LANGTOOLS,
+                                                JSR308_TAG_PREFIXES, JSR308_LT_DOC, TMP_DIR + "/jsr308.manual")
 
         if projects_to_release[AFU_OPT]:
-            propose_change_review("the Annotation File Utilities documentation updates", old_afu_version, ANNO_TOOLS,
-                                  AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual")
+            propose_documentation_change_review("the Annotation File Utilities documentation updates", old_afu_version, ANNO_TOOLS,
+                                                AFU_TAG_PREFIXES, AFU_MANUAL, TMP_DIR + "/afu.manual")
 
         if projects_to_release[CF_OPT]:
             build_checker_framework_release(jsr308_version, afu_version, afu_date, "", manual_only=True)
@@ -417,8 +448,8 @@ def main(argv):
             print "by following the instructions at eclipse/README-developers.html#update_checkers"
             print ""
 
-            propose_change_review("the Checker Framework documentation updates", old_jsr308_version, CHECKER_FRAMEWORK,
-                                  CHECKER_TAG_PREFIXES, CHECKER_MANUAL, TMP_DIR + "/checker-framework.manual")
+            propose_documentation_change_review("the Checker Framework documentation updates", old_jsr308_version, CHECKER_FRAMEWORK,
+                                                CHECKER_TAG_PREFIXES, CHECKER_MANUAL, TMP_DIR + "/checker-framework.manual")
 
         return
 

@@ -102,6 +102,10 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>If you have never made a release before, follow the instructions in the
   <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
+  <li>Download and install the lastest version of Eclipse.  Check that the Eclipse version
+      matches the version listed in
+      <a href="../eclipse/checker-framework-eclipse-update-site/manual/index.html#installation">the Eclipse plugin manual</a>.
+  </li>
   <li>
       <strong>Log into Buffalo</strong><br/>
       <code>ssh $USER@buffalo.cs.washington.edu<br/></code>
@@ -172,17 +176,18 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <ul>
     <li>Annotation File Utilities: <img src="https://travis-ci.org/typetools/annotation-tools.svg?branch=master" alt="Travis typetools/annotation-tools status"/></li>
     <li>Checker Framework: <img src="https://travis-ci.org/typetools/checker-framework.svg?branch=master" alt="Travis typetools/checker-framework status"/></li>
-    <li>checker-framework.demos: <img src="https://travis-ci.org/typetools/checker-framework.demos.svg?branch=master" alt="Travis typetools/checker-framework status"/></li>
-    <li>checker-framework-inference: <img src="https://travis-ci.org/typetools/checker-framework-inference.svg?branch=master" alt="Travis typetools/checker-framework status"/></li>
-    <li>Daikon: <img src="https://travis-ci.org/codespecs/daikon.svg?branch=master" alt="Travis codespecs/daikon.svg status"/></li>
+    <li>checker-framework.demos: <img src="https://travis-ci.org/typetools/checker-framework.demos.svg?branch=master" alt="Travis typetools/checker-framework.demos status"/></li>
+    <li>checker-framework-inference: <img src="https://travis-ci.org/typetools/checker-framework-inference.svg?branch=master" alt="Travis typetools/checker-framework-inference status"/></li>
+    <li>Daikon: <img src="https://travis-ci.org/codespecs/daikon.svg?branch=master" alt="Travis codespecs/daikon status"/></li>
     <li>daikon-typecheck: <img src="https://travis-ci.org/typetools/daikon-typecheck.svg?branch=master" alt="Travis typetools/daikon-typecheck status"/></li>
-    <li>daikon-typecheck-nullness: <img src="https://travis-ci.org/typetools/daikon-typecheck-nullness.svg?branch=master" alt="Travis typetools/daikon-typecheck status"/></li>
-    <li>daikon-typecheck-signature: <img src="https://travis-ci.org/typetools/daikon-typecheck-signature.svg?branch=master" alt="Travis typetools/daikon-typecheck status"/></li>
-    <li>daikon-typecheck-regex: <img src="https://travis-ci.org/typetools/daikon-typecheck-regex.svg?branch=master" alt="Travis typetools/daikon-typecheck status"/></li>
-    <li>daikon-typecheck-interning: <img src="https://travis-ci.org/typetools/daikon-typecheck-interning.svg?branch=master" alt="Travis typetools/daikon-typecheck status"/></li>
-    <li>daikon-typecheck-formatter: <img src="https://travis-ci.org/typetools/daikon-typecheck-formatter.svg?branch=master" alt="Travis typetools/daikon-typecheck status"/></li>
+    <li>daikon-typecheck-formatter: <img src="https://travis-ci.org/typetools/daikon-typecheck-formatter.svg?branch=master" alt="Travis typetools/daikon-typecheck-formatter status"/></li>
+    <li>daikon-typecheck-interning: <img src="https://travis-ci.org/typetools/daikon-typecheck-interning.svg?branch=master" alt="Travis typetools/daikon-typecheck-interning status"/></li>
+    <li>daikon-typecheck-lock: <img src="https://travis-ci.org/typetools/daikon-typecheck-lock.svg?branch=master" alt="Travis typetools/daikon-typecheck-lock status"/></li>
+    <li>daikon-typecheck-nullness: <img src="https://travis-ci.org/typetools/daikon-typecheck-nullness.svg?branch=master" alt="Travis typetools/daikon-typecheck-lock status"/></li>
+    <li>daikon-typecheck-regex: <img src="https://travis-ci.org/typetools/daikon-typecheck-regex.svg?branch=master" alt="Travis typetools/daikon-typecheck-nullness status"/></li>
+    <li>daikon-typecheck-signature: <img src="https://travis-ci.org/typetools/daikon-typecheck-signature.svg?branch=master" alt="Travis typetools/daikon-typecheck-signature status"/></li>
     <li>plume-lib: <img src="https://travis-ci.org/mernst/plume-lib.svg?branch=master" alt="Travis mernst/plume-lib status"/></li>
-    <li>plume-lib-typecheck: <img src="https://travis-ci.org/typetools/plume-lib-typecheck.svg?branch=master" alt="Travis typetools/plume-lib status"/></li>
+    <li>plume-lib-typecheck: <img src="https://travis-ci.org/typetools/plume-lib-typecheck.svg?branch=master" alt="Travis typetools/plume-lib-typecheck status"/></li>
   </ul>
   </li>
 </ol>
@@ -262,12 +267,13 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         issue tracker for each project that has been released.
         You will need to be a "developer" for each project so that you have update privileges for
         the issue trackers.
+        You should be listed as a member of typetools on <a href="https://bitbucket.org/typetools/profile/members">Bitbucket</a> and  a committer on <a href="https://github.com/orgs/typetools/teams/committers">GitHub</a>.
       </td>
     </tr>
     <tr>
       <td>8.</td>
-      <td><strong>Ensure that you can see the status of all Travis builds relevant to the release</strong><br/>
-        Ensure that the status of all the Travis projects listed <a href="README-development-process.html#travis">here</a> is displayed correctly.
+      <td><strong>Ensure that you can see the status of all Travis and Jenkins builds relevant to the release</strong><br/>
+        Ensure that the status of all the Travis projects listed <a href="#continuous-integration">here</a> is displayed correctly.  You will need an account on Jenkins.  Someone with an account can create one for you <a href="http://tern.cs.washington.edu:8080/securityRealm/addUser">here</a>.
       </td>
     </tr>
     <tr>
@@ -278,6 +284,25 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         explains these responsibilities in detail.  Please re-read the <a href="README-development-process.html#checklist">checklist</a> in this document at the beginning
         of each month that you are the designated the release person, and help keep this document up
         to date with the latest best practices.
+      </td>
+    </tr>
+    <tr>
+      <td>10.</td>
+      <td><strong>Install html5validator</strong>
+       If you are going to preform the release on buffalo, you may need to install
+       html5validator.  If <code>html5validator --version</code> issues any errors, try running
+       <code>pip install --user html5validator</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>11.</td>
+      <td><strong>Run release_build once</strong><br/>
+        To save time on release day addressing potential configuration issues, before your first
+        release day, ensure that <code>release_build</code> is working correctly
+        by following steps 2, 3 and 5 of the <a href="#step_by_step">Step by Step</a> section.
+        <code>release_build</code> still needs to be re-run on release day (even if no changes
+        were pushed to any repositories since the last run of <code>release_build</code>) in
+        order for the release date to be correct in all documents.
       </td>
     </tr>
   </table>
@@ -473,11 +498,14 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         If a change is breaking, no matter how small, mention it.</li>
       <li>List all issues (in issue trackers) resolved since the previous release, for
           the Checker Framework (<a href="http://types.cs.washington.edu/checker-framework/current/changelog.txt">previous release</a>,
-          <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>),
+          <a href="https://github.com/typetools/checker-framework/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
+          <a href="https://github.com/typetools/checker-framework/blob/master/changelog.txt">current changelog</a>),
           Annotation File Utilities (<a href="http://types.cs.washington.edu/annotation-file-utilities/changelog.html">previous release</a>,
-          <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>),
+          <a href="https://github.com/typetools/annotation-tools/issues?q=is%3Aissue+is%3Aclosed+sort%3Aupdated-desc">issues query</a>,
+           <a href="https://github.com/typetools/annotation-tools/blob/master/annotation-file-utilities/changelog.html">current changelog</a>),
           and jsr308-langtools (<a href="http://types.cs.washington.edu/jsr308/current/changelog-jsr308.txt">previous release</a>,
-          <a href="https://bitbucket.org/typetools/jsr308-langtools/issues?status=resolved&sort=-updated_on">issues query</a>).
+          <a href="https://bitbucket.org/typetools/jsr308-langtools/issues?status=resolved&sort=-updated_on">issues query</a>,
+           <a href="https://bitbucket.org/typetools/jsr308-langtools/src/default/doc/changelog-jsr308.txt?at=default&fileviewer=file-view-default">current changelog</a>).
       </li>
 	  <li>
 	    Examine the version control logs since the last release tag to ensure they are reflected in the changelogs when appropriate.

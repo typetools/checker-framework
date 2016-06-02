@@ -17,4 +17,3 @@ import org.checkerframework.framework.qual.*;
 @UnitsRelations(FrequencyRelations.class)
 @UnitsMultiple(quantity=Hz.class, prefix=Prefix.kilo) // alias of @Hz(Prefix.kilo)
 public @interface kHz {} // No prefix defined in the annotation itself
-

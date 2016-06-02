@@ -29,7 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.qualframework.base.TypeMirrorConverter.Key;
+import org.checkerframework.qualframework.qual.QualifierKey;
 
 import annotations.Annotation;
 import annotations.el.AClass;
@@ -228,6 +228,9 @@ public class WholeProgramInferenceScenesHelper {
                 // Return type
                 removeIgnoredAnnosFromATypeElement(
                         method.returnType, TypeUseLocation.RETURN);
+                // Receiver type
+                removeIgnoredAnnosFromATypeElement(
+                        method.receiver.type, TypeUseLocation.RECEIVER);
                 // Parameter type
                 for (AField param : method.parameters.values()) {
                     removeIgnoredAnnosFromATypeElement(
@@ -393,8 +396,8 @@ public class WholeProgramInferenceScenesHelper {
         }
 
         // Special cases that should be ignored:
-        // {@link org.checkerframework.qualframework.base.TypeMirrorConverter.Key}
-        if (AnnotationUtils.areSameByClass(am, Key.class)) {
+        // {@link org.checkerframework.framework.qual.QualifierKey}
+        if (AnnotationUtils.areSameByClass(am, QualifierKey.class)) {
             return true;
         }
         return false;

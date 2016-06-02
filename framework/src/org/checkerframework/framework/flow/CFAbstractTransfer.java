@@ -40,8 +40,10 @@ import org.checkerframework.dataflow.cfg.node.VariableDeclarationNode;
 import org.checkerframework.dataflow.cfg.node.WideningConversionNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
@@ -272,6 +274,30 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
             addFinalLocalValues(info, methodElem);
 
+            if (shouldPerformWholeProgramInference(methodTree, methodElem)) {
+                Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
+                        AnnotatedTypes.overriddenMethods(
+                                analysis.atypeFactory.getElementUtils(),
+                                analysis.atypeFactory, methodElem);
+                for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
+                        overriddenMethods.entrySet()) {
+                    AnnotatedExecutableType overriddenMethod =
+                            AnnotatedTypes.asMemberOf(
+                                    analysis.atypeFactory.getProcessingEnv().getTypeUtils(),
+                                    analysis.atypeFactory, pair.getKey(), pair.getValue());
+
+                    // Infers parameter and receiver types of the method based
+                    // on the overridden method.
+                    analysis.atypeFactory.getWholeProgramInference().
+                            updateInferredMethodParameterTypes(
+                                    methodTree, methodElem, overriddenMethod,
+                                    analysis.getTypeFactory());
+                    analysis.atypeFactory.getWholeProgramInference().
+                            updateInferredMethodReceiverType(
+                                    methodTree, methodElem, overriddenMethod,
+                                    analysis.getTypeFactory());
+                }
+            }
             return info;
 
         } else if (underlyingAST.getKind() == Kind.LAMBDA) {
@@ -415,7 +441,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
             Element elem = e.getKey();
 
-            // There is a design flaw where the values of final local values leaks
+            // TODO: There is a design flaw where the values of final local values leaks
             // into other methods of the same class. For example, in
             // class a { void b() {...} void c() {...} }
             // final local values from b() would be visible in the store for c(),
@@ -1111,39 +1137,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     // result.setResultValue(resultValue);
     // return result;
     // }
-
-    /**
-     * Refine the operand of an instanceof check with more specific annotations
-     * if possible.
-     */
-    @Override
-    public TransferResult<V, S> visitInstanceOf(InstanceOfNode n,
-            TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitInstanceOf(n, p);
-
-        // Look at the annotations from the type of the instanceof check
-        // (provided by the factory)
-        V factoryValue = getValueFromFactory(n.getTree().getType(), null);
-
-        // Look at the value from the operand.
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-
-        // Combine the two.
-        V mostPreciseValue = moreSpecificValue(operandValue, factoryValue);
-
-        // Insert into the store if possible.
-        Receiver operandInternal = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), n.getOperand());
-        if (CFAbstractStore.canInsertReceiver(operandInternal)) {
-            S thenStore = result.getThenStore();
-            S elseStore = result.getElseStore();
-            thenStore.insertValue(operandInternal, mostPreciseValue);
-            return new ConditionalTransferResult<>(result.getResultValue(),
-                    thenStore, elseStore);
-        }
-
-        return result;
-    }
 
     /**
      * Returns the abstract value of {@code (value1, value2)} that is more

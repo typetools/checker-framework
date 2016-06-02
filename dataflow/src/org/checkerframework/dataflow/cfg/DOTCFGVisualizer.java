@@ -36,7 +36,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
 import com.sun.tools.javac.tree.JCTree;

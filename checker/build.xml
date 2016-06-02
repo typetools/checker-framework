@@ -401,7 +401,7 @@
 
         <mkdir dir="dist" />
 
-        <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/">
+        <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/">
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
                 <attribute name="Implementation-Version" value="${build.version}"/>
@@ -624,6 +624,8 @@
         <antcall target="example-tests-nobuildjdk"/>
 
         <antcall target="check-tutorial"/>
+        <antcall target="check-compilermsgs"/>
+        <antcall target="check-purity"/>
 
     </target>
 
@@ -857,6 +859,9 @@
             description="Run tests for the Internationalization Formatter checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.I18nFormatterTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.I18nFormatterGlbCheckerTest"/>
         </antcall>
     </target>
 

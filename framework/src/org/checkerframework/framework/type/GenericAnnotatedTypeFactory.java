@@ -543,7 +543,7 @@ public abstract class GenericAnnotatedTypeFactory<
         if (type.getKind() == TypeKind.DECLARED) {
             for (AnnotatedTypeMirror supertype : supertypes) {
                 Element elt = ((DeclaredType) supertype.getUnderlyingType()).asElement();
-                annotateImplicit(elt, supertype);
+                addComputedTypeAnnotations(elt, supertype);
             }
         }
     }
@@ -570,7 +570,7 @@ public abstract class GenericAnnotatedTypeFactory<
         AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(this, constructorReturnType, constructorType);
 
         // Now add back defaulting.
-        annotateImplicit(memberReferenceTree.getQualifierExpression(), constructorReturnType);
+        addComputedTypeAnnotations(memberReferenceTree.getQualifierExpression(), constructorReturnType);
         return constructorReturnType;
 
     }
@@ -1027,28 +1027,28 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /**
      * This method is final; override
-     * {@link #annotateImplicit(Tree, AnnotatedTypeMirror, boolean)}
+     * {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror, boolean)}
      * instead.
      *
      * {@inheritDoc}
      */
     @Override
-    protected final void annotateImplicit(Tree tree, AnnotatedTypeMirror type) {
-        annotateImplicit(tree, type, this.useFlow);
+    protected final void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type) {
+        addComputedTypeAnnotations(tree, type, this.useFlow);
     }
 
     /**
-     * Like {#annotateImplicit(Tree, AnnotatedTypeMirror)}.
+     * Like {#addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
      * Overriding implementations typically simply pass the boolean to calls to super.
      */
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
+    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        assert root != null : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: " +
                 " root needs to be set when used on trees; factory: " + this.getClass();
 
         if (iUseFlow) {
              /**
              * We perform flow analysis on each {@link ClassTree} that is
-             * passed to annotateImplicit.  This works correctly when
+             * passed to addComputedTypeAnnotations.  This works correctly when
              * a {@link ClassTree} is passed to this method before any of its
              * sub-trees.  It also helps to satisfy the requirement that a
              * {@link ClassTree} has been advanced to annotation before we
@@ -1121,7 +1121,7 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     @Override
-    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+    public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
     }
