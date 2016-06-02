@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -276,11 +277,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected ReflectionResolver reflectionResolver;
 
     /**
-     * Annotated Type Loader used to load annotation classes via reflective lookup
-     */
-    protected AnnotationClassLoader loader;
-
-    /**
      * Indicates that the whole-program inference is on.
      */
     private final boolean infer;
@@ -334,8 +330,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.types = processingEnv.getTypeUtils();
         this.visitorState = new VisitorState();
 
-        this.loader = new AnnotationClassLoader(checker);
         this.supportedQuals = createSupportedTypeQualifiers();
+        checkSupportedQuals();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
@@ -363,6 +359,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             checkInvalidOptionsInferSignatures();
             wholeProgramInference = new WholeProgramInferenceScenes(
                     !"NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName()));
+        }
+    }
+
+    /**
+     * Issue an error if any of the support qualifiers has @Target that contains something besides
+     * TYPE_USE or TYPE_PARAMETER.
+     */
+    private void checkSupportedQuals() {
+        for(Class<? extends Annotation> annotationClass : supportedQuals) {
+            AnnotatedTypes.hasTypeQualifierElementTypes(
+                    annotationClass.getAnnotation(Target.class).value(), annotationClass);
         }
     }
 
@@ -788,7 +795,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     @SuppressWarnings("varargs")
     private final Set<Class<? extends Annotation>> loadTypeAnnotationsFromQualDir(Class<? extends Annotation>... explicitlyListedAnnotations) {
         // add the loaded annotations to the annotation set
-        Set<Class<? extends Annotation>> annotations = loader.getLoadedAnnotationClasses();
+        Set<Class<? extends Annotation>> annotations = new AnnotationClassLoader(checker)
+                .getLoadedAnnotationClasses();
 
         // add in all explicitly Listed qualifiers
         if (explicitlyListedAnnotations != null) {

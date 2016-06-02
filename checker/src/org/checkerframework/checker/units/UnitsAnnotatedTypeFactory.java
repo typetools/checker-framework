@@ -10,6 +10,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotationClassLoader;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -56,6 +57,8 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final AnnotationMirror TOP = AnnotationUtils.fromClass(elements, UnknownUnits.class);
     protected final AnnotationMirror BOTTOM = AnnotationUtils.fromClass(elements, UnitsBottom.class);
 
+    protected final UnitsAnnotationClassLoader loader;
+
     /**
      * Map from canonical class name to the corresponding UnitsRelations instance.
      * We use the string to prevent instantiating the UnitsRelations multiple times.
@@ -69,7 +72,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public UnitsAnnotatedTypeFactory(BaseTypeChecker checker) {
         // use true to enable flow inference, false to disable it
         super(checker, false);
-
+        loader = new UnitsAnnotationClassLoader(checker);
         this.postInit();
     }
 
@@ -144,9 +147,6 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // Use the Units Annotated Type Loader instead of the default one
-        loader = new UnitsAnnotationClassLoader(checker);
-
         // get all the loaded annotations
         Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
         qualSet.addAll(getBundledTypeQualifiersWithPolyAll());
