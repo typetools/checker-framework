@@ -100,10 +100,10 @@ mkdir "${TMPDIR}"
 
 # Stage 2: convert stub files to JAIFs
 
-# download annotation definitions
-#[ -r annotation-defs.jaif ]\
-# || wget https://types.cs.washington.edu/checker-framework/annotation-defs.jaif\
-# || exit $?
+ download annotation definitions
+[ -r annotation-defs.jaif ]\
+ || wget https://types.cs.washington.edu/checker-framework/annotation-defs.jaif\
+ || exit $?
 
 (
     cd "${CHECKERFRAMEWORK}"
@@ -157,7 +157,7 @@ mkdir "${TMPDIR}"
         # first write out standard annotation defs
         # then strip out empty annotation defs
         # also generate and insert @AnnotatedFor annotations
-        (cat annotation-defs.jaif && awk '
+        awk '
             # initial state: print on, no class seen yet
             BEGIN {x=2}
             # omit until class or package (unless no class seen yet)
@@ -168,7 +168,7 @@ mkdir "${TMPDIR}"
             /^class/ {for(j=0;j<i;++j){print a[j]};split("",a);x=1;i=0}
             # store, print, or drop (depending on x)
             {if(x==0){a[i++]=$0}{if(x>0)print}}
-        ' < "${TMPDIR}/$f") | java -cp ${CP} org.checkerframework.framework.stub.AddAnnotatedFor >> "$g"
+        ' < "${TMPDIR}/$f" | java -cp ${CP} org.checkerframework.framework.stub.AddAnnotatedFor > "$g"
     done
 )
 
