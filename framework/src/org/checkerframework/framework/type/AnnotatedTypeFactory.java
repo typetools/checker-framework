@@ -373,7 +373,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * TYPE_USE or TYPE_PARAMETER.
      */
     private void checkSupportedQuals() {
-        for(Class<? extends Annotation> annotationClass : supportedQuals) {
+        for (Class<? extends Annotation> annotationClass : supportedQuals) {
             AnnotatedTypes.hasTypeQualifierElementTypes(
                     annotationClass.getAnnotation(Target.class).value(), annotationClass);
         }
