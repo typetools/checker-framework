@@ -102,6 +102,10 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   <li>If you have never made a release before, follow the instructions in the
   <a href="#pre_release_checklist">Pre-release Checklist</a>.
   </li>
+  <li>Download and install the lastest version of Eclipse.  Check that the Eclipse version
+      matches the version listed in
+      <a href="../eclipse/checker-framework-eclipse-update-site/manual/index.html#installation">the Eclipse plugin manual</a>.
+  </li>
   <li>
       <strong>Log into Buffalo</strong><br/>
       <code>ssh $USER@buffalo.cs.washington.edu<br/></code>
@@ -284,6 +288,14 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     </tr>
     <tr>
       <td>10.</td>
+      <td><strong>Install html5validator</strong>
+       If you are going to preform the release on buffalo, you may need to install
+       html5validator.  If <code>html5validator --version</code> issues any errors, try running
+       <code>pip install --user html5validator</code>.
+      </td>
+    </tr>
+    <tr>
+      <td>11.</td>
       <td><strong>Run release_build once</strong><br/>
         To save time on release day addressing potential configuration issues, before your first
         release day, ensure that <code>release_build</code> is working correctly
