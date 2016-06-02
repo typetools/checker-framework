@@ -629,7 +629,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks all (non-conditional) postcondition on the method {@code node}
-     * with element {@code methodElement} for consistency.
+     * with element {@code methodElement} for consistency, i.e.
+     * that no formal parameter names are mentioned in the postconditions
+     * (an index such as "#1" should be used instead), and that all
+     * formal parameters referred to by an index in the postconditions are
+     * effectively final.
      */
     protected void checkPostconditionsConsistency(MethodTree node,
             ExecutableElement methodElement, List<String> formalParamNames) {
@@ -760,7 +764,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks all conditional postcondition on the method with element
-     * {@code methodElement} for consistency.
+     * {@code methodElement} for consistency, i.e. that no formal parameter
+     * names are mentioned in the conditional postconditions (an index such
+     * as "#1" should be used instead), and that all formal parameters
+     * referred to by an index in the conditional postconditions are
+     * effectively final.
      */
     protected void checkConditionalPostconditionsConsistency(MethodTree node,
             ExecutableElement methodElement, List<String> formalParamNames) {
@@ -802,12 +810,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Check that the parameters used in {@code stringExpr} are final for method
+     * Check that the parameters used in {@code stringExpr} are effectively final for method
      * {@code method}.
      */
     protected void checkFlowExprParameters(ExecutableElement method, String stringExpr) {
         // check that all parameters used in the expression are
-        // final, so that they cannot be modified
+        // effectively final, so that they cannot be modified
         List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
         for (Integer idx : parameterIndices) {
             VariableElement parameter = method.getParameters().get(idx - 1);
@@ -1032,6 +1040,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
+    /**
+     * Returns a flow expression context corresponding to the given {@code node}.
+     * Only handles the kinds of Nodes for which a precondition check is applicable
+     * and for which values are stored in {@link CFAbstractStore}. Returns null
+     * if the Node kind is not handled.
+     *
+     * @param node the Node to generate the flow expression context for
+     * @return the resulting flow expression context, or null if the Node kind is not handled.
+     */
     private FlowExpressionContext getFlowExpressionContextFromNode(Node node) {
         FlowExpressionContext flowExprContext = null;
 
@@ -1110,7 +1127,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks all the preconditions of the method with element
-     * {@code methodElement} for consistency.
+     * {@code methodElement} for consistency, i.e. that no formal
+     * parameter names are mentioned in the preconditions
+     * (an index such as "#1" should be used instead), and that all
+     * formal parameters referred to by an index in the preconditions are
+     * effectively final.
      */
     protected void checkPreconditionsConsistency(MethodTree node,
             ExecutableElement methodElement, List<String> formalParamNames) {

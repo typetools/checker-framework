@@ -441,7 +441,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
             Element elem = e.getKey();
 
-            // There is a design flaw where the values of final local values leaks
+            // TODO: There is a design flaw where the values of final local values leaks
             // into other methods of the same class. For example, in
             // class a { void b() {...} void c() {...} }
             // final local values from b() would be visible in the store for c(),
@@ -1137,39 +1137,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     // result.setResultValue(resultValue);
     // return result;
     // }
-
-    /**
-     * Refine the operand of an instanceof check with more specific annotations
-     * if possible.
-     */
-    @Override
-    public TransferResult<V, S> visitInstanceOf(InstanceOfNode n,
-            TransferInput<V, S> p) {
-        TransferResult<V, S> result = super.visitInstanceOf(n, p);
-
-        // Look at the annotations from the type of the instanceof check
-        // (provided by the factory)
-        V factoryValue = getValueFromFactory(n.getTree().getType(), null);
-
-        // Look at the value from the operand.
-        V operandValue = p.getValueOfSubNode(n.getOperand());
-
-        // Combine the two.
-        V mostPreciseValue = moreSpecificValue(operandValue, factoryValue);
-
-        // Insert into the store if possible.
-        Receiver operandInternal = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), n.getOperand());
-        if (CFAbstractStore.canInsertReceiver(operandInternal)) {
-            S thenStore = result.getThenStore();
-            S elseStore = result.getElseStore();
-            thenStore.insertValue(operandInternal, mostPreciseValue);
-            return new ConditionalTransferResult<>(result.getResultValue(),
-                    thenStore, elseStore);
-        }
-
-        return result;
-    }
 
     /**
      * Returns the abstract value of {@code (value1, value2)} that is more

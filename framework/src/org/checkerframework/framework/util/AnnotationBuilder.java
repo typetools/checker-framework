@@ -70,8 +70,10 @@ public class AnnotationBuilder {
     public AnnotationBuilder(ProcessingEnvironment env, CharSequence name) {
         this.elements = env.getElementUtils();
         this.types = env.getTypeUtils();
-
         this.annotationElt = elements.getTypeElement(name);
+        if (annotationElt == null) {
+            ErrorReporter.errorAbort("Could not find annotation: " + name + ". Is it on the classpath?");
+        }
         assert annotationElt.getKind() == ElementKind.ANNOTATION_TYPE;
         this.annotationType = (DeclaredType) annotationElt.asType();
         this.elementValues = new LinkedHashMap<ExecutableElement, AnnotationValue>();

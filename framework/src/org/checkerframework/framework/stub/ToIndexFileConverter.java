@@ -8,7 +8,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -83,6 +82,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final List<String> imports;
   private final AScene scene;
 
+  /**
+   * @param pkgDecl AST node for package declaration
+   * @param importDecls AST node for import declarations
+   * @param scene scene for visitor methods to fill in
+   */
   public ToIndexFileConverter(PackageDeclaration pkgDecl,
       List<ImportDeclaration> importDecls, AScene scene) {
     this.scene = scene;
@@ -183,6 +187,14 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return scene;
   }
 
+  /**
+   * Builds simplified annotation from its declaration.
+   * Only the name is included, because stubfiles do not generally have
+   * access to the full definitions of annotations.
+   *
+   * @param expr
+   * @return
+   */
   private static Annotation extractAnnotation(AnnotationExpr expr) {
     //String exprName = expr.getName().getName();
     String exprName = expr.toString().substring(1);  // 1 for '@'
@@ -192,6 +204,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return new Annotation(def, Collections.<String, Object>emptyMap());
   }
 
+  @Override
   public Void visit(AnnotationDeclaration decl, AElement elem) {
     return null;
   }
@@ -370,6 +383,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return null;
   }
 
+  /**
+   * Copies information from an AST declaration node to an {@link ADeclaration}.
+   * Called by visitors for BodyDeclaration subclasses.
+   */
   private Void visitDecl(BodyDeclaration decl, ADeclaration elem) {
     List<AnnotationExpr> annoExprs = decl.getAnnotations();
     if (annoExprs != null) {
@@ -381,6 +398,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return null;
   }
 
+  /**
+   * Copies information from an AST type node to an {@link ATypeElement}.
+   */
   private Void visitType(Type type, final ATypeElement elem) {
     List<AnnotationExpr> exprs = type.getAnnotations();
     if (exprs != null) {
@@ -393,13 +413,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return null;
   }
 
+  /**
+   * Copies information from an AST type node's inner type nodes to an
+   * {@link ATypeElement}.
+   */
   private static Void visitInnerTypes(Type type, final ATypeElement elem) {
-    return visitInnerTypes(type, elem,
-        InnerTypeLocation.EMPTY_INNER_TYPE_LOCATION);
-  }
-
-  private static Void visitInnerTypes(Type type, final ATypeElement elem,
-      InnerTypeLocation loc) {
     return type.accept(new GenericVisitorAdapter<Void, InnerTypeLocation>() {
       @Override
       public Void visit(ClassOrInterfaceType type, InnerTypeLocation loc) {
@@ -441,20 +459,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return null;
       }
 
+      /**
+       * Copies information from an AST inner type node to an
+       * {@link ATypeElement}.
+       */
       private void visitInnerType(Type type, InnerTypeLocation loc) {
-        visitInnerType(type, loc, type.getAnnotations());
-      }
-
-      private void visitInnerType(Type type, InnerTypeLocation loc,
-          Collection<AnnotationExpr> annos) {
         ATypeElement typeElem = elem.innerTypes.vivify(loc);
-        for (AnnotationExpr expr : annos) {
+        for (AnnotationExpr expr : type.getAnnotations()) {
           Annotation anno = extractAnnotation(expr);
           typeElem.tlAnnotationsHere.add(anno);
           type.accept(this, loc);
         }
       }
 
+      /**
+       * Extends type path by one element.
+       * @see TypePathEntry.fromBinary
+       */
       private InnerTypeLocation extendedTypePath(InnerTypeLocation loc,
           int tag, int arg) {
         List<TypePathEntry> path =
@@ -463,7 +484,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         path.add(TypePathEntry.fromBinary(tag, arg));
         return new InnerTypeLocation(path);
       }
-    }, loc);
+    }, InnerTypeLocation.EMPTY_INNER_TYPE_LOCATION);
   }
 
   /**
@@ -578,29 +599,42 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return qualifiedName;
   }
 
+  /**
+   * Attempts to resolve class name with respect to import.
+   *
+   * @param prefix name of imported package
+   * @param base name of class, possibly qualified
+   * @return fully qualified class name if resolution succeeds, null otherwise
+   */
   private static String mergePrefix(String prefix, String base) {
     if (prefix.isEmpty() || prefix.equals(base)) {
       return base;
+    }
+    String[] a0 = prefix.split("\\.");
+    String[] a1 = base.split("\\.");
+    String prefixEnd = a0[a0.length-1];
+    if ("*".equals(prefixEnd)) {
+      int n = a0.length-1;
+      String[] a = Arrays.copyOf(a0, n + a1.length);
+      for (int i = 0; i < a1.length; i++) { a[n+i] = a1[i]; }
+      return PluginUtil.join(".", a);
     } else {
-      String[] a0 = prefix.split("\\.");
-      String[] a1 = base.split("\\.");
-      String prefixEnd = a0[a0.length-1];
-      if ("*".equals(prefixEnd)) {
-        int n = a0.length-1;
-        String[] a = Arrays.copyOf(a0, n + a1.length);
-        for (int i = 0; i < a1.length; i++) { a[n+i] = a1[i]; }
-        return PluginUtil.join(".", a);
-      } else {
-        int i = a0.length;
-        int n = i - a1.length;
-        while (--i >= n) {
-          if (!a1[i-n].equals(a0[i])) { return null; }
-        }
-        return prefix;
+      int i = a0.length;
+      int n = i - a1.length;
+      while (--i >= n) {
+        if (!a1[i-n].equals(a0[i])) { return null; }
       }
+      return prefix;
     }
   }
 
+  /**
+   * Finds {@link Class} corresponding to a name.
+   *
+   * @param className
+   * @return {@link Class} object corresponding to className, or null if
+   * none found
+   */
   private static Class<?> loadClass(String className) {
     if (className != null) {
       try {

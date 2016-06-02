@@ -156,7 +156,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         }
 
         Effect callerEffect = atypeFactory.getDeclaredEffect(callerElt);
-        assert (callerEffect.equals(effStack.peek()));
+        // Field initializers inside anonymous inner classes show up with a null current-method ---
+        // the traversal goes straight from the class to the initializer.
+        assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
 
         if (!Effect.LE(targetEffect, callerEffect)) {
             checker.report(Result.failure("call.invalid.ui", targetEffect, callerEffect), node);

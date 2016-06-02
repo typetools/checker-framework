@@ -260,7 +260,8 @@ def main(argv):
     auto = read_command_line_option(argv, "--auto")
     test_mode = not read_command_line_option(argv, "release")
 
-    msg = ("You have chosen test_mode.  \nThis means that this script will execute all build steps that " +
+    msg = ("You have chosen test_mode.\n" +
+           "This means that this script will execute all build steps that " +
            "do not have side-effects.  That is, this is a test run of the script.  All checks and user prompts "  +
            "will be shown but no steps will be executed that will cause the release to be deployed or partially " +
            "deployed.\n" +

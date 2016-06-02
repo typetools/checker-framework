@@ -2,6 +2,7 @@ package org.checkerframework.qualframework.base;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.qualframework.qual.QualifierKey;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 
@@ -22,17 +23,17 @@ class TypeAnnotatorAdapter<Q> extends ImplicitsTypeAnnotator {
     }
 
     /**
-     * Return the qualifier indicated by the <code>@Key</code> annotation on an
+     * Return the qualifier indicated by the <code>@QualifierKey</code> annotation on an
      * {@link ExtendedTypeMirror}, or <code>null</code> if there is no such
      * annotation.  The default {@link TypeAnnotator} implementation uses this
      * method to avoid re-processing a type more than once, which will likely
      * produce wrong results (since {@link TypeMirrorConverter} removes the
-     * existing annotations when it adds the <code>@Key</code>).
+     * existing annotations when it adds the <code>@QualifierKey</code>).
      */
     public Q getExistingQualifier(ExtendedTypeMirror type) {
         if (type instanceof WrappedAnnotatedTypeMirror) {
             AnnotatedTypeMirror atm = ((WrappedAnnotatedTypeMirror)type).unwrap();
-            if (atm.hasAnnotation(TypeMirrorConverter.Key.class)) {
+            if (atm.hasAnnotation(QualifierKey.class)) {
                 return converter.getQualifier(atm);
             }
         }
