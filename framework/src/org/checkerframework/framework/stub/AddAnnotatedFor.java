@@ -58,7 +58,7 @@ public class AddAnnotatedFor {
    * Reads JAIF from standard input, adds any appropriate
    * {@code @AnnotatedFor} annotations, and writes to standard output.
    *
-   * @param args ignored 
+   * @param args ignored
    */
   public static void main(String[] args)
       throws IOException, DefException, ParseException {
