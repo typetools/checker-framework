@@ -13,15 +13,11 @@
 #     cd checker-framework && ant
 #     
 # 2.  Clone the OpenJDK 8u repository and sub-repositories.
-#     hg clone http://hg.openjdk.java.net
+#     hg clone http://hg.openjdk.java.net/jdk8u/jdk8u  [yes, jdk8u*2]
 #     cd jdk8u && sh ./get_source
 #
-# 3.  Build OpenJDK, following the instructions in README-builds.html.
-#     (Dan isn't sure this is necessary.)
-#
-# 4.  Set JAVA_HOME to build/(name of output directory).
-#
-# This script should be run from the top-level OpenJDK directory.
+# This script should be run from the top-level OpenJDK directory
+# ("jdk8u" by default).
 #
 # 
 # Build stages:
@@ -38,12 +34,11 @@
 #
 # 4.  Insert annotations from JAIFs into JDK source files.
 #
-# 5.  Compile the annotated JDK.
 #
-# 6.  Combine the results of the previous two stages.
-#
-#
-# TODO: What comes next?
+# The end product of these stages is the annotated JDK 8 source.  To
+# build, invoke the Checker Framework script checker/jdk/build8.sh.
+# (It may be necessary to edit some of the variable settings in the
+# script.)
 
 export SCRIPTDIR=`cd \`dirname $0\` && pwd`
 export WD="`pwd`"            # run from top directory of jdk8u clone
@@ -198,6 +193,8 @@ mkdir "${TMPDIR}"
     # copy annotated source files over originals
     rsync -au annotated/* .
     # apply ad-hoc patch to correct miscellaneous errors
-    patch -p1 < ${SCRIPTDIR}/ad-hoc.diff
+    if [ -r ${SCRIPTDIR}/ad-hoc.diff ] ; then
+        patch -p1 < ${SCRIPTDIR}/ad-hoc.diff
+    fi
 )
 
