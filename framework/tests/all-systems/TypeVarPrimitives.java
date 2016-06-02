@@ -9,4 +9,3 @@ public class TypeVarPrimitives {
         long l = tLong;
     }
 }
-

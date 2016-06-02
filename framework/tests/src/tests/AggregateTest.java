@@ -20,5 +20,3 @@ public class AggregateTest  extends CheckerFrameworkTest {
     }
 
 }
-
-

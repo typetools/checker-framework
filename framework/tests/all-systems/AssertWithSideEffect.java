@@ -8,4 +8,3 @@ public class AssertWithSideEffect {
         assert (assert_enabled = true);
     }
 }
-
