@@ -93,7 +93,7 @@ public class AnnotationClassLoader {
     private final URL resourceURL;
 
     /** The loaded annotation classes */
-    private final Set<Class<? extends Annotation>> loadedAnnotations;
+    private Set<Class<? extends Annotation>> loadedAnnotations;
 
     /**
      * Constructor for loading annotations defined for a checker.
@@ -121,8 +121,10 @@ public class AnnotationClassLoader {
         // to the list
         fullyQualifiedPackageNameSegments.addAll(Arrays.asList(Pattern.compile(Character.toString(DOT), Pattern.LITERAL).split(packageName)));
 
-        // create the data structure to hold all loaded annotation classes
-        loadedAnnotations = new LinkedHashSet<Class<? extends Annotation>>();
+        // Only load annotations if requested to avoid issue an error if the qual package contains
+        // an annotation that is not a qualifier, but the checker does not try to use it as a
+        // qualifier
+        loadedAnnotations = null;
 
         ClassLoader applicationClassloader = getAppClassLoader();
 
@@ -142,9 +144,6 @@ public class AnnotationClassLoader {
             // qual directory
             resourceURL = getURLFromClasspaths();
         }
-
-        // load the annotation classes using reflective lookup
-        loadBundledAnnotationClasses();
     }
 
     /**
@@ -483,6 +482,9 @@ public class AnnotationClassLoader {
      * @return the set of loaded annotation classes
      */
     public final Set<Class<? extends Annotation>> getLoadedAnnotationClasses() {
+        if (loadedAnnotations == null) {
+            loadBundledAnnotationClasses();
+        }
         return loadedAnnotations;
     }
 
@@ -492,6 +494,9 @@ public class AnnotationClassLoader {
      * lookup.
      */
     private final void loadBundledAnnotationClasses() {
+        if (loadedAnnotations == null) {
+            loadedAnnotations = new LinkedHashSet<Class<? extends Annotation>>();
+        }
         if (resourceURL == null) {
             // if there's no resourceURL, then there's nothing we can load
             return;
@@ -746,6 +751,9 @@ public class AnnotationClassLoader {
      * @return true if the annotation is supported, false if it isn't
      */
     protected boolean isSupportedAnnotationClass(final Class<? extends Annotation> annoClass) {
+        if (loadedAnnotations == null) {
+            loadBundledAnnotationClasses();
+        }
         if (loadedAnnotations.contains(annoClass)) {
             // if it has already been checked before, return true
             return true;

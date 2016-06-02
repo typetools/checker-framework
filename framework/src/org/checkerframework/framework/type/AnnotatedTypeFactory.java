@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -336,6 +337,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.loader = new AnnotationClassLoader(checker);
         this.supportedQuals = createSupportedTypeQualifiers();
+        checkSupportedQuals();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
@@ -363,6 +365,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             checkInvalidOptionsInferSignatures();
             wholeProgramInference = new WholeProgramInferenceScenes(
                     !"NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName()));
+        }
+    }
+
+    /**
+     * Issue an error if any of the support qualifiers has @Target that contains something besides
+     * TYPE_USE or TYPE_PARAMETER.
+     */
+    private void checkSupportedQuals() {
+        for(Class<? extends Annotation> annotationClass : supportedQuals) {
+            AnnotatedTypes.hasTypeQualifierElementTypes(
+                    annotationClass.getAnnotation(Target.class).value(), annotationClass);
         }
     }
 
