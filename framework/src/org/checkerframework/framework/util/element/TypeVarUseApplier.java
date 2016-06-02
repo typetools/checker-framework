@@ -275,4 +275,3 @@ public class TypeVarUseApplier {
         return result;
     }
 }
-

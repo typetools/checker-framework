@@ -58,4 +58,3 @@ public class Unions {
     class SubMyExceptionA2 extends MyExceptionA {
     }
 }
-

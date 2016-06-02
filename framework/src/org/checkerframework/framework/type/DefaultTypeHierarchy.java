@@ -190,9 +190,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         }
 
         if (subtypeIterator.hasNext() || supertypesIterator.hasNext()) {
-            ErrorReporter.errorAbort("Unbalanced set of type arguments. \n" +
-                            "subtype=( " + PluginUtil.join(", ", subtypes) + ")\n"  +
-                            "supertype=( " + PluginUtil.join(", ", supertypes)  + ")"
+            ErrorReporter.errorAbort("Unbalanced set of type arguments.\n" +
+                            "  subtype=( " + PluginUtil.join(", ", subtypes) + ")\n"  +
+                            "  supertype=( " + PluginUtil.join(", ", supertypes)  + ")"
             );
         }
 

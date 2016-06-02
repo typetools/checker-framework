@@ -1,7 +1,6 @@
 package org.checkerframework.qualframework.base.format;
 
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.QualifierKey;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
 import org.checkerframework.framework.util.AnnotationFormatter;
@@ -12,6 +11,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.TypeMirrorConverter;
 import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.format.PrettyQualParamsFormatter;
+import org.checkerframework.qualframework.qual.QualifierKey;
 
 import javax.lang.model.element.AnnotationMirror;
 import java.util.Collection;

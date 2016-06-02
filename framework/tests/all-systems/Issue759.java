@@ -20,3 +20,16 @@ public class Issue759 {
     <T> void lowercase3(final T items) {
     }
 }
+
+class Gen<T extends Gen<T>> {
+    T[] getConstants() { return null; }
+}
+
+class IncompatibleTypes {
+    void possibleValues(final Gen<?> genType) {
+        lowercase(genType.getConstants());
+    }
+
+    <S> void lowercase(final S items) {
+    }
+}

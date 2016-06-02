@@ -8,4 +8,3 @@ class WildcardInvoke {
         d.call(null);
     }
 }
-

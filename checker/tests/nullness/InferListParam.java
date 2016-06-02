@@ -9,4 +9,3 @@ class InferListParam<V> {
         fieldValues = Collections.emptyList();
     }
 }
-

@@ -10,4 +10,3 @@ import java.lang.annotation.Target;
 public @interface MultiMethodRegexParam {
     MethodRegexParam[] value();
 }
-

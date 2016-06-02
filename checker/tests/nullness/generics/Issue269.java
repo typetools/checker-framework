@@ -23,4 +23,3 @@ class Repro {
     callback.handler(null);
   }
 }
-

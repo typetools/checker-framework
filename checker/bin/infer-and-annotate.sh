@@ -156,4 +156,3 @@ fi
 
 read_input "$@"
 infer_and_annotate
-

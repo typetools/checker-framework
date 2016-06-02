@@ -213,4 +213,3 @@ package java.util.regex;
 public final class Pattern {
     @Pure public static String quote(String s);
 }
-

@@ -35,4 +35,3 @@ public class AnonymousClasses {
     interface Foo {
     }
 }
-

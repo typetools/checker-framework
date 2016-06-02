@@ -1,6 +1,5 @@
 package org.checkerframework.qualframework.poly.format;
 
-import org.checkerframework.framework.qual.QualifierKey;
 import org.checkerframework.framework.type.AnnotatedTypeFormatter;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -11,6 +10,7 @@ import org.checkerframework.qualframework.base.TypeMirrorConverter;
 import org.checkerframework.qualframework.base.format.DefaultQualifiedTypeFormatter;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.QualParams;
+import org.checkerframework.qualframework.qual.QualifierKey;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;

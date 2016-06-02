@@ -15,6 +15,7 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -170,6 +171,16 @@ public class NullnessTransfer extends
                 .visitArrayAccess(n, p);
         makeNonNull(result, n.getArray());
         return result;
+    }
+
+    @Override
+    public TransferResult<NullnessValue, NullnessStore> visitInstanceOf(
+            InstanceOfNode n, TransferInput<NullnessValue, NullnessStore> p) {
+        TransferResult<NullnessValue, NullnessStore> result = super.visitInstanceOf(n, p);
+        NullnessStore thenStore = result.getThenStore();
+        NullnessStore elseStore = result.getElseStore();
+        makeNonNull(thenStore, n.getOperand());
+        return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
     }
 
     @Override

@@ -131,16 +131,28 @@
     </exec>
   </target>
 
-  <property name="style.args1" value="-r -n -e"/>
-  <property name="style.args2" value="--exclude-dir=.git --exclude-dir=api --exclude-dir=bootstrap --exclude-dir=build --exclude-dir=jdk --exclude-dir=stubparser --exclude='*.aux' --exclude='*.class' --exclude='*.dvi' --exclude='*.jar' --exclude='*.jtr' --exclude='*.log' --exclude='*.patch' --exclude='*.pdf' --exclude='*.png' --exclude='*.sty' --exclude='*~' --exclude='CFLogo.ai' --exclude='logfile.log.rec.index' --exclude='manual.html' --exclude='junit*.properties' ."/>
+  <property name="style.grep.args" value="-r -n -e"/>
+  <property name="style.grep.files" value="--exclude-dir=.git --exclude-dir=api --exclude-dir=bootstrap --exclude-dir=build --exclude-dir=jdk --exclude-dir=stubparser --exclude='*.aux' --exclude='*.class' --exclude='*.dvi' --exclude='*.expected' --exclude='*.gif' --exclude='*.jar' --exclude='*.jtr' --exclude='*.log' --exclude='*.out' --exclude='*.patch' --exclude='*.pdf' --exclude='*.png' --exclude='*.sty' --exclude='*~' --exclude='CFLogo.ai' --exclude='logfile.log.rec.index' --exclude='manual.html' --exclude='junit*.properties' ."/>
+
+  <property name="style.find.files" value=". -not ( -name .git -prune ) -not ( -name api -prune ) -not ( -name bootstrap -prune ) -not ( -name build -prune ) -not ( -name jdk -prune ) -not ( -path stubparser -prune ) -not ( -name '*.aux' ) -not ( -name '*.class' ) -not ( -name '*.dvi' ) -not ( -name '*.expected' ) -not ( -name '*.gif' ) -not ( -name '*.jar' ) -not ( -name '*.log' ) -not ( -name '*.out' ) -not ( -name '*.patch' ) -not ( -name '*.pdf' ) -not ( -name '*.png' ) -not ( -name '*~' ) -not ( -empty ) -type f"/>
+  <loadresource property="style.find.files.quoted">
+    <propertyresource name="style.find.files"/>
+    <filterchain>
+      <tokenfilter>
+        <replacestring from="(" to="\("/>
+        <replacestring from=")" to="\)"/>
+      </tokenfilter>
+    </filterchain>
+  </loadresource>
 
   <target name="check-style"
 	  description="Check basic style guidelines">
     <!-- There should be a way to templatize the following. -->
+
     <exec executable="grep" outputproperty="trailingwhitespace" failonerror="false">
-      <arg line="${style.args1}"/>
+      <arg line="${style.grep.args}"/>
       <arg value=" $"/>
-      <arg line="${style.args2}"/>
+      <arg line="${style.grep.files}"/>
     </exec>
     <fail message="Trailing whitespace:${line.separator}${trailingwhitespace}">
       <condition>
@@ -149,16 +161,55 @@
 	</not>
       </condition>
     </fail>
+
     <exec executable="grep" outputproperty="missingspace" failonerror="false">
-      <arg line="${style.args1}"/>
+      <arg line="${style.grep.args}"/>
       <arg value="[^\\]\b\(else\|finally\|try\){\|}\(catch\|else\|finally\)\b\|){\($\|[^0-9]\)\|\b\(catch\|for\|if\|while\)("/>
-      <arg line="${style.args2}"/>
+      <arg line="${style.grep.files}"/>
       <arg line="--exclude=build.xml --exclude=Makefile"/>
     </exec>
     <fail message="Missing space:${line.separator}${missingspace}">
       <condition>
 	<not>
 	  <equals arg1="${missingspace}" arg2=""/>
+	</not>
+      </condition>
+    </fail>
+
+    <!-- To remove trailing whitespace:
+	 find . -name '*.java' | xargs sed -i ':a;/^[ \n]*$/{$d;N;ba}'
+    -->
+    <exec executable="find" outputproperty="blankline" failonerror="false">
+      <arg line="${style.find.files}"/>
+      <arg value="-exec"/>
+      <arg value="sh"/>
+      <arg value="-c"/>
+      <arg value="[ -z &quot;$(sed -n &quot;\$p&quot; &quot;$1&quot;)&quot; ]"/>
+      <arg value="_"/>
+      <arg value="{}"/>
+      <arg value=";"/>
+      <arg value="-print"/>
+    </exec>
+    <fail message="Blank line at end of file:${line.separator}${blankline}">
+      <condition>
+	<not>
+	  <equals arg1="${blankline}" arg2=""/>
+	</not>
+      </condition>
+    </fail>
+
+    <!-- To add final newline:
+         find -type f -name '*.java' | xargs sed -i -e '$a\'
+    -->
+    <exec executable="sh" outputproperty="notrailingnewline" failonerror="false">
+      <arg value="-c"/>
+      <arg value="find ${style.find.files.quoted} -print0 | xargs -0 -L1 bash -c 'test &quot;$(tail -c 1 &quot;$0&quot;)&quot; &amp;&amp; echo &quot;No newline at end of $0&quot;'"/>
+      <!-- <arg value="find ${style.find.files.quoted} -print0 | xargs -0 -L1 bash -c 'echo &quot;$0&quot;'"/> -->
+    </exec>
+    <fail message="Missing newline at end of files:${line.separator}${notrailingnewline}">
+      <condition>
+	<not>
+	  <equals arg1="${notrailingnewline}" arg2=""/>
 	</not>
       </condition>
     </fail>

@@ -18,4 +18,3 @@ class Issue373 extends AbstractMap<String, String> {
         return Collections.emptySet();
     }
 }
-

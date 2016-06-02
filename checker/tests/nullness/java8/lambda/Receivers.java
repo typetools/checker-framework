@@ -28,4 +28,3 @@ class ReceiverTest {
         Supplier s = () -> this;
     }
 }
-

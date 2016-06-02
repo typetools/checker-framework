@@ -29,7 +29,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.framework.qual.QualifierKey;
+import org.checkerframework.qualframework.qual.QualifierKey;
 
 import annotations.Annotation;
 import annotations.el.AClass;

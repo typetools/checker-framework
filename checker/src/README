@@ -19,4 +19,3 @@ If you use Eclipse:
      Preferences > Java > Code Style > Organize Imports pref
    and file
      checker-framework/checker/eclipse/checker-framework.importorder
-

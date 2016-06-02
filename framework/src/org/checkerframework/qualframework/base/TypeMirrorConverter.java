@@ -1,6 +1,5 @@
 package org.checkerframework.qualframework.base;
 
-import org.checkerframework.framework.qual.QualifierKey;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -24,6 +23,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedType
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
+import org.checkerframework.qualframework.qual.QualifierKey;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 
 import java.util.ArrayList;

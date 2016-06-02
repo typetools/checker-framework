@@ -82,6 +82,3 @@ class Outer {
         // 4 <: 3? Constructor annotations?
     }
 }
-
-
-

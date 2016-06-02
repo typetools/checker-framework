@@ -6,8 +6,16 @@ We renamed method annotateImplicit to addComputedTypeAnnotations.  If you
 have implemented a checker, you need to change occurrences of
 annotateImplicit to addComputedTypeAnnotations.
 
+The Checker Framework (checker.jar) is now placed on the processorpath
+during compilation.  Previously, it was placed on the classpath.  The
+qualifiers (checker-qual.jar) remain on the classpath.  This change should
+reduce conflicts between your code and the Checker Framework.  If your code
+depends on classes in the Checker Framework, then you should add those
+classes to the classpath when you run the compiler.
+
 Closed issues:
-704, 720
+738, 689, 720, 696, 707, 291, 740, 706, 705, 523, 736, 723, 698, 171, 250, 721,
+577, 728, 688, 691, 704, 672, 702, 680, 695, 690.
 
 ---------------------------------------------------------------------------
 

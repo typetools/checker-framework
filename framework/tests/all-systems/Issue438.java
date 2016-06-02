@@ -17,4 +17,3 @@ public class Issue438 {
         return new HashSet<>(list).size();
     }
 }
-

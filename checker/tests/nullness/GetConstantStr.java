@@ -5,4 +5,3 @@ public class GetConstantStr {
       assert obj != null;
   }
 }
-

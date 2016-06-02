@@ -17,6 +17,3 @@ class NullnessAndRegex {
         localized("ldskjfldj"); // error
     }
 }
-
-
-

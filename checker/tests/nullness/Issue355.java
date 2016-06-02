@@ -62,4 +62,3 @@ class Issue355e {
       }
     }
   }
-

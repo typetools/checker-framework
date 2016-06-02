@@ -5,4 +5,3 @@ public interface ExtendedArrayType extends ExtendedReferenceType {
     /** Returns the component type of this array type. */
     ExtendedTypeMirror getComponentType();
 }
-
