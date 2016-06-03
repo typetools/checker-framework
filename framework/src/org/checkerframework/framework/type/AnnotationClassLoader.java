@@ -121,9 +121,9 @@ public class AnnotationClassLoader {
         // to the list
         fullyQualifiedPackageNameSegments.addAll(Arrays.asList(Pattern.compile(Character.toString(DOT), Pattern.LITERAL).split(packageName)));
 
-        // Only load annotations if requested to avoid issue an error if the qual package contains
-        // an annotation that is not a qualifier, but the checker does not try to use it as a
-        // qualifier
+        // Only load annotations if requested.  This avoids issuing an error
+        // if the qual package contains an annotation that is not a qualifier,
+        // but the checker does not try to use it as a qualifier.
         loadedAnnotations = null;
 
         ClassLoader applicationClassloader = getAppClassLoader();
