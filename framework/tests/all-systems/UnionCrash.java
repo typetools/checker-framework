@@ -1,3 +1,5 @@
+// Test case for issue #775
+// https://github.com/typetools/checker-framework/issues/775
 // @skip-test
 public class UnionCrash {
     void foo(MyInterface<Throwable> param) throws Throwable {
@@ -7,9 +9,7 @@ public class UnionCrash {
             try {
                 bar();
             } catch (SubMyExceptionA | MyExceptionB ex2) {
-// This call cause a crash because of bugs in asSuper
-// See issue 717
-// https://github.com/typetools/checker-framework/issues/717
+                // This call cause a crash
                 typeVar(ex1, ex2);
             }
         }
