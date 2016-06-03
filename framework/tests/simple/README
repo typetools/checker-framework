@@ -1,2 +1,2 @@
-This directory holds one simple Java file used to start of checkers that test some initialization
-of the checker.  See tests.supportedquals.SupportedQualsChecker for an example
+This directory should only contain one Java class.  It is used to test initialization of a checker,
+such as tests.supportedquals.SupportedQualsChecker.

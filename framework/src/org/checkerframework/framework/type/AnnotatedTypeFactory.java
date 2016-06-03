@@ -369,13 +369,41 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Issue an error if any of the support qualifiers has @Target that contains something besides
-     * TYPE_USE or TYPE_PARAMETER.
+     * Issue an error and abort if any of the support qualifiers have @Target meta-annotations
+     * that contain something besides TYPE_USE or TYPE_PARAMETER or does not contain TYPE_USE.
      */
     private void checkSupportedQuals() {
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
-            AnnotatedTypes.hasTypeQualifierElementTypes(
-                    annotationClass.getAnnotation(Target.class).value(), annotationClass);
+            ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
+            boolean hasTypeUse = false;
+            String otherElementTypes = null;
+            for (ElementType element : elements) {
+                if (element.equals(ElementType.TYPE_USE)) {
+                    // valid qualifiers have to have TYPE_USE
+                    hasTypeUse = true;
+                } else if (!element.equals(ElementType.TYPE_PARAMETER)) {
+                    // if there's an ElementType with a enumerated value of something other than
+                    // TYPE_USE or TYPE_PARAMETER then it isn't a valid qualifier
+                    if (otherElementTypes == null) {
+                        otherElementTypes = element.toString();
+                    } else {
+                        otherElementTypes += ", " + element.toString();
+                    }
+                }
+            }
+            if (!hasTypeUse || otherElementTypes != null) {
+                StringBuffer buf = new StringBuffer("The @Target meta-annotation on ");
+                buf.append(annotationClass.toString());
+                if (!hasTypeUse) {
+                    buf.append("must contain ").append(ElementType.TYPE_USE.toString());
+                    if (otherElementTypes != null) {
+                        buf.append(" and ");
+                    }
+                } else {
+                    buf.append(" must not contain ").append(otherElementTypes);
+                }
+                ErrorReporter.errorAbort(buf.toString());
+            }
         }
     }
 
