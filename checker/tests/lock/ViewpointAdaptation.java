@@ -1,3 +1,5 @@
+// Test case for Issue #770
+// https://github.com/typetools/checker-framework/issues/770
 // @skip-test
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
