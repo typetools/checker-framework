@@ -95,7 +95,7 @@ mkdir "${TMPDIR}"
 
 # Stage 2: convert stub files to JAIFs
 
- download annotation definitions
+# download annotation definitions
 [ -r annotation-defs.jaif ]\
  || wget https://types.cs.washington.edu/checker-framework/annotation-defs.jaif\
  || exit $?
@@ -127,8 +127,8 @@ mkdir "${TMPDIR}"
                 if(out){close(out)};out=o
                 if(system("test -s "out)!=0) {
                     system("mkdir -p "d" && cp "adefs" "out)
-                    printf("%s\n",l)>>out  # current pkg decl
                 }
+                printf("%s\n",l)>>out  # current pkg decl
             }
         }
     }
@@ -139,7 +139,7 @@ mkdir "${TMPDIR}"
 [ ${RET} -ne 0 ] && echo "stage 2 failed" 1>&2 && exit ${RET}
 
 
-# Stage 3: incorporate Stage 2 JAIFs into hierarchy built in Stage 1
+# Stage 3: combine JAIFs from Stages 1 and 2
 
 (
     rm -rf "${JAIFDIR}"
@@ -155,7 +155,7 @@ mkdir "${TMPDIR}"
         awk '
             # initial state: print on, no class seen yet
             BEGIN {x=2}
-            # omit until class or package (unless no class seen yet)
+            # skip until class or package (unless no class seen yet)
             /^annotation/ {if(x<=1){x=-1}}
             # hold and print only if class follows (unless no class seen yet)
             /^package/ {if(x<=1){x=0;i=0;split("",a)}}
