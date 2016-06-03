@@ -210,6 +210,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   @Override
+  public Void visit(BlockStmt stmt, AElement elem) {
+    return null;
+    //super.visit(stmt, elem);
+  }
+
+  @Override
   public Void visit(ClassOrInterfaceDeclaration decl, AElement elem) {
     visitDecl(decl, (ADeclaration) elem);
     return super.visit(decl, elem);
