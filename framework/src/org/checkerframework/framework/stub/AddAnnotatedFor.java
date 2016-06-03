@@ -1,12 +1,16 @@
 package org.checkerframework.framework.stub;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import java.io.PrintWriter;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import annotations.Annotation;
@@ -48,25 +52,29 @@ public class AddAnnotatedFor {
     annotatedForMetaAnnotations.add(Annotations.createValueAnnotation(
         Annotations.adTarget,
         Arrays.<String>asList("TYPE", "METHOD", "CONSTRUCTOR", "PACKAGE")));
-    adAnnotatedFor = new AnnotationDef("AnnotatedFor",
+    adAnnotatedFor = new AnnotationDef(
+        "org.checkerframework.framework.qual.AnnotatedFor",
         annotatedForMetaAnnotations,
         Collections.<String, AnnotationFieldType>singletonMap("value",
             new ArrayAFT(BasicAFT.forType(String.class))));
   }
 
   /**
-   * Reads JAIF from standard input, adds any appropriate
-   * {@code @AnnotatedFor} annotations, and writes to standard output.
-   *
-   * @param args ignored
+   * Reads JAIF from the file indicated by the first element, or
+   * standard input if the argument array is empty; inserts any
+   * appropriate {@code @AnnotatedFor} annotations, based on the
+   * annotations defined in the input JAIF; and writes the augmented
+   * JAIF to standard output.
    */
   public static void main(String[] args)
       throws IOException, DefException, ParseException {
     AScene scene = new AScene();
-    IndexFileParser.parse(
-        new LineNumberReader(new InputStreamReader(System.in)), scene);
+    Reader r = args.length > 0 ? new FileReader(args[0])
+        : new InputStreamReader(System.in);
+    IndexFileParser.parse(new LineNumberReader(r), scene);
+    scene.prune();
     addAnnotatedFor(scene);
-    IndexFileWriter.write(scene, new PrintWriter(System.out));
+    IndexFileWriter.write(scene, new PrintWriter(System.out, true));
   }
 
   public static void addAnnotatedFor(AScene scene) {
@@ -74,9 +82,13 @@ public class AddAnnotatedFor {
       Set<String> annotatedFor = new HashSet<String>();
       clazz.accept(annotatedForVisitor, annotatedFor);
       if (!annotatedFor.isEmpty()) {
+        // Set eliminates duplicates, but it must be converted to List;
+        // for whatever reason, IndexFileWriter recognizes array
+        // arguments only in List form.
+        List<String> annotatedForList = new ArrayList<String>(annotatedFor);
         clazz.tlAnnotationsHere.add(
             new Annotation(adAnnotatedFor,
-                Annotations.valueFieldOnly(annotatedFor)));
+                Annotations.valueFieldOnly(annotatedForList)));
       }
     }
   }
