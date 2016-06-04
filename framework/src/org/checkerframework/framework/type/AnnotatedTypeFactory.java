@@ -395,7 +395,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 StringBuffer buf = new StringBuffer("The @Target meta-annotation on ");
                 buf.append(annotationClass.toString());
                 if (!hasTypeUse) {
-                    buf.append("must contain ").append(ElementType.TYPE_USE.toString());
+                    buf.append(" must contain ").append(ElementType.TYPE_USE.toString());
                     if (otherElementTypes != null) {
                         buf.append(" and ");
                     }
