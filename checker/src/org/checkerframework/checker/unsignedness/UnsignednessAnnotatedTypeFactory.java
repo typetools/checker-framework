@@ -158,4 +158,3 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         }
     }
 }
-
