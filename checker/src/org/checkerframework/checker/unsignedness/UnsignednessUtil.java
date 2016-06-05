@@ -76,7 +76,7 @@ public final class UnsignednessUtil {
 	/**
 	 * Compares two Unsigned shorts x and y. This returns a negative number iff
 	 * x {@literal <} y, a positive number iff x {@literal >} y, and zero iff
-	 * x == y. Extends {@link Integer#compareUnsigned(short, short) compareUnsigned(short, short)}
+	 * x == y. Extends {@link Integer#compareUnsigned(int, int) compareUnsigned(int, int)}
 	 * to act on short arguments.
 	 *
 	 * This should be used when one would normally compare two shorts with {@literal <}
