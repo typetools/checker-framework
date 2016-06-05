@@ -6,8 +6,8 @@ import org.checkerframework.framework.qual.*;
 
 /**
  * Constant is a type qualifier which indicates that a value
- * is a compile-time constant, and could be {@link Unsigned} or 
- * {@link Signed}.
+ * is a compile-time constant, and could be Unsigned or 
+ * Signed.
  *
  * @checker_framework.manual #unsignedness-checker Unsignedness Checker
  */

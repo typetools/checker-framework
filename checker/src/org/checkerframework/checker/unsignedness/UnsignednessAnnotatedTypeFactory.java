@@ -21,16 +21,20 @@ import javax.lang.model.type.TypeMirror;
 /**
  * UnsignednessAnnotatedTypeFactory removes implicit types from local variables
  * because currently types are assigned implicitely rather than defaultly because
- * they are linked to types, not locations. This ensures users may add @Unsigned
+ * they are linked to types, not locations. This ensures users may add Unsigned
  * types to local variables.
  *
- * Furthermore, this removes all annotations from booleans to stop @Unsigned types
- * from bubling up through comparisons.
+ * Furthermore, this removes all annotations from booleans to stop Unsigned types
+ * from bubbling up through comparisons.
+ *
+ * @checker_framework.manual #unsignedness-checker Unsignedness Checker
  */
 public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
 
     private final AnnotationMirror UNKNOWN_SIGNEDNESS;
     
+    // These are commented out until issues with making boxed implicitely signed
+    // are worked out.
     /*
     private final String JAVA_LANG_BYTE = "java.lang.Byte";
     private final String JAVA_LANG_SHORT = "java.lang.Short";
@@ -45,8 +49,11 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         postInit();
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         // When it is possible to default types based on their TypeKinds,
         // this method will no longer be needed.
         // Currently, it is adding the LOCAL_VARIABLE default for 
@@ -57,15 +64,13 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         // have a primitive type.
 
         addUnknownSignednessToSomeLocals(tree, type);
-        super.annotateImplicit(tree, type, iUseFlow);
+        super.addComputedTypeAnnotations(tree, type, iUseFlow);
     }
    
     /**
      * If the tree is a local variable and the type is a byte, short, int or long,
-     * then it adds the @UnknownSignedness annotation.
-     *
-     * @param tree
-     * @param type
+     * then it adds the UnknownSignedness annotation so that the user's annotation
+     * can be applied if present.
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
         switch (type.getKind()) {
@@ -81,6 +86,8 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
             defaults.annotate(tree, type);
         }
         
+        // This code commented out until issues with making boxed implicitely signed
+        // are worked out.
         
         /*switch (type.getUnderlyingType().toString()) {
         case JAVA_LANG_BYTE:
@@ -94,6 +101,9 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         
     }
     
+    /**
+     * @inheritDoc
+     */
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -103,8 +113,8 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
     }
     
     /**
-     * Do not allow @Unsigned or @Signed annotations to propogate up the syntax
-     * tree through booleans. 
+     * This TreeAnnotator will ensure that booleans cannot cause Unsigned or 
+     * Signed annotations to bubble up through them. 
      */
     private class UnsignednessTreeAnnotator extends TreeAnnotator {
         private final AnnotationMirror UNSIGNED;
@@ -117,10 +127,7 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         }    
         
         /**
-         * Remove @Unsigned and @Signed annotations from boolean binary trees.
-         * 
-         * @param tree
-         * @param type
+         * Remove Unsigned and Signed annotations from boolean binary trees.
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
@@ -135,14 +142,12 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
         }
         
         /**
-         * Remove @Unsigned and @Signed annotations from boolean compound assignment
+         * Remove Unsigned and Signed annotations from boolean compound assignment
          * trees.
-         * 
-         * @param tree
-         * @param type
          */
         @Override
         public Void visitCompoundAssignment(CompoundAssignmentTree tree, AnnotatedTypeMirror type) {
+            
             switch (type.getKind()) {
             case BOOLEAN:
                 type.removeAnnotation(UNSIGNED);

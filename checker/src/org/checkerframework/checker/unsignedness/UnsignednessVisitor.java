@@ -12,6 +12,12 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree.Kind;
 
+/**
+ * The UnsignednessVisitor enforces the Unsignedness Checker rules. These rules
+ * are described in detail in the Checker Framework Manual.
+ *
+ * @checker_framework.manual #unsignedness-checker Unsignedness Checker
+ */
 public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTypeFactory> {
 
     public UnsignednessVisitor(BaseTypeChecker checker) {
@@ -19,17 +25,16 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
     }
 
     /**
-     * Enforces the following rules on binary operations involving @Unsigned and
-     * @Signed types:
-     *      Do not allow any @Unsigned types in the {/, %} operations.
-     *      Do not allow the signed right shift {>>} of an @Unsigned type.
-     *      Do not allow the unsigned right shift {>>>} of a @Signed type.
-     *      Do not allow non-equality comparisons {<, <=, >, >=} on @Unsigned types.
-     *      Allow any left shift {<<}.
-     *      Do not allow the mixing of @Signed and @Unsigned types.
-     *
-     * @param node
-     * @param p
+     * Enforces the following rules on binary operations involving Unsigned and
+     * Signed types:
+     * <ul>
+     *      <li> Do not allow any @Unsigned types in the {/, %} operations. </li>
+     *      <li> Do not allow the signed right shift {>>} of an @Unsigned type. </li>
+     *      <li> Do not allow the unsigned right shift {>>>} of a @Signed type. </li>
+     *      <li> Do not allow non-equality comparisons {<, <=, >, >=} on @Unsigned types. </li>
+     *      <li> Allow any left shift {<<}. </li>
+     *      <li> Do not allow the mixing of @Signed and @Unsigned types. </li>
+     * </ul>
      */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
@@ -109,16 +114,15 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
     }
 
     /**
-     * Enforces the following rules on compound assignments involving @Unsigned and
-     * @Signed types:
-     *      Do not allow any @Unsigned types in the {/=, %=} assignments.
-     *      Do not allow the signed right shift {>>=} to assign to an @Unsigned type.
-     *      Do not allow the unsigned right shift {>>>=} to assign to a @Signed type.
-     *      Allow any left shift {<<=} assignment.
-     *      Do not allow the mixing of @Signed and @Unsigned types.
-     *
-     * @param node
-     * @param p
+     * Enforces the following rules on compound assignments involving Unsigned and
+     * Signed types:
+     * <ul>
+     *      <li> Do not allow any @Unsigned types in the {/=, %=} assignments. </li>
+     *      <li> Do not allow the signed right shift {>>=} to assign to an @Unsigned type. </li>
+     *      <li> Do not allow the unsigned right shift {>>>=} to assign to a @Signed type. </li>
+     *      <li> Allow any left shift {<<=} assignment. </li>
+     *      <li> Do not allow the mixing of @Signed and @Unsigned types. </li>
+     * </ul>
      */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
