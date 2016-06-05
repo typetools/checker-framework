@@ -50,7 +50,7 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     @Override
     protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -102,7 +102,7 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     @Override
     protected TreeAnnotator createTreeAnnotator() {
