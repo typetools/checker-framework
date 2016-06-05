@@ -14,9 +14,9 @@ import java.nio.ByteBuffer;
 public final class UnsignednessUtil {
 
 	/**
-	 * Gets an Unsigned short from the ByteBuffer b. Wraps {@link #ByteBuffer#getShort()}.
+	 * Gets an Unsigned short from the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#getShort() getShort()}.
 	 *
-	 * This should be used when one would normally use {@link #ByteBuffer#getShort()},
+	 * This should be used when one would normally use {@link java.nio.ByteBuffer#getShort() getShort()},
 	 * but the result should be interpreted as Unsigned.
 	 */
 	@SuppressWarnings("unsignedness")
@@ -25,9 +25,9 @@ public final class UnsignednessUtil {
 	}
 
 	/**
-	 * Gets an Unsigned byte from the ByteBuffer b. Wraps {@link #ByteBuffer#get()}.
+	 * Gets an Unsigned byte from the ByteBuffer b. Wraps {@link java.nio.ByteBuffer#get() get()}.
 	 *
-	 * This should be used when one would normally use {@link #ByteBuffer#get()},
+	 * This should be used when one would normally use {@link java.nio.ByteBuffer#get() get()},
 	 * but the result should be interpreted as Unsigned.
 	 */
 	@SuppressWarnings("unsignedness")
@@ -37,9 +37,9 @@ public final class UnsignednessUtil {
 
 	/**
 	 * Gets an array of Unsigned byte[] from the ByteBuffer b and stores in
-	 * the array bs. Wraps {@link #ByteBuffer#get(byte[])}.
+	 * the array bs. Wraps {@link java.nio.ByteBuffer#get(byte[]) get(byte[])}.
 	 *
-	 * This should be used when one would normally use {@link #ByteBuffer#get(byte[])},
+	 * This should be used when one would normally use {@link java.nio.ByteBuffer#get(byte[]) get(byte[])},
 	 * but the array of bytes should be interpreted as Unsigned.
 	 */
 	@SuppressWarnings("unsignedness")
@@ -49,10 +49,11 @@ public final class UnsignednessUtil {
 
 	/**
 	 * Compares two Unsigned longs x and y. This returns a negative number iff
-	 * x < y, a positive number iff x > y, and zero iff x == y. Wraps {@link #Long#compareUnsigned(long, long)}.
+	 * x {@literal <} y, a positive number iff x {@literal >} y, and zero iff
+	 * x == y. Wraps {@link Long#compareUnsigned(long, long) compareUnsigned(long, long)}.
 	 *
-	 * This should be used when one would normally compare two longs with < or >
-	 * but cannot as the longs are Unsigned.
+	 * This should be used when one would normally compare two longs with {@literal <}
+	 * or {@literal >} but cannot as the longs are Unsigned.
 	 */
 	@SuppressWarnings("unsignedness")
 	public static int compareUnsigned(@Unsigned long x, @Unsigned long y) {
@@ -61,10 +62,11 @@ public final class UnsignednessUtil {
 
 	/**
 	 * Compares two Unsigned ints x and y. This returns a negative number iff
-	 * x < y, a positive number iff x > y, and zero iff x == y. Wraps {@link #Int#compareUnsigned(int, int)}.
+	 * x {@literal <} y, a positive number iff x {@literal >} y, and zero iff
+	 * x == y. Wraps {@link Int#compareUnsigned(int, int) compareUnsigned(int, int)}.
 	 *
-	 * This should be used when one would normally compare two ints with < or >
-	 * but cannot as the ints are Unsigned.
+	 * This should be used when one would normally compare two ints with {@literal <}
+	 * or {@literal >} but cannot as the ints are Unsigned.
 	 */
 	@SuppressWarnings("unsignedness")
 	public static int compareUnsigned(@Unsigned int x, @Unsigned int y) {
@@ -73,11 +75,12 @@ public final class UnsignednessUtil {
 
 	/**
 	 * Compares two Unsigned shorts x and y. This returns a negative number iff
-	 * x < y, a positive number iff x > y, and zero iff x == y. Extends {@link #Int#compareUnsigned(int, int)}
+	 * x {@literal <} y, a positive number iff x {@literal >} y, and zero iff
+	 * x == y. Extends {@link Int#compareUnsigned(short, short) compareUnsigned(short, short)}
 	 * to act on short arguments.
 	 *
-	 * This should be used when one would normally compare two shorts with < or >
-	 * but cannot as the shorts are Unsigned.
+	 * This should be used when one would normally compare two shorts with {@literal <}
+	 * or {@literal >} but cannot as the shorts are Unsigned.
 	 */
 	@SuppressWarnings("unsignedness")
 	public static int compareUnsigned(@Unsigned short x, @Unsigned short y) {
@@ -89,11 +92,12 @@ public final class UnsignednessUtil {
 
 	/**
 	 * Compares two Unsigned bytes x and y. This returns a negative number iff
-	 * x < y, a positive number iff x > y, and zero iff x == y. Extends {@link #Int#compareUnsigned(int, int)}
+	 * x {@literal <} y, a positive number iff x {@literal >} y, and zero iff
+	 * x == y. Extends {@link Int#compareUnsigned(int, int) compareUnsigned(int, int)}
 	 * to act on byte arguments.
 	 *
-	 * This should be used when one would normally compare two bytes with < or >
-	 * but cannot as the bytes are Unsigned.
+	 * This should be used when one would normally compare two bytes with {@literal <}
+	 * or {@literal >} but cannot as the bytes are Unsigned.
 	 */
 	@SuppressWarnings("unsignedness")
 	public static int compareUnsigned(@Unsigned byte x, @Unsigned byte y) {
@@ -104,7 +108,7 @@ public final class UnsignednessUtil {
 	}
 
 	/**
-	 * Produces a string representation of the Unsigned long l. Wraps {@link #Long#toUnsignedString(long)}.
+	 * Produces a string representation of the Unsigned long l. Wraps {@link Long#toUnsignedString(long) toUnsignedString(long)}.
 	 *
 	 * This should be used when one needs to get the string representation of an
 	 * Unsigned long and cannot rely on Java to interpret the long as Unsigned.
@@ -115,7 +119,7 @@ public final class UnsignednessUtil {
 	}
 
 	/**
-	 * Produces a string representation of the Unsigned long l in base radix. Wraps {@link #Long#toUnsignedString(long, int)}.
+	 * Produces a string representation of the Unsigned long l in base radix. Wraps {@link Long#toUnsignedString(long, int) toUnsignedString(long, int)}.
 	 *
 	 * This should be used when one needs to get the string representation of an
 	 * Unsigned long and cannot rely on Java to interpret the long as Unsigned, but also
@@ -127,7 +131,7 @@ public final class UnsignednessUtil {
 	}
 
 	/**
-	 * Produces a string representation of the Unsigned int i. Wraps {@link #Int#toUnsignedString(int)}.
+	 * Produces a string representation of the Unsigned int i. Wraps {@link Int#toUnsignedString(int) toUnsignedString(int)}.
 	 *
 	 * This should be used when one needs to get the string representation of an
 	 * Unsigned int and cannot rely on Java to interpret the int as Unsigned.
@@ -138,7 +142,7 @@ public final class UnsignednessUtil {
 	}
 
 	/**
-	 * Produces a string representation of the Unsigned int i in base radix. Wraps {@link #Int#toUnsignedString(int, int)}.
+	 * Produces a string representation of the Unsigned int i in base radix. Wraps {@link Int#toUnsignedString(int, int) toUnsignedString(int, int)}.
 	 *
 	 * This should be used when one needs to get the string representation of an
 	 * Unsigned int and cannot rely on Java to interpret the int as Unsigned, but also
@@ -150,7 +154,7 @@ public final class UnsignednessUtil {
 	}
 
 	/**
-	 * Produces a string representation of the Unsigned short s. Extends {@link #Int#toUnsignedString(int)}
+	 * Produces a string representation of the Unsigned short s. Extends {@link Int#toUnsignedString(int) toUnsignedString(int)}
 	 * to operate on a short argument.
 	 *
 	 * This should be used when one needs to get the string representation of an
@@ -162,7 +166,7 @@ public final class UnsignednessUtil {
 	}
 
 	/**
-	 * Produces a string representation of the Unsigned short s in base radix. Extends {@link #Int#toUnsignedString(int, int)}
+	 * Produces a string representation of the Unsigned short s in base radix. Extends {@link Int#toUnsignedString(int, int) toUnsignedString(int, int)}
 	 * to operate on a short argument.
 	 *
 	 * This should be used when one needs to get the string representation of an
@@ -175,7 +179,7 @@ public final class UnsignednessUtil {
 	}
 
 	/**
-	 * Produces a string representation of the Unsigned byte b. Extends {@link #Int#toUnsignedString(int)}
+	 * Produces a string representation of the Unsigned byte b. Extends {@link Int#toUnsignedString(int) toUnsignedString(int)}
 	 * to operate on a byte argument.
 	 *
 	 * This should be used when one needs to get the string representation of an
@@ -187,7 +191,7 @@ public final class UnsignednessUtil {
 	}
 
 	/**
-	 * Produces a string representation of the Unsigned byte b in base radix. Extends {@link #Int#toUnsignedString(int, int)}
+	 * Produces a string representation of the Unsigned byte b in base radix. Extends {@link Int#toUnsignedString(int, int) toUnsignedString(int, int)}
 	 * to operate on a byte argument.
 	 *
 	 * This should be used when one needs to get the string representation of an
