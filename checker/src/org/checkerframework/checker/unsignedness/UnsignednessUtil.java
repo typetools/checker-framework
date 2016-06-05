@@ -15,7 +15,7 @@ public final class UnsignednessUtil {
 
 	/**
 	 * Gets an Unsigned short from the ByteBuffer b. Wraps {@link #ByteBuffer#getShort()}.
-	 * 
+	 *
 	 * This should be used when one would normally use {@link #ByteBuffer#getShort()},
 	 * but the result should be interpreted as Unsigned.
 	 */
@@ -26,7 +26,7 @@ public final class UnsignednessUtil {
 
 	/**
 	 * Gets an Unsigned byte from the ByteBuffer b. Wraps {@link #ByteBuffer#get()}.
-	 * 
+	 *
 	 * This should be used when one would normally use {@link #ByteBuffer#get()},
 	 * but the result should be interpreted as Unsigned.
 	 */
@@ -102,7 +102,7 @@ public final class UnsignednessUtil {
 				Byte.toUnsignedInt(y)
 		);
 	}
-	
+
 	/**
 	 * Produces a string representation of the Unsigned long l. Wraps {@link #Long#toUnsignedString(long)}.
 	 *
@@ -113,7 +113,7 @@ public final class UnsignednessUtil {
 	public static String toUnsignedString(@Unsigned long l) {
 		return Long.toUnsignedString(l);
 	}
-	
+
 	/**
 	 * Produces a string representation of the Unsigned long l in base radix. Wraps {@link #Long#toUnsignedString(long, int)}.
 	 *
@@ -125,7 +125,7 @@ public final class UnsignednessUtil {
 	public static String toUnsignedString(@Unsigned long l, int radix) {
 		return Long.toUnsignedString(l, radix);
 	}
-	
+
 	/**
 	 * Produces a string representation of the Unsigned int i. Wraps {@link #Int#toUnsignedString(int)}.
 	 *
@@ -136,7 +136,7 @@ public final class UnsignednessUtil {
 	public static String toUnsignedString(@Unsigned int i) {
 		return Integer.toUnsignedString(i);
 	}
-	
+
 	/**
 	 * Produces a string representation of the Unsigned int i in base radix. Wraps {@link #Int#toUnsignedString(int, int)}.
 	 *
@@ -148,7 +148,7 @@ public final class UnsignednessUtil {
 	public static String toUnsignedString(@Unsigned int i, int radix) {
 		return Integer.toUnsignedString(i, radix);
 	}
-	
+
 	/**
 	 * Produces a string representation of the Unsigned short s. Extends {@link #Int#toUnsignedString(int)}
 	 * to operate on a short argument.
@@ -160,7 +160,7 @@ public final class UnsignednessUtil {
 	public static String toUnsignedString(@Unsigned short s) {
 		return Integer.toUnsignedString(Short.toUnsignedInt(s));
 	}
-	
+
 	/**
 	 * Produces a string representation of the Unsigned short s in base radix. Extends {@link #Int#toUnsignedString(int, int)}
 	 * to operate on a short argument.
@@ -173,7 +173,7 @@ public final class UnsignednessUtil {
 	public static String toUnsignedString(@Unsigned short s, int radix) {
 		return Integer.toUnsignedString(Short.toUnsignedInt(s), radix);
 	}
-	
+
 	/**
 	 * Produces a string representation of the Unsigned byte b. Extends {@link #Int#toUnsignedString(int)}
 	 * to operate on a byte argument.
@@ -185,7 +185,7 @@ public final class UnsignednessUtil {
 	public static String toUnsignedString(@Unsigned byte b) {
 		return Integer.toUnsignedString(Byte.toUnsignedInt(b));
 	}
-	
+
 	/**
 	 * Produces a string representation of the Unsigned byte b in base radix. Extends {@link #Int#toUnsignedString(int, int)}
 	 * to operate on a byte argument.

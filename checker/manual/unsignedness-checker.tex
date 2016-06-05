@@ -1,8 +1,8 @@
 \htmlhr
 \chapter{Unsignedness Checker\label{unsignedness-checker}}
 
-The Unsignedness Checker guarantees that signed and unsigned values are not mixed 
-together in a computation. In addition, it prohibits meaningless operations, such 
+The Unsignedness Checker guarantees that signed and unsigned values are not mixed
+together in a computation. In addition, it prohibits meaningless operations, such
 as division on an unsigned value.
 
 \section{Annotations\label{unsignedness-checker-annotations}}
@@ -35,11 +35,11 @@ These are the qualifiers in the Unsignedness type system:
 
 \item[\refqualclass{checker/unsignedness/qual}{Constant}]
     indicates that a value is a compile-time constant and could be
-    interpreted as unsigned or signed. This is used internally, and should not 
+    interpreted as unsigned or signed. This is used internally, and should not
     be written by the programmer.
 
 \item[\refqualclass{checker/unsignedness/qual}{UnknownSignedness}]
-    indicates that a value's type is not relevant or known to this checker. 
+    indicates that a value's type is not relevant or known to this checker.
     This annotation is used internally, and should not be
     written by the programmer.
 
@@ -78,14 +78,14 @@ The Unsignedness Checker prohibits the following uses of operators:
 
 \begin{itemize}
 
-    \item   
+    \item
     Division ( \code{/} ) or modulus ( \code{\%} ) with an \code{@Unsigned}
     operand.
-    \item   
+    \item
     Signed right shift ( \verb|>>| ) with an \code{@Unsigned} left operand.
-    \item   
+    \item
     Unsigned right shift ( \verb|>>>| ) with a \code{@Signed} left operand.
-    \item   
+    \item
     Any other binary operator with one \code{@Unsigned} operand and one
     \code{@Signed} operand, with the exception of left shift ( \verb|<<| ).
 
@@ -96,11 +96,11 @@ unsigned interpretations. For this reason, the Unsignedness Checker will prohibi
 
 \begin{itemize}
 
-    \item   
+    \item
     Greater/less than (or equal) comparators
     ( \code{<}, \code{<=}, \code{>}, \code{>=} ) with an \code{@Unsigned}
     operand.
-    \item   
+    \item
     Equals ( \code{==} ) and not equals ( \code{!=} ) with one \code{@Unsigned}
     operand and one \code{@Signed} operand.
 
@@ -142,5 +142,5 @@ Consider the following Java code:
     result = u1 % u2;   // ERROR: (2^32 - 1) % 5 should not be 4
 \end{Verbatim}
 
-These examples illustrate why any division or modulus with an unsigned operand 
+These examples illustrate why any division or modulus with an unsigned operand
 is illegal. Many other uses of operators are prohibited for similar reasons.

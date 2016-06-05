@@ -126,41 +126,41 @@ public class Defaults {
 
         //:: error: (assignment.type.incompatible)
         conChar = testChar;
-        
+
         /*
         //Test boxed bytes
         @Signed Byte sinBoxedByte;
         @Constant Byte conBoxedByte;
-        
+
         sinBoxedByte = testBoxedByte;
-        
+
         ////:: error: (assignment.type.incompatible)
         conBoxedByte = testBoxedByte;
-        
+
         //Test boxed shorts
         @Signed Short sinBoxedShort;
         @Constant Short conBoxedShort;
-        
+
         sinBoxedShort = testBoxedShort;
-        
+
         ////:: error: (assignment.type.incompatible)
         conBoxedShort = testBoxedShort;
-        
+
         //Test boxed Integers
         @Signed Integer sinBoxedInteger;
         @Constant Integer conBoxedInteger;
-        
+
         sinBoxedInteger = testBoxedInteger;
-        
+
         ////:: error: (assignment.type.incompatible)
         conBoxedInteger = testBoxedInteger;
-        
+
         //Test boxed Longs
         @Signed Long sinBoxedLong;
         @Constant Long conBoxedLong;
-        
+
         sinBoxedLong = testBoxedLong;
-        
+
         ////:: error: (assignment.type.incompatible)
         conBoxedLong = testBoxedLong;
         */
@@ -185,7 +185,7 @@ public class Defaults {
         //:: error: (assignment.type.incompatible)
         sinObj = testObj;
     }
-    
+
     public void booleanProblem(@Unsigned int unsigned, @Signed int signed) {
         boolean testBool = unsigned == 1 || signed > 1;
     }

@@ -38,7 +38,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
      */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
-        
+
         ExpressionTree leftOp = node.getLeftOperand();
         ExpressionTree rightOp = node.getRightOperand();
         AnnotatedTypeMirror leftOpType = atypeFactory.getAnnotatedType(leftOp);
@@ -126,7 +126,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
      */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
-        
+
         ExpressionTree var = node.getVariable();
         ExpressionTree expr = node.getExpression();
         AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(var);

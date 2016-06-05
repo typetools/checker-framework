@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * UnknownSignedness is a type qualifier which indicates that a value's 
+ * UnknownSignedness is a type qualifier which indicates that a value's
  * signedness is either not known after some operation, or cannot have
  * a signedness.
  *

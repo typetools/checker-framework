@@ -1,7 +1,7 @@
 import org.checkerframework.checker.unsignedness.qual.*;
 
 public class Comparisons {
-    
+
     public void ComparisonTest(@Unsigned int unsigned, @UnknownSignedness int unknown) {
 
         boolean testRes;
