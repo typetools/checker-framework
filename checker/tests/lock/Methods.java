@@ -2,7 +2,7 @@ import org.checkerframework.checker.lock.qual.*;
 
 public class Methods {
 
-    Object lock;
+    final Object lock = new Object();
 
     @Holding("lock")
     void lockedByLock() { }
@@ -18,7 +18,7 @@ public class Methods {
         lockedByThis();     // error
     }
 
-    @HoldingOnEntry("lock")
+    @Holding("lock")
     void usingHolding1() {
         lockedByLock();
         //:: error: (contracts.precondition.not.satisfied)

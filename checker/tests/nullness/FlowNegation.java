@@ -10,24 +10,30 @@ public class FlowNegation {
     void testCase1() {
         String s = "m";
         //:: warning: (known.nonnull)
-        if (s != null) { }
-        else { }
+        if (s != null) {
+        } else {
+            // nothing to do
+        }
         s.toString();
     }
 
     void testCase2() {
         String s = "m";
         //:: warning: (known.nonnull)
-        if (s == null) { }
-        else { }
+        if (s == null) {
+        } else {
+            // nothing to do
+        }
         s.toString();
     }
 
     void testInvalidCase1() {
         String s = "m";
         //:: warning: (known.nonnull)
-        if (s != null) { s = null; }
-        else { }
+        if (s != null) { s = null;
+        } else {
+            // nothing to do
+        }
         //:: error: (dereference.of.nullable)
         s.toString();   // error
     }
@@ -35,8 +41,11 @@ public class FlowNegation {
     void testInvalidCase2() {
         String s = "m";
         //:: warning: (known.nonnull)
-        if (s != null) { }
-        else { s = null; }
+        if (s != null) {
+            // nothing to do
+        } else {
+            s = null;
+        }
         //:: error: (dereference.of.nullable)
         s.toString();   // error
     }

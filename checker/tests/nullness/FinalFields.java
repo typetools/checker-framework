@@ -46,4 +46,3 @@ class Lower {
     ffs.hashCode();
   }
 }
-

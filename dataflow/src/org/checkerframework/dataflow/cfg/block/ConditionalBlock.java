@@ -13,24 +13,24 @@ import org.checkerframework.dataflow.cfg.node.Node;
 public interface ConditionalBlock extends Block {
 
     /**
-     * @return The entry block of the then branch.
+     * @return the entry block of the then branch
      */
     Block getThenSuccessor();
 
     /**
-     * @return The entry block of the else branch.
+     * @return the entry block of the else branch
      */
     Block getElseSuccessor();
 
     /**
-     * @return The flow rule for information flowing from
-     * this block to its then successor.
+     * @return the flow rule for information flowing from
+     * this block to its then successor
      */
     Store.FlowRule getThenFlowRule();
 
     /**
-     * @return The flow rule for information flowing from
-     * this block to its else successor.
+     * @return the flow rule for information flowing from
+     * this block to its else successor
      */
     Store.FlowRule getElseFlowRule();
 

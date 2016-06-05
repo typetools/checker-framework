@@ -18,4 +18,3 @@ class VarArgsTest {
     ArrayFunc v3 = VarArgsTest::myMethod;
     ArrayFunc v4 = VarArgsTest::myMethodArray;
 }
-

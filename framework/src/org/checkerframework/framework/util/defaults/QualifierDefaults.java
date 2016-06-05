@@ -321,7 +321,7 @@ public class QualifierDefaults {
         final QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
 
         for (Default previous : previousDefaults ) {
-            if (!newAnno.equals(previous.anno) && previous.location == newLoc) {
+            if (!AnnotationUtils.areSame(newAnno, previous.anno) && previous.location == newLoc) {
                 final AnnotationMirror previousTop = qualHierarchy.getTopAnnotation(previous.anno);
                 if (qualHierarchy.isSubtype(newAnno, previousTop)) {
                     return true;
@@ -386,8 +386,9 @@ public class QualifierDefaults {
                     DefaultQualifier d = elt.getAnnotation(DefaultQualifier.class);
                     DefaultQualifiers ds = elt.getAnnotation(DefaultQualifiers.class);
 
-                    if (d == null && ds == null)
+                    if (d == null && ds == null) {
                         break;
+                    }
                 }
                 if (prev!=null && prev.getKind() == Tree.Kind.MODIFIERS) {
                     // Annotations are modifiers. We do not want to apply the local variable default to
@@ -731,7 +732,7 @@ public class QualifierDefaults {
          * Returns true if the given qualifier should be applied to the given type.  Currently we do not
          * apply defaults to void types, packages, wildcards, and type variables.
          *
-         * @param type Type to which qual would be applied
+         * @param type type to which qual would be applied
          * @return true if this application should proceed
          */
         private static boolean shouldBeAnnotated(final AnnotatedTypeMirror type, final boolean applyToTypeVar) {
@@ -808,7 +809,7 @@ public class QualifierDefaults {
                         doApply(t, qual);
                         if (t.getKind() == TypeKind.UNION) {
                             AnnotatedUnionType aut = (AnnotatedUnionType) t;
-                            //Also apply the default to the alternative types
+                            // Also apply the default to the alternative types
                             for (AnnotatedDeclaredType anno : aut
                                     .getAlternatives()) {
                                 doApply(anno, qual);
@@ -927,13 +928,13 @@ public class QualifierDefaults {
                 impl.boundType = BoundType.UNBOUND;
             }
 
-            //are we currently defaulting the lower bound of a type variable or wildcard
+            // are we currently defaulting the lower bound of a type variable or wildcard
             private boolean isLowerBound = false;
 
-            //are we currently defaulting the upper bound of a type variable or wildcard
+            // are we currently defaulting the upper bound of a type variable or wildcard
             private boolean isUpperBound  = false;
 
-            //the bound type of the current wildcard or type variable being defaulted
+            // the bound type of the current wildcard or type variable being defaulted
             private BoundType boundType = BoundType.UNBOUND;
 
             @Override
@@ -1030,9 +1031,9 @@ public class QualifierDefaults {
     }
 
     /**
-     * @param type The type whose boundType is returned.
+     * @param type the type whose boundType is returned.
      *             type must be an AnnotatedWildcardType or AnnotatedTypeVariable
-     * @return The boundType for type
+     * @return the boundType for type
      */
     private static BoundType getBoundType(final AnnotatedTypeMirror type,
                                           final AnnotatedTypeFactory typeFactory) {
@@ -1045,7 +1046,7 @@ public class QualifierDefaults {
         }
 
         ErrorReporter.errorAbort("Unexpected type kind: type=" + type);
-        return null; //dead code
+        return null; // dead code
     }
 
     /**
@@ -1057,7 +1058,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * @return The boundType (UPPER, UNBOUND, or UNKNOWN) of the declaration of typeParamElem.
+     * @return the boundType (UPPER, UNBOUND, or UNKNOWN) of the declaration of typeParamElem
      */
     private static BoundType getTypeVarBoundType(final TypeParameterElement typeParamElem,
                                                  final AnnotatedTypeFactory typeFactory) {
@@ -1089,7 +1090,7 @@ public class QualifierDefaults {
                 ErrorReporter.errorAbort("Unexpected tree type for typeVar Element:\n"
                                        + "typeParamElem=" + typeParamElem + "\n"
                                        + typeParamDecl);
-                boundType = null; //dead code
+                boundType = null; // dead code
             }
         }
 
@@ -1111,7 +1112,7 @@ public class QualifierDefaults {
             boundType = getTypeVarBoundType((TypeParameterElement) wildcard.bound.asElement(), typeFactory);
 
         } else {
-            //note: isSuperBound will be true for unbounded and lowers, but the unbounded case is already handled
+            // note: isSuperBound will be true for unbounded and lowers, but the unbounded case is already handled
             boundType = wildcard.isSuperBound() ? BoundType.LOWER : BoundType.UPPER;
         }
 

@@ -403,26 +403,23 @@ superclass member to be automatically inherited by subclasses that override
 it.  This feature would reduce both annotation effort and program
 comprehensibility.  In general, a program is read more often than it is
 edited/annotated, so the Checker Framework does not currently support this
-feature.  Here are more detailed justifications:
+feature.
 
-\begin{itemize}
+Currently, a user can determine the annotation on a parameter or return
+value by looking at a single file.  If annotations could be inherited from
+supertypes, then a user would have to examine all supertypes, and do
+computations over them, to understand the meaning of an unannotated type in
+a given file.
 
-\item
-  Currently, a user can determine the annotation on a parameter or return
-  value by looking at a single file.  If annotations could be inherited
-  from supertypes, then a user would have to examine all supertypes to
-  understand the meaning of an unannotated type in a given file.
+Computation is necessary because different annotations might be inherited
+from a supertype and an interface, or from two interfaces.  For return
+types, the inherited type should be the least upper bound of all
+annotations on overridden implementations in supertypes.  For method
+parameters, the inherited type should be the greatest lower bound of all
+annotations on overridden implementations in supertypes.  In each case, an
+error would be thrown if no such annotations existed.
 
-\item
-  Different annotations might be inherited from a supertype and an
-  interface, or from two interfaces.  Presumably, the subtype's annotations
-  would be stronger than either (the greatest lower bound in the type
-  system), or an error would be thrown if no such annotations existed.
-
-\end{itemize}
-
-If these issues can be resolved, then the feature may be added in the
-future.  Or, it may be added optionally, and each type-checker
+In the future, this feature may be added optionally, and each type-checker
 implementation can enable it if desired.
 
 
@@ -737,6 +734,9 @@ Type systems that support a run-time test are:
   \ahrefloc{map-key-checker}{Map Key Checker} to track which values are
   keys in a map (see \chapterpageref{map-key-checker})
 \item
+  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
+  (see \chapterpageref{lock-checker})
+\item
   \ahrefloc{regex-checker}{Regex Checker} to prevent use of syntactically
   invalid regular expressions (see \chapterpageref{regex-checker})
 \item
@@ -757,19 +757,6 @@ additional implementation work, are
 \item
   \ahrefloc{interning-checker}{Interning Checker} for errors in equality
   testing and interning (see \chapterpageref{interning-checker})
-\item
-  \ahrefloc{lock-checker}{Lock Checker} for concurrency and lock errors
-  (see \chapterpageref{lock-checker})
-% This section is supposed to be brief, but for the Checker Framework
-% developers' reference, the two run-time tests that the Lock Checker
-% could support with additional implementation work are:
-% myLock.isHeldByCurrentThread() if myLock is an explicit lock of type
-% ReentrantLock.
-% java.lang.Thread.holdsLock(myLock) if myLock is an implicit lock
-% (acquired via a synchronized statement or method modifier).
-%
-% Note that the java.util.concurrent.locks.Lock interface does not include
-% a run-time test, but ReentrantLock does.
 \item
   \ahrefloc{propkey-checker}{Property File Checker} to ensure that valid
   keys are used for property files and resource bundles (see
@@ -869,8 +856,9 @@ class DBObject {
     // updatedAt is @Nullable, so warning about .getTime()
     ... updatedAt.getTime() ... // warning about possible NullPointerException
 
-    if (updatedAt == null)
-        updatedAt = new Date();
+    if (updatedAt == null) {
+      updatedAt = new Date();
+    }
 
     // updatedAt is now @NonNull, so .getTime() call is OK
     ... updatedAt.getTime() ...
@@ -1104,7 +1092,6 @@ expression as an argument include:
 
 % TODO: Need to periodically check/update this list.
 \begin{itemize}
-%\item \refqualclass{checker/nullness/qual}{KeyFor}
 \item \refqualclass{framework/qual}{RequiresQualifier}
 \item \refqualclass{framework/qual}{EnsuresQualifier}
 \item \refqualclass{framework/qual}{EnsuresQualifierIf}
@@ -1114,21 +1101,58 @@ expression as an argument include:
 % Not implemented: \refqualclass{checker/nullness/qual}{AssertNonNullIfNonNull}
 \item \refqualclass{checker/nullness/qual}{KeyFor}
 \item \refqualclass{checker/i18nformatter/qual}{I18nFormatFor}
+\item \refqualclass{checker/lock/qual}{EnsuresLockHeld}
+\item \refqualclass{checker/lock/qual}{EnsuresLockHeldIf}
+\item \refqualclass{checker/lock/qual}{GuardedBy}
+\item \refqualclass{checker/lock/qual}{Holding}
 \end{itemize}
 
-The expression is a subset of legal Java expressions:
+The set of permitted expressions is a subset of all Java expressions:
 
 \begin{itemize}
 \item
-  the receiver object, \<this>.
+  the receiver object, \<this>.  You can write \<this> to annotate any
+  variable or declaration where you could write \<this> in code.
+  Notably, it cannot be used in annotations on declarations of
+  static fields or methods.  For a field, \<this> is the field's
+  receiver, i.e. its container.  For a local variable, it is the
+  method's receiver.
+  Note that assignment of type qualifier annotations with argument
+  \<this> is conservatively disallowed because the receiver may fall
+  out of scope.  For example, suppose the annotation on \<obj2.key>
+  has been refined to \<@KeyFor("this")>.  Then the assignment
+  \code{obj1.key = obj2.key} is disallowed, because \<obj2> may
+  fall out of scope while \<obj1> is still in use.
+
 \item
   the receiver object as seen from the superclass, \<super>.  This can be used
   to refer to fields shadowed in the subclass (although shadowing fields is
   discouraged in Java).
+
+\item
+  \<itself>, i.e. the value of the annotated reference (non-primitive) variable.
+  Currently only defined for the \<@GuardedBy> type system.
+  For example, \<@GuardedBy("itself") Object o> indicates that the value
+  referenced by \<o> is guarded by the intrinsic (monitor) lock of the value
+  referenced by \<o>.
+
 \item
   a formal parameter.  Write \<\#> followed by the \textbf{one-based} parameter
   index.  For example: \<\#1>, \<\#3>.  It is not permitted to write \<\#0> to
-  refer to the receiver object; use \<this> instead.
+  refer to the receiver object; use \<this> instead.  (A side note:
+  The formal parameter syntax \<\#1> is less natural in source code
+  than writing the formal parameter name.  This syntax is necessary for
+  separate compilation, when an annotated method has already been compiled
+  into a \<.class> file and a client of that method is later compiled.
+  In the \<.class> file, no formal parameter name information is available,
+  so it is necessary to use a number to indicate a formal parameter.)
+%% At some point, we will start assuming that the .class file was created
+%% by the Checker Framework and this justification, and the #n syntax
+%% itself, will not be necessary.
+% Running
+% the compiler without a checker should create legal annotations in the
+% \<.class> file, so we cannot rely on the checker to translate names to
+% indices.
 
 % This is not implemented at the moment, as KeyFor does not use flow expressions yet.
 %\item
@@ -1145,6 +1169,8 @@ The expression is a subset of legal Java expressions:
 \item
   a field of any expression.  For example:  \<next>,
   \<this.next>, \<\#1.next>. %, \<myLocalVar.next>.
+  You may optionally omit a leading ``\<this.>'', just as in Java.  Thus,
+  \<this.next> and \<next> are equivalent.
 
 \item
   an array access.  For example:  \<this.myArray[i]>, \<vals[\#1]>.
@@ -1155,58 +1181,45 @@ The expression is a subset of legal Java expressions:
   This even works for overloaded methods and methods with type parameters.
   For example:
   \<m1(x, y.z, \#2)>, \<a.m2("hello")>.
+  One unusual feature is that the method call is allowed to have side
+  effects.  If a specification is going to be checked at run time via
+  assertions, then the specification must not use methods with side
+  effects.  But, the Checker Framework works at compile time, so it allows
+  side effects.
+  The current implementation will never able to prove such
+  a contract, but it is able to use the information (when checking
+  the method body with preconditions, or when checking the caller's
+  code with postconditions).  This can be useful to annotate trusted
+  methods precisely (e.g., \<java.io.BufferedReader.ready()>).  % TODO: expand this example.
 
 \end{itemize}
 
-You may optionally omit a leading ``\<this.>'', just as in Java.  Thus,
-\<this.next> and \<next> are equivalent.
-
-One unusual feature is that the method call is allowed to have side
-effects.  If a specification is going to be checked at run time via
-assertions, then the specification must not use methods with side
-effects.  But, the Checker Framework works at compile time, so it allows
-side effects.
-The current implementation will never able to prove such
-a contract, but it is able to use the information (when checking
-the method body with preconditions, or when checking the callers
-code with postconditions).  This can be useful to annotate trusted
-methods precisely (e.g., \<java.io.BufferedReader.ready()>).
-
 % We want this in the future:
-%The expression may refer to private fields and method calls.  The client
-%cannot directly make use of these private fields and method calls, but they
-%may be useful in establishing a precondition that itself refers to private
-%fields or methods.  This exposure of implementation details is unfortunate,
-%but it enables more expressive and useful specifications to be written, it does not jeopardize soundness nor let the client manipulate the
-%representation, and it is simple
+% The expression may refer to private fields and method calls.  The client
+% cannot directly make use of these private fields and method calls, but they
+% may be useful in establishing a precondition that itself refers to private
+% fields or methods.  This exposure of implementation details is unfortunate,
+% but it enables more expressive and useful specifications to be written, it does not jeopardize soundness nor let the client manipulate the
+% representation, and it is simple
 % simpler than defining specification fields or ghost fields
 %% TODO: we may eventually have an @SpecField annotation
-
-(A side note:  The formal parameter syntax \<\#1> is less natural in source code
-than writing the formal parameter name.  This syntax is necessary for
-separate compilation, when an annotated method has already been compiled
-into a \<.class> file and a client of that method is later compiled.
-In the \<.class> file, no formal parameter name information is available,
-so it is necessary to use a number to indicate a formal parameter.)
-%% At some point, we will start assuming that the .class file was created
-%% by the Checker Framework and this justification, and the #n syntax
-%% itself, will not be necessary.
-% Running
-% the compiler without a checker should create legal annotations in the
-% \<.class> file, so we cannot rely on the checker to translate names to
-% indices.
 
 
 \textbf{Limitations:}
 The following Java expressions may not currently be written:
+% The Checker Framework is best at reasoning about Java expressions that
+% are variable references, but these expressions are not.
 \begin{itemize}
 \item Some literals:  floats, doubles, chars, and class literals.
 \item String concatenation expressions.
 \item Mathematical operators (plus, minus, division, ...).
 \item Comparisons (equality, less than, etc.).
-\item Quantification over all array components (e.g. to express that all
-  array elements are non-null).
 \end{itemize}
+
+Additionally, it is not possible to write
+quantification over all array components (e.g. to express that all
+  array elements are non-null).  There is no such Java expression, but it
+  would be useful when writing specifications.
 
 
 

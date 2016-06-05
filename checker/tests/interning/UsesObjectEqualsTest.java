@@ -14,7 +14,7 @@ public class UsesObjectEqualsTest {
 
     class B2 extends A {}
 
-    //changed to inherited, no (superclass.annotated) warning
+    // changed to inherited, no (superclass.annotated) warning
     class C extends A {}
 
     class D {}

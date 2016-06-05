@@ -14,4 +14,3 @@ class TestAssign {
         foo((@NonNull String s) -> s);
     }
 }
-

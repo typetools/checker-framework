@@ -61,13 +61,13 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
      * Neither this method nor visit should be called directly by a visitor,
      * only use {@link BaseTypeVisitor#validateTypeOf(Tree)}.
      *
-     * @param type The type to validate.
-     * @param tree The tree from which the type originated.
+     * @param type the type to validate
+     * @param tree the tree from which the type originated.
      *   Note that the tree might be a method tree - the
      *     return type should then be validated.
      *   Note that the tree might be a variable tree - the
      *     field type should then be validated.
-     * @return True, iff the type is valid.
+     * @return true, iff the type is valid
      */
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
@@ -112,10 +112,10 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
             default:
                 ErrorReporter.errorAbort(
-                        "Type is not bounded. \n"
+                        "Type is not bounded.\n"
                       + "type=" + type + "\n"
                       + "tree=" + tree);
-                label = null; //dead code
+                label = null; // dead code
                 upperBound = null;
                 lowerBound = null;
         }
@@ -160,12 +160,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
         if (typeArgTree == null) {
             return super.visitDeclared(type, tree);
-        } //else
+        } // else
 
 
-        //We put this here because we don't want to put it in visitedNodes before calling
-        //super (in the else branch) because that would cause the super implementation
-        //to detect that we've already visited type and to immediately return
+        // We put this here because we don't want to put it in visitedNodes before calling
+        // super (in the else branch) because that would cause the super implementation
+        // to detect that we've already visited type and to immediately return
         visitedNodes.put(type, null);
 
         // We have a ParameterizedTypeTree -> visit it.
@@ -181,8 +181,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
          */
         List<? extends AnnotatedTypeMirror> tatypes = type.getTypeArguments();
 
-        if (tatypes == null)
+        if (tatypes == null) {
             return null;
+        }
 
         // May be zero for a "diamond" (inferred type args in constructor
         // invocation).
@@ -282,8 +283,9 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     @Override
     public Void visitPrimitive(AnnotatedPrimitiveType type, Tree tree) {
-        if (checker.shouldSkipUses(type.getUnderlyingType().toString()))
+        if (checker.shouldSkipUses(type.getUnderlyingType().toString())) {
             return super.visitPrimitive(type, tree);
+        }
 
         if (!visitor.isValidUse(type, tree)) {
             reportError(type, tree);
@@ -328,12 +330,14 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         // System.out.printf("TypeValidator.visitParameterizedType: type: %s, tree: %s\n",
         // type, tree);
 
-        if (TreeUtils.isDiamondTree(tree))
+        if (TreeUtils.isDiamondTree(tree)) {
             return null;
+        }
 
         final TypeElement element = (TypeElement) type.getUnderlyingType().asElement();
-        if (checker.shouldSkipUses(element))
+        if (checker.shouldSkipUses(element)) {
             return null;
+        }
 
         List<AnnotatedTypeParameterBounds> bounds = atypeFactory.typeVariablesFromUse(type, element);
 
@@ -368,7 +372,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             {
                 // Check whether multiple qualifiers from the same hierarchy
                 // appear.
-                checkConflicitingPrimaryAnnos(type, tree);
+                checkConflictingPrimaryAnnos(type, tree);
             }
 
             // TODO: because of the way AnnotatedTypeMirror fixes up the bounds,
@@ -420,7 +424,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             {
                 // Check whether multiple qualifiers from the same hierarchy
                 // appear.
-                checkConflicitingPrimaryAnnos(type, tree);
+                checkConflictingPrimaryAnnos(type, tree);
             }
 
             /* TODO: see note with visitTypeVariable
@@ -456,7 +460,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     @Override
     public Void visitNull(final AnnotatedNullType type, final Tree tree) {
-        checkConflicitingPrimaryAnnos(type, tree);
+        checkConflictingPrimaryAnnos(type, tree);
 
         return super.visitNull(type, tree);
     }
@@ -474,7 +478,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         if (upperBoundAnnos.size() == lowerBoundAnnos.size()) {
             return qualifierHierarchy.isSubtype(lowerBoundAnnos, upperBoundAnnos);
 
-        } //else
+        } // else
           //  When upperBoundAnnos.size() != lowerBoundAnnos.size() one of the two bound types will
           //  be reported as invalid.  Therefore, we do not do any other comparisons nor do we report
           //  a bound.type.incompatible
@@ -484,12 +488,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
     /**
      * Determines if there are multiple qualifiers from a single hierarchy in type's
-     * primary annotations.  If so, report an error
+     * primary annotations.  If so, report an error.
      * @param type the type to check
      * @param tree tree on which an error is reported
      * @return true if an error was reported
      */
-    public boolean checkConflicitingPrimaryAnnos(final AnnotatedTypeMirror type, final Tree tree ) {
+    public boolean checkConflictingPrimaryAnnos(final AnnotatedTypeMirror type, final Tree tree ) {
         boolean error = false;
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror aOnVar : type.getAnnotations()) {

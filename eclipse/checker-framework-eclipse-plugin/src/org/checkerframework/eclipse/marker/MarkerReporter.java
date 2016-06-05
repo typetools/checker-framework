@@ -24,7 +24,7 @@ public class MarkerReporter implements IWorkspaceRunnable
     private static final String DETAIL_SEPARATOR = "$$";
     private static final String DETAIL_SEPARATOR_REGEX = "\\$\\$";
 
-    //Typically a Java File
+    // Typically a Java File
     private final IResource resource;
 
 

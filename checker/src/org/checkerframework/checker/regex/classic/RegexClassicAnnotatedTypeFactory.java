@@ -437,8 +437,8 @@ public class RegexClassicAnnotatedTypeFactory extends GenericAnnotatedTypeFactor
          * then visit their upper bounds to get the Regex annotation.  It's get "minimum" regex count
          * because, depending on the bounds of a typevar or wildcard, the actual type may have more than
          * the upper bound's count.
-         * @param type Type that may carry a Regex annotation
-         * @return The Integer value of the Regex annotation (0 if no value exists)
+         * @param type type that may carry a Regex annotation
+         * @return the Integer value of the Regex annotation (0 if no value exists)
          */
         private Integer getMinimumRegexCount(final AnnotatedTypeMirror type) {
             final AnnotationMirror primaryRegexAnno = type.getAnnotation(Regex.class);
@@ -455,8 +455,9 @@ public class RegexClassicAnnotatedTypeFactory extends GenericAnnotatedTypeFactor
                         for (final AnnotatedTypeMirror bound : ((AnnotatedIntersectionType) type).directSuperTypes()) {
                             Integer boundRegexNum = getMinimumRegexCount(bound);
                             if (boundRegexNum != null) {
-                                if (maxBound == null || boundRegexNum > maxBound)
+                                if (maxBound == null || boundRegexNum > maxBound) {
                                     maxBound = boundRegexNum;
+                                }
                             }
                         }
                         return maxBound;

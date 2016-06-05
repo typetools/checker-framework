@@ -592,9 +592,11 @@ no matter what the array's element types are:
    * testing for equality using == (not the equals method).
    */
   public static int indexOfEq(@PolyAll Object[] a, @Nullable Object elt) {
-    for (int i=0; i<a.length; i++)
-      if (elt == a[i])
+    for (int i=0; i<a.length; i++) {
+      if (elt == a[i]) {
         return i;
+      }
+    }
     return -1;
   }
 \end{Verbatim}
@@ -615,9 +617,11 @@ this signature is overly restrictive:
    * testing for equality using == (not the equals method).
    */
   public static int eltwiseEqualUsingEq(@PolyAll Object[] a, @PolyAll Object elt) {
-    for (int i=0; i<a.length; i++)
-      if (elt != a[i])
+    for (int i=0; i<a.length; i++) {
+      if (elt != a[i]) {
         return false;
+      }
+    }
     return true;
   }
 \end{Verbatim}
@@ -805,8 +809,7 @@ The examples in this section use arrays, but analogous examples exist that
 use collections.
 
 
-\subsubsection{Using a single polymorphic qualifier to indicate all
-  arguments are legal\label{qualifier-polymorphism-top-type}}
+\subsubsection{Using a single polymorphic qualifier to indicate all arguments are legal\label{qualifier-polymorphism-top-type}}
 
 A single \<@PolyAll> annotation can indicate that any possible value is
 permitted to be passed.  For example:

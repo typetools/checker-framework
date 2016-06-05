@@ -18,12 +18,10 @@ import javax.lang.model.util.ElementFilter;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -31,12 +29,10 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
-import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
@@ -76,11 +72,28 @@ public final class TreeUtils {
      * @return true iff tree describes a call to super
      */
     public static boolean isSuperCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("super", tree);
+    }
+
+    /**
+     * Checks if the method invocation is a call to this.
+     *
+     * @param tree
+     *            a tree defining a method invocation
+     *
+     * @return true iff tree describes a call to this
+     */
+    public static boolean isThisCall(MethodInvocationTree tree) {
+        return isNamedMethodCall("this", tree);
+
+    }
+
+    protected static boolean isNamedMethodCall(String name, MethodInvocationTree tree) {
         /*@Nullable*/ ExpressionTree mst = tree.getMethodSelect();
         assert mst != null; /*nninvariant*/
 
         if (mst.getKind() == Tree.Kind.IDENTIFIER ) {
-            return ((IdentifierTree)mst).getName().contentEquals("super");
+            return ((IdentifierTree)mst).getName().contentEquals(name);
         }
 
         if (mst.getKind() == Tree.Kind.MEMBER_SELECT) {
@@ -91,7 +104,7 @@ public final class TreeUtils {
             }
 
             return ((IdentifierTree) selectTree.getExpression()).getName()
-                .contentEquals("super");
+                    .contentEquals(name);
         }
 
         return false;
@@ -120,19 +133,22 @@ public final class TreeUtils {
     public static boolean isSelfAccess(final ExpressionTree tree) {
         ExpressionTree tr = TreeUtils.skipParens(tree);
         // If method invocation check the method select
-        if (tr.getKind() == Tree.Kind.ARRAY_ACCESS)
+        if (tr.getKind() == Tree.Kind.ARRAY_ACCESS) {
             return false;
+        }
 
         if (tree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             tr = ((MethodInvocationTree)tree).getMethodSelect();
         }
         tr = TreeUtils.skipParens(tr);
-        if (tr.getKind() == Tree.Kind.TYPE_CAST)
+        if (tr.getKind() == Tree.Kind.TYPE_CAST) {
             tr = ((TypeCastTree)tr).getExpression();
+        }
         tr = TreeUtils.skipParens(tr);
 
-        if (tr.getKind() == Tree.Kind.IDENTIFIER)
+        if (tr.getKind() == Tree.Kind.IDENTIFIER) {
             return true;
+        }
 
         if (tr.getKind() == Tree.Kind.MEMBER_SELECT) {
             tr = ((MemberSelectTree)tr).getExpression();
@@ -170,8 +186,9 @@ public final class TreeUtils {
         while (p != null) {
             Tree leaf = p.getLeaf();
             assert leaf != null; /*nninvariant*/
-            if (kinds.contains(leaf.getKind()))
+            if (kinds.contains(leaf.getKind())) {
                 return leaf;
+            }
             p = p.getParentPath();
         }
 
@@ -213,8 +230,9 @@ public final class TreeUtils {
         while (p != null) {
             Tree leaf = p.getLeaf();
             assert leaf != null; /*nninvariant*/
-            if (kinds.contains(leaf.getKind()))
+            if (kinds.contains(leaf.getKind())) {
                 return p;
+            }
             p = p.getParentPath();
         }
 
@@ -233,8 +251,9 @@ public final class TreeUtils {
 
         while (p != null) {
             Tree leaf = p.getLeaf();
-            if (treeClass.isInstance(leaf))
+            if (treeClass.isInstance(leaf)) {
                 return treeClass.cast(leaf);
+            }
             p = p.getParentPath();
         }
 
@@ -249,7 +268,7 @@ public final class TreeUtils {
      *
      * @param path the path defining the tree node
      * @return the enclosing class (or interface) as given by the path, or null
-     *         if one does not exist.
+     *         if one does not exist
      */
     public static /*@Nullable*/ ClassTree enclosingClass(final /*@Nullable*/ TreePath path) {
         return (ClassTree) enclosingOfKind(path, classTreeKinds());
@@ -324,30 +343,39 @@ public final class TreeUtils {
      *   <li>VariableTree</li>
      * </ul>
      *
-     * If the leaf is a ConditionalExpressionTree, then recur on the leaf.
+     * If the leaf is a ConditionalExpressionTree or ParenthesizedTree, then recur on the leaf.
      *
      * Otherwise, null is returned.
      *
-     * @return  the assignment context as described.
+     * @return  the assignment context as described
      */
     public static Tree getAssignmentContext(final TreePath treePath) {
-        TreePath path = treePath.getParentPath();
+        TreePath parentPath = treePath.getParentPath();
 
-        if (path == null)
+        if (parentPath == null) {
             return null;
-        Tree node = path.getLeaf();
-        if ((node instanceof AssignmentTree) ||
-                (node instanceof CompoundAssignmentTree) ||
-                (node instanceof MethodInvocationTree) ||
-                (node instanceof NewArrayTree) ||
-                (node instanceof NewClassTree) ||
-                (node instanceof ReturnTree) ||
-                (node instanceof VariableTree)) {
-            return node;
-        } else if (node instanceof ConditionalExpressionTree) {
-            return getAssignmentContext(path);
         }
-        return null;
+
+        Tree parent = parentPath.getLeaf();
+        switch (parent.getKind()) {
+        case PARENTHESIZED:
+        case CONDITIONAL_EXPRESSION:
+            return getAssignmentContext(parentPath);
+        case ASSIGNMENT:
+        case METHOD_INVOCATION:
+        case NEW_ARRAY:
+        case NEW_CLASS:
+        case RETURN:
+        case VARIABLE:
+            return parent;
+        default:
+            // 11 Tree.Kinds are CompoundAssignmentTrees,
+            // so use instanceof rather than listing all 11.
+            if (parent instanceof CompoundAssignmentTree) {
+                return parent;
+            }
+            return null;
+        }
     }
 
     /**
@@ -409,7 +437,7 @@ public final class TreeUtils {
      * Determine whether the given ExpressionTree has an underlying element.
      *
      * @param node the ExpressionTree to test
-     * @return whether the tree refers to an identifier, member select, or method invocation.
+     * @return whether the tree refers to an identifier, member select, or method invocation
      */
     public static final boolean isUseOfElement(ExpressionTree node) {
         node = TreeUtils.skipParens(node);
@@ -429,10 +457,11 @@ public final class TreeUtils {
      */
     public static final Name methodName(MethodInvocationTree node) {
         ExpressionTree expr = node.getMethodSelect();
-        if (expr.getKind() == Tree.Kind.IDENTIFIER)
+        if (expr.getKind() == Tree.Kind.IDENTIFIER) {
             return ((IdentifierTree)expr).getName();
-        else if (expr.getKind() == Tree.Kind.MEMBER_SELECT)
+        } else if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree)expr).getIdentifier();
+        }
         ErrorReporter.errorAbort("TreeUtils.methodName: cannot be here: " + node);
         return null; // dead code
     }
@@ -461,10 +490,11 @@ public final class TreeUtils {
         Tree first;
         if (tree.getKind() == Tree.Kind.BLOCK) {
             BlockTree block = (BlockTree)tree;
-            if (block.getStatements().isEmpty())
+            if (block.getStatements().isEmpty()) {
                 first = block;
-            else
+            } else {
                 first = block.getStatements().iterator().next();
+            }
         } else {
             first = tree;
         }
@@ -474,8 +504,8 @@ public final class TreeUtils {
     /**
      * Determine whether the given class contains an explicit constructor.
      *
-     * @param node A class tree.
-     * @return True, iff there is an explicit constructor.
+     * @param node a class tree
+     * @return true, iff there is an explicit constructor
      */
     public static boolean hasExplicitConstructor(ClassTree node) {
         TypeElement elem = TreeUtils.elementFromDeclaration(node);
@@ -537,8 +567,9 @@ public final class TreeUtils {
      */
     public static boolean isCompileTimeString(ExpressionTree node) {
         ExpressionTree tree = TreeUtils.skipParens(node);
-        if (tree instanceof LiteralTree)
+        if (tree instanceof LiteralTree) {
             return true;
+        }
 
         if (TreeUtils.isUseOfElement(tree)) {
             Element elt = TreeUtils.elementFromUse(tree);
@@ -656,8 +687,9 @@ public final class TreeUtils {
      * of any method that overrides that one.
      */
     public static boolean isMethodInvocation(Tree tree, ExecutableElement method, ProcessingEnvironment env) {
-        if (!(tree instanceof MethodInvocationTree))
+        if (!(tree instanceof MethodInvocationTree)) {
             return false;
+        }
         MethodInvocationTree methInvok = (MethodInvocationTree)tree;
         ExecutableElement invoked = TreeUtils.elementFromUse(methInvok);
         return isMethod(invoked, method, env);
@@ -741,7 +773,7 @@ public final class TreeUtils {
      * </pre>
      *
      * @return true iff if tree is a field access expression (implicit or
-     *         explicit).
+     *         explicit)
      */
     public static boolean isFieldAccess(Tree tree) {
         if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
@@ -764,7 +796,7 @@ public final class TreeUtils {
      * accesses. Requires <code>tree</code> to be a field access, as determined
      * by <code>isFieldAccess</code>.
      *
-     * @return The name of the field accessed by <code>tree</code>.
+     * @return the name of the field accessed by <code>tree</code>.
      */
     public static String getFieldName(Tree tree) {
         assert isFieldAccess(tree);
@@ -787,7 +819,7 @@ public final class TreeUtils {
      * </pre>
      *
      * @return true iff if tree is a method access expression (implicit or
-     *         explicit).
+     *         explicit)
      */
     public static boolean isMethodAccess(Tree tree) {
         if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
@@ -816,7 +848,7 @@ public final class TreeUtils {
      * accesses. Requires <code>tree</code> to be a method access, as determined
      * by <code>isMethodAccess</code>.
      *
-     * @return The name of the method accessed by <code>tree</code>.
+     * @return the name of the method accessed by <code>tree</code>.
      */
     public static String getMethodName(Tree tree) {
         assert isMethodAccess(tree);
@@ -861,9 +893,9 @@ public final class TreeUtils {
     /**
      * Returns the VariableElement for a field declaration.
      *
-     * @param typeName the class where the field is declared.
-     * @param fieldName the name of the field.
-     * @param env the processing environment.
+     * @param typeName the class where the field is declared
+     * @param fieldName the name of the field
+     * @param env the processing environment
      * @return the VariableElement for typeName.fieldName
      */
     public static VariableElement getField(String typeName, String fieldName, ProcessingEnvironment env) {
@@ -881,7 +913,7 @@ public final class TreeUtils {
      *
      * TODO: is there a nicer way than an instanceof?
      *
-     * @param tree the Tree to test.
+     * @param tree the Tree to test
      * @return whether the tree is an ExpressionTree
      */
     public static boolean isExpressionTree(Tree tree) {
@@ -924,7 +956,7 @@ public final class TreeUtils {
 
     /**
      * @see Object#getClass()
-     * @return True iff invocationTree is an instance of getClass()
+     * @return true iff invocationTree is an instance of getClass()
      */
     public static boolean isGetClassInvocation(MethodInvocationTree invocationTree) {
         final Element declarationElement = elementFromUse(invocationTree);

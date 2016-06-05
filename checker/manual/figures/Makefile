@@ -24,4 +24,3 @@ clean: clean-obsolete-files
 clean-obsolete-files:
 	@\rm -f *.png
 	@\rm -f *.eps
-

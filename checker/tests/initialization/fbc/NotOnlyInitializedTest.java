@@ -19,7 +19,7 @@ public class NotOnlyInitializedTest {
     }
 
     static void testDeref(NotOnlyInitializedTest o) {
-        // o is fully iniatlized, so we can dereference it's fields
+        // o is fully iniatlized, so we can dereference its fields
         o.f.toString();
         o.g.toString();
     }

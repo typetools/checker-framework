@@ -26,7 +26,6 @@ public class AssertIfTrueTest {
     // checking.
 
     public class File1 {
-        @SuppressWarnings("flowexpr.method.not.deterministic")
         @EnsuresNonNullIf(result=true, expression={"list()","list(String)","listFiles()","listFiles(String)","listFiles(Double)"})
         public boolean isDirectory() { throw new RuntimeException("skeleton method"); }
 

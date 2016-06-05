@@ -166,8 +166,8 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
 
     /**
-     * @return The list of annotations that is forbidden for the constructor
-     *         return type.
+     * @return the list of annotations that is forbidden for the constructor
+     *         return type
      */
     public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
         return getInitializationAnnotations();
@@ -327,8 +327,9 @@ public abstract class InitializationAnnotatedTypeFactory<
             return true;
         }
         for (Tree member : classTree.getMembers()) {
-            if (!member.getKind().equals(Tree.Kind.VARIABLE))
+            if (!member.getKind().equals(Tree.Kind.VARIABLE)) {
                 continue;
+            }
             VariableTree var = (VariableTree) member;
             VariableElement varElt = TreeUtils.elementFromDeclaration(var);
             // var is not committed-only
@@ -553,8 +554,9 @@ public abstract class InitializationAnnotatedTypeFactory<
 
         AnnotationMirror unused = getDeclAnnotation(
                 TreeUtils.elementFromDeclaration(field), Unused.class);
-        if (unused == null)
+        if (unused == null) {
             return false;
+        }
 
         Name when = AnnotationUtils.getElementValueClassName(unused, "when",
                                                              false);

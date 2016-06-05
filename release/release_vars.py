@@ -22,6 +22,10 @@ import pwd
 # variables.  All other methods that aid in release should go in release_utils.py
 
 def getAndAppend(name, append):
+    """Retrieves the given environment variable and appends the given string to
+    its value and returns the new value. The environment variable is not
+    modified. Returns an empty string if the environment variable does not
+    exist."""
     if os.environ.has_key(name):
         return os.environ[name] + append
 
@@ -29,6 +33,8 @@ def getAndAppend(name, append):
         return ""
 
 def append_to_PATH(paths):
+    """Retrieves the PATH environment variable, appends the given paths to it,
+    and sets the PATH environment variable to the new value."""
     current_PATH = os.getenv('PATH')
     new_PATH = current_PATH + ':' + ':'.join(paths)
     os.environ['PATH'] = new_PATH
@@ -149,7 +155,6 @@ PLUME_BIB = os.path.join(BUILD_DIR, 'plume-bib')
 MAVEN_PLUGIN_DIR = os.path.join(CHECKER_FRAMEWORK, 'maven-plugin')
 MAVEN_PLUGIN_POM = os.path.join(MAVEN_PLUGIN_DIR, 'pom.xml')
 MAVEN_DEV_REPO = 'file:///cse/www2/types/dev/m2-repo'
-MAVEN_LIVE_REPO = 'file:///cse/www2/types/m2-repo'
 
 MAVEN_POMS_DIR = os.path.join(MAVEN_PLUGIN_DIR, 'poms')
 CHECKER_BINARY_POM = os.path.join(MAVEN_POMS_DIR, 'checkerPom.xml')

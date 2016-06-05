@@ -78,10 +78,7 @@ class Outer {
         //:: error: (methodref.receiver.bound.invalid)
         Supplier<Inner2> f2 = Inner2::new;
 
-        //Supplier</*3*/Inner> f = /*4*/Inner::new;
+        // Supplier</*3*/Inner> f = /*4*/Inner::new;
         // 4 <: 3? Constructor annotations?
     }
 }
-
-
-

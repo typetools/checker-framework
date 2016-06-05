@@ -347,13 +347,6 @@
             <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
                         includes="checker/bin/javac" filemode="755"/>
 
-            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
-                        includes="changelog.txt README.html LICENSE.txt" excludes="api/**"/>
-
-            <zipfileset dir="${checkerframework}" prefix="checker-framework-${version}"
-                        includes="tutorial/**"
-                        excludes="tutorial/tests/** tutorial/eclipse-projects/** tutorial/src/** tutorial/test/** tutorial/Makefile tutorial/README"/>
-
             <zipfileset dir="${checkerframework}"
                         includes="checker/manual/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/checker/manual/CFLogo.png"/>
 

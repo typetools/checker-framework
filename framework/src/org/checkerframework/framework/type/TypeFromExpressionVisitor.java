@@ -109,9 +109,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
         AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
 
-        //here
-        if (trueType.equals(falseType))
+        // here
+        if (trueType.equals(falseType)) {
             return trueType;
+        }
 
         // TODO: We would want this:
         /*
@@ -210,7 +211,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             }
         }
         ErrorReporter.errorAbort("TypeFromExpressionVisitor.visitMemberSelect unexpected element or type: " + node.toString());
-        return null; //dead code
+        return null; // dead code
     }
 
     @Override
@@ -363,10 +364,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror result = f.type(node);
         assert result instanceof AnnotatedWildcardType;
 
-        //the first time getSuperBound/getExtendsBound is called the bound of this wildcard will be
-        //appropriately initialized where for the type of node, instead of replacing that bound
-        //we merge the annotations onto the initialized bound
-        //This ensures that the structure of the wildcard will match that created by BoundsInitializer/createType
+        // the first time getSuperBound/getExtendsBound is called the bound of this wildcard will be
+        // appropriately initialized where for the type of node, instead of replacing that bound
+        // we merge the annotations onto the initialized bound
+        // This ensures that the structure of the wildcard will match that created by BoundsInitializer/createType
         if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
             AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getSuperBound());
 

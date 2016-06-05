@@ -14,7 +14,7 @@ interface BiFunction<T, U, R> {
 
 
 /** super # instMethod */
-//SUPER(ReferenceMode.INVOKE, false),
+// SUPER(ReferenceMode.INVOKE, false),
 class Super {
 
     Object func1 (Object o) { return o; }

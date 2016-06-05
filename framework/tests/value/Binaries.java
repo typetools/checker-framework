@@ -229,7 +229,7 @@ class Binaries {
         @BoolVal(true) boolean h =(BANG == bangChar);
 
         Character bang = '!';
-        //Reference equalitiy is used
+        // Reference equalitiy is used
         //:: error: (assignment.type.incompatible)
         @BoolVal(false) boolean i =(BANG == bang);
 

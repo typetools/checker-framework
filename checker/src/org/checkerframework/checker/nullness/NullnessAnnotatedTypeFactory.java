@@ -87,7 +87,7 @@ public class NullnessAnnotatedTypeFactory
      */
     protected final GeneralAnnotatedTypeFactory generalFactory;
 
-    // Cache for the nullness annotations
+    /** Cache for the nullness annotations */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
 
@@ -196,8 +196,8 @@ public class NullnessAnnotatedTypeFactory
 
     // handle dependent types
     @Override
-    protected void annotateImplicit(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
-        super.annotateImplicit(tree, type, useFlow);
+    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+        super.addComputedTypeAnnotations(tree, type, useFlow);
         dependentTypes.handle(tree, type);
     }
 
@@ -217,8 +217,8 @@ public class NullnessAnnotatedTypeFactory
      * }
      * </pre>
      *
-     * @param lhsType  Type to replace whose polymorphic qualifier will be replaced
-     * @param context Tree used to get dataflow value
+     * @param lhsType  type to replace whose polymorphic qualifier will be replaced
+     * @param context tree used to get dataflow value
      */
     protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
         if (lhsType.hasAnnotation(PolyNull.class)
@@ -332,8 +332,9 @@ public class NullnessAnnotatedTypeFactory
      *            the type of the element {@code elt}
      */
     private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
-        if (elt == null)
+        if (elt == null) {
             return;
+        }
 
         if (elt.getKind().isClass() || elt.getKind().isInterface()
         // Workaround for System.{out,in,err} issue: assume all static
@@ -344,11 +345,13 @@ public class NullnessAnnotatedTypeFactory
     }
 
     private static boolean isSystemField(Element elt) {
-        if (!elt.getKind().isField())
+        if (!elt.getKind().isField()) {
             return false;
+        }
 
-        if (!ElementUtils.isStatic(elt) || !ElementUtils.isFinal(elt))
+        if (!ElementUtils.isStatic(elt) || !ElementUtils.isFinal(elt)) {
             return false;
+        }
 
         VariableElement var = (VariableElement) elt;
 
@@ -478,7 +481,7 @@ public class NullnessAnnotatedTypeFactory
 
 
     /**
-     * @return The list of annotations of the non-null type system.
+     * @return the list of annotations of the non-null type system
      */
     public Set<Class<? extends Annotation>> getNullnessAnnotations() {
         return nullnessAnnos;

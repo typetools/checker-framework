@@ -21,5 +21,3 @@ public class EqualityTests {
         return 10;
     }
 }
-
-

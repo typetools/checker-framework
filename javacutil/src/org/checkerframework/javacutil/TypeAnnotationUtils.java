@@ -45,9 +45,9 @@ public class TypeAnnotationUtils {
     /**
      * Check whether a TypeCompound is contained in a list of TypeCompounds.
      *
-     * @param list The input list of TypeCompounds.
-     * @param tc The TypeCompound to find.
-     * @return true, iff a TypeCompound equal to tc is contained in list.
+     * @param list the input list of TypeCompounds
+     * @param tc the TypeCompound to find
+     * @return true, iff a TypeCompound equal to tc is contained in list
      */
     public static boolean isTypeCompoundContained(Types types, List<TypeCompound> list, TypeCompound tc) {
         for (Attribute.TypeCompound rawat : list) {
@@ -76,9 +76,9 @@ public class TypeAnnotationUtils {
     /**
      * Compare two TypeAnnotationPositions for equality.
      *
-     * @param p1 The first position.
-     * @param p2 The second position.
-     * @return true, iff the two positions are equal.
+     * @param p1 the first position
+     * @param p2 the second position
+     * @return true, iff the two positions are equal
      */
     public static boolean isSameTAPosition(TypeAnnotationPosition p1,
             TypeAnnotationPosition p2) {
@@ -106,7 +106,7 @@ public class TypeAnnotationUtils {
      * argument AnnotationMirror.
      *
      * @param am  an AnnotationMirror, which may be part of an AST or an internally
-     *            created subclass.
+     *            created subclass
      * @return  a new Attribute.Compound corresponding to the AnnotationMirror
      */
     public static Attribute.Compound createCompoundFromAnnotationMirror(ProcessingEnvironment env,
@@ -127,8 +127,8 @@ public class TypeAnnotationUtils {
      * argument AnnotationMirror.
      *
      * @param am  an AnnotationMirror, which may be part of an AST or an internally
-     *            created subclass.
-     * @param tapos  the type annotation position to use.
+     *            created subclass
+     * @param tapos  the type annotation position to use
      * @return  a new Attribute.TypeCompound corresponding to the AnnotationMirror
      */
     public static Attribute.TypeCompound createTypeCompoundFromAnnotationMirror(ProcessingEnvironment env,
@@ -148,9 +148,9 @@ public class TypeAnnotationUtils {
      * Returns a newly created Attribute corresponding to an argument
      * AnnotationValue.
      *
-     * @param meth the ExecutableElement that is assigned the value, needed for empty arrays.
+     * @param meth the ExecutableElement that is assigned the value, needed for empty arrays
      * @param av  an AnnotationValue, which may be part of an AST or an internally
-     *            created subclass.
+     *            created subclass
      * @return  a new Attribute corresponding to the AnnotationValue
      */
     public static Attribute attributeFromAnnotationValue(ProcessingEnvironment env, ExecutableElement meth, AnnotationValue av) {
@@ -306,8 +306,8 @@ public class TypeAnnotationUtils {
      * Catch all exceptions and abort if one occurs - the reflection code should
      * never break once fully debugged.
      *
-     * @param tc The TAPCall abstraction to encapsulate two methods.
-     * @return The created TypeAnnotationPosition.
+     * @param tc the TAPCall abstraction to encapsulate two methods
+     * @return the created TypeAnnotationPosition
      */
     private static <RET> RET call8or9(Call8or9<RET> tc) {
         try {
@@ -589,12 +589,15 @@ public class TypeAnnotationUtils {
         TypeAnnotationPosition.class.getField("bound_index").set(res, tapos.bound_index);
         res.exception_index = tapos.exception_index;
         res.location = List.from(tapos.location);
-        if (tapos.lvarIndex != null)
+        if (tapos.lvarIndex != null) {
             res.lvarIndex = Arrays.copyOf(tapos.lvarIndex, tapos.lvarIndex.length);
-        if (tapos.lvarLength != null)
+        }
+        if (tapos.lvarLength != null) {
             res.lvarLength = Arrays.copyOf(tapos.lvarLength, tapos.lvarLength.length);
-        if (tapos.lvarOffset != null)
+        }
+        if (tapos.lvarOffset != null) {
             res.lvarOffset = Arrays.copyOf(tapos.lvarOffset, tapos.lvarOffset.length);
+        }
         res.offset = tapos.offset;
         TypeAnnotationPosition.class.getField("onLambda").set(res, tapos.onLambda);
         TypeAnnotationPosition.class.getField("parameter_index").set(res, tapos.parameter_index);

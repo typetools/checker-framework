@@ -43,17 +43,17 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     }
 
     /**
-     * @param printVerboseGenerics For type parameters, their uses, and wildcards, print more information
-     * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
+     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more information
+     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
     public DefaultAnnotatedTypeFormatter(boolean printVerboseGenerics, boolean defaultPrintInvisibleAnnos) {
         this(new DefaultAnnotationFormatter(), printVerboseGenerics, defaultPrintInvisibleAnnos);
     }
 
     /**
-     * @param formatter An object that converts annotation mirrors to strings
-     * @param printVerboseGenerics For type parameters, their uses, and wildcards, print more information
-     * @param defaultPrintInvisibleAnnos Whether or not this AnnotatedTypeFormatter should print invisible annotations
+     * @param formatter an object that converts annotation mirrors to strings
+     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more information
+     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print invisible annotations
      */
     public DefaultAnnotatedTypeFormatter(AnnotationFormatter formatter, boolean printVerboseGenerics,
                                          boolean defaultPrintInvisibleAnnos) {
@@ -182,17 +182,21 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             sb.append(annoFormatter.formatAnnotationString(type.getAnnotations(), currentPrintInvisibleSetting));
             sb.append(smpl);
 
-            final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
-            if (!typeArgs.isEmpty()) {
-                sb.append("<");
+            if (type.typeArgs != null) {
+                // getTypeArguments sets the field if it does not already exist.
+                final List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
+                if (!typeArgs.isEmpty()) {
+                    sb.append("<");
 
-                boolean isFirst = true;
-                for (AnnotatedTypeMirror typeArg : typeArgs) {
-                    if (!isFirst) sb.append(", ");
-                    sb.append(visit(typeArg, visiting));
-                    isFirst = false;
+                    boolean isFirst = true;
+                    for (AnnotatedTypeMirror typeArg : typeArgs) {
+                        if (!isFirst)
+                            sb.append(", ");
+                        sb.append(visit(typeArg, visiting));
+                        isFirst = false;
+                    }
+                    sb.append(">");
                 }
-                sb.append(">");
             }
             return sb.toString();
         }

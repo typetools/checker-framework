@@ -63,7 +63,7 @@ load-from-dir-test:
 	-AprintErrorStack \
 	-Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	LoaderTest.java > Out.txt 2>&1
-	diff -u Out.txt Expected.txt
+	diff -u Expected.txt Out.txt
 	-rm Out.txt
 
 # loads from framework.jar
@@ -75,5 +75,5 @@ load-from-jar-test:
 	-AprintErrorStack \
 	-Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	LoaderTest.java > Out.txt 2>&1
-	diff -u Out.txt Expected.txt
+	diff -u Expected.txt Out.txt
 	-rm Out.txt

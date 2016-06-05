@@ -21,4 +21,3 @@ public interface ExtendedTypeDeclaration extends ExtendedTypeMirror {
      */
     List<? extends ExtendedParameterDeclaration> getTypeParameters();
 }
-

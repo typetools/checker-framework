@@ -9,7 +9,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
-import org.checkerframework.dataflow.analysis.FlowExpressions.PureMethodCall;
+import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
@@ -74,7 +74,7 @@ public class FlowExpressionParseUtil {
      * Matches the self reference. In the future we could allow "#0" as a
      * synonym for "this".
      */
-    protected static final Pattern selfPattern = Pattern.compile("^this$");
+    protected static final Pattern thisPattern = Pattern.compile("^this$");
     /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
     protected static final Pattern itselfPattern = Pattern.compile("^itself$");
     /** Matches 'super' */
@@ -101,13 +101,12 @@ public class FlowExpressionParseUtil {
             .compile("^\"([^\"\\\\]|\\\\.)*\"$");
     /** Matches the null literal */
     protected static final Pattern nullPattern = Pattern.compile("^null$");
+    /** Matches an expression contained in matching start and end parentheses */
+    protected static final Pattern parenthesesPattern = Pattern.compile("^\\((.*)\\)$");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or
-     * throw an {@link FlowExpressionParseException}. The expression is assumed
-     * to be used in the context of a method.
-     * Returns null if 'itself' is passed in as the string to parse
-     * and no receiver named 'itself' could be found.
+     * throw an {@link FlowExpressionParseException}.
      *
      * @param s
      *            The string to parse.
@@ -119,14 +118,33 @@ public class FlowExpressionParseUtil {
     public static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        return parse(s, context, path, false);
+        return parse(s, context, path, false, false);
+    }
+
+    /**
+     * Parse a string and return its representation as a {@link Receiver}, or
+     * throw an {@link FlowExpressionParseException}.
+     * Returns null if 'itself' is passed in as the string to parse
+     * and no receiver named 'itself' could be found.
+     *
+     * @param s
+     *            The string to parse.
+     * @param context
+     *            information about any receiver and arguments
+     * @param path
+     *            The current tree path.
+     */
+    public static FlowExpressions. /*@Nullable*/ Receiver parseAllowingItself(String s,
+            FlowExpressionContext context, TreePath path)
+            throws FlowExpressionParseException {
+        return parse(s, context, path, true, false);
     }
 
     private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
-            FlowExpressionContext context, TreePath path, boolean recursiveCall)
+            FlowExpressionContext context, TreePath path, boolean allowItself, boolean recursiveCall)
             throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true, true,
-                true, true, recursiveCall);
+                true, true, allowItself, recursiveCall);
         return result;
     }
 
@@ -138,11 +156,11 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext context, TreePath path, boolean allowSelf,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
             boolean allowMethods, boolean allowArrays, boolean allowLiterals,
-            boolean allowLocalVariables, boolean recursiveCall)
+            boolean allowLocalVariables, boolean allowItself, boolean recursiveCall)
             throws FlowExpressionParseException {
         s = s.trim();
 
-        Matcher selfMatcher = selfPattern.matcher(s);
+        Matcher selfMatcher = thisPattern.matcher(s);
 
         // Do not do this in recursive calls, otherwise we can get an infinite loop where
         // "this" gets converted to "this.<fieldname>" in the line below, then
@@ -150,7 +168,7 @@ public class FlowExpressionParseUtil {
         // with s == "this"
         if (selfMatcher.matches() && allowSelf && !recursiveCall) {
             s = context.receiver.toString(); // it is possible that s == "this" after this call
-            selfMatcher = selfPattern.matcher(s); // Refresh the matcher
+            selfMatcher = thisPattern.matcher(s); // Refresh the matcher
         }
 
         Matcher itselfMatcher = itselfPattern.matcher(s);
@@ -164,6 +182,7 @@ public class FlowExpressionParseUtil {
         Matcher longMatcher = longPattern.matcher(s);
         Matcher stringMatcher = stringPattern.matcher(s);
         Matcher nullMatcher = nullPattern.matcher(s);
+        Matcher parenthesesMatcher = parenthesesPattern.matcher(s);
 
         ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
         Types types = env.getTypeUtils();
@@ -182,11 +201,10 @@ public class FlowExpressionParseUtil {
             return new ValueLiteral(types.getDeclaredType(stringTypeElem),
                     s.substring(1, s.length() - 1));
         } else if (selfMatcher.matches() && allowSelf) {
-            // this literal, even after the call above to set s = context.receiver.toString();
+            // "this" literal, even after the call above to set s = context.receiver.toString();
             if (context.receiver == null || context.receiver.containsUnknown()) {
                 return new ThisReference(context.receiver == null ? null : context.receiver.getType());
-            }
-            else { // If we already know the receiver, return it.
+            } else { // If we already know the receiver, return it.
                 return context.receiver;
             }
         } else if (superMatcher.matches() && allowSelf) {
@@ -207,13 +225,15 @@ public class FlowExpressionParseUtil {
                 }
             }
             if (superType == null) {
-                throw constructParserException(s);
+                throw constructParserException(s, "superType==null");
             }
             return new ThisReference(superType);
         } else if (identifierMatcher.matches() && allowIdentifier) {
             Resolver resolver = new Resolver(env);
             try {
                 if (allowLocalVariables) {
+                    // Attempt to match a local variable within the scope of the
+                    // given path before attempting to match a field.
                     VariableElement varElem = resolver.findLocalVariableOrParameter(s, path);
                     if (varElem != null) {
                         return new LocalVariable(varElem);
@@ -250,8 +270,11 @@ public class FlowExpressionParseUtil {
                     }
                 }
 
+                if (fieldElem == null) {
+                    throw constructParserException(s, "fieldElem==null");
+                }
                 if (fieldElem == null || fieldElem.getKind() != ElementKind.FIELD) {
-                    throw constructParserException(s); // TODO: It is poor design to use exceptions to pass information around. We should change this.
+                    throw constructParserException(s, "fieldElem.getKind()==" + fieldElem.getKind());
                 }
                 TypeMirror fieldType = ElementUtils.getType(fieldElem);
                 if (ElementUtils.isStatic(fieldElem)) {
@@ -264,32 +287,34 @@ public class FlowExpressionParseUtil {
                     if (originalReceiver) {
                         return new FieldAccess(context.receiver,
                                 fieldType, fieldElem);
-                    }
-                    else {
+                    } else {
                         return new FieldAccess(FlowExpressions.internalReprOf(context.checkerContext.getAnnotationProvider(), new ImplicitThisLiteralNode(receiverType)),
                                 fieldType, fieldElem);
                     }
                 }
-            } catch (Throwable t) { // TODO: It is poor design to use exceptions to pass information around. We should change this.
+            } catch (Throwable t) {
                 try {
                     // class literal
                     Element classElem = resolver.findClass(s, path);
                     TypeMirror classType = ElementUtils.getType(classElem);
                     if (classType == null) {
-                        throw constructParserException(s);
+                        throw constructParserException(s, "classtype==null", t);
                     }
                     return new ClassName(classType);
                 } catch (Throwable t2) {
 
-                    if (!recursiveCall && itselfMatcher.matches()) {
+                    if (allowItself && itselfMatcher.matches()) {
                         return null; // Don't throw an exception if 'itself' does not match an identifier.
                         // The callee knows that it passed in 'itself' and will handle the null return value.
                         // DO however throw an exception below if the call is recursive and 'itself' matches,
                         // because that might mean that the original expression was "classname.itself",
-                        // which means a field named itself was explicitly sought.
+                        // which means a field named itself was explicitly sought. (See the last recursive call
+                        // to parse in the (dotMatcher.matches() && allowDot) case below. In that recursive
+                        // call, the allowItself parameter is set to false.)
                     }
 
-                    throw constructParserException(s);
+                    // It would be helpful to also give information about t here.
+                    throw constructParserException(s, "not itself", t2);
                 }
             }
         } else if (parameterMatcher.matches() && allowParameter && context.arguments != null) {
@@ -314,7 +339,9 @@ public class FlowExpressionParseUtil {
             Receiver index = parse(indexStr, context, path);
             TypeMirror receiverType = receiver.getType();
             if (!(receiverType instanceof ArrayType)) {
-                throw constructParserException(s);
+                throw constructParserException(
+                   s,
+                   String.format("receiver not an array: %s : %s", receiver, receiverType));
             }
             TypeMirror componentType = ((ArrayType) receiverType)
                     .getComponentType();
@@ -349,8 +376,11 @@ public class FlowExpressionParseUtil {
                     receiverType = ((DeclaredType)receiverType).getEnclosingType();
                 }
 
-                if (methodElement == null || methodElement.getKind() != ElementKind.METHOD) {
-                    throw constructParserException(s);
+                if (methodElement == null) {
+                    throw constructParserException(s, "methodElement==null");
+                }
+                if (methodElement.getKind() != ElementKind.METHOD) {
+                    throw constructParserException(s, "methodElement.getKind()==" + methodElement.getKind());
                 }
 
                 ExecutableElement mElem = (ExecutableElement) methodElement;
@@ -365,16 +395,20 @@ public class FlowExpressionParseUtil {
                         MethodSymbol valueOfMethod = TreeBuilder.getValueOfMethod(env, formalType);
                         List<Receiver> p = new ArrayList<>();
                         p.add(actual);
-                        Receiver boxedParam = new PureMethodCall(formalType, valueOfMethod, new ClassName(formalType), p);
+                        Receiver boxedParam = new MethodCall(formalType, valueOfMethod, new ClassName(formalType), p);
                         parameters.set(i, boxedParam);
                     }
                 }
             } catch (Throwable t) {
-                throw constructParserException(s);
+                throw constructParserException(s, t);
             }
             // check that the method is pure (this is no longer required)
+            // TODO: It is not clear when non-pure method calls are allowed - see the
+            // Javadoc for FlowExpressions.MethodCall and the TODO below it.
+            // Once that TODO is resolved, remove/restore/change the commented out
+            // code below.
             assert methodElement != null;
-            /*if (!PurityUtils.isDeterministic(context.atypeFactory,
+            /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
                     methodElement)) {
                 throw new FlowExpressionParseException(Result.failure(
                         "flowexpr.method.not.deterministic",
@@ -384,14 +418,14 @@ public class FlowExpressionParseUtil {
                 Element classElem = methodElement.getEnclosingElement();
                 Receiver staticClassReceiver = new ClassName(
                         ElementUtils.getType(classElem));
-                return new PureMethodCall(ElementUtils.getType(methodElement),
+                return new MethodCall(ElementUtils.getType(methodElement),
                         methodElement, staticClassReceiver, parameters);
             } else {
                 TypeMirror methodType = InternalUtils
                         .substituteMethodReturnType(
                                 ElementUtils.getType(methodElement),
                                 context.receiver.getType());
-                return new PureMethodCall(methodType, methodElement,
+                return new MethodCall(methodType, methodElement,
                         context.receiver, parameters);
             }
         } else if (dotMatcher.matches() && allowDot) {
@@ -399,7 +433,13 @@ public class FlowExpressionParseUtil {
             String remainingString = dotMatcher.group(2);
 
             // Parse the receiver first.
-            Receiver receiver = parse(receiverString, context, path, true);
+            Receiver receiver = parse(receiverString, context, path, allowItself, true);
+
+            if (allowItself && receiver == null) {
+                // "itself.<someexpression>", where "itself" is not a variable name. Let the caller handle it.
+
+                return null;
+            }
 
             if (receiver instanceof FlowExpressions.ClassName && remainingString.equals("class")) {
                 return receiver;
@@ -407,20 +447,52 @@ public class FlowExpressionParseUtil {
 
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
+            // Parameter allowItself is set to false since "itself" (when used
+            // to mean "the expression itself")  can only be in the receiver,
+            // not in the remaining string. Note that "itself" can still be a
+            // variable name in the remaining string, and this recursive call
+            // handles that case.
             return parse(remainingString, newContext, path, false, true, false,
-                    true, true, false, false, false, true);
+                    true, true, false, false, false, false, true);
+        } else if (parenthesesMatcher.matches()) {
+            String expressionString = parenthesesMatcher.group(1);
+            // Do not modify the value of recursiveCall, since a parenthesis match is essentially
+            // a match to a no-op and should not semantically affect the parsing.
+            return parse(expressionString, context, path, allowSelf,
+                    allowIdentifier, allowParameter, allowDot,
+                    allowMethods, allowArrays, allowLiterals,
+                    allowLocalVariables, allowItself, recursiveCall);
         } else {
-            throw constructParserException(s);
+            throw constructParserException(s, "no matcher matched");
         }
     }
 
     /**
-     * Returns a {@link FlowExpressionParseException} for the string {@code s}.
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with explanation {@code explanation}.
      */
     private static FlowExpressionParseException constructParserException(
-            String s) {
-        return new FlowExpressionParseException(Result.failure(
-                "flowexpr.parse.error", s));
+            String expr, String explanation) {
+        return constructParserException(expr, explanation, null);
+    }
+
+    /**
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} whose parsing threw {@code cause}.
+     */
+    private static FlowExpressionParseException constructParserException(
+            String expr, Throwable cause) {
+        return constructParserException(expr, null, cause);
+    }
+
+    /**
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with explanation {@code explanation}, whose parsing threw {@code cause}.
+     */
+    private static FlowExpressionParseException constructParserException(
+            String expr, String explanation, Throwable cause) {
+        String message
+            = expr
+            + ((explanation==null) ? "" : (": " + explanation))
+            + ((cause==null) ? "" : (": " + cause.getMessage()));
+    return new FlowExpressionParseException(Result.failure("flowexpr.parse.error", message), cause);
     }
 
     /**
@@ -454,8 +526,10 @@ public class FlowExpressionParseUtil {
                 // end of string reached
                 if (idx == parameterString.length()) {
                     // finish current param
-                    if (inString || callLevel > 0) {
-                        throw constructParserException(parameterString);
+                    if (inString) {
+                        throw constructParserException(parameterString, "not inString");
+                    } else if (callLevel > 0) {
+                        throw constructParserException(parameterString, "callLevel==" + callLevel);
                     } else {
                         finishParam(parameterString, allowEmptyList, context,
                                 path, result, idx);
@@ -505,7 +579,7 @@ public class FlowExpressionParseUtil {
                         // stay in same state and consume the character
                     } else {
                         if (callLevel == 0) {
-                            throw constructParserException(parameterString);
+                            throw constructParserException(parameterString, "callLevel==0");
                         } else {
                             callLevel--;
                         }
@@ -526,7 +600,7 @@ public class FlowExpressionParseUtil {
                 if (allowEmptyList) {
                     return;
                 } else {
-                    throw constructParserException(parameterString);
+                    throw constructParserException(parameterString, "idx==0");
                 }
             } else {
                 result.add(parse(parameterString.substring(0, idx), context,
@@ -583,7 +657,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return The list of parameters that occur in {@code s}, identified by the
+     * @return the list of parameters that occur in {@code s}, identified by the
      *         number of the parameter (starting at 1).
      */
     public static List<Integer> parameterIndices(String s) {
@@ -606,6 +680,11 @@ public class FlowExpressionParseUtil {
         protected final Result result;
 
         public FlowExpressionParseException(Result result) {
+            this(result, null);
+        }
+
+        public FlowExpressionParseException(Result result, Throwable cause) {
+            super(cause);
             this.result = result;
         }
 
@@ -615,7 +694,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     * @return a {@link FlowExpressionContext} for the method {@code node} as
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
@@ -635,7 +714,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     * @return a {@link FlowExpressionContext} for the method {@code node} as
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
@@ -654,7 +733,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code node} as
+     * @return a {@link FlowExpressionContext} for the method {@code node} as
      *         seen at the method declaration.
      */
     public static FlowExpressionContext buildFlowExprContextForDeclaration(
@@ -664,7 +743,23 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the method {@code n}
+     * @return a {@link FlowExpressionContext} for the class {@code classTree} as
+     *         seen at the class declaration.
+     */
+    public static FlowExpressionContext buildFlowExprContextForDeclaration(
+            ClassTree classTree, TreePath currentPath, BaseContext checkerContext) {
+        Node receiver = new ImplicitThisLiteralNode(
+                InternalUtils.typeOf(classTree));
+        Receiver internalReceiver = FlowExpressions.internalReprOf(checkerContext.getAnnotationProvider(),
+                receiver);
+        List<Receiver> internalArguments = new ArrayList<>();
+        FlowExpressionContext flowExprContext = new FlowExpressionContext(
+                internalReceiver, internalArguments, checkerContext);
+        return flowExprContext;
+    }
+
+    /**
+     * @return a {@link FlowExpressionContext} for the method {@code n}
      *         (represented as a {@link Node} as seen at the method use (i.e.,
      *         at a method call site).
      */
@@ -683,7 +778,7 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * @return A {@link FlowExpressionContext} for the constructor {@code n}
+     * @return a {@link FlowExpressionContext} for the constructor {@code n}
      *         (represented as a {@link Node} as seen at the method use (i.e.,
      *         at a method call site).
      */
@@ -702,8 +797,7 @@ public class FlowExpressionParseUtil {
 
         if (enclosingMethod != null && !enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC)) {
             receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(enclosingClass));
-        }
-        else {
+        } else {
             receiver = new ClassNameNode(enclosingClass);
         }
 

@@ -31,8 +31,8 @@ import com.sun.source.tree.Tree.Kind;
  * annotations specified by {@link org.checkerframework.framework.qual.ImplicitFor} for any tree whose visitor is
  * not overridden or does not call {@code super}; it is designed to be invoked
  * from
- * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#annotateImplicit(javax.lang.model.element.Element, org.checkerframework.framework.type.AnnotatedTypeMirror)}
- * and {@link org.checkerframework.framework.type.AnnotatedTypeFactory#annotateImplicit(com.sun.source.tree.Tree, org.checkerframework.framework.type.AnnotatedTypeMirror)}.
+ * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(javax.lang.model.element.Element, org.checkerframework.framework.type.AnnotatedTypeMirror)}
+ * and {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(com.sun.source.tree.Tree, org.checkerframework.framework.type.AnnotatedTypeMirror)}.
  *
  * <p>
  *
@@ -99,8 +99,9 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
         // classes and kinds into maps.
         for (Class<? extends Annotation> qual : quals) {
             ImplicitFor implicit = qual.getAnnotation(ImplicitFor.class);
-            if (implicit == null)
+            if (implicit == null) {
                 continue;
+            }
 
             AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.getElementUtils(), qual);
             for (LiteralKind literalKind : implicit.literals()) {
@@ -115,7 +116,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
 
     /**
      * Added an implicit rule for a particular {@link Tree} class
-     * @param treeClass Tree class that should be implicited to {@code theQual}
+     * @param treeClass tree class that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeClass}
      */
     public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {

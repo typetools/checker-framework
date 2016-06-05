@@ -84,8 +84,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
     /**
      * Handle invocations of isRegex and asRegex on RegexUtil.
      *
-     * @param n The method invocation.
-     * @param method The method element.
+     * @param n the method invocation
+     * @param method the method element
      * @param resultIn the input {@link org.checkerframework.dataflow.analysis.TransferResult}
      * @return the possibly refined output {@link org.checkerframework.dataflow.analysis.TransferResult}
      */
@@ -137,8 +137,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
 
     /** Determine the int value of the given Node.
      *
-     * @param num Input Node.
-     * @return The int value of num. 0 if num is not an int literal.
+     * @param num input Node
+     * @return the int value of num. 0 if num is not an int literal.
      */
 
     private int determineIntValue(Node num) {

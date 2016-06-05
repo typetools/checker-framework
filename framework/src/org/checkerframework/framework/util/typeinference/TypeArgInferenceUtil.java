@@ -33,6 +33,7 @@ import javax.lang.model.util.Types;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -54,8 +55,8 @@ public class TypeArgInferenceUtil {
     /**
      * Takes an expression tree that must be either a MethodInovcationTree or a NewClassTree (constructor invocation)
      * and returns the arguments to its formal parameters.  An IllegalArgumentException will be thrown if it is neither
-     * @param expression A MethodInvocationTree or a NewClassTree
-     * @return The list of arguments to Expression
+     * @param expression a MethodInvocationTree or a NewClassTree
+     * @return the list of arguments to Expression
      */
     public static List<? extends ExpressionTree> expressionToArgTrees(final ExpressionTree expression) {
         final List<? extends ExpressionTree> argTrees;
@@ -147,11 +148,15 @@ public class TypeArgInferenceUtil {
             AnnotatedExecutableType method = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, methodElt);
             int treeIndex = -1;
             for (int i = 0; i < method.getParameterTypes().size(); ++i) {
-                if (TreeUtils.skipParens(methodInvocation.getArguments().get(i)) == path.getLeaf()) {
+                ExpressionTree argumentTree = methodInvocation.getArguments().get(i);
+                if (isArgument(path, argumentTree)) {
                     treeIndex = i;
                     break;
                 }
             }
+            assert treeIndex != -1 :  "Could not find path in MethodInvocationTree.\n"
+                                      + "treePath=" + path.toString() + "\n"
+                                      + "methodInvocation=" + methodInvocation;
 
             if (treeIndex == -1) {
                 return null;
@@ -159,7 +164,7 @@ public class TypeArgInferenceUtil {
 
             final AnnotatedTypeMirror paramType = method.getParameterTypes().get(treeIndex);
 
-            //Examples like this:
+            // Examples like this:
             // <T> T outMethod()
             // <U> void inMethod(U u);
             // inMethod(outMethod())
@@ -184,17 +189,18 @@ public class TypeArgInferenceUtil {
             // This need to be basically like MethodTree
             NewClassTree newClassTree = (NewClassTree) assignmentContext;
             ExecutableElement constructorElt = InternalUtils.constructor(newClassTree);
-            AnnotatedTypeMirror receiver = atypeFactory.getAnnotatedType(newClassTree.getIdentifier());
+            AnnotatedTypeMirror receiver = atypeFactory.fromNewClass(newClassTree);
             AnnotatedExecutableType constructor = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, constructorElt);
             int treeIndex = -1;
             for (int i = 0; i < constructor.getParameterTypes().size(); ++i) {
-                if (TreeUtils.skipParens(newClassTree.getArguments().get(i)) == path.getLeaf()) {
+                ExpressionTree argumentTree = newClassTree.getArguments().get(i);
+                if (isArgument(path, argumentTree)) {
                     treeIndex = i;
                     break;
                 }
             }
 
-            assert treeIndex != -1 :  "Could not find path in NewClassTre."
+            assert treeIndex != -1 :  "Could not find path in NewClassTree.\n"
                     + "treePath=" + path.toString() + "\n"
                     + "methodInvocation=" + newClassTree;
             if (treeIndex == -1) {
@@ -222,6 +228,24 @@ public class TypeArgInferenceUtil {
         ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
         return null; // dead code
     }
+
+    /**
+     * Returns whether argumentTree is the tree at the leaf of path.
+     * if tree is a conditional expression, isArgument is called recursively on the true
+     * and false expressions.
+     */
+    private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
+        argumentTree = TreeUtils.skipParens(argumentTree);
+        if (argumentTree == path.getLeaf()) {
+            return true;
+        } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
+            ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) argumentTree;
+            return isArgument(path, conditionalExpressionTree.getTrueExpression())
+                   || isArgument(path, conditionalExpressionTree.getFalseExpression());
+        }
+        return false;
+    }
+
     /**
      * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
      * Rational:
@@ -284,7 +308,7 @@ public class TypeArgInferenceUtil {
             typeVars.add(annotatedTypeVar.getUnderlyingType());
         }
 
-        //note NULL values creep in because the underlying visitor uses them in various places
+        // note NULL values creep in because the underlying visitor uses them in various places
         final Boolean result = type.accept(new TypeVariableFinder(), typeVars);
         return result != null && result;
     }
@@ -311,8 +335,9 @@ public class TypeArgInferenceUtil {
 
         @Override
         protected Boolean scan(Iterable<? extends AnnotatedTypeMirror> types, List<TypeVariable> typeVars) {
-            if (types == null)
+            if (types == null) {
                 return false;
+            }
             Boolean result = false;
             Boolean first = true;
             for (AnnotatedTypeMirror type : types) {
@@ -351,8 +376,8 @@ public class TypeArgInferenceUtil {
      */
     private final static TypeVariableSubstitutor substitutor = new TypeVariableSubstitutor();
 
-    //Substituter requires an input map that the substitute methods build.  We just reuse the same map rather than
-    //recreate it each time.
+    // Substituter requires an input map that the substitute methods build.  We just reuse the same map rather than
+    // recreate it each time.
     private final static Map<TypeVariable, AnnotatedTypeMirror> substituteMap = new HashMap<>(5);
 
     /**

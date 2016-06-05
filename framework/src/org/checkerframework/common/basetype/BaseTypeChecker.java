@@ -200,8 +200,9 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             BaseTypeVisitor<?> result = invokeConstructorFor(classToLoad,
                     new Class<?>[]{BaseTypeChecker.class},
                     new Object[]{this});
-            if (result != null)
+            if (result != null) {
                 return result;
+            }
             checkerClass = checkerClass.getSuperclass();
         }
 
@@ -323,8 +324,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * only such checker, or null if none was found.
      * The caller must know the exact checker class to request.
      *
-     * @param checkerClass The class of the subchecker.
-     * @return The requested subchecker or null if not found.
+     * @param checkerClass the class of the subchecker
+     * @return the requested subchecker or null if not found
      */
     @SuppressWarnings("unchecked")
     public <T extends BaseTypeChecker> T getSubchecker(Class<T> checkerClass) {
@@ -343,8 +344,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
      * type factory is null.
      * The caller must know the exact checker class to request.
      *
-     * @param checkerClass The class of the subchecker.
-     * @return The type factory of the requested subchecker or null if not found.
+     * @param checkerClass the class of the subchecker
+     * @return the type factory of the requested subchecker or null if not found
      */
     @SuppressWarnings("unchecked")
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> T getTypeFactoryOfSubchecker(Class<U> checkerClass) {

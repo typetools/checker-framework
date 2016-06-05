@@ -33,4 +33,3 @@ public @interface Var {
      */
     Wildcard wildcard() default Wildcard.NONE;
 }
-

@@ -43,8 +43,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     public GuiEffectVisitor(BaseTypeChecker checker) {
         super(checker);
         debugSpew = checker.getLintOption("debugSpew", false);
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("Running GuiEffectVisitor");
+        }
         effStack = new Stack<Effect>();
         currentMethods = new Stack<MethodTree>();
     }
@@ -104,30 +105,35 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     // Check that the invoked effect is <= permitted effect (effStack.peek())
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("For invocation " + node + " in " + currentMethods.peek().getName());
+        }
 
         // Target method annotations
         ExecutableElement methodElt = TreeUtils.elementFromUse(node);
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("methodElt found");
+        }
 
         MethodTree callerTree = TreeUtils.enclosingMethod(getCurrentPath());
         if (callerTree == null) {
             // Static initializer; let's assume this is safe to have the UI effect
-            if (debugSpew)
+            if (debugSpew) {
                 System.err.println("No enclosing method: likely static initializer");
+            }
             return super.visitMethodInvocation(node, p);
         }
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("callerTree found");
+        }
 
         ExecutableElement callerElt = TreeUtils.elementFromDeclaration(callerTree);
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("callerElt found");
+        }
 
         Effect targetEffect = atypeFactory.getDeclaredEffect(methodElt);
-        //System.err.println("Dispatching method "+node+"on "+node.getMethodSelect());
+        // System.err.println("Dispatching method "+node+"on "+node.getMethodSelect());
         if (targetEffect.isPoly()) {
             AnnotatedTypeMirror srcType = null;
             assert (node.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER ||
@@ -150,7 +156,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         }
 
         Effect callerEffect = atypeFactory.getDeclaredEffect(callerElt);
-        assert (callerEffect.equals(effStack.peek()));
+        // Field initializers inside anonymous inner classes show up with a null current-method ---
+        // the traversal goes straight from the class to the initializer.
+        assert (currentMethods.peek() == null || callerEffect.equals(effStack.peek()));
 
         if (!Effect.LE(targetEffect, callerEffect)) {
             checker.report(Result.failure("call.invalid.ui", targetEffect, callerEffect), node);
@@ -158,8 +166,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
                 System.err.println("Issuing error for node: " + node);
             }
         }
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("Successfully finished main non-recursive checkinv of invocation "+node);
+        }
 
         return super.visitMethodInvocation(node, p);
     }
@@ -178,8 +187,9 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         //       and inheritance!  Those are actually the hardest part of the system.
 
         ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("\nVisiting method "+methElt);
+        }
 
         // Check for conflicting (multiple) annotations
         assert (methElt != null);
@@ -216,13 +226,14 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // We hang onto the current method here for ease.  We back up the old
         // current method because this code is reentrant when we traverse methods of an inner class
         currentMethods.push(node);
-        //effStack.push(targetSafeP != null ? new Effect(AlwaysSafe.class) :
+        // effStack.push(targetSafeP != null ? new Effect(AlwaysSafe.class) :
         //                (targetPolyP != null ? new Effect(PolyUI.class) :
         //                   (targetUIP != null ? new Effect(UI.class) :
         //                      (range != null ? range.min : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? new Effect(UI.class) : new Effect(AlwaysSafe.class))))));
         effStack.push(atypeFactory.getDeclaredEffect(methElt));
-        if (debugSpew)
+        if (debugSpew) {
             System.err.println("Pushing "+effStack.peek()+" onto the stack when checking "+methElt);
+        }
 
         Void ret = super.visitMethod(node, p);
         currentMethods.pop();

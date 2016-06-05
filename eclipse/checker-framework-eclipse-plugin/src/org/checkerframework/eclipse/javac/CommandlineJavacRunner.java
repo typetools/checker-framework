@@ -104,8 +104,8 @@ public class CommandlineJavacRunner implements CheckersRunner {
             if (verbose) {
                 out.println(PluginUtil.join(" ", cmd));
                 out.println();
-                out.println("Classpath:    \n\t" + classpath + "\n");
-                out.println("Source Files: \n\t" + PluginUtil.join("\n\t", fileNames));
+                out.println("Classpath:\n  " + classpath + "\n");
+                out.println("Source Files:\n  " + PluginUtil.join("\n\t", fileNames));
             }
 
             final String [] cmdArr = cmd.toArray(new String[cmd.size()]);

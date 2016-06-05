@@ -67,4 +67,3 @@ class MonotonicNonNullConstructorTest4 {
     this.data = dataParam;
   }
 }
-

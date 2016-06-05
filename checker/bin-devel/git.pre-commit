@@ -3,4 +3,9 @@
 # This file will be used as .git/hooks/pre-commit.
 # However, it should be edited as checker/bin-devel/git.pre-commit.
 
+# Fail if any command fails
+set -e
+
 ant -e check-style
+
+release/checkPluginUtil.sh

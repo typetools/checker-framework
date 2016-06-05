@@ -17,7 +17,7 @@ class GenericAnnotatedTypeFactory<Value extends CFAbstractValue<Value>,
         return result;
     }
 
-    @SuppressWarnings({"nullness:return.type.incompatible", "immutabilitysub:type.argument.type.incompatible"})
+    @SuppressWarnings({"nullness:return.type.incompatible", "lock:return.type.incompatible", "immutabilitysub:type.argument.type.incompatible"})
     public static <T> T invokeConstructorFor() {
         return null;
     }

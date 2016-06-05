@@ -4,7 +4,7 @@
 
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
-CHECKER_DIRS = nullness
+CHECKER_DIRS = nullness lock
 
 all: clean classes
 # Extracts unannotated .class files from $(CTSYM)
@@ -28,7 +28,8 @@ ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class')
 # These, and only these, need to be extracted from $(CTSYM).
 ANNOTATED_CLASSES = \
 	$(patsubst nullness/build/%.class,annotated/%.class, \
-		  $(ANNOTATED_CLASSES_BY_DIR))
+      $(patsubst lock/build/%.class,annotated/%.class, \
+        $(ANNOTATED_CLASSES_BY_DIR)))
 
 # Extract from $(CTSYM) an unannotated version of every file that will
 # eventually get any annotation.

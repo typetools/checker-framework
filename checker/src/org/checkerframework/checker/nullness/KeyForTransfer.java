@@ -112,7 +112,7 @@ public class KeyForTransfer extends
     }
 
     /**
-     * @return The String value of a KeyFor, this will throw an exception
+     * @return the String value of a KeyFor, this will throw an exception
      */
     private Set<String> getKeys(final AnnotationMirror keyFor) {
         if (keyFor.getElementValues().size() == 0) {

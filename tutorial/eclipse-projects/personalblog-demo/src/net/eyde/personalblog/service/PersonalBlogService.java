@@ -101,7 +101,7 @@ public class PersonalBlogService {
                 pm = new PropertyManager();
             }
 
-            //I want to take it out of here, for these
+            // I want to take it out of here, for these
             sf = cfg.buildSessionFactory();
         } catch (Exception e) {
             log.error("Error initializing PersonalBlog Service", e);

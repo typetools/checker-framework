@@ -13,4 +13,3 @@ import java.lang.annotation.Target;
 @PolymorphicQualifier
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PolyReflection {}
-

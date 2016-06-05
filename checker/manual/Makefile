@@ -32,6 +32,7 @@ typestate-checker.tex \
 generics.tex \
 advanced-features.tex \
 warnings.tex \
+inference.tex \
 annotating-libraries.tex \
 creating-a-checker.tex \
 external-tools.tex \
@@ -44,7 +45,7 @@ all: manual.pdf manual.html
 figures-all:
 	${MAKE} -C figures all
 
-manual.pdf: bib-update figures-all
+manual.pdf: bib-update figures-all check-labels
 	pdflatex manual.tex
 	bibtex manual
 	pdflatex manual.tex
@@ -70,6 +71,11 @@ CFLogo.png: logo/Logo/CFLogo.png
 
 favicon-checkerframework.png: logo/Checkmark/CFCheckmark_favicon.png
 	cp -p $< $@
+
+# Ensure that every section of the manual has a \label{} command.
+.PHONY: check-labels
+check-labels:
+	if grep -n --perl-regexp "\\\\((sub)*section|paragraph){[^#](?!.*\\\\label.*}})" *.tex ; then false ; else true ; fi
 
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:

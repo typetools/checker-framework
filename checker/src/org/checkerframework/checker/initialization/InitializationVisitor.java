@@ -43,6 +43,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
@@ -90,7 +91,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
 
     @Override
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
-            AnnotatedExecutableType constructor, Tree src) {
+            AnnotatedExecutableType constructor, NewClassTree src) {
         // receiver annotations for constructors are forbidden, therefore no
         // check is necessary
         // TODO: nested constructors can have receivers!

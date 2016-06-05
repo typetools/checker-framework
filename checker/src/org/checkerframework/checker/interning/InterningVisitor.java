@@ -104,8 +104,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);
 
         // If either argument is a primitive, check passes due to auto-unboxing
-        if (left.getKind().isPrimitive() || right.getKind().isPrimitive())
+        if (left.getKind().isPrimitive() || right.getKind().isPrimitive()) {
             return super.visitBinary(node, p);
+        }
 
         // If shouldCheckExpression returns true for either the LHS or RHS,
         // this method proceeds with the interning check.
@@ -132,16 +133,20 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         // shouldCheckExpression returns true for either the LHS or the RHS, this method proceeds
         // with the interning check.
 
-        if (!shouldCheckExpression(leftOp) && !shouldCheckExpression(rightOp))
+        if (!shouldCheckExpression(leftOp) && !shouldCheckExpression(rightOp)) {
             return super.visitBinary(node, p);
+        }
 
         // Syntactic checks for legal uses of ==
-        if (suppressInsideComparison(node))
+        if (suppressInsideComparison(node)) {
             return super.visitBinary(node, p);
-        if (suppressEarlyEquals(node))
+        }
+        if (suppressEarlyEquals(node)) {
             return super.visitBinary(node, p);
-        if (suppressEarlyCompareTo(node))
+        }
+        if (suppressEarlyCompareTo(node)) {
             return super.visitBinary(node, p);
+        }
 
         if (suppressEqualsIfClassIsAnnotated(left, right)) {
             return super.visitBinary(node, p);
@@ -159,7 +164,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         //TODO: CODE REVIEW
         //TODO: WOULD IT BE CLEARER TO USE A METHOD usesReferenceEquality(AnnotatedTypeMirror type)
         //TODO: RATHER THAN leftElt.getAnnotation(UsesObjectEquals.class) != null)
-        //if neither @Interned or @UsesObjectEquals, report error
+        // if neither @Interned or @UsesObjectEquals, report error
         if (!(left.hasEffectiveAnnotation(INTERNED) || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null))) {
             checker.report(Result.failure("not.interned", left), leftOp);
         }
@@ -332,8 +337,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     // TODO: handle more methods, such as early return from addAll when this == arg
     private boolean suppressInsideComparison(final BinaryTree node) {
         // Only handle == binary trees
-        if (node.getKind() != Tree.Kind.EQUAL_TO)
+        if (node.getKind() != Tree.Kind.EQUAL_TO) {
             return false;
+        }
 
         Tree left = node.getLeftOperand();
         Tree right = node.getRightOperand();
@@ -345,8 +351,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
         // If we're not directly in an if statement in a method (ignoring
         // parens and blocks), terminate.
-        if (!Heuristics.matchParents(getCurrentPath(), Tree.Kind.IF, Tree.Kind.METHOD))
+        if (!Heuristics.matchParents(getCurrentPath(), Tree.Kind.IF, Tree.Kind.METHOD)) {
             return false;
+        }
 
         // Ensure the if statement is the first statement in the method
 
@@ -392,8 +399,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
                 @Override
                 public Boolean visitBlock(BlockTree tree, Void p) {
-                    if (tree.getStatements().size() > 0)
+                    if (tree.getStatements().size() > 0) {
                         return visit(tree.getStatements().get(0), p);
+                    }
                     return false;
                 }
 
@@ -413,8 +421,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 Heuristics.Matchers.withIn(
                         Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero)).match(getCurrentPath());
 
-            if (!returnsZero)
+            if (!returnsZero) {
                 return false;
+            }
 
             assert enclosing.getParameters().size() == 2;
             Element p1 = enclosing.getParameters().get(0);
@@ -486,8 +495,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     private boolean suppressEarlyEquals(final BinaryTree node) {
         // Only handle == binary trees
-        if (node.getKind() != Tree.Kind.EQUAL_TO)
+        if (node.getKind() != Tree.Kind.EQUAL_TO) {
             return false;
+        }
 
         // should strip parens
         final ExpressionTree left = TreeUtils.skipParens(node.getLeftOperand());
@@ -496,7 +506,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         // looking for ((a == b || a.equals(b))
         Heuristics.Matcher matcherEqOrEquals = new Heuristics.Matcher() {
 
-                // Returns true if e is either "e1 != null" or "e2 != null"
+                /** Returns true if e is either "e1 != null" or "e2 != null". */
                 private boolean isNeqNull(ExpressionTree e, ExpressionTree e1, ExpressionTree e2) {
                     e = TreeUtils.skipParens(e);
                     if (e.getKind() != Tree.Kind.NOT_EQUAL_TO) {
@@ -605,8 +615,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      */
     private boolean suppressEarlyCompareTo(final BinaryTree node) {
         // Only handle == binary trees
-        if (node.getKind() != Tree.Kind.EQUAL_TO)
+        if (node.getKind() != Tree.Kind.EQUAL_TO) {
             return false;
+        }
 
         Tree left = TreeUtils.skipParens(node.getLeftOperand());
         Tree right = TreeUtils.skipParens(node.getRightOperand());
@@ -626,8 +637,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 @Override
                 public Boolean visitBinary(BinaryTree tree, Void p) {
                     if (tree.getKind() == Tree.Kind.EQUAL_TO) {                          // a.compareTo(b) == 0
-                        ExpressionTree leftTree = tree.getLeftOperand();        //looking for a.compareTo(b) or b.compareTo(a)
-                        ExpressionTree rightTree = tree.getRightOperand();      //looking for 0
+                        ExpressionTree leftTree = tree.getLeftOperand();        // looking for a.compareTo(b) or b.compareTo(a)
+                        ExpressionTree rightTree = tree.getRightOperand();      // looking for 0
 
                         if (rightTree.getKind() != Tree.Kind.INT_LITERAL) {
                             return false;
@@ -640,8 +651,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                         return visit(leftTree, p);
                     } else {
                         // a == b || a.compareTo(b) == 0
-                        ExpressionTree leftTree = tree.getLeftOperand();        //looking for a==b
-                        ExpressionTree rightTree = tree.getRightOperand();      //looking for a.compareTo(b) == 0 or b.compareTo(a) == 0
+                        ExpressionTree leftTree = tree.getLeftOperand();        // looking for a==b
+                        ExpressionTree rightTree = tree.getRightOperand();      // looking for a.compareTo(b) == 0 or b.compareTo(a) == 0
                         if (leftTree != node) {
                             return false;
                         }
@@ -751,9 +762,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      *      if not found
      */
     private Element getThis(Scope scope) {
-        for (Element e : scope.getLocalElements())
-            if (e.getSimpleName().contentEquals("this"))
+        for (Element e : scope.getLocalElements()) {
+            if (e.getSimpleName().contentEquals("this")) {
                 return e;
+            }
+        }
         return null;
     }
 
@@ -774,10 +787,12 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         assert clazzElt != null;
 
         // Check all of the methods in the class for name matches and overriding.
-        for (ExecutableElement elt : ElementFilter.methodsIn(clazzElt.getEnclosedElements()))
+        for (ExecutableElement elt : ElementFilter.methodsIn(clazzElt.getEnclosedElements())) {
             if (elt.getSimpleName().contentEquals(method)
-                && elements.overrides(e, elt, clazzElt))
+                && elements.overrides(e, elt, clazzElt)) {
                 return true;
+            }
+        }
 
         return false;
     }

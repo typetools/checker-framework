@@ -98,6 +98,10 @@
       <div id="regexexample">
         <h4>1. The RegexExample program</h4>
 
+        <p>If you have not already done so, download
+          <a href="../sourcefiles.zip">the source files</a> for the tutorial.
+        </p>
+
         <p>
         The <a href="../src/RegexExample.java">RegexExample.java</a>
         program is called with two arguments: a regular expression and a
@@ -161,19 +165,12 @@ RegexExample.java:13: error: [argument.type.incompatible] incompatible types in 
                                       ^
   found   : String
   required: @Regex String
-RegexExample.java:18: error: [group.count.invalid] invalid groups parameter 1. Only 0 groups are guaranteed to exist for mat.
-                System.out.println("Group 1: " + mat.group(1));
-                                                           ^
-2 errors
+1 errors
 </pre>
 
         <p>The "incompatible types" warning indicates that variable
         <code>regex</code> is not of type <code>@Regex String</code> which
         is required for strings passed to <a href="http://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#compile-java.lang.String-"><code>Pattern.compile()</code></a>.</p>
-
-        <p>The "group.count.invalid" warning indicates that no groups are
-        guaranteed to exist at run time, which is required for a Matcher
-        <code>mat</code> in order to call <a href="http://docs.oracle.com/javase/8/docs/api/java/util/regex/Matcher.html#group-int-"><code>mat.group(1)</code></a>.</p>
       </div>
 
       <div id="validate">

@@ -144,12 +144,13 @@ public class ElementUtils {
      * @return  the type for the element used as a value
      */
     public static TypeMirror getType(Element element) {
-        if (element.getKind() == ElementKind.METHOD)
+        if (element.getKind() == ElementKind.METHOD) {
             return ((ExecutableElement)element).getReturnType();
-        else if (element.getKind() == ElementKind.CONSTRUCTOR)
+        } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
             return enclosingClass(element).asType();
-        else
+        } else {
             return element.asType();
+        }
     }
 
     /**
@@ -159,7 +160,7 @@ public class ElementUtils {
      * @param element
      *            an element enclosed by a class, or a
      *            {@code TypeElement}
-     * @return The qualified {@code Name} of the innermost class
+     * @return the qualified {@code Name} of the innermost class
      *         enclosing the element
      */
     public static /*@Nullable*/ Name getQualifiedClassName(Element element) {
@@ -169,8 +170,9 @@ public class ElementUtils {
         }
 
         TypeElement elem = enclosingClass(element);
-        if (elem == null)
+        if (elem == null) {
             return null;
+        }
 
         return elem.getQualifiedName();
     }
@@ -212,13 +214,14 @@ public class ElementUtils {
      * Always return false if elt is a package.
      */
     public static boolean isElementFromByteCode(Element elt) {
-        if (elt == null)
+        if (elt == null) {
             return false;
+        }
 
         if (elt instanceof Symbol.ClassSymbol) {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if (null != clss.classfile) {
-                //The class file could be a .java file
+                // The class file could be a .java file
                 return clss.classfile.getName().endsWith(".class");
             } else {
                 return false;
@@ -232,8 +235,9 @@ public class ElementUtils {
      * Always return false if elt is a package.
      */
     private static boolean isElementFromByteCode(Element elt, Element orig) {
-        if (elt == null)
+        if (elt == null) {
             return false;
+        }
         if (elt instanceof Symbol.ClassSymbol) {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if (null != clss.classfile) {
@@ -278,8 +282,8 @@ public class ElementUtils {
      * Does the given element need a receiver for accesses?
      * For example, an access to a local variable does not require a receiver.
      *
-     * @param element The element to test.
-     * @return whether the element requires a receiver for accesses.
+     * @param element the element to test
+     * @return whether the element requires a receiver for accesses
      */
     public static boolean hasReceiver(Element element) {
         return (element.getKind().isField() ||

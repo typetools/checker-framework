@@ -9,13 +9,13 @@ public class TestDiagnostic {
     private final long lineNumber;
     private final DiagnosticKind kind;
 
-    //whether this diagnostic should no longer be reported after whole program inference
+    /** Whether this diagnostic should no longer be reported after whole program inference */
     private final boolean isFixable;
 
-    //an error key or full error message that usually appears between parentheses in diagnostic messages
+    /** An error key or full error message that usually appears between parentheses in diagnostic messages */
     private final String message;
 
-    //whether or not String representation methods should omit the parentheses around the message
+    /** Whether or not String representation methods should omit the parentheses around the message */
     private final boolean omitParentheses;
 
     /**

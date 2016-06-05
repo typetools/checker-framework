@@ -90,17 +90,20 @@ public class ConstantPropagationStore implements
 
     @Override
     public boolean equals(Object o) {
-        if (o == null)
+        if (o == null) {
             return false;
-        if (!(o instanceof ConstantPropagationStore))
+        }
+        if (!(o instanceof ConstantPropagationStore)) {
             return false;
+        }
         ConstantPropagationStore other = (ConstantPropagationStore) o;
         // go through all of the information of the other object
         for (Entry<Node, Constant> e : other.contents.entrySet()) {
             Node n = e.getKey();
             Constant otherVal = e.getValue();
-            if (otherVal.isBottom())
+            if (otherVal.isBottom()) {
                 continue; // no information
+            }
             if (contents.containsKey(n)) {
                 if (!otherVal.equals(contents.get(n))) {
                     return false;
@@ -113,8 +116,9 @@ public class ConstantPropagationStore implements
         for (Entry<Node, Constant> e : contents.entrySet()) {
             Node n = e.getKey();
             Constant thisVal = e.getValue();
-            if (thisVal.isBottom())
+            if (thisVal.isBottom()) {
                 continue; // no information
+            }
             if (other.contents.containsKey(n)) {
                 continue;
             } else {

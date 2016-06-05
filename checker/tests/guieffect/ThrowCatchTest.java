@@ -4,7 +4,7 @@ import org.checkerframework.checker.guieffect.qual.*;
 
 class ThrowsTest {
     boolean flag = true;
-    //Type var test
+    // Type var test
     <E extends @UI PolyUIException> void throwTypeVarUI1(E ex1, @UI E ex2) throws PolyUIException {
         if (flag) {
             //:: error: (throw.type.invalid)
@@ -40,9 +40,9 @@ class ThrowsTest {
             throw ex2;
     }
 
-    //Wildcards
+    // Wildcards
     //:: error: (type.argument.type.incompatible)
-    void throwWildcard(List<? extends @UI PolyUIException> ui, //Default type of List's type parameter is below @UI so this is type.argument.incompatible
+    void throwWildcard(List<? extends @UI PolyUIException> ui, // Default type of List's type parameter is below @UI so this is type.argument.incompatible
            List<? extends @AlwaysSafe PolyUIException> alwaysSafe) throws PolyUIException {
         if (flag) {
             //:: error: (throw.type.invalid)
@@ -54,7 +54,7 @@ class ThrowsTest {
    void throwNull() {
        throw null;
    }
-   //Declared
+   // Declared
     @UI PolyUIException ui = new PolyUIException();
     @AlwaysSafe PolyUIException alwaysSafe = new PolyUIException();
 
@@ -72,7 +72,7 @@ class ThrowsTest {
         }
     }
 
-    //Test Exception parameters
+    // Test Exception parameters
     void unionTypes() {
 // GuiEffectChecker throws an exception on this code.  When issue 384 is fixed, uncomment these lines.
 //https://github.com/typetools/checker-framework/issues/384

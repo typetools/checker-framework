@@ -29,6 +29,30 @@ to doing its normal processing.
 \end{itemize}
 
 
+\subsection{Unable to compile the Checker Framework\label{common-problems-compiling}}
+
+If you get the following error while compiling the Checker Framework itself:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+checker-framework/stubparser/dist/stubparser.jar(org/checkerframework/stubparser/ast/CompilationUnit.class):
+warning: [classfile] Signature attribute introduced in version 49.0 class files is ignored in version 46.0 class files
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+and you have used Eclipse to compile the Checker Framework, then probably
+you are using a very old version of Eclipse.  (If you
+install Eclipse from the Ubuntu 16.04 repository, you get Eclipse version
+3.8.  Ubuntu 16.04 was released in April 2016, and Eclipse 3.8 was released
+in June 2012, with subsequent major releases in June 2013, June 2014, and
+June 2015.)
+Install the latest version of Eclipse and use it instead.
+
 
 \subsection{Unable to run the checker, or checker crashes\label{common-problems-running}}
 
@@ -519,8 +543,7 @@ Add this .jar file to your build path.
 \end{itemize}
 
 
-\subsection{Unexpected compilation output when running javac without a
-  pluggable type-checker\label{common-problems-running-javac}}
+\subsection{Unexpected compilation output when running javac without a pluggable type-checker\label{common-problems-running-javac}}
 
 On rare occasions, javac may issue an error when compiling against the
 Checker Framework's annotated JDK that you do not get when using the
@@ -668,10 +691,10 @@ the Checker Framework, rather than an official release.
 \subsection{Install prerequisites\label{building-prerequisites}}
 
 You need to install several packages in order to build the Checker
-Framework.  The following command installs them for Ubuntu 14.04:
+Framework.  The following command installs them for Ubuntu 16.04:
 
 \begin{Verbatim}
-sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-7-jdk unzip
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk unzip
 \end{Verbatim}
 
 
@@ -688,6 +711,9 @@ git clone https://github.com/typetools/checker-framework.git checker-framework
 git clone https://github.com/typetools/annotation-tools.git annotation-tools
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
+
+You might want to add the \<export JSR308=\$HOME/jsr308> line to your
+\<.bashrc> file.
 
 
 \subsection{Build the Type Annotations compiler\label{building-compiler}}
@@ -711,7 +737,8 @@ This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
-In the bash shell, the following command \emph{sometimes} works (it might
+In the bash shell, putting the following command in your \code{.bashrc} file
+\emph{sometimes} works (it might
 not because \<java> might be the version in the JDK or in the JRE):
 % Can someone give a simpler command?
 %BEGIN LATEX
@@ -872,7 +899,8 @@ so that you learn quickly of any errors that creep into your fork.
 
 Run the
 \ahref{https://docs.travis-ci.com/user/getting-started/#To-get-started-with-Travis-CI\%3A}{Travis-CI getting started directions},
-though note that the \<.travis.yml> files already exist.
+though note that the \<.travis.yml> files already exist, so only the first
+two steps may be necessary.
 
 
 \section{Publications\label{publications}\label{learning-more}}
@@ -915,6 +943,11 @@ describes inference for the Rawness Initialization Checker.
 
 \item[Interning (Chapter~\ref{interning-checker})]
 See the two papers about the Checker Framework, described above.
+
+\item[Locking (Chapter~\ref{lock-checker})]
+``Locking discipline inference and checking'' (ICSE 2016,
+\myurl{http://homes.cs.washington.edu/~mernst/pubs/locking-inference-checking-icse2016-abstract.html})
+describes the Lock Checker.
 
 \item[Fake enumerations (Chapter~\ref{fenum-checker})]
 See the ICSE 2011 paper about the Checker Framework, described above.
@@ -1048,31 +1081,12 @@ documentation for a detailed discussion of related work.
 
 
 
-\section{Credits, changelog, and license\label{credits}}
+\section{Credits and changelog\label{credits}}
 
 Differences from previous versions of the checkers and framework can be found
 in the \code{changelog.txt} file.  This file is included in the
 Checker Framework distribution and is also available on the web at
 \myurl{http://types.cs.washington.edu/checker-framework/current/changelog.txt}.
-
-Two different licenses apply to different parts of the Checker Framework.
-\begin{itemize}
-\item
-The Checker Framework itself is licensed under the GNU General Public License
-(GPL), version 2.  The GPL is the same license that OpenJDK is licensed
-under.  Just as compiling your code with javac does not infect your code
-with the GPL, type-checking your code with the Checker Framework does not
-infect your code with the GPL\@.  Running the Checker Framework during
-development has no effect on your intellectual property or licensing.  If
-you want to ship the Checker Framework as part of your product, then your
-product must be licensed under the GPL\@.
-\item
-The more permissive MIT License applies
-to code that you might want to include in your own
-program, such as the annotations.
-\end{itemize}
-\noindent
-For details, see file \<LICENSE.txt>.
 
 Developers who have contributed code to the Checker Framework include
 %
@@ -1114,6 +1128,30 @@ Werner Dietl.
 In addition, too many users to list have provided valuable feedback, which
 has improved the toolset's design and implementation.
 Thanks for your help!
+
+
+\section{License\label{license}}
+
+Two different licenses apply to different parts of the Checker Framework.
+\begin{itemize}
+\item
+The Checker Framework itself is licensed under the GNU General Public License
+(GPL), version 2, with the classpath exception.
+The GPL is the same license that OpenJDK is licensed
+under.  Just as compiling your code with javac does not infect your code
+with the GPL, type-checking your code with the Checker Framework does not
+infect your code with the GPL\@.  Running the Checker Framework during
+development has no effect on your intellectual property or licensing.  If
+you want to ship the Checker Framework as part of your product, then your
+product must be licensed under the GPL\@.
+\item
+The more permissive MIT License applies
+to code that you might want to include in your own
+program, such as the annotations and run-time utility classes.
+\end{itemize}
+\noindent
+For details, see file
+\ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt}{\<LICENSE.txt>}.
 
 
 

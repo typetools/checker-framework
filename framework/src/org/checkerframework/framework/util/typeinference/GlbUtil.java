@@ -37,7 +37,7 @@ public class GlbUtil {
             return null;
         }
 
-        //dtermine the greatest lower bounds for the primary annotations
+        // dtermine the greatest lower bounds for the primary annotations
         Map<AnnotationMirror, AnnotationMirror> glbPrimaries = AnnotationUtils.createAnnotationMap();
         for (Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> tmEntry : typeMirrors.entrySet()) {
             final Set<AnnotationMirror> typeAnnoHierarchies = tmEntry.getValue();
@@ -59,7 +59,7 @@ public class GlbUtil {
 
         final List<AnnotatedTypeMirror> glbTypes = new ArrayList<>();
 
-        //create a copy of all of the types and apply the glb primary annotation
+        // create a copy of all of the types and apply the glb primary annotation
         final Set<AnnotationMirror> values = new HashSet<>(glbPrimaries.values());
         for (AnnotatedTypeMirror type : typeMirrors.keySet()) {
             if (type.getKind() != TypeKind.TYPEVAR
@@ -69,31 +69,31 @@ public class GlbUtil {
                 glbTypes.add(copy);
 
             } else {
-                //if the annotations came from the upper bound of this typevar
-                //we do NOT want to place them as primary annotations (and destroy the
-                //type vars lower bound)
+                // if the annotations came from the upper bound of this typevar
+                // we do NOT want to place them as primary annotations (and destroy the
+                // type vars lower bound)
                glbTypes.add(type);
             }
         }
 
         final TypeHierarchy typeHierarchy = typeFactory.getTypeHierarchy();
 
-        //sort placing supertypes first
+        // sort placing supertypes first
         sortForGlb(glbTypes, typeFactory);
 
-        //find the lowest type in the list that is not an AnnotatedNullType
+        // find the lowest type in the list that is not an AnnotatedNullType
         AnnotatedTypeMirror glbType = glbTypes.get(0);
         int index = 1;
         while (index < glbTypes.size()) {
-            //avoid using null if possible, since constraints form the lower bound will often have NULL types
+            // avoid using null if possible, since constraints form the lower bound will often have NULL types
             if (glbType.getKind() != TypeKind.NULL) {
                 glbType = glbTypes.get(index);
             }
             index += 1;
         }
 
-        //if the lowest type is a subtype of all glbTypes then it is the GLB, otherwise
-        //there are two types  in glbTypes that are incomparable and we need to use bottom (AnnotatedNullType)
+        // if the lowest type is a subtype of all glbTypes then it is the GLB, otherwise
+        // there are two types  in glbTypes that are incomparable and we need to use bottom (AnnotatedNullType)
         boolean incomparable = false;
         for (final AnnotatedTypeMirror type : glbTypes) {
             if (!incomparable && !typeHierarchy.isSubtype(glbType, type) && type.getKind() != TypeKind.NULL) {
@@ -101,7 +101,7 @@ public class GlbUtil {
             }
         }
 
-        //we had two incomparable types in glbTypes
+        // we had two incomparable types in glbTypes
         if (incomparable) {
             return createBottom(typeFactory, glbType.getEffectiveAnnotations());
         }
@@ -143,7 +143,7 @@ public class GlbUtil {
                     return 1;
                 }
 
-                //if they're incomparable or type2 is a subtype of type1
+                // if they're incomparable or type2 is a subtype of type1
                 return -1;
             }
 

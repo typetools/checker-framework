@@ -3,8 +3,9 @@ import org.checkerframework.checker.nullness.qual.*;
 public class Varargs {
 
     public void test(@NonNull Object @NonNull... o) {
-        for (@NonNull Object p : o)
+        for (@NonNull Object p : o) {
             System.out.println(p);
+        }
     }
 
     public void test2(Object o1, Object o2) {
@@ -42,7 +43,7 @@ public class Varargs {
         String s = null;
         printf("%s", s);
         // tests do not use annotated jdk
-        //System.out.printf ("%s", s);
+        // System.out.printf ("%s", s);
     }
 
     // printf declaration is taken from PrintStream

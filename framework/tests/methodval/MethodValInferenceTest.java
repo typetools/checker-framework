@@ -78,7 +78,7 @@ class MethodValInferenceTest {
     public void testGetConstructorClassBoundFail() throws Exception {
         @MethodVal(className="java.lang.Object", methodName="<init>", params=0)
         //:: error: (assignment.type.incompatible)
-        Constructor<?> con1 = classBound.getConstructor(new Class[] {}); //Should be @UnknownMethod
+        Constructor<?> con1 = classBound.getConstructor(new Class[] {}); // Should be @UnknownMethod
     }
 
     public void testGetConstructorParamLen(Class<?> @ArrayLen(2) [] classArray2,

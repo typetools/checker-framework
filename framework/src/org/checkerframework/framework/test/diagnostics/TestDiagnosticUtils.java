@@ -22,26 +22,26 @@ public class TestDiagnosticUtils {
     public static final String STUB_PARSER_STRING = "warning: StubParser";
     public static final String STUB_PARSER_COMMENT = "//" + STUB_PARSER_STRING;
 
-    //This is SPARTA specific and should be removed, we need to create a more general way to handle these special
-    //diagnostics, perhaps by moving away from static state
+    // This is SPARTA-specific and should be removed, we need to create a more general way to handle these special
+    // diagnostics, perhaps by moving away from static state
     public static final String FLOW_POLICY_STRING = "warning: FlowPolicy:";
     public static final String FLOW_POLICY_COMMENT = "//" + FLOW_POLICY_STRING;
 
-    //this regex represents how the diagnostics appear in Java source files
+    // this regex represents how the diagnostics appear in Java source files
     public static final String DIAGNOSTIC_IN_JAVA_REGEX = "\\s*(error|fixable-error|warning|other):\\s*(\\(?.*\\)?)\\s*";
     public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN = Pattern.compile(DIAGNOSTIC_IN_JAVA_REGEX);
 
     public static final String DIAGNOSTIC_WARNING_IN_JAVA_REGEX = "\\s*warning:\\s*(.*\\s*.*)\\s*";
     public static final Pattern DIAGNOSTIC_WARNING_IN_JAVA_PATTERN = Pattern.compile(DIAGNOSTIC_WARNING_IN_JAVA_REGEX);
 
-    //this regex represents how the diagnostics appear in javax tools diagnostics from the compiler
+    // this regex represents how the diagnostics appear in javax tools diagnostics from the compiler
     public static final String DIAGNOSTIC_REGEX = ":(\\d+):" + DIAGNOSTIC_IN_JAVA_REGEX;
     public static final Pattern DIAGNOSTIC_PATTERN = Pattern.compile(DIAGNOSTIC_REGEX);
 
     public static final String DIAGNOSTIC_WARNING_REGEX = ":(\\d+):" + DIAGNOSTIC_WARNING_IN_JAVA_REGEX;
     public static final Pattern DIAGNOSTIC_WARNING_PATTERN = Pattern.compile(DIAGNOSTIC_WARNING_REGEX);
 
-    //represents how the diagnostics appearn in diagnostic files (.out)
+    // represents how the diagnostics appearn in diagnostic files (.out)
     public static final String DIAGNOSTIC_FILE_REGEX = ".+\\.java" + DIAGNOSTIC_REGEX;
     public static final Pattern DIAGNOSTIC_FILE_PATTERN = Pattern.compile(DIAGNOSTIC_FILE_REGEX);
 
@@ -51,7 +51,7 @@ public class TestDiagnosticUtils {
     /**
      * Instantiate the diagnostic based on a string that would appear in diagnostic files
      * (i.e. files that only contain line after line of expected diagnostics)
-     * @param stringFromDiagnosticFile A single diagnostic string to parse
+     * @param stringFromDiagnosticFile a single diagnostic string to parse
      */
     public static TestDiagnostic fromDiagnosticFileString(String stringFromDiagnosticFile) {
         return fromPatternMatching(DIAGNOSTIC_FILE_PATTERN, DIAGNOSTIC_WARNING_IN_JAVA_PATTERN,
@@ -61,8 +61,8 @@ public class TestDiagnosticUtils {
     /**
      * Instantiate the diagnostic from a string that would appear in a Java file, e.g.:
      * "error: (message)"
-     * @param lineNumber The lineNumber of the line immediately below the diagnostic comment in the Java file
-     * @param stringFromjavaFile The string containing the diagnostic
+     * @param lineNumber the lineNumber of the line immediately below the diagnostic comment in the Java file
+     * @param stringFromjavaFile the string containing the diagnostic
      */
     public static TestDiagnostic fromJavaFileComment(long lineNumber, String stringFromjavaFile) {
         return fromPatternMatching(DIAGNOSTIC_IN_JAVA_PATTERN, DIAGNOSTIC_WARNING_IN_JAVA_PATTERN,
@@ -73,11 +73,11 @@ public class TestDiagnosticUtils {
      * is never fixable and always has parentheses
      */
     public static TestDiagnostic fromJavaxToolsDiagnostic(String diagnosticString, boolean noMsgText) {
-        //It would be nice not to parse this from the diagnostic string
-        //however, the interface provides no way to know when an [unchecked] or similar
-        //message is added to the reported error.  That is, when doing diagnostic.toString
-        //the message may contain an [unchecked] even though getMessage does not report one
-        //Since we want to match the error messages reported by javac exactly, we must parse
+        // It would be nice not to parse this from the diagnostic string
+        // however, the interface provides no way to know when an [unchecked] or similar
+        // message is added to the reported error.  That is, when doing diagnostic.toString
+        // the message may contain an [unchecked] even though getMessage does not report one
+        // Since we want to match the error messages reported by javac exactly, we must parse
         String trimmed = formatJavaxToolString(diagnosticString, noMsgText);
         return fromPatternMatching(DIAGNOSTIC_PATTERN, DIAGNOSTIC_WARNING_PATTERN, null, trimmed);
     }
@@ -146,8 +146,8 @@ public class TestDiagnosticUtils {
                 message = diagnosticString;
                 noParentheses = true;
 
-                //this should only happen if we are parsing a Java Diagnostic from the compiler
-                //that we did do not handle
+                // this should only happen if we are parsing a Java Diagnostic from the compiler
+                // that we did do not handle
                 if (lineNumber == null) {
                     lineNo = -1;
                 }
@@ -241,8 +241,8 @@ public class TestDiagnosticUtils {
         Set<TestDiagnostic> diagnostics = new LinkedHashSet<>(javaxDiagnostics.size());
 
         for (Diagnostic<? extends JavaFileObject> diagnostic : javaxDiagnostics) {
-            //See TestDiagnosticUtils as to why we use diagnostic.toString rather
-            //than convert from the diagnostic itself
+            // See TestDiagnosticUtils as to why we use diagnostic.toString rather
+            // than convert from the diagnostic itself
             final String diagnosticString = diagnostic.toString();
 
             // suppress Xlint warnings

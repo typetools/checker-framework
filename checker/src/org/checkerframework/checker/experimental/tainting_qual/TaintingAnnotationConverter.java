@@ -38,4 +38,3 @@ public class TaintingAnnotationConverter implements AnnotationConverter<Tainting
         return fromAnnotation(anno) != null;
     }
 }
-

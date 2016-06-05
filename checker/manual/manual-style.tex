@@ -156,6 +156,9 @@
 % Omits the class name in the visible text; is terser.  Good for mentioning
 % a method that needs to be overridden.
 \newcommand{\refmethodterse}[4]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#3>}}
+% Permits specification of the anchor text.  Good for mentioning the
+% arguments of an overloaded method that needs to be overridden.
+\newcommand{\refmethodanchortext}[5]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#5>}}
 % Like refmethod, but formatted more concisely as ``field'' instead of
 % ``Class.field''.  The last argument is usually empty {}.
 \newcommand{\refenum}[4]{\href{api/org/checkerframework/#1/#2.html\##3#4}{\<#3>}}
@@ -167,6 +170,9 @@
 \newcommand{\sunjavadoc}[2]{\href{http://docs.oracle.com/javase/8/docs/api/#1}{\<#2>}}
 % Like \sunjavadoc, but for annotations and prepends "@".
 \newcommand{\sunjavadocanno}[2]{\href{http://docs.oracle.com/javase/8/docs/api/#1}{\<@#2>}}
+% Now, for Java EE:
+\newcommand{\javaeejavadoc}[2]{\href{http://docs.oracle.com/javaee/7/api/#1}{\<#2>}}
+\newcommand{\javaeejavadocanno}[2]{\href{http://docs.oracle.com/javaee/7/api/#1}{\<@#2>}}
 
 
 \newcommand{\refwithpage}[1]{\ref{#1}, page~\pageref{#1}}

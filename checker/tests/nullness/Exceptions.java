@@ -22,10 +22,10 @@ public class Exceptions {
 
     void throwException() {
         int a = 0;
-        if (a == 0)
+        if (a == 0) {
             //:: error: (throwing.nullable)
             throw null;
-        else if (a == 1) {
+        } else if (a == 1) {
             RuntimeException e = null;
             //:: error: (throwing.nullable)
             throw e;

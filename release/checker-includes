@@ -1,3 +1,6 @@
+changelog.txt
+README.html
+LICENSE.txt
 checker/bin/**
 checker/dist/**
 checker/lib/**
@@ -21,3 +24,4 @@ checker/examples/units-extension/README
 checker/examples/MavenExample/pom.xml
 checker/examples/MavenExample/README
 checker/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java
+tutorial/**

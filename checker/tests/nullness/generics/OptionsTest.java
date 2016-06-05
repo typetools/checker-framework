@@ -34,5 +34,3 @@ public class OptionsTest {
 /* compile-command: "javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/jdk7.jar OptionsTest.java" */
 /* compile-history: ("javac -processor org.checkerframework.checker.nullness.NullnessChecker -Xbootclasspath/p:$CHECKERFRAMEWORK/checker/dist/jdk7.jar OptionsTest.java") */
 /* End: */
-
-
