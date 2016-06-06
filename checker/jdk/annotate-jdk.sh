@@ -13,15 +13,11 @@
 #     cd checker-framework && ant
 #     
 # 2.  Clone the OpenJDK 8u repository and sub-repositories.
-#     hg clone http://hg.openjdk.java.net
+#     hg clone http://hg.openjdk.java.net/jdk8u/jdk8u  [yes, jdk8u*2]
 #     cd jdk8u && sh ./get_source
 #
-# 3.  Build OpenJDK, following the instructions in README-builds.html.
-#     (Dan isn't sure this is necessary.)
-#
-# 4.  Set JAVA_HOME to build/(name of output directory).
-#
-# This script should be run from the top-level OpenJDK directory.
+# This script should be run from the top-level OpenJDK directory
+# ("jdk8u" by default).
 #
 # 
 # Build stages:
@@ -38,12 +34,11 @@
 #
 # 4.  Insert annotations from JAIFs into JDK source files.
 #
-# 5.  Compile the annotated JDK.
 #
-# 6.  Combine the results of the previous two stages.
-#
-#
-# TODO: What comes next?
+# The end product of these stages is the annotated JDK 8 source.  To
+# build, invoke the Checker Framework script checker/jdk/build8.sh.
+# (It may be necessary to edit some of the variable settings in the
+# script.)
 
 export SCRIPTDIR=`cd \`dirname $0\` && pwd`
 export WD="`pwd`"            # run from top directory of jdk8u clone
@@ -101,9 +96,9 @@ mkdir "${TMPDIR}"
 # Stage 2: convert stub files to JAIFs
 
 # download annotation definitions
-#[ -r annotation-defs.jaif ]\
-# || wget https://types.cs.washington.edu/checker-framework/annotation-defs.jaif\
-# || exit $?
+[ -r annotation-defs.jaif ]\
+ || wget https://types.cs.washington.edu/checker-framework/annotation-defs.jaif\
+ || exit $?
 
 (
     cd "${CHECKERFRAMEWORK}"
@@ -132,8 +127,8 @@ mkdir "${TMPDIR}"
                 if(out){close(out)};out=o
                 if(system("test -s "out)!=0) {
                     system("mkdir -p "d" && cp "adefs" "out)
-                    printf("%s\n",l)>>out  # current pkg decl
                 }
+                printf("%s\n",l)>>out  # current pkg decl
             }
         }
     }
@@ -144,7 +139,7 @@ mkdir "${TMPDIR}"
 [ ${RET} -ne 0 ] && echo "stage 2 failed" 1>&2 && exit ${RET}
 
 
-# Stage 3: incorporate Stage 2 JAIFs into hierarchy built in Stage 1
+# Stage 3: combine JAIFs from Stages 1 and 2
 
 (
     rm -rf "${JAIFDIR}"
@@ -157,10 +152,10 @@ mkdir "${TMPDIR}"
         # first write out standard annotation defs
         # then strip out empty annotation defs
         # also generate and insert @AnnotatedFor annotations
-        (cat annotation-defs.jaif && awk '
+        awk '
             # initial state: print on, no class seen yet
             BEGIN {x=2}
-            # omit until class or package (unless no class seen yet)
+            # skip until class or package (unless no class seen yet)
             /^annotation/ {if(x<=1){x=-1}}
             # hold and print only if class follows (unless no class seen yet)
             /^package/ {if(x<=1){x=0;i=0;split("",a)}}
@@ -168,7 +163,7 @@ mkdir "${TMPDIR}"
             /^class/ {for(j=0;j<i;++j){print a[j]};split("",a);x=1;i=0}
             # store, print, or drop (depending on x)
             {if(x==0){a[i++]=$0}{if(x>0)print}}
-        ' < "${TMPDIR}/$f") | java -cp ${CP} org.checkerframework.framework.stub.AddAnnotatedFor >> "$g"
+        ' < "${TMPDIR}/$f" | java -cp ${CP} org.checkerframework.framework.stub.AddAnnotatedFor > "$g"
     done
 )
 
@@ -198,6 +193,8 @@ mkdir "${TMPDIR}"
     # copy annotated source files over originals
     rsync -au annotated/* .
     # apply ad-hoc patch to correct miscellaneous errors
-    patch -p1 < ${SCRIPTDIR}/ad-hoc.diff
+    if [ -r ${SCRIPTDIR}/ad-hoc.diff ] ; then
+        patch -p1 < ${SCRIPTDIR}/ad-hoc.diff
+    fi
 )
 
