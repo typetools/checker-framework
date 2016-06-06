@@ -150,6 +150,53 @@ public class FormatterAnnotatedTypeFactory extends
         }
 
         @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror anno1,
+                AnnotationMirror anno2) {
+            if (AnnotationUtils.areSameIgnoringValues(anno1, FORMATBOTTOM)) {
+                return anno2;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno2, FORMATBOTTOM)) {
+                return anno1;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno1, FORMAT) &&
+                AnnotationUtils.areSameIgnoringValues(anno2, FORMAT)) {
+                ConversionCategory[] shorterArgTypesList =
+                        treeUtil.formatAnnotationToCategories(anno1);
+                ConversionCategory[] longerArgTypesList =
+                        treeUtil.formatAnnotationToCategories(anno2);
+                if (shorterArgTypesList.length > longerArgTypesList.length) {
+                    ConversionCategory[] temp = longerArgTypesList;
+                    longerArgTypesList = shorterArgTypesList;
+                    shorterArgTypesList = temp;
+                }
+
+                // From the manual:
+                // It is legal to use a format string with fewer format specifiers
+                // than required, but a warning is issued.
+
+                ConversionCategory[] resultArgTypes =
+                        new ConversionCategory[longerArgTypesList.length];
+
+                for (int i = 0; i < shorterArgTypesList.length; ++i) {
+                    resultArgTypes[i] = ConversionCategory.intersect(shorterArgTypesList[i], longerArgTypesList[i]);
+                }
+                for (int i = shorterArgTypesList.length; i < longerArgTypesList.length; ++i) {
+                    resultArgTypes[i] = longerArgTypesList[i];
+                }
+                return treeUtil.categoriesToFormatAnnotation(resultArgTypes);
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT) &&
+                AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
+                if (AnnotationUtils.areSame(anno1, anno2)) {
+                    return anno1;
+                }
+                return INVALIDFORMAT; // Same as for GLB
+            }
+
+            return UNKNOWNFORMAT;
+        }
+
+        @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror anno1,
                 AnnotationMirror anno2) {
             if (AnnotationUtils.areSameIgnoringValues(anno1, UNKNOWNFORMAT)) {
@@ -186,7 +233,7 @@ public class FormatterAnnotatedTypeFactory extends
                 if (AnnotationUtils.areSame(anno1, anno2)) {
                     return anno1;
                 }
-                return INVALIDFORMAT;
+                return INVALIDFORMAT; // Same as for LUB
             }
 
             return FORMATBOTTOM;

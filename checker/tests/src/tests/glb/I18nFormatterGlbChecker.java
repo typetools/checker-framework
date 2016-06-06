@@ -1,7 +1,8 @@
 package tests.glb;
 
-// Test case for issue 723.
+// Test case for issues 723 and 756.
 // https://github.com/typetools/checker-framework/issues/723
+// https://github.com/typetools/checker-framework/issues/756
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
@@ -64,6 +65,9 @@ public class I18nFormatterGlbChecker extends I18nFormatterChecker {
         AnnotationMirror I18nFormatNumberAnno = treeUtil.categoriesToFormatAnnotation(cc);
 
         QualifierHierarchy qh = ((BaseTypeVisitor<?>)visitor).getTypeFactory().getQualifierHierarchy();
+
+
+        // ** GLB tests **
 
         // GLB of UNUSED and others
 
@@ -286,6 +290,223 @@ public class I18nFormatterGlbChecker extends I18nFormatterChecker {
             "GLB of @I18nFormatBottom and @I18nFormatFor(\"#1\") is not @I18nFormatBottom!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(I18NFORMATBOTTOM, I18NFORMATBOTTOM), I18NFORMATBOTTOM) :
             "GLB of @I18nFormatBottom and @I18nFormatBottom is not @I18nFormatBottom!";
+
+
+        // ** LUB tests **
+
+        // LUB of UNUSED and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18nFormatUnusedAnno), I18nFormatUnusedAnno) :
+            "LUB of @I18nFormat(UNUSED) and @I18nFormat(UNUSED) is not @I18nFormat(UNUSED)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18nFormatGeneralAnno), I18nFormatGeneralAnno) :
+            "LUB of @I18nFormat(UNUSED) and @I18nFormat(GENERAL) is not @I18nFormat(GENERAL)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18nFormatDateAnno), I18nFormatDateAnno) :
+            "LUB of @I18nFormat(UNUSED) and @I18nFormat(DATE) is not @I18nFormat(DATE)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18nFormatNumberAnno), I18nFormatNumberAnno) :
+            "LUB of @I18nFormat(UNUSED) and @I18nFormat(NUMBER) is not @I18nFormat(NUMBER)!";
+
+        // LUB of GENERAL and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatGeneralAnno, I18nFormatUnusedAnno), I18nFormatGeneralAnno) :
+            "LUB of @I18nFormat(GENERAL) and @I18nFormat(UNUSED) is not @I18nFormat(GENERAL)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatGeneralAnno, I18nFormatGeneralAnno), I18nFormatGeneralAnno) :
+            "LUB of @I18nFormat(GENERAL) and @I18nFormat(GENERAL) is not @I18nFormat(GENERAL)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatGeneralAnno, I18nFormatDateAnno), I18nFormatDateAnno) :
+            "LUB of @I18nFormat(GENERAL) and @I18nFormat(DATE) is not @I18nFormat(DATE)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatGeneralAnno, I18nFormatNumberAnno), I18nFormatNumberAnno) :
+            "LUB of @I18nFormat(GENERAL) and @I18nFormat(NUMBER) is not @I18nFormat(NUMBER)!";
+
+        // LUB of DATE and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatDateAnno, I18nFormatUnusedAnno), I18nFormatDateAnno) :
+            "LUB of @I18nFormat(DATE) and @I18nFormat(UNUSED) is not @I18nFormat(DATE)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatDateAnno, I18nFormatGeneralAnno), I18nFormatDateAnno) :
+            "LUB of @I18nFormat(DATE) and @I18nFormat(GENERAL) is not @I18nFormat(DATE)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatDateAnno, I18nFormatDateAnno), I18nFormatDateAnno) :
+            "LUB of @I18nFormat(DATE) and @I18nFormat(DATE) is not @I18nFormat(DATE)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatDateAnno, I18nFormatNumberAnno), I18nFormatNumberAnno) :
+            "LUB of @I18nFormat(DATE) and @I18nFormat(NUMBER) is not @I18nFormat(NUMBER)!";
+
+        // LUB of NUMBER and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatNumberAnno, I18nFormatUnusedAnno), I18nFormatNumberAnno) :
+            "LUB of @I18nFormat(NUMBER) and @I18nFormat(UNUSED) is not @I18nFormat(NUMBER)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatNumberAnno, I18nFormatGeneralAnno), I18nFormatNumberAnno) :
+            "LUB of @I18nFormat(NUMBER) and @I18nFormat(GENERAL) is not @I18nFormat(NUMBER)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatNumberAnno, I18nFormatDateAnno), I18nFormatNumberAnno) :
+            "LUB of @I18nFormat(NUMBER) and @I18nFormat(DATE) is not @I18nFormat(NUMBER)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatNumberAnno, I18nFormatNumberAnno), I18nFormatNumberAnno) :
+            "LUB of @I18nFormat(NUMBER) and @I18nFormat(NUMBER) is not @I18nFormat(NUMBER)!";
+
+        // Now test with two I18nConversionCategory at a time:
+
+        cc2[0] = I18nConversionCategory.DATE;
+        cc2[1] = I18nConversionCategory.NUMBER;
+        AnnotationMirror FormatTwoConvCat4 = treeUtil.categoriesToFormatAnnotation(cc2);
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(FormatTwoConvCat1, FormatTwoConvCat2), FormatTwoConvCat4) :
+            "LUB of @I18nFormat([DATE,DATE]) and @I18nFormat([UNUSED,NUMBER]) is not @I18nFormat([DATE,NUMBER])!";
+
+        // Test that the LUB of two I18nConversionCategory arrays of different sizes is an array of the largest size of the two:
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatGeneralAnno, FormatTwoConvCat1), FormatTwoConvCat1) :
+            "LUB of @I18nFormat(GENERAL) and @I18nFormat([DATE,DATE]) is not @I18nFormat([DATE,DATE])!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(FormatTwoConvCat2, I18nFormatDateAnno), FormatTwoConvCat4) :
+            "LUB of @I18nFormat([UNUSED,NUMBER]) and @I18nFormat(DATE) is not @I18nFormat([DATE,NUMBER])!";
+
+        // LUB of two distinct @I18nFormatFor(...) annotations is @I18nUnknownFormat
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatForWithValue1, I18nFormatForWithValue2), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(\"#1\") and @I18nFormatFor(\"#2\") is not @I18nUnknownFormat!";
+
+        // LUB of @I18nUnknownFormat and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NUNKNOWNFORMAT, I18NUNKNOWNFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nUnknownFormat and @I18nUnknownFormat is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NUNKNOWNFORMAT, I18NFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nUnknownFormat and @I18nFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NUNKNOWNFORMAT, I18nFormatUnusedAnno), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nUnknownFormat and @I18nFormat(UNUSED) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NUNKNOWNFORMAT, I18NINVALIDFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nUnknownFormat and @I18nInvalidFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NUNKNOWNFORMAT, I18nInvalidFormatWithMessage), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nUnknownFormat and @I18nInvalidFormat(\"Message\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NUNKNOWNFORMAT, I18NFORMATFOR), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nUnknownFormat and @I18nFormatFor(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NUNKNOWNFORMAT, I18nFormatForWithValue1), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nUnknownFormat and @I18nFormatFor(\"#1\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NUNKNOWNFORMAT, I18NFORMATBOTTOM), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nUnknownFormat and @I18nFormatBottom is not @I18nUnknownFormat!";
+
+        // LUB of @I18nFormat(null) and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMAT, I18NUNKNOWNFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(null) and @I18nUnknownFormat is not @I18nUnknownFormat!";
+        // Computing the LUB of @I18nFormat(null) and @I18nFormat(null) should never occur in practice. Skipping this case as it causes an expected crash.
+        // Computing the LUB of @I18nFormat(null) and @I18nFormat with a value should never occur in practice. Skipping this case as it causes an expected crash.
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMAT, I18NINVALIDFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(null) and @I18nInvalidFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMAT, I18nInvalidFormatWithMessage), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(null) and @I18nInvalidFormat(\"Message\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMAT, I18NFORMATFOR), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(null) and @I18nFormatFor(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMAT, I18nFormatForWithValue1), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(null) and @I18nFormatFor(\"#1\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMAT, I18NFORMATBOTTOM), I18NFORMAT) :
+            "LUB of @I18nFormat(null) and @I18nFormatBottom is not @I18nFormat(null)!";
+
+        // LUB of @I18nFormat(UNUSED) and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18NUNKNOWNFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(UNUSED) and @I18nUnknownFormat is not @I18nUnknownFormat!";
+        // Computing the LUB of @I18nFormat with a value and @I18nFormat(null) should never occur in practice. Skipping this case as it causes an expected crash.
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18nFormatUnusedAnno), I18nFormatUnusedAnno) :
+            "LUB of @I18nFormat(UNUSED) and @I18nFormat(UNUSED) is not @I18nFormat(UNUSED)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18NINVALIDFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(UNUSED) and @I18nInvalidFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18nInvalidFormatWithMessage), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(UNUSED) and @I18nInvalidFormat(\"Message\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18NFORMATFOR), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(UNUSED) and @I18nFormatFor(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18nFormatForWithValue1), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormat(UNUSED) and @I18nFormatFor(\"#1\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatUnusedAnno, I18NFORMATBOTTOM), I18nFormatUnusedAnno) :
+            "LUB of @I18nFormat(UNUSED) and @I18nFormatBottom is not @I18nFormat(UNUSED)!";
+
+        // LUB of @I18nInvalidFormat(null) and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18NUNKNOWNFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(null) and @I18nUnknownFormat is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18NFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(null) and @I18nFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18nFormatUnusedAnno), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(null) and @I18nFormat(UNUSED) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18NINVALIDFORMAT), I18NINVALIDFORMAT) :
+            "LUB of @I18nInvalidFormat(null) and @I18nInvalidFormat(null) is not @I18nInvalidFormat(null)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18nInvalidFormatWithMessage), I18NINVALIDFORMAT) :
+            "LUB of @I18nInvalidFormat(null) and @I18nInvalidFormat(\"Message\") is not @I18nInvalidFormat(null)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18NFORMATFOR), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(null) and @I18nFormatFor(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18nFormatForWithValue1), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(null) and @I18nFormatFor(\"#1\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18NFORMATBOTTOM), I18NINVALIDFORMAT) :
+            "LUB of @I18nInvalidFormat(null) and @I18nFormatBottom is not @I18nInvalidFormat(null)!";
+
+        // LUB of @I18nInvalidFormat("Message") and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18NUNKNOWNFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(\"Message\") and @I18nUnknownFormat is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18NFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(\"Message\") and @I18nFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18nFormatUnusedAnno), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(\"Message\") and @I18nFormat(UNUSED) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18NINVALIDFORMAT), I18NINVALIDFORMAT) :
+            "LUB of @I18nInvalidFormat(\"Message\") and @I18nInvalidFormat(null) is not @I18nInvalidFormat(null)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18nInvalidFormatWithMessage), I18nInvalidFormatWithMessage) :
+            "LUB of @I18nInvalidFormat(\"Message\") and @I18nInvalidFormat(\"Message\") is not @I18nInvalidFormat(\"Message\")!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18NFORMATFOR), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(\"Message\") and @I18nFormatFor(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18nFormatForWithValue1), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nInvalidFormat(\"Message\") and @I18nFormatFor(\"#1\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18NFORMATBOTTOM), I18nInvalidFormatWithMessage) :
+            "LUB of @I18nInvalidFormat(\"Message\") and @I18nFormatBottom is not @I18nInvalidFormat(\"Message\")!";
+
+        // LUB of @I18nFormatFor(null) and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATFOR, I18NUNKNOWNFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(null) and @I18nUnknownFormat is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATFOR, I18NFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(null) and @I18nFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATFOR, I18nFormatUnusedAnno), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(null) and @I18nFormat(UNUSED) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATFOR, I18NINVALIDFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(null) and @I18nInvalidFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATFOR, I18nInvalidFormatWithMessage), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(null) and @I18nInvalidFormat(\"Message\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATFOR, I18NFORMATFOR), I18NFORMATFOR) :
+            "LUB of @I18nFormatFor(null) and @I18nFormatFor(null) is not @I18nFormatFor(null)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATFOR, I18nFormatForWithValue1), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(null) and @I18nFormatFor(\"#1\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATFOR, I18NFORMATBOTTOM), I18NFORMATFOR) :
+            "LUB of @I18nFormatFor(null) and @I18nFormatBottom is not @I18nFormatFor(null)!";
+
+        // LUB of @I18nFormatFor("#1") and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatForWithValue1, I18NUNKNOWNFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(\"#1\") and @I18nUnknownFormat is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatForWithValue1, I18NFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(\"#1\") and @I18nFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatForWithValue1, I18nFormatUnusedAnno), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(\"#1\") and @I18nFormat(UNUSED) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatForWithValue1, I18NINVALIDFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(\"#1\") and @I18nInvalidFormat(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatForWithValue1, I18nInvalidFormatWithMessage), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(\"#1\") and @I18nInvalidFormat(\"Message\") is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatForWithValue1, I18NFORMATFOR), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatFor(\"#1\") and @I18nFormatFor(null) is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatForWithValue1, I18nFormatForWithValue1), I18nFormatForWithValue1) :
+            "LUB of @I18nFormatFor(\"#1\") and @I18nFormatFor(\"#1\") is not @I18nFormatFor(\"#1\")!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nFormatForWithValue1, I18NFORMATBOTTOM), I18nFormatForWithValue1) :
+            "LUB of @I18nFormatFor(\"#1\") and @I18nFormatBottom is not @I18nFormatFor(\"#1\")!";
+
+        // LUB of @I18nFormatBottom and others
+
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATBOTTOM, I18NUNKNOWNFORMAT), I18NUNKNOWNFORMAT) :
+            "LUB of @I18nFormatBottom and @I18nUnknownFormat is not @I18nUnknownFormat!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATBOTTOM, I18NFORMAT), I18NFORMAT) :
+            "LUB of @I18nFormatBottom and @I18nFormat(null) is not @I18nFormat(null)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATBOTTOM, I18nFormatUnusedAnno), I18nFormatUnusedAnno) :
+            "LUB of @I18nFormatBottom and @I18nFormat(UNUSED) is not @I18nFormat(UNUSED)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATBOTTOM, I18NINVALIDFORMAT), I18NINVALIDFORMAT) :
+            "LUB of @I18nFormatBottom and @I18nInvalidFormat(null) is not @I18nInvalidFormat(null)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATBOTTOM, I18nInvalidFormatWithMessage), I18nInvalidFormatWithMessage) :
+            "LUB of @I18nFormatBottom and @I18nInvalidFormat(\"Message\") is not @I18nInvalidFormat(\"Message\")!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATBOTTOM, I18NFORMATFOR), I18NFORMATFOR) :
+            "LUB of @I18nFormatBottom and @I18nFormatFor(null) is not @I18nFormatFor(null)!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATBOTTOM, I18nFormatForWithValue1), I18nFormatForWithValue1) :
+            "LUB of @I18nFormatBottom and @I18nFormatFor(\"#1\") is not @I18nFormatFor(\"#1\")!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NFORMATBOTTOM, I18NFORMATBOTTOM), I18NFORMATBOTTOM) :
+            "LUB of @I18nFormatBottom and @I18nFormatBottom is not @I18nFormatBottom!";
         }
 
 }
