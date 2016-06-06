@@ -1008,7 +1008,7 @@ So, use our own archived version.
       <get
         src="http://types.cs.washington.edu/jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/.." />
-      <untar src="${jtreg.home}/../jtreg-4.2.0-tip.tar.gz"
+      <untar src="${jtreg.home}/../jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/../"
         compression="gzip" />
     </target>
