@@ -195,10 +195,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param expr
    * @return
    */
-  private static Annotation extractAnnotation(AnnotationExpr expr) {
-    //String exprName = expr.getName().getName();
-    String exprName = expr.toString().substring(1);  // 1 for '@'
-    //String exprName = resolve(expr.getName().getName());
+  private Annotation extractAnnotation(AnnotationExpr expr) {
+    String exprName = resolve(expr.getName().getName());
     AnnotationDef def = new AnnotationDef(exprName);
     def.setFieldTypes(Collections.<String, AnnotationFieldType>emptyMap());
     return new Annotation(def, Collections.<String, Object>emptyMap());
@@ -423,7 +421,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Copies information from an AST type node's inner type nodes to an
    * {@link ATypeElement}.
    */
-  private static Void visitInnerTypes(Type type, final ATypeElement elem) {
+  private Void visitInnerTypes(Type type, final ATypeElement elem) {
     return type.accept(new GenericVisitorAdapter<Void, InnerTypeLocation>() {
       @Override
       public Void visit(ClassOrInterfaceType type, InnerTypeLocation loc) {
