@@ -991,7 +991,7 @@
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
       <!-- The last successful artifact
            (https://adopt-openjdk.ci.cloudbees.com/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz)
-           includes Java 8 class files.  
+           includes Java 8 class files.
            You can confirm the problem by running:
 wget https://adopt-openjdk.ci.cloudbees.com/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz
 tar xzf jtreg-4.2.0-tip.tar.gz
