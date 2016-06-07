@@ -1,8 +1,7 @@
 class GetClassTest {
 
-    // See AnntoatedTypeFactory.adaptGetClassReturnTypeToReceiver
+    // See AnnotatedTypeFactory.adaptGetClassReturnTypeToReceive
 
-    //@SuppressWarnings("unsignedness")
     void context() {
         Integer i = 4;
         i.getClass();
