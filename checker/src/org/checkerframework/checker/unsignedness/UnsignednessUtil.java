@@ -51,7 +51,7 @@ public final class UnsignednessUtil {
    /**
 	* Compares two Unsigned longs x and y. This returns a negative number iff
 	* x {@literal <} y, a positive number iff x {@literal >} y, and zero iff
-	* x == y. Annotates {@link Long#compareUnsigned(long, long) compareUnsigned(long, long)}.
+	* x == y. Annotates Long::compareUnsigned(long, long).
 	*
 	* This should be used when one would normally compare two longs with {@literal <}
 	* or {@literal >} but cannot as the longs are Unsigned.
@@ -64,7 +64,7 @@ public final class UnsignednessUtil {
    /**
 	* Compares two Unsigned ints x and y. This returns a negative number iff
 	* x {@literal <} y, a positive number iff x {@literal >} y, and zero iff
-	* x == y. Annotates {@link Integer#compareUnsigned(int, int) compareUnsigned(int, int)}.
+	* x == y. Annotates Integer::compareUnsigned(int, int).
 	*
 	* This should be used when one would normally compare two ints with {@literal <}
 	* or {@literal >} but cannot as the ints are Unsigned.
@@ -77,7 +77,7 @@ public final class UnsignednessUtil {
    /**
 	* Compares two Unsigned shorts x and y. This returns a negative number iff
 	* x {@literal <} y, a positive number iff x {@literal >} y, and zero iff
-	* x == y. Extends {@link Integer#compareUnsigned(int, int) compareUnsigned(int, int)}
+	* x == y. Extends Integer::compareUnsigned(int, int).
 	* to act on short arguments.
 	*
 	* This should be used when one would normally compare two shorts with {@literal <}
@@ -94,7 +94,7 @@ public final class UnsignednessUtil {
    /**
 	* Compares two Unsigned bytes x and y. This returns a negative number iff
 	* x {@literal <} y, a positive number iff x {@literal >} y, and zero iff
-	* x == y. Extends {@link Integer#compareUnsigned(int, int) compareUnsigned(int, int)}
+	* x == y. Extends Integer::compareUnsigned(int, int).
 	* to act on byte arguments.
 	*
 	* This should be used when one would normally compare two bytes with {@literal <}
@@ -221,7 +221,7 @@ public final class UnsignednessUtil {
 
    /**
 	* Upcasts an Unsigned int into an Unsigned long.
-	* Annotates {@link Integer#toUnsignedLong(int) toUnsignedLong(int)}.
+	* Annotates Integer::toUnsignedLong(int).
 	*
 	* This should be used only when you would normally cast an int to a long,
 	* but cannot rely on Java to interpret the int as Unsigned.
@@ -232,7 +232,7 @@ public final class UnsignednessUtil {
 
    /**
 	* Upcasts an Unsigned short into an Unsigned long.
-	* Annotates {@link Short#toUnsignedLong(short) toUnsignedLong(short)}.
+	* Annotates Short::toUnsignedLong(short).
 	*
 	* This should be used only when you would normally cast a short to a long,
 	* but cannot rely on Java to interpret the short as Unsigned.
@@ -243,7 +243,7 @@ public final class UnsignednessUtil {
 
    /**
 	* Upcasts an Unsigned short into an Unsigned int.
-	* Annotates {@link Short#toUnsignedInt(short) toUnsignedInt(short)}.
+	* Annotates Short::toUnsignedInt(short).
 	*
 	* This should be used only when you would normally cast a short to an int,
 	* but cannot rely on Java to interpret the short as Unsigned.
@@ -254,7 +254,7 @@ public final class UnsignednessUtil {
 
    /**
 	* Upcasts an Unsigned byte into an Unsigned long.
-	* Annotates {@link Byte#toUnsignedLong(byte) toUnsignedLong(byte)}.
+	* Annotates Byte::toUnsignedLong(byte).
 	*
 	* This should be used only when you would normally cast a byte to a long,
 	* but cannot rely on Java to interpret the byte as Unsigned.
@@ -265,7 +265,7 @@ public final class UnsignednessUtil {
 
    /**
 	* Upcasts an Unsigned byte into an Unsigned int.
-	* Annotates {@link Byte#toUnsignedInt(byte) toUnsignedInt(byte)}.
+	* Annotates Byte::toUnsignedInt(byte).
 	*
 	* This should be used only when you would normally cast a byte to an int,
 	* but cannot rely on Java to interpret the byte as Unsigned.
