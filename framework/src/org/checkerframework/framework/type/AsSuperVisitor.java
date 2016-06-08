@@ -57,7 +57,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         } else if (type == superType) {
             return (T) type.deepCopy();
         }
-        AnnotatedTypeMirror copySuperType = superType.deepCopy();
+        AnnotatedTypeMirror copySuperType = superType.deepCopy(false);
         AnnotatedTypeMirror result = visit(type.deepCopy(), copySuperType, null);
 
         if (result == null) {
