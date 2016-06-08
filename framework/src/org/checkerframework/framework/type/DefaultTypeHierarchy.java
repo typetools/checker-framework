@@ -563,7 +563,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             for (AnnotatedDeclaredType supertypeI : subtype.directSuperTypes()) {
                 if (TypesUtils.isErasedSubtype(types, subtypeI.getUnderlyingType(), supertypeI.getUnderlyingType())) {
-                    if (!isSubtype(subtypeI, supertype)) {
+                    if (!isSubtype(subtypeI, supertypeI)) {
                         return false;
                     }
                 }
