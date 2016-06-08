@@ -3,7 +3,9 @@ package org.checkerframework.framework.stub;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.checkerframework.stubparser.JavaParser;
+import org.checkerframework.stubparser.ParseException;
 import org.checkerframework.stubparser.ast.CompilationUnit;
 import org.checkerframework.stubparser.ast.ImportDeclaration;
 import org.checkerframework.stubparser.ast.IndexUnit;
@@ -55,9 +58,11 @@ import annotations.el.AScene;
 import annotations.el.ATypeElement;
 import annotations.el.AnnotationDef;
 import annotations.el.BoundLocation;
+import annotations.el.DefException;
 import annotations.el.InnerTypeLocation;
 import annotations.el.LocalLocation;
 import annotations.field.AnnotationFieldType;
+import annotations.io.IndexFileParser;
 import annotations.io.IndexFileWriter;
 
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
@@ -121,42 +126,61 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Note that the results do not include annotation definitions, for
    * which stubfiles do not generally provide complete information.
    *
-   * @param args names of stub files to be converted
+   * @param args name of JAIF with annotation definition, followed by
+   * names of stub files to be converted (if none given, program reads
+   * from standard input)
+   * @throws IOException
    */
   public static void main(String[] args) {
-    if (args.length > 0) {
-      for (int i = 0; i < args.length; i++) {
+    if (args.length < 1) {
+      System.err.println("usage: java ToIndexFileConverter jaif [stubfile...]");
+      System.err.println("(JAIF contains needed annotation definitions)");
+      System.exit(1);
+    }
+
+    AScene scene = new AScene();
+    try {
+      IndexFileParser.parseFile(args[0], scene);
+
+      if (args.length == 1) {
+        convert(scene, System.in, System.out);
+        return;
+      }
+
+      for (int i = 1; i < args.length; i++) {
         String f0 = args[i];
-        String f1 = (f0.endsWith(".astub") ? f0.substring(0, f0.length()-5)
-            : f0) + "jaif";
-        try (InputStream in = new FileInputStream(f0)) {
-          try (FileOutputStream out = new FileOutputStream(f1)) {
-            IndexUnit iu = JavaParser.parse(in);
-            AScene scene = extractScene(iu);
-            try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
-              IndexFileWriter.write(scene, w);
-            } catch (Exception e) {
-              e.printStackTrace();  // TODO
-            }
-          } catch (Exception e) {
-            e.printStackTrace();  // TODO
-          }
-        } catch (Exception e) {
-          e.printStackTrace();  // TODO
+        String f1 = (f0.endsWith(".astub")
+            ? f0.substring(0, f0.length()-6)
+            : f0) + ".jaif";
+        try (
+            InputStream in = new FileInputStream(f0);
+            OutputStream out = new FileOutputStream(f1);
+            ) {
+          convert(new AScene(scene), in, out);
         }
       }
-    } else {
-      try {
-        IndexUnit iu = JavaParser.parse(System.in);
-        AScene scene = extractScene(iu);
-        try (Writer w = new BufferedWriter(new OutputStreamWriter(System.out))) {
-          IndexFileWriter.write(scene, w);
-        } catch (Exception e) {
-          e.printStackTrace();  // TODO
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+    } catch (Throwable e) {
+      e.printStackTrace();
+      System.exit(1);
+    }
+  }
+
+  /**
+   * Augment given scene with information from stubfile, reading stubs
+   * from input stream and writing JAIF to output stream.
+   *
+   * @param scene the initial scene
+   * @param in stubfile contents
+   * @param out JAIF representing augmented scene
+   * @throws ParseException
+   * @throws DefException
+   */
+  private static void convert(AScene scene, InputStream in, OutputStream out)
+      throws IOException, DefException, ParseException {
+    IndexUnit iu = JavaParser.parse(in);
+    extractScene(iu, scene);
+    try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
+      IndexFileWriter.write(scene, w);
     }
   }
 
@@ -166,8 +190,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param iu {@link IndexUnit} representing stubfile
    * @return {@link AScene} containing annotations from stubfile
    */
-  private static AScene extractScene(IndexUnit iu) {
-    AScene scene = new AScene();
+  private static void extractScene(IndexUnit iu, AScene scene) {
     for (CompilationUnit cu : iu.getCompilationUnits()) {
       List<TypeDeclaration> typeDecls = cu.getTypes();
       if (typeDecls != null) {
@@ -183,8 +206,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
       }
     }
-    scene.prune();
-    return scene;
   }
 
   /**
@@ -207,6 +228,12 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   @Override
   public Void visit(AnnotationDeclaration decl, AElement elem) {
     return null;
+  }
+
+  @Override
+  public Void visit(BlockStmt stmt, AElement elem) {
+    return null;
+    //super.visit(stmt, elem);
   }
 
   @Override
