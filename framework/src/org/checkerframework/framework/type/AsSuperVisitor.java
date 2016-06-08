@@ -139,7 +139,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             return visit(annotatedTypeFactory.getStringType(type), superType, p);
         }
         ErrorReporter.errorAbort(
-                "AsSuperVisitor: types is not an erased subtype of supertype."
+                "AsSuperVisitor: type is not an erased subtype of supertype."
                         + "\ntype: %s\nsuperType: %s",
                 type,
                 superType);
