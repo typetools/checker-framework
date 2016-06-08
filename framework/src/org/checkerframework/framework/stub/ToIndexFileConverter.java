@@ -129,7 +129,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param args name of JAIF with annotation definition, followed by
    * names of stub files to be converted (if none given, program reads
    * from standard input)
-   * @throws IOException 
+   * @throws IOException
    */
   public static void main(String[] args) {
     if (args.length < 1) {
@@ -173,7 +173,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param in stubfile contents
    * @param out JAIF representing augmented scene
    * @throws ParseException
-   * @throws DefException 
+   * @throws DefException
    */
   private static void convert(AScene scene, InputStream in, OutputStream out)
       throws IOException, DefException, ParseException {
