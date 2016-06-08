@@ -407,7 +407,7 @@ def push_changes_prompt_if_fail(repo_root):
                 if not prompt_yn("Try again (responding 'n' will skip this push command but will not exit the script) ?"):
                     break
         if is_git(repo_root):
-            cmd = 'git -C %s push' % repo_root
+            cmd = 'git -C %s push origin master' % repo_root
         else:
             cmd = 'hg -R %s push' % repo_root
         result = os.system(cmd)
