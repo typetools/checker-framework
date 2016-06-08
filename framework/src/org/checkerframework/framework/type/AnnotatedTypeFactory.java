@@ -375,23 +375,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private void checkSupportedQuals() {
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
             ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
-            String otherElementTypes = null;
+            List<ElementType> otherElementTypes = new ArrayList<>();
             for (ElementType element : elements) {
                 if (!(element.equals(ElementType.TYPE_USE)
                         || element.equals(ElementType.TYPE_PARAMETER))) {
                     // if there's an ElementType with an enumerated value of something other
                     // than TYPE_USE or TYPE_PARAMETER then it isn't a valid qualifier
-                    if (otherElementTypes == null) {
-                        otherElementTypes = element.toString();
-                    } else {
-                        otherElementTypes += ", " + element.toString();
-                    }
+                    otherElementTypes.add(element);
                 }
             }
-            if (otherElementTypes != null) {
-                StringBuffer buf = new StringBuffer("The @Target meta-annotation on ");
+            if (!otherElementTypes.isEmpty()) {
+                StringBuffer buf = new StringBuffer("The @Target meta-annotation on type qualifier ");
                 buf.append(annotationClass.toString());
-                buf.append(" must not contain: ").append(otherElementTypes).append(".");
+                buf.append(" must not contain ");
+                for (int i = 0; i < otherElementTypes.size(); i++) {
+                    if (i == 1 && otherElementTypes.size() == 2) {
+                        buf.append(" or ");
+                    } else if (i == otherElementTypes.size() - 1) {
+                        buf.append(", or ");
+                    } else if (i != 0) {
+                        buf.append(", ");
+                    }
+                    buf.append(otherElementTypes.get(i));
+                }
+                buf.append(".");
                 ErrorReporter.errorAbort(buf.toString());
             }
         }
