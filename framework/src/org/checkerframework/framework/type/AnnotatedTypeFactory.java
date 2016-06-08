@@ -370,20 +370,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Issue an error and abort if any of the support qualifiers have @Target meta-annotations
-     * that contain something besides TYPE_USE or TYPE_PARAMETER or does not contain TYPE_USE.
+     * that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
      */
     private void checkSupportedQuals() {
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
             ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
-            boolean hasTypeUse = false;
             String otherElementTypes = null;
             for (ElementType element : elements) {
-                if (element.equals(ElementType.TYPE_USE)) {
-                    // valid qualifiers have to have TYPE_USE
-                    hasTypeUse = true;
-                } else if (!element.equals(ElementType.TYPE_PARAMETER)) {
-                    // if there's an ElementType with a enumerated value of something other than
-                    // TYPE_USE or TYPE_PARAMETER then it isn't a valid qualifier
+                if (!(element.equals(ElementType.TYPE_USE)
+                        || element.equals(ElementType.TYPE_PARAMETER))) {
+                    // if there's an ElementType with an enumerated value of something other
+                    // than TYPE_USE or TYPE_PARAMETER then it isn't a valid qualifier
                     if (otherElementTypes == null) {
                         otherElementTypes = element.toString();
                     } else {
@@ -391,17 +388,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     }
                 }
             }
-            if (!hasTypeUse || otherElementTypes != null) {
+            if (otherElementTypes != null) {
                 StringBuffer buf = new StringBuffer("The @Target meta-annotation on ");
                 buf.append(annotationClass.toString());
-                if (!hasTypeUse) {
-                    buf.append(" must contain ").append(ElementType.TYPE_USE.toString());
-                    if (otherElementTypes != null) {
-                        buf.append(" and ");
-                    }
-                } else {
-                    buf.append(" must not contain ").append(otherElementTypes);
-                }
+                buf.append(" must not contain: ").append(otherElementTypes).append(".");
                 ErrorReporter.errorAbort(buf.toString());
             }
         }
