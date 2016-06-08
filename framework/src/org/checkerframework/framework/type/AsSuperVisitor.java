@@ -246,6 +246,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
                             t.getUnderlyingType(), "java.io.Serializable"))) {
                 return errorTypeNotErasedSubtypeOfSuperType(type, superType, p);
             }
+            copyPrimaryAnnos(type, t);
         }
         return copyPrimaryAnnos(type, superType);
     }
