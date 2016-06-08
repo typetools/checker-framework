@@ -38,7 +38,10 @@
 # The end product of these stages is the annotated JDK 8 source.  To
 # build, invoke the Checker Framework script checker/jdk/build8.sh.
 # (It may be necessary to edit some of the variable settings in the
-# script.)
+# script.)  If successful, build8 will replace checker/dist/jdk8.jar
+# with a JAR containing annotations from the annotated JDK source.  To
+# run the Checker Framework test suite, invoke "ant tests-nobuildjdk"
+# from the Checker Framework's root directory.
 
 export SCRIPTDIR=`cd \`dirname $0\` && pwd`
 export WD="`pwd`"            # run from top directory of jdk8u clone
