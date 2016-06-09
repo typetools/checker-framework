@@ -1907,10 +1907,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         String valueTypeString = valueType.toString();
         String varTypeString = varType.toString();
 
-        // If both types as strings are the same, try outputting
-        // the type including also invisible qualifiers.
-        // This usually means there is a mistake in type defaulting.
-        // This code is therefore not covered by a test.
+        // If both types as strings are the same, try printing verbosely.
         if (valueTypeString.equals(varTypeString)) {
             valueTypeString = valueType.toString(true);
             varTypeString = varType.toString(true);
