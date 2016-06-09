@@ -1,7 +1,6 @@
 // Test case for issue #783:
 // https://github.com/typetools/checker-framework/issues/783
 
-// @skip-test until the issue is fixed
 
 // Note that Issue783a.java, which differs only in the import statement,
 // suffers no type-checking warning.
