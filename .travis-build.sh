@@ -34,7 +34,7 @@ ant javadoc-private
 (cd checker && ant example-tests-nobuildjdk)
 (cd checker && ant check-tutorial)
 # If too many checker tests are run, the tests crash, so run one.
-(cd checker && ant nullness-base-tests regex-qual-tests lock-tests lock-safedefaults-tests)
+(cd checker && ant nullness-base-tests regex-qual-tests lock-tests)
 ## end of alternatives.
 
 # It's cheaper to run the demos test here than to trigger the
