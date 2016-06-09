@@ -775,13 +775,14 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             AnnotatedWildcardType type, AnnotatedWildcardType superType, Void p) {
         if (type.getSuperBound() instanceof AnnotatedNullType
                 && !(superType.getSuperBound() instanceof AnnotatedNullType)) {
-            ErrorReporter.errorAbort(
-                    "AsSuperVisitor visitWildcard_Wildcard: can't call asSuper on a type var"
-                            + " with + a lower bound and a wildcard without.\nType: "
-                            + "%s\nsuperType: %s",
-                    type,
-                    superType);
-            return null; // dead code
+            AnnotatedTypeMirror lowerbound =
+                    visit(type.getExtendsBound(), superType.getSuperBound(), p);
+            superType.setSuperBound(lowerbound);
+
+            AnnotatedTypeMirror upperbound = superType.getExtendsBound();
+            copyPrimaryAnnos(type, upperbound);
+            superType.setExtendsBound(upperbound);
+            return copyPrimaryAnnos(type, superType);
         }
 
         AnnotatedTypeMirror upperBound =
