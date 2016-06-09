@@ -1,9 +1,11 @@
 package org.checkerframework.checker.fenum;
 
-import java.util.Collections;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.Tree;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -11,14 +13,13 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.TreeUtils;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.SwitchTree;
-import com.sun.source.tree.Tree;
+import java.util.Collections;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
 
 public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     public FenumVisitor(BaseTypeChecker checker) {
@@ -30,10 +31,10 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
         if (!TreeUtils.isStringConcatenation(node)) {
             // TODO: ignore string concatenations
 
-            AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getLeftOperand());
-            AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getRightOperand());
-            if (!(atypeFactory.getTypeHierarchy().isSubtype(lhs, rhs)
-                  || atypeFactory.getTypeHierarchy().isSubtype(rhs, lhs))) {
+            Set<AnnotationMirror> lhs = atypeFactory.getAnnotatedType(node.getLeftOperand()).getEffectiveAnnotations();
+            Set<AnnotationMirror> rhs = atypeFactory.getAnnotatedType(node.getRightOperand()).getEffectiveAnnotations();
+            QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
+            if (!(qualHierarchy.isSubtype(lhs, rhs) || qualHierarchy.isSubtype(rhs, lhs))) {
                 checker.report(Result.failure("binary.type.incompatible", lhs, rhs), node);
             }
         }
