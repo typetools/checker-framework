@@ -29,16 +29,16 @@ public class PrettyQualifiedTypeFormatter<Q> extends DefaultQualifiedTypeFormatt
     public PrettyQualifiedTypeFormatter(
             TypeMirrorConverter<QualParams<Q>> converter,
             Set<?> invisibleQualifiers,
-            boolean useOldFormat,
+            boolean defaultPrintVerboseGenerics,
             boolean defaultPrintInvisibleQualifiers) {
 
-        super(new PrettyQualParamsFormatter<Q>(invisibleQualifiers), converter, useOldFormat, defaultPrintInvisibleQualifiers);
+        super(new PrettyQualParamsFormatter<Q>(invisibleQualifiers), converter, defaultPrintVerboseGenerics, defaultPrintInvisibleQualifiers);
     }
 
     @Override
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter(AnnotationFormatter annotationFormatter) {
         return new QualParamsAnnoTypeFormatter<Q>(converter, qualFormatter,
-                annotationFormatter, useOldFormat, defaultPrintInvisibleQualifiers);
+                annotationFormatter, defaultPrintVerboseGenerics, defaultPrintInvisibleQualifiers);
     }
 
     /**
