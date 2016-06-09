@@ -40,9 +40,9 @@ public class ErrorReporter {
     public static void errorAbort(String msg, Object... args) {
         String formattedMsg = String.format(msg, args);
         if (handler != null) {
-            handler.errorAbort(msg);
+            handler.errorAbort(formattedMsg);
         } else {
-            throw new RuntimeException(msg, new Throwable());
+            throw new RuntimeException(formattedMsg, new Throwable());
         }
     }
 
