@@ -77,7 +77,6 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     @Override
     public String format(final AnnotatedTypeMirror type, final boolean printVerbose) {
         formattingVisitor.setVerboseSettings(printVerbose);
-        formattingVisitor.setVerboseSettings(printVerbose);
         return formattingVisitor.visit(type);
     }
 
