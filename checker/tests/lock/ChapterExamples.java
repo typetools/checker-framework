@@ -901,8 +901,6 @@ void boxingUnboxing() {
     @GuardedBy("o2") Object guarded3 = new Object();
 
     // Test expressions that are not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
-    // TODO: Fix the flow expression parser so that it supports package names
-    //:: error: (flowexpr.parse.error)
     @GuardedBy("java.lang.String.class") Object guarded4;
     //:: error: (flowexpr.parse.error)
     @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)") Object guarded5;

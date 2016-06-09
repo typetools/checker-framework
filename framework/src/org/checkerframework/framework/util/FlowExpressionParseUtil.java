@@ -22,6 +22,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -50,7 +51,9 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
 
 /**
@@ -285,6 +288,9 @@ public class FlowExpressionParseUtil {
                             fieldType, fieldElem);
                 } else {
                     if (originalReceiver) {
+                        if (recursiveCall && context.receiver instanceof ClassName) {
+                            throw constructParserException(s, " a non-static field cannot have a class name as a receiver.");
+                        }
                         return new FieldAccess(context.receiver,
                                 fieldType, fieldElem);
                     } else {
@@ -429,16 +435,30 @@ public class FlowExpressionParseUtil {
                         context.receiver, parameters);
             }
         } else if (dotMatcher.matches() && allowDot) {
-            String receiverString = dotMatcher.group(1);
-            String remainingString = dotMatcher.group(2);
+            Resolver resolver = new Resolver(env);
 
-            // Parse the receiver first.
-            Receiver receiver = parse(receiverString, context, path, allowItself, true);
+            // Attempt to match a package and class name first.
+            Pair<ClassName, String> classAndRemainingString = matchPackageAndClassNameWithinExpression(s, resolver, path);
 
-            if (allowItself && receiver == null) {
-                // "itself.<someexpression>", where "itself" is not a variable name. Let the caller handle it.
+            Receiver receiver = null;
+            String remainingString = null;
 
-                return null;
+            if (classAndRemainingString == null) {
+                String receiverString = dotMatcher.group(1);
+                remainingString = dotMatcher.group(2);
+                // Parse the receiver first.
+                receiver = parse(receiverString, context, path, allowItself, true);
+                if (allowItself && receiver == null) {
+                    // "itself.<someexpression>", where "itself" is not a variable name. Let the caller handle it.
+
+                    return null;
+                }
+            } else {
+                receiver = classAndRemainingString.first;
+                remainingString = classAndRemainingString.second;
+                if (remainingString == null) {
+                    return receiver;
+                }
             }
 
             if (receiver instanceof FlowExpressions.ClassName && remainingString.equals("class")) {
@@ -465,6 +485,127 @@ public class FlowExpressionParseUtil {
         } else {
             throw constructParserException(s, "no matcher matched");
         }
+    }
+
+    /**
+     * Matches a substring of {@code expression} to a package and class name
+     * (starting from the beginning of the string).
+     *
+     * @param expression the expression string that may start with a package and class name.
+     * @param resolver The {@code Resolver} for the current processing environment.
+     * @param path The tree path to the local scope.
+     * @return {@code null} if the expression string did not start with a package name,
+     * otherwise a {@code Pair} containing the {@code ClassName} for the matched
+     * class, and the remaining substring of the expression (possibly null) after
+     * the package and class name.
+     * @throws FlowExpressionParseException if the entire expression string matches a package name (but no class name),
+     * or if a package name was matched but the class could not be found within the package
+     * (e.g. {@code "myExistingPackage.myNonExistentClass"}).
+     */
+    private static Pair<ClassName, String> matchPackageAndClassNameWithinExpression(String expression,
+            Resolver resolver, TreePath path)
+            throws FlowExpressionParseException {
+        Pair<PackageSymbol, String> packageSymbolAndRemainingString = matchPackageNameWithinExpression(expression, resolver, path);
+
+        if (packageSymbolAndRemainingString == null) {
+            return null;
+        }
+
+        PackageSymbol packageSymbol = packageSymbolAndRemainingString.first;
+        String remainingString = packageSymbolAndRemainingString.second;
+
+        Matcher dotMatcher = dotPattern.matcher(remainingString);
+        String classNameString = null;
+        if (dotMatcher.matches()) {
+            classNameString = dotMatcher.group(1);
+            remainingString = dotMatcher.group(2);
+        } else {
+            classNameString = remainingString;
+            remainingString = null;
+        }
+        ClassSymbol classSymbol = null;
+        try {
+            classSymbol = resolver.findClassInPackage(classNameString, packageSymbol, path);
+        } catch (Throwable t) {
+            throw constructParserException(expression,
+                    " findClassInPackage threw an exception when looking up class " + classNameString +
+                    " in package " + packageSymbol.toString(), t);
+        }
+        if (classSymbol == null) {
+            throw constructParserException(expression, "classSymbol==null when looking for class in package");
+        }
+        TypeMirror classType = ElementUtils.getType(classSymbol);
+        if (classType == null) {
+            throw constructParserException(expression, "classtype==null when looking for class in package");
+        }
+        return Pair.of(new ClassName(classType), remainingString);
+    }
+
+    /**
+     * Greedily matches the longest substring of {@code expression} to a package
+     * (starting from the beginning of the string).
+     *
+     * @param expression the expression string that may start with a package name.
+     * @param resolver The {@code Resolver} for the current processing environment.
+     * @param path The tree path to the local scope.
+     * @return {@code null} if the expression string did not start with a package name,
+     * otherwise a {@code Pair} containing the {@code PackageSymbol} for the matched
+     * package, and the remaining substring of the expression (always non-null) after
+     * the package name.
+     * @throws FlowExpressionParseException if the entire expression string matches a package name.
+     */
+    private static Pair<PackageSymbol, String> matchPackageNameWithinExpression(String expression, Resolver resolver, TreePath path)
+            throws FlowExpressionParseException {
+        Matcher dotMatcher = dotPattern.matcher(expression);
+
+        // To proceed past this point, at the minimum the expression must be composed of packageName.className
+        if (!dotMatcher.matches()) { // Do not remove the call to matches(), otherwise the dotMatcher groups will not be filled in.
+            return null;
+        }
+
+        String packageName = dotMatcher.group(1);
+        String remainingString = dotMatcher.group(2),
+               remainingStringIfPackageMatched = remainingString;
+
+        PackageSymbol packageSymbol = null;
+
+        while (true) {
+            PackageSymbol packageLookupResult = null;
+            try {
+                packageLookupResult = resolver.findPackage(packageName, path);
+            } catch (Throwable t) {
+                throw constructParserException(expression, " findPackage threw an exception when looking up package " + packageName, t);
+            }
+            if (packageLookupResult == null) {
+                break;
+            }
+            packageSymbol = packageLookupResult; // A valid package symbol was retrieved - store it.
+            remainingString = remainingStringIfPackageMatched;
+            dotMatcher = dotPattern.matcher(remainingString);
+            if (dotMatcher.matches()) {
+                packageName += "." + dotMatcher.group(1);
+                remainingStringIfPackageMatched = dotMatcher.group(2);
+            } else {
+                try {
+                    packageLookupResult = resolver.findPackage(expression, path);
+                } catch (Throwable t) {
+                    throw constructParserException(expression, " findPackage threw an exception when looking up package " + expression, t);
+                }
+                if (packageLookupResult != null) {
+                    // The entire expression matches a package name.
+                    throw constructParserException(expression, " a flow expression string cannot be a standalone package name");
+                }
+                break;
+            }
+        }
+
+        if (packageSymbol == null) {
+            return null;
+        }
+
+        assert remainingString != null; // an exception would have been thrown above if the entire expression is a package name
+
+        return Pair.of(packageSymbol, remainingString);
     }
 
     /**
