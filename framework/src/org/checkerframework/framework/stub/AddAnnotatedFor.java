@@ -47,13 +47,14 @@ public class AddAnnotatedFor {
   private static AnnotationDef adAnnotatedFor;
 
   static {
+    Class<?> annotatedFor =
+        org.checkerframework.framework.qual.AnnotatedFor.class;
     Set<Annotation> annotatedForMetaAnnotations = new HashSet<Annotation>();
     annotatedForMetaAnnotations.add(Annotations.aRetentionSource);
     annotatedForMetaAnnotations.add(Annotations.createValueAnnotation(
         Annotations.adTarget,
         Arrays.<String>asList("TYPE", "METHOD", "CONSTRUCTOR", "PACKAGE")));
-    adAnnotatedFor = new AnnotationDef(
-        "org.checkerframework.framework.qual.AnnotatedFor",
+    adAnnotatedFor = new AnnotationDef(annotatedFor.getCanonicalName(),
         annotatedForMetaAnnotations,
         Collections.<String, AnnotationFieldType>singletonMap("value",
             new ArrayAFT(BasicAFT.forType(String.class))));
