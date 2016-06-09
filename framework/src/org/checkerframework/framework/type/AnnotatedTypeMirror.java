@@ -727,8 +727,8 @@ public abstract class AnnotatedTypeMirror {
     }
 
     @SideEffectFree
-    public final String toString(boolean printInvisibles) {
-        return formatter.format(this, printInvisibles);
+    public final String toString(boolean verbose) {
+        return formatter.format(this, verbose);
 
     }
 

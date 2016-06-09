@@ -123,8 +123,8 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
         }
 
         @Override
-        public String format(AnnotatedTypeMirror type, boolean printInvisibles) {
-            return qualifiedTypeFormatter.format(getTypeMirrorConverter().getQualifiedType(type), printInvisibles);
+        public String format(AnnotatedTypeMirror type, boolean printVerbose) {
+            return qualifiedTypeFormatter.format(getTypeMirrorConverter().getQualifiedType(type), printVerbose);
         }
 
         @Override
