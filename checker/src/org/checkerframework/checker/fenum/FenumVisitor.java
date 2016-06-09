@@ -30,12 +30,14 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     public Void visitBinary(BinaryTree node, Void p) {
         if (!TreeUtils.isStringConcatenation(node)) {
             // TODO: ignore string concatenations
+            AnnotatedTypeMirror lhsAtm = atypeFactory.getAnnotatedType(node.getLeftOperand());
+            AnnotatedTypeMirror rhsAtm = atypeFactory.getAnnotatedType(node.getRightOperand());
 
-            Set<AnnotationMirror> lhs = atypeFactory.getAnnotatedType(node.getLeftOperand()).getEffectiveAnnotations();
-            Set<AnnotationMirror> rhs = atypeFactory.getAnnotatedType(node.getRightOperand()).getEffectiveAnnotations();
+            Set<AnnotationMirror> lhs = lhsAtm.getEffectiveAnnotations();
+            Set<AnnotationMirror> rhs = rhsAtm.getEffectiveAnnotations();
             QualifierHierarchy qualHierarchy = atypeFactory.getQualifierHierarchy();
             if (!(qualHierarchy.isSubtype(lhs, rhs) || qualHierarchy.isSubtype(rhs, lhs))) {
-                checker.report(Result.failure("binary.type.incompatible", lhs, rhs), node);
+                checker.report(Result.failure("binary.type.incompatible", lhsAtm, rhsAtm), node);
             }
         }
         return super.visitBinary(node, p);
