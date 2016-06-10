@@ -999,11 +999,26 @@
     </target>
 
     <target name="-jtreg.download" depends="jtreg.check" unless="jtreg.exists">
-      <!-- The last successful artifact includes Java 8 class files, so use the last build that does not. -->
+      <!-- The last successful artifact
+           (https://adopt-openjdk.ci.cloudbees.com/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz)
+           includes Java 8 class files.
+           You can confirm the problem by running:
+wget https://adopt-openjdk.ci.cloudbees.com/job/jtreg/lastSuccessfulBuild/artifact/jtreg-4.2.0-tip.tar.gz
+tar xzf jtreg-4.2.0-tip.tar.gz
+cd jtreg/lib
+jar xf *.jar
+file `find . -name '*.class'` | grep 'version 52.0'
+
+The last build that does not was
+https://adopt-openjdk.ci.cloudbees.com/job/jtreg/545/artifact/jtreg-4.2.0-tip.tar.gz
+but it expired from the cloudbees Jenkins server in early June 2016.
+
+So, use our own archived version.
+      -->
       <get
-        src="https://adopt-openjdk.ci.cloudbees.com/job/jtreg/545/artifact/jtreg-4.2.0-tip.tar.gz"
+        src="http://types.cs.washington.edu/jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/.." />
-      <untar src="${jtreg.home}/../jtreg-4.2.0-tip.tar.gz"
+      <untar src="${jtreg.home}/../jtreg-4.2.0-for-jdk7.tar.gz"
         dest="${jtreg.home}/../"
         compression="gzip" />
     </target>
