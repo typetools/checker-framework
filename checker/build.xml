@@ -1267,8 +1267,7 @@ So, use our own archived version.
                 classpath="${javac.lib}:${checker.lib}:${junit.lib}:${hamcrest.lib}"
                 srcdir="${src}"
                 includes="**/*.java"
-                excludes="org/checkerframework/checker/nullness/NullnessUtils.java org/checkerframework/checker/regex/RegexUtils.java org/checkerframework/checker/unsignedness/UnsignednessUtil.java"/>
-"
+                excludes="org/checkerframework/checker/nullness/NullnessUtils.java org/checkerframework/checker/regex/RegexUtils.java org/checkerframework/checker/unsignedness/UnsignednessUtil.java"
                 compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
                 destdir="${build}">
             <compilerarg value="-Xjcov"/>
