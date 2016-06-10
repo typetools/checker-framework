@@ -7,8 +7,8 @@ import org.checkerframework.framework.qual.*;
 import javax.lang.model.type.TypeKind;
 
 /**
- * UnsignednessBottom is the bottom qualifier in the Unsigned Type
- * System, and is only assigned to a value in error.
+ * The bottom qualifier in the Unsigned Type
+ * System.  It is only assigned to a value in error.
  *
  * @checker_framework.manual #unsignedness-checker Unsignedness Checker
  */

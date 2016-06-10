@@ -5,9 +5,8 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- * Constant is a type qualifier which indicates that a value
- * is a compile-time constant, and could be Unsigned or
- * Signed.
+ * The valueis a compile-time constant, and could be
+ * {@link Signed} or {@link Unsigned}.
  *
  * @checker_framework.manual #unsignedness-checker Unsignedness Checker
  */
