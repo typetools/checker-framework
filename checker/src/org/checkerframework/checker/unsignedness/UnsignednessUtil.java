@@ -53,7 +53,7 @@ public final class UnsignednessUtil {
      *
      * This is a reimplementation of Java 8's
      * {@code Long.compareUnsigned(long, long)}.
-     * 
+     *
      * @return a negative number iff x {@literal <} y,
      *         a positive number iff x {@literal >} y,
      *         and zero iff x == y.
@@ -108,7 +108,7 @@ public final class UnsignednessUtil {
 
     /**
      * Produces a string representation of the unsigned long l.
-     * 
+     *
      * This is a reimplementation of Java 8's
      * {@code Long.toUnsignedString(long)}.
      */
