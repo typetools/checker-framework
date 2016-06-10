@@ -130,11 +130,14 @@ Consider the following Java code:
   result = s2 / s1;   // OK: result is 2, which is correct for -2 / -1
   result = u2 / u1;   // ERROR: result is 2, which is incorrect for (2^32 - 1) / (2^32 - 2)
 
-  int s3 = 0;
+  int s3 = -1;
   int s4 = 5;
 
   @Unsigned int u3 = 0xFFFFFFFF;    // unsigned: 2^32 - 1, signed: -1
   @Unsigned int u4 = 5;
+
+  result = s3 % s4;    // OK: result is 4, which is correct for -2 % 5
+  result = u3 % u4;    // ERROR: result is 4, which is incorrect for (2^32 - 1) % 5
 \end{Verbatim}
 
 These examples illustrate why division and modulus with an unsigned operand
