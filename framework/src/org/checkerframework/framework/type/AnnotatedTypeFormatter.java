@@ -21,11 +21,11 @@ public interface AnnotatedTypeFormatter {
     /**
      * Formats type into a String.
      * @param type the type to be converted
-     * @param printInvisibles whether or not to print invisible annotations
+     * @param printVerbose whether or not to print verbosely
      * @see org.checkerframework.framework.qual.InvisibleQualifier
      * @return a string representation of type
      */
     @SideEffectFree
-    public String format(AnnotatedTypeMirror type, boolean printInvisibles);
+    public String format(AnnotatedTypeMirror type, boolean printVerbose);
 
 }

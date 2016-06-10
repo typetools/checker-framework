@@ -576,6 +576,13 @@
 	-->
     </target>
 
+    <target name="supportedquals-tests" depends="jar,build-tests"
+            description="Run tests for specifying supported qualifiers.">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SupportedQualsTest"/>
+        </antcall>
+    </target>
+
     <target name="value-tests" depends="jar,build-tests"
             description="Run tests for constant value propagation">
         <antcall target="-run-tests">

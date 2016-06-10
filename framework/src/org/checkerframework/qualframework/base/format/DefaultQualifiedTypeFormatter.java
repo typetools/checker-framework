@@ -32,16 +32,16 @@ public class DefaultQualifiedTypeFormatter<Q, QUAL_FORMATTER extends QualFormatt
 
     protected final AnnotatedTypeFormatter adapter;
     protected final AnnotationFormatter annoAdapter;
-    protected final boolean useOldFormat;
+    protected final boolean defaultPrintVerboseGenerics;
 
     public DefaultQualifiedTypeFormatter(
             QUAL_FORMATTER qualFormatter,
             TypeMirrorConverter<Q> converter,
-            boolean useOldFormat,
+            boolean defaultPrintVerboseGenerics,
             boolean defaultPrintInvisibleQualifiers) {
 
         this.converter = converter;
-        this.useOldFormat = useOldFormat;
+        this.defaultPrintVerboseGenerics = defaultPrintVerboseGenerics;
         this.defaultPrintInvisibleQualifiers = defaultPrintInvisibleQualifiers;
         this.qualFormatter = qualFormatter;
         this.annoAdapter = createAnnotationFormatter();
@@ -57,7 +57,7 @@ public class DefaultQualifiedTypeFormatter<Q, QUAL_FORMATTER extends QualFormatt
      * @return the AnnotatedTypeFormatter
      */
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter(AnnotationFormatter annotationFormatter) {
-        return new DefaultAnnotatedTypeFormatter(annotationFormatter, useOldFormat, defaultPrintInvisibleQualifiers);
+        return new DefaultAnnotatedTypeFormatter(annotationFormatter, defaultPrintVerboseGenerics, defaultPrintInvisibleQualifiers);
     }
 
     @Override
