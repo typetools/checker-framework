@@ -1840,8 +1840,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * to a variable and emits an error message (through the compiler's
      * messaging interface) if it is not valid.
      *
-     * @param varTree the AST node for the variable
-     * @param valueExp the AST node for the value
+     * @param varTree the AST node for the lvalue (usually a variable)
+     * @param valueExp the AST node for the rvalue (the new value)
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      */
@@ -1864,8 +1864,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * to a variable and emits an error message (through the compiler's
      * messaging interface) if it is not valid.
      *
-     * @param varType the annotated type of the variable
-     * @param valueExp the AST node for the value
+     * @param varType the annotated type of the lvalue (usually a variable)
+     * @param valueExp the AST node for the rvalue (the new value)
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      */
