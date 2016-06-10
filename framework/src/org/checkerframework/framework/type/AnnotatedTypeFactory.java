@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -336,6 +337,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.loader = new AnnotationClassLoader(checker);
         this.supportedQuals = createSupportedTypeQualifiers();
+        checkSupportedQuals();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
@@ -363,6 +365,42 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             checkInvalidOptionsInferSignatures();
             wholeProgramInference = new WholeProgramInferenceScenes(
                     !"NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName()));
+        }
+    }
+
+    /**
+     * Issue an error and abort if any of the support qualifiers have @Target meta-annotations
+     * that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
+     */
+    private void checkSupportedQuals() {
+        for (Class<? extends Annotation> annotationClass : supportedQuals) {
+            ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
+            List<ElementType> otherElementTypes = new ArrayList<>();
+            for (ElementType element : elements) {
+                if (!(element.equals(ElementType.TYPE_USE)
+                        || element.equals(ElementType.TYPE_PARAMETER))) {
+                    // if there's an ElementType with an enumerated value of something other
+                    // than TYPE_USE or TYPE_PARAMETER then it isn't a valid qualifier
+                    otherElementTypes.add(element);
+                }
+            }
+            if (!otherElementTypes.isEmpty()) {
+                StringBuffer buf = new StringBuffer("The @Target meta-annotation on type qualifier ");
+                buf.append(annotationClass.toString());
+                buf.append(" must not contain ");
+                for (int i = 0; i < otherElementTypes.size(); i++) {
+                    if (i == 1 && otherElementTypes.size() == 2) {
+                        buf.append(" or ");
+                    } else if (i == otherElementTypes.size() - 1) {
+                        buf.append(", or ");
+                    } else if (i != 0) {
+                        buf.append(", ");
+                    }
+                    buf.append(otherElementTypes.get(i));
+                }
+                buf.append(".");
+                ErrorReporter.errorAbort(buf.toString());
+            }
         }
     }
 
