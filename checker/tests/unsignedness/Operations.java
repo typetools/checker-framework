@@ -6,16 +6,16 @@ public class Operations {
 
         @UnknownSignedness int testRes;
 
-        //:: error: (binary.operation.type.incompatible.unsignedlhs)
+        //:: error: (operation.unsignedlhs)
         testRes = unsigned / 1;
 
-        //:: error: (binary.operation.type.incompatible.unsignedrhs)
+        //:: error: (operation.unsignedrhs)
         testRes = 1 / unsigned;
 
-        //:: error: (binary.operation.type.incompatible.unsignedlhs)
+        //:: error: (operation.unsignedlhs)
         testRes = unsigned % 1;
 
-        //:: error: (binary.operation.type.incompatible.unsignedrhs)
+        //:: error: (operation.unsignedrhs)
         testRes = 1 % unsigned;
     }
 
@@ -23,7 +23,7 @@ public class Operations {
 
         @UnknownSignedness int testRes;
 
-        //:: error: (binary.operation.shift.signed.type.incompatible)
+        //:: error: (shift.signed)
         testRes = unsigned >> 1;
     }
 
@@ -31,7 +31,7 @@ public class Operations {
 
         @UnknownSignedness int testRes;
 
-        //:: error: (binary.operation.shift.unsigned.type.incompatible)
+        //:: error: (shift.unsigned)
         testRes = signed >>> 1;
     }
 
@@ -39,40 +39,40 @@ public class Operations {
 
         @UnknownSignedness int testRes;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedlhs)
+        //:: error: (operation.mixed.unsignedlhs)
         testRes = unsigned * signed;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedrhs)
+        //:: error: (operation.mixed.unsignedrhs)
         testRes = signed * unsigned;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedlhs)
+        //:: error: (operation.mixed.unsignedlhs)
         testRes = unsigned + signed;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedrhs)
+        //:: error: (operation.mixed.unsignedrhs)
         testRes = signed + unsigned;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedlhs)
+        //:: error: (operation.mixed.unsignedlhs)
         testRes = unsigned - signed;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedrhs)
+        //:: error: (operation.mixed.unsignedrhs)
         testRes = signed - unsigned;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedlhs)
+        //:: error: (operation.mixed.unsignedlhs)
         testRes = unsigned & signed;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedrhs)
+        //:: error: (operation.mixed.unsignedrhs)
         testRes = signed & unsigned;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedlhs)
+        //:: error: (operation.mixed.unsignedlhs)
         testRes = unsigned ^ signed;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedrhs)
+        //:: error: (operation.mixed.unsignedrhs)
         testRes = signed ^ unsigned;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedlhs)
+        //:: error: (operation.mixed.unsignedlhs)
         testRes = unsigned | signed;
 
-        //:: error: (binary.operation.type.incompatible.mixed.unsignedrhs)
+        //:: error: (operation.mixed.unsignedrhs)
         testRes = signed | unsigned;
     }
 }

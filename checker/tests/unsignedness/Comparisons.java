@@ -6,28 +6,28 @@ public class Comparisons {
 
         boolean testRes;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
+        //:: error: (comparison.unsignedlhs)
         testRes = unsigned < unknown;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
+        //:: error: (comparison.unsignedrhs)
         testRes = unknown < unsigned;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
+        //:: error: (comparison.unsignedlhs)
         testRes = unsigned <= unknown;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
+        //:: error: (comparison.unsignedrhs)
         testRes = unknown <= unsigned;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
+        //:: error: (comparison.unsignedlhs)
         testRes = unsigned > unknown;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
+        //:: error: (comparison.unsignedrhs)
         testRes = unknown > unsigned;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedlhs)
+        //:: error: (comparison.unsignedlhs)
         testRes = unsigned >= unknown;
 
-        //:: error: (binary.comparison.type.incompatible.unsignedrhs)
+        //:: error: (comparison.unsignedrhs)
         testRes = unknown >= unsigned;
     }
 
@@ -35,16 +35,16 @@ public class Comparisons {
 
         boolean testRes;
 
-        //:: error: (binary.comparison.type.incompatible.mixed.unsignedlhs)
+        //:: error: (comparison.mixed.unsignedlhs)
         testRes = unsigned == signed;
 
-        //:: error: (binary.comparison.type.incompatible.mixed.unsignedrhs)
+        //:: error: (comparison.mixed.unsignedrhs)
         testRes = signed == unsigned;
 
-        //:: error: (binary.comparison.type.incompatible.mixed.unsignedlhs)
+        //:: error: (comparison.mixed.unsignedlhs)
         testRes = unsigned != signed;
 
-        //:: error: (binary.comparison.type.incompatible.mixed.unsignedrhs)
+        //:: error: (comparison.mixed.unsignedrhs)
         testRes = signed != unsigned;
     }
 }
