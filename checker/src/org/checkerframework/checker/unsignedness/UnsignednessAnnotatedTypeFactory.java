@@ -31,6 +31,8 @@ import javax.lang.model.type.TypeMirror;
  */
 public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
 
+    private final AnnotationMirror UNSIGNED;
+    private final AnnotationMirror SIGNED;
     private final AnnotationMirror UNKNOWN_SIGNEDNESS;
 
     // These are commented out until issues with making boxed implicitely signed
@@ -44,6 +46,8 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
 
     public UnsignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+        UNSIGNED = AnnotationUtils.fromClass(elements, Unsigned.class);
+        SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
         UNKNOWN_SIGNEDNESS = AnnotationUtils.fromClass(elements, UnknownSignedness.class);
 
         postInit();
@@ -113,17 +117,13 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
     }
 
     /**
-     * This TreeAnnotator will ensure that booleans cannot cause Unsigned or
-     * Signed annotations to bubble up through them.
+     * This TreeAnnotator ensures that booleans expressions are not
+     * given Unsigned or Signed annotations.
      */
     private class UnsignednessTreeAnnotator extends TreeAnnotator {
-        private final AnnotationMirror UNSIGNED;
-        private final AnnotationMirror SIGNED;
 
         public UnsignednessTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
-            UNSIGNED = AnnotationUtils.fromClass(elements, Unsigned.class);
-            SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
         }
 
         /**

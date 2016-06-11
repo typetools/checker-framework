@@ -28,11 +28,11 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
      * Enforces the following rules on binary operations involving Unsigned and
      * Signed types:
      * <ul>
-     *      <li> Do not allow any Unsigned types in the {@literal {/, %}} operations. </li>
-     *      <li> Do not allow the signed right shift {@literal {>>}} of an Unsigned type. </li>
-     *      <li> Do not allow the unsigned right shift {@literal {>>>}} of a Signed type. </li>
-     *      <li> Do not allow non-equality comparisons {@literal {<, <=, >, >=}} on Unsigned types. </li>
+     *      <li> Do not allow any Unsigned types in {@literal {/, %}} operations. </li>
+     *      <li> Do not allow signed right shift {@literal {>>}} on an Unsigned type. </li>
+     *      <li> Do not allow unsigned right shift {@literal {>>>}} on a Signed type. </li>
      *      <li> Allow any left shift {@literal {<<}}. </li>
+     *      <li> Do not allow non-equality comparisons {@literal {<, <=, >, >=}} on Unsigned types. </li>
      *      <li> Do not allow the mixing of Signed and Unsigned types. </li>
      * </ul>
      */
@@ -125,11 +125,11 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
      * Enforces the following rules on compound assignments involving Unsigned and
      * Signed types:
      * <ul>
-     *      <li> Do not allow any Unsigned types in the {@literal {/=, %=}} assignments. </li>
-     *      <li> Do not allow the signed right shift {@literal {>>=}} to assign to an Unsigned type. </li>
-     *      <li> Do not allow the unsigned right shift {@literal {>>>=}} to assign to a Signed type. </li>
+     *      <li> Do not allow any Unsigned types in {@literal {/=, %=}} assignments. </li>
+     *      <li> Do not allow signed right shift {@literal {>>=}} to assign to an Unsigned type. </li>
+     *      <li> Do not allow unsigned right shift {@literal {>>>=}} to assign to a Signed type. </li>
      *      <li> Allow any left shift {@literal {<<=}} assignment. </li>
-     *      <li> Do not allow the mixing of Signed and Unsigned types. </li>
+     *      <li> Do not allow mixing of Signed and Unsigned types. </li>
      * </ul>
      */
     @Override
