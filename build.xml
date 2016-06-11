@@ -121,7 +121,7 @@
   </target>
 
   <target name="html-validate"
-	  description="Validate that HTML files are well-formed; only works with JDK 8">
+          description="Validate that HTML files are well-formed; only works with JDK 8">
     <exec executable="html5validator">
       <arg value="--ignore"/>
       <arg value="/api/"/>
@@ -146,7 +146,7 @@
   </loadresource>
 
   <target name="check-style"
-	  description="Check basic style guidelines">
+          description="Check basic style guidelines">
     <!-- There should be a way to templatize the following. -->
 
     <exec executable="grep" outputproperty="trailingwhitespace" failonerror="false">
@@ -156,9 +156,9 @@
     </exec>
     <fail message="Trailing whitespace:${line.separator}${trailingwhitespace}">
       <condition>
-	<not>
-	  <equals arg1="${trailingwhitespace}" arg2=""/>
-	</not>
+        <not>
+          <equals arg1="${trailingwhitespace}" arg2=""/>
+        </not>
       </condition>
     </fail>
 
@@ -170,14 +170,14 @@
     </exec>
     <fail message="Missing space:${line.separator}${missingspace}">
       <condition>
-	<not>
-	  <equals arg1="${missingspace}" arg2=""/>
-	</not>
+        <not>
+          <equals arg1="${missingspace}" arg2=""/>
+        </not>
       </condition>
     </fail>
 
     <!-- To remove trailing whitespace:
-	 find . -name '*.java' | xargs sed -i ':a;/^[ \n]*$/{$d;N;ba}'
+         find . -name '*.java' | xargs sed -i ':a;/^[ \n]*$/{$d;N;ba}'
     -->
     <exec executable="find" outputproperty="blankline" failonerror="false">
       <arg line="${style.find.files}"/>
@@ -192,9 +192,9 @@
     </exec>
     <fail message="Blank line at end of file:${line.separator}${blankline}">
       <condition>
-	<not>
-	  <equals arg1="${blankline}" arg2=""/>
-	</not>
+        <not>
+          <equals arg1="${blankline}" arg2=""/>
+        </not>
       </condition>
     </fail>
 
@@ -208,9 +208,9 @@
     </exec>
     <fail message="Missing newline at end of files:${line.separator}${notrailingnewline}">
       <condition>
-	<not>
-	  <equals arg1="${notrailingnewline}" arg2=""/>
-	</not>
+        <not>
+          <equals arg1="${notrailingnewline}" arg2=""/>
+        </not>
       </condition>
     </fail>
   </target>
@@ -220,7 +220,7 @@
   <!-- Allow 30 seconds for either formatting task to complete. -->
 
   <target name="reformat"
-	  description="Reformat Java code">
+          description="Reformat Java code">
     <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true"/>
     <apply executable="python" parallel="true" failonerror="true">
       <arg value="./checker/bin-devel/run-google-java-format.py"/>
@@ -230,7 +230,7 @@
   </target>
 
   <target name="check-format"
-	  description="Check Java code formatting">
+          description="Check Java code formatting">
     <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true"/>
     <apply executable="python" parallel="true" failonerror="true">
       <arg value="./checker/bin-devel/check-google-java-format.py"/>

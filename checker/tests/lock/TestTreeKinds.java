@@ -224,13 +224,13 @@ void testTreeTypes() {
     // Test different @GuardedBy(...) present on the element and array locations.
     @GuardedBy("lock") MyClass @GuardedBy("lock2") [] array = new MyClass[3];
     //:: error: (contracts.precondition.not.satisfied.field)
-	array[0].field = new Object();
+    array[0].field = new Object();
     if (lock.isHeldByCurrentThread()) {
-	    //:: error: (contracts.precondition.not.satisfied.field)
-	    array[0].field = new Object();
-	    if (lock2.isHeldByCurrentThread()) {
-		    array[0].field = new Object();
-	    }
+      //:: error: (contracts.precondition.not.satisfied.field)
+      array[0].field = new Object();
+      if (lock2.isHeldByCurrentThread()) {
+        array[0].field = new Object();
+      }
     }
 
     //:: error: (contracts.precondition.not.satisfied.field)

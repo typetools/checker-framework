@@ -502,19 +502,19 @@ miss a step if you only read the paragraph asking you to say 'yes'.
           <a href="https://bitbucket.org/typetools/jsr308-langtools/issues?status=resolved&sort=-updated_on">issues query</a>,
            <a href="https://bitbucket.org/typetools/jsr308-langtools/src/default/doc/changelog-jsr308.txt?at=default&fileviewer=file-view-default">current changelog</a>).
       </li>
-	  <li>
-	    Examine the version control logs since the last release tag to ensure they are reflected in the changelogs when appropriate.
+          <li>
+            Examine the version control logs since the last release tag to ensure they are reflected in the changelogs when appropriate.
         This can be done from the command-line with:<br/>
-	    <code>cd $CHECKERFRAMEWORK && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
-	    <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
-	    <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r `hg log -r "." --template "{latesttag}\n"`:</code><br/>
+            <code>cd $CHECKERFRAMEWORK && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
+            <code>cd $CHECKERFRAMEWORK/../annotation-tools && git log --name-status `git describe --abbrev=0 --tags`..</code><br/>
+            <code>cd $CHECKERFRAMEWORK/../jsr308-langtools && hg log -r `hg log -r "." --template "{latesttag}\n"`:</code><br/>
         or by opening the following commit queries for <a href="https://bitbucket.org/typetools/jsr308-langtools/commits/all">jsr308-langtools</a>,
         the <a href="https://github.com/typetools/annotation-tools/commits/master">Annotation File Utilities</a> and the
             <a href="https://github.com/typetools/checker-framework/commits/master">Checker Framework</a>.
       </li>
-	  <li>
-	    Even if some code has been committed to the repository, don't
-	    announce the feature until it has been documented in the manual.
+          <li>
+            Even if some code has been committed to the repository, don't
+            announce the feature until it has been documented in the manual.
       </li>
     </ul>
   </section>

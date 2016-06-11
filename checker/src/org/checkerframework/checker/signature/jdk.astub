@@ -68,10 +68,10 @@ package java.lang.instrument;
 
 class ClassFileTransformer {
   byte[] transform(ClassLoader loader,
-		   @InternalForm String className,
-		   Class<?> classBeingRedefined,
-		   ProtectionDomain protectionDomain,
-		   byte[] classfileBuffer);
+                   @InternalForm String className,
+                   Class<?> classBeingRedefined,
+                   ProtectionDomain protectionDomain,
+                   byte[] classfileBuffer);
 }
 
 package java.lang.management;
