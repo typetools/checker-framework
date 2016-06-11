@@ -407,8 +407,8 @@ def main(argv):
 
         print "Verify that all changelog messages follow the guidelines found in README-maintainers.html#changelog_guide\n"
 
-        print "Ensure that the changelogs end with a line like"
-        print "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374\n"
+        print "Ensure that the changelogs end with a line that lists resolved issues in numerical order, like"
+        print "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374.\n"
 
         print("To ensure the jsr308-langtools, AFU and Checker Framework changelogs are correct and complete, " +
               "please follow the Content Guidelines found in README-maintainers.html#content_guidelines\n")
