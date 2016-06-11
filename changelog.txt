@@ -1,5 +1,12 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.0, 1 July 2016
+
+The new Unsignedness Checker prevents mixing of unsigned and signed
+values and prevents meaningless operations on unsigned values.
+
+---------------------------------------------------------------------------
+
 Version 2.0.1, 1 June 2016
 
 We renamed method annotateImplicit to addComputedTypeAnnotations.  If you
