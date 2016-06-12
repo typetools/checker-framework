@@ -13,7 +13,7 @@ public interface ExtendedExecutableType extends ExtendedTypeMirror {
 
     /**
      * Returns the receiver type of this executable, or {@link ExtendedNoType}
-     * with kind <code>NONE</code> if the executable has no receiver type. An
+     * with kind {@code NONE} if the executable has no receiver type. An
      * executable which is an instance method, or a constructor of an inner
      * class, has a receiver type derived from the declaring type. An
      * executable which is a static method, or a constructor of a non-inner
@@ -23,15 +23,15 @@ public interface ExtendedExecutableType extends ExtendedTypeMirror {
 
     /**
      * Returns the return type of this executable. Returns an {@link
-     * ExtendedNoType} with kind <code>VOID</code> if this executable is a
+     * ExtendedNoType} with kind {@code VOID} if this executable is a
      * method that does not return a value.  Unlike
-     * <code>ExecutableType.getReturnType</code>, calling this method on the
+     * {@code ExecutableType.getReturnType}, calling this method on the
      * type of a constructor returns the type of the object to be constructed.
      */
     ExtendedTypeMirror getReturnType();
 
     /** Returns the exceptions and other throwables listed in this executable's
-     * <code>throws</code> clause. */
+     * {@code throws} clause. */
     List<? extends ExtendedTypeMirror> getThrownTypes();
 
     /** Returns the type variables declared by the formal type parameters of

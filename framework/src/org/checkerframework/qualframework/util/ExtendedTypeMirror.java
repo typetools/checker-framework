@@ -7,7 +7,7 @@ import javax.lang.model.type.TypeMirror;
 /**
  * Represents a type in the Java programming language.  The {@link
  * ExtendedTypeMirror} hierarchy follows the same structure as the standard
- * {@link TypeMirror} hierarchy.  We use these <code>Extended</code> interfaces
+ * {@link TypeMirror} hierarchy.  We use these {@code Extended} interfaces
  * instead of the standard {@link TypeMirror} interfaces because in some cases
  * we require behavior that differs from the specification of {@link
  * TypeMirror}.  (See the subinterfaces' documentation for details.)

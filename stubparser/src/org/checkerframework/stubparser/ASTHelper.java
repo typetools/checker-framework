@@ -137,7 +137,7 @@ public final class ASTHelper {
 
     /**
      * Adds the given parameter to the method. The list of parameters will be
-     * initialized if it is <code>null</code>.
+     * initialized if it is {@code null}.
      * 
      * @param method
      *            method
@@ -155,7 +155,7 @@ public final class ASTHelper {
 
     /**
      * Adds the given argument to the method call. The list of arguments will be
-     * initialized if it is <code>null</code>.
+     * initialized if it is {@code null}.
      * 
      * @param call
      *            method call
@@ -173,7 +173,7 @@ public final class ASTHelper {
 
     /**
      * Adds the given type declaration to the compilation unit. The list of
-     * types will be initialized if it is <code>null</code>.
+     * types will be initialized if it is {@code null}.
      * 
      * @param cu
      *            compilation unit
@@ -196,7 +196,7 @@ public final class ASTHelper {
      * @param name
      *            name of the class or interface
      * @param arrayCount
-     *            number os arrays or <code>0</code> if is not a array.
+     *            number os arrays or {@code 0} if is not a array.
      * @return instanceof {@link ReferenceType}
      */
     public static ReferenceType createReferenceType(String name, int arrayCount) {
@@ -209,7 +209,7 @@ public final class ASTHelper {
      * @param type
      *            primitive type
      * @param arrayCount
-     *            number os arrays or <code>0</code> if is not a array.
+     *            number os arrays or {@code 0} if is not a array.
      * @return instanceof {@link ReferenceType}
      */
     public static ReferenceType createReferenceType(PrimitiveType type, int arrayCount) {
@@ -218,7 +218,7 @@ public final class ASTHelper {
 
     /**
      * Adds the given statement to the specified block. The list of statements
-     * will be initialized if it is <code>null</code>.
+     * will be initialized if it is {@code null}.
      */
     public static void addStmt(BlockStmt block, Statement stmt) {
         List<Statement> stmts = block.getStmts();
@@ -231,7 +231,7 @@ public final class ASTHelper {
 
     /**
      * Adds the given expression to the specified block. The list of statements
-     * will be initialized if it is <code>null</code>.
+     * will be initialized if it is {@code null}.
      */
     public static void addStmt(BlockStmt block, Expression expr) {
         addStmt(block, new ExpressionStmt(expr));
@@ -239,7 +239,7 @@ public final class ASTHelper {
 
     /**
      * Adds the given declaration to the specified type. The list of members
-     * will be initialized if it is <code>null</code>.
+     * will be initialized if it is {@code null}.
      * 
      * @param type
      *            type declaration

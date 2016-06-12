@@ -128,7 +128,7 @@ public class JavaSource2CFGDOT {
      *            Also generate a PDF?
      * @param analysis
      *            Analysis to perform befor the visualization (or
-     *            <code>null</code> if no analysis is to be performed).
+     *            {@code null} if no analysis is to be performed).
      */
     public static
     <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>

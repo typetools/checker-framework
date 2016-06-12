@@ -5,7 +5,7 @@ package org.checkerframework.qualframework.base;
  * checks between qualifiers.
  */
 public interface QualifierHierarchy<Q> {
-    /** Checks if <code>subtype</code> is a subtype of <code>supertype</code>. */
+    /** Checks if {@code subtype} is a subtype of {@code supertype}. */
     boolean isSubtype(Q subtype, Q supertype);
 
     /** Gets the least upper bound of two qualifiers. */

@@ -48,30 +48,30 @@ public interface QualifiedTypeFactory<Q> {
     QualifiedTypes<Q> getQualifiedTypes();
 
     /**
-     * Hook for customizing the behavior of <code>directSuperTypes</code>.
+     * Hook for customizing the behavior of {@code directSuperTypes}.
      *
      * @param subtype
-     *      the target of the <code>directSuperTypes</code> call
+     *      the target of the {@code directSuperTypes} call
      * @param supertypes
      *      the supertypes produced by the default
-     *      <code>directSuperTypes</code> implementation
+     *      {@code directSuperTypes} implementation
      * @return
-     *      a copy of <code>supertypes</code> after applying checker-specific
+     *      a copy of {@code supertypes} after applying checker-specific
      *      adjustments
      */
     List<QualifiedTypeMirror<Q>> postDirectSuperTypes(QualifiedTypeMirror<Q> subtype, List<? extends QualifiedTypeMirror<Q>> supertypes);
 
-    /** Hook for customizing the behavior of <code>asMemberOf</code>.
+    /** Hook for customizing the behavior of {@code asMemberOf}.
      *
      * @param memberType
      *      the type of the element being accessed, according to the default
-     *      <code>asMemberOf</code> implementation
+     *      {@code asMemberOf} implementation
      * @param receiverType
      *      the type of the object instance whose element is being accessed
      * @param memberElement
      *      the element being accessed
      * @return
-     *      a copy of <code>memberType</code> after applying checker-specific
+     *      a copy of {@code memberType} after applying checker-specific
      *      adjustments
      */
     QualifiedTypeMirror<Q> postAsMemberOf(QualifiedTypeMirror<Q> memberType, QualifiedTypeMirror<Q> receiverType, Element memberElement);

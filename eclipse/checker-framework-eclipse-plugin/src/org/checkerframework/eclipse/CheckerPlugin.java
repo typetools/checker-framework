@@ -114,11 +114,11 @@ public class CheckerPlugin extends AbstractUIPlugin
     }
 
     /**
-     * Returns the SWT Shell of the active workbench window or <code>null</code>
+     * Returns the SWT Shell of the active workbench window or {@code null}
      * if no workbench window is active.
      *
      * @return the SWT Shell of the active workbench window, or
-     *         <code>null</code> if no workbench window is active
+     *         {@code null} if no workbench window is active
      */
     public static Shell getShell()
     {
