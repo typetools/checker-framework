@@ -1,12 +1,16 @@
 package org.checkerframework.framework.util.element;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.ErrorReporter;
+
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.TypeKind;
+
 import java.util.List;
 
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
@@ -39,6 +43,15 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
     VariableApplier(final AnnotatedTypeMirror type, final Element element) {
         super(type, element);
         varSymbol = (Symbol.VarSymbol) element;
+
+        if (type.getKind() == TypeKind.UNION &&
+                element.getKind() != ElementKind.EXCEPTION_PARAMETER) {
+            ErrorReporter.errorAbort("Union types only allowed for exception parameters! " +
+                "Type: " + type + " for element: " + element);
+        }
+        // TODO: need a way to split the union types into the right alternative
+        // to use for the annotation. The exception_index is probably what we
+        // need to look at, but it might not be set at this point.
     }
 
     @Override
