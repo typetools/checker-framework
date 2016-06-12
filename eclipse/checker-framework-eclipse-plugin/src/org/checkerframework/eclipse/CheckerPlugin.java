@@ -44,7 +44,7 @@ public class CheckerPlugin extends AbstractUIPlugin
     @Override
     public void start(BundleContext context) throws Exception
     {
-    	super.start(context);
+        super.start(context);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class CheckerPlugin extends AbstractUIPlugin
 
     @Override
     protected void initializeImageRegistry(ImageRegistry reg) {
-    	reg.put(CHECKER_WARNING_IMG_ID, getImageDescriptor("icons/sample_decorator.gif"));
+        reg.put(CHECKER_WARNING_IMG_ID, getImageDescriptor("icons/sample_decorator.gif"));
     }
 
     /**

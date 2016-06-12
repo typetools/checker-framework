@@ -1459,14 +1459,14 @@ Functionality
   Added more performance optimizations
   nullness: Added support for netbeans nullness annotations
   nullness: better semantics for redundant nullness tests
-	related to redundant tests in assertions
+    related to redundant tests in assertions
   lock: Added support for JCIP annotation in the Lock Checker
   tainting: Added support for polymorphism
   Lock Checker supports the JCIP GuardedBy annotation
 
 Bug fixes
   Fixed a crashing bug related to interaction between
-	generic types and wildcards
+    generic types and wildcards
   Fixed a bug in stub file parser related to vararg annotations
   Fixed few bugs in skeleton file generators
 
