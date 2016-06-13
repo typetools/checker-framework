@@ -797,7 +797,8 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 return isPrimarySubtype(subtype, supertype, true);
 
             } else if (!subtypeHasAnno && !supertypeHasAnno && areEqualInHierarchy(subtype, supertype, currentTop)) {
-                // two unannotated uses of the same wildcard are of the same type
+                // TODO: wildcard capture conversion
+                // Two unannotated uses of reference-equal wildcard types are the same type
                 return true;
             }
         }
