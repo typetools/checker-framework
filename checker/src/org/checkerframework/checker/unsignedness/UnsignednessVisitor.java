@@ -112,7 +112,7 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
     /**
      * @return a string representation of kind, with trailing _ASSIGNMENT stripped off if any.
      */
-    private String kindSansAssignment(Kind kind) {
+    private String kindWithOutAssignment(Kind kind) {
         String result = kind.toString();
         if (result.endsWith("_ASSIGNMENT")) {
             return result.substring(0, result.length()-"_ASSIGNMENT".length());
@@ -148,24 +148,24 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
         case REMAINDER_ASSIGNMENT:
             if (varType.hasAnnotation(Unsigned.class)) {
                 checker.report(Result.failure("compound.assignment.unsigned.variable",
-                                              kindSansAssignment(kind)), var);
+                                              kindWithOutAssignment(kind)), var);
             } else if (exprType.hasAnnotation(Unsigned.class)) {
                 checker.report(Result.failure("compound.assignment.unsigned.expression",
-                                              kindSansAssignment(kind)), expr);
+                                              kindWithOutAssignment(kind)), expr);
             }
             break;
 
         case RIGHT_SHIFT_ASSIGNMENT:
             if (varType.hasAnnotation(Unsigned.class)) {
                 checker.report(Result.failure("compound.assignment.shift.signed",
-                                              kindSansAssignment(kind), "unsigned"), var);
+                                              kindWithOutAssignment(kind), "unsigned"), var);
             }
             break;
 
         case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
             if (varType.hasAnnotation(Signed.class)) {
                 checker.report(Result.failure("compound.assignment.shift.unsigned",
-                                              kindSansAssignment(kind), "signed"), var);
+                                              kindWithOutAssignment(kind), "signed"), var);
             }
             break;
 
@@ -175,10 +175,10 @@ public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTy
         default:
             if (varType.hasAnnotation(Unsigned.class) && exprType.hasAnnotation(Signed.class)) {
                 checker.report(Result.failure("compound.assignment.mixed.unsigned.variable",
-                                              kindSansAssignment(kind)), expr);
+                                              kindWithOutAssignment(kind)), expr);
             } else if (varType.hasAnnotation(Signed.class) && exprType.hasAnnotation(Unsigned.class)) {
                 checker.report(Result.failure("compound.assignment.mixed.unsigned.expression",
-                                              kindSansAssignment(kind)), expr);
+                                              kindWithOutAssignment(kind)), expr);
             }
             break;
         }
