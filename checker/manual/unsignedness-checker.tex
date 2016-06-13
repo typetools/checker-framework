@@ -142,3 +142,14 @@ Consider the following Java code:
 
 These examples illustrate why division and modulus with an unsigned operand
 are illegal.  Other uses of operators are prohibited for similar reasons.
+
+
+\section{Utility routines for manipulating unsigned values\label{unsignedness-utilities}}
+
+Class \refclass{checker/unsignedness}{UnsignednessUtil} provides static
+utility methods for working with unsigned values.  Some of these
+re-implement functionality in JDK 8, making it available in earlier
+versions of Java.  Others provide new functionality.  All of them are
+properly annotated with \refqualclass{checker/unsignedness/qual}{Unsigned}
+where appropriate, so using them may reduce the number of annotations that
+you need to write.

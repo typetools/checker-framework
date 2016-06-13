@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 /**
- * Provides static utility methods for unsigned integers.
+ * Provides static utility methods for unsigned values.
  * Some re-implement functionality in JDK 8,
  * making it available in earlier versions of Java.
  * Others provide new functionality.
