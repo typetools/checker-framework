@@ -80,8 +80,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Returns the list of classnames from <code>@ClassBound</code> or <code>@ClassVal</code> if anno is
-     * <code>@ClassBound</code> or <code>@ClassVal</code>, otherwise returns an empty list
+     * Returns the list of classnames from {@code @ClassBound} or {@code @ClassVal} if anno is
+     * {@code @ClassBound} or {@code @ClassVal}, otherwise returns an empty list
      *
      * @param anno any AnnotationMirror
      * @return list of classnames in anno

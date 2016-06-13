@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>
  *
  * For example, the parameter of {@link String#String(String s)} is
- * <code>@NonLeaked</code>, because
+ * {@code @NonLeaked}, because
  * the method only uses the parameter to make a copy of it.
  *
  * @see LeakedToResult

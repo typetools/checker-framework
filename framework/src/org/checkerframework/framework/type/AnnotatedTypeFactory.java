@@ -62,6 +62,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -336,6 +337,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.loader = new AnnotationClassLoader(checker);
         this.supportedQuals = createSupportedTypeQualifiers();
+        checkSupportedQuals();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
@@ -363,6 +365,42 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             checkInvalidOptionsInferSignatures();
             wholeProgramInference = new WholeProgramInferenceScenes(
                     !"NullnessAnnotatedTypeFactory".equals(this.getClass().getSimpleName()));
+        }
+    }
+
+    /**
+     * Issue an error and abort if any of the support qualifiers have @Target meta-annotations
+     * that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
+     */
+    private void checkSupportedQuals() {
+        for (Class<? extends Annotation> annotationClass : supportedQuals) {
+            ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
+            List<ElementType> otherElementTypes = new ArrayList<>();
+            for (ElementType element : elements) {
+                if (!(element.equals(ElementType.TYPE_USE)
+                        || element.equals(ElementType.TYPE_PARAMETER))) {
+                    // if there's an ElementType with an enumerated value of something other
+                    // than TYPE_USE or TYPE_PARAMETER then it isn't a valid qualifier
+                    otherElementTypes.add(element);
+                }
+            }
+            if (!otherElementTypes.isEmpty()) {
+                StringBuffer buf = new StringBuffer("The @Target meta-annotation on type qualifier ");
+                buf.append(annotationClass.toString());
+                buf.append(" must not contain ");
+                for (int i = 0; i < otherElementTypes.size(); i++) {
+                    if (i == 1 && otherElementTypes.size() == 2) {
+                        buf.append(" or ");
+                    } else if (i == otherElementTypes.size() - 1) {
+                        buf.append(", or ");
+                    } else if (i != 0) {
+                        buf.append(", ");
+                    }
+                    buf.append(otherElementTypes.get(i));
+                }
+                buf.append(".");
+                ErrorReporter.errorAbort(buf.toString());
+            }
         }
     }
 
@@ -1279,18 +1317,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * In some type systems, the upper bounds depend on the instantiation
      * of the class. For example, in the Generic Universe Type system,
      * consider a class declaration
-     * <pre>   class C&lt;X extends @Peer Object&gt; </pre>
+     * <pre>{@code   class C<X extends @Peer Object> }</pre>
      * then the instantiation
-     * <pre>   @Rep C&lt;@Rep Object&gt; </pre>
+     * <pre>{@code   @Rep C<@Rep Object> }</pre>
      * is legal. The upper bounds of class C have to be adapted
      * by the main modifier.
      * <p>
      * An example of an adaptation follows.  Suppose, I have a declaration:
-     * class MyClass&lt;E extends List&lt;E&gt;&gt;
+     * <pre>{@code  class MyClass<E extends List<E>>}</pre>
      * And an instantiation:
-     * new MyClass&lt;@NonNull String&gt;()
+     * <pre>{@code  new MyClass<@NonNull String>()}</pre>
      * <p>
-     * The upper bound of E adapted to the argument String, would be List&lt;@NonNull String&gt;
+     * The upper bound of E adapted to the argument String, would be
+     * {@code List<@NonNull String>}
      * and the lower bound would be an AnnotatedNullType.
      * <p>
      * TODO: ensure that this method is consistently used instead

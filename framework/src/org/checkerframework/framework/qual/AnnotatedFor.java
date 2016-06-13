@@ -11,27 +11,27 @@ import java.lang.annotation.Target;
 
 /**
  * Indicates that this class has been annotated for the given type system.
- * For example, <code>@AnnotatedFor({"nullness", "regex"})</code> indicates
+ * For example, {@code @AnnotatedFor({"nullness", "regex"})} indicates
  * that the class has been annotated with annotations such as
- * <code>@Nullable</code> and <code>@Regex</code>.  Has no effect unless the
- * <code>-AuseDefaultsForUncheckedCode=source</code> command-line argument
+ * {@code @Nullable} and {@code @Regex}.  Has no effect unless the
+ * {@code -AuseDefaultsForUncheckedCode=source} command-line argument
  * is supplied.
  * <p>
  *
- * Ordinarily, the <code>-AuseDefaultsForUncheckedCode=source</code> command-line argument
+ * Ordinarily, the {@code -AuseDefaultsForUncheckedCode=source} command-line argument
  * causes unannotated locations to be defaulted using unchecked code defaults,
  * and it suppresses all warnings. However, the
- * <code>-AuseDefaultsForUncheckedCode=source</code> command-line argument has no effect on
- * classes with a relevant <code>@AnnotatedFor</code> annotation:  any
+ * {@code -AuseDefaultsForUncheckedCode=source} command-line argument has no effect on
+ * classes with a relevant {@code @AnnotatedFor} annotation:  any
  * unannotated location is defaulted normally (typically using the
  * CLIMB-to-top rule), and typechecking warnings are issued.
  * <p>
  *
- * <code>@AnnotatedFor</code>'s arguments are any string that may be passed
- * to the <code>-processor</code> command-line argument:  the fully-qualified
+ * {@code @AnnotatedFor}'s arguments are any string that may be passed
+ * to the {@code -processor} command-line argument:  the fully-qualified
  * class name for the checker, or a shorthand for built-in checkers.  Using
  * the annotation with no arguments, as in
- * <code>@AnnotatedFor({})</code>, has no effect.
+ * {@code @AnnotatedFor({})}, has no effect.
  *
  * @checker_framework.manual #compiling-libraries Compiling partially-annotated libraries
  */
@@ -41,7 +41,7 @@ public @interface AnnotatedFor {
     /**
      * @return the type systems for which the class has been annotated.
      * Legal arguments are any string that may be passed to the
-     * <code>-processor</code> command-line argument:  the fully-qualified
+     * {@code -processor} command-line argument:  the fully-qualified
      * class name for the checker, or a shorthand for built-in checkers.
      * @checker_framework.manual #shorthand-for-checkers Short names for built-in checkers
      */

@@ -195,11 +195,11 @@ import org.checkerframework.checker.regex.RegexUtil;
         After variable <code>regex</code> is defined but before it is
         used, add</p>
 <pre>
-	if (!RegexUtil.isRegex(regex, 1)) {
-	    System.out.println("Input is not a regular expression \"" + regex
-		    + "\": " + RegexUtil.regexException(regex).getMessage());
-	    System.exit(1);
-	}
+    if (!RegexUtil.isRegex(regex, 1)) {
+        System.out.println("Input is not a regular expression \"" + regex
+            + "\": " + RegexUtil.regexException(regex).getMessage());
+        System.exit(1);
+    }
 </pre>
       </div>
 

@@ -622,7 +622,7 @@
 
         <antcall target="nullness-extra-tests-nobuildjdk"/>
 
-	<antcall target="command-line-tests"/>
+        <antcall target="command-line-tests"/>
 
         <antcall target="example-tests-nobuildjdk"/>
 

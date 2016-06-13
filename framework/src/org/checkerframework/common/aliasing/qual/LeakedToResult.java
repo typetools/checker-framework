@@ -16,7 +16,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>
  *
  * For example, the receiver parameter of {@link StringBuffer#append(String
- * s)} is annotated as <code>@LeakedToResult</code>, because the method returns
+ * s)} is annotated as {@code @LeakedToResult}, because the method returns
  * the updated receiver.
  *
  * @see NonLeaked

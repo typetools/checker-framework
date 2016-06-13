@@ -212,7 +212,7 @@ public abstract class AnnotatedTypeMirror {
      * Returns true if this type mirror represents a declaration, rather than a
      * use, of a type.
      *
-     * For example, <code>class List&lt;T&gt; { ... }</code> declares a new type
+     * For example, {@code class List<T> { ... }} declares a new type
      * {@code List<T>}, while {@code List<Integer>} is a use of the type.
      *
      * @return  true if this represents a declaration
@@ -727,8 +727,8 @@ public abstract class AnnotatedTypeMirror {
     }
 
     @SideEffectFree
-    public final String toString(boolean printInvisibles) {
-        return formatter.format(this, printInvisibles);
+    public final String toString(boolean verbose) {
+        return formatter.format(this, verbose);
 
     }
 
@@ -1706,7 +1706,7 @@ public abstract class AnnotatedTypeMirror {
          * This method will traverse the upper bound of this type variable calling getErased
          * until it finds the concrete upper bound.
          * e.g.
-         * &lt;E extends T&gt;, T extends S, S extends List&lt;String&gt;&gt;
+         * <pre>{@code  <E extends T>, T extends S, S extends List<String>>}</pre>
          * A call to getErased will return the type List
          * @return the erasure of the upper bound of this type
          *

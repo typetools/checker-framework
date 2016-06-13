@@ -31,16 +31,16 @@ public interface ReflectionResolver {
      * Determines whether the given tree represents a reflective method or
      * constructor call.
      *
-     * @return <code>true</code> iff tree is a reflective method invocation,
-     *         <code>false</code> otherwise
+     * @return {@code true} iff tree is a reflective method invocation,
+     *         {@code false} otherwise
      */
     public boolean isReflectiveMethodInvocation(MethodInvocationTree tree);
 
     /**
      * Resolve reflection and return the result of
-     * <code>factory.methodFromUse</code> for the actual, resolved method or
+     * {@code factory.methodFromUse} for the actual, resolved method or
      * constructor call. If the reflective method cannot be resolved the
-     * original result (<code>origResult</code>) is returned.
+     * original result ({@code origResult}) is returned.
      *
      * @param factory
      *            the currently used AnnotatedTypeFactory

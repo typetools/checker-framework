@@ -19,21 +19,21 @@ import java.lang.annotation.Target;
  *
  * Here is an example use:
  *
- * <pre><code>     @AssertNonNullIfNonNull("id")
+ * <pre>{@code      @AssertNonNullIfNonNull("id")
  *    {@literal @}Pure
  *     public @Nullable Long getId() {
  *         return id;
  *     }
- * </code></pre>
+ * }</pre>
  *
  * Note the direction of the implication.  This annotation says that if the
- * result is non-null, then the variable <code>id</code> is also non-null.  The
- * annotation does not say that if <code>id</code> is non-null, then the result
+ * result is non-null, then the variable {@code id} is also non-null.  The
+ * annotation does not say that if {@code id} is non-null, then the result
  * is non-null.  (There is not currently a way to say the latter,
  * though it would also be useful.)
  * <p>
  *
- * You should <em>not</em> write a formal parameter name or <code>this</code>
+ * You should <em>not</em> write a formal parameter name or {@code this}
  * as the argument of this annotation.  In those cases, use the {@link
  * PolyNull} annotation instead.
  *

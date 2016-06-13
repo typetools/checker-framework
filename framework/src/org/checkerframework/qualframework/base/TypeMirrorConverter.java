@@ -59,7 +59,7 @@ public class TypeMirrorConverter<Q> {
     /** Annotation processing environment, used to construct new {@link QualifierKey}
      * {@link AnnotationMirror}s. */
     private final ProcessingEnvironment processingEnv;
-    /** A {@link QualifierKey} annotation with no <code>index</code> set. */
+    /** A {@link QualifierKey} annotation with no {@code index} set. */
     private final AnnotationMirror blankKey;
     /** The type factory adapter, used to construct {@link
      * AnnotatedTypeMirror}s. */
@@ -69,7 +69,7 @@ public class TypeMirrorConverter<Q> {
     private int nextIndex = 0;
 
     /** The qualifier-to-index half of the lookup table.  This lets us ensure
-     * that the same qualifier maps to the same <code>@QualifierKey</code> annotation.
+     * that the same qualifier maps to the same {@code @QualifierKey} annotation.
      */
     private final HashMap<Q, Integer> qualToIndex;
     /** The index-to-qualifier half of the lookup table.  This is used for
@@ -109,7 +109,7 @@ public class TypeMirrorConverter<Q> {
     }
 
     /** Constructs a new {@link QualifierKey} annotation with the provided index, using
-     * <code>desc.toString()</code> to set the {@link QualifierKey#desc()} field. */
+     * {@code desc.toString()} to set the {@link QualifierKey#desc()} field. */
     private AnnotationMirror createKey(int index, Object desc) {
         if (keyToAnnoCache.containsKey(index)) {
             return keyToAnnoCache.get(index);
@@ -123,8 +123,8 @@ public class TypeMirrorConverter<Q> {
         }
     }
 
-    /** Returns the index that represents <code>qual</code>.  If
-     * <code>qual</code> has not been assigned an index yet, a new index will
+    /** Returns the index that represents {@code qual}.  If
+     * {@code qual} has not been assigned an index yet, a new index will
      * be generated and assigned to it.
      */
     private int getIndexForQualifier(Q qual) {
@@ -138,7 +138,7 @@ public class TypeMirrorConverter<Q> {
         }
     }
 
-    /** Returns the <code>index</code> field of a {@link QualifierKey} {@link
+    /** Returns the {@code index} field of a {@link QualifierKey} {@link
      * AnnotationMirror}. */
     private int getIndex(AnnotationMirror anno) {
         Integer value = AnnotationUtils.getElementValue(anno, "index", Integer.class, true);
