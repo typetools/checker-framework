@@ -17,11 +17,11 @@ import com.sun.source.tree.Tree;
  * assignment context the member reference or lambda is used in.
  *
  * <pre>
- *   <em>FunctionalInterface func = param1, param2, ... -&gt; statement</em>
+ *   <em>FunctionalInterface func = param1, param2, ... &rarr; statement</em>
  * </pre>
  *
  * <pre>
- *   <em>FunctionalInterface func = param1, param2, ... -&gt; { ... }</em>
+ *   <em>FunctionalInterface func = param1, param2, ... &rarr; { ... }</em>
  * </pre>
  *
  * <pre>

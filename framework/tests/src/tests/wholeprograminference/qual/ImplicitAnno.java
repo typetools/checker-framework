@@ -6,9 +6,6 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.IgnoreInWholeProgramInference;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
-
-import com.sun.source.tree.LiteralTree;
 
 /**
  * Toy type system for testing field inference.

@@ -6,8 +6,16 @@ We renamed method annotateImplicit to addComputedTypeAnnotations.  If you
 have implemented a checker, you need to change occurrences of
 annotateImplicit to addComputedTypeAnnotations.
 
+The Checker Framework (checker.jar) is now placed on the processorpath
+during compilation.  Previously, it was placed on the classpath.  The
+qualifiers (checker-qual.jar) remain on the classpath.  This change should
+reduce conflicts between your code and the Checker Framework.  If your code
+depends on classes in the Checker Framework, then you should add those
+classes to the classpath when you run the compiler.
+
 Closed issues:
-704, 720
+171, 250, 291, 523, 577, 672, 680, 688, 689, 690, 691, 695, 696, 698, 702,
+704, 705, 706, 707, 720, 721, 723, 728, 736, 738, 740.
 
 ---------------------------------------------------------------------------
 
@@ -1451,14 +1459,14 @@ Functionality
   Added more performance optimizations
   nullness: Added support for netbeans nullness annotations
   nullness: better semantics for redundant nullness tests
-	related to redundant tests in assertions
+    related to redundant tests in assertions
   lock: Added support for JCIP annotation in the Lock Checker
   tainting: Added support for polymorphism
   Lock Checker supports the JCIP GuardedBy annotation
 
 Bug fixes
   Fixed a crashing bug related to interaction between
-	generic types and wildcards
+    generic types and wildcards
   Fixed a bug in stub file parser related to vararg annotations
   Fixed few bugs in skeleton file generators
 

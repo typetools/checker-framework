@@ -3,18 +3,20 @@ package org.checkerframework.framework.stub;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.checkerframework.stubparser.JavaParser;
+import org.checkerframework.stubparser.ParseException;
 import org.checkerframework.stubparser.ast.CompilationUnit;
 import org.checkerframework.stubparser.ast.ImportDeclaration;
 import org.checkerframework.stubparser.ast.IndexUnit;
@@ -56,9 +58,11 @@ import annotations.el.AScene;
 import annotations.el.ATypeElement;
 import annotations.el.AnnotationDef;
 import annotations.el.BoundLocation;
+import annotations.el.DefException;
 import annotations.el.InnerTypeLocation;
 import annotations.el.LocalLocation;
 import annotations.field.AnnotationFieldType;
+import annotations.io.IndexFileParser;
 import annotations.io.IndexFileWriter;
 
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
@@ -83,6 +87,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   private final List<String> imports;
   private final AScene scene;
 
+  /**
+   * @param pkgDecl AST node for package declaration
+   * @param importDecls AST node for import declarations
+   * @param scene scene for visitor methods to fill in
+   */
   public ToIndexFileConverter(PackageDeclaration pkgDecl,
       List<ImportDeclaration> importDecls, AScene scene) {
     this.scene = scene;
@@ -117,42 +126,61 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * Note that the results do not include annotation definitions, for
    * which stubfiles do not generally provide complete information.
    *
-   * @param args names of stub files to be converted
+   * @param args name of JAIF with annotation definition, followed by
+   * names of stub files to be converted (if none given, program reads
+   * from standard input)
+   * @throws IOException
    */
   public static void main(String[] args) {
-    if (args.length > 0) {
-      for (int i = 0; i < args.length; i++) {
+    if (args.length < 1) {
+      System.err.println("usage: java ToIndexFileConverter jaif [stubfile...]");
+      System.err.println("(JAIF contains needed annotation definitions)");
+      System.exit(1);
+    }
+
+    AScene scene = new AScene();
+    try {
+      IndexFileParser.parseFile(args[0], scene);
+
+      if (args.length == 1) {
+        convert(scene, System.in, System.out);
+        return;
+      }
+
+      for (int i = 1; i < args.length; i++) {
         String f0 = args[i];
-        String f1 = (f0.endsWith(".astub") ? f0.substring(0, f0.length()-5)
-            : f0) + "jaif";
-        try (InputStream in = new FileInputStream(f0)) {
-          try (FileOutputStream out = new FileOutputStream(f1)) {
-            IndexUnit iu = JavaParser.parse(in);
-            AScene scene = extractScene(iu);
-            try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
-              IndexFileWriter.write(scene, w);
-            } catch (Exception e) {
-              e.printStackTrace();  // TODO
-            }
-          } catch (Exception e) {
-            e.printStackTrace();  // TODO
-          }
-        } catch (Exception e) {
-          e.printStackTrace();  // TODO
+        String f1 = (f0.endsWith(".astub")
+            ? f0.substring(0, f0.length()-6)
+            : f0) + ".jaif";
+        try (
+            InputStream in = new FileInputStream(f0);
+            OutputStream out = new FileOutputStream(f1);
+            ) {
+          convert(new AScene(scene), in, out);
         }
       }
-    } else {
-      try {
-        IndexUnit iu = JavaParser.parse(System.in);
-        AScene scene = extractScene(iu);
-        try (Writer w = new BufferedWriter(new OutputStreamWriter(System.out))) {
-          IndexFileWriter.write(scene, w);
-        } catch (Exception e) {
-          e.printStackTrace();  // TODO
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+    } catch (Throwable e) {
+      e.printStackTrace();
+      System.exit(1);
+    }
+  }
+
+  /**
+   * Augment given scene with information from stubfile, reading stubs
+   * from input stream and writing JAIF to output stream.
+   *
+   * @param scene the initial scene
+   * @param in stubfile contents
+   * @param out JAIF representing augmented scene
+   * @throws ParseException
+   * @throws DefException
+   */
+  private static void convert(AScene scene, InputStream in, OutputStream out)
+      throws IOException, DefException, ParseException {
+    IndexUnit iu = JavaParser.parse(in);
+    extractScene(iu, scene);
+    try (Writer w = new BufferedWriter(new OutputStreamWriter(out))) {
+      IndexFileWriter.write(scene, w);
     }
   }
 
@@ -162,8 +190,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
    * @param iu {@link IndexUnit} representing stubfile
    * @return {@link AScene} containing annotations from stubfile
    */
-  private static AScene extractScene(IndexUnit iu) {
-    AScene scene = new AScene();
+  private static void extractScene(IndexUnit iu, AScene scene) {
     for (CompilationUnit cu : iu.getCompilationUnits()) {
       List<TypeDeclaration> typeDecls = cu.getTypes();
       if (typeDecls != null) {
@@ -179,10 +206,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
       }
     }
-    scene.prune();
-    return scene;
   }
 
+  /**
+   * Builds simplified annotation from its declaration.
+   * Only the name is included, because stubfiles do not generally have
+   * access to the full definitions of annotations.
+   *
+   * @param expr
+   * @return
+   */
   private static Annotation extractAnnotation(AnnotationExpr expr) {
     //String exprName = expr.getName().getName();
     String exprName = expr.toString().substring(1);  // 1 for '@'
@@ -192,8 +225,15 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return new Annotation(def, Collections.<String, Object>emptyMap());
   }
 
+  @Override
   public Void visit(AnnotationDeclaration decl, AElement elem) {
     return null;
+  }
+
+  @Override
+  public Void visit(BlockStmt stmt, AElement elem) {
+    return null;
+    //super.visit(stmt, elem);
   }
 
   @Override
@@ -370,6 +410,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return null;
   }
 
+  /**
+   * Copies information from an AST declaration node to an {@link ADeclaration}.
+   * Called by visitors for BodyDeclaration subclasses.
+   */
   private Void visitDecl(BodyDeclaration decl, ADeclaration elem) {
     List<AnnotationExpr> annoExprs = decl.getAnnotations();
     if (annoExprs != null) {
@@ -381,6 +425,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return null;
   }
 
+  /**
+   * Copies information from an AST type node to an {@link ATypeElement}.
+   */
   private Void visitType(Type type, final ATypeElement elem) {
     List<AnnotationExpr> exprs = type.getAnnotations();
     if (exprs != null) {
@@ -393,13 +440,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return null;
   }
 
+  /**
+   * Copies information from an AST type node's inner type nodes to an
+   * {@link ATypeElement}.
+   */
   private static Void visitInnerTypes(Type type, final ATypeElement elem) {
-    return visitInnerTypes(type, elem,
-        InnerTypeLocation.EMPTY_INNER_TYPE_LOCATION);
-  }
-
-  private static Void visitInnerTypes(Type type, final ATypeElement elem,
-      InnerTypeLocation loc) {
     return type.accept(new GenericVisitorAdapter<Void, InnerTypeLocation>() {
       @Override
       public Void visit(ClassOrInterfaceType type, InnerTypeLocation loc) {
@@ -441,20 +486,23 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return null;
       }
 
+      /**
+       * Copies information from an AST inner type node to an
+       * {@link ATypeElement}.
+       */
       private void visitInnerType(Type type, InnerTypeLocation loc) {
-        visitInnerType(type, loc, type.getAnnotations());
-      }
-
-      private void visitInnerType(Type type, InnerTypeLocation loc,
-          Collection<AnnotationExpr> annos) {
         ATypeElement typeElem = elem.innerTypes.vivify(loc);
-        for (AnnotationExpr expr : annos) {
+        for (AnnotationExpr expr : type.getAnnotations()) {
           Annotation anno = extractAnnotation(expr);
           typeElem.tlAnnotationsHere.add(anno);
           type.accept(this, loc);
         }
       }
 
+      /**
+       * Extends type path by one element.
+       * @see TypePathEntry.fromBinary
+       */
       private InnerTypeLocation extendedTypePath(InnerTypeLocation loc,
           int tag, int arg) {
         List<TypePathEntry> path =
@@ -463,7 +511,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         path.add(TypePathEntry.fromBinary(tag, arg));
         return new InnerTypeLocation(path);
       }
-    }, loc);
+    }, InnerTypeLocation.EMPTY_INNER_TYPE_LOCATION);
   }
 
   /**
@@ -578,29 +626,42 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     return qualifiedName;
   }
 
+  /**
+   * Attempts to resolve class name with respect to import.
+   *
+   * @param prefix name of imported package
+   * @param base name of class, possibly qualified
+   * @return fully qualified class name if resolution succeeds, null otherwise
+   */
   private static String mergePrefix(String prefix, String base) {
     if (prefix.isEmpty() || prefix.equals(base)) {
       return base;
+    }
+    String[] a0 = prefix.split("\\.");
+    String[] a1 = base.split("\\.");
+    String prefixEnd = a0[a0.length-1];
+    if ("*".equals(prefixEnd)) {
+      int n = a0.length-1;
+      String[] a = Arrays.copyOf(a0, n + a1.length);
+      for (int i = 0; i < a1.length; i++) { a[n+i] = a1[i]; }
+      return PluginUtil.join(".", a);
     } else {
-      String[] a0 = prefix.split("\\.");
-      String[] a1 = base.split("\\.");
-      String prefixEnd = a0[a0.length-1];
-      if ("*".equals(prefixEnd)) {
-        int n = a0.length-1;
-        String[] a = Arrays.copyOf(a0, n + a1.length);
-        for (int i = 0; i < a1.length; i++) { a[n+i] = a1[i]; }
-        return PluginUtil.join(".", a);
-      } else {
-        int i = a0.length;
-        int n = i - a1.length;
-        while (--i >= n) {
-          if (!a1[i-n].equals(a0[i])) { return null; }
-        }
-        return prefix;
+      int i = a0.length;
+      int n = i - a1.length;
+      while (--i >= n) {
+        if (!a1[i-n].equals(a0[i])) { return null; }
       }
+      return prefix;
     }
   }
 
+  /**
+   * Finds {@link Class} corresponding to a name.
+   *
+   * @param className
+   * @return {@link Class} object corresponding to className, or null if
+   * none found
+   */
   private static Class<?> loadClass(String className) {
     if (className != null) {
       try {

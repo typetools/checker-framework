@@ -4,8 +4,10 @@ package org.checkerframework.framework.flow;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
@@ -41,6 +43,17 @@ import javax.lang.model.util.Types;
  * A store for the checker framework analysis tracks the annotations of memory
  * locations such as local variables and fields.
  *
+ * When adding a new field to track values for a code construct (similar to
+ * {@code localVariableValues} and {@code thisValue}), it is important
+ * to review all constructors and methods in this class for locations
+ * where the new field must be handled (such as the copy constructor and
+ * {@code clearValue}), as well as all constructors/methods in subclasses
+ * of {code CFAbstractStore}. Note that this includes not only overridden
+ * methods in the subclasses, but new methods in the subclasses as well.
+ * Also check if BaseTypeVisitor#getFlowExpressionContextFromNode(Node)
+ * needs to be updated. Failing to do so may result in silent failures that are
+ * time consuming to debug.
+ *
  * @author Charlie Garrett
  * @author Stefan Heule
  */
@@ -55,8 +68,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected final CFAbstractAnalysis<V, S, ?> analysis;
 
     /**
-     * Information collected about local variables, which are identified by the
-     * corresponding element.
+     * Information collected about local variables (including method arguments).
      */
     protected final Map<FlowExpressions.LocalVariable, V> localVariableValues;
 
@@ -83,6 +95,10 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      */
     protected Map<FlowExpressions.MethodCall, V> methodValues;
 
+    /**
+     * Information collected about <i>classname</i>.class values,
+     * using the internal representation {@link ClassName}.
+     */
     protected Map<FlowExpressions.ClassName, V> classValues;
 
     /**
@@ -562,11 +578,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Update the information in the store by considering an assignment with
      * target {@code n}, where the target is an array access.
      *
-     * <ol>
-     * <li value="1">Remove any abstract values for field accesses <em>b.g</em>
-     * where {@code n} might alias any expression in the receiver <em>b</em>.
-     * <li value="2">Remove any information about pure method calls.
-     * </ol>
+     * See {@link CFAbstractStore#removeConflicting(ArrayAccess,CFAbstractValue)}, as it is called first
+     * by this method.
      */
     protected void updateForArrayAssignment(ArrayAccess arrayAccess,
             /*@Nullable*/ V val) {
@@ -613,7 +626,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * <li value="2">Remove any abstract values for field accesses <em>b.g</em>
      * where {@code fieldAccess} might alias any expression in the receiver
      * <em>b</em>.
-     * <li value="3">Remove any information about pure method calls.
+     * <li value="3">Remove any information about method calls.
      * <li value="4">Remove any abstract values an arrary access <em>b[i]</em>
      * where {@code fieldAccess} might alias any expression in the receiver
      * <em>a</em> or index <em>i</em>.
@@ -684,7 +697,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * <li value="2">Remove any abstract values for field accesses <em>b.g</em>
      * where <em>a[i]</em> might alias any expression in the receiver <em>b</em>
      * and there is an array expression somewhere in the receiver.
-     * <li value="3">Remove any information about pure method calls.
+     * <li value="3">Remove any information about method calls.
      * </ol>
      *
      * @param val
@@ -742,7 +755,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * <em>b</em>.
      * <li value="2">Remove any abstract values for array accesses <em>a[i]</em>
      * where {@code localVar} might alias the receiver <em>a</em>.
-     * <li value="3">Remove any information about pure method calls where the
+     * <li value="3">Remove any information about method calls where the
      * receiver or any of the parameters contains {@code localVar}.
      * </ol>
      */

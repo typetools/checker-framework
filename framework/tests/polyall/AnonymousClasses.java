@@ -20,4 +20,3 @@ interface GenInter<@H1S2 F extends @H1S2 Object> {
 }
 
 interface Foo {}
-

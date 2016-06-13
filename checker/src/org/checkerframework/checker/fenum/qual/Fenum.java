@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.*;
 /**
  * A generic fake enumeration qualifier that is parameterized by a name.
  * It is written in source code as, for example,
- * <code>@Fenum("cardSuit")</code> and <code>@Fenum("faceValue")</code>, which
+ * {@code @Fenum("cardSuit")} and {@code @Fenum("faceValue")}, which
  * would be distinct fake enumerations.
  *
  * @checker_framework.manual #fenum-checker Fake Enum Checker

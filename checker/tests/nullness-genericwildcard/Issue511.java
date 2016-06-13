@@ -29,6 +29,3 @@ class Use{
     MyGeneric<?> wildCardNoBound = new MyGeneric<>();
     MyGeneric<? extends Number> wildCardExtendsNumber2 = wildCardNoBound;
 }
-
-
-

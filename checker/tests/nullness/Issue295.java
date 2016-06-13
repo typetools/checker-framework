@@ -45,4 +45,3 @@ abstract class Issue295 {
         Box<String> v = load(f);
     }
 }
-

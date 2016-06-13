@@ -21,4 +21,3 @@ nonsense:
 	-rm Out.txt
 	-$(JAVAC) -processor NonsenseChecker -XDrawDiagnostics -Anomsgtext -Awarns -AprintErrorStack NullnessRegexWithErrors.java > Out.txt 2>&1
 	diff -u NonsenseExpected.txt Out.txt
-

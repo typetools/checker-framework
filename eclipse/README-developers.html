@@ -99,7 +99,8 @@
         <tr>
             <td>1.</td>
             <td><strong>Download a copy of Eclipse with RCP Support</strong><br/>
-                Visit:<br/>
+                On Ubuntu, run <code>sudo apt-get install eclipse-rcp eclipse-platform</code><br    />
+                or Visit:<br/>
                 <code>http://www.eclipse.org/downloads/</code><br/>
                 Download and install the latest copy of "Eclipse for RCP and RAP Developers".  You will probably
                 want to "Check for Updates" in Eclipse after installing though it is not strictly necessary.
@@ -118,7 +119,7 @@
                 <br/> <br/>
                 <ol>
                     <li>Open Eclipse with RCP Support</li>
-                    <li>Select File->Import</li>
+                    <li>Select File->Import->General->Existing Projects into Workspace</li>
                     <li>Select the <code>checker-framework/eclipse</code> directory from your Checker Framework clone</li>
                     <li>Select all three projects and import</li>
                     <li>If these projects were ever built on your machine before, make sure to "Clean all projects" and
@@ -361,9 +362,12 @@
                 Checker Framework clone that has been built:
 
                 <code><br/>
+                cd eclipse<br/>
                 mkdir checker-framework-eclipse-plugin/lib<br/>
-                cp checker/dist checker-framework-eclipse-plugin/lib
-                </code>
+                cp -r $CHECKERFRAMEWORK/checker/dist/ checker-framework-eclipse-plugin/lib
+                </code><br/>
+                If the Eclipse plugin workspace is open, you will need to refresh Eclipse until the directory appears.
+                (File -> Refresh)
             </td>
         </tr>
         <tr id="update_version">
@@ -371,17 +375,21 @@
                 <strong>Build Step 1: Update Version Numbers</strong><br/>
                 <ol>
                     <li><strong>Update Plugin version number in plugin.xml on the &quot;Overview&quot; tab in
-                        the Eclipse editor.</strong><br/>  When making a release, this version number is always the
+                        the Eclipse editor.</strong><br/>
+                        (Open checker-framework-eclipse-plugin/plugin.xml in Eclipse and save the file after editing.)
+                        When making a release, this version number is always the
                         same as the release version.  If you're iterating over changes locally (i.e. developing
                         rather than releasing) then you can just do minor increments (e.g. 1.8.0 can become 1.8.0.1).
                         See the <a href="#testing">Testing</a> section for more details.
                     </li>
                     <li><strong>Update the Feature version number and Plugin version number in feature.xml.</strong><br/>
+                        (Open checker-framework-eclipse-feature/feature.xml in Eclipse and save the file after editing.)
                         In the Eclipse feature editor, there is a feature version on &quot;Overview&quot; tab and a
                         plugin version on the &quot;Plug-ins&quot; tab.  Both of these should be updated to the
                         same version (see the previous bullet).
                     </li>
                     <li><strong>Update the Update Site Versions.</strong><br/>
+                        (Open checker-framework-eclipse-update-site/site.xml in Eclipse and save the file after editing.)
                         There are two versions in site.xml that need to be updated.  It is easier to just update the
                         XML directly than using the Eclipse editor.  Select the &quot;site.xml&quot; tab and replace
                         the previous versions (in the &lt;feature&gt; tag) to the same version as in the above
@@ -400,7 +408,8 @@
                     <li>Open an Eclipse instance with the plugin installed.</li>
                     <li>Right click a folder or source file.</li>
                     <li>Select &quot;Run built-in checker&quot;.</li>
-                    <li>Verify that the displayed list contains all of the checkers in the Checker Framework manual.</li>
+                    <li>Verify that the displayed list contains all of the checkers in the Introduction of the
+                        Checker Framework manual. (The Map Key Checker is listed in the introduction, but is not in the plugin.)</li>
                 </ol>
                 Alternatively, you can verify the list of checkers using the following process.
                 When adding a new checker, ensure that it is in the same relative order
@@ -433,7 +442,7 @@
                     <li>Press Build-All.</li>
                 </ol>
                 Most of the time, regardless of whether or not this step is successful, the following directories
-                and files will be created: features, plugins, artifacts.jar, and content.jar.  If the build failed
+                and files will be created in checker-framework-eclipse-update-site: features, plugins, artifacts.jar, and content.jar.  If the build failed
                 with compilation errors, Eclipse (frustratingly) places the error messages in a text file,
                 in a directory that's in a zip file "logs.zip" in the Update site directory.
                 If the build fails for other reason (such as forgetting to update one of the versions),

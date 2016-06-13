@@ -8,5 +8,3 @@ public final class SequenceAndIndices<T extends @Interned Object> {
         this.seq = seq;
     }
 }
-
-

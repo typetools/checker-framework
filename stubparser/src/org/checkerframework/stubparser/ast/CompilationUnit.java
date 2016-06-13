@@ -94,10 +94,10 @@ public final class CompilationUnit extends Node {
      * Return a list containing all comments declared in this compilation unit.
      * Including javadocs, line comments and block comments of all types,
      * inner-classes and other members.<br>
-     * If there is no comment, <code>null</code> is returned.
+     * If there is no comment, {@code null} is returned.
      *
      * @return list with all comments of this compilation unit or
-     *         <code>null</code>
+     *         {@code null}
      * @see JavadocComment
      * @see LineComment
      * @see BlockComment
@@ -108,9 +108,9 @@ public final class CompilationUnit extends Node {
 
     /**
      * Retrieves the list of imports declared in this compilation unit or
-     * <code>null</code> if there is no import.
+     * {@code null} if there is no import.
      *
-     * @return the list of imports or <code>null</code> if there is no import
+     * @return the list of imports or {@code null} if there is no import
      */
     public List<ImportDeclaration> getImports() {
         return imports;
@@ -119,9 +119,9 @@ public final class CompilationUnit extends Node {
     /**
      * Retrieves the package declaration of this compilation unit.<br>
      * If this compilation unit has no package declaration (default package),
-     * <code>null</code> is returned.
+     * {@code null} is returned.
      *
-     * @return the package declaration or <code>null</code>
+     * @return the package declaration or {@code null}
      */
     public PackageDeclaration getPackage() {
         return pakage;
@@ -129,9 +129,9 @@ public final class CompilationUnit extends Node {
 
     /**
      * Return the list of types declared in this compilation unit.<br>
-     * If there is no types declared, <code>null</code> is returned.
+     * If there is no types declared, {@code null} is returned.
      *
-     * @return the list of types or <code>null</code> null if there is no type
+     * @return the list of types or {@code null} null if there is no type
      * @see AnnotationDeclaration
      * @see ClassOrInterfaceDeclaration
      * @see EmptyTypeDeclaration
@@ -153,7 +153,7 @@ public final class CompilationUnit extends Node {
 
     /**
      * Sets the list of imports of this compilation unit. The list is initially
-     * <code>null</code>.
+     * {@code null}.
      *
      * @param imports
      *            the list of imports
@@ -166,7 +166,7 @@ public final class CompilationUnit extends Node {
      * Sets or clear the package declarations of this compilation unit.
      *
      * @param pakage
-     *            the pakage declaration to set or <code>null</code> to default
+     *            the pakage declaration to set or {@code null} to default
      *            package
      */
     public void setPackage(PackageDeclaration pakage) {

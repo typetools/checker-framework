@@ -28,7 +28,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * annotated variable only if the thread holds all the given lock expressions.
  * <p>
  *
- * <code>@GuardedBy({})</code> is the default type qualifier.
+ * {@code @GuardedBy({})} is the default type qualifier.
  * <p>
  *
  * The argument is a string or set of strings that indicates the
@@ -43,7 +43,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * the value referenced by {@code o}.
  * <p>
  *
- * Two <code>@GuardedBy</code> annotations with different argument expressions
+ * Two {@code @GuardedBy} annotations with different argument expressions
  * are unrelated by subtyping.
  * <p>
  *

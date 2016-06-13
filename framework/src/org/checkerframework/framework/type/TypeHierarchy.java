@@ -3,6 +3,7 @@ package org.checkerframework.framework.type;
 import org.checkerframework.framework.util.AnnotatedTypes;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Types;
 
 /**
  * Compares AnnotatedTypeMirrors for subtype relationships.
@@ -23,9 +24,9 @@ public interface TypeHierarchy {
      * 4 categories are converted in isSubtype:
      *
      * <ul>
-     * <li> Boxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper}
+     * <li> Boxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}
      *      which calls {@link AnnotatedTypeFactory#getBoxedType}
-     * <li> Unboxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper}
+     * <li> Unboxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}
      *      which calls {@link AnnotatedTypeFactory#getUnboxedType}
      * <li> Capture conversions:  Wildcards are treated as though they were converted to type variables
      * <li> String conversions: Any type to String. Special case in {@link DefaultTypeHierarchy#visitDeclared_Declared}.
@@ -34,7 +35,7 @@ public interface TypeHierarchy {
      * 1 happens elsewhere:
      * <ul>
      * <li> Unchecked conversions: Generic type to raw type.  Raw types are instantiated with bounds in
-     *      {@link AnnotatedTypeFactory#fromTypeTree} before is subtype is called
+     *      AnnotatedTypeFactory#fromTypeTree before is subtype is called
      * </ul>
      *
      * 7 are not explicitly converted and are treated as though the types are actually subtypes.

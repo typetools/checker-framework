@@ -82,9 +82,9 @@ public final class PackageDeclaration extends Node {
 
     /**
      * Retrieves the list of annotations declared before the package
-     * declaration. Return <code>null</code> if there are no annotations.
+     * declaration. Return {@code null} if there are no annotations.
      * 
-     * @return list of annotations or <code>null</code>
+     * @return list of annotations or {@code null}
      */
     public List<AnnotationExpr> getAnnotations() {
         return annotations;

@@ -47,4 +47,3 @@ public class RegexQualTest extends CheckerFrameworkTest {
         return o.toString().equals("tests/regex/MatcherGroupCount.java");
     }
 }
-

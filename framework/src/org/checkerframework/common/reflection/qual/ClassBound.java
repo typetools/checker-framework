@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This represents a Class&lt;T&gt; object whose run-time value
+ * This represents a {@code Class<T>} object whose run-time value
  * is equal to or a subtype of one of the arguments.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker

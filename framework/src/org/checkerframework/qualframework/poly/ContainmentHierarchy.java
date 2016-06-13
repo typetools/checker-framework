@@ -79,4 +79,3 @@ public class ContainmentHierarchy<Q> implements QualifierHierarchy<Wildcard<Q>> 
         return Wildcard.empty();
     }
 }
-

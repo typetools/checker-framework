@@ -136,4 +136,3 @@ public class DaikonTests {
 class Bug1Other {
     static @Nullable Object field;
 }
-

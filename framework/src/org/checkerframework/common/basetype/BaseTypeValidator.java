@@ -112,7 +112,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
 
             default:
                 ErrorReporter.errorAbort(
-                        "Type is not bounded. \n"
+                        "Type is not bounded.\n"
                       + "type=" + type + "\n"
                       + "tree=" + tree);
                 label = null; // dead code

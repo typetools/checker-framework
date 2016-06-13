@@ -36,7 +36,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 
 import com.sun.tools.javac.tree.JCTree;
@@ -485,7 +484,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     }
 
     /**
-     * Write a file <code>methods.txt</code> that contains a mapping from
+     * Write a file {@code methods.txt} that contains a mapping from
      * source code location to generated dot file.
      */
     @Override
