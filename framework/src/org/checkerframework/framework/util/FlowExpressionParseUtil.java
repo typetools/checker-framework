@@ -161,8 +161,9 @@ public class FlowExpressionParseUtil {
     /**
      * Private implementation of {@link #parse} with a choice of which classes
      * of expressions should be parsed.
-     * Returns null only if {@code allowSelf} is true and the expression
-     * contains "null".
+     * Returns null only if {@code allowItself} is true, and 'itself' is
+     * passed in as (part of) the string to parse and no receiver named
+     * 'itself' could be found.
      * @param allowSelf also controls whether "super" is allowed
      */
     private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
