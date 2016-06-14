@@ -50,6 +50,9 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
 
@@ -251,7 +254,8 @@ public class FlowExpressionParseUtil {
                     if (fieldElem != null) {
                         break;
                     }
-                    receiverType = ((DeclaredType)receiverType).getEnclosingType();
+                    receiverType = getEnclosingType((DeclaredType) receiverType);
+
                     originalReceiver = false;
                 }
 
@@ -266,7 +270,7 @@ public class FlowExpressionParseUtil {
                         if (fieldElem != null) {
                             break;
                         }
-                        receiverType = ((DeclaredType)receiverType).getEnclosingType();
+                        receiverType = getEnclosingType((DeclaredType) receiverType);
                     }
                 }
 
@@ -373,7 +377,7 @@ public class FlowExpressionParseUtil {
                     if (methodElement.getKind() == ElementKind.METHOD) {
                         break;
                     }
-                    receiverType = ((DeclaredType)receiverType).getEnclosingType();
+                    receiverType = getEnclosingType((DeclaredType) receiverType);
                 }
 
                 if (methodElement == null) {
@@ -464,6 +468,35 @@ public class FlowExpressionParseUtil {
                     allowLocalVariables, allowItself, recursiveCall);
         } else {
             throw constructParserException(s, "no matcher matched");
+        }
+    }
+
+    /**
+     * Returns the innermost enclosing type of the given type,
+     * or Type.noType if no such type was found.
+     *
+     * @param type a DeclaredType
+     * @return the innermost enclosing type, or Type.noType
+     */
+    private static TypeMirror getEnclosingType(DeclaredType type) {
+        if (type instanceof ClassType) {
+            // enclClass() needs to be called on tsym.owner,
+            // otherwise it simply returns tsym.
+            Symbol sym = ((ClassType) type).tsym.owner;
+
+            if (sym == null) {
+                return Type.noType;
+            }
+
+            ClassSymbol cs = sym.enclClass();
+
+            if (cs == null) {
+                return Type.noType;
+            }
+
+            return cs.asType();
+        } else {
+            return type.getEnclosingType();
         }
     }
 
