@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 /**
- * This class behaves similarly to to javac.  CheckerMain does the following:
+ * This class behaves similarly to javac.  CheckerMain does the following:
  * <ul>
  *   <li>add the jsr308-langtools’ javac.jar to the runtime bootclasspath
  *     of the process that runs the Checker Framework.
