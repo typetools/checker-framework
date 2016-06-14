@@ -52,9 +52,9 @@ public enum I18nConversionCategory {
      * Use if the parameter can be of number or choice types.
      * An example of choice:
      *
-     * <pre>
-     * format("{0, choice, 0#zero|1#one|1&lt;{0, number} is more than 1}", 2)
-     * </pre>
+     * <pre>{@code
+     * format("{0, choice, 0#zero|1#one|1<{0, number} is more than 1}", 2)
+     * }</pre>
      *
      * This will print "2 is more than 1".
      *

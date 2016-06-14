@@ -9,20 +9,20 @@ import org.checkerframework.framework.qual.*;
  *
  * <p>
  * The value of the annotation is the reference name of the map.
- * Suppose that <code>config</code> is a <code>Map&lt;String, String&gt;</code>.
+ * Suppose that {@code config} is a {@code Map<String, String>}.
  * Then the declaration
  *
- * <pre><code>  @KeyFor("config") String key = "HOSTNAME"; </code></pre>
+ * <pre>{@code   @KeyFor("config") String key = "HOSTNAME"; }</pre>
  *
- * indicates that "HOSTNAME" is a key in <code>config</code>.
+ * indicates that "HOSTNAME" is a key in {@code config}.
  *
  * <p>
  * The value of the annotation can also be a set of reference names of the maps.
- * If <code>defaultConfig</code> is also a <code>Map&lt;String, String&gt;</code>, then
+ * If {@code defaultConfig} is also a {@code Map<String, String>}, then
  *
- * <pre><code>  @KeyFor({"config","defaultConfig"}) String key = "HOSTNAME"; </code></pre>
+ * <pre>{@code   @KeyFor({"config","defaultConfig"}) String key = "HOSTNAME"; }</pre>
  *
- * indicates that "HOSTNAME" is a key in <code>config</code> and in <code>defaultConfig</code>.
+ * indicates that "HOSTNAME" is a key in {@code config} and in {@code defaultConfig}.
  *
  * @checker_framework.manual #map-key-checker Map Key Checker
  */

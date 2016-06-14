@@ -175,7 +175,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /**
      * Returns the annotation that makes up the invariant of this commitment
-     * type system, such as <code>@NonNull</code>.
+     * type system, such as {@code @NonNull}.
      */
     public abstract AnnotationMirror getFieldInvariantAnnotation();
 

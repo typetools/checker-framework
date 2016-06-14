@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * Annotation for methods of the form:
  * <br>
- * <code>{@link ClassVal}("name") Class method(String name) {...}</code>
+ * {@code {@link ClassVal}("name") Class method(String name) {...}}
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

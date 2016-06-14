@@ -89,7 +89,7 @@ public final class ImportDeclaration extends Node {
     /**
      * Return if the import ends with "*".
      * 
-     * @return <code>true</code> if the import ends with "*", <code>false</code>
+     * @return {@code true} if the import ends with "*", {@code false}
      *         otherwise
      */
     public boolean isAsterisk() {
@@ -99,7 +99,7 @@ public final class ImportDeclaration extends Node {
     /**
      * Return if the import is static.
      * 
-     * @return <code>true</code> if the import is static, <code>false</code>
+     * @return {@code true} if the import is static, {@code false}
      *         otherwise
      */
     public boolean isStatic() {
@@ -110,7 +110,7 @@ public final class ImportDeclaration extends Node {
      * Sets if this import is asterisk.
      * 
      * @param asterisk
-     *            <code>true</code> if this import is asterisk
+     *            {@code true} if this import is asterisk
      */
     public void setAsterisk(boolean asterisk) {
         this.asterisk = asterisk;
@@ -130,7 +130,7 @@ public final class ImportDeclaration extends Node {
      * Sets if this import is static.
      * 
      * @param static_
-     *            <code>true</code> if this import is static
+     *            {@code true} if this import is static
      */
     public void setStatic(boolean static_) {
         this.static_ = static_;

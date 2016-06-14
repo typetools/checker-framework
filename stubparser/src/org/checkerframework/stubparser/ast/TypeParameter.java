@@ -90,9 +90,9 @@ public final class TypeParameter extends Node {
 
     /**
      * Return the list of {@link ClassOrInterfaceType} that this parameter
-     * extends. Return <code>null</code> null if there are no type.
+     * extends. Return {@code null} null if there are no type.
      * 
-     * @return list of types that this paramente extends or <code>null</code>
+     * @return list of types that this paramente extends or {@code null}
      */
     public List<ClassOrInterfaceType> getTypeBound() {
         return typeBound;

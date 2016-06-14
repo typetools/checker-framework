@@ -343,7 +343,7 @@ public class I18nFormatterAnnotatedTypeFactory extends
                 // than required, but a warning is issued.
                 int length = anno1ArgTypes.length;
                 if (anno2ArgTypes.length < length) {
-                	length = anno2ArgTypes.length;
+                    length = anno2ArgTypes.length;
                 }
 
                 I18nConversionCategory[] anno3ArgTypes =

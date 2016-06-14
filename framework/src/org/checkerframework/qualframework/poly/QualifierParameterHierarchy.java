@@ -6,7 +6,7 @@ import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
-/** This class provides a <code>QualifierHierarchy</code> implementation for
+/** This class provides a {@code QualifierHierarchy} implementation for
  * sets of qualifier parameters.  Under this hierarchy, A is a subtype of B iff
  * the value of each qualifier parameter in A is contained within the value of
  * the corresponding parameter in B.

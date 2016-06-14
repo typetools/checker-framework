@@ -20,7 +20,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
  * Note that {@link QualifierHierarchyAdapter.Implementation} is the actual
  * {@link MultiGraphQualifierHierarchy} implementation, not {@link
  * QualifierHierarchyAdapter}.  To construct an instance, call:
- * <code>new QualifierHierarchyAdapter(underlying, converter).createImplementation(factory)</code>.
+ * {@code new QualifierHierarchyAdapter(underlying, converter).createImplementation(factory)}.
  */
 /* We need this 'Implementation' silliness because MultiGraphQualifierHierarchy
  * calls some of its own methods from inside the constructor.  The call to the

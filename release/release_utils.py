@@ -489,7 +489,7 @@ def clone(src_repo, dst_repo, bareflag):
     if isGitRepo:
         flags = ""
         if bareflag:
-            flags = "--bare"
+            flags = "--mirror"
         execute('git clone --quiet %s %s %s' % (flags, src_repo, dst_repo))
     else:
         execute('hg clone --quiet %s %s' % (src_repo, dst_repo))

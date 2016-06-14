@@ -16,10 +16,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * point, would evaluate to the exact same object value.
  * <p>
  *
- * A constructor's return type should be annotated with <code>@Unique</code> if the
+ * A constructor's return type should be annotated with {@code @Unique} if the
  * constructor does not leak references to the constructed object.
- * For example, the <code>String()</code> constructor return type
- * is annotated as <code>@Unique</code>.
+ * For example, the {@code String()} constructor return type
+ * is annotated as {@code @Unique}.
  *
  * @see MaybeAliased
  * @checker_framework.manual #aliasing-checker Aliasing Checker

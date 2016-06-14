@@ -180,10 +180,10 @@ public class CheckerActions
 
     public static class SingleCustomAction extends RunCheckerAction
     {
-    	public SingleCustomAction()
-    	{
-    		useSingleCustom = true;
-    		usePrefs = false;
-    	}
+        public SingleCustomAction()
+        {
+            useSingleCustom = true;
+            usePrefs = false;
+        }
     }
 }
