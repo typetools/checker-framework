@@ -1,6 +1,8 @@
 // Test case for issue #372:
 // https://github.com/typetools/checker-framework/issues/372
 
+// @skip-test until the issue is fixed
+
 import java.util.HashMap;
 import java.util.Map;
 
