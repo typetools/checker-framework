@@ -427,6 +427,9 @@ public class FlowExpressionParseUtil {
                 return new MethodCall(ElementUtils.getType(methodElement),
                         methodElement, staticClassReceiver, parameters);
             } else {
+                if (recursiveCall && context.receiver instanceof ClassName) {
+                    throw constructParserException(s, " a non-static method call cannot have a class name as a receiver.");
+                }
                 TypeMirror methodType = InternalUtils
                         .substituteMethodReturnType(
                                 ElementUtils.getType(methodElement),
