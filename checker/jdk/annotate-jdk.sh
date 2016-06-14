@@ -47,7 +47,7 @@
 # 2. copy the newly created jdk8.jar to checker/dist; and
 # 3. run "ant tests-nobuildjdk" from Checker Framework's base directory.
 
-export SCRIPTDIR=`cd \`dirname $0\` && pwd`
+export SCRIPTDIR=`dirname \`readlink -m -v $0\``
 export WD="`pwd`"            # run from top directory of jdk8u clone
 export JDK="${WD}/jdk"       # JDK to be annotated
 export TMPDIR="${WD}/tmp"    # directory for temporary files
@@ -182,7 +182,7 @@ mkdir "${TMPDIR}"
     cd ../build || exit 1
 
     for f in `find * -name '*\.class' -print` ; do
-        extract-annotations "$f" 1>&2
+        extract-annotations -b "$f" 1>&2
         [ ${RET} -eq 0 ] && RET=$?
     done
 
@@ -244,8 +244,8 @@ echo "stage 3 complete" 1>&2
     rsync -au annotated/* .
 
     # apply ad-hoc patch to correct miscellaneous errors
-    if [ -r ${SCRIPTDIR}/ad-hoc.diff ] ; then
-        patch -p1 < ${SCRIPTDIR}/ad-hoc.diff
+    if [ -r ${PATCH} ] ; then
+        patch -p1 < ${PATCH}
     fi
 )
 echo "stage 4 complete" 1>&2
