@@ -10,6 +10,7 @@ import java.util.HashMap;
 class KeyForLocalVariable {
 
     public static void localVariableShadowing() {
+        // There should be a warning here that m0 is not in scope
         @KeyFor("m0") String kk;
         {
             Map<String, Integer> m0 = new HashMap<String,Integer>();
@@ -22,6 +23,11 @@ class KeyForLocalVariable {
             //:: error: (assignment.type.incompatible)
             @KeyFor("m0") String k2 = kk;
         }
+    }
+
+    public static void invalidLocalVariable() {
+        // There should be a warning here that m0 is not in scope
+        @KeyFor("foobar") String kk;
     }
 
 }

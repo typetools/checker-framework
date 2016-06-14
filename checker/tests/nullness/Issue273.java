@@ -1,4 +1,4 @@
-// Test case for issue @273:
+// Test case for issue #273:
 // https://github.com/typetools/checker-framework/issues/273
 
 import org.checkerframework.checker.nullness.qual.*;
@@ -13,6 +13,7 @@ class A {
         @KeyFor("m0") String k = "key";
         m0.put(k, 1);
 
+        //:: error: (argument.type.incompatible)
         getMap2(m0,m1,k).toString();
     }
 
