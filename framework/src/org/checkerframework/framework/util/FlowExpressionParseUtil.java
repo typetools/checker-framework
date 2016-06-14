@@ -452,8 +452,17 @@ public class FlowExpressionParseUtil {
             // not in the remaining string. Note that "itself" can still be a
             // variable name in the remaining string, and this recursive call
             // handles that case.
-            return parse(remainingString, newContext, path, false, true, false,
-                    true, true, false, false, false, false, true);
+            return parse(remainingString, newContext, path,
+                         /*allowSelf=*/ false,
+                         /*allowIdentifier=*/ true,
+                         /*allowParameter=*/ false,
+                         /*allowDot=*/ true,
+                         /*allowMethods=*/ true,
+                         /*allowArrays=*/ false,
+                         /*allowLiterals=*/ false,
+                         /*allowLocalVariables=*/ false,
+                         /*allowItself=*/ false,
+                         /*recursiveCal=*/ true);
         } else if (parenthesesMatcher.matches()) {
             String expressionString = parenthesesMatcher.group(1);
             // Do not modify the value of recursiveCall, since a parenthesis match is essentially
