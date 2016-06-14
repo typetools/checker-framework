@@ -8,10 +8,11 @@ A few parts of the Checker Framework have more permissive licenses.
    license appears below.)  More specifically, all the parts of the Checker
    Framework that you might want to include with your own program use the
    MIT License.  This is the checker-qual.jar file and all the files that
-   appear in it:  every file in a qual/ directory, plus NullnessUtils.java
-   and RegexUtil.java.  In addition, the cleanroom implementations of
-   third-party annotations, which the Checker Framework recognizes as
-   aliases for its own annotations, are licensed under the MIT License.
+   appear in it:  every file in a qual/ directory, plus utility files such
+   as NullnessUtils.java, RegexUtil.java, UnsignednessUtil.java, etc.
+   In addition, the cleanroom implementations of third-party annotations,
+   which the Checker Framework recognizes as aliases for its own
+   annotations, are licensed under the MIT License.
 
  * The Maven plugin is dual-licensed (you may use whichever you prefer)
    under GPL2 and the Apache License, version 2.0 (Apache2).  The text of

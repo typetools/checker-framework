@@ -147,8 +147,11 @@ class TopLevelWithArg<T> {
 
 /** ArrayType # new */
 // ARRAY_CTOR(ReferenceMode.NEW, false);
+
 class ArrayType {
     void context() {
+        //TODO: Unsignedness Checker does not default boxed primitives correctly
+        @SuppressWarnings({"unsignedness"})
         Function<Integer, String[]> string = String[]::new;
         Function<String[], String[]> clone = String[]::clone;
         Function<String[], String> toString = String[]::toString;
