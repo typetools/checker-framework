@@ -394,7 +394,8 @@ public abstract class AnnotatedTypeMirror {
      *
      * will not contain {@code @MyExplicitAnno}.
      *
-     * @return the set of explicitly written annotations on this type supported by this checker
+     * @return the set of explicitly written annotations on this type that are
+     * supported by this checker
      */
     public Set<AnnotationMirror> getExplicitAnnotations() {
         // TODO JSR 308: The explicit type annotations should be always present
