@@ -1,4 +1,4 @@
-package tests.glb;
+package tests.lubglb;
 
 // Test case for issues 723 and 756.
 // https://github.com/typetools/checker-framework/issues/723
@@ -26,8 +26,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * test for the crash that occurs if I18nFormatterAnnotatedTypeFactory
  * does not override greatestLowerBound.
  * That is done by tests/all-systems/Issue691.java.
+ * It also tests the implementation of LUB computation in the
+ * I18n Format String Checker.
  */
-public class I18nFormatterGlbChecker extends I18nFormatterChecker {
+public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
 
     @Override
     public void initChecker() {

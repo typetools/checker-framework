@@ -1,4 +1,4 @@
-package tests.glb;
+package tests.lubglb;
 
 // Test case for issues 691 and 756.
 // https://github.com/typetools/checker-framework/issues/691
@@ -23,8 +23,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * This class tests the implementation of GLB computation in the
  * Formatter Checker, but it does not test for the crash described
  * in issue 691. That is done by tests/all-systems/Issue691.java.
+ * It also tests the implementation of LUB computation in the
+ * Formatter Checker.
  */
-public class FormatterGlbChecker extends FormatterChecker {
+public class FormatterLubGlbChecker extends FormatterChecker {
 
     @Override
     public void initChecker() {
