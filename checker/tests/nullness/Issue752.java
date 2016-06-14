@@ -7,22 +7,25 @@ public class Issue752 {
     Issue752 field = new Issue752();
     static Issue752 staticField = new Issue752();
 
+    // A package name without a class name is not a valid flow expression string.
     @RequiresNonNull("java.lang")
     //:: error: (flowexpr.parse.error)
     void method1() { }
 
-    @RequiresNonNull("java.lang.String")
+    @RequiresNonNull("java.lang.String.class")
     void method2() { }
 
+    // A package name without a class name is not a valid flow expression string.
     @RequiresNonNull("a.b.c")
     //:: error: (flowexpr.parse.error)
     void method3() { }
 
+    // notaclass does not exist.
     @RequiresNonNull("a.b.c.notaclass")
     //:: error: (flowexpr.parse.error)
     void method4() { }
 
-    @RequiresNonNull("a.b.c.Issue752")
+    @RequiresNonNull("a.b.c.Issue752.class")
     void method5() {
     }
 
@@ -32,10 +35,12 @@ public class Issue752 {
     @RequiresNonNull("a.b.c.Issue752.staticField.field")
     void method7() { }
 
+    // field is an instance field, and Issue752 is a class.
     @RequiresNonNull("a.b.c.Issue752.field")
     //:: error: (flowexpr.parse.error)
     void method8() { }
 
+    // field is an instance field, and Issue752 is a class.
     @RequiresNonNull("a.b.c.Issue752.field.field")
     //:: error: (flowexpr.parse.error)
     void method9() { }
