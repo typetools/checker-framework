@@ -378,11 +378,23 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the set of explicitly written annotations supported by this checker.
+     * Returns the set of explicitly written annotations on this type that are
+     * supported by this checker.
      * This is useful to check the validity of annotations explicitly present on a type,
      * as flow inference might add annotations that were not previously present.
+     * Note that since AnnotatedTypeMirror instances are created for type uses,
+     * this method will return explicit annotations in type use locations but will
+     * not return explicit annotations that had an impact on defaulting, such as
+     * an explicit annotation on a class declaration. For example, given:
+     * <p>
+     * {@code @MyExplicitAnno class MyClass { }; MyClass myClassInstance; }
+     * <p>
+     * the result of calling
+     * {@code atypeFactory.getAnnotatedType(variableTreeForMyClassInstance).getExplicitAnnotations()}
      *
-     * @return the set of explicitly written annotations supported by this checker
+     * will not contain {@code @MyExplicitAnno}.
+     *
+     * @return the set of explicitly written annotations on this type supported by this checker
      */
     public Set<AnnotationMirror> getExplicitAnnotations() {
         // TODO JSR 308: The explicit type annotations should be always present
@@ -490,12 +502,17 @@ public abstract class AnnotatedTypeMirror {
      *
      * In contrast to {@link #hasExplicitAnnotationRelaxed(AnnotationMirror)}
      * this method also compares annotation values.
+     * <p>
+     *
+     * See the documentation for {@link #getExplicitAnnotations()} for details
+     * on which explicit annotations are not included.
      *
      * @param a the annotation to check for
      * @return true iff the annotation {@code a} is explicitly written
      * on the type
      *
      * @see #hasExplicitAnnotationRelaxed(AnnotationMirror)
+     * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotation(AnnotationMirror a) {
         return AnnotationUtils.containsSame(getExplicitAnnotations(), a);
@@ -531,21 +548,32 @@ public abstract class AnnotatedTypeMirror {
     /**
      * A version of hasAnnotationRelaxed that only considers annotations that
      * are explicitly written on the type.
+     * <p>
+     *
+     * See the documentation for {@link #getExplicitAnnotations()} for details
+     * on which explicit annotations are not included.
      *
      * @see #hasAnnotationRelaxed(AnnotationMirror)
+     * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotationRelaxed(AnnotationMirror a) {
         return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), a);
     }
 
     /**
-     * Determines whether this type contains an explictly written annotation
+     * Determines whether this type contains an explicitly written annotation
      * with the same annotation type as a particular annotation. This method
      * does not consider an annotation's values.
+     * <p>
+     *
+     * See the documentation for {@link #getExplicitAnnotations()} for details
+     * on which explicit annotations are not included.
      *
      * @param a the class of annotation to check for
      * @return true iff the type contains an explicitly written annotation
      * with the same type as the annotation given by {@code a}
+     *
+     * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotation(Class<? extends Annotation> a) {
         return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), getAnnotation(a));
