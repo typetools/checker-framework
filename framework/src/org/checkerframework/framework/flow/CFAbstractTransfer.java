@@ -395,6 +395,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         // add properties about fields (static information from type)
         boolean isNotFullyInitializedReceiver = isNotFullyInitializedReceiver(methodTree);
+        if (isNotFullyInitializedReceiver &&  !TreeUtils.isConstructor(methodTree)) {
+            // cannot add information about fields if the receiver isn't initialized
+            // and the method isn't a constructor
+            return;
+        }
         for (Tree member : classTree.getMembers()) {
             if (member instanceof VariableTree) {
                 VariableTree vt = (VariableTree) member;
@@ -409,9 +414,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 }
                 V value = analysis.createAbstractValue(type);
                 if (value == null) continue;
-                if (isNotFullyInitializedReceiver) {
-                    // if we are in a constructor (or another method where
-                    // the receiver might not yet be fully initialized),
+                if (TreeUtils.isConstructor(methodTree)) {
+                    // if we are in a constructor,
                     // then we can still use the static type, but only
                     // if there is also an initializer that already does
                     // some initialization.
