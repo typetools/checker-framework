@@ -63,8 +63,7 @@ class Initializer {
 
     String f = "";
     void t1(@UnknownInitialization @Raw Initializer this) {
-        // this is potentially uninitialized, but the static type of f, as well as
-        // the initializer guarantee that it is initialized.
+        //:: error: (dereference.of.nullable)
         this.f.toString();
     }
 
