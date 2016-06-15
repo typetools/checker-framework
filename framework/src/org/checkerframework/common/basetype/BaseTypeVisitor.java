@@ -2392,6 +2392,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private boolean checkMethodReferenceInference(MemberReferenceTree memberReferenceTree, AnnotatedExecutableType memberReferenceType,
                                                   AnnotatedExecutableType overridden, AnnotatedTypeMirror overridingType) {
+        // TODO: Issue #802
+        // TODO: https://github.com/typetools/checker-framework/issues/802
         // TODO: Method type argument inference
         // TODO: Enable checks for method reference with inferred type arguments.
         // For now, error on mismatch of class or method type arguments.
