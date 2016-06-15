@@ -391,7 +391,7 @@ public void testMethodAnnotations() {
     methodThatTakesAnInteger(i);
   }
 
-  void testReceiverGuardedByItself(@GuardedBy("itself") TestTreeKinds this) {
+  void testReceiverGuardedByItself(@GuardedBy("<self>") TestTreeKinds this) {
       //:: error: (contracts.precondition.not.satisfied)
       method();
       synchronized(this) {
@@ -401,7 +401,7 @@ public void testMethodAnnotations() {
   void method(@GuardSatisfied TestTreeKinds this) {
   }
 
-  void testOtherClassReceiverGuardedByItself(final @GuardedBy("itself") OtherClass o) {
+  void testOtherClassReceiverGuardedByItself(final @GuardedBy("<self>") OtherClass o) {
      //:: error: (contracts.precondition.not.satisfied)
      o.foo();
      synchronized(o) {

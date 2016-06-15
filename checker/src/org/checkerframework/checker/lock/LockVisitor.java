@@ -88,7 +88,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     private final Class<? extends Annotation> checkerGuardedByClass = GuardedBy.class;
     private final Class<? extends Annotation> checkerGuardSatisfiedClass = GuardSatisfied.class;
 
-    private static final Pattern itselfReceiverPattern = Pattern.compile("^itself(\\.(.*))?$");
+    private static final Pattern selfReceiverPattern = Pattern.compile("^<self>(\\.(.*))?$");
 
     public LockVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -1120,8 +1120,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * If expression is "itself", and the flow expression parser cannot find a variable,
-     * class, etc. named "itself", a flow expression receiver for {@code node} is returned,
+     * If expression is {@code "<self>"}, a flow expression receiver for {@code node} is returned,
      * unless {@code node} is null, in which case null is returned.
      * Also checks that the flow expression is effectively final and issues an error if it is not.
      * <p>
@@ -1135,41 +1134,34 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         FlowExpressions.Receiver expr = null;
         expression = expression.trim();
 
-        Matcher itselfReceiverMatcher = itselfReceiverPattern.matcher(expression);
+        Matcher selfReceiverMatcher = selfReceiverPattern.matcher(expression);
 
-        if (itselfReceiverMatcher.matches()) {
-            expr = FlowExpressionParseUtil.parseAllowingItself(expression, flowExprContext, path);
+        if (selfReceiverMatcher.matches()) {
+            if (node == null) {
+                // node is definitely null if this method was called by LockVisitor.visitAnnotation.
+                // In this case, we skip the check to ensure that the "<self>" expression is
+                // effectively final at the site of the @GuardedBy("<self>") annotation.
 
-            if (expr == null) {
-                // No variable, class, etc. named "itself(.*)" could be found.
-                // Hence "itself" is interpreted to actually mean itself.
+                return null;
+            }
 
-                if (node == null) {
-                    // node is definitely null if this method was called by LockVisitor.visitAnnotation.
-                    // In this case, we skip the check to ensure that the "itself" expression is
-                    // effectively final at the site of the @GuardedBy("itself") annotation.
+            String remainingExpression = selfReceiverMatcher.group(2);
 
-                    return null;
-                }
+            if (remainingExpression == null || remainingExpression.isEmpty()) {
+                expr = FlowExpressions.internalReprOf(atypeFactory,
+                        node);
+            } else {
+                // TODO: The proper way to do this is to call flowExprContext.changeReceiver to set the
+                // receiver to the <self> expression, and then call FlowExpressionParseUtil.parse on the
+                // remaining expression string with the new flow expression context. However, this currently
+                // results in a FlowExpressions.Receiver that has a different hash code than if
+                // the following flow expression is parsed directly, which results in our inability
+                // to check that a lock expression is held as it does not match anything in the store
+                // due to the hash code mismatch.
+                // For now, convert the "<self>" portion to the node's string representation, and parse
+                // the entire string:
 
-                String remainingExpression = itselfReceiverMatcher.group(2);
-
-                if (remainingExpression == null || remainingExpression.isEmpty()) {
-                    expr = FlowExpressions.internalReprOf(atypeFactory,
-                            node);
-                } else {
-                    // TODO: The proper way to do this is to call flowExprContext.changeReceiver to set the
-                    // receiver to the itself expression, and then call FlowExpressionParseUtil.parse on the
-                    // remaining expression string with the new flow expression context. However, this currently
-                    // results in a FlowExpressions.Receiver that has a different hash code than if
-                    // the following flow expression is parsed directly, which results in our inability
-                    // to check that a lock expression is held as it does not match anything in the store
-                    // due to the hash code mismatch.
-                    // For now, convert the "itself" portion to the node's string representation, and parse
-                    // the entire string:
-
-                    expr = FlowExpressionParseUtil.parse(node.toString() + "." + remainingExpression, flowExprContext, path);
-                }
+                expr = FlowExpressionParseUtil.parse(node.toString() + "." + remainingExpression, flowExprContext, path);
             }
         } else {
             expr = super.parseExpressionString(expression, flowExprContext, path, node, treeForErrorReporting);
