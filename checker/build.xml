@@ -1244,31 +1244,42 @@ So, use our own archived version.
     </target>
 
 
-    <!-- TODO: like for -run-checker this only checks checker/src.
-         Improve both. -->
+    <target name="errorprone.check">
+      <condition property="errorprone.exists">
+        <available file="${errorprone.lib}" type="file"/>
+      </condition>
+    </target>
+
+    <target name="-errorprone.download" depends="errorprone.check" unless="errorprone.exists">
+      <get
+        src="https://github.com/google/error-prone/archive/v2.0.9.tar.gz"
+        dest="${errorprone.home}/../error-prone-2.0.9.tar.gz" />
+      <untar src="${errorprone.home}/../error-prone-2.0.9.tar.gz"
+        dest="${errorprone.home}/../"
+        compression="gzip" />
+
+      <exec executable="mvn" dir="${errorprone.home}" failonerror="true">
+        <arg line="package"/>
+      </exec>
+    </target>
+
     <!-- Depend on dist-nobuildjdk to make sure everything compiles. -->
-    <target name="check-errorprone" depends="dist-nobuildjdk, clean-nojar"
+    <target name="check-errorprone" depends="dist-nobuildjdk, clean-nojar, -errorprone.download"
             description="Run the error-prone compiler on the Checker Framework">
         <mkdir dir="${build}"/>
+
         <javac failonerror="true"
                 includeantruntime="false"
-                bootclasspath="${javac.lib}:${java.home}/lib/rt.jar"
-                classpath="${javac.lib}:${checker.lib}:${junit.lib}:${hamcrest.lib}"
-                srcdir="${src}"
+                debug="true"
+                classpath="${checker.lib}:${junit.lib}:${hamcrest.lib}"
+                srcdir="${framework.loc}/${src}:${dataflow.loc}/${src}:${javacutil.loc}/${src}:${stubparser.loc}/${src}:${src}"
                 includes="**/*.java"
-                excludes="org/checkerframework/checker/nullness/NullnessUtils.java org/checkerframework/checker/regex/RegexUtils.java"
+                excludes="**/javacutil/dist/**"
                 compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
                 destdir="${build}">
-            <compilerarg value="-Xjcov"/>
-            <compilerarg value="-Xprefer:source"/>
-            <compilerarg value="-version"/>
-
-            <compilerarg value="-proc:only"/>
-            <!-- Using -proc:only without processor gives a warning,
-                 but error-prone crashes when I provide a dummy processor.
-            <compilerarg value="-processor"/>
-            <compilerarg value="org.checkerframework.common.util.debug.EmptyProcessor"/>
-            -->
+            <compilerclasspath>
+              <pathelement location="${errorprone.lib}"/>
+            </compilerclasspath>
         </javac>
     </target>
 
