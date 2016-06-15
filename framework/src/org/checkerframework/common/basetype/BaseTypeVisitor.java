@@ -1101,7 +1101,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@code flowExprContext}. The expression "this" is allowed and is handled.
      * {@code node} refers to the method invocation or variable access being analyzed.
      * It can be used by an overriding method for special handling of expressions
-     * such as "itself" which may indicate a reference to {@code node}.
+     * such as {@code "<self>"} which may indicate a reference to {@code node}.
      *
      * @param expression the flow expression string to be parsed
      * @param flowExprContext the flow expression context with respect to which the expression string is to be evaluated
@@ -1116,8 +1116,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             TreePath path, Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
         expression = expression.trim();
 
-        Matcher selfMatcher = thisPattern.matcher(expression);
-        if (selfMatcher.matches()) {
+        Matcher thisMatcher = thisPattern.matcher(expression);
+        if (thisMatcher.matches()) {
             // It is possible that expression == "this" after this call.
             expression = flowExprContext.receiver.toString().trim();
         }
@@ -2392,6 +2392,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     private boolean checkMethodReferenceInference(MemberReferenceTree memberReferenceTree, AnnotatedExecutableType memberReferenceType,
                                                   AnnotatedExecutableType overridden, AnnotatedTypeMirror overridingType) {
+        // TODO: Issue #802
+        // TODO: https://github.com/typetools/checker-framework/issues/802
         // TODO: Method type argument inference
         // TODO: Enable checks for method reference with inferred type arguments.
         // For now, error on mismatch of class or method type arguments.

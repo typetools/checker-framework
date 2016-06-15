@@ -356,9 +356,19 @@ public class FormatterTreeUtil {
      * message as value.
      */
     public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalFormatException ex) {
+        return stringToInvalidFormatAnnotation(ex.getMessage());
+    }
+
+    /**
+     * Takes an invalid formatter string and, returns a syntax trees
+     * element that represents a {@link InvalidFormat} annotation with
+     * the invalid formatter string as value.
+     */
+    // package-private
+    AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
-        builder.setValue("value", ex.getMessage());
+        builder.setValue("value", invalidFormatString);
         return builder.build();
     }
 

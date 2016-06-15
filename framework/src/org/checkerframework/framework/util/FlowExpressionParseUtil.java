@@ -91,8 +91,6 @@ public class FlowExpressionParseUtil {
      * numbering starts at 0 and assume that #0 is the first formal parameter.
      */
     protected static final Pattern thisPattern = anchored("this");
-    /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
-    protected static final Pattern itselfPattern = anchored("itself");
     /** Matches 'super' */
     protected static final Pattern superPattern = anchored("super");
     /** Matches an identifier */
@@ -129,55 +127,33 @@ public class FlowExpressionParseUtil {
     public static FlowExpressions.Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        FlowExpressions.Receiver result = parse(s, context, path, false, false);
-        assert result != null;
+        FlowExpressions.Receiver result = parse(s, context, path, false);
         return result;
     }
 
-    /**
-     * Parse a string and return its representation as a {@link Receiver}.
-     *
-     * @param s
-     *            The string to parse.
-     * @param context
-     *            information about any receiver and arguments
-     * @param path
-     *            The current tree path.
-     * @return null only if 'itself' is passed in as (part of) the string to parse
-     *   and no receiver named 'itself' could be found.
-     * @throws FlowExpressionParseException if the expression is malformed
-     */
-    public static FlowExpressions. /*@Nullable*/ Receiver parseAllowingItself(String s,
-            FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-        return parse(s, context, path, true, false);
-    }
-
-    private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
-            FlowExpressionContext context, TreePath path, boolean allowItself, boolean recursiveCall)
+    private static FlowExpressions.Receiver parse(String s,
+            FlowExpressionContext context, TreePath path, boolean recursiveCall)
             throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true, true,
-                true, true, allowItself, recursiveCall);
+                true, true, recursiveCall);
+        assert result != null;
         return result;
     }
 
     /**
      * Private implementation of {@link #parse} with a choice of which classes
      * of expressions should be parsed.
-     * Returns null only if {@code allowItself} is true, and 'itself' is
-     * passed in as (part of) the string to parse and no receiver named
-     * 'itself' could be found.
-     * @param allowSelf also controls whether "super" is allowed
+     * @param allowThis controls whether "this" and "super" are allowed
      */
-    private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
-            FlowExpressionContext context, TreePath path, boolean allowSelf,
+    private static FlowExpressions.Receiver parse(String s,
+            FlowExpressionContext context, TreePath path, boolean allowThis,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
             boolean allowMethods, boolean allowArrays, boolean allowLiterals,
-            boolean allowLocalVariables, boolean allowItself, boolean recursiveCall)
+            boolean allowLocalVariables, boolean recursiveCall)
             throws FlowExpressionParseException {
         s = s.trim();
 
-        Matcher selfMatcher = thisPattern.matcher(s);
+        Matcher thisMatcher = thisPattern.matcher(s);
 
         // If the expression is "this", then replace it by the receiver of the
         // Java expression to which the annotation applies.
@@ -185,12 +161,11 @@ public class FlowExpressionParseUtil {
         // "this" gets converted to "this.<fieldname>" in the line below, then
         // dotMatcher matches "this.<fieldname>" and calls this function recursively
         // with s == "this"
-        if (selfMatcher.matches() && allowSelf && !recursiveCall) {
+        if (thisMatcher.matches() && allowThis && !recursiveCall) {
             s = context.receiver.toString(); // it is possible that s == "this" after this call
-            selfMatcher = thisPattern.matcher(s); // Refresh the matcher
+            thisMatcher = thisPattern.matcher(s); // Refresh the matcher
         }
 
-        Matcher itselfMatcher = itselfPattern.matcher(s);
         Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher superMatcher = superPattern.matcher(s);
         Matcher parameterMatcher = parameterPattern.matcher(s);
@@ -219,14 +194,14 @@ public class FlowExpressionParseUtil {
                     "java.lang.String");
             return new ValueLiteral(types.getDeclaredType(stringTypeElem),
                     s.substring(1, s.length() - 1));
-        } else if (selfMatcher.matches() && allowSelf) {
+        } else if (thisMatcher.matches() && allowThis) {
             // "this" literal, even after the call above to set s = context.receiver.toString();
             if (context.receiver == null || context.receiver.containsUnknown()) {
                 return new ThisReference(context.receiver == null ? null : context.receiver.getType());
             } else { // If we already know the receiver, return it.
                 return context.receiver;
             }
-        } else if (superMatcher.matches() && allowSelf) {
+        } else if (superMatcher.matches() && allowThis) {
             // super literal
             List<? extends TypeMirror> superTypes = types
                     .directSupertypes(context.receiver.getType());
@@ -325,19 +300,8 @@ public class FlowExpressionParseUtil {
                     return new ClassName(classType);
                 } catch (Throwable t2) {
 
-                    if (allowItself && itselfMatcher.matches()) {
-                        // Don't throw an exception if 'itself' does not match an identifier.
-                        // The callee knows that it passed in 'itself' and will handle the null return value.
-                        // DO however throw an exception below if the call is recursive and 'itself' matches,
-                        // because that might mean that the original expression was "classname.itself",
-                        // which means a field named itself was explicitly sought. (See the last recursive call
-                        // to parse in the (dotMatcher.matches() && allowDot) case below. In that recursive
-                        // call, the allowItself parameter is set to false.)
-                        return null;
-                    }
-
                     // It would be helpful to also give information about t here.
-                    throw constructParserException(s, "not itself", t2);
+                    throw constructParserException(s, "not a class literal", t2);
                 }
             }
         } else if (parameterMatcher.matches() && allowParameter && context.arguments != null) {
@@ -464,12 +428,7 @@ public class FlowExpressionParseUtil {
                 String receiverString = dotMatcher.group(1);
                 remainingString = dotMatcher.group(2);
                 // Parse the receiver first.
-                receiver = parse(receiverString, context, path, allowItself, true);
-                if (allowItself && receiver == null) {
-                    // "itself.<someexpression>", where "itself" is not a variable name. Let the caller handle it.
-
-                    return null;
-                }
+                receiver = parse(receiverString, context, path, true);
             } else {
                 receiver = classAndRemainingString.first;
                 remainingString = classAndRemainingString.second;
@@ -484,12 +443,8 @@ public class FlowExpressionParseUtil {
 
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
-            // Parameter allowItself is set to false since "itself" is
-            // allowed to mean "the expression itself" when used before the
-            // dot ("itself.someField") but not when used after the dot
-            // ("object.itself", where there may be a field named "itself").
             return parse(remainingString, newContext, path,
-                         /*allowSelf=*/ false,
+                         /*allowThis=*/ false,
                          /*allowIdentifier=*/ true,
                          /*allowParameter=*/ false,
                          /*allowDot=*/ true,
@@ -497,16 +452,15 @@ public class FlowExpressionParseUtil {
                          /*allowArrays=*/ false,
                          /*allowLiterals=*/ false,
                          /*allowLocalVariables=*/ false,
-                         /*allowItself=*/ false,
                          /*recursiveCal=*/ true);
         } else if (parenthesesMatcher.matches()) {
             String expressionString = parenthesesMatcher.group(1);
             // Do not modify the value of recursiveCall, since a parenthesis match is essentially
             // a match to a no-op and should not semantically affect the parsing.
-            return parse(expressionString, context, path, allowSelf,
+            return parse(expressionString, context, path, allowThis,
                     allowIdentifier, allowParameter, allowDot,
                     allowMethods, allowArrays, allowLiterals,
-                    allowLocalVariables, allowItself, recursiveCall);
+                    allowLocalVariables, recursiveCall);
         } else {
             throw constructParserException(s, "no matcher matched");
         }
