@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 
 /**
  * Represents the bottom of the ClassVal qualifier hierarchy. This is used to
- * make the <code>null</code> literal a subtype of all ClassVal annotations.
+ * make the {@code null} literal a subtype of all ClassVal annotations.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */

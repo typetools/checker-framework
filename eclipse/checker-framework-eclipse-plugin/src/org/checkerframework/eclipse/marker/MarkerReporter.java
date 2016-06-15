@@ -33,13 +33,13 @@ public class MarkerReporter implements IWorkspaceRunnable
     private final int startPosition;
     private final int endPosition;
 
-	private final String errorKey;
+    private final String errorKey;
     private final List<String> errorArguments;
 
 
-	public MarkerReporter(IResource resource, int startLine, String errorKey,
-			List<String> errorArguments, String message, int startPosition,
-			int endPosition) {
+    public MarkerReporter(IResource resource, int startLine, String errorKey,
+            List<String> errorArguments, String message, int startPosition,
+            int endPosition) {
         this.startLine = startLine;
         this.resource = resource;
         this.startPosition = startPosition;
@@ -78,12 +78,12 @@ public class MarkerReporter implements IWorkspaceRunnable
         marker.setAttribute(ERROR_KEY,           errorKey);
         marker.setAttribute(NUM_ERROR_ARGUMENTS, errorArguments.size());
         Iterator<String> iterator = errorArguments.iterator();
-		int i = 0;
-		while (iterator.hasNext()) {
-			String errorArgument = iterator.next();
-			marker.setAttribute(ERROR_ARGUMENTS + i, errorArgument);
-			++i;
-		}
+        int i = 0;
+        while (iterator.hasNext()) {
+            String errorArgument = iterator.next();
+            marker.setAttribute(ERROR_ARGUMENTS + i, errorArgument);
+            ++i;
+        }
     }
 
 }

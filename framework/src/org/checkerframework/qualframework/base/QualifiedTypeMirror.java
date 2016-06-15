@@ -24,19 +24,19 @@ import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 /**
  * A {@link ExtendedTypeMirror} with a qualifier for the top level and for
  * each component of the type.  For example, the qualified version of
- * <code>int[]</code> has one qualifier on the top-level {@link
+ * {@code int[]} has one qualifier on the top-level {@link
  * QualifiedArrayType} and another on the {@link QualifiedPrimitiveType}
- * representing <code>int</code>.
+ * representing {@code int}.
  *
  * A {@link QualifiedTypeMirror} is immutable and always has exactly one
  * non-null qualifier.  In addition, the structure of the {@link
  * QualifiedTypeMirror} always matches the structure of the underlying {@link
  * ExtendedTypeMirror}.  That is, for any type with components (such as
- * <code>DeclaredType</code>, which has a list of type arguments as a
+ * {@code DeclaredType}, which has a list of type arguments as a
  * component), it will always be the case that
- * <code>qtm.getUnderlyingType().getComponent()</code> is equivalent to
- * <code>qtm.getComponent().getUnderlyingType()</code> according to
- * <code>Object.equals</code>.
+ * {@code qtm.getUnderlyingType().getComponent()} is equivalent to
+ * {@code qtm.getComponent().getUnderlyingType()} according to
+ * {@code Object.equals}.
  *
  * @see QualifiedTypeFactory
  */

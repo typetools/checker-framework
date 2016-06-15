@@ -112,7 +112,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
      * The following invariant holds:
      *
      * <pre>
-     *   !isRunning ==&gt; (currentNode == null)
+     *   !isRunning &rArr; (currentNode == null)
      * </pre>
      */
     protected Node currentNode;
@@ -426,7 +426,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
-     * Add a basic block to the worklist. If <code>b</code> is already present,
+     * Add a basic block to the worklist. If {@code b} is already present,
      * the method does nothing.
      */
     protected void addToWorklist(Block b) {
@@ -437,7 +437,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
     }
 
     /**
-     * Add a store before the basic block <code>b</code> by merging with the
+     * Add a store before the basic block {@code b} by merging with the
      * existing stores for that location.
      */
     protected void addStoreBefore(Block b, Node node, S s, Store.Kind kind,
@@ -576,7 +576,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     /**
      * @return the transfer input corresponding to the location right before the basic
-     *         block <code>b</code>.
+     *         block {@code b}.
      */
     protected /*@Nullable*/ TransferInput<A, S> getInputBefore(Block b) {
         return inputs.get(b);
@@ -584,7 +584,7 @@ public class Analysis<A extends AbstractValue<A>, S extends Store<S>, T extends 
 
     /**
      * @return the store corresponding to the location right before the basic
-     *         block <code>b</code>.
+     *         block {@code b}.
      */
     protected /*@Nullable*/ S getStoreBefore(Block b, Store.Kind kind) {
         switch (kind) {

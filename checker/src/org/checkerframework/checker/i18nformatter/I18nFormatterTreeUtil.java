@@ -106,7 +106,7 @@ public class I18nFormatterTreeUtil {
      * annotation, and returns its value.
      */
     public I18nConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-    	List<I18nConversionCategory> list =
+        List<I18nConversionCategory> list =
                 AnnotationUtils.getElementValueEnumArray(anno, "value", I18nConversionCategory.class, false);
         return list.toArray(new I18nConversionCategory[] {});
     }

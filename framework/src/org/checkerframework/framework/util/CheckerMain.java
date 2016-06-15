@@ -18,12 +18,33 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 /**
- * This class functions essentially the same as the jsr308-langtools javac
- * script EXCEPT that it adds the appropriate jdk.jar to the bootclasspath and
- * adds checker.jar to the processor passed to javac.
+ * This class behaves similarly to javac.  CheckerMain does the following:
+ * <ul>
+ *   <li>add the jsr308-langtools’ javac.jar to the runtime bootclasspath
+ *     of the process that runs the Checker Framework.
+ *     This specifies which classes are used to run javac</li>
+ *   <li>add jdk7.jar or jdk8.jar to the compile time bootclasspath
+ *     of the javac argument list passed to javac</li>
+ *   <li>parse and implement any special options used by the Checker Framework,
+ *     e.g., using “shortnames” for annotation processors</li>
+ *   <li>pass all remaining command-line arguments to the real javac</li>
+ * </ul>
+ *
+ * To debug this class, use the {@code -AoutputArgsToFile=FILENAME} command-line argument.
  * <p>
  *
- * To debug it, use the -AoutputArgsToFile=... command-line argument.
+ * "To run the Checker Framework" really means to run java, where the
+ * program being run is a special version of javac, and javac is passed a
+ * -processor command-line argument that mentions a Checker Framework
+ * checker.  There are 5 relevant classpaths:  The classpath and
+ * bootclasspath when running java, and the classpath, bootclasspath, and
+ * processorpath used by javac.  The latter three are the only important
+ * ones.
+ * <p>
+ *
+ * Note for developers: Try to limit the work done (and options
+ * interpreted) by CheckerMain, because its functionality is not available
+ * to users who choose not to use the Checker Framework javac script.
  */
 public class CheckerMain {
 
@@ -351,6 +372,8 @@ public class CheckerMain {
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
 
+        // Prepend ("/p:") because our javac.jar doesn’t have all classes
+        // required by the Java runtime to execute the compiler.
         args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeBootClasspath));
         args.add("-ea");
         // com.sun.tools needs to be enabled separately
@@ -360,6 +383,14 @@ public class CheckerMain {
 
         addMainArgs(args);
 
+        // No classes on the compilation bootclasspath will be loaded
+        // during compilation, but the classes are read by the compiler
+        // without loading them.  The compiler assumes that any class on
+        // this bootclasspath will be on the bootclasspath of the JVM used
+        // to later run the classfiles that Javac produces.  Our
+        // jdk[78].jar classes don't have bodies, so they won't be used at
+        // run time, but other, real definitions of those classes will be
+        // on the classpath at run time.
         args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
 
         if (!argsListHasClassPath(argListFiles)) {

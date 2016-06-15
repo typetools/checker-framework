@@ -6,7 +6,6 @@
 //   found   : T extends @Initialized @Nullable Object
 //   required: T extends @Initialized @Nullable Object
 
-// @skip-test temorarily disabled until issue #594 is fixed
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 

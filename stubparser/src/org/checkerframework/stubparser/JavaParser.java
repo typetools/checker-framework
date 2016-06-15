@@ -33,7 +33,7 @@ import org.checkerframework.stubparser.ast.IndexUnit;
  * <p>This class was generated automatically by javacc, do not edit.</p>
  * <p>Parse Java 1.5 source code and creates Abstract Syntax Tree classes.</p>
  * <p><b>Note:</b> To use this parser asynchronously, disable de parser cache
- * by calling the method {@link #setCacheParser} with <code>false</code>
+ * by calling the method {@link #setCacheParser} with {@code false}
  * as argument.</p>
  *
  * @author Júlio Vilmar Gesser
@@ -53,9 +53,9 @@ public final class JavaParser {
      * parser cache is enabled, only one insance of this object will be 
      * used in every call to parse methods.
      * If this parser is intend to be used asynchonously, the cache must 
-     * be disabled setting this flag to <code>false</code>.
+     * be disabled setting this flag to {@code false}.
      * By default, the cache is enabled.
-     * @param value <code>false</code> to disable the parser instance cache. 
+     * @param value {@code false} to disable the parser instance cache. 
      */
     public static void setCacheParser(boolean value) {
         cacheParser = value;

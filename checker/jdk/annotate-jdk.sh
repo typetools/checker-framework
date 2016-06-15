@@ -61,10 +61,95 @@ export AFUJAR="${AFU}/annotation-file-utilities/annotation-file-utilities.jar"
 export CFJAR="${CHECKERFRAMEWORK}/checker/dist/checker.jar"
 export LTJAR="${JSR308}/jsr308-langtools/dist/lib/javac.jar"
 export JDJAR="${JSR308}/jsr308-langtools/dist/lib/javadoc.jar"
-export CP=".:${JDK}/build/classes:${LTJAR}:${JDJAR}:${CFJAR}:${AFUJAR}:${CLASSPATH}"
+export JAVAC="java -jar ${CHECKERFRAMEWORK}/checker/dist/checker.jar"
+export JFLAGS="-Xbootclasspath/p:${CLASSPATH}/checker/dist/javac.jar -XDignore.symbol.file=true -Xmaxerrs 20000 -Xmaxwarns 20000 -source 8 -target 8 -encoding ascii"
+export CLASSPATH=".:${JDK}/build/classes:${LTJAR}:${JDJAR}:${CFJAR}:${AFUJAR}:${CLASSPATH}"
 
 # return value
 export RET=0
+
+
+# generate @AnnotatedFor annotations
+addAnnotatedFor() {
+    java org.checkerframework.framework.stub.AddAnnotatedFor
+}
+
+# find JAIFs in hierarchical directory tree and insert indicated
+# annotations into corresponding source files
+annotateSourceFile() {
+    R=0
+    BASE="${JAIFDIR}/`dirname "$1"`/`basename "$1" .java`"
+    # must insert annotations on inner classes as well
+    for f in ${BASE}.jaif ${BASE}\$*.jaif ; do
+        if [ -r "$f" ] ; then
+            insert-annotations-to-source "$f" "$1"
+            [ $R -ne 0 ] || R=$?
+        fi
+    done
+    return $R
+}
+
+# convert stubfiles to JAIF
+# first arg is JAIF containing all necessary annotation definitions
+convertStub() {
+    java org.checkerframework.framework.stub.ToIndexFileConverter "${WD}/annotation-defs.jaif" $1
+}
+
+# convert all stubfiles in Checker Framework repository into JAIF format
+# and emit to standard output
+convertStubs() {
+    R=0
+    cd "${CHECKERFRAMEWORK}"
+    [ -z "`ls`" ] && echo "no files" 1>&2 && exit 1
+
+    for f in `find * -name 'jdk\.astub' -print` ; do
+        convertStub "$f"
+        [ $R -ne 0 ] || R=$?
+        g="`dirname $f`/`basename $f .astub`.jaif"
+        [ -r "$g" ] && cat "$g" && rm -f "$g"
+    done
+    return $R
+}
+
+# split up JAIF into files by package (directory) and class (JAIF)
+splitJAIF() {
+    awk '
+        # save class sections from converted JAIFs to hierarchical JAIF dir.
+        BEGIN {out="";adefs=ENVIRON["WD"]"/annotation-defs.jaif"}
+        /^package / {
+            l=$0;i=index($2,":");d=(i?substr($2,1,i-1):$2)
+            if(d){gsub(/\./,"/",d)}else{d=""}
+            d=ENVIRON["TMPDIR"]"/"d
+        }
+        /^class / {
+            i=index($2,":");c=(i?substr($2,1,i-1):$2)
+            if(c) {
+                o=d"/"c".jaif"
+                if (o!=out) {
+                    if(out){fflush(out);close(out)};out=o
+                    if(system("[ -s \""out"\" ]")!=0) {
+                        system("mkdir -p "d" && cp "adefs" "out)
+                    }
+                    printf("%s\n",l)>>out  # current pkg decl
+                }
+                printf("%s\n",l)>>out  # current pkg decl
+            }
+        }
+        /^annotation / { out="" }
+        {if(out){print>>out}}
+        END {close(out)}
+    '
+}
+
+# remove all annotation definitions from JAIF
+stripDefs() {
+    awk '
+      /^annotation / {suppress=1}
+      /^class / {suppress=0}
+      /^package / {suppress=0}
+      {if(!suppress){print}}
+    '
+}
 
 
 # Stage 0: restore old comments (should happen only once)
@@ -76,6 +161,11 @@ if [ ${COMMENTS} -ne 0 ] ; then
 (cd "${JDK}" && patch -p1 < annotated-jdk-comment-patch.jaif)
 fi
 
+# download annotation definitions
+[ -r annotation-defs.jaif ]\
+ || wget https://types.cs.washington.edu/checker-framework/annotation-defs.jaif\
+ || exit $?
+
 
 # Stage 1: extract JAIFs from nullness JDK
 
@@ -85,11 +175,14 @@ mkdir "${TMPDIR}"
 (
     cd "${CHECKERFRAMEWORK}/checker/jdk/nullness/src" || exit 1
     [ -z "`ls`" ] && echo "no files" 1>&2 && exit 1
-    find * -name '*\.java' -print | xargs javac -Xmx2500M -XDignore.symbol.file -d ../build
 
-    cd "../build" || exit 1
+    mkdir -p ../build
+    find * -name google -prune -o -name '*\.java' -print | xargs javac -d ../build ${JFLAGS}
+    [ ${RET} -eq 0 ] && RET=$?
+    cd ../build || exit 1
+
     for f in `find * -name '*\.class' -print` ; do
-        CLASSPATH="${CP}" extract-annotations "$f" 1>&2
+        extract-annotations "$f" 1>&2
         [ ${RET} -eq 0 ] && RET=$?
     done
 
@@ -99,101 +192,36 @@ mkdir "${TMPDIR}"
     done
 )
 
-[ ${RET} -ne 0 ] && echo "stage 1 failed" 1>&2 && exit ${RET}
-echo "stage 2 complete" 1>&2
+#[ ${RET} -ne 0 ] && echo "stage 1 failed" 1>&2 && exit ${RET}
+echo "stage 1 complete" 1>&2
 
 
 # Stage 2: convert stub files to JAIFs
 
-convertStubs() {
-    cd "${CHECKERFRAMEWORK}"
-    [ -z "`ls`" ] && echo "no files" 1>&2 && exit 1
-
-    for f in `find * -name 'jdk\.astub' -print` ; do
-        java -cp "${CP}" org.checkerframework.framework.stub.ToIndexFileConverter ${WD}/annotation-defs.jaif "$f"
-        x=$?
-        [ ${RET} -ne 0 ] || RET=$x
-        g="`dirname $f`/`basename $f .astub`.jaif"
-        [ -r "$g" ] && cat "$g" && rm -f "$g"
-    done
-}
-
-splitJAIF() {
-    awk '
-        # save class sections from converted JAIFs to hierarchical JAIF directory
-        BEGIN {out="";adefs=ENVIRON["WD"]"/annotation-defs.jaif"}
-        /^package / {
-            l=$0;i=index($2,":");d=(i?substr($2,1,i-1):$2)
-            if(d){gsub(/\./,"/",d)}else{d=""}
-            d=ENVIRON["TMPDIR"]"/"d
-            next
-        }
-        /^class / {
-            i=index($2,":");c=(i?substr($2,1,i-1):$2)
-            if(c) {
-                o=d"/"c".jaif"
-                if (o!=out) {
-                    if(out){close(out)};out=o
-                    if(system("test -s "out)!=0) {
-                        if(system("mkdir -p "d" && cp "adefs" "out)!=0) {
-                            system("echo failed at \""out"\" && exit 1");
-                        }
-                    }
-                    printf("%s\n",l)>>out  # current pkg decl
-                }
-            }
-        }
-        {if(out){print>>out}}
-        END {close(out)}
-    '
-}
-
-# download annotation definitions
-[ -r annotation-defs.jaif ]\
- || wget https://types.cs.washington.edu/checker-framework/annotation-defs.jaif\
- || exit $?
-
 convertStubs | splitJAIF
-
-[ ${RET} -ne 0 ] && echo "stage 2 failed" 1>&2 && exit ${RET}
+RET=$?
+#[ ${RET} -ne 0 ] && echo "stage 2 failed" 1>&2 && exit ${RET}
 echo "stage 2 complete" 1>&2
 
 
 # Stage 3: combine JAIFs from Stages 1 and 2
-
-stripDefs() {
-    awk '
-        # initial state: print on, no class seen yet
-        BEGIN {x=2}
-        # skip until class or package (unless no class seen yet)
-        /^annotation/ {if(x<=1){x=-1}}
-        # hold and print only if class follows (unless no class seen yet)
-        /^package/ {if(x<=1){x=0;i=0;split("",a)}}
-        # print stored lines, note class has been seen (x=1 instead of 2)
-        /^class/ {for(j=0;j<i;++j){print a[j]};split("",a);x=1;i=0}
-        # store, print, or drop (depending on x)
-        {if(x==0){a[i++]=$0}{if(x>0)print}}
-    '
-}
-
-addAnnotatedFor() {
-    java -cp ${CP} org.checkerframework.framework.stub.AddAnnotatedFor
-}
 
 rm -rf "${JAIFDIR}"
 # write out JAIFs from TMPDIR, replacing (bogus) annotation defs
 for f in `(cd "${TMPDIR}" && find * -name '*\.jaif' -print)` ; do
     g="${JAIFDIR}/$f"
     mkdir -p `dirname $g`
-    echo "$g"
+    echo "$g" 1>&2
+    cp "${WD}/annotation-defs.jaif" "$g"
 
     # first write out standard annotation defs
     # then strip out empty annotation defs
     # also generate and insert @AnnotatedFor annotations
-    stripDefs < "${TMPDIR}/$f" | java -cp ${CP} org.checkerframework.framework.stub.AddAnnotatedFor > "$g"
+    (cat "${WD}/annotation-defs.jaif" && stripDefs < "${TMPDIR}/$f") | addAnnotatedFor > "$g"
+    [ ${RET} -ne 0 ] || RET=$?
 done
 
-[ ${RET} -ne 0 ] && echo "stage 3 failed" 1>&2 && exit ${RET}
+#[ ${RET} -ne 0 ] && echo "stage 3 failed" 1>&2 && exit ${RET}
 echo "stage 3 complete" 1>&2
 
 
@@ -206,22 +234,18 @@ echo "stage 3 complete" 1>&2
     rm -rf annotated
 
     for f in `find * -name '*\.java' -print` ; do
-        BASE="${JAIFDIR}/`dirname $f`/`basename $f .java`"
-        # must insert annotations on inner classes as well
-        for g in ${BASE}.jaif ${BASE}\$*.jaif ; do
-            if [ -r "$g" ] ; then
-                CLASSPATH=${CP} insert-annotations-to-source "$g" "$f"
-                [ ${RET} -ne 0 ] || RET=$?
-            fi
-        done
+        annotateSourceFile $f
+        [ ${RET} -ne 0 ] || RET=$?
     done
 
-    [ ${RET} -ne 0 ] && echo "stage 4 failed" 1>&2 && exit ${RET}
+    #[ ${RET} -ne 0 ] && echo "stage 4 failed" 1>&2 && exit ${RET}
 
     # copy annotated source files over originals
     rsync -au annotated/* .
 
     # apply ad-hoc patch to correct miscellaneous errors
-    patch -p1 < ./ad-hoc.diff
+    if [ -r ${SCRIPTDIR}/ad-hoc.diff ] ; then
+        patch -p1 < ${SCRIPTDIR}/ad-hoc.diff
+    fi
 )
-
+echo "stage 4 complete" 1>&2
