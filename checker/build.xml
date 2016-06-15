@@ -861,7 +861,7 @@
             <param name="param" value="tests.FormatterTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.FormatterGlbCheckerTest"/>
+            <param name="param" value="tests.FormatterLubGlbCheckerTest"/>
         </antcall>
     </target>
 
@@ -871,7 +871,7 @@
             <param name="param" value="tests.I18nFormatterTest"/>
         </antcall>
         <antcall target="-run-tests">
-            <param name="param" value="tests.I18nFormatterGlbCheckerTest"/>
+            <param name="param" value="tests.I18nFormatterLubGlbCheckerTest"/>
         </antcall>
     </target>
 
