@@ -71,7 +71,7 @@
     <attribute name="file2"/>
     <attribute name="ignore-matching-lines"/>
     <sequential>
-      <exec executable="diff" resultproperty="diff-result"> <!-- not  failonerror="true because that prevents user-friendly error message below -->
+      <exec executable="diff" outputproperty="diff-output" resultproperty="diff-result"> <!-- not  failonerror="true because that prevents user-friendly error message below -->
         <!-- <arg value="-q"/> -->
         <arg line="-I '@{ignore-matching-lines}'"/>
         <!-- ignore lint results -->
@@ -109,8 +109,13 @@ ${line.separator}
 ${line.separator}but found:
 ${line.separator}=====================================================================
 ${line.separator}${results.actual}
-${line.separator}
 ${line.separator}=====================================================================
+${line.separator}
+${line.separator}Diff output is:
+${line.separator}=====================================================================
+${line.separator}${diff-output}
+${line.separator}=====================================================================
+${line.separator}
 ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
           </then>
       </if>
