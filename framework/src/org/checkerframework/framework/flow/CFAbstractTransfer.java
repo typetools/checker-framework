@@ -24,7 +24,6 @@ import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
@@ -46,9 +45,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.ConditionalPostconditionSet;
 import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.PreOrPostconditionSet;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -503,7 +500,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             MethodTree methodTree, ExecutableElement methodElement) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
-        PreOrPostconditionSet preconditions = contracts.getPreconditions(methodElement);
+        Set<PreOrPostcondition> preconditions = contracts.getPreconditions(methodElement);
 
         for (PreOrPostcondition p : preconditions) {
             String expression = p.expression;
@@ -963,7 +960,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     protected void processPostconditions(MethodInvocationNode n, S store,
             ExecutableElement methodElement, Tree tree) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        PreOrPostconditionSet postconditions = contracts.getPostconditions(methodElement);
+        Set<PreOrPostcondition> postconditions = contracts.getPostconditions(methodElement);
 
         FlowExpressionContext flowExprContext = null;
 
@@ -1047,7 +1044,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     protected void processConditionalPostconditions(MethodInvocationNode n,
             ExecutableElement methodElement, Tree tree, S thenStore, S elseStore) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        ConditionalPostconditionSet conditionalPostconditions =
+        Set<ConditionalPostcondition> conditionalPostconditions =
                 contracts.getConditionalPostconditions(methodElement);
 
         FlowExpressionContext flowExprContext = null;

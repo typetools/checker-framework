@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -58,12 +57,15 @@ public class ContractsUtils {
      * Can also be generated, such as in
      * {@code LockVisitor.generatePreconditionsBasedOnGuards}.
      */
+    // When making changes, make also the appropriate changes
+    // to class ConditionalPostcondition.
     public static class PreOrPostcondition {
         /**
          * The expression for which the condition must hold, such as
          * {@code "foo"} in {@code @RequiresNonNull("foo")}.
          */
         public final String expression;
+
         /**
          * The name of the qualifier class that describes the condition that
          * must hold.
@@ -77,52 +79,14 @@ public class ContractsUtils {
     }
 
     /**
-     * An Iterable set of PreOrPostcondition entries.
-     * Implements the Iterable interface but not the Set interface.
-     */
-    public static class PreOrPostconditionSet implements Iterable<PreOrPostcondition> {
-        private Set<PreOrPostcondition> conditionSet;
-
-        private static final PreOrPostconditionSet EMPTY_SET =
-                new PreOrPostconditionSet(Collections.<PreOrPostcondition>emptySet());
-
-        private PreOrPostconditionSet(Set<PreOrPostcondition> initialSet) {
-            conditionSet = initialSet;
-        }
-
-        public PreOrPostconditionSet() {
-            conditionSet = new LinkedHashSet<PreOrPostcondition>(0);
-        }
-
-        public static PreOrPostconditionSet emptySet() {
-            return EMPTY_SET;
-        }
-
-        public void add(PreOrPostcondition p) {
-            conditionSet.add(p);
-        }
-
-        public void addAll(PreOrPostconditionSet set) {
-            conditionSet.addAll(set.conditionSet);
-        }
-
-        @Override
-        public Iterator<PreOrPostcondition> iterator() {
-            return conditionSet.iterator();
-        }
-
-        public boolean isEmpty() {
-            return conditionSet.isEmpty();
-        }
-    }
-
-    /**
      * Represents a conditional postcondition that must be verified by
      * {@code BaseTypeVisitor} or one of its subclasses. Automatically
      * extracted from annotations with meta-annotation
      * {@code @ConditionalPostconditionAnnotation}, such as
      * {@code EnsuresNonNullIf}.
      */
+    // When making changes, make also the appropriate changes
+    // to class PreOrPostcondition.
     public static class ConditionalPostcondition {
         /**
          * The expression for which the conditional postcondition must hold,
@@ -130,6 +94,7 @@ public class ContractsUtils {
          * {@code @EnsuresNonNullIf(expression="foo", result=true)}.
          */
         public final String expression;
+
         /**
          * The return value for the annotated method that ensures that the
          * conditional postcondition holds. For example, given<br>
@@ -138,6 +103,7 @@ public class ContractsUtils {
          * to {@code method()} if that call returns {@code false}.
          */
         public final boolean annoResult;
+
         /**
          * The name of the qualifier class that describes the condition that
          * must hold.
@@ -152,52 +118,12 @@ public class ContractsUtils {
     }
 
     /**
-     * An Iterable set of ConditionalPostcondition entries.
-     * Implements the Iterable interface but not the Set interface.
-     */
-    public static class ConditionalPostconditionSet implements Iterable<ConditionalPostcondition> {
-        private Set<ConditionalPostcondition> conditionalPostconditionSet;
-
-        private static final ConditionalPostconditionSet EMPTY_SET =
-                new ConditionalPostconditionSet(Collections.<ConditionalPostcondition>emptySet());
-
-        private ConditionalPostconditionSet(Set<ConditionalPostcondition> initialSet) {
-            conditionalPostconditionSet = initialSet;
-        }
-
-        public ConditionalPostconditionSet() {
-            conditionalPostconditionSet = new LinkedHashSet<ConditionalPostcondition>(0);
-        }
-
-        public static ConditionalPostconditionSet emptySet() {
-            return EMPTY_SET;
-        }
-
-        public void add(ConditionalPostcondition p) {
-            conditionalPostconditionSet.add(p);
-        }
-
-        public void addAll(ConditionalPostconditionSet set) {
-            conditionalPostconditionSet.addAll(set.conditionalPostconditionSet);
-        }
-
-        @Override
-        public Iterator<ConditionalPostcondition> iterator() {
-            return conditionalPostconditionSet.iterator();
-        }
-
-        public boolean isEmpty() {
-            return conditionalPostconditionSet.isEmpty();
-        }
-    }
-
-    /**
      * Returns a set of pairs {@code (expr, annotation)} of preconditions on the
      * element {@code element}.
      */
-    public PreOrPostconditionSet getPreconditions(
+    public Set<PreOrPostcondition> getPreconditions(
             Element element) {
-        PreOrPostconditionSet result = new PreOrPostconditionSet();
+        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
         // Check for a single contract.
         AnnotationMirror requiresAnnotation = factory.getDeclAnnotation(
                 element, RequiresQualifier.class);
@@ -237,12 +163,12 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of preconditions
      * according to the given {@link RequiresQualifier}.
      */
-    private PreOrPostconditionSet getPrecondition(
+    private Set<PreOrPostcondition> getPrecondition(
             AnnotationMirror requiresAnnotation) {
         if (requiresAnnotation == null) {
-            return PreOrPostconditionSet.emptySet();
+            return Collections.emptySet();
         }
-        PreOrPostconditionSet result = new PreOrPostconditionSet();
+        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
         List<String> expressions = AnnotationUtils.getElementValueArray(
                 requiresAnnotation, "expression", String.class, false);
         String annotation = AnnotationUtils.getElementValueClassName(
@@ -257,9 +183,9 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of postconditions on
      * the method {@code methodElement}.
      */
-    public PreOrPostconditionSet getPostconditions(
+    public Set<PreOrPostcondition> getPostconditions(
             ExecutableElement methodElement) {
-        PreOrPostconditionSet result = new PreOrPostconditionSet();
+        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
         // Check for a single contract.
         AnnotationMirror ensuresAnnotation = factory.getDeclAnnotation(
                 methodElement, EnsuresQualifier.class);
@@ -299,12 +225,12 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of postconditions
      * according to the given {@link EnsuresQualifier}.
      */
-    private PreOrPostconditionSet getPostcondition(
+    private Set<PreOrPostcondition> getPostcondition(
             AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation == null) {
-            return PreOrPostconditionSet.emptySet();
+            return Collections.emptySet();
         }
-        PreOrPostconditionSet result = new PreOrPostconditionSet();
+        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
         List<String> expressions = AnnotationUtils.getElementValueArray(
                 ensuresAnnotation, "expression", String.class, false);
         String annotation = AnnotationUtils.getElementValueClassName(
@@ -319,9 +245,9 @@ public class ContractsUtils {
      * Returns a set of triples {@code (expr, (result, annotation))} of
      * conditional postconditions on the method {@code methodElement}.
      */
-    public ConditionalPostconditionSet getConditionalPostconditions(
+    public Set<ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
-        ConditionalPostconditionSet result = new ConditionalPostconditionSet();
+        Set<ConditionalPostcondition> result = new LinkedHashSet<ConditionalPostcondition>();
         // Check for a single contract.
         AnnotationMirror ensuresAnnotationIf = factory.getDeclAnnotation(
                 methodElement, EnsuresQualifierIf.class);
@@ -364,12 +290,12 @@ public class ContractsUtils {
      * conditional postconditions according to the given
      * {@link EnsuresQualifierIf}.
      */
-    private ConditionalPostconditionSet getConditionalPostcondition(
+    private Set<ConditionalPostcondition> getConditionalPostcondition(
             AnnotationMirror ensuresAnnotationIf) {
         if (ensuresAnnotationIf == null) {
-            return ConditionalPostconditionSet.emptySet();
+            return Collections.emptySet();
         }
-        ConditionalPostconditionSet result = new ConditionalPostconditionSet();
+        Set<ConditionalPostcondition> result = new LinkedHashSet<ConditionalPostcondition>();
         List<String> expressions = AnnotationUtils.getElementValueArray(
                 ensuresAnnotationIf, "expression", String.class, false);
         String annotation = AnnotationUtils.getElementValueClassName(

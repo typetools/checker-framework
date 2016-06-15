@@ -34,7 +34,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.PreOrPostconditionSet;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -48,6 +47,7 @@ import org.checkerframework.javacutil.TypesUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
@@ -313,9 +313,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * @param atm the AnnotatedTypeMirror containing the @GuardedBy annotation with the lock expression preconditions.
      * @return a set of lock expression preconditions that can be processed by checkPreconditions
      */
-    private PreOrPostconditionSet generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
+    private Set<PreOrPostcondition> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
         Set<AnnotationMirror> amList = atm.getAnnotations();
-        PreOrPostconditionSet preconditions = new PreOrPostconditionSet();
+        Set<PreOrPostcondition> preconditions = new LinkedHashSet<PreOrPostcondition>();
 
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
@@ -505,7 +505,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
 
             if (AnnotationUtils.areSameByClass(gb, checkerGuardedByClass)) {
-                PreOrPostconditionSet preconditions = generatePreconditionsBasedOnGuards(atmOfReceiver);
+                Set<PreOrPostcondition> preconditions = generatePreconditionsBasedOnGuards(atmOfReceiver);
                 checkPreconditions(treeToReportErrorAt, expressionNode, preconditions);
             } else if (AnnotationUtils.areSameByClass(gb, checkerGuardSatisfiedClass)) {
                 // Can always dereference if type is @GuardSatisfied
