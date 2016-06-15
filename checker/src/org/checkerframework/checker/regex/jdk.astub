@@ -33,5 +33,5 @@ package javax.swing;
 
 public abstract class RowFilter<M,I> {
     public static <M,I> RowFilter<M,I> regexFilter(@Regex String regex,
-                                                       int... indices);
+                                                       int[] indices);
 }
