@@ -1130,9 +1130,9 @@ The set of permitted expressions is a subset of all Java expressions:
   discouraged in Java).
 
 \item
-  \<itself>, i.e. the value of the annotated reference (non-primitive) variable.
+  \code{<self>}, i.e. the value of the annotated reference (non-primitive) variable.
   Currently only defined for the \<@GuardedBy> type system.
-  For example, \<@GuardedBy("itself") Object o> indicates that the value
+  For example, \code{@GuardedBy("<self>") Object o} indicates that the value
   referenced by \<o> is guarded by the intrinsic (monitor) lock of the value
   referenced by \<o>.
 
