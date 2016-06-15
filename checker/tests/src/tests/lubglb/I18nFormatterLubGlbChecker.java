@@ -47,6 +47,18 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
         builder.setValue("value", "Message");
         AnnotationMirror I18nInvalidFormatWithMessage = builder.build();
 
+        builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
+        builder.setValue("value", "Message2");
+        AnnotationMirror I18nInvalidFormatWithMessage2 = builder.build();
+
+        builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
+        builder.setValue("value", "(\"Message\" or \"Message2\")");
+        AnnotationMirror I18nInvalidFormatWithMessagesOred = builder.build();
+
+        builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
+        builder.setValue("value", "(\"Message\" and \"Message2\")");
+        AnnotationMirror I18nInvalidFormatWithMessagesAnded = builder.build();
+
         builder = new AnnotationBuilder(processingEnv, I18nFormatFor.class.getCanonicalName());
         builder.setValue("value", "#1");
         AnnotationMirror I18nFormatForWithValue1 = builder.build();
@@ -206,10 +218,6 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
             "GLB of @I18nInvalidFormat(null) and @I18nFormat(null) is not @I18nFormatBottom!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(I18NINVALIDFORMAT, I18nFormatUnusedAnno), I18NFORMATBOTTOM) :
             "GLB of @I18nInvalidFormat(null) and @I18nFormat(UNUSED) is not @I18nFormatBottom!";
-        assert AnnotationUtils.areSame(qh.greatestLowerBound(I18NINVALIDFORMAT, I18NINVALIDFORMAT), I18NINVALIDFORMAT) :
-            "GLB of @I18nInvalidFormat(null) and @I18nInvalidFormat(null) is not @I18nInvalidFormat(null)!";
-        assert AnnotationUtils.areSame(qh.greatestLowerBound(I18NINVALIDFORMAT, I18nInvalidFormatWithMessage), I18NINVALIDFORMAT) :
-            "GLB of @I18nInvalidFormat(null) and @I18nInvalidFormat(\"Message\") is not @I18nInvalidFormat(null)!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(I18NINVALIDFORMAT, I18NFORMATFOR), I18NFORMATBOTTOM) :
             "GLB of @I18nInvalidFormat(null) and @I18nFormatFor(null) is not @I18nFormatBottom!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(I18NINVALIDFORMAT, I18nFormatForWithValue1), I18NFORMATBOTTOM) :
@@ -225,10 +233,10 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
             "GLB of @I18nInvalidFormat(\"Message\") and @I18nFormat(null) is not @I18nFormatBottom!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(I18nInvalidFormatWithMessage, I18nFormatUnusedAnno), I18NFORMATBOTTOM) :
             "GLB of @I18nInvalidFormat(\"Message\") and @I18nFormat(UNUSED) is not @I18nFormatBottom!";
-        assert AnnotationUtils.areSame(qh.greatestLowerBound(I18nInvalidFormatWithMessage, I18NINVALIDFORMAT), I18NINVALIDFORMAT) :
-            "GLB of @I18nInvalidFormat(\"Message\") and @I18nInvalidFormat(null) is not @I18nInvalidFormat(null)!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(I18nInvalidFormatWithMessage, I18nInvalidFormatWithMessage), I18nInvalidFormatWithMessage) :
             "GLB of @I18nInvalidFormat(\"Message\") and @I18nInvalidFormat(\"Message\") is not @I18nInvalidFormat(\"Message\")!";
+        assert AnnotationUtils.areSame(qh.greatestLowerBound(I18nInvalidFormatWithMessage, I18nInvalidFormatWithMessage2), I18nInvalidFormatWithMessagesAnded) :
+            "GLB of @I18nInvalidFormat(\"Message\") and @I18nInvalidFormat(\"Message2\") is not @I18nInvalidFormat(\"(\"Message\" and \"Message2\")\")!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(I18nInvalidFormatWithMessage, I18NFORMATFOR), I18NFORMATBOTTOM) :
             "GLB of @I18nInvalidFormat(\"Message\") and @I18nFormatFor(null) is not @I18nFormatBottom!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(I18nInvalidFormatWithMessage, I18nFormatForWithValue1), I18NFORMATBOTTOM) :
@@ -423,10 +431,6 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
             "LUB of @I18nInvalidFormat(null) and @I18nFormat(null) is not @I18nUnknownFormat!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18nFormatUnusedAnno), I18NUNKNOWNFORMAT) :
             "LUB of @I18nInvalidFormat(null) and @I18nFormat(UNUSED) is not @I18nUnknownFormat!";
-        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18NINVALIDFORMAT), I18NINVALIDFORMAT) :
-            "LUB of @I18nInvalidFormat(null) and @I18nInvalidFormat(null) is not @I18nInvalidFormat(null)!";
-        assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18nInvalidFormatWithMessage), I18NINVALIDFORMAT) :
-            "LUB of @I18nInvalidFormat(null) and @I18nInvalidFormat(\"Message\") is not @I18nInvalidFormat(null)!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18NFORMATFOR), I18NUNKNOWNFORMAT) :
             "LUB of @I18nInvalidFormat(null) and @I18nFormatFor(null) is not @I18nUnknownFormat!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(I18NINVALIDFORMAT, I18nFormatForWithValue1), I18NUNKNOWNFORMAT) :
@@ -442,10 +446,10 @@ public class I18nFormatterLubGlbChecker extends I18nFormatterChecker {
             "LUB of @I18nInvalidFormat(\"Message\") and @I18nFormat(null) is not @I18nUnknownFormat!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18nFormatUnusedAnno), I18NUNKNOWNFORMAT) :
             "LUB of @I18nInvalidFormat(\"Message\") and @I18nFormat(UNUSED) is not @I18nUnknownFormat!";
-        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18NINVALIDFORMAT), I18NINVALIDFORMAT) :
-            "LUB of @I18nInvalidFormat(\"Message\") and @I18nInvalidFormat(null) is not @I18nInvalidFormat(null)!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18nInvalidFormatWithMessage), I18nInvalidFormatWithMessage) :
             "LUB of @I18nInvalidFormat(\"Message\") and @I18nInvalidFormat(\"Message\") is not @I18nInvalidFormat(\"Message\")!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18nInvalidFormatWithMessage2), I18nInvalidFormatWithMessagesOred) :
+            "LUB of @I18nInvalidFormat(\"Message\") and @I18nInvalidFormat(\"Message2\") is not @I18nInvalidFormat(\"(\"Message\" or \"Message2\")\")!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18NFORMATFOR), I18NUNKNOWNFORMAT) :
             "LUB of @I18nInvalidFormat(\"Message\") and @I18nFormatFor(null) is not @I18nUnknownFormat!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(I18nInvalidFormatWithMessage, I18nFormatForWithValue1), I18NUNKNOWNFORMAT) :

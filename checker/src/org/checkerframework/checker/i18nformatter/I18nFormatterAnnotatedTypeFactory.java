@@ -307,10 +307,16 @@ public class I18nFormatterAnnotatedTypeFactory extends
             }
             if (AnnotationUtils.areSameIgnoringValues(anno1, I18NINVALIDFORMAT) &&
                 AnnotationUtils.areSameIgnoringValues(anno2, I18NINVALIDFORMAT)) {
+                assert !anno1.getElementValues().isEmpty();
+                assert !anno2.getElementValues().isEmpty();
+
                 if (AnnotationUtils.areSame(anno1, anno2)) {
                     return anno1;
                 }
-                return I18NINVALIDFORMAT; // Same as for GLB
+
+                return treeUtil.stringToInvalidFormatAnnotation(
+                        "(" + treeUtil.invalidFormatAnnotationToErrorMessage(anno1) + " or " +
+                              treeUtil.invalidFormatAnnotationToErrorMessage(anno2) + ")");
             }
 
             // All @I18nFormatFor annotations are unrelated by subtyping.
@@ -356,10 +362,16 @@ public class I18nFormatterAnnotatedTypeFactory extends
             }
             if (AnnotationUtils.areSameIgnoringValues(anno1, I18NINVALIDFORMAT) &&
                 AnnotationUtils.areSameIgnoringValues(anno2, I18NINVALIDFORMAT)) {
+                assert !anno1.getElementValues().isEmpty();
+                assert !anno2.getElementValues().isEmpty();
+
                 if (AnnotationUtils.areSame(anno1, anno2)) {
                     return anno1;
                 }
-                return I18NINVALIDFORMAT; // Same as for LUB
+
+                return treeUtil.stringToInvalidFormatAnnotation(
+                        "(" + treeUtil.invalidFormatAnnotationToErrorMessage(anno1) + " and " +
+                              treeUtil.invalidFormatAnnotationToErrorMessage(anno2) + ")");
             }
             // All @I18nFormatFor annotations are unrelated by subtyping.
             if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMATFOR) &&

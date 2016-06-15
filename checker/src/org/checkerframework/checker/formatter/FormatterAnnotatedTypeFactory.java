@@ -187,10 +187,16 @@ public class FormatterAnnotatedTypeFactory extends
             }
             if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT) &&
                 AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
+                assert !anno1.getElementValues().isEmpty();
+                assert !anno2.getElementValues().isEmpty();
+
                 if (AnnotationUtils.areSame(anno1, anno2)) {
                     return anno1;
                 }
-                return INVALIDFORMAT; // Same as for GLB
+
+                return treeUtil.stringToInvalidFormatAnnotation(
+                        "(" + treeUtil.invalidFormatAnnotationToErrorMessage(anno1) + " or " +
+                              treeUtil.invalidFormatAnnotationToErrorMessage(anno2) + ")");
             }
 
             return UNKNOWNFORMAT;
@@ -230,10 +236,16 @@ public class FormatterAnnotatedTypeFactory extends
             }
             if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT) &&
                 AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
+                assert !anno1.getElementValues().isEmpty();
+                assert !anno2.getElementValues().isEmpty();
+
                 if (AnnotationUtils.areSame(anno1, anno2)) {
                     return anno1;
                 }
-                return INVALIDFORMAT; // Same as for LUB
+
+                return treeUtil.stringToInvalidFormatAnnotation(
+                        "(" + treeUtil.invalidFormatAnnotationToErrorMessage(anno1) + " and " +
+                              treeUtil.invalidFormatAnnotationToErrorMessage(anno2) + ")");
             }
 
             return FORMATBOTTOM;

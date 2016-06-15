@@ -43,6 +43,18 @@ public class FormatterLubGlbChecker extends FormatterChecker {
         builder.setValue("value", "Message");
         AnnotationMirror InvalidFormatWithMessage = builder.build();
 
+        builder = new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        builder.setValue("value", "Message2");
+        AnnotationMirror InvalidFormatWithMessage2 = builder.build();
+
+        builder = new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        builder.setValue("value", "(\"Message\" or \"Message2\")");
+        AnnotationMirror InvalidFormatWithMessagesOred = builder.build();
+
+        builder = new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
+        builder.setValue("value", "(\"Message\" and \"Message2\")");
+        AnnotationMirror InvalidFormatWithMessagesAnded = builder.build();
+
         ConversionCategory[] cc = new ConversionCategory[1];
 
         cc[0] = ConversionCategory.UNUSED;
@@ -335,10 +347,6 @@ public class FormatterLubGlbChecker extends FormatterChecker {
             "GLB of @InvalidFormat(null) and @Format(null) is not @FormatBottom!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(INVALIDFORMAT, FormatUnusedAnno), FORMATBOTTOM) :
             "GLB of @InvalidFormat(null) and @Format(UNUSED) is not @FormatBottom!";
-        assert AnnotationUtils.areSame(qh.greatestLowerBound(INVALIDFORMAT, INVALIDFORMAT), INVALIDFORMAT) :
-            "GLB of @InvalidFormat(null) and @InvalidFormat(null) is not @InvalidFormat(null)!";
-        assert AnnotationUtils.areSame(qh.greatestLowerBound(INVALIDFORMAT, InvalidFormatWithMessage), INVALIDFORMAT) :
-            "GLB of @InvalidFormat(null) and @InvalidFormat(\"Message\") is not @InvalidFormat(null)!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(INVALIDFORMAT, FORMATBOTTOM), FORMATBOTTOM) :
             "GLB of @InvalidFormat(null) and @FormatBottom is not @FormatBottom!";
 
@@ -350,10 +358,10 @@ public class FormatterLubGlbChecker extends FormatterChecker {
             "GLB of @InvalidFormat(\"Message\") and @Format(null) is not @FormatBottom!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(InvalidFormatWithMessage, FormatUnusedAnno), FORMATBOTTOM) :
             "GLB of @InvalidFormat(\"Message\") and @Format(UNUSED) is not @FormatBottom!";
-        assert AnnotationUtils.areSame(qh.greatestLowerBound(InvalidFormatWithMessage, INVALIDFORMAT), INVALIDFORMAT) :
-            "GLB of @InvalidFormat(\"Message\") and @InvalidFormat(null) is not @InvalidFormat(null)!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(InvalidFormatWithMessage, InvalidFormatWithMessage), InvalidFormatWithMessage) :
             "GLB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
+        assert AnnotationUtils.areSame(qh.greatestLowerBound(InvalidFormatWithMessage, InvalidFormatWithMessage2), InvalidFormatWithMessagesAnded) :
+            "GLB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message2\") is not @InvalidFormat(\"(\"Message\" and \"Message2\")\")!";
         assert AnnotationUtils.areSame(qh.greatestLowerBound(InvalidFormatWithMessage, FORMATBOTTOM), FORMATBOTTOM) :
             "GLB of @InvalidFormat(\"Message\") and @FormatBottom is not @FormatBottom!";
 
@@ -633,10 +641,6 @@ public class FormatterLubGlbChecker extends FormatterChecker {
             "LUB of @InvalidFormat(null) and @Format(null) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(INVALIDFORMAT, FormatUnusedAnno), UNKNOWNFORMAT) :
             "LUB of @InvalidFormat(null) and @Format(UNUSED) is not @UnknownFormat!";
-        assert AnnotationUtils.areSame(qh.leastUpperBound(INVALIDFORMAT, INVALIDFORMAT), INVALIDFORMAT) :
-            "LUB of @InvalidFormat(null) and @InvalidFormat(null) is not @InvalidFormat(null)!";
-        assert AnnotationUtils.areSame(qh.leastUpperBound(INVALIDFORMAT, InvalidFormatWithMessage), INVALIDFORMAT) :
-            "LUB of @InvalidFormat(null) and @InvalidFormat(\"Message\") is not @InvalidFormat(null)!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(INVALIDFORMAT, FORMATBOTTOM), INVALIDFORMAT) :
             "LUB of @InvalidFormat(null) and @FormatBottom is not @InvalidFormat(null)!";
 
@@ -648,10 +652,10 @@ public class FormatterLubGlbChecker extends FormatterChecker {
             "LUB of @InvalidFormat(\"Message\") and @Format(null) is not @UnknownFormat!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(InvalidFormatWithMessage, FormatUnusedAnno), UNKNOWNFORMAT) :
             "LUB of @InvalidFormat(\"Message\") and @Format(UNUSED) is not @UnknownFormat!";
-        assert AnnotationUtils.areSame(qh.leastUpperBound(InvalidFormatWithMessage, INVALIDFORMAT), INVALIDFORMAT) :
-            "LUB of @InvalidFormat(\"Message\") and @InvalidFormat(null) is not @InvalidFormat(null)!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(InvalidFormatWithMessage, InvalidFormatWithMessage), InvalidFormatWithMessage) :
             "LUB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message\") is not @InvalidFormat(\"Message\")!";
+        assert AnnotationUtils.areSame(qh.leastUpperBound(InvalidFormatWithMessage, InvalidFormatWithMessage2), InvalidFormatWithMessagesOred) :
+            "LUB of @InvalidFormat(\"Message\") and @InvalidFormat(\"Message2\") is not @InvalidFormat(\"(\"Message\" or \"Message2\")\")!";
         assert AnnotationUtils.areSame(qh.leastUpperBound(InvalidFormatWithMessage, FORMATBOTTOM), InvalidFormatWithMessage) :
             "LUB of @InvalidFormat(\"Message\") and @FormatBottom is not @InvalidFormat(\"Message\")!";
 
