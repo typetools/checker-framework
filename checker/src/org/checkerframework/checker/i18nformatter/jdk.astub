@@ -4,7 +4,7 @@ package java.text;
 
 class MessageFormat {
 
-    public static String format(@I18nFormatFor("#2") String arg0, Object... arg1);
+    public static String format(@I18nFormatFor("#2") String arg0, Object[] arg1);
 
 }
 
