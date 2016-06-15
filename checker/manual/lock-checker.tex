@@ -87,8 +87,8 @@ This section describes the lock annotations you can write on types and methods.
 
   Section~\ref{java-expressions-as-arguments} explains which
   expressions the Lock Checker is able to analyze as lock expressions.
-  These include \<itself>, i.e. the value of the annotated reference
-  (non-primitive) variable.  For example, \<@GuardedBy("itself") Object o>
+  These include \code{<self>}, i.e. the value of the annotated reference
+  (non-primitive) variable.  For example, \code{@GuardedBy("<self>") Object o}
   indicates that the value referenced by \<o> is guarded by the intrinsic
   (monitor) lock of the value referenced by \<o>.
 
@@ -465,13 +465,13 @@ variable having type annotation \code{@GuardedBy("lock")}.  You could
 explicitly write \code{new @GuardedBy("lock") Object()} but it is not
 required.
 
-The following example demonstrates that using \<itself> as a lock expression
+The following example demonstrates that using \code{<self>} as a lock expression
 allows a guarded value to be dereferenced even when the original
 variable name the value was originally assigned to falls out of scope.
 
 \begin{Verbatim}
 class MyClass {
-  private final @GuardedBy("itself") Object x = new Object();
+  private final @GuardedBy("<self>") Object x = new Object();
   void method() {
     x.toString(); // ILLEGAL because x is not known to be held.
     synchronized(x) {
@@ -479,15 +479,15 @@ class MyClass {
     }
   }
 
-  public @GuardedBy("itself") Object get_x() {
-    return x; // OK, since the return type is @GuardedBy("itself").
+  public @GuardedBy("<self>") Object get_x() {
+    return x; // OK, since the return type is @GuardedBy("<self>").
   }
 }
 
 class MyOtherClass {
   void method() {
     MyClass m = new MyClass();
-    final @GuardedBy("itself") Object o = m.get_x();
+    final @GuardedBy("<self>") Object o = m.get_x();
     o.toString(); // ILLEGAL because o is not known to be held.
     synchronized(o) {
       o.toString(); // OK: o is known to be held.

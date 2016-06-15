@@ -10,13 +10,13 @@ import java.util.*;
 class ItselfExpressionCases {
     final Object somelock = new Object();
 
-    final private @GuardedBy({"itself"}) MyClass m = new MyClass();
+    final private @GuardedBy({"<self>"}) MyClass m = new MyClass();
     @Pure
-    private @GuardedBy({"itself"}) MyClass getm() {
+    private @GuardedBy({"<self>"}) MyClass getm() {
         return m;
     }
     @Pure
-    private @GuardedBy({"itself"}) MyClass getm2(@GuardedBy("itself") ItselfExpressionCases this) {
+    private @GuardedBy({"<self>"}) MyClass getm2(@GuardedBy("<self>") ItselfExpressionCases this) {
         // The following error is due to the precondition of the this.m field dereference not being satisfied.
         //:: error: (contracts.precondition.not.satisfied.field)
         return m;
@@ -28,7 +28,7 @@ class ItselfExpressionCases {
         return getm().field;
     }
 
-    public void arrayTest(final Object @GuardedBy("itself") [] a1) {
+    public void arrayTest(final Object @GuardedBy("<self>") [] a1) {
         //:: error: (contracts.precondition.not.satisfied.field)
         Object a = a1[0];
         synchronized(a1) {
@@ -36,10 +36,10 @@ class ItselfExpressionCases {
         }
     }
 
-    Object @GuardedBy("itself") [] a2;
+    Object @GuardedBy("<self>") [] a2;
 
     @Pure
-    public Object @GuardedBy("itself") [] geta2() {
+    public Object @GuardedBy("<self>") [] geta2() {
         return a2;
     }
 
@@ -51,7 +51,7 @@ class ItselfExpressionCases {
         }
     }
 
-    public void testCheckPreconditions(final @GuardedBy("itself") MyClass o, @GuardSatisfied Object gs, @GuardSatisfied MyClass gsMyClass) {
+    public void testCheckPreconditions(final @GuardedBy("<self>") MyClass o, @GuardSatisfied Object gs, @GuardSatisfied MyClass gsMyClass) {
         //:: error: (contracts.precondition.not.satisfied)
         getm().field = new Object();
         synchronized(getm()) {
@@ -107,7 +107,7 @@ class ItselfExpressionCases {
 
         void foo2(@GuardSatisfied MyClass this) {}
 
-        void method(@GuardedBy("itself") MyClass this) {
+        void method(@GuardedBy("<self>") MyClass this) {
             //:: error: (contracts.precondition.not.satisfied)
             this.foo();
             //:: error: (contracts.precondition.not.satisfied)
