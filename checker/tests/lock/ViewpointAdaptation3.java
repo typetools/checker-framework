@@ -40,13 +40,13 @@ public class ViewpointAdaptation3 {
             final LockExampleSubclass les3 = les2;
             LockExample le1 = new LockExample();
 
-            synchronized(super.myLock){
+            synchronized(super.myLock) {
                 super.locked.toString();
                 super.locked2.toString();
                 //:: error: (contracts.precondition.not.satisfied)
                 locked.toString();
             }
-            synchronized(myLock){
+            synchronized(myLock) {
                 //:: error: (contracts.precondition.not.satisfied)
                 super.locked.toString();
                 //:: error: (contracts.precondition.not.satisfied)
@@ -151,4 +151,3 @@ public class ViewpointAdaptation3 {
         }
     }
 }
-
