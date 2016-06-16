@@ -44,7 +44,7 @@ public class ViewpointAdaptation2 {
         //:: error: (assignment.type.incompatible)
         @GuardedBy("this.myLock") Object oM3 = lockExample1.getLocked();
 
-        void uses(){
+        void uses() {
             lockExample1.locked = o1;
             //:: error: (assignment.type.incompatible)
             lockExample1.locked = o3;
