@@ -53,6 +53,7 @@ public class AnnotationUtils {
     public static void clear() {
         annotationsFromNames.clear();
         annotationMirrorNames.clear();
+        annotationMirrorSimpleNames.clear();
         annotationClassNames.clear();
     }
 
@@ -72,6 +73,13 @@ public class AnnotationUtils {
      * the map are interned Strings, so they can be compared with ==.
      */
     private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorNames
+        = CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE);
+
+    /**
+     * Cache simple names of AnnotationMirrors for faster access.  Values in
+     * the map are interned Strings, so they can be compared with ==.
+     */
+    private static final Map<AnnotationMirror, /*@Interned*/ String> annotationMirrorSimpleNames
         = CollectionUtils.createLRUCache(ANNOTATION_CACHE_SIZE);
 
     /**
@@ -180,8 +188,15 @@ public class AnnotationUtils {
      * @return the simple name of an annotation as a String
      */
     public static String annotationSimpleName(AnnotationMirror annotation) {
-        String annotationName = annotationName(annotation);
-        return annotationName.substring(annotationName.lastIndexOf('.') + 1 /* +1 to skip the last . as well */);
+        if (annotationMirrorSimpleNames.containsKey(annotation)) {
+            return annotationMirrorSimpleNames.get(annotation);
+        }
+
+        final DeclaredType annoType = annotation.getAnnotationType();
+        final TypeElement elm = (TypeElement) annoType.asElement();
+        /*@Interned*/ String name = elm.getSimpleName().toString().intern();
+        annotationMirrorSimpleNames.put(annotation, name);
+        return name;
     }
 
     /**
