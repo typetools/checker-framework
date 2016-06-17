@@ -2047,6 +2047,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree, Node)
             // Uses an ExecutableElement, which did not substitute type variables.
             break;
+        case WILDCARD:
+            // TODO: look at bounds of wildcard and see whether we can improve.
+            break;
         default:
             if (ctxtype.getKind().isPrimitive()) {
                 // See Issue 438. Ignore primitive types for diamond inference - a primitive type
