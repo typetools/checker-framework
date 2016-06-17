@@ -6,8 +6,10 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // Also, see framework/tests/all-systems/Issue738.java
 public class Issue738 {
     public static void methodA(int[] is, Object @Nullable [] os, int i) {
-        // NullnessTransfer changes the type of an agrument is assigned to a @NonNull parameter
-        // then the argument is changed to @NonNull, so use a switch statement to prevent this.
+        // The type argument to methodB* for each call below is Cloneable & Serializable
+
+        // NullnessTransfer changes the type of an argument that is assigned to a @NonNull parameter
+        // to @NonNull. Use a switch statement to prevent this.
         switch (i) {
             case 1:
                 methodB(is, os);
