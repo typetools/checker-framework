@@ -5,7 +5,7 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- * The valueis a compile-time constant, and could be
+ * The value is a compile-time constant, and could be
  * {@link Signed} or {@link Unsigned}.
  *
  * @checker_framework.manual #unsignedness-checker Unsignedness Checker
