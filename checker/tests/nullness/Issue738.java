@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 // https://github.com/typetools/checker-framework/issues/738
 // Also, see framework/tests/all-systems/Issue738.java
 public class Issue738 {
-    public static void methodA(int[] is, Object @Nullable [] os, int i) {
+     void methodA(int[] is, Object @Nullable [] os, int i) {
         // The type argument to methodB* for each call below is Cloneable & Serializable
 
         // NullnessTransfer changes the type of an argument that is assigned to a @NonNull parameter
@@ -29,15 +29,15 @@ public class Issue738 {
         }
     }
 
-    private static <T> void methodB(T paramA, T paramB) {
+    <T> void methodB(T paramA, T paramB) {
     }
 
-    private static <T> void methodB2(T paramA, @NonNull T paramB) {
+    <T> void methodB2(T paramA, @NonNull T paramB) {
     }
 
-    private static <@NonNull T extends @NonNull Object> void methodB3(T paramA, T paramB) {
+    <@NonNull T extends @NonNull Object> void methodB3(T paramA, T paramB) {
     }
 
-    private static <T extends @NonNull Cloneable> void methodB4(T paramA, T paramB) {
+    <T extends @NonNull Cloneable> void methodB4(T paramA, T paramB) {
     }
 }
