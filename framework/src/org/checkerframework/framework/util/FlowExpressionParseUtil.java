@@ -341,33 +341,35 @@ public class FlowExpressionParseUtil {
             for (Receiver p : parameters) {
                 parameterTypes.add(p.getType());
             }
-            Element methodElement = null;
+            ExecutableElement methodElement = null;
             try {
+                Element element = null;
+
                 // try to find the correct method
                 Resolver resolver = new Resolver(env);
                 TypeMirror receiverType = context.receiver.getType();
 
                 // Search for method in each enclosing class.
                 while (receiverType.getKind() == TypeKind.DECLARED) {
-                    methodElement = resolver.findMethod(methodName, receiverType,
+                    element = resolver.findMethod(methodName, receiverType,
                             path, parameterTypes);
-                    if (methodElement.getKind() == ElementKind.METHOD) {
+                    if (element.getKind() == ElementKind.METHOD) {
                         break;
                     }
                     receiverType = ((DeclaredType)receiverType).getEnclosingType();
                 }
 
-                if (methodElement == null) {
-                    throw constructParserException(s, "methodElement==null");
+                if (element == null) {
+                    throw constructParserException(s, "element==null");
                 }
-                if (methodElement.getKind() != ElementKind.METHOD) {
-                    throw constructParserException(s, "methodElement.getKind()==" + methodElement.getKind());
+                if (element.getKind() != ElementKind.METHOD) {
+                    throw constructParserException(s, "element.getKind()==" + element.getKind());
                 }
 
-                ExecutableElement mElem = (ExecutableElement) methodElement;
+                methodElement = (ExecutableElement) element;
 
                 for (int i = 0; i < parameters.size(); i++) {
-                    VariableElement formal = mElem.getParameters().get(i);
+                    VariableElement formal = methodElement.getParameters().get(i);
                     TypeMirror formalType = formal.asType();
                     Receiver actual = parameters.get(i);
                     TypeMirror actualType = actual.getType();

@@ -639,7 +639,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the store immediately before a given {@link Tree}.
      */
     public Store getStoreBefore(Tree tree) {
-        if (analyses == null || analyses.isEmpty()) {
+        if (analyses.isEmpty()) {
             return flowResult.getStoreBefore(tree);
         }
         FlowAnalysis analysis = analyses.getFirst();
@@ -657,7 +657,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the store immediately before a given {@link Node}.
      */
     public Store getStoreBefore(Node node) {
-        if (analyses == null || analyses.isEmpty()) {
+        if (analyses.isEmpty()) {
             return flowResult.getStoreBefore(node);
         }
         FlowAnalysis analysis = analyses.getFirst();
@@ -673,7 +673,7 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return the store immediately after a given {@link Tree}.
      */
     public Store getStoreAfter(Tree tree) {
-        if (analyses == null || analyses.isEmpty()) {
+        if (analyses.isEmpty()) {
             return flowResult.getStoreAfter(tree);
         }
         FlowAnalysis analysis = analyses.getFirst();
