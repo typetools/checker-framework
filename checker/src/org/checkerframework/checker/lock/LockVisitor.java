@@ -33,6 +33,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -312,9 +313,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      * @param atm the AnnotatedTypeMirror containing the @GuardedBy annotation with the lock expression preconditions.
      * @return a set of lock expression preconditions that can be processed by checkPreconditions
      */
-    private Set<Pair<String, String>> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
+    private Set<PreOrPostcondition> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
         Set<AnnotationMirror> amList = atm.getAnnotations();
-        Set<Pair<String, String>> preconditions = new LinkedHashSet<>();
+        Set<PreOrPostcondition> preconditions = new LinkedHashSet<PreOrPostcondition>();
 
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
@@ -324,7 +325,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                         List<String> guardedByValue = AnnotationUtils.getElementValueArray(annotationMirror, "value", String.class, false);
 
                         for (String lockExpression : guardedByValue) {
-                            preconditions.add(Pair.of(lockExpression, LockHeld.class.getCanonicalName()));
+                            preconditions.add(new PreOrPostcondition(lockExpression, LockHeld.class.getCanonicalName()));
                         }
                     }
                 }
@@ -504,7 +505,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
 
             if (AnnotationUtils.areSameByClass(gb, checkerGuardedByClass)) {
-                Set<Pair<String, String>> preconditions = generatePreconditionsBasedOnGuards(atmOfReceiver);
+                Set<PreOrPostcondition> preconditions = generatePreconditionsBasedOnGuards(atmOfReceiver);
                 checkPreconditions(treeToReportErrorAt, expressionNode, preconditions);
             } else if (AnnotationUtils.areSameByClass(gb, checkerGuardSatisfiedClass)) {
                 // Can always dereference if type is @GuardSatisfied
