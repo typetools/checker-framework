@@ -135,7 +135,7 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext context, TreePath path, boolean recursiveCall)
             throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true, true,
-                true, true, recursiveCall);
+                true, true, recursiveCall, false);
         assert result != null;
         return result;
     }
@@ -149,7 +149,8 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext context, TreePath path, boolean allowThis,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
             boolean allowMethods, boolean allowArrays, boolean allowLiterals,
-            boolean allowLocalVariables, boolean recursiveCall)
+            boolean allowLocalVariables, boolean recursiveCall,
+            boolean isRemainingStringOfDotExpression)
             throws FlowExpressionParseException {
         s = s.trim();
 
@@ -297,6 +298,10 @@ public class FlowExpressionParseUtil {
                     if (classType == null) {
                         throw constructParserException(s, "classtype==null", t);
                     }
+                    if (!recursiveCall ||
+                        isRemainingStringOfDotExpression) {
+                        throw constructParserException(s, "a class literal cannot terminate a flow expression string", t);
+                    }
                     return new ClassName(classType);
                 } catch (Throwable t2) {
 
@@ -433,7 +438,7 @@ public class FlowExpressionParseUtil {
                 receiver = classAndRemainingString.first;
                 remainingString = classAndRemainingString.second;
                 if (remainingString == null) {
-                    return receiver;
+                    throw constructParserException(s, "a class literal cannot terminate a flow expression string");
                 }
             }
 
@@ -452,7 +457,8 @@ public class FlowExpressionParseUtil {
                          /*allowArrays=*/ false,
                          /*allowLiterals=*/ false,
                          /*allowLocalVariables=*/ false,
-                         /*recursiveCal=*/ true);
+                         /*recursiveCall=*/ true,
+                         /*isRemainingStringOfDotExpression=*/ true);
         } else if (parenthesesMatcher.matches()) {
             String expressionString = parenthesesMatcher.group(1);
             // Do not modify the value of recursiveCall, since a parenthesis match is essentially
@@ -460,7 +466,8 @@ public class FlowExpressionParseUtil {
             return parse(expressionString, context, path, allowThis,
                     allowIdentifier, allowParameter, allowDot,
                     allowMethods, allowArrays, allowLiterals,
-                    allowLocalVariables, recursiveCall);
+                    allowLocalVariables, recursiveCall,
+                    isRemainingStringOfDotExpression);
         } else {
             throw constructParserException(s, "no matcher matched");
         }
@@ -749,7 +756,6 @@ public class FlowExpressionParseUtil {
             this.arguments = arguments;
             this.outerReceiver = outerReceiver;
             this.checkerContext = checkerContext;
-
         }
 
         /**
