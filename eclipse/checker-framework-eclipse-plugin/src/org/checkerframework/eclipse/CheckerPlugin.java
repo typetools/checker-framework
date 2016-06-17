@@ -44,7 +44,7 @@ public class CheckerPlugin extends AbstractUIPlugin
     @Override
     public void start(BundleContext context) throws Exception
     {
-    	super.start(context);
+        super.start(context);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class CheckerPlugin extends AbstractUIPlugin
 
     @Override
     protected void initializeImageRegistry(ImageRegistry reg) {
-    	reg.put(CHECKER_WARNING_IMG_ID, getImageDescriptor("icons/sample_decorator.gif"));
+        reg.put(CHECKER_WARNING_IMG_ID, getImageDescriptor("icons/sample_decorator.gif"));
     }
 
     /**
@@ -114,11 +114,11 @@ public class CheckerPlugin extends AbstractUIPlugin
     }
 
     /**
-     * Returns the SWT Shell of the active workbench window or <code>null</code>
+     * Returns the SWT Shell of the active workbench window or {@code null}
      * if no workbench window is active.
      *
      * @return the SWT Shell of the active workbench window, or
-     *         <code>null</code> if no workbench window is active
+     *         {@code null} if no workbench window is active
      */
     public static Shell getShell()
     {

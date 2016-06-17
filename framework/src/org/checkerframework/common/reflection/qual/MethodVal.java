@@ -10,13 +10,13 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * This represents a set of {@link java.lang.reflect.Method Method} or
  * {@link java.lang.reflect.Constructor Constructor} values.  If an
- * expression's type has <code>@MethodVal</code>, then the expression's
+ * expression's type has {@code @MethodVal}, then the expression's
  * run-time value is one of those values.
  * <p>
  *
- * Each of <code>@MethodVal</code>'s argument lists must be of equal length,
+ * Each of {@code @MethodVal}'s argument lists must be of equal length,
  * and { className[i], methodName[i], params[i] } represents one of the
- * <code>Method</code> or <code>Constructor</code> values in the set.
+ * {@code Method} or {@code Constructor} values in the set.
  *
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */
@@ -29,7 +29,7 @@ public @interface MethodVal {
     String[] className();
 
     /** The name of the method that this Method object represents.
-     * Use <code>&lt;init&gt;</code> for constructors. */
+     * Use {@code <init>} for constructors. */
     String[] methodName();
 
     /** The number of parameters to the method. */

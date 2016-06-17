@@ -117,7 +117,7 @@ public class GuardSatisfiedTest {
 
        // The following error is due to the fact that you cannot access "this.lock1" without first having acquired "lock1".
        // The right fix in a user scenario would be to not guard "this" with "this.lock1". The current object could instead
-       // be guarded by "itself" or by some other lock expression that is not one of its fields. We are keeping this test
+       // be guarded by "<self>" or by some other lock expression that is not one of its fields. We are keeping this test
        // case here to make sure this scenario issues a warning.
        //:: error: (contracts.precondition.not.satisfied.field)
        synchronized(lock1) {

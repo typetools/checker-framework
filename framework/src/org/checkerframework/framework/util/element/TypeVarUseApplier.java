@@ -8,6 +8,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.getTypeAtLocation;
@@ -104,6 +105,7 @@ public class TypeVarUseApplier {
      * then applies the explicit annotations written on the type variable
      */
     public void extractAndApply() {
+        addAnnotationsFromElement(typeVariable, useElem.getAnnotationMirrors());
 
         // apply declaration annotations
         ElementAnnotationApplier.apply(typeVariable, declarationElem, typeFactory);

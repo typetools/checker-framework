@@ -1,0 +1,2 @@
+This directory should only contain one Java class.  It is used to test initialization of a checker,
+such as tests.supportedquals.SupportedQualsChecker.

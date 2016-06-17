@@ -747,7 +747,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Determine whether <code>tree</code> is a class literal, such
+     * Determine whether {@code tree} is a class literal, such
      * as
      *
      * <pre>
@@ -764,7 +764,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Determine whether <code>tree</code> is a field access expressions, such
+     * Determine whether {@code tree} is a field access expressions, such
      * as
      *
      * <pre>
@@ -792,11 +792,11 @@ public final class TreeUtils {
     }
 
     /**
-     * Compute the name of the field that the field access <code>tree</code>
-     * accesses. Requires <code>tree</code> to be a field access, as determined
-     * by <code>isFieldAccess</code>.
+     * Compute the name of the field that the field access {@code tree}
+     * accesses. Requires {@code tree} to be a field access, as determined
+     * by {@code isFieldAccess}.
      *
-     * @return the name of the field accessed by <code>tree</code>.
+     * @return the name of the field accessed by {@code tree}.
      */
     public static String getFieldName(Tree tree) {
         assert isFieldAccess(tree);
@@ -810,7 +810,7 @@ public final class TreeUtils {
     }
 
     /**
-     * Determine whether <code>tree</code> refers to a method element, such
+     * Determine whether {@code tree} refers to a method element, such
      * as
      *
      * <pre>
@@ -844,11 +844,11 @@ public final class TreeUtils {
     }
 
     /**
-     * Compute the name of the method that the method access <code>tree</code>
-     * accesses. Requires <code>tree</code> to be a method access, as determined
-     * by <code>isMethodAccess</code>.
+     * Compute the name of the method that the method access {@code tree}
+     * accesses. Requires {@code tree} to be a method access, as determined
+     * by {@code isMethodAccess}.
      *
-     * @return the name of the method accessed by <code>tree</code>.
+     * @return the name of the method accessed by {@code tree}.
      */
     public static String getMethodName(Tree tree) {
         assert isMethodAccess(tree);

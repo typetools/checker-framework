@@ -72,7 +72,7 @@
         <mkdir dir="${dejavuDir}"/>
         <touch file="${dejavuDir}/dejavu.css"/>
 
-	<condition property="compiler.exists">
+        <condition property="compiler.exists">
             <or>
                 <istrue value="${compiler.exists.jsr308}"/>
                 <istrue value="${compiler.exists.java8}"/>

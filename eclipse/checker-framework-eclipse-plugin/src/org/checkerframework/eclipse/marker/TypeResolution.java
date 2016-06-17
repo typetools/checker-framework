@@ -28,10 +28,10 @@ public class TypeResolution implements IMarkerResolution2
     @Override
     public Image getImage()
     {
-    	/*
-    	final Image checkerMarker = CheckerPlugin.getDefault().getImageRegistry().get(CheckerPlugin.CHECKER_WARNING_IMG_ID);
-    	return CheckerPlugin.getDefault().getImageRegistry().get(CheckerPlugin.CHECKER_WARNING_IMG_ID);*/
-    	return null;
+        /*
+        final Image checkerMarker = CheckerPlugin.getDefault().getImageRegistry().get(CheckerPlugin.CHECKER_WARNING_IMG_ID);
+        return CheckerPlugin.getDefault().getImageRegistry().get(CheckerPlugin.CHECKER_WARNING_IMG_ID);*/
+        return null;
     }
 
 }

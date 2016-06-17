@@ -81,7 +81,7 @@ public class ControlFlowGraph {
     }
 
     /**
-     * @return the {@link Node} to which the {@link Tree} <code>t</code>
+     * @return the {@link Node} to which the {@link Tree} {@code t}
      *         corresponds.
      */
     public Node getNodeCorrespondingToTree(Tree t) {

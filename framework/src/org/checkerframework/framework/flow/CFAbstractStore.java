@@ -96,7 +96,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     protected Map<FlowExpressions.MethodCall, V> methodValues;
 
     /**
-     * Information collected about &lt;class name&gt;.class values,
+     * Information collected about <i>classname</i>.class values,
      * using the internal representation {@link ClassName}.
      */
     protected Map<FlowExpressions.ClassName, V> classValues;

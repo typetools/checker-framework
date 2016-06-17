@@ -123,7 +123,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * @param tree
      *            The method invocation tree that has to be resolved.
      * @param origResult
-     *            The original result from <code>factory.methodFromUse</code>.
+     *            The original result from {@code factory.methodFromUse}.
      */
     private Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolveMethodCall(
             AnnotatedTypeFactory factory, MethodInvocationTree tree,
@@ -257,7 +257,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      *            The method invocation tree (representing a constructor call)
      *            that has to be resolved.
      * @param origResult
-     *            The original result from <code>factory.methodFromUse</code>.
+     *            The original result from {@code factory.methodFromUse}.
      */
     private Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolveConstructorCall(
             AnnotatedTypeFactory factory, MethodInvocationTree tree,
@@ -613,10 +613,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Build lub of the two types (represented by sets <code>set1</code>
-     * and <code>set2</code>) using the provided AnnotatedTypeFactory.
+     * Build lub of the two types (represented by sets {@code set1}
+     * and {@code set2}) using the provided AnnotatedTypeFactory.
      * <p>
-     * If <code>set1</code> is <code>null</code> or empty, <code>set2</code> is
+     * If {@code set1} is {@code null} or empty, {@code set2} is
      * returned.
      */
     private Set<? extends AnnotationMirror> lub(
@@ -630,10 +630,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Build glb of the two types (represented by sets <code>set1</code>
-     * and <code>set2</code>) using the provided AnnotatedTypeFactory.
+     * Build glb of the two types (represented by sets {@code set1}
+     * and {@code set2}) using the provided AnnotatedTypeFactory.
      * <p>
-     * If <code>set1</code> is <code>null</code> or empty, <code>set2</code> is
+     * If {@code set1} is {@code null} or empty, {@code set2} is
      * returned.
      */
     private Set<? extends AnnotationMirror> glb(

@@ -12,10 +12,10 @@ import java.lang.annotation.*;
  * enclosing object (the receiver), is marked as {@code ThreadSafe}.
  * Such a field can be declared as:
  *
- * <pre><code>
+ * <pre>{@code
  *   private @Nullable @Dependent(result=NonNull.class, when=ThreadSafe.class)
  *     Lock lock;
- * </code></pre>
+ * }</pre>
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

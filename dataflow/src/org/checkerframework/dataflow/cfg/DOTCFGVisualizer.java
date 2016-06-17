@@ -484,7 +484,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     }
 
     /**
-     * Write a file <code>methods.txt</code> that contains a mapping from
+     * Write a file {@code methods.txt} that contains a mapping from
      * source code location to generated dot file.
      */
     @Override
