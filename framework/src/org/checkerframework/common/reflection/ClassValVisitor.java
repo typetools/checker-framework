@@ -71,6 +71,10 @@ class ClassNameValidator extends BaseTypeValidator {
      * @return true if className is a legal class name
      */
     private boolean isLegalClassName(String className) {
+        int lastBracket = className.lastIndexOf("]");
+        if (lastBracket != -1 && lastBracket != className.length()-1) {
+            return false;
+        }
         className = className.replaceAll("\\[\\]","");
         String[] identifiers = className.split("(\\.)");
         for (String identifier : identifiers) {
