@@ -1317,18 +1317,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * In some type systems, the upper bounds depend on the instantiation
      * of the class. For example, in the Generic Universe Type system,
      * consider a class declaration
-     * <pre>   class C&lt;X extends @Peer Object&gt; </pre>
+     * <pre>{@code   class C<X extends @Peer Object> }</pre>
      * then the instantiation
-     * <pre>   @Rep C&lt;@Rep Object&gt; </pre>
+     * <pre>{@code   @Rep C<@Rep Object> }</pre>
      * is legal. The upper bounds of class C have to be adapted
      * by the main modifier.
      * <p>
      * An example of an adaptation follows.  Suppose, I have a declaration:
-     * class MyClass&lt;E extends List&lt;E&gt;&gt;
+     * <pre>{@code  class MyClass<E extends List<E>>}</pre>
      * And an instantiation:
-     * new MyClass&lt;@NonNull String&gt;()
+     * <pre>{@code  new MyClass<@NonNull String>()}</pre>
      * <p>
-     * The upper bound of E adapted to the argument String, would be List&lt;@NonNull String&gt;
+     * The upper bound of E adapted to the argument String, would be
+     * {@code List<@NonNull String>}
      * and the lower bound would be an AnnotatedNullType.
      * <p>
      * TODO: ensure that this method is consistently used instead
@@ -2046,6 +2047,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree, Node)
             // Uses an ExecutableElement, which did not substitute type variables.
             break;
+        case WILDCARD:
+            // TODO: look at bounds of wildcard and see whether we can improve.
+            break;
         default:
             if (ctxtype.getKind().isPrimitive()) {
                 // See Issue 438. Ignore primitive types for diamond inference - a primitive type
@@ -2689,7 +2693,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotation mirror for anno
      */
     @Override
-    public AnnotationMirror getDeclAnnotation(Element elt,
+    public final AnnotationMirror getDeclAnnotation(Element elt,
             Class<? extends Annotation> anno) {
         String annoName = anno.getCanonicalName().intern();
         return getDeclAnnotation(elt, annoName, true);
@@ -2715,7 +2719,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param anno annotation class
      * @return the annotation mirror for anno
      */
-    public AnnotationMirror getDeclAnnotationNoAliases(Element elt,
+    public final AnnotationMirror getDeclAnnotationNoAliases(Element elt,
             Class<? extends Annotation> anno) {
         String annoName = anno.getCanonicalName().intern();
         return getDeclAnnotation(elt, annoName, false);

@@ -333,7 +333,7 @@
              printsummary="false"
              haltonerror="${halt.on.test.failure}"
              haltonfailure="${halt.on.test.failure}"
-	     showoutput="true">
+             showoutput="true">
           <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
           <jvmarg line="-ea"/>
 
@@ -569,11 +569,11 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.SubtypingStringPatternsFullTest"/>
         </antcall>
-	<!-- This fails by design.
+        <!-- This fails by design.
         <antcall target="-run-tests">
             <param name="param" value="tests.SubtypingStringPatternsPartialTest"/>
         </antcall>
-	-->
+        -->
     </target>
 
     <target name="supportedquals-tests" depends="jar,build-tests"

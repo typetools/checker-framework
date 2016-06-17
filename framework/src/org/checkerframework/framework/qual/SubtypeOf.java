@@ -18,10 +18,10 @@ import java.lang.annotation.*;
  * <p>
  *
  * If a qualified type is a subtype of the same type without any qualifier,
- * then use <code>Unqualified.class</code> in place of a type qualifier
- * class.  For example, to express that <code>@Encrypted <em>C</em></code>
- * is a subtype of <code><em>C</em></code> (for every class
- * <code><em>C</em></code>), and likewise for <code>@Interned</code>, write:
+ * then use {@code Unqualified.class} in place of a type qualifier
+ * class.  For example, to express that {@code @Encrypted <em>C</em>}
+ * is a subtype of {@code <em>C</em>} (for every class
+ * {@code <em>C</em>}), and likewise for {@code @Interned}, write:
  *
  * <pre> @SubtypeOf(Unqualified.class)
  * public @interface Encrypted { }

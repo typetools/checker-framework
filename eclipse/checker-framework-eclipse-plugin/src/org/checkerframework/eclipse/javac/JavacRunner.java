@@ -209,11 +209,11 @@ public class JavacRunner implements CheckersRunner
         List<JavacError> javacErrors = new ArrayList<JavacError>();
         for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics)
         {
-        	if (diagnostic.getSource() != null) {
-        		javacErrors.add(new JavacError(diagnostic));
-        	} else {//TODO: TEST PRINTING THIS TO THE CONSOLE
-        		System.out.println("No source for diagnostic at: " + diagnostic.getLineNumber() + " Message " + diagnostic.getMessage(null));
-        	}
+            if (diagnostic.getSource() != null) {
+                javacErrors.add(new JavacError(diagnostic));
+            } else {//TODO: TEST PRINTING THIS TO THE CONSOLE
+                System.out.println("No source for diagnostic at: " + diagnostic.getLineNumber() + " Message " + diagnostic.getMessage(null));
+            }
         }
         return javacErrors;
     }

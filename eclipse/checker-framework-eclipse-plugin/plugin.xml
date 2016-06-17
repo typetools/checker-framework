@@ -4,9 +4,9 @@
 <plugin>
   <extension point="org.eclipse.ui.preferencePages">
     <page id="org.checkerframework.eclipse.prefs.CheckerPreferences"
- 	  name="Checker Framework"
+       name="Checker Framework"
       class="org.checkerframework.eclipse.ui.CheckerPreferencePage">
-   	</page>
+       </page>
   </extension>
 
   <extension point="org.eclipse.core.runtime.preferences">
@@ -16,9 +16,9 @@
 <!--
   <extension
     id="buildnature"
-   	name="%extension.name"
-   	point="org.eclipse.core.resources.natures">
-   	<runtime>
+       name="%extension.name"
+       point="org.eclipse.core.resources.natures">
+       <runtime>
       <run class="checkers.eclipse.natures.CheckerBuildNature"/>
     </runtime>
     <builder id="checkers.eclipse.checkerbuilder"/>
@@ -41,9 +41,9 @@
     id="checker.framework.eclipse.plugin.marker"
     name="%extension.name.1"
     point="org.eclipse.core.resources.markers">
-	<super type="org.eclipse.core.resources.problemmarker"/>
-	<super type="org.eclipse.core.resources.textmarker"/>
-	<persistent value="true"/>
+    <super type="org.eclipse.core.resources.problemmarker"/>
+    <super type="org.eclipse.core.resources.textmarker"/>
+    <persistent value="true"/>
   </extension>
 
   <!--extension
@@ -193,15 +193,15 @@
         </dynamic>
         <visibleWhen checkEnabled="false">
           <with variable="activeMenuSelection">
-          	<!--<or>-->
-	            <iterate>
-	              <adapt type="org.eclipse.jdt.internal.core.JavaElement">
-	              </adapt>
-	            </iterate>
-	            <!--<iterate>
-	              <adapt type="org.eclipse.core.resources.IProject">
-	              </adapt> TODO: IS THIS OK TRY CHECKING WHOLE PROJECT
-	            </iterate>-->
+              <!--<or>-->
+                <iterate>
+                  <adapt type="org.eclipse.jdt.internal.core.JavaElement">
+                  </adapt>
+                </iterate>
+                <!--<iterate>
+                  <adapt type="org.eclipse.core.resources.IProject">
+                  </adapt> TODO: IS THIS OK TRY CHECKING WHOLE PROJECT
+                </iterate>-->
             <!--</or>-->
           </with>
         </visibleWhen>

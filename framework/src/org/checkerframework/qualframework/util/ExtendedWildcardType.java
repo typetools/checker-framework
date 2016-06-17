@@ -4,17 +4,17 @@ package org.checkerframework.qualframework.util;
 public interface ExtendedWildcardType extends ExtendedTypeMirror {
     /**
      * Returns the upper bound of this wildcard.  Unlike
-     * <code>WildcardType.getExtendsBound</code>, if no upper bound is
+     * {@code WildcardType.getExtendsBound}, if no upper bound is
      * explicitly declared, a {@link ExtendedTypeMirror} representing
-     * <code>java.lang.Object</code> is returned.
+     * {@code java.lang.Object} is returned.
      */
     ExtendedTypeMirror getExtendsBound();
 
     /**
      * Returns the lower bound of this wildcard.  Unlike
-     * <code>WildcardType.getSuperBound</code>, if no lower
+     * {@code WildcardType.getSuperBound}, if no lower
      * bound is explicitly declared, a {@link ExtendedTypeMirror} representing
-     * the type of <code>null</code> is returned.
+     * the type of {@code null} is returned.
      */
     ExtendedTypeMirror getSuperBound();
 }

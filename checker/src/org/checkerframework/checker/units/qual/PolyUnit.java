@@ -14,7 +14,7 @@ import org.checkerframework.framework.qual.*;
  * unit qualifier such as @kg (kilograms) or @h (hours).
  * <p>
  *
- * The following example shows how method <code>triplePolyUnit</code> can be
+ * The following example shows how method {@code triplePolyUnit} can be
  * used to process either meters or seconds:
  *
  * <pre> {@literal @}PolyUnit int triplePolyUnit(@PolyUnit int amount) {

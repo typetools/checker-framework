@@ -15,7 +15,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Example: int[][]
  * Example: MyClass
  * Example: MyClass[]
- * Example: MyClass$22	
+ * Example: MyClass$22
  * Example: MyClass$22[]
  *
  * @checker_framework.manual #signature-checker Signature Checker

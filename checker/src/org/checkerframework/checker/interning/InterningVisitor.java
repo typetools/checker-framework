@@ -704,10 +704,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Given <code>a == b</code>, where a has type A and b has type B,
+     * Given {@code a == b}, where a has type A and b has type B,
      * don't issue a warning when either the declaration of A or that of B
      * is annotated with @Interned
-     * because <code>a == b</code> will be true only if a's run-time type is B (or
+     * because {@code a == b} will be true only if a's run-time type is B (or
      * lower), in which case a is actually interned.
      */
     private boolean suppressEqualsIfClassIsAnnotated(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {

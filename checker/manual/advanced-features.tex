@@ -801,6 +801,10 @@ Type systems that cannot support a run-time test are:
   performed on correct units of measurement
   (see \chapterpageref{units-checker})
 \item
+  \ahrefloc{unsignedness-checker}{Unsignedness Checker} to
+  ensure unsigned and signed values are not mixed
+  (see \chapterpageref{unsignedness-checker})
+\item
   \ahrefloc{aliasing-checker}{Aliasing Checker} to identify whether
   expressions have aliases (see \chapterpageref{aliasing-checker})
 \item
@@ -1126,9 +1130,9 @@ The set of permitted expressions is a subset of all Java expressions:
   discouraged in Java).
 
 \item
-  \<itself>, i.e. the value of the annotated reference (non-primitive) variable.
+  \code{<self>}, i.e. the value of the annotated reference (non-primitive) variable.
   Currently only defined for the \<@GuardedBy> type system.
-  For example, \<@GuardedBy("itself") Object o> indicates that the value
+  For example, \code{@GuardedBy("<self>") Object o} indicates that the value
   referenced by \<o> is guarded by the intrinsic (monitor) lock of the value
   referenced by \<o>.
 
@@ -1177,16 +1181,23 @@ The set of permitted expressions is a subset of all Java expressions:
   This even works for overloaded methods and methods with type parameters.
   For example:
   \<m1(x, y.z, \#2)>, \<a.m2("hello")>.
-  One unusual feature is that the method call is allowed to have side
-  effects.  If a specification is going to be checked at run time via
-  assertions, then the specification must not use methods with side
-  effects.  But, the Checker Framework works at compile time, so it allows
-  side effects.
-  The current implementation will never able to prove such
-  a contract, but it is able to use the information (when checking
-  the method body with preconditions, or when checking the caller's
-  code with postconditions).  This can be useful to annotate trusted
-  methods precisely (e.g., \<java.io.BufferedReader.ready()>).  % TODO: expand this example.
+
+  One unusual feature of the Checker Framework's Java expressions is that a
+  method call is allowed to have side effects.  Other tools forbid methods
+  with side effects (and doing so is necessary if a specification is going
+  to be checked at run time via assertions).  The Checker Framework enables
+  you to state more facts.  For example, consider the annotation on
+  \<java.io.BufferedReader.ready()>:
+
+\begin{Verbatim}
+  @EnsuresNonNullIf(expression="readLine()", result=true)
+  @Pure public boolean ready() throws IOException { ... }
+\end{Verbatim}
+
+  This states that if \<readLine()> is called immediately after \<ready()>
+  returns true, then \<readLine()> returns a non-null value.
+  Currently, the Checker Framework cannot prove all contracts about method
+  calls, so you may need to suppress some warnings.
 
 \end{itemize}
 

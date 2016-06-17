@@ -62,47 +62,53 @@ import com.sun.tools.javac.code.Type.ClassType;
  */
 public class FlowExpressionParseUtil {
 
-    /** Regular expression for an identifier */
+    /**
+     * Regular expression for an identifier.  Permits '$' in the name,
+     * though that character never appears in Java source code.
+     */
     protected static final String identifierRegex = "[a-zA-Z_$][a-zA-Z_$0-9]*";
+    /** Regular expression for a formal parameter use. */
+    protected static final String parameterRegex = "#([1-9][0-9]*)";
+
+    /** Unanchored; can be used to find all formal parameter uses. */
+    protected static final Pattern unanchoredParameterPattern = Pattern
+            .compile(parameterRegex);
+
+    /** Returns a Pattern, anchored at the beginning and end, for the regex. */
+    private static Pattern anchored(String regex) {
+        return Pattern.compile("^" + regex + "$");
+    }
+
+    // Each of the below patterns is anchored with ^...$.
     /** Matches a parameter */
-    protected static final Pattern parameterPattern = Pattern
-            .compile("^#([1-9]+[0-9]*)$");
-    /** Finds all parameters */
-    protected static final Pattern parametersPattern = Pattern
-            .compile("#([1-9]+[0-9]*)");
+    protected static final Pattern parameterPattern = anchored(parameterRegex);
     /**
-     * Matches the self reference. In the future we could allow "#0" as a
-     * synonym for "this".
+     * Matches 'this', the self reference.
+     * Does not allow "#0" because people reading the code might assume the
+     * numbering starts at 0 and assume that #0 is the first formal parameter.
      */
-    protected static final Pattern thisPattern = Pattern.compile("^this$");
-    /** Matches 'itself' - it refers to the variable that is annotated, which is different from 'this' */
-    protected static final Pattern itselfPattern = Pattern.compile("^itself$");
+    protected static final Pattern thisPattern = anchored("this");
     /** Matches 'super' */
-    protected static final Pattern superPattern = Pattern.compile("^super$");
+    protected static final Pattern superPattern = anchored("super");
     /** Matches an identifier */
-    protected static final Pattern identifierPattern = Pattern.compile("^"
-            + identifierRegex + "$");
-    /** Matches a method call */
-    protected static final Pattern methodPattern = Pattern.compile("^("
-            + identifierRegex + ")\\((.*)\\)$");
-    /** Matches an array access */
-    protected static final Pattern arrayPattern = Pattern.compile("^(.*)\\[(.*)\\]$");
-    /** Matches a field access */
-    protected static final Pattern dotPattern = Pattern
-            .compile("^([^.]+)\\.(.+)$");
+    protected static final Pattern identifierPattern = anchored(identifierRegex);
+    /** Matches a method call.  Capturing groups 1 and 2 are the method and arguments. */
+    protected static final Pattern methodPattern = anchored("(" + identifierRegex + ")\\((.*)\\)");
+    /** Matches an array access.  Capturing groups 1 and 2 are the array and index. */
+    protected static final Pattern arrayPattern = anchored("(.*)\\[(.*)\\]");
+    /** Matches a field access.  Capturing groups 1 and 2 are the object and field. */
+    protected static final Pattern dotPattern = anchored("([^.]+)\\.(.+)");
     /** Matches integer literals */
-    protected static final Pattern intPattern = Pattern
-            .compile("^[1-9][0-9]*$");
+    protected static final Pattern intPattern = anchored("[-+]?[1-9][0-9]*");
     /** Matches long literals */
-    protected static final Pattern longPattern = Pattern
-            .compile("^[1-9][0-9]*L$");
+    protected static final Pattern longPattern = anchored("[-+]?[1-9][0-9]*L");
     /** Matches string literals */
-    protected static final Pattern stringPattern = Pattern
-            .compile("^\"([^\"\\\\]|\\\\.)*\"$");
+    // Regex can be found at, for example, http://stackoverflow.com/a/481587/173852
+    protected static final Pattern stringPattern = anchored("\"(?:[^\"\\\\]|\\\\.)*\"");
     /** Matches the null literal */
-    protected static final Pattern nullPattern = Pattern.compile("^null$");
+    protected static final Pattern nullPattern = anchored("null");
     /** Matches an expression contained in matching start and end parentheses */
-    protected static final Pattern parenthesesPattern = Pattern.compile("^\\((.*)\\)$");
+    protected static final Pattern parenthesesPattern = anchored("\\((.*)\\)");
 
     /**
      * Parse a string and return its representation as a {@link Receiver}, or
@@ -115,63 +121,48 @@ public class FlowExpressionParseUtil {
      * @param path
      *            The current tree path.
      */
-    public static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
+    public static FlowExpressions.Receiver parse(String s,
             FlowExpressionContext context, TreePath path)
             throws FlowExpressionParseException {
-        return parse(s, context, path, false, false);
+        FlowExpressions.Receiver result = parse(s, context, path, false);
+        return result;
     }
 
-    /**
-     * Parse a string and return its representation as a {@link Receiver}, or
-     * throw an {@link FlowExpressionParseException}.
-     * Returns null if 'itself' is passed in as the string to parse
-     * and no receiver named 'itself' could be found.
-     *
-     * @param s
-     *            The string to parse.
-     * @param context
-     *            information about any receiver and arguments
-     * @param path
-     *            The current tree path.
-     */
-    public static FlowExpressions. /*@Nullable*/ Receiver parseAllowingItself(String s,
-            FlowExpressionContext context, TreePath path)
-            throws FlowExpressionParseException {
-        return parse(s, context, path, true, false);
-    }
-
-    private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
-            FlowExpressionContext context, TreePath path, boolean allowItself, boolean recursiveCall)
+    private static FlowExpressions.Receiver parse(String s,
+            FlowExpressionContext context, TreePath path, boolean recursiveCall)
             throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true, true,
-                true, true, allowItself, recursiveCall);
+                true, true, recursiveCall);
+        assert result != null;
         return result;
     }
 
     /**
      * Private implementation of {@link #parse} with a choice of which classes
      * of expressions should be parsed.
+     * @param allowThis controls whether "this" and "super" are allowed
      */
-    private static FlowExpressions. /*@Nullable*/ Receiver parse(String s,
-            FlowExpressionContext context, TreePath path, boolean allowSelf,
+    private static FlowExpressions.Receiver parse(String s,
+            FlowExpressionContext context, TreePath path, boolean allowThis,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
             boolean allowMethods, boolean allowArrays, boolean allowLiterals,
-            boolean allowLocalVariables, boolean allowItself, boolean recursiveCall)
+            boolean allowLocalVariables, boolean recursiveCall)
             throws FlowExpressionParseException {
         s = s.trim();
 
-        Matcher selfMatcher = thisPattern.matcher(s);
+        Matcher thisMatcher = thisPattern.matcher(s);
 
+        // If the expression is "this", then replace it by the receiver of the
+        // Java expression to which the annotation applies.
         // Do not do this in recursive calls, otherwise we can get an infinite loop where
         // "this" gets converted to "this.<fieldname>" in the line below, then
         // dotMatcher matches "this.<fieldname>" and calls this function recursively
         // with s == "this"
-        if (selfMatcher.matches() && allowSelf && !recursiveCall) {
+        if (thisMatcher.matches() && allowThis && !recursiveCall) {
             s = context.receiver.toString(); // it is possible that s == "this" after this call
-            selfMatcher = thisPattern.matcher(s); // Refresh the matcher
+            thisMatcher = thisPattern.matcher(s); // Refresh the matcher
         }
 
-        Matcher itselfMatcher = itselfPattern.matcher(s);
         Matcher identifierMatcher = identifierPattern.matcher(s);
         Matcher superMatcher = superPattern.matcher(s);
         Matcher parameterMatcher = parameterPattern.matcher(s);
@@ -187,11 +178,11 @@ public class FlowExpressionParseUtil {
         ProcessingEnvironment env = context.checkerContext.getProcessingEnvironment();
         Types types = env.getTypeUtils();
 
-        if (intMatcher.matches() && allowLiterals) {
+        if (nullMatcher.matches() && allowLiterals) {
+            return new ValueLiteral(types.getNullType(), (Object) null);
+        } else if (intMatcher.matches() && allowLiterals) {
             int val = Integer.parseInt(s);
             return new ValueLiteral(types.getPrimitiveType(TypeKind.INT), val);
-        } else if (nullMatcher.matches() && allowLiterals) {
-            return new ValueLiteral(types.getNullType(), (Object) null);
         } else if (longMatcher.matches() && allowLiterals) {
             long val = Long.parseLong(s.substring(0, s.length() - 1));
             return new ValueLiteral(types.getPrimitiveType(TypeKind.LONG), val);
@@ -200,14 +191,14 @@ public class FlowExpressionParseUtil {
                     "java.lang.String");
             return new ValueLiteral(types.getDeclaredType(stringTypeElem),
                     s.substring(1, s.length() - 1));
-        } else if (selfMatcher.matches() && allowSelf) {
+        } else if (thisMatcher.matches() && allowThis) {
             // "this" literal, even after the call above to set s = context.receiver.toString();
             if (context.receiver == null || context.receiver.containsUnknown()) {
                 return new ThisReference(context.receiver == null ? null : context.receiver.getType());
             } else { // If we already know the receiver, return it.
                 return context.receiver;
             }
-        } else if (superMatcher.matches() && allowSelf) {
+        } else if (superMatcher.matches() && allowThis) {
             // super literal
             List<? extends TypeMirror> superTypes = types
                     .directSupertypes(context.receiver.getType());
@@ -273,7 +264,7 @@ public class FlowExpressionParseUtil {
                 if (fieldElem == null) {
                     throw constructParserException(s, "fieldElem==null");
                 }
-                if (fieldElem == null || fieldElem.getKind() != ElementKind.FIELD) {
+                if (fieldElem.getKind() != ElementKind.FIELD) {
                     throw constructParserException(s, "fieldElem.getKind()==" + fieldElem.getKind());
                 }
                 TypeMirror fieldType = ElementUtils.getType(fieldElem);
@@ -303,18 +294,8 @@ public class FlowExpressionParseUtil {
                     return new ClassName(classType);
                 } catch (Throwable t2) {
 
-                    if (allowItself && itselfMatcher.matches()) {
-                        return null; // Don't throw an exception if 'itself' does not match an identifier.
-                        // The callee knows that it passed in 'itself' and will handle the null return value.
-                        // DO however throw an exception below if the call is recursive and 'itself' matches,
-                        // because that might mean that the original expression was "classname.itself",
-                        // which means a field named itself was explicitly sought. (See the last recursive call
-                        // to parse in the (dotMatcher.matches() && allowDot) case below. In that recursive
-                        // call, the allowItself parameter is set to false.)
-                    }
-
                     // It would be helpful to also give information about t here.
-                    throw constructParserException(s, "not itself", t2);
+                    throw constructParserException(s, "not a class literal", t2);
                 }
             }
         } else if (parameterMatcher.matches() && allowParameter && context.arguments != null) {
@@ -360,33 +341,35 @@ public class FlowExpressionParseUtil {
             for (Receiver p : parameters) {
                 parameterTypes.add(p.getType());
             }
-            Element methodElement = null;
+            ExecutableElement methodElement = null;
             try {
+                Element element = null;
+
                 // try to find the correct method
                 Resolver resolver = new Resolver(env);
                 TypeMirror receiverType = context.receiver.getType();
 
                 // Search for method in each enclosing class.
                 while (receiverType.getKind() == TypeKind.DECLARED) {
-                    methodElement = resolver.findMethod(methodName, receiverType,
+                    element = resolver.findMethod(methodName, receiverType,
                             path, parameterTypes);
-                    if (methodElement.getKind() == ElementKind.METHOD) {
+                    if (element.getKind() == ElementKind.METHOD) {
                         break;
                     }
                     receiverType = ((DeclaredType)receiverType).getEnclosingType();
                 }
 
-                if (methodElement == null) {
-                    throw constructParserException(s, "methodElement==null");
+                if (element == null) {
+                    throw constructParserException(s, "element==null");
                 }
-                if (methodElement.getKind() != ElementKind.METHOD) {
-                    throw constructParserException(s, "methodElement.getKind()==" + methodElement.getKind());
+                if (element.getKind() != ElementKind.METHOD) {
+                    throw constructParserException(s, "element.getKind()==" + element.getKind());
                 }
 
-                ExecutableElement mElem = (ExecutableElement) methodElement;
+                methodElement = (ExecutableElement) element;
 
                 for (int i = 0; i < parameters.size(); i++) {
-                    VariableElement formal = mElem.getParameters().get(i);
+                    VariableElement formal = methodElement.getParameters().get(i);
                     TypeMirror formalType = formal.asType();
                     Receiver actual = parameters.get(i);
                     TypeMirror actualType = actual.getType();
@@ -402,12 +385,9 @@ public class FlowExpressionParseUtil {
             } catch (Throwable t) {
                 throw constructParserException(s, t);
             }
-            // check that the method is pure (this is no longer required)
-            // TODO: It is not clear when non-pure method calls are allowed - see the
-            // Javadoc for FlowExpressions.MethodCall and the TODO below it.
-            // Once that TODO is resolved, remove/restore/change the commented out
-            // code below.
             assert methodElement != null;
+            // TODO: reinstate this test, but issue a warning that the user
+            // can override, rather than halting parsing which the user cannot override.
             /*if (!PurityUtils.isDeterministic(context.checkerContext.getAnnotationProvider(),
                     methodElement)) {
                 throw new FlowExpressionParseException(Result.failure(
@@ -433,13 +413,7 @@ public class FlowExpressionParseUtil {
             String remainingString = dotMatcher.group(2);
 
             // Parse the receiver first.
-            Receiver receiver = parse(receiverString, context, path, allowItself, true);
-
-            if (allowItself && receiver == null) {
-                // "itself.<someexpression>", where "itself" is not a variable name. Let the caller handle it.
-
-                return null;
-            }
+            Receiver receiver = parse(receiverString, context, path, true);
 
             if (receiver instanceof FlowExpressions.ClassName && remainingString.equals("class")) {
                 return receiver;
@@ -447,57 +421,33 @@ public class FlowExpressionParseUtil {
 
             // Parse the rest, with a new receiver.
             FlowExpressionContext newContext = context.changeReceiver(receiver);
-            // Parameter allowItself is set to false since "itself" (when used
-            // to mean "the expression itself")  can only be in the receiver,
-            // not in the remaining string. Note that "itself" can still be a
-            // variable name in the remaining string, and this recursive call
-            // handles that case.
-            return parse(remainingString, newContext, path, false, true, false,
-                    true, true, false, false, false, false, true);
+            return parse(remainingString, newContext, path,
+                         /*allowThis=*/ false,
+                         /*allowIdentifier=*/ true,
+                         /*allowParameter=*/ false,
+                         /*allowDot=*/ true,
+                         /*allowMethods=*/ true,
+                         /*allowArrays=*/ false,
+                         /*allowLiterals=*/ false,
+                         /*allowLocalVariables=*/ false,
+                         /*recursiveCal=*/ true);
         } else if (parenthesesMatcher.matches()) {
             String expressionString = parenthesesMatcher.group(1);
             // Do not modify the value of recursiveCall, since a parenthesis match is essentially
             // a match to a no-op and should not semantically affect the parsing.
-            return parse(expressionString, context, path, allowSelf,
+            return parse(expressionString, context, path, allowThis,
                     allowIdentifier, allowParameter, allowDot,
                     allowMethods, allowArrays, allowLiterals,
-                    allowLocalVariables, allowItself, recursiveCall);
+                    allowLocalVariables, recursiveCall);
         } else {
             throw constructParserException(s, "no matcher matched");
         }
     }
 
     /**
-     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with explanation {@code explanation}.
-     */
-    private static FlowExpressionParseException constructParserException(
-            String expr, String explanation) {
-        return constructParserException(expr, explanation, null);
-    }
-
-    /**
-     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} whose parsing threw {@code cause}.
-     */
-    private static FlowExpressionParseException constructParserException(
-            String expr, Throwable cause) {
-        return constructParserException(expr, null, cause);
-    }
-
-    /**
-     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with explanation {@code explanation}, whose parsing threw {@code cause}.
-     */
-    private static FlowExpressionParseException constructParserException(
-            String expr, String explanation, Throwable cause) {
-        String message
-            = expr
-            + ((explanation==null) ? "" : (": " + explanation))
-            + ((cause==null) ? "" : (": " + cause.getMessage()));
-    return new FlowExpressionParseException(Result.failure("flowexpr.parse.error", message), cause);
-    }
-
-    /**
-     * A very simple parser for parameter lists, i.e. strings of the form
-     * {@code a, b, c} for some expressions {@code a}, {@code b} and {@code c}.
+     * A very simple parser for unparenthesized parameter lists
+     * &mdash; that is, strings of the form {@code a, b, c}
+     * for some expressions {@code a}, {@code b}, and {@code c}.
      *
      * @author Stefan Heule
      */
@@ -527,9 +477,9 @@ public class FlowExpressionParseUtil {
                 if (idx == parameterString.length()) {
                     // finish current param
                     if (inString) {
-                        throw constructParserException(parameterString, "not inString");
+                        throw constructParserException(parameterString, "unterminated string");
                     } else if (callLevel > 0) {
-                        throw constructParserException(parameterString, "callLevel==" + callLevel);
+                        throw constructParserException(parameterString, "unterminated method invocation, callLevel==" + callLevel);
                     } else {
                         finishParam(parameterString, allowEmptyList, context,
                                 path, result, idx);
@@ -600,7 +550,7 @@ public class FlowExpressionParseUtil {
                 if (allowEmptyList) {
                     return;
                 } else {
-                    throw constructParserException(parameterString, "idx==0");
+                    throw constructParserException(parameterString, "empty parameter list; idx==0");
                 }
             } else {
                 result.add(parse(parameterString.substring(0, idx), context,
@@ -610,7 +560,30 @@ public class FlowExpressionParseUtil {
     }
 
     /**
+     * @return a list of 1-based indices of all formal parameters that
+     * occur in {@code s}.  Each formal parameter occurs in s as a string
+     * like "#1" or "#4".  This routine does not do proper parsing; for
+     * instance, if "#2" appears within a string in s, then 2 would still
+     * be in the result list.
+     */
+    public static List<Integer> parameterIndices(String s) {
+        List<Integer> result = new ArrayList<>();
+        Matcher matcher = unanchoredParameterPattern.matcher(s);
+        while (matcher.find()) {
+            int idx = Integer.parseInt(matcher.group(1));
+            result.add(idx);
+        }
+        return result;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    /// Contexts
+    ///
+
+    /**
      * Context used to parse a flow expression.
+     * When parsing flow expression E in annotation {@code @A(E)},
+     * The context is the program element that is annotated by {@code @A(E)}.
      */
     public static class FlowExpressionContext {
         public final Receiver receiver;
@@ -638,7 +611,7 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * Returns a copy of the context that is identical, but has a different
+         * Returns a copy of the context that differs in that it has a different
          * receiver. The outer receiver remains unchanged.
          */
         public FlowExpressionContext changeReceiver(Receiver receiver) {
@@ -647,49 +620,13 @@ public class FlowExpressionParseUtil {
         }
 
         /**
-         * Returns a copy of the context that is identical, but uses the outer
-         * receiver as main receiver.
+         * Returns a copy of the context that differs in that it uses the
+         * outer receiver as main receiver (and also uses it as the outer
+         * receiver).
          */
         public FlowExpressionContext useOuterReceiver() {
             return new FlowExpressionContext(outerReceiver, outerReceiver,
                     arguments, checkerContext);
-        }
-    }
-
-    /**
-     * @return the list of parameters that occur in {@code s}, identified by the
-     *         number of the parameter (starting at 1).
-     */
-    public static List<Integer> parameterIndices(String s) {
-        List<Integer> result = new ArrayList<>();
-        Matcher matcher = parametersPattern.matcher(s);
-        while (matcher.find()) {
-            int idx = Integer.parseInt(matcher.group(1));
-            result.add(idx);
-        }
-        return result;
-    }
-
-    /**
-     * An exception that indicates a parse error. It contains a {@link Result}
-     * that can be used for error reporting.
-     */
-    public static class FlowExpressionParseException extends Exception {
-        private static final long serialVersionUID = 1L;
-
-        protected final Result result;
-
-        public FlowExpressionParseException(Result result) {
-            this(result, null);
-        }
-
-        public FlowExpressionParseException(Result result, Throwable cause) {
-            super(cause);
-            this.result = result;
-        }
-
-        public Result getResult() {
-            return result;
         }
     }
 
@@ -884,4 +821,60 @@ public class FlowExpressionParseUtil {
 
         return flowExprContext;
     }
+
+    ///////////////////////////////////////////////////////////////////////////
+    /// Exceptions
+    ///
+
+    /**
+     * An exception that indicates a parse error. It contains a {@link Result}
+     * that can be used for error reporting.
+     */
+    public static class FlowExpressionParseException extends Exception {
+        private static final long serialVersionUID = 1L;
+
+        protected final Result result;
+
+        public FlowExpressionParseException(Result result) {
+            this(result, null);
+        }
+
+        public FlowExpressionParseException(Result result, Throwable cause) {
+            super(cause);
+            this.result = result;
+        }
+
+        public Result getResult() {
+            return result;
+        }
+    }
+
+    /**
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with explanation {@code explanation}.
+     */
+    private static FlowExpressionParseException constructParserException(
+            String expr, String explanation) {
+        return constructParserException(expr, explanation, null);
+    }
+
+    /**
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} whose parsing threw {@code cause}.
+     */
+    private static FlowExpressionParseException constructParserException(
+            String expr, Throwable cause) {
+        return constructParserException(expr, null, cause);
+    }
+
+    /**
+     * Returns a {@link FlowExpressionParseException} for the expression {@code expr} with explanation {@code explanation}, whose parsing threw {@code cause}.
+     */
+    private static FlowExpressionParseException constructParserException(
+            String expr, String explanation, Throwable cause) {
+        String message
+            = expr
+            + ((explanation==null) ? "" : (": " + explanation))
+            + ((cause==null) ? "" : (": " + cause.getMessage()));
+        return new FlowExpressionParseException(Result.failure("flowexpr.parse.error", message), cause);
+    }
+
 }

@@ -20,6 +20,7 @@ propkey-checker.tex \
 signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
+unsignedness-checker.tex \
 constant-value-checker.tex \
 aliasing-checker.tex \
 linear-checker.tex \

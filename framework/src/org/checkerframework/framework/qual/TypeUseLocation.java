@@ -58,30 +58,30 @@ public enum TypeUseLocation {
     /**
      * Apply default annotations to unannotated lower bounds
      * for type variables and wildcards both explicit ones in
-     * <code>extends</code> clauses, and implicit upper bounds
-     * when no explicit <code>extends</code> or <code>super</code>
+     * {@code extends} clauses, and implicit upper bounds
+     * when no explicit {@code extends} or {@code super}
      * clause is present
      */
     LOWER_BOUND,
 
     /**
      * Apply default annotations to unannotated, but explicit lower bounds:
-     * <code>&lt;? super Object&gt;</code>
+     * {@code <? super Object>}
      *
      */
     EXPLICIT_LOWER_BOUND,
 
     /**
      * Apply default annotations to unannotated, but implicit lower bounds:
-     * <code>&lt;T&gt;</code>
-     * <code>&lt;?&gt;</code>
+     * {@code <T>}
+     * {@code <?>}
      */
     IMPLICIT_LOWER_BOUND,
 
     /**
      * Apply default annotations to unannotated upper bounds:  both
-     * explicit ones in <code>extends</code> clauses, and implicit upper bounds
-     * when no explicit <code>extends</code> or <code>super</code> clause is
+     * explicit ones in {@code extends} clauses, and implicit upper bounds
+     * when no explicit {@code extends} or {@code super} clause is
      * present.
      *
      * Especially useful for parametrized classes that provide a lot of
@@ -93,7 +93,7 @@ public enum TypeUseLocation {
 
     /**
      * Apply default annotations to unannotated, but explicit upper bounds:
-     * <code>&lt;T extends Object&gt;</code>
+     * {@code <T extends Object>}
      *
      * TODO: more doc, relation to other UPPER_BOUND
      */
@@ -101,7 +101,7 @@ public enum TypeUseLocation {
 
     /**
      * Apply default annotations to unannotated type variables:
-     * <code>&lt;T&gt;</code>
+     * {@code <T>}
      *
      * TODO: more doc, relation to other UPPER_BOUND
      */
