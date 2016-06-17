@@ -66,5 +66,24 @@ class Initializer {
         //:: error: (dereference.of.nullable)
         this.f.toString();
     }
+    String fieldF = "";
 
+}
+class SubInitializer extends Initializer {
+
+    String f = "";
+    void subt1(@UnknownInitialization(Initializer.class) @Raw(Initializer.class) SubInitializer this) {
+        fieldF.toString();
+        super.f.toString();
+        //:: error: (dereference.of.nullable)
+        this.f.toString();
+    }
+    void subt2(@UnknownInitialization @Raw SubInitializer this) {
+        //:: error: (dereference.of.nullable)
+        fieldF.toString();
+        //:: error: (dereference.of.nullable)
+        super.f.toString();
+        //:: error: (dereference.of.nullable)
+        this.f.toString();
+    }
 }
