@@ -71,14 +71,8 @@ class ClassNameValidator extends BaseTypeValidator {
      * @return true if className is a legal class name
      */
     private boolean isLegalClassName(String className) {
-        String regex = "([^\\.\\[\\]](\\.[^\\.\\[\\]])*)*(\\[\\])*";
-        Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(className);
-        if (!m.matches()) {
-            return false;
-        }
-        className = m.group(1);
-        String[] identifiers = className.split(".");
+        className = className.replaceAll("\\[\\]","");
+        String[] identifiers = className.split("(\\.)");
         for (String identifier : identifiers) {
             if (!isJavaIdentifier(identifier)) {
                 return false;
