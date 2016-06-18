@@ -1,6 +1,8 @@
 // Test case for Issue #807:
 // https://github.com/typetools/checker-framework/issues/807
 
+// @below-java8-jdk-skip-test
+
 import java.util.function.Consumer;
 
 class Issue807 {
