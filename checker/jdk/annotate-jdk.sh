@@ -1,10 +1,10 @@
 #!/bin/sh
 
-# Generates the annotated JDK from old annotation sources (nullness JDK
-# and stubfiles).  The goal is to transfer all the annotations from the
-# sources to the JDK source, which will be the new home for all the
-# annotations associated with the checkers that are distributed with the
-# Checker Framework.
+# Generates the annotated JDK from old annotation sources (lock and
+# nullness JDKs and stubfiles).  The goal is to transfer all the
+# annotations from the sources to the JDK source, which will be the new
+# home for all the annotations associated with the checkers that are
+# distributed with the Checker Framework.
 #
 # Prerequisites:
 #
@@ -167,13 +167,13 @@ fi
  || exit $?
 
 
-# Stage 1: extract JAIFs from nullness JDK
+# Stage 1: extract JAIFs from lock and nullness JDKs
 
 rm -rf "${TMPDIR}"
 mkdir "${TMPDIR}"
 
-(
-    cd "${CHECKERFRAMEWORK}/checker/jdk/nullness/src" || exit 1
+for p in lock nullness ; do
+    cd "${CHECKERFRAMEWORK}/checker/jdk/$p/src" || exit 1
     [ -z "`ls`" ] && echo "no files" 1>&2 && exit 1
 
     mkdir -p ../build
@@ -190,7 +190,7 @@ mkdir "${TMPDIR}"
         mkdir -p "${TMPDIR}/`dirname $f`" && mv "$f" "${TMPDIR}/$f"
         [ ${RET} -eq 0 ] && RET=$?
     done
-)
+done
 
 #[ ${RET} -ne 0 ] && echo "stage 1 failed" 1>&2 && exit ${RET}
 echo "stage 1 complete" 1>&2
@@ -198,7 +198,8 @@ echo "stage 1 complete" 1>&2
 
 # Stage 2: convert stub files to JAIFs
 
-convertStubs | splitJAIF
+# sed invocation is temporary workaround for stubfile converter bug
+convertStubs | sed 's/<clinit>:/<clinit>()V/' | splitJAIF
 RET=$?
 #[ ${RET} -ne 0 ] && echo "stage 2 failed" 1>&2 && exit ${RET}
 echo "stage 2 complete" 1>&2
