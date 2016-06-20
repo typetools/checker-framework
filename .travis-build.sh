@@ -41,6 +41,7 @@ ant javadoc-private
 
 ## end of alternatives for tests
 
+ulimit -s 1082768  # Demos Require a bit of more memory.
 # It's cheaper to run the demos test here than to trigger the
 # checker-framework-demos job, which has to build the whole Checker Framework.
 (cd checker && ant check-demos)
