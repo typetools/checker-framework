@@ -1,5 +1,7 @@
 package org.checkerframework.javacutil;
 
+import static com.sun.tools.javac.code.Kinds.PCK;
+import static com.sun.tools.javac.code.Kinds.TYP;
 import static com.sun.tools.javac.code.Kinds.VAR;
 
 import java.lang.reflect.Constructor;
@@ -17,6 +19,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.comp.AttrContext;
@@ -41,6 +45,7 @@ public class Resolver {
 
     private static final Method FIND_METHOD;
     private static final Method FIND_VAR;
+    private static final Method FIND_IDENT;
     private static final Method FIND_IDENT_IN_TYPE;
     private static final Method FIND_IDENT_IN_PACKAGE;
     private static final Method FIND_TYPE;
@@ -59,6 +64,10 @@ public class Resolver {
             FIND_VAR = Resolve.class.getDeclaredMethod("findVar",
                     Env.class, Name.class);
             FIND_VAR.setAccessible(true);
+
+            FIND_IDENT = Resolve.class.getDeclaredMethod(
+                    "findIdent", Env.class, Name.class, int.class);
+            FIND_IDENT.setAccessible(true);
 
             FIND_IDENT_IN_TYPE = Resolve.class.getDeclaredMethod(
                     "findIdentInType", Env.class, Type.class, Name.class,
@@ -101,6 +110,38 @@ public class Resolver {
         this.names = Names.instance(context);
         this.trees = Trees.instance(env);
         this.log = Log.instance(context);
+    }
+
+    /**
+     * Finds the package with name {@code name}.
+     *
+     * @param name
+     *            The name of the package.
+     * @param path
+     *            The tree path to the local scope.
+     * @return the {@code PackageSymbol} for the package if it is found,
+     * {@code null} otherwise
+     */
+    public PackageSymbol findPackage(String name, TreePath path) {
+        Log.DiagnosticHandler discardDiagnosticHandler =
+            new Log.DiscardDiagnosticHandler(log);
+        try {
+            JavacScope scope = (JavacScope) trees.getScope(path);
+            Env<AttrContext> env = scope.getEnv();
+            Element res = wrapInvocationOnResolveInstance(FIND_IDENT, env,
+                    names.fromString(name), PCK);
+            // findIdent will return a PackageSymbol even for a symbol that is not a package,
+            // such as a.b.c.MyClass.myStaticField. "exists()" must be called on it to ensure
+            // that it exists.
+            if (res.getKind() == ElementKind.PACKAGE) {
+                PackageSymbol ps = (PackageSymbol) res;
+                return ps.exists() ? ps : null;
+            } else {
+                return null;
+            }
+        } finally {
+            log.popDiagnosticHandler(discardDiagnosticHandler);
+        }
     }
 
     /**
@@ -190,6 +231,36 @@ public class Resolver {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
             return wrapInvocationOnResolveInstance(FIND_TYPE, env, names.fromString(name));
+        } finally {
+            log.popDiagnosticHandler(discardDiagnosticHandler);
+        }
+    }
+
+    /**
+     * Finds the class with name {@code name} in a given package.
+     *
+     * @param name
+     *            The name of the class.
+     * @param pck
+     *            The PackageSymbol for the package.
+     * @param path
+     *            The tree path to the local scope.
+     * @return the {@code ClassSymbol} for the class if it is found,
+     * {@code null} otherwise
+     */
+    public ClassSymbol findClassInPackage(String name, PackageSymbol pck, TreePath path) {
+        Log.DiagnosticHandler discardDiagnosticHandler =
+            new Log.DiscardDiagnosticHandler(log);
+        try {
+            JavacScope scope = (JavacScope) trees.getScope(path);
+            Env<AttrContext> env = scope.getEnv();
+            Element res = wrapInvocationOnResolveInstance(FIND_IDENT_IN_PACKAGE, env, pck,
+                    names.fromString(name), TYP);
+            if (res.getKind() == ElementKind.CLASS) {
+                return (ClassSymbol) res;
+            } else {
+                return null;
+            }
         } finally {
             log.popDiagnosticHandler(discardDiagnosticHandler);
         }
