@@ -2,7 +2,9 @@
 // https://github.com/typetools/checker-framework/issues/810
 // @skip-test
 
-class C {
-    java.util.Map m = new java.util.HashMap();
-    java.util.Set n = m.keySet();
+import java.util.*;
+
+class Issue810 {
+    Map<String, String>  m = new HashMap<>();
+    Set<String> n = m.keySet();
 }
