@@ -2047,6 +2047,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // org.checkerframework.dataflow.cfg.node.MethodAccessNode.MethodAccessNode(ExpressionTree, Node)
             // Uses an ExecutableElement, which did not substitute type variables.
             break;
+        case WILDCARD:
+            // TODO: look at bounds of wildcard and see whether we can improve.
+            break;
         default:
             if (ctxtype.getKind().isPrimitive()) {
                 // See Issue 438. Ignore primitive types for diamond inference - a primitive type
@@ -2690,7 +2693,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return the annotation mirror for anno
      */
     @Override
-    public AnnotationMirror getDeclAnnotation(Element elt,
+    public final AnnotationMirror getDeclAnnotation(Element elt,
             Class<? extends Annotation> anno) {
         String annoName = anno.getCanonicalName().intern();
         return getDeclAnnotation(elt, annoName, true);
@@ -2716,7 +2719,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param anno annotation class
      * @return the annotation mirror for anno
      */
-    public AnnotationMirror getDeclAnnotationNoAliases(Element elt,
+    public final AnnotationMirror getDeclAnnotationNoAliases(Element elt,
             Class<? extends Annotation> anno) {
         String annoName = anno.getCanonicalName().intern();
         return getDeclAnnotation(elt, annoName, false);

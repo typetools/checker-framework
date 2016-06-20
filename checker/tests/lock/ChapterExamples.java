@@ -114,8 +114,8 @@ class ChapterExamples {
   void testMultipleSideEffectAnnotations() {
   }
 
-  void guardedByItselfOnReceiver(@GuardedBy("itself") ChapterExamples this) {
-    synchronized(this) { // Tests translation of 'itself' to 'this' by the LockVisitor for this scenario.
+  void guardedByItselfOnReceiver(@GuardedBy("<self>") ChapterExamples this) {
+    synchronized(this) { // Tests translation of '<self>' to 'this' by the LockVisitor for this scenario.
       // myField = new MyClass();
       myField.toString();
       this.myField = new MyClass();
@@ -163,7 +163,7 @@ class ChapterExamples {
     m.field.toString();
     // The following error is due to the fact that you cannot access "this.lock" without first having acquired "lock".
     // The right fix in a user scenario would be to not guard "this" with "this.lock". The current object could instead
-    // be guarded by "itself" or by some other lock expression that is not one of its fields. We are keeping this test
+    // be guarded by "<self>" or by some other lock expression that is not one of its fields. We are keeping this test
     // case here to make sure this scenario issues a warning.
     //:: error: (contracts.precondition.not.satisfied.field)
     synchronized(lock) {
@@ -1009,7 +1009,7 @@ void boxingUnboxing() {
   }
 
   void testItselfFinalLock() {
-    final @GuardedBy("itself.finalLock") MyClassContainingALock m = new MyClassContainingALock();
+    final @GuardedBy("<self>.finalLock") MyClassContainingALock m = new MyClassContainingALock();
     //:: error: (contracts.precondition.not.satisfied.field)
     m.field = new Object();
     // Ignore this error: it is expected that an error will be issued for dereferencing 'm' in order to take the 'm.finalLock' lock.
@@ -1022,7 +1022,7 @@ void boxingUnboxing() {
   }
 
   void testItselfNonFinalLock() {
-    final @GuardedBy("itself.nonFinalLock") MyClassContainingALock m = new MyClassContainingALock();
+    final @GuardedBy("<self>.nonFinalLock") MyClassContainingALock m = new MyClassContainingALock();
     //:: error: (lock.expression.not.final)
     m.field = new Object();
     //:: error: (lock.expression.not.final)
@@ -1038,10 +1038,10 @@ void boxingUnboxing() {
   }
 
   class SessionManager {
-    private @GuardedBy("itself") Session session = new Session();
+    private @GuardedBy("<self>") Session session = new Session();
 
     private void session_done() {
-      final @GuardedBy("itself") Session tmp = session;
+      final @GuardedBy("<self>") Session tmp = session;
       session = null;
       synchronized (tmp) {
         tmp.kill();

@@ -22,6 +22,7 @@ ant javadoc-private
 
 ## Alternative 1 (desired alternative):
 # ant tests-nobuildjdk
+## This should be redundant because it's run by tests-nobuildjdk
 # (cd checker && ant check-compilermsgs check-purity check-tutorial)
 
 ## Alternative 2 (because alternative 1 currently crashes);

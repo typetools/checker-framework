@@ -267,7 +267,7 @@ public abstract class ClassLoader {
 
     // The packages defined in this class loader.  Each package name is mapped
     // to its corresponding Package object.
-    // @GuardedBy("itself")
+    // @GuardedBy("<self>")
     private final HashMap<String, Package> packages = new HashMap<>();
 
     private static Void checkCreateClassLoader() {
