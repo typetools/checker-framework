@@ -5,3 +5,7 @@ import polyall.quals.*;
 public final class Object {
     public Class<@H1S1 ? extends @H1S1 Object> getClass();
 }
+
+class String {
+    public static String format(String format, @H1S1 Object @H1S2... args);
+}
