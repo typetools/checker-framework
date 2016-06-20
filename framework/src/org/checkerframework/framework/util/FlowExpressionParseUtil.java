@@ -510,7 +510,7 @@ public class FlowExpressionParseUtil {
             classNameString = dotMatcher.group(1);
             remainingString = dotMatcher.group(2);
         } else {
-            classNameString = remainingString;
+            classNameString = packageRemainingString;
             remainingString = null;
         }
         ClassSymbol classSymbol;
