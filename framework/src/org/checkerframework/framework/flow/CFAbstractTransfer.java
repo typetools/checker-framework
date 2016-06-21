@@ -980,23 +980,9 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             }
 
             try {
-                Tree methodDecl = flowExprContext.checkerContext.getTreeUtils().getTree(methodElement);
-                FlowExpressions.Receiver r = null;
-
-                /*TODO: This just preserve the old behavior in the cases we don't have the tree
-                 *TODO: (i.e. in byte code and different compilation units).  The symbols
-                 *TODO: should instead be searched for in the element API (in fact for both cases
-                 *TODO: we likely want to do this)
-                 */
-                if (methodDecl == null) {
-                    r = FlowExpressionParseUtil.parse(
+                FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
                             expression, flowExprContext,
                             analysis.atypeFactory.getPath(tree));
-                } else {
-                    r = FlowExpressionParseUtil.parse(
-                            expression, flowExprContext,
-                            analysis.atypeFactory.getPath(methodDecl));
-                }
                 store.insertValue(r, anno);
             } catch (FlowExpressionParseException e) {
                 // these errors are reported at the declaration, ignore here
