@@ -121,8 +121,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      */
     private final boolean infer;
 
-    protected static final Pattern thisPattern = Pattern.compile("^(this)$");
-
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
         this.sequentialSemantics = !analysis.checker.hasOption("concurrentSemantics");
@@ -969,7 +967,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         FlowExpressionContext flowExprContext = null;
 
         for (PreOrPostcondition p : postconditions) {
-            String expression = p.expression;
+            String expression = p.expression.trim();
             AnnotationMirror anno = AnnotationUtils.fromName(analysis.getTypeFactory().getElementUtils(),
                     p.annotationString);
 
@@ -982,42 +980,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             }
 
             try {
-                FlowExpressions.Receiver r = null;
-
-                String s = expression.trim();
-
-                Matcher selfMatcher = thisPattern.matcher(s);
-                if (selfMatcher.matches()) {
-                    s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
-
-                    if (flowExprContext.receiver instanceof FieldAccess) {
-                        // This changes the receiver from the one expressed in the postcondition
-                        // declaration to the actual receiver at the site of the postcondition evaluation.
-
-                        // For example, it will ensure that in the call to myLock.lock(),
-                        // the receiver is myLock (and not the instance of foo):
-
-                        // public class ReentrantLock {
-                        //     @EnsuresLockHeld("this")
-                        //     void lock();
-                        // }
-
-                        // public class foo {
-                        //     ReentrantLock myLock = new ReentrantLock();
-                        //     void lockTheLock() {
-                        //         myLock.lock();
-                        //     }
-                        // }
-
-                        FieldAccess foo = ((FieldAccess) flowExprContext.receiver);
-                        Receiver bar = foo.getReceiver();
-
-                        flowExprContext = flowExprContext.changeReceiver(bar);
-                    }
-                }
-
-
                 Tree methodDecl = flowExprContext.checkerContext.getTreeUtils().getTree(methodElement);
+                FlowExpressions.Receiver r = null;
 
                 /*TODO: This just preserve the old behavior in the cases we don't have the tree
                  *TODO: (i.e. in byte code and different compilation units).  The symbols
@@ -1026,11 +990,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                  */
                 if (methodDecl == null) {
                     r = FlowExpressionParseUtil.parse(
-                            s, flowExprContext,
+                            expression, flowExprContext,
                             analysis.atypeFactory.getPath(tree));
                 } else {
                     r = FlowExpressionParseUtil.parse(
-                            s, flowExprContext,
+                            expression, flowExprContext,
                             analysis.atypeFactory.getPath(methodDecl));
                 }
                 store.insertValue(r, anno);
@@ -1071,37 +1035,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             try {
                 FlowExpressions.Receiver r = null;
 
-                String s = expression.trim();
-
-                Matcher selfMatcher = thisPattern.matcher(s);
-                if (selfMatcher.matches()) {
-                    s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
-
-                    if (flowExprContext.receiver instanceof FieldAccess) {
-                        // This changes the receiver from the one expressed in the postcondition
-                        // declaration to the actual receiver at the site of the postcondition evaluation.
-
-                        // For example, it will ensure that in the call to myLock.tryLock(),
-                        // the receiver is myLock (and not the instance of foo):
-
-                        // public class ReentrantLock {
-                        //     @EnsuresLockHeldIf(expression="this", result=true)
-                        //     boolean tryLock();
-                        // }
-
-                        // public class foo {
-                        //     ReentrantLock myLock = new ReentrantLock();
-                        //     boolean tryToLockTheLock() {
-                        //         return myLock.tryLock();
-                        //     }
-                        // }
-
-                        flowExprContext = flowExprContext.changeReceiver(((FieldAccess) flowExprContext.receiver).getReceiver());
-                    }
-                }
-
                 r = FlowExpressionParseUtil.parse(
-                        s, flowExprContext,
+                        expression, flowExprContext,
                         analysis.atypeFactory.getPath(tree));
                 if (result) {
                     thenStore.insertValue(r, anno);
