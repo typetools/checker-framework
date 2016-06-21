@@ -22,6 +22,7 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -50,7 +51,9 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.PackageSymbol;
 import com.sun.tools.javac.code.Type.ClassType;
 
 /**
@@ -132,7 +135,7 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext context, TreePath path, boolean recursiveCall)
             throws FlowExpressionParseException {
         Receiver result = parse(s, context, path, true, true, true, true, true, true,
-                true, true, recursiveCall);
+                true, true, recursiveCall, false);
         assert result != null;
         return result;
     }
@@ -146,7 +149,8 @@ public class FlowExpressionParseUtil {
             FlowExpressionContext context, TreePath path, boolean allowThis,
             boolean allowIdentifier, boolean allowParameter, boolean allowDot,
             boolean allowMethods, boolean allowArrays, boolean allowLiterals,
-            boolean allowLocalVariables, boolean recursiveCall)
+            boolean allowLocalVariables, boolean recursiveCall,
+            boolean isRemainingStringOfDotExpression)
             throws FlowExpressionParseException {
         s = s.trim();
 
@@ -276,6 +280,9 @@ public class FlowExpressionParseUtil {
                             fieldType, fieldElem);
                 } else {
                     if (originalReceiver) {
+                        if (recursiveCall && context.receiver instanceof ClassName) {
+                            throw constructParserException(s, "a non-static field cannot have a class name as a receiver.");
+                        }
                         return new FieldAccess(context.receiver,
                                 fieldType, fieldElem);
                     } else {
@@ -290,6 +297,10 @@ public class FlowExpressionParseUtil {
                     TypeMirror classType = ElementUtils.getType(classElem);
                     if (classType == null) {
                         throw constructParserException(s, "classtype==null", t);
+                    }
+                    if (!recursiveCall ||
+                        isRemainingStringOfDotExpression) {
+                        throw constructParserException(s, "a class literal cannot terminate a flow expression string", t);
                     }
                     return new ClassName(classType);
                 } catch (Throwable t2) {
@@ -401,6 +412,9 @@ public class FlowExpressionParseUtil {
                 return new MethodCall(ElementUtils.getType(methodElement),
                         methodElement, staticClassReceiver, parameters);
             } else {
+                if (recursiveCall && context.receiver instanceof ClassName) {
+                    throw constructParserException(s, "a non-static method call cannot have a class name as a receiver.");
+                }
                 TypeMirror methodType = InternalUtils
                         .substituteMethodReturnType(
                                 ElementUtils.getType(methodElement),
@@ -409,11 +423,26 @@ public class FlowExpressionParseUtil {
                         context.receiver, parameters);
             }
         } else if (dotMatcher.matches() && allowDot) {
-            String receiverString = dotMatcher.group(1);
-            String remainingString = dotMatcher.group(2);
+            Resolver resolver = new Resolver(env);
 
-            // Parse the receiver first.
-            Receiver receiver = parse(receiverString, context, path, true);
+            // Attempt to match a package and class name first.
+            Pair<ClassName, String> classAndRemainingString = matchPackageAndClassNameWithinExpression(s, resolver, path);
+
+            Receiver receiver;
+            String remainingString;
+
+            if (classAndRemainingString == null) {
+                String receiverString = dotMatcher.group(1);
+                remainingString = dotMatcher.group(2);
+                // Parse the receiver first.
+                receiver = parse(receiverString, context, path, true);
+            } else {
+                receiver = classAndRemainingString.first;
+                remainingString = classAndRemainingString.second;
+                if (remainingString == null) {
+                    throw constructParserException(s, "a class literal cannot terminate a flow expression string");
+                }
+            }
 
             if (receiver instanceof FlowExpressions.ClassName && remainingString.equals("class")) {
                 return receiver;
@@ -430,7 +459,8 @@ public class FlowExpressionParseUtil {
                          /*allowArrays=*/ false,
                          /*allowLiterals=*/ false,
                          /*allowLocalVariables=*/ false,
-                         /*recursiveCal=*/ true);
+                         /*recursiveCall=*/ true,
+                         /*isRemainingStringOfDotExpression=*/ true);
         } else if (parenthesesMatcher.matches()) {
             String expressionString = parenthesesMatcher.group(1);
             // Do not modify the value of recursiveCall, since a parenthesis match is essentially
@@ -438,16 +468,149 @@ public class FlowExpressionParseUtil {
             return parse(expressionString, context, path, allowThis,
                     allowIdentifier, allowParameter, allowDot,
                     allowMethods, allowArrays, allowLiterals,
-                    allowLocalVariables, recursiveCall);
+                    allowLocalVariables, recursiveCall,
+                    isRemainingStringOfDotExpression);
         } else {
             throw constructParserException(s, "no matcher matched");
         }
     }
 
     /**
-     * A very simple parser for unparenthesized parameter lists
-     * &mdash; that is, strings of the form {@code a, b, c}
-     * for some expressions {@code a}, {@code b}, and {@code c}.
+     * Matches a substring of {@code expression} to a package and class name
+     * (starting from the beginning of the string).
+     *
+     * @param expression the expression string that may start with a package and class name
+     * @param resolver the {@code Resolver} for the current processing environment
+     * @param path the tree path to the local scope
+     * @return {@code null} if the expression string did not start with a package name;
+     * otherwise a {@code Pair} containing the {@code ClassName} for the matched
+     * class, and the remaining substring of the expression (possibly null) after
+     * the package and class name.
+     * @throws FlowExpressionParseException if the entire expression string
+     * matches a package name (but no class name), or if a package name was
+     * matched but the class could not be found within the package
+     * (e.g., {@code "myExistingPackage.myNonExistentClass"}).
+     */
+    private static Pair<ClassName, String> matchPackageAndClassNameWithinExpression(String expression,
+            Resolver resolver, TreePath path)
+            throws FlowExpressionParseException {
+        Pair<PackageSymbol, String> packageSymbolAndRemainingString = matchPackageNameWithinExpression(expression, resolver, path);
+
+        if (packageSymbolAndRemainingString == null) {
+            return null;
+        }
+
+        PackageSymbol packageSymbol = packageSymbolAndRemainingString.first;
+        String packageRemainingString = packageSymbolAndRemainingString.second;
+
+        Matcher dotMatcher = dotPattern.matcher(packageRemainingString);
+        String classNameString;
+        String remainingString;
+        if (dotMatcher.matches()) {
+            classNameString = dotMatcher.group(1);
+            remainingString = dotMatcher.group(2);
+        } else {
+            classNameString = packageRemainingString;
+            remainingString = null;
+        }
+        ClassSymbol classSymbol;
+        try {
+            classSymbol = resolver.findClassInPackage(classNameString, packageSymbol, path);
+        } catch (Throwable t) {
+            throw constructParserException(expression,
+                    " findClassInPackage threw an exception when looking up class " + classNameString +
+                    " in package " + packageSymbol.toString(), t);
+        }
+        if (classSymbol == null) {
+            throw constructParserException(expression, "classSymbol==null when looking up class " + classNameString +
+                    " in package " + packageSymbol.toString());
+        }
+        TypeMirror classType = ElementUtils.getType(classSymbol);
+        if (classType == null) {
+            throw constructParserException(expression, "classType==null when looking for class symbol " + classSymbol);
+        }
+        return Pair.of(new ClassName(classType), remainingString);
+    }
+
+    /**
+     * Greedily matches the longest substring of {@code expression} to a package
+     * (starting from the beginning of the string).
+     *
+     * @param expression the expression string that may start with a package name
+     * @param resolver the {@code Resolver} for the current processing environment
+     * @param path the tree path to the local scope
+     * @return {@code null} if the expression string did not start with a package name;
+     * otherwise a {@code Pair} containing the {@code PackageSymbol} for the matched
+     * package, and the remaining substring of the expression (always non-null) after
+     * the package name
+     * @throws FlowExpressionParseException if the entire expression string matches a package name.
+     */
+    private static Pair<PackageSymbol, String> matchPackageNameWithinExpression(String expression, Resolver resolver, TreePath path)
+            throws FlowExpressionParseException {
+        Matcher dotMatcher = dotPattern.matcher(expression);
+
+        // To proceed past this point, at the minimum the expression must be composed of packageName.className .
+        // Do not remove the call to matches(), otherwise the dotMatcher groups will not be filled in.
+        if (!dotMatcher.matches()) {
+            return null;
+        }
+
+        String packageName = dotMatcher.group(1);
+        String remainingString = dotMatcher.group(2),
+               remainingStringIfPackageMatched = remainingString;
+
+        PackageSymbol result = null; // the result of this method call
+
+        while (true) {
+            // At this point, packageName is one component longer than result,
+            // and that extra component appears in remainingString but not in remainingStringIfPackageMatched.
+            // In other words, result and remainingStringIfPackageMatched are consistent,
+            // and packageName and remainingString are consistent.
+            // Try to set result to account for the extra component in packageName.
+            PackageSymbol longerResult;
+            try {
+                longerResult = resolver.findPackage(packageName, path);
+            } catch (Throwable t) {
+                throw constructParserException(expression, "findPackage threw an exception when looking up package " + packageName, t);
+            }
+            if (longerResult == null) {
+                break;
+            }
+            result = longerResult;
+            remainingString = remainingStringIfPackageMatched;
+            dotMatcher = dotPattern.matcher(remainingString);
+            if (dotMatcher.matches()) {
+                packageName += "." + dotMatcher.group(1);
+                remainingStringIfPackageMatched = dotMatcher.group(2);
+            } else {
+                // There are no dots in remainingString, so we are done.
+                // Fail if the whole string represents a package, otherwise return.
+                PackageSymbol wholeExpressionAsPackage;
+                try {
+                    wholeExpressionAsPackage = resolver.findPackage(expression, path);
+                } catch (Throwable t) {
+                    throw constructParserException(expression, "findPackage threw an exception when looking up package " + expression, t);
+                }
+                if (wholeExpressionAsPackage != null) {
+                    // The entire expression matches a package name.
+                    throw constructParserException(expression, "a flow expression string cannot be just a package name");
+                }
+                break;
+            }
+        }
+
+        if (result == null) {
+            return null;
+        }
+
+        assert remainingString != null; // an exception would have been thrown above if the entire expression is a package name
+
+        return Pair.of(result, remainingString);
+    }
+
+    /**
+     * A very simple parser for parameter lists, i.e. strings of the form
+     * {@code a, b, c} for some expressions {@code a}, {@code b} and {@code c}.
      *
      * @author Stefan Heule
      */
@@ -607,7 +770,6 @@ public class FlowExpressionParseUtil {
             this.arguments = arguments;
             this.outerReceiver = outerReceiver;
             this.checkerContext = checkerContext;
-
         }
 
         /**

@@ -63,9 +63,27 @@ class Initializer {
 
     String f = "";
     void t1(@UnknownInitialization @Raw Initializer this) {
-        // this is potentially uninitialized, but the static type of f, as well as
-        // the initializer guarantee that it is initialized.
+        //:: error: (dereference.of.nullable)
         this.f.toString();
     }
+    String fieldF = "";
 
+}
+class SubInitializer extends Initializer {
+
+    String f = "";
+    void subt1(@UnknownInitialization(Initializer.class) @Raw(Initializer.class) SubInitializer this) {
+        fieldF.toString();
+        super.f.toString();
+        //:: error: (dereference.of.nullable)
+        this.f.toString();
+    }
+    void subt2(@UnknownInitialization @Raw SubInitializer this) {
+        //:: error: (dereference.of.nullable)
+        fieldF.toString();
+        //:: error: (dereference.of.nullable)
+        super.f.toString();
+        //:: error: (dereference.of.nullable)
+        this.f.toString();
+    }
 }
