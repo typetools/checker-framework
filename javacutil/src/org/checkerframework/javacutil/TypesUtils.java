@@ -134,7 +134,7 @@ public final class TypesUtils {
 
     /**
      * Returns true iff the argument is an anonymous type.
-     * 
+     *
      * @return whether the argument is an anonymous type
      */
     public static boolean isAnonymous(TypeMirror type) {
