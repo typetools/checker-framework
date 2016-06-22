@@ -71,26 +71,26 @@
     <attribute name="file2"/>
     <attribute name="ignore-matching-lines"/>
     <sequential>
-      <exec executable="diff" resultproperty="diff-result"> <!-- not  failonerror="true because that prevents user-friendly error message below -->
+      <exec executable="diff" outputproperty="diff-output" resultproperty="diff-result"> <!-- not  failonerror="true because that prevents user-friendly error message below -->
         <!-- <arg value="-q"/> -->
         <arg line="-I '@{ignore-matching-lines}'"/>
         <!-- ignore lint results -->
         <arg line="-I 'Note:'"/>
         <!-- ignore ant headers and empty lines -->
-	<arg line="-I '^ *$'"/>
-	<arg line="-I '^[^ ]*:$'"/>
+        <arg line="-I '^ *$'"/>
+        <arg line="-I '^[^ ]*:$'"/>
 
-	<!-- ignore version of Checker Framework javac -->
-	<arg line="-I '^javac 1.8.0-jsr308'"/>
+        <!-- ignore version of Checker Framework javac -->
+        <arg line="-I '^javac 1.8.0-jsr308'"/>
 
         <!-- ignore paths -->
         <arg line="-I '.java'"/>
         <arg line="-I '.xml'"/>
-	<arg line="-I 'Deleting directory'"/>
-	<arg line="-I 'Created dir:'"/>
-	<arg line="-I 'Compiling 2 source files to'"/>
+        <arg line="-I 'Deleting directory'"/>
+        <arg line="-I 'Created dir:'"/>
+        <arg line="-I 'Compiling 2 source files to'"/>
 
-	<!-- the files to compare -->
+        <!-- the files to compare -->
         <arg line="@{file1}"/>
         <arg line="@{file2}"/>
       </exec>
@@ -109,8 +109,13 @@ ${line.separator}
 ${line.separator}but found:
 ${line.separator}=====================================================================
 ${line.separator}${results.actual}
-${line.separator}
 ${line.separator}=====================================================================
+${line.separator}
+${line.separator}Diff output is:
+${line.separator}=====================================================================
+${line.separator}${diff-output}
+${line.separator}=====================================================================
+${line.separator}
 ${line.separator}NOTE: Did you run 'ant touch-files'?"/>
           </then>
       </if>

@@ -73,7 +73,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target(\ttlcb{}ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\ttrcb)
 @SubtypeOf(FenumTop.class)
 public @interface \textit{MyFenum} \ttlcb\ttrcb
 \end{alltt}
@@ -81,7 +81,7 @@ public @interface \textit{MyFenum} \ttlcb\ttrcb
 You only need to adapt the italicized package, annotation, and file names in the example.
 
 Note that all custom annotations must have the
-\<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
+\<@Target(\ttlcb ElementType.TYPE\_USE\ttrcb)> meta-annotation. See section
 \ref{define-type-qualifiers}.
 
 \item Use the provided \refqualclass{checker/fenum/qual}{Fenum} annotation, which takes a

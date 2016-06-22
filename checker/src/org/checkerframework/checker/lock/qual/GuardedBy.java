@@ -28,7 +28,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * annotated variable only if the thread holds all the given lock expressions.
  * <p>
  *
- * <code>@GuardedBy({})</code> is the default type qualifier.
+ * {@code @GuardedBy({})} is the default type qualifier.
  * <p>
  *
  * The argument is a string or set of strings that indicates the
@@ -37,13 +37,13 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * of Java expressions</a> described in the manual.
  * The expressions evaluate to an intrinsic (built-in, synchronization)
  * monitor or an explicit {@link java.util.concurrent.locks.Lock}.  The
- * expression {@code "itself"} is also permitted; the type
- * {@code @GuardedBy("itself") Object o} indicates that the value
+ * expression {@code "<self>"} is also permitted; the type
+ * {@code @GuardedBy("<self>") Object o} indicates that the value
  * referenced by {@code o} is guarded by the intrinsic (monitor) lock of
  * the value referenced by {@code o}.
  * <p>
  *
- * Two <code>@GuardedBy</code> annotations with different argument expressions
+ * Two {@code @GuardedBy} annotations with different argument expressions
  * are unrelated by subtyping.
  * <p>
  *

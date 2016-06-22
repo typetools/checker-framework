@@ -60,13 +60,13 @@ public final class RegexUtil {
    *   ... Pattern.compile(myString) ...
    * </pre>
    *
-   * Simply calling <code>Pattern.compile</code> would have a similar effect,
-   * in that <code>PatternSyntaxException</code> would be thrown at run time if
-   * <code>myString</code> is not a regular expression.  There are two problems
-   * with such an approach.  First, a client of <code>myMethod</code> might
-   * forget to handle the exception, since <code>PatternSyntaxException</code>
+   * Simply calling {@code Pattern.compile} would have a similar effect,
+   * in that {@code PatternSyntaxException} would be thrown at run time if
+   * {@code myString} is not a regular expression.  There are two problems
+   * with such an approach.  First, a client of {@code myMethod} might
+   * forget to handle the exception, since {@code PatternSyntaxException}
    * is not checked.  Also, the Regex Checker would issue a warning about
-   * the call to <code>Pattern.compile</code> that might throw an exception.
+   * the call to {@code Pattern.compile} that might throw an exception.
    * The above usage pattern avoids both problems.
    *
    * @see PatternSyntaxException

@@ -14,6 +14,7 @@ import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
 import org.checkerframework.checker.tainting.TaintingChecker;
 import org.checkerframework.checker.units.UnitsChecker;
+import org.checkerframework.checker.unsignedness.UnsignednessChecker;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.common.value.ValueChecker;
@@ -129,6 +130,14 @@ public class CheckerActions
         }
     }
 
+    public static class UnsignednessAction extends RunCheckerAction
+    {
+        public UnsignednessAction()
+        {
+            super(UnsignednessChecker.class.getCanonicalName());
+        }
+    }
+
     public static class ConstantValueAction extends RunCheckerAction
     {
         public ConstantValueAction()
@@ -180,10 +189,10 @@ public class CheckerActions
 
     public static class SingleCustomAction extends RunCheckerAction
     {
-    	public SingleCustomAction()
-    	{
-    		useSingleCustom = true;
-    		usePrefs = false;
-    	}
+        public SingleCustomAction()
+        {
+            useSingleCustom = true;
+            usePrefs = false;
+        }
     }
 }

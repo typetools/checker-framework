@@ -19,11 +19,11 @@ import java.lang.annotation.Target;
  * if the target is {@code T}. The subtyping hierarchy has to be defined as
  * follows:
  *
- * <pre>
- *   T &lt;: MonoT &lt;: S
- * </pre>
+ * <pre>{@code
+ *   T <: MonoT <: S
+ * }</pre>
  *
- * where {@code &lt;:} indicates the subtyping relation.
+ * where {@code <:} indicates the subtyping relation.
  *
  * <p>
  * An expression of a monotonic type can only be assigned expressions of the

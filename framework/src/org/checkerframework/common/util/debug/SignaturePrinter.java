@@ -52,11 +52,11 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * <ol>
  * <li id="a">From source: the class is to be used as an annotation processor
  * when reading annotations from source.  It can be invoked via the command:
- * <p><code>javac -processor SignaturePrinter &lt;java files&gt; ...</code>
+ * <p>{@code javac -processor SignaturePrinter <java files> ...}
  *
  * <li id="b">From classfile: the class is to be used as an independent app
  * when reading annotations from classfile.  It can be invoked via the command:
- * <p><code>java SignaturePrinter &lt;class name&gt;</code>
+ * <p>{@code java SignaturePrinter <class name>}
  *
  * </ol>
  *
@@ -64,8 +64,8 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * To view the default and effective annotations in a class that are associated
  * with a checker, the fully qualified name of the checker needs to be passed
  * as '-Achecker=' argument, e.g.
- * <p><code>javac -processor SignaturePrinter
- *         -Achecker=org.checkerframework.checker.nullness.NullnessChecker JavaFile.java</code>
+ * <p>{@code javac -processor SignaturePrinter
+ *         -Achecker=org.checkerframework.checker.nullness.NullnessChecker JavaFile.java}
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes("*")

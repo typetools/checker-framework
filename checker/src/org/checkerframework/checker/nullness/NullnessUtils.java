@@ -45,7 +45,7 @@ public final class NullnessUtils {
      * have the @NonNull type qualifier, and returns it.  The Nullness
      * Checker considers both the return value, and also the argument, to
      * be non-null after the method call.  Therefore, the
-     * <code>castNonNull</code> method can be used either as a cast expression or
+     * {@code castNonNull} method can be used either as a cast expression or
      * as a statement.  The Nullness Checker issues no warnings in any of
      * the following code:
      *
@@ -61,7 +61,7 @@ public final class NullnessUtils {
      *   possiblyNull3.toString();`
      * </pre>
      *
-     * The <code>castNonNull</code> method is intended to be used in situations
+     * The {@code castNonNull} method is intended to be used in situations
      * where the programmer definitively knows that a given reference is
      * not null, but the type system is unable to make this deduction.  It
      * is not intended for defensive programming, in which a programmer

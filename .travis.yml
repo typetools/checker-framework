@@ -58,8 +58,8 @@ after_success:
         curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
         sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
         sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN
-        sh trigger-travis.sh typetools daikon-typecheck $TRAVISTOKEN
-        sh trigger-travis.sh typetools plume-lib-typecheck $TRAVISTOKEN
+        sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
+        sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
         sh trigger-travis.sh typetools sparta $TRAVISTOKEN
       fi
 

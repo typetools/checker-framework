@@ -10,31 +10,31 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
 
 /**
  * A polymorphic type qualifier that varies over all type hierarchies.
- * Writing <code>@PolyAll</code> is equivalent to writing a polymorphic
+ * Writing {@code @PolyAll} is equivalent to writing a polymorphic
  * qualifier for every type system.
  * <p>
  *
- * The <code>@PolyAll</code> annotation applies to every type qualifier hierarchy for
+ * The {@code @PolyAll} annotation applies to every type qualifier hierarchy for
  * which no explicit qualifier is written.  For example, a declaration like
- * <code>@PolyAll @NonNull String s</code> is polymorphic over every type system
+ * {@code @PolyAll @NonNull String s} is polymorphic over every type system
  * <em>except</em> the nullness type system, for which the type is fixed at
- * <code>@NonNull</code>.
+ * {@code @NonNull}.
  * <p>
  *
  * <!-- TODO: uncomment when this is implemented
  * The optional argument creates conceptually distinct polymorphic
- * qualifiers, such as <code>@PolyAll(1)</code> and <code>@PolyAll(2)</code>.
+ * qualifiers, such as {@code @PolyAll(1)} and {@code @PolyAll(2)}.
  * These two qualifierrs can vary independently.  When a method has
  * multiple occurrences of a single polymorphic qualifier, all of the
  * occurrences with the same argument (or with no argument) vary together.
  * <p>
  * -->
  *
- * <code>@PolyAll</code> only works for a given type system if that type system
+ * {@code @PolyAll} only works for a given type system if that type system
  * already has its own polymorphic qualifier, such as
  * {@code @PolyNull} or {@code @PolyRegex}.
  * Therefore, every type system should define a polymorphic qualifier.
- * Then, to support <code>@PolyAll</code> in a type system, simply add it to the
+ * Then, to support {@code @PolyAll} in a type system, simply add it to the
  * list of supported type qualifiers.
  *
  * @see org.checkerframework.checker.nullness.qual.PolyNull

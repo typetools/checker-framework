@@ -6,20 +6,20 @@ import java.lang.annotation.*;
 /**
  * A marker annotation, written on a class declaration, that signifies that
  * one or more of the class's type parameters can be treated covariantly.
- * For example, if <code>MyClass</code> has a single type parameter that is
- * treated covariantly, and if <code>B</code> is a subtype of <code>A</code>, then
- * <code>SomeClass&lt;B&gt;</code> is a subtype of <code>SomeClass&lt;B&gt;</code>.
+ * For example, if {@code MyClass} has a single type parameter that is
+ * treated covariantly, and if {@code B} is a subtype of {@code A}, then
+ * {@code SomeClass<B>} is a subtype of {@code SomeClass<B>}.
  * <p>
  *
  * Ordinarily, Java treats type parameters invariantly:
- * <code>SomeClass&lt;B&gt;</code> is unrelated to (neither a subtype nor a
- * supertype of) <code>SomeClass&lt;A&gt;</code>.
+ * {@code SomeClass<B>} is unrelated to (neither a subtype nor a
+ * supertype of) {@code SomeClass<A>}.
  * <p>
  *
  * It is only safe to mark a type parameter as covariant if the type
  * parameter is used in a read-only way:  values of that type are read from
  * but never modified.  This property is not checked; the
- * <code>@Covariant</code> is simply trusted.
+ * {@code @Covariant} is simply trusted.
  * <p>
  *
  * @checker_framework.manual #covariant-type-parameters Covariant type parameters
