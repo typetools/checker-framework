@@ -10,6 +10,7 @@ import com.sun.tools.javac.util.Context;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.ArrayType;
@@ -132,9 +133,24 @@ public final class TypesUtils {
     }
 
     /**
+     * Returns true iff the argument is an anonymous type.
+     * 
+     * @return whether the argument is an anonymous type
+     */
+    public static boolean isAnonymous(TypeMirror type) {
+        if (type instanceof DeclaredType) {
+            if (((TypeElement) ((DeclaredType) type).asElement()).getNestingKind().equals(
+                    NestingKind.ANONYMOUS)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Returns true iff the argument is a primitive type.
      *
-     * @return  whether the argument is a primitive type
+     * @return whether the argument is a primitive type
      */
     public static boolean isPrimitive(TypeMirror type) {
         switch (type.getKind()) {
