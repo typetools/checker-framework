@@ -138,13 +138,9 @@ public final class TypesUtils {
      * @return whether the argument is an anonymous type
      */
     public static boolean isAnonymous(TypeMirror type) {
-        if (type instanceof DeclaredType) {
-            if (((TypeElement) ((DeclaredType) type).asElement()).getNestingKind().equals(
-                    NestingKind.ANONYMOUS)) {
-                return true;
-            }
-        }
-        return false;
+        return (type instanceof DeclaredType)
+                && (((TypeElement) ((DeclaredType) type).asElement()).getNestingKind()
+                        .equals(NestingKind.ANONYMOUS));
     }
 
     /**
