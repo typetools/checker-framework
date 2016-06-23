@@ -58,7 +58,9 @@
              Please add it as well and keep both in sync. -->
         <javadoc destdir="${api.doc}"
                  private="${javadoc.private}"
-                 failonerror="true">
+                 failonerror="true"
+                 failonwarning="true"
+            >
             <!-- To add later:    additionalParam="-Xdoclint:all,-missing" -->
             <fileset dir="src">
                 <include name="**/*.java"/>
