@@ -156,15 +156,8 @@ stripDefs() {
 
 COMMENTS=0  # non-zero to enable
 if [ ${COMMENTS} -ne 0 ] ; then
-# download patch
-[ -r annotated-jdk-comment-patch.jaif ] || wget https://types.cs.washington.edu/checker-framework/annotated-jdk-comment-patch.jaif || exit $?
-(cd "${JDK}" && patch -p1 < annotated-jdk-comment-patch.jaif)
+(cd "${JDK}" && patch -p1 < ${WD}/annotated-jdk-comment-patch.jaif)
 fi
-
-# download annotation definitions
-[ -r annotation-defs.jaif ]\
- || wget https://types.cs.washington.edu/checker-framework/annotation-defs.jaif\
- || exit $?
 
 
 # Stage 1: extract JAIFs from lock and nullness JDKs
