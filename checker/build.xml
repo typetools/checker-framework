@@ -61,8 +61,21 @@
                    file="${framework.loc}/build.xml"/>
         <antcall target="-prep-framework-compile"/>
 
+        <!-- Ant's copy task does not retain file permissions,
+             so use <exec executable="cp"> instead.
         <copy file="bin-devel/git.post-merge" tofile="../.git/hooks/post-merge" preservelastmodified="true" />
         <copy file="bin-devel/git.pre-commit" tofile="../.git/hooks/pre-commit" preservelastmodified="true" />
+        -->
+        <exec executable="cp">
+            <arg value="-p"/>
+            <arg value="bin-devel/git.post-merge"/>
+            <arg value="../.git/hooks/post-merge"/>
+        </exec>
+        <exec executable="cp">
+            <arg value="-p"/>
+            <arg value="bin-devel/git.pre-commit"/>
+            <arg value="../.git/hooks/pre-commit"/>
+        </exec>
     </target>
 
     <target name="-prep-framework-compile" if="framework.project"
@@ -354,6 +367,7 @@
                  private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
+                 failonwarning="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"

@@ -4,6 +4,7 @@ import org.checkerframework.checker.guieffect.GuiEffectChecker;
 import org.checkerframework.checker.propkey.PropertyKeyChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
 import org.checkerframework.checker.units.UnitsChecker;
+import org.checkerframework.checker.unsignedness.UnsignednessChecker;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.common.value.ValueChecker;
@@ -77,6 +78,7 @@ public class CheckerInfo
 
                 new CheckerInfo("GUI Effect Checker", GuiEffectChecker.class),
                 new CheckerInfo("Units Checker",      UnitsChecker.class),
+                new CheckerInfo("Unsignedness Checker", UnsignednessChecker.class),
 
                 new CheckerInfo("Constant Value Checker", ValueChecker.class),
                 new CheckerInfo("Aliasing Checker",      AliasingChecker.class),
