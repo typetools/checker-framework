@@ -1,0 +1,786 @@
+package java.lang:
+annotation @Deprecated: @Retention(RetentionPolicy.RUNTIME) @Target({CONSTRUCTOR,FIELD,LOCAL_VARIABLE,METHOD,PACKAGE,PARAMETER,TYPE})
+
+package java.lang:
+annotation @FunctionalInterface: @Retention(RetentionPolicy.RUNTIME) @Target({TYPE})
+
+package java.lang:
+annotation @Override: @Retention(RetentionPolicy.SOURCE) @Target({METHOD})
+
+package java.lang:
+annotation @SuppressWarnings:
+    String[] value
+
+package org.checkerframework.checker.units.qual:
+annotation @Acceleration: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @AlwaysSafe: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @Angle: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @A: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.units.qual:
+annotation @Area: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.nullness.qual:
+annotation @AssertNonNullIfNonNull: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+    String[] value
+
+package org.checkerframework.checker.fenum.qual:
+annotation @AwtAlphaCompositingRule: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @AwtColorSpace: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @AwtCursorType: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @AwtFlowLayout: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.signature.qual:
+annotation @BinaryName: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.signature.qual:
+annotation @BinaryNameForNonArray: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.signature.qual:
+annotation @BinaryNameForNonArrayInUnnamedPackage: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.signature.qual:
+annotation @BinaryNameInUnnamedPackage: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @C: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @cd: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.signature.qual:
+annotation @ClassGetName: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.signature.qual:
+annotation @ClassGetSimpleName: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.regex.qual:
+annotation @ClassRegexParam: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE})
+    String value
+
+package org.checkerframework.checker.tainting.qual:
+annotation @ClassTaintingParam: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE})
+    String value
+
+package org.checkerframework.checker.compilermsgs.qual:
+annotation @CompilerMessageKey: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.nullness.qual:
+annotation @Covariant: @Target({ElementType.TYPE}) @Retention(RetentionPolicy.RUNTIME)
+    int[] value
+
+package org.checkerframework.checker.units.qual:
+annotation @Current: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @degrees: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.lock.qual:
+annotation @EnsuresLockHeldIf: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+    String[] expression
+    boolean result
+
+package org.checkerframework.checker.lock.qual:
+annotation @EnsuresLockHeld: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+    String[] value
+
+package org.checkerframework.checker.nullness.qual:
+annotation @EnsuresNonNullIf: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+    String[] expression
+    boolean result
+
+package org.checkerframework.checker.nullness.qual:
+annotation @EnsuresNonNull: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+    String[] value
+
+package org.checkerframework.checker.initialization.qual:
+annotation @FBCBottom: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.fenum.qual:
+annotation @FenumBottom: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER }) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.checker.fenum.qual:
+annotation @Fenum: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    String value
+
+package org.checkerframework.checker.fenum.qual:
+annotation @FenumTop: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.signature.qual:
+annotation @FieldDescriptor: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.signature.qual:
+annotation @FieldDescriptorForArray: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.formatter.qual:
+annotation @FormatBottom: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.formatter.qual:
+annotation @Format: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    enum ConversionCategory[] value
+
+package org.checkerframework.checker.formatter.qual:
+annotation @FormatMethod: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+
+package org.checkerframework.checker.signature.qual:
+annotation @FullyQualifiedName: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @g: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.lock.qual:
+annotation @GuardedByBottom: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER }) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.checker.lock.qual:
+annotation @GuardedBy: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    String[] value
+
+package org.checkerframework.checker.lock.qual:
+annotation @GuardedByUnknown: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.lock.qual:
+annotation @GuardSatisfied: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.TYPE_USE)
+    int value
+
+package org.checkerframework.checker.units.qual:
+annotation @h: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.lock.qual:
+annotation @Holding: @Target({ElementType.METHOD, ElementType.CONSTRUCTOR}) @Retention(RetentionPolicy.RUNTIME)
+    String[] value
+
+package org.checkerframework.checker.i18nformatter.qual:
+annotation @I18nChecksFormat: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+
+package org.checkerframework.checker.i18nformatter.qual:
+annotation @I18nFormatBottom: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.i18nformatter.qual:
+annotation @I18nFormatFor: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    String value
+
+package org.checkerframework.checker.i18nformatter.qual:
+annotation @I18nFormat: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    enum I18nConversionCategory[] value
+
+package org.checkerframework.checker.i18nformatter.qual:
+annotation @I18nInvalidFormat: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    String value
+
+package org.checkerframework.checker.i18nformatter.qual:
+annotation @I18nMakeFormat: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+
+package org.checkerframework.checker.i18nformatter.qual:
+annotation @I18nUnknownFormat: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.i18nformatter.qual:
+annotation @I18nValidFormat: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+
+package org.checkerframework.checker.signature.qual:
+annotation @Identifier: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.signature.qual:
+annotation @IdentifierOrArray: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.initialization.qual:
+annotation @Initialized: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.signature.qual:
+annotation @InternalForm: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.interning.qual:
+annotation @Interned: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.formatter.qual:
+annotation @InvalidFormat: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    String value
+
+package org.checkerframework.checker.nullness.qual:
+annotation @KeyForBottom: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.nullness.qual:
+annotation @KeyFor: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    String[] value
+
+package org.checkerframework.checker.units.qual:
+annotation @kg: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @km: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @km2: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @kmPERh: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @K: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.nullness.qual:
+annotation @LazyNonNull: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.TYPE_USE) 
+
+package org.checkerframework.checker.units.qual:
+annotation @Length: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.linear.qual:
+annotation @Linear: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.i18n.qual:
+annotation @LocalizableKey: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.i18n.qual:
+annotation @Localized: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.lock.qual:
+annotation @LockingFree: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.checker.units.qual:
+annotation @Luminance: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @m2: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.units.qual:
+annotation @Mass: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.lock.qual:
+annotation @MayReleaseLocks: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.checker.signature.qual:
+annotation @MethodDescriptor: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.regex.qual:
+annotation @MethodRegexParam: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    String value
+
+package org.checkerframework.checker.tainting.qual:
+annotation @MethodTaintingParam: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    String value
+
+package org.checkerframework.checker.units.qual:
+annotation @min: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @mm: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @mm2: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @mol: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.nullness.qual:
+annotation @MonotonicNonNull: @Target(ElementType.TYPE_USE) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.checker.units.qual:
+annotation @mPERs2: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.units.qual:
+annotation @mPERs: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.units.qual:
+annotation @m: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.nullness.qual:
+annotation @NonNull: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.nullness.qual:
+annotation @NonRaw: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.linear.qual:
+annotation @Normal: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.initialization.qual:
+annotation @NotOnlyInitialized: @Target(ElementType.FIELD) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.checker.nullness.qual:
+annotation @Nullable: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.interning.qual:
+annotation @PolyInterned: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.nullness.qual:
+annotation @PolyKeyFor: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.nullness.qual:
+annotation @PolyNull: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.nullness.qual:
+annotation @PolyRaw: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.regex.qual:
+annotation @PolyRegex: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    String param
+
+package org.checkerframework.checker.signature.qual:
+annotation @PolySignature: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.tainting.qual:
+annotation @PolyTainted: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    String param
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @PolyUI: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @PolyUIEffect: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD})
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @PolyUIType: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE})
+
+package org.checkerframework.checker.units.qual:
+annotation @PolyUnit: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.propkey.qual:
+annotation @PropertyKey: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.propkey.qual:
+annotation @PropertyKeyBottom: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @radians: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.nullness.qual:
+annotation @Raw: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    Class value
+
+package org.checkerframework.checker.regex.qual:
+annotation @Regex: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    int value
+    String param
+    enum Wildcard wildcard
+
+package org.checkerframework.checker.lock.qual:
+annotation @ReleasesNoLocks: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.checker.nullness.qual:
+annotation @RequiresNonNull: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+    String[] value
+
+package org.checkerframework.checker.formatter.qual:
+annotation @ReturnsFormat: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @SafeEffect: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD})
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @SafeType: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE})
+
+package org.checkerframework.checker.signature.qual:
+annotation @SignatureBottom: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.signature.qual:
+annotation @SourceNameForNonArrayNonInner: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.signature.qual:
+annotation @SourceNameForNonInner: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @Speed: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @s: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    enum Prefix value
+
+package org.checkerframework.checker.units.qual:
+annotation @Substance: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @SwingBoxOrientation: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @SwingCompassDirection: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @SwingElementOrientation: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @SwingHorizontalOrientation: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @SwingSplitPaneOrientation: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @SwingTextOrientation: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @SwingTitleJustification: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @SwingTitlePosition: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.fenum.qual:
+annotation @SwingVerticalOrientation: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.tainting.qual:
+annotation @Tainted: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    String param
+    enum Wildcard wildcard
+
+package org.checkerframework.checker.units.qual:
+annotation @Temperature: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @Time: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @UI: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @UIEffect: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @UIPackage: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.PACKAGE})
+
+package org.checkerframework.checker.guieffect.qual:
+annotation @UIType: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE})
+
+package org.checkerframework.checker.initialization.qual:
+annotation @UnderInitialization: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    Class value
+
+package org.checkerframework.checker.units.qual:
+annotation @UnitsBottom: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @UnitsMultiple: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    Class quantity
+    enum Prefix prefix
+
+package org.checkerframework.checker.units.qual:
+annotation @UnitsRelations: @Retention(RetentionPolicy.RUNTIME)
+    Class value
+
+package org.checkerframework.checker.initialization.qual:
+annotation @UnknownInitialization: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+    Class value
+
+package org.checkerframework.checker.interning.qual:
+annotation @UnknownInterned: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.nullness.qual:
+annotation @UnknownKeyFor: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.i18n.qual:
+annotation @UnknownLocalized: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.propkey.qual:
+annotation @UnknownPropertyKey: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.units.qual:
+annotation @UnknownUnits: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.tainting.qual:
+annotation @Untainted: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    String param
+    enum Wildcard wildcard
+
+package org.checkerframework.checker.linear.qual:
+annotation @Unusable: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.interning.qual:
+annotation @UsesObjectEquals: @Target(ElementType.TYPE) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.checker.regex.qual:
+annotation @Var: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    String arg
+    String param
+    enum Wildcard wildcard
+
+package org.checkerframework.checker.regex.qual:
+annotation @Wild: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    String param
+
+package org.checkerframework.checker.regex.qual:
+annotation @MultiClassRegexParam: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE})
+    annotation-field ClassRegexParam[] value
+
+package org.checkerframework.checker.tainting.qual:
+annotation @MultiClassTaintingParam: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE})
+    annotation-field ClassTaintingParam[] value
+
+package org.checkerframework.checker.regex.qual:
+annotation @MultiMethodRegexParam: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    annotation-field MethodRegexParam[] value
+
+package org.checkerframework.checker.tainting.qual:
+annotation @MultiMethodTaintingParam: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+    annotation-field MethodTaintingParam[] value
+
+package org.checkerframework.checker.regex.qual:
+annotation @MultiPolyRegex: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    annotation-field PolyRegex[] value
+
+package org.checkerframework.checker.tainting.qual:
+annotation @MultiPolyTainted: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    annotation-field PolyTainted[] value
+
+package org.checkerframework.checker.regex.qual:
+annotation @MultiRegex: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    annotation-field Regex[] value
+
+package org.checkerframework.checker.tainting.qual:
+annotation @MultiTainted: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    annotation-field Tainted[] value
+
+package org.checkerframework.checker.tainting.qual:
+annotation @MultiUntainted: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    annotation-field Untainted[] value
+
+package org.checkerframework.checker.tainting.qual:
+annotation @MultiVar: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    annotation-field Var[] value
+
+package org.checkerframework.checker.tainting.qual:
+annotation @MultiWild: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+    annotation-field Wild[] value
+
+package org.checkerframework.checker.lock.qual:
+annotation @PolyGuardedBy: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.regex.classic.qual:
+annotation @RegexBottom: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.regex.classic.qual:
+annotation @UnknownRegex: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.checker.unsignedness.qual:
+annotation @Constant: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.unsignedness.qual:
+annotation @Signed: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.unsignedness.qual:
+annotation @Unknownsignedness: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.checker.unsignedness.qual:
+annotation @Unsigned: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.dataflow.qual:
+annotation @Deterministic: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.dataflow.qual:
+annotation @Pure: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.dataflow.qual:
+annotation @SideEffectFree: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.dataflow.qual:
+annotation @TerminatesExecution: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.common.aliasing.qual:
+annotation @LeakedToResult: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE })
+
+package org.checkerframework.common.aliasing.qual:
+annotation @MaybeAliased: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
+
+package org.checkerframework.common.aliasing.qual:
+annotation @NonLeaked: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE })
+
+package org.checkerframework.common.aliasing.qual:
+annotation @Unique: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.reflection.qual:
+annotation @ClassBound: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.reflection.qual:
+annotation @ClassValBottom: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.reflection.qual:
+annotation @ClassVal: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.reflection.qual:
+annotation @ForName: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD })
+
+package org.checkerframework.common.reflection.qual:
+annotation @GetClass: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD })
+
+package org.checkerframework.common.reflection.qual:
+annotation @GetConstructor: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD })
+
+package org.checkerframework.common.reflection.qual:
+annotation @GetMethod: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD })
+
+package org.checkerframework.common.reflection.qual:
+annotation @Invoke: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD })
+
+package org.checkerframework.common.reflection.qual:
+annotation @MethodValBottom: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.reflection.qual:
+annotation @MethodVal: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.reflection.qual:
+annotation @NewInstance: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD })
+
+package org.checkerframework.common.reflection.qual:
+annotation @UnknownClass: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.reflection.qual:
+annotation @UnknownMethod: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.util.report.qual:
+annotation @ReportCall: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+
+package org.checkerframework.common.util.report.qual:
+annotation @ReportCreation: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE, ElementType.CONSTRUCTOR})
+
+package org.checkerframework.common.util.report.qual:
+annotation @ReportInherit: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.TYPE)
+
+package org.checkerframework.common.util.report.qual:
+annotation @ReportOverride: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.METHOD)
+
+package org.checkerframework.common.util.report.qual:
+annotation @ReportReadWrite: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD)
+
+package org.checkerframework.common.util.report.qual:
+annotation @ReportUnqualified: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.util.report.qual:
+annotation @ReportUse: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.PACKAGE, ElementType.TYPE})
+
+package org.checkerframework.common.util.report.qual:
+annotation @ReportWrite: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.FIELD)
+
+package org.checkerframework.common.value.qual:
+annotation @ArrayLen: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
+
+package org.checkerframework.common.value.qual:
+annotation @BoolVal: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
+
+package org.checkerframework.common.value.qual:
+annotation @BottomVal: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.common.value.qual:
+annotation @DoubleVal: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
+
+package org.checkerframework.common.value.qual:
+annotation @IntVal: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
+
+package org.checkerframework.common.value.qual:
+annotation @StaticallyExecutable: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD })
+
+package org.checkerframework.common.value.qual:
+annotation @StringVal: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
+
+package org.checkerframework.common.value.qual:
+annotation @UnknownVal: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
+
+package org.checkerframework.framework.qual:
+annotation @AnnotatedFor: @Target({TYPE, METHOD, CONSTRUCTOR, PACKAGE}) @Retention(RetentionPolicy.SOURCE)
+    String[] value
+
+package org.checkerframework.framework.qual:
+annotation @Bottom: @Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+
+package org.checkerframework.framework.qual:
+annotation @ConditionalPostconditionAnnotation: @Target({ ElementType.ANNOTATION_TYPE }) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.framework.qual:
+annotation @DefaultFor: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.ANNOTATION_TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @DefaultInUncheckedCodeFor: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.ANNOTATION_TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @DefaultQualifierInHierarchyInUncheckedCode: @Retention(RetentionPolicy.RUNTIME) @Target(ANNOTATION_TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @DefaultQualifierInHierarchy: @Retention(RetentionPolicy.RUNTIME) @Target(ANNOTATION_TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @DefaultQualifier: @Retention(RetentionPolicy.SOURCE) @Target({PACKAGE, TYPE, CONSTRUCTOR, METHOD, FIELD, LOCAL_VARIABLE, PARAMETER})
+
+package org.checkerframework.framework.qual:
+annotation @DefaultQualifiers: @Retention(RetentionPolicy.SOURCE) @Target({PACKAGE, TYPE, CONSTRUCTOR, METHOD, FIELD, LOCAL_VARIABLE, PARAMETER})
+
+package org.checkerframework.framework.qual:
+annotation @Dependent: @Retention(RetentionPolicy.RUNTIME) @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+
+package org.checkerframework.framework.qual:
+annotation @EnsuresQualifierIf: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD })
+
+package org.checkerframework.framework.qual:
+annotation @EnsuresQualifier: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.framework.qual:
+annotation @EnsuresQualifiersIf: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD })
+
+package org.checkerframework.framework.qual:
+annotation @EnsuresQualifiers: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.framework.qual:
+annotation @FieldIsExpression: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.ANNOTATION_TYPE)
+
+@Retention(RetentionPolicy.RUNTIME)
+annotation @FromByteCode: @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.TYPE, ElementType.PACKAGE })
+
+package org.checkerframework.framework.qual:
+annotation @FromStubFile: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.TYPE, ElementType.PACKAGE })
+
+package org.checkerframework.framework.qual:
+annotation @IgnoreInWholeProgramInference: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.ANNOTATION_TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @ImplicitFor: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.ANNOTATION_TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @InheritedAnnotation: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.ANNOTATION_TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @InvisibleQualifier: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.ANNOTATION_TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @MonotonicQualifier: @Target({ ElementType.ANNOTATION_TYPE }) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.framework.qual:
+annotation @PolyAll: @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER}) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.framework.qual:
+annotation @PolymorphicQualifier: @Target({ElementType.ANNOTATION_TYPE}) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.framework.qual:
+annotation @PostconditionAnnotation: @Target({ ElementType.ANNOTATION_TYPE }) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.framework.qual:
+annotation @PreconditionAnnotation: @Target({ ElementType.ANNOTATION_TYPE }) @Retention(RetentionPolicy.RUNTIME)
+
+package org.checkerframework.framework.qual:
+annotation @RequiresQualifier: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.framework.qual:
+annotation @RequiresQualifiers: @Retention(RetentionPolicy.RUNTIME) @Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
+
+package org.checkerframework.framework.qual:
+annotation @StubFiles: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @SubtypeOf: @Retention(RetentionPolicy.RUNTIME) @Target(ElementType.ANNOTATION_TYPE)
+
+package org.checkerframework.framework.qual:
+annotation @Unused: @Retention(RetentionPolicy.RUNTIME) @Target({FIELD})
+
