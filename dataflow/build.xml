@@ -148,11 +148,13 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
+        <!-- With Ant 1.9.4 or later, add
+            failonwarning="true"
+            but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}" destdir="${api.doc}"
                  private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
-                 failonwarning="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javacutil.lib}:${javac.lib}:${javadoc.lib}:${java.home}/../lib/tools.jar"
                  bootclasspath="${javac.lib}:${javadoc.lib}:${java.home}/lib/rt.jar">

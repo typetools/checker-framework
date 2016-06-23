@@ -220,8 +220,11 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     //String exprName = expr.getName().getName();
     String exprName = expr.toString().substring(1);  // 1 for '@'
     //String exprName = resolve(expr.getName().getName());
+
+    // Eliminate jdk.Profile+Annotation, a synthetic annotation that
+    // the JDK adds, apparently for profiling.
     if (exprName.contains("+")) {
-      return null;  // eliminate jdk.Profile+Annotation!
+      return null;
     }
     AnnotationDef def = new AnnotationDef(exprName);
     def.setFieldTypes(Collections.<String, AnnotationFieldType>emptyMap());
