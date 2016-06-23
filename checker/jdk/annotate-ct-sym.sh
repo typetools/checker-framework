@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Builds JDK jar for Checker Framework by inserting annotations into
-# ct.sym.
+# Builds JDK jar for Checker Framework by inserting annotations from
+# annotated JDK class files into ct.sym.
 
 # ensure CHECKERFRAMEWORK set
 if [ -z "$CHECKERFRAMEWORK" ] ; then

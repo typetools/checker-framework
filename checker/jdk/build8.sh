@@ -1,17 +1,11 @@
 #!/bin/sh
 
-# Builds JDK 8 jar for Checker Framework by inserting annotations into
-# ct.sym.
+# Builds JDK 8 jar for Checker Framework by compiling annotated JDK
+# source, extracting annotations, and inserting extracted annotations
+# into ${JAVA_HOME}/lib/ct.sym.
 
 # ensure CHECKERFRAMEWORK set
-if [ -z "$CHECKERFRAMEWORK" ] ; then
-    if [ -z "$CHECKER_FRAMEWORK" ] ; then
-        export CHECKERFRAMEWORK=`(cd "$0/../.." && pwd)`
-    else
-        export CHECKERFRAMEWORK=${CHECKER_FRAMEWORK}
-    fi
-fi
-[ $? -eq 0 ] || (echo "CHECKERFRAMEWORK not set; exiting" && exit 1)
+[ ! -z "$CHECKERFRAMEWORK" ] || export CHECKERFRAMEWORK=`(cd "$0/../.." && pwd)`
 
 # Debugging
 PRESERVE=1  # option to preserve intermediate files
