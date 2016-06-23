@@ -204,11 +204,13 @@
              mirrors javadoc dependencies. If changing project
              dependencies, change the Javadoc dependencies to keep
              them in sync (and vice versa). -->
+        <!-- With Ant 1.9.4 or later, add
+            failonwarning="true"
+            but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
         <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}" destdir="${api.doc}"
                  private="${javadoc.private}"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
-                 failonwarning="true"
                  executable="${javadoc.bin}"
                  classpath="${build}:${javacutil.lib}:${dataflow.lib}:${stubparser.lib}:${javac.lib}:${javadoc.lib}:${junit.lib}:${hamcrest.lib}:${annotation-file-utilities.lib}"
                  excludepackagenames="org.checkerframework.framework.stub"
