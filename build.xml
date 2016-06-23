@@ -120,6 +120,13 @@
       </ant>
   </target>
 
+  <target name="build-jdk"
+          description="Compile the Annotated JDK and create jar(s)">
+    <ant dir="checker">
+      <target name="build-jdk"/>
+    </ant>
+  </target>
+
   <target name="html-validate"
           description="Validate that HTML files are well-formed; only works with JDK 8">
     <exec executable="html5validator">
