@@ -677,7 +677,7 @@ public class AnnotationClassLoader {
 
         try {
             // load the class
-            cls = Class.forName(fullyQualifiedClassName);
+            cls = Class.forName(fullyQualifiedClassName, true, getAppClassLoader());
         } catch (ClassNotFoundException e) {
             // do nothing: projects can have annotation class files and regular
             // source files located within the same directory, and as such when
