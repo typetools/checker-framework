@@ -1,0 +1,738 @@
+diff -r dc4322602480 src/share/classes/java/io/BufferedReader.java
+--- a/src/share/classes/java/io/BufferedReader.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/io/BufferedReader.java	Tue May 10 16:29:53 2016 -0700
+@@ -309,6 +309,7 @@
+      *
+      * @exception  IOException  If an I/O error occurs
+      */
++    // neither @Deterministic nor @SideEffectFree
+     String readLine(boolean ignoreLF) throws IOException {
+         StringBuffer s = null;
+         int startChar;
+diff -r dc4322602480 src/share/classes/java/io/File.java
+--- a/src/share/classes/java/io/File.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/io/File.java	Tue May 10 16:29:53 2016 -0700
+@@ -819,6 +819,10 @@
+         return ((fs.getBooleanAttributes(this) & FileSystem.BA_EXISTS) != 0);
+     }
+ 
++    // This @EnsuresNonNullIfTrue is not true, since the list methods also
++    // return null in the case of an IO error (instead of throwing IOException).
++    // @EnsuresNonNullIf(expression={"list()","list(FilenameFilter)","listFiles()","listFiles(FilenameFilter)","listFiles(FileFilter)"}, result=true)
++
+     /**
+      * Tests whether the file denoted by this abstract pathname is a
+      * directory.
+diff -r dc4322602480 src/share/classes/java/io/ObjectInputStream.java
+--- a/src/share/classes/java/io/ObjectInputStream.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/io/ObjectInputStream.java	Tue May 10 16:29:53 2016 -0700
+@@ -529,6 +529,7 @@
+      *          objects.
+      * @since 1.2
+      */
++    // return value was @PolyRead in a previous annotation of the library
+     public ObjectInputStream.GetField readFields()
+         throws IOException, ClassNotFoundException
+     {
+diff -r dc4322602480 src/share/classes/java/io/PrintStream.java
+--- a/src/share/classes/java/io/PrintStream.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/io/PrintStream.java	Tue May 10 16:29:53 2016 -0700
+@@ -825,6 +825,8 @@
+         }
+     }
+ 
++    // The vararg arrays can actually be null, but let's not annotate them
++    // because passing null is bad sytle; see whether this annotation is useful.
+ 
+     /**
+      * A convenience method to write a formatted string to this output stream
+diff -r dc4322602480 src/share/classes/java/lang/Class.java
+--- a/src/share/classes/java/lang/Class.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/lang/Class.java	Tue May 10 16:29:53 2016 -0700
+@@ -3635,4 +3635,9 @@
+     public AnnotatedType[] getAnnotatedInterfaces() {
+          return TypeAnnotationParser.buildAnnotatedInterfaces(getRawTypeAnnotations(), getConstantPool(), this);
+     }
++
++    //@Pure public boolean isTypeAnnotationPresent(Class<? extends java.lang.annotation.Annotation> annotationClass) { throw new RuntimeException("skeleton method"); }
++    //public <M extends java.lang.annotation.Annotation> M getTypeAnnotation(Class<M> annotationClass) { throw new RuntimeException("skeleton method"); }
++    //public java.lang.annotation.Annotation[] getTypeAnnotations() { throw new RuntimeException("skeleton method"); }
++    //public java.lang.annotation.Annotation[] getDeclaredTypeAnnotations() { throw new RuntimeException("skeleton method"); }
+ }
+diff -r dc4322602480 src/share/classes/java/lang/Comparable.java
+--- a/src/share/classes/java/lang/Comparable.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/lang/Comparable.java	Tue May 10 16:29:53 2016 -0700
+@@ -133,5 +133,6 @@
+      * @throws ClassCastException if the specified object's type prevents it
+      *         from being compared to this object.
+      */
++    // argument may NOT be null
+     public int compareTo(T o);
+ }
+diff -r dc4322602480 src/share/classes/java/lang/InheritableThreadLocal.java
+--- a/src/share/classes/java/lang/InheritableThreadLocal.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/lang/InheritableThreadLocal.java	Tue May 10 16:29:53 2016 -0700
+@@ -44,7 +44,7 @@
+  * @see     ThreadLocal
+  * @since   1.2
+  */
+-
++// See comment in ThreadLocal class about type parameter annotation.
+ public class InheritableThreadLocal<T> extends ThreadLocal<T> {
+     /**
+      * Computes the child's initial value for this inheritable thread-local
+diff -r dc4322602480 src/share/classes/java/lang/Object.java
+--- a/src/share/classes/java/lang/Object.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/lang/Object.java	Tue May 10 16:29:53 2016 -0700
+@@ -232,6 +232,8 @@
+      *
+      * @return  a string representation of the object.
+      */
++    // toString() is @SideEffectFree rather than @Pure because it returns a string
++    // that differs according to ==, and @Deterministic is with respect to ==.
+     public String toString() {
+         return getClass().getName() + "@" + Integer.toHexString(hashCode());
+     }
+diff -r dc4322602480 src/share/classes/java/lang/String.java
+--- a/src/share/classes/java/lang/String.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/lang/String.java	Tue May 10 16:29:53 2016 -0700
+@@ -2883,7 +2883,8 @@
+      *
+      * @return  the string itself.
+      */
++    // Actually @Pure, but mark it @SideEffectFree while debugging a problem
+     public String toString() {
+         return this;
+     }
+ 
+diff -r dc4322602480 src/share/classes/java/lang/System.java
+--- a/src/share/classes/java/lang/System.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/lang/System.java	Tue May 10 16:29:53 2016 -0700
+@@ -1271,4 +1271,25 @@
+             }
+         });
+     }
++
++    // included from nullness-annotated JDK; may not be useful anymore
++//   /**
++//     * The following two methods exist because in, out, and err must be
++//     * initialized to null.  The compiler, however, cannot be permitted to
++//     * inline access to them, since they are later set to more sensible values
++//     * by initializeSystemClass().
++//     */
++//    private static InputStream nullInputStream() throws NullPointerException {
++//        if (currentTimeMillis() > 0) {
++//            return null;
++//        }
++//        throw new NullPointerException();
++//    }
++//
++//    private static PrintStream nullPrintStream() throws NullPointerException {
++//        if (currentTimeMillis() > 0) {
++//            return null;
++//        }
++//        throw new NullPointerException();
++//    }
+ }
+diff -r dc4322602480 src/share/classes/java/lang/ThreadLocal.java
+--- a/src/share/classes/java/lang/ThreadLocal.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/lang/ThreadLocal.java	Tue May 10 16:29:53 2016 -0700
+@@ -71,6 +71,11 @@
+  * @author  Josh Bloch and Doug Lea
+  * @since   1.2
+  */
++// It is permitted to write a subclass that extends ThreadLocal<@NonNull
++// MyType>, but in such a case:
++//   * the subclass must override initialValue to return a non-null value
++//   * the subclass needs to suppress a warning:
++//     @SuppressWarnings("nullness:type.argument.type.incompatible")
+ public class ThreadLocal<T> {
+     /**
+      * ThreadLocals rely on per-thread linear-probe hash maps attached
+diff -r dc4322602480 src/share/classes/java/lang/Throwable.java
+--- a/src/share/classes/java/lang/Throwable.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/lang/Throwable.java	Tue May 10 16:29:53 2016 -0700
+@@ -451,7 +451,11 @@
+      *         been called on this throwable.
+      * @since  1.4
+      */
++  // The signature of initCause should use @PolyRaw as follows, but implementing
++  // @PolyRaw is a fair amount of work, so don't bother to do so yet.  See
++  // https://github.com/typetools/checker-framework/issues/216 .
++  // public synchronized @PolyRaw Throwable initCause(@PolyRaw Throwable this, @Nullable Throwable a1) { throw new RuntimeException("skeleton method"); }
+     public synchronized Throwable initCause(Throwable cause) {
+         if (this.cause != this)
+             throw new IllegalStateException("Can't overwrite cause with " +
+                                             Objects.toString(cause, "a null"), this);
+diff -r dc4322602480 src/share/classes/java/lang/reflect/Method.java
+--- a/src/share/classes/java/lang/reflect/Method.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/lang/reflect/Method.java	Tue May 10 16:29:53 2016 -0700
+@@ -480,6 +480,12 @@
+      * @exception ExceptionInInitializerError if the initialization
+      * provoked by this method fails.
+      */
++    // The method being invoked might be one that requires non-null
++    // arguments (including the receiver obj), or might be one that permits
++    // null.  We don't know which.  Therefore, the Nullness Checker should
++    // conservatively issue a warning whenever null is passed, in order to
++    // give a guarantee that no nullness-related exception will be thrown
++    // by the invoked method.
+     @CallerSensitive
+     public Object invoke(Object obj, Object... args)
+         throws IllegalAccessException, IllegalArgumentException,
+diff -r dc4322602480 src/share/classes/java/sql/PreparedStatement.java
+--- a/src/share/classes/java/sql/PreparedStatement.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/sql/PreparedStatement.java	Tue May 10 16:29:53 2016 -0700
+@@ -30,6 +30,10 @@
+ import java.io.Reader;
+ import java.io.InputStream;
+ 
++// Note about @Nullable annotations on parameters "Object x" and "String x":
++// JDBC 4.1 Spec 13.2.2.4 says: "If a Java null is passed to any of the setter
++// methods that take a Java object, the parameter will be set to JDBC NULL".
++
+ /**
+  * An object that represents a precompiled SQL statement.
+  * <P>A SQL statement is precompiled and stored in a
+diff -r dc4322602480 src/share/classes/java/util/AbstractCollection.java
+--- a/src/share/classes/java/util/AbstractCollection.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/AbstractCollection.java	Tue May 10 16:29:53 2016 -0700
+@@ -57,7 +57,7 @@
+  * @see Collection
+  * @since 1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public abstract class AbstractCollection<E> implements Collection<E> {
+     /**
+      * Sole constructor.  (For invocation by subclass constructors, typically
+diff -r dc4322602480 src/share/classes/java/util/AbstractList.java
+--- a/src/share/classes/java/util/AbstractList.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/AbstractList.java	Tue May 10 16:29:53 2016 -0700
+@@ -67,7 +67,7 @@
+  * @author  Neal Gafter
+  * @since 1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public abstract class AbstractList<E> extends AbstractCollection<E> implements List<E> {
+     /**
+      * Sole constructor.  (For invocation by subclass constructors, typically
+diff -r dc4322602480 src/share/classes/java/util/AbstractSequentialList.java
+--- a/src/share/classes/java/util/AbstractSequentialList.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/AbstractSequentialList.java	Tue May 10 16:29:53 2016 -0700
+@@ -65,7 +65,7 @@
+  * @see AbstractCollection
+  * @since 1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public abstract class AbstractSequentialList<E> extends AbstractList<E> {
+     /**
+      * Sole constructor.  (For invocation by subclass constructors, typically
+diff -r dc4322602480 src/share/classes/java/util/AbstractSet.java
+--- a/src/share/classes/java/util/AbstractSet.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/AbstractSet.java	Tue May 10 16:29:53 2016 -0700
+@@ -54,7 +54,7 @@
+  * @see Set
+  * @since 1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public abstract class AbstractSet<E> extends AbstractCollection<E> implements Set<E> {
+     /**
+      * Sole constructor.  (For invocation by subclass constructors, typically
+diff -r dc4322602480 src/share/classes/java/util/Arrays.java
+--- a/src/share/classes/java/util/Arrays.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Arrays.java	Tue May 10 16:29:53 2016 -0700
+@@ -3794,7 +3794,7 @@
+      * @param a the array by which the list will be backed
+      * @return a list view of the specified array
+      */
+-    @SafeVarargs
++    @SafeVarargs  // for JDK 7
+     @SuppressWarnings("varargs")
+     public static <T> List<T> asList(T... a) {
+         return new ArrayList<>(a);
+diff -r dc4322602480 src/share/classes/java/util/Collection.java
+--- a/src/share/classes/java/util/Collection.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Collection.java	Tue May 10 16:29:53 2016 -0700
+@@ -140,7 +140,7 @@
+  * @see     AbstractCollection
+  * @since 1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public interface Collection<E> extends Iterable<E> {
+     // Query Operations
+ 
+@@ -176,6 +176,7 @@
+      *         collection does not permit null elements
+      *         (<a href="#optional-restrictions">optional</a>)
+      */
++    // not true, because map could contain nulls:  AssertParametersNonNull("get(#1)")
+     boolean contains(Object o);
+ 
+     /**
+@@ -206,6 +207,12 @@
+      */
+     Object[] toArray();
+ 
++    // [comment copied over from older nullness-annotated JDK; obsolete?]
++    // The Nullness Checker does NOT use these signatures for either version
++    // of toArray; rather, the checker has hard-coded rules for those two
++    // methods, because the most useful type for toArray is not expressible
++    // in the surface syntax that the nullness annotations support.
++
+     /**
+      * Returns an array containing all of the elements in this collection;
+      * the runtime type of the returned array is that of the specified array.
+diff -r dc4322602480 src/share/classes/java/util/Collections.java
+--- a/src/share/classes/java/util/Collections.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Collections.java	Tue May 10 16:29:53 2016 -0700
+@@ -5394,7 +5394,7 @@
+      * @see Collection#addAll(Collection)
+      * @since 1.5
+      */
+-    @SafeVarargs
++    @SafeVarargs  // for JDK 7
+     public static <T> boolean addAll(Collection<? super T> c, T... elements) {
+         boolean result = false;
+         for (T element : elements)
+diff -r dc4322602480 src/share/classes/java/util/Deque.java
+--- a/src/share/classes/java/util/Deque.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Deque.java	Tue May 10 16:29:53 2016 -0700
+@@ -190,6 +190,8 @@
+  * @since  1.6
+  * @param <E> the type of elements held in this collection
+  */
++// Subclasses of this interface/class may opt to prohibit
++// null elements
+ public interface Deque<E> extends Queue<E> {
+     /**
+      * Inserts the specified element at the front of this deque if it is
+diff -r dc4322602480 src/share/classes/java/util/Dictionary.java
+--- a/src/share/classes/java/util/Dictionary.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Dictionary.java	Tue May 10 16:29:53 2016 -0700
+@@ -46,6 +46,7 @@
+  * @see     java.util.Hashtable
+  * @since   JDK1.0
+  */
++// Subclasses of this interface/class may opt to prohibit null elements
+ public abstract
+ class Dictionary<K,V> {
+     /**
+diff -r dc4322602480 src/share/classes/java/util/Hashtable.java
+--- a/src/share/classes/java/util/Hashtable.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Hashtable.java	Tue May 10 16:29:53 2016 -0700
+@@ -127,6 +127,7 @@
+  * @see     TreeMap
+  * @since JDK1.0
+  */
++// This collection can only contain nonnull values
+ public class Hashtable<K,V>
+     extends Dictionary<K,V>
+     implements Map<K,V>, Cloneable, java.io.Serializable {
+diff -r dc4322602480 src/share/classes/java/util/IdentityHashMap.java
+--- a/src/share/classes/java/util/IdentityHashMap.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/IdentityHashMap.java	Tue May 10 16:29:53 2016 -0700
+@@ -134,7 +134,7 @@
+  * @author  Doug Lea and Josh Bloch
+  * @since   1.4
+  */
+-
++// This class allows null elements
+ public class IdentityHashMap<K,V>
+     extends AbstractMap<K,V>
+     implements Map<K,V>, java.io.Serializable, Cloneable
+diff -r dc4322602480 src/share/classes/java/util/Iterator.java
+--- a/src/share/classes/java/util/Iterator.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Iterator.java	Tue May 10 16:29:53 2016 -0700
+@@ -51,6 +51,9 @@
+  * @see Iterable
+  * @since 1.2
+  */
++// This @Covariant annotation is sound, but it would not be sound on
++// ListIterator (a subclass of Iterator), which supports a set operation.
++@Covariant({0})
+ public interface Iterator<E> {
+     /**
+      * Returns {@code true} if the iteration has more elements.
+@@ -60,6 +63,8 @@
+      * @return {@code true} if the iteration has more elements
+      */
+     boolean hasNext();
++    // For a justification of the ReadOnly annotations, see section
++    // "Iterators and their abstract state" in the Checker Framework Manual.
+ 
+     /**
+      * Returns the next element in the iteration.
+diff -r dc4322602480 src/share/classes/java/util/LinkedHashSet.java
+--- a/src/share/classes/java/util/LinkedHashSet.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/LinkedHashSet.java	Tue May 10 16:29:53 2016 -0700
+@@ -114,7 +114,7 @@
+  * @see     Hashtable
+  * @since   1.4
+  */
+-
++// This class permits null elements
+ public class LinkedHashSet<E>
+     extends HashSet<E>
+     implements Set<E>, Cloneable, java.io.Serializable {
+diff -r dc4322602480 src/share/classes/java/util/LinkedList.java
+--- a/src/share/classes/java/util/LinkedList.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/LinkedList.java	Tue May 10 16:29:53 2016 -0700
+@@ -79,7 +79,7 @@
+  * @since 1.2
+  * @param <E> the type of elements held in this collection
+  */
+-
++// This class permits null elements
+ public class LinkedList<E>
+     extends AbstractSequentialList<E>
+     implements List<E>, Deque<E>, Cloneable, java.io.Serializable
+diff -r dc4322602480 src/share/classes/java/util/List.java
+--- a/src/share/classes/java/util/List.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/List.java	Tue May 10 16:29:53 2016 -0700
+@@ -107,7 +107,7 @@
+  * @see AbstractSequentialList
+  * @since 1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public interface List<E> extends Collection<E> {
+     // Query Operations
+ 
+@@ -167,6 +167,8 @@
+      *         sequence
+      * @see Arrays#asList(Object[])
+      */
++    // Element annotation should be the same as that on the type parameter E.
++    // Eventually, figure out how to express this, or hard-code in the checker.
+     Object[] toArray();
+ 
+     /**
+@@ -209,6 +211,8 @@
+      * @throws NullPointerException if the specified array is null
+      */
+     <T> T[] toArray(T[] a);
++    // @Nullable because, if there is room in the argument a, the method
++    // puts null after the elements of this.
+ 
+ 
+     // Modification Operations
+diff -r dc4322602480 src/share/classes/java/util/Map.java
+--- a/src/share/classes/java/util/Map.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Map.java	Tue May 10 16:29:53 2016 -0700
+@@ -126,6 +126,7 @@
+  * @see Set
+  * @since 1.2
+  */
++// Subclasses of this interface/class may opt to prohibit null elements
+ public interface Map<K,V> {
+     // Query Operations
+ 
+@@ -209,7 +210,15 @@
+      *         does not permit null keys
+      * (<a href="{@docRoot}/java/util/Collection.html#optional-restrictions">optional</a>)
+      */
++    // [copied from old nullable-annotated JDK, but contradicts annotations
++    //  from same source!]
++    // The parameter is not nullable, because implementations of Map.get and
++    // Map.put are specifically permitted to throw NullPointerException if
++    // any of the arguments is a null).  And some implementations do not
++    // permit nulls (sorted queues PriorityQueue, Hashtable, most concurrent
++    // collections).  Some other implementation do accept nulls and are so
++    // annotatied (see ArrayList, LinkedList, HashMap).
+     V get(Object key);
+ 
+     // Modification Operations
+ 
+diff -r dc4322602480 src/share/classes/java/util/NavigableMap.java
+--- a/src/share/classes/java/util/NavigableMap.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/NavigableMap.java	Tue May 10 16:29:53 2016 -0700
+@@ -92,6 +92,7 @@
+  * @param <V> the type of mapped values
+  * @since 1.6
+  */
++// Subclasses of this interface/class may opt to prohibit null elements
+ public interface NavigableMap<K,V> extends SortedMap<K,V> {
+     /**
+      * Returns a key-value mapping associated with the greatest key
+diff -r dc4322602480 src/share/classes/java/util/NavigableSet.java
+--- a/src/share/classes/java/util/NavigableSet.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/NavigableSet.java	Tue May 10 16:29:53 2016 -0700
+@@ -83,6 +83,7 @@
+  * @param <E> the type of elements maintained by this set
+  * @since 1.6
+  */
++// Subclasses of this interface/class may opt to prohibit null elements
+ public interface NavigableSet<E> extends SortedSet<E> {
+     /**
+      * Returns the greatest element in this set strictly less than the
+diff -r dc4322602480 src/share/classes/java/util/Optional.java
+--- a/src/share/classes/java/util/Optional.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Optional.java	Tue May 10 16:29:53 2016 -0700
+@@ -29,6 +29,9 @@
+ import java.util.function.Predicate;
+ import java.util.function.Supplier;
+ 
++// Note: Methods with references to java 8 classes have been commented out
++// because it breaks the annotated jdk build when running java 7.
++
+ /**
+  * A container object which may or may not contain a non-null value.
+  * If a value is present, {@code isPresent()} will return {@code true} and
+@@ -153,11 +156,11 @@
+      * @param consumer block to be executed if a value is present
+      * @throws NullPointerException if value is present and {@code consumer} is
+      * null
+-     */
++
+     public void ifPresent(Consumer<? super T> consumer) {
+         if (value != null)
+             consumer.accept(value);
+-    }
++    }*/
+ 
+     /**
+      * If a value is present, and the value matches the given predicate,
+@@ -170,13 +173,13 @@
+      * otherwise an empty {@code Optional}
+      * @throws NullPointerException if the predicate is null
+      */
+-    public Optional<T> filter(Predicate<? super T> predicate) {
++    /*public Optional<T> filter(Predicate<? super T> predicate) {
+         Objects.requireNonNull(predicate);
+         if (!isPresent())
+             return this;
+         else
+             return predicate.test(value) ? this : empty();
+-    }
++    }*/
+ 
+     /**
+      * If a value is present, apply the provided mapping function to it,
+@@ -207,14 +210,14 @@
+      * otherwise an empty {@code Optional}
+      * @throws NullPointerException if the mapping function is null
+      */
+-    public<U> Optional<U> map(Function<? super T, ? extends U> mapper) {
++    /*public<U> Optional<U> map(Function<? super T, ? extends U> mapper) {
+         Objects.requireNonNull(mapper);
+         if (!isPresent())
+             return empty();
+         else {
+             return Optional.ofNullable(mapper.apply(value));
+         }
+-    }
++    }*/
+ 
+     /**
+      * If a value is present, apply the provided {@code Optional}-bearing
+@@ -233,14 +236,14 @@
+      * @throws NullPointerException if the mapping function is null or returns
+      * a null result
+      */
+-    public<U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
++    /*public<U> Optional<U> flatMap(Function<? super T, Optional<U>> mapper) {
+         Objects.requireNonNull(mapper);
+         if (!isPresent())
+             return empty();
+         else {
+             return Objects.requireNonNull(mapper.apply(value));
+         }
+-    }
++    }*/
+ 
+     /**
+      * Return the value if present, otherwise return {@code other}.
+@@ -263,9 +266,9 @@
+      * @throws NullPointerException if value is not present and {@code other} is
+      * null
+      */
+-    public T orElseGet(Supplier<? extends T> other) {
++    /*public T orElseGet(Supplier<? extends T> other) {
+         return value != null ? value : other.get();
+-    }
++    }*/
+ 
+     /**
+      * Return the contained value, if present, otherwise throw an exception
+@@ -283,13 +286,13 @@
+      * @throws NullPointerException if no value is present and
+      * {@code exceptionSupplier} is null
+      */
+-    public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
++    /*public <X extends Throwable> T orElseThrow(Supplier<? extends X> exceptionSupplier) throws X {
+         if (value != null) {
+             return value;
+         } else {
+             throw exceptionSupplier.get();
+         }
+-    }
++    }*/
+ 
+     /**
+      * Indicates whether some other object is "equal to" this Optional. The
+diff -r dc4322602480 src/share/classes/java/util/PriorityQueue.java
+--- a/src/share/classes/java/util/PriorityQueue.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/PriorityQueue.java	Tue May 10 16:29:53 2016 -0700
+@@ -79,6 +79,7 @@
+  * @author Josh Bloch, Doug Lea
+  * @param <E> the type of elements held in this collection
+  */
++// doesn't permit null element
+ public class PriorityQueue<E> extends AbstractQueue<E>
+     implements java.io.Serializable {
+ 
+diff -r dc4322602480 src/share/classes/java/util/Queue.java
+--- a/src/share/classes/java/util/Queue.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Queue.java	Tue May 10 16:29:53 2016 -0700
+@@ -141,6 +141,7 @@
+  * @author Doug Lea
+  * @param <E> the type of elements held in this collection
+  */
++// Subclasses of this interface/class may opt to prohibit null elements
+ public interface Queue<E> extends Collection<E> {
+     /**
+      * Inserts the specified element into this queue if it is possible to do so
+diff -r dc4322602480 src/share/classes/java/util/Set.java
+--- a/src/share/classes/java/util/Set.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Set.java	Tue May 10 16:29:53 2016 -0700
+@@ -81,7 +81,7 @@
+  * @see Collections#EMPTY_SET
+  * @since 1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public interface Set<E> extends Collection<E> {
+     // Query Operations
+ 
+diff -r dc4322602480 src/share/classes/java/util/SortedMap.java
+--- a/src/share/classes/java/util/SortedMap.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/SortedMap.java	Tue May 10 16:29:53 2016 -0700
+@@ -109,7 +109,7 @@
+  * @see ClassCastException
+  * @since 1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public interface SortedMap<K,V> extends Map<K,V> {
+     /**
+      * Returns the comparator used to order the keys in this map, or
+diff -r dc4322602480 src/share/classes/java/util/SortedSet.java
+--- a/src/share/classes/java/util/SortedSet.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/SortedSet.java	Tue May 10 16:29:53 2016 -0700
+@@ -104,7 +104,7 @@
+  * @see ClassCastException
+  * @since 1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public interface SortedSet<E> extends Set<E> {
+     /**
+      * Returns the comparator used to order the elements in this set,
+diff -r dc4322602480 src/share/classes/java/util/Stack.java
+--- a/src/share/classes/java/util/Stack.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Stack.java	Tue May 10 16:29:53 2016 -0700
+@@ -45,6 +45,7 @@
+  * @author  Jonathan Payne
+  * @since   JDK1.0
+  */
++// permits null elements
+ public
+ class Stack<E> extends Vector<E> {
+     /**
+diff -r dc4322602480 src/share/classes/java/util/TreeMap.java
+--- a/src/share/classes/java/util/TreeMap.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/TreeMap.java	Tue May 10 16:29:53 2016 -0700
+@@ -107,7 +107,7 @@
+  * @see Collection
+  * @since 1.2
+  */
+-
++// This permits null element when using a custom comparator which allows null
+ public class TreeMap<K,V>
+     extends AbstractMap<K,V>
+     implements NavigableMap<K,V>, Cloneable, java.io.Serializable
+diff -r dc4322602480 src/share/classes/java/util/TreeSet.java
+--- a/src/share/classes/java/util/TreeSet.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/TreeSet.java	Tue May 10 16:29:53 2016 -0700
+@@ -88,7 +88,7 @@
+  * @see     TreeMap
+  * @since   1.2
+  */
+-
++// Subclasses of this interface/class may opt to prohibit null elements
+ public class TreeSet<E> extends AbstractSet<E>
+     implements NavigableSet<E>, Cloneable, java.io.Serializable
+ {
+diff -r dc4322602480 src/share/classes/java/util/Vector.java
+--- a/src/share/classes/java/util/Vector.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/Vector.java	Tue May 10 16:29:53 2016 -0700
+@@ -80,6 +80,7 @@
+  * @see LinkedList
+  * @since   JDK1.0
+  */
++// permits nullable object
+ public class Vector<E>
+     extends AbstractList<E>
+     implements List<E>, RandomAccess, Cloneable, java.io.Serializable
+@@ -188,6 +189,7 @@
+      *         a runtime type that can be stored in the specified array
+      * @see #toArray(Object[])
+      */
++    // copyInto is special-cased by the type-checker
+     public synchronized void copyInto(Object[] anArray) {
+         System.arraycopy(elementData, 0, anArray, 0, elementCount);
+     }
+diff -r dc4322602480 src/share/classes/java/util/WeakHashMap.java
+--- a/src/share/classes/java/util/WeakHashMap.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/WeakHashMap.java	Tue May 10 16:29:53 2016 -0700
+@@ -133,6 +133,7 @@
+  * @see         java.util.HashMap
+  * @see         java.lang.ref.WeakReference
+  */
++// permits null keys and values
+ public class WeakHashMap<K,V>
+     extends AbstractMap<K,V>
+     implements Map<K,V> {
+diff -r dc4322602480 src/share/classes/java/util/jar/JarFile.java
+--- a/src/share/classes/java/util/jar/JarFile.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/jar/JarFile.java	Tue May 10 16:29:53 2016 -0700
+@@ -466,6 +466,7 @@
+     }
+ 
+     // Statics for hand-coded Boyer-Moore search
++    // Initialize the shift arrays to search for "class-path"
+     private static final char[] CLASSPATH_CHARS = {'c','l','a','s','s','-','p','a','t','h'};
+     // The bad character shift for "class-path"
+     private static final int[] CLASSPATH_LASTOCC;
+@@ -514,6 +515,7 @@
+     * Returns {@code true} iff this JAR file has a manifest with the
+     * Class-Path attribute
+     */
++    // Currently (?) exported to core libraries via sun.misc.SharedSecrets.
+     boolean hasClassPathAttribute() throws IOException {
+         checkForSpecialAttributes();
+         return hasClassPathAttribute;
+diff -r dc4322602480 src/share/classes/java/util/regex/Pattern.java
+--- a/src/share/classes/java/util/regex/Pattern.java	Fri May 06 13:50:13 2016 +0100
++++ b/src/share/classes/java/util/regex/Pattern.java	Tue May 10 16:29:53 2016 -0700
+@@ -1024,6 +1024,7 @@
+      * @throws  PatternSyntaxException
+      *          If the expression's syntax is invalid
+      */
++    @Pure  // pure wrt equals() but not ==
+     public static Pattern compile(String regex) {
+         return new Pattern(regex, 0);
+     }
+@@ -1050,6 +1051,7 @@
+      * @throws  PatternSyntaxException
+      *          If the expression's syntax is invalid
+      */
++    @Pure  // pure wrt equals() but not ==
+     public static Pattern compile(String regex, int flags) {
+         return new Pattern(regex, flags);
+     }
