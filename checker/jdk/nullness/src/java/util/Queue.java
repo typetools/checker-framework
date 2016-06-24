@@ -11,4 +11,6 @@ public interface Queue<E extends @Nullable Object> extends Collection<E> {
   public abstract @Nullable E poll();
   public abstract E element();
   public abstract @Nullable E peek();
+  @EnsuresNonNullIf(expression={"poll()", "peek()"}, result=false)
+  @Pure public abstract boolean isEmpty();
 }

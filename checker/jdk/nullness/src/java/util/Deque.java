@@ -33,4 +33,6 @@ public interface Deque<E extends @Nullable Object> extends Queue<E> {
   @Pure public abstract int size();
   public abstract Iterator<E> iterator();
   public abstract Iterator<E> descendingIterator();
+  @EnsuresNonNullIf(expression={"peek()", "peekFirst()", "peekLast()", "poll()", "pollFirst()", "pollLast()"}, result=false)
+  @Pure public abstract boolean isEmpty();
 }

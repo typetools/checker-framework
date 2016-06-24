@@ -21,4 +21,8 @@ public interface NavigableSet<E extends @Nullable Object> extends SortedSet<E> {
   @SideEffectFree public abstract SortedSet<E> subSet(E a1, E a2);
   @SideEffectFree public abstract SortedSet<E> headSet(E a1);
   @SideEffectFree public abstract SortedSet<E> tailSet(E a1);
+
+  @EnsuresNonNullIf(expression={"pollFirst()", "pollLast()"}, result=false)
+  @Pure public abstract boolean isEmpty();
+
 }
