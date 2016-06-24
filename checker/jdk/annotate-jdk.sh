@@ -47,6 +47,8 @@
 # 2. copy the newly created jdk8.jar to checker/dist; and
 # 3. run "ant tests-nobuildjdk" from Checker Framework's base directory.
 
+[ -r ${CHECKERFRAMEWORK} ] || exit 1
+
 export SCRIPTDIR=`dirname \`readlink -m -v $0\``
 export WD="`pwd`"            # run from top directory of jdk8u clone
 export JDK="${WD}/jdk"       # JDK to be annotated
@@ -89,7 +91,7 @@ annotateSourceFile() {
     return $R
 }
 
-# convert stubfiles to JAIF
+# convert stubfile to JAIF
 # first arg is JAIF containing all necessary annotation definitions
 convertStub() {
     java org.checkerframework.framework.stub.ToIndexFileConverter "${WD}/annotation-defs.jaif" $1
@@ -104,9 +106,12 @@ convertStubs() {
 
     for f in `find * -name 'jdk\.astub' -print` ; do
         convertStub "$f"
-        [ $R -ne 0 ] || R=$?
-        g="`dirname $f`/`basename $f .astub`.jaif"
-        [ -r "$g" ] && cat "$g" && rm -f "$g"
+        if [ $? ] ; then
+            g="`dirname $f`/`basename $f .astub`.jaif"
+            cat "$g" && rm -f "$g"
+        else
+            [ $R -ne 0 ] || R=$?
+        fi
     done
     return $R
 }
@@ -120,7 +125,7 @@ splitJAIF() {
             l=$0;i=index($2,":");d=(i?substr($2,1,i-1):$2)
             if(d){gsub(/\./,"/",d)}else{d=""}
             d=ENVIRON["TMPDIR"]"/"d
-        }
+        }  # most recent package line in l; corresponding directory in d
         /^class / {
             i=index($2,":");c=(i?substr($2,1,i-1):$2)
             if(c) {
@@ -185,7 +190,7 @@ for p in lock nullness ; do
     done
 done
 
-#[ ${RET} -ne 0 ] && echo "stage 1 failed" 1>&2 && exit ${RET}
+[ ${RET} -ne 0 ] && echo "stage 1 failed" 1>&2 && exit ${RET}
 echo "stage 1 complete" 1>&2
 
 
@@ -194,7 +199,7 @@ echo "stage 1 complete" 1>&2
 # sed invocation is temporary workaround for stubfile converter bug
 convertStubs | sed 's/<clinit>:/<clinit>()V/' | splitJAIF
 RET=$?
-#[ ${RET} -ne 0 ] && echo "stage 2 failed" 1>&2 && exit ${RET}
+[ ${RET} -ne 0 ] && echo "stage 2 failed" 1>&2 && exit ${RET}
 echo "stage 2 complete" 1>&2
 
 
@@ -215,7 +220,7 @@ for f in `(cd "${TMPDIR}" && find * -name '*\.jaif' -print)` ; do
     [ ${RET} -ne 0 ] || RET=$?
 done
 
-#[ ${RET} -ne 0 ] && echo "stage 3 failed" 1>&2 && exit ${RET}
+[ ${RET} -ne 0 ] && echo "stage 3 failed" 1>&2 && exit ${RET}
 echo "stage 3 complete" 1>&2
 
 
@@ -232,7 +237,7 @@ echo "stage 3 complete" 1>&2
         [ ${RET} -ne 0 ] || RET=$?
     done
 
-    #[ ${RET} -ne 0 ] && echo "stage 4 failed" 1>&2 && exit ${RET}
+    [ ${RET} -ne 0 ] && echo "stage 4 failed" 1>&2 && exit ${RET}
 
     # copy annotated source files over originals
     rsync -au annotated/* .
