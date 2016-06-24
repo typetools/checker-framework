@@ -39,7 +39,13 @@ classes: $(SOURCES)
 	mkdir -p build
 	@echo "Building the JDK..."
 # TODO: fix all issues and remove -Awarns
-	@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build -processor $(JDKDIR) -AprintErrorStack -Awarns $?
+	@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build $?
+	#@$(CHECKER_JAVAC) -J-Xmx2500M -XDignore.symbol.file -d build -processor $(JDKDIR) -AprintErrorStack -Awarns $?
+
+# Above -processor option and associated flags were removed for this
+# branch, which exists only for re-creating the annotated JDK.  For this
+# purpose, we don't want any additional annotations the processor might
+# add, only the ones that appear explicitly in the source.
 
 build/%.expected: build/%.class
 	@$(JAVAP) -cp $(JAVADOCLIB) $(subst /,.,$*)  | grep public | sed 's/ native / /g' | sed 's/? extends java\/lang\/Object/?/g' | sort > $@
