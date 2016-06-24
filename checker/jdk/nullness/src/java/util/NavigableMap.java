@@ -27,7 +27,4 @@ public interface NavigableMap<K extends @Nullable Object, V extends @Nullable Ob
   public abstract SortedMap<K, V> subMap(K a1, K a2);
   public abstract SortedMap<K, V> headMap(K a1);
   public abstract SortedMap<K, V> tailMap(K a1);
-
-  @EnsuresNonNullIf(expression={"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"}, result=false)
-  @Pure public abstract boolean isEmpty();
 }

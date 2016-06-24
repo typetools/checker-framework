@@ -49,7 +49,4 @@ public class TreeMap<K extends @Nullable Object, V extends @Nullable Object> ext
   @SideEffectFree public SortedMap<K, V> headMap(K a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public SortedMap<K, V> tailMap(K a1) { throw new RuntimeException("skeleton method"); }
   @SideEffectFree public Object clone() { throw new RuntimeException("skeleton method"); }
-
-  @EnsuresNonNullIf(expression={"firstEntry()", "pollFirstEntry()", "lastEntry()", "pollLastEntry()"}, result=false)
-  @Pure public boolean isEmpty() { throw new RuntimeException("skeleton method"); }
 }
