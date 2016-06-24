@@ -603,7 +603,8 @@ public class FlowExpressionParseUtil {
             return null;
         }
 
-        assert remainingString != null; // an exception would have been thrown above if the entire expression is a package name
+        // an exception would have been thrown above if the entire expression is a package name
+        assert remainingString != null;
 
         return Pair.of(result, remainingString);
     }

@@ -213,9 +213,7 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
     /**
      * Returns the number of groups in the given regex String.
      */
-    public static int getGroupCount(
-            /*@org.checkerframework.checker.regex.qual.Regex*/ String regex) {
-
+    public static int getGroupCount(/*@Regex*/ String regex) {
         return Pattern.compile(regex).matcher("").groupCount();
     }
 

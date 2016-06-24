@@ -558,34 +558,33 @@ public class KeyForAnnotatedTypeFactory extends
 
       assert(node instanceof MethodInvocationNode || node instanceof ObjectCreationNode);
 
-      /* The following code is best explained by example. Suppose we have the following:
-
-      public static class Graph {
-          private Map<String, Integer> adjList = new HashMap<String, Integer>();
-          public static boolean addEdge(@KeyFor("#2.adjList") String theStr, Graph theGraph) {
-              ...
-          }
-      }
-
-      public static class TestClass {
-          public void buildGraph(Graph myGraph, @KeyFor("#1.adjList") String myStr) {
-              Graph.addEdge(myStr, myGraph);
-          }
-      }
-
-      The challenge is to recognize that in the call to addEdge(myStr, myGraph), myGraph
-      corresponds to theGraph formal parameter, even though one is labeled as
-      parameter #1 and the other as #2.
-
-      All we know at this point is:
-      -We have a varType whose annotation is @KeyFor("#2.adjList")
-      -We have a valueType whose annotation is @KeyFor("#1.adjList")
-      -We are processing a method call Graph.addEdge(myStr, myGraph)
-
-      We need to build flow expression contexts that will allow us
-      to convert both annotations into @KeyFor("myGraph.adjList")
-      so that we will know they are equivalent.
-      */
+      // The following code is best explained by example. Suppose we have the following:
+      //
+      // public static class Graph {
+      //     private Map<String, Integer> adjList = new HashMap<String, Integer>();
+      //     public static boolean addEdge(@KeyFor("#2.adjList") String theStr, Graph theGraph) {
+      //         ...
+      //     }
+      // }
+      //
+      // public static class TestClass {
+      //     public void buildGraph(Graph myGraph, @KeyFor("#1.adjList") String myStr) {
+      //         Graph.addEdge(myStr, myGraph);
+      //     }
+      // }
+      //
+      // The challenge is to recognize that in the call to addEdge(myStr, myGraph), myGraph
+      // corresponds to theGraph formal parameter, even though one is labeled as
+      // parameter #1 and the other as #2.
+      //
+      // All we know at this point is:
+      // -We have a varType whose annotation is @KeyFor("#2.adjList").
+      // -We have a valueType whose annotation is @KeyFor("#1.adjList").
+      // -We are processing a method call Graph.addEdge(myStr, myGraph).
+      //
+      // We need to build flow expression contexts that will allow us
+      // to convert both annotations into @KeyFor("myGraph.adjList")
+      // so that we will know they are equivalent.
 
       // Building the context for the varType is straightforward. We need it to be
       // the context of the call site (Graph.addEdge(myStr, myGraph)) so that the
