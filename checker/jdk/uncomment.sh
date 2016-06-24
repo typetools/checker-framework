@@ -4,6 +4,15 @@
 # out and creates and compiles variants with one method restored in
 # each.  Useful for finding method that makes a processor crash.
 
+# To prepare input file, for each concrete non-constructor method in any
+# class:
+# 1.  Find the opening bracket and append (on the same line):
+#         throw new RuntimeException("cf-bug");} //{
+# 2.  Insert "//" at the beginning of each remaining line in the method
+#     body.
+# 3.  If the closing bracket is commented out, put it on its own line
+#     below.
+
 set -o pipefail
 
 [ $# -ne 1 ] && echo "usage: `basename $0` sourcefile.java" && exit 1
