@@ -1,0 +1,230 @@
+--- a/java/lang/System.java	Fri May 13 18:39:58 2016 +0300
++++ b/java/lang/System.java	Sat Jun 25 15:28:12 2016 -0700
+@@ -1096,6 +1096,7 @@
+      * @see        java.lang.SecurityManager#checkLink(java.lang.String)
+      */
+     @CallerSensitive
++    @SuppressWarnings({"rawtypes"})
+     public static void load(String filename) {
+         Runtime.getRuntime().load0(Reflection.getCallerClass(), filename);
+     }
+--- a/java/lang/reflect/Constructor.java	Fri May 13 18:39:58 2016 +0300
++++ b/java/lang/reflect/Constructor.java	Sat Jun 25 15:28:12 2016 -0700
+@@ -502,7 +514,7 @@
+      * @throws NullPointerException  {@inheritDoc}
+      * @since 1.5
+      */
+-    public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
++    public <T extends @Nullable Annotation> @Nullable T getAnnotation(Class<T> annotationClass) {
+         return super.getAnnotation(annotationClass);
+     }
+ 
+--- a/java/util/logging/LogManager.java	Fri May 13 18:39:58 2016 +0300
++++ b/java/util/logging/LogManager.java	Sat Jun 25 15:28:12 2016 -0700
+@@ -29,7 +29,7 @@
+
+ package java.util.logging;
+
+-import java.lang.SuppressWarnings;
++import org.checkerframework.checker.signature.qual.BinaryName;
+ import java.io.*;
+ import java.util.*;
+ import java.security.*;
+@@ -146,7 +146,7 @@
+*/
+
+@UsesObjectEquals
+-@AnnotatedFor({"interning"})
++@AnnotatedFor({"interning","signature"})
+public class LogManager {
+    // The global LogManager object
+    private static final LogManager manager;
+@@ -552,6 +552,7 @@
+     // add a new Logger or return the one that has been added previously
+     // as a LogManager subclass may override the addLogger, getLogger,
+     // readConfiguration, and other methods.
++    @SuppressWarnings({"signature"})
+     Logger demandLogger(String name, String resourceBundleName, Class<?> caller) {
+         Logger result = getLogger(name);
+         if (result == null) {
+@@ -1413,7 +1414,8 @@
+         // Load the properties
+         props.load(ins);
+         // Instantiate new configuration objects.
+-        String names[] = parseClassNames("config");
++        @SuppressWarnings({"signature"})
++        String names @BinaryName [] = parseClassNames("config");
+
+         for (int i = 0; i < names.length; i++) {
+             String word = names[i];
+--- a/java/util/logging/Logger.java	2016-06-24 21:52:19.358413835 -0700
++++ b/java/util/logging/Logger.java	2016-06-25 23:18:46.187587419 -0700
+@@ -26,6 +26,8 @@
+ 
+ package java.util.logging;
+ 
++import org.checkerframework.checker.nullness.qual.Nullable;
++import org.checkerframework.framework.qual.AnnotatedFor;
+ import java.lang.ref.WeakReference;
+ import java.security.AccessController;
+ import java.security.PrivilegedAction;
+@@ -215,6 +217,7 @@
+  *
+  * @since 1.4
+  */
++@AnnotatedFor({"nullness"})
+ public class Logger {
+     private static final Handler emptyHandlers[] = new Handler[0];
+     private static final int offValue = Level.OFF.intValue();
+@@ -374,7 +377,7 @@
+         this(name, resourceBundleName, null, LogManager.getLogManager(), false);
+     }
+ 
+-    Logger(String name, String resourceBundleName, Class<?> caller, LogManager manager, boolean isSystemLogger) {
++    Logger(@Nullable String name, @Nullable String resourceBundleName, @Nullable Class<?> caller, LogManager manager, boolean isSystemLogger) {
+         this.manager = manager;
+         this.isSystemLogger = isSystemLogger;
+         setupResourceInfo(resourceBundleName, caller);
+--- a/java/util/function/Function.java	2016-06-24 21:52:19.500414566 -0700
++++ b/java/util/function/Function.java	2016-06-25 23:21:01.713314801 -0700
+@@ -39,7 +39,6 @@
+  * @since 1.8
+  */
+ @FunctionalInterface
+-@FunctionalInterface
+ public interface Function<T, R> {
+ 
+     /**
+--- a/java/util/function/Consumer.java	2016-06-24 21:52:19.515414643 -0700
++++ b/java/util/function/Consumer.java	2016-06-25 23:21:18.374404157 -0700
+@@ -40,7 +40,6 @@
+  * @since 1.8
+  */
+ @FunctionalInterface
+-@FunctionalInterface
+ public interface Consumer<T> {
+ 
+     /**
+--- a/java/util/function/IntConsumer.java	2016-06-24 21:52:19.471414417 -0700
++++ b/java/util/function/IntConsumer.java	2016-06-25 23:21:30.165467385 -0700
+@@ -40,7 +40,6 @@
+  * @since 1.8
+  */
+ @FunctionalInterface
+-@FunctionalInterface
+ public interface IntConsumer {
+ 
+     /**
+--- a/java/util/function/LongConsumer.java	2016-06-24 21:52:19.490414515 -0700
++++ b/java/util/function/LongConsumer.java	2016-06-25 23:21:52.313586131 -0700
+@@ -40,7 +40,6 @@
+  * @since 1.8
+  */
+ @FunctionalInterface
+-@FunctionalInterface
+ public interface LongConsumer {
+ 
+     /**
+--- a/java/util/function/DoubleConsumer.java	2016-06-24 21:52:19.512414628 -0700
++++ b/java/util/function/DoubleConsumer.java	2016-06-25 23:22:26.437769036 -0700
+@@ -40,7 +40,6 @@
+  * @since 1.8
+  */
+ @FunctionalInterface
+-@FunctionalInterface
+ public interface DoubleConsumer {
+ 
+     /**
+--- a/java/util/concurrent/Callable.java	2016-06-24 21:52:19.380413948 -0700
++++ b/java/util/concurrent/Callable.java	2016-06-25 23:23:20.042056232 -0700
+@@ -59,7 +59,6 @@
+  */
+ @FunctionalInterface
+ @AnnotatedFor({"nullness"})
+-@FunctionalInterface
+ public interface Callable<V extends @Nullable Object> {
+     /**
+      * Computes a result, or throws an exception if unable to do so.
+--- a/java/beans/PropertyChangeSupport.java	2016-06-24 21:52:19.542414782 -0700
++++ b/java/beans/PropertyChangeSupport.java	2016-06-25 23:24:41.748493711 -0700
+@@ -186,7 +186,8 @@
+      *         empty array if no listeners have been added
+      * @since 1.4
+      */
+-    public PropertyChangeListener @PolyUI  @PolyUIEffect [] getPropertyChangeListeners(@PolyUI PropertyChangeSupport this) {
++    @PolyUIEffect
++    public PropertyChangeListener @PolyUI [] getPropertyChangeListeners(@PolyUI PropertyChangeSupport this) {
+         return this.map.getListeners();
+     }
+ 
+@@ -253,7 +254,8 @@
+      *         returned.
+      * @since 1.4
+      */
+-    public PropertyChangeListener @PolyUI  @PolyUIEffect [] getPropertyChangeListeners(@PolyUI PropertyChangeSupport this, String propertyName) {
++    @PolyUIEffect
++    public PropertyChangeListener @PolyUI [] getPropertyChangeListeners(@PolyUI PropertyChangeSupport this, String propertyName) {
+         return this.map.getListeners(propertyName);
+     }
+ 
+--- a/javax/swing/plaf/basic/BasicRootPaneUI.java	Fri May 13 18:39:58 2016 +0300
++++ b/javax/swing/plaf/basic/BasicRootPaneUI.java	Sat Jun 25 15:28:12 2016 -0700
+@@ -25,6 +25,8 @@
+ 
+ package javax.swing.plaf.basic;
+ 
++import org.checkerframework.checker.interning.qual.Interned;
++import org.checkerframework.framework.qual.AnnotatedFor;
+ import java.awt.event.ActionEvent;
+ import java.awt.KeyboardFocusManager;
+ import java.awt.Component;
+@@ -44,6 +46,7 @@
+  * @author Scott Violet
+  * @since 1.3
+  */
++@AnnotatedFor({"interning"})
+ public class BasicRootPaneUI extends RootPaneUI implements
+                   PropertyChangeListener {
+     private static RootPaneUI rootPaneUI = new BasicRootPaneUI();
+@@ -170,9 +173,9 @@
+ 
+ 
+     static class Actions extends UIAction {
+-        public static final String PRESS = "press";
+-        public static final String RELEASE = "release";
+-        public static final String POST_POPUP = "postPopup";
++        public static final @Interned String PRESS = "press";
++        public static final @Interned String RELEASE = "release";
++        public static final @Interned String POST_POPUP = "postPopup";
+ 
+         Actions(String name) {
+             super(name);
+--- a/javax/swing/plaf/basic/BasicSliderUI.java	Fri May 13 18:39:58 2016 +0300
++++ b/javax/swing/plaf/basic/BasicSliderUI.java	Sat Jun 25 15:28:12 2016 -0700
+@@ -25,6 +25,8 @@
+ 
+ package javax.swing.plaf.basic;
+ 
++import org.checkerframework.checker.interning.qual.Interned;
++import org.checkerframework.framework.qual.AnnotatedFor;
+ import java.awt.event.*;
+ import java.awt.*;
+ import java.beans.*;
+@@ -43,14 +45,15 @@
+  *
+  * @author Tom Santos
+  */
++@AnnotatedFor({"interning"})
+ public class BasicSliderUI extends SliderUI{
+     // Old actions forward to an instance of this.
+     private static final Actions SHARED_ACTION = new Actions();
+ 
+     public static final int POSITIVE_SCROLL = +1;
+     public static final int NEGATIVE_SCROLL = -1;
+-    public static final int MIN_SCROLL = -2;
+-    public static final int MAX_SCROLL = +2;
++    public static final @Interned int MIN_SCROLL = -2;
++    public static final @Interned int MAX_SCROLL = +2;
+ 
+     protected Timer scrollTimer;
+     protected JSlider slider;
