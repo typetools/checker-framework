@@ -17,7 +17,7 @@ public class TypeVars<K, V> {
         }
 
         void useExplicit() {
-                ExplicitUpperBound<Object> bottom;;
+                ExplicitUpperBound<Object> bottom;
         }
 
         void wildCardImplicit() {
@@ -41,7 +41,7 @@ public class TypeVars<K, V> {
         }
 
         void wildCardLowerBoundExplicit() {
-                ExplicitUpperBound<? super Object> bottom;;
+                ExplicitUpperBound<? super Object> bottom;
         }
 
 }
