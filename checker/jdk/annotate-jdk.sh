@@ -173,7 +173,7 @@ stripDefs() {
 
 COMMENTS=0  # non-zero to enable
 if [ ${COMMENTS} -ne 0 ] ; then
-(cd "${JDK}" && patch -p1 < ${SCRIPTDIR}/annotated-jdk-comment-patch.jaif)
+    (cd "${JDK}" && patch -p1 < ${SCRIPTDIR}/annotated-jdk-comment-patch.jaif)
 fi
 
 
