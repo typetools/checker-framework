@@ -1,8 +1,8 @@
 #!/bin/sh
 
 # Utility that takes Java source file with methods stubbed/commented
-# out and creates and compiles variants with one method restored in
-# each.  Useful for finding method that makes a processor crash.
+# out and creates and compiles variants with one method restored at
+# a time.  Useful for finding the method that makes a processor crash.
 
 # To prepare input file, for each concrete non-constructor method in any
 # class:
@@ -25,6 +25,8 @@ SRCDIR="${JSR308}/annotated-jdk8u-jdk/src/share/classes"
 ORIGINAL="${SRCDIR}/$1"
 BASE=`dirname $1`/`basename "$1" .java`
 COPY="${BASE}.0"
+
+# CURRENT is the loop index, count is the limit
 COUNT=`expr \`grep -c cf-bug "${ORIGINAL}"\` + 0`
 CURRENT=`expr 0`
 
