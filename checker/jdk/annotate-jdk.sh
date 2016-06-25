@@ -78,18 +78,21 @@ export CLASSPATH=".:${JDK}/build/classes:${LTJAR}:${JDJAR}:${CFJAR}:${AFUJAR}:${
 export RET=0
 
 
-# generate @AnnotatedFor annotations
+# Generate @AnnotatedFor annotations.
+# Reads from stdin and writes to stdout.
 addAnnotatedFor() {
     java org.checkerframework.framework.stub.AddAnnotatedFor
 }
 
-# find JAIFs in hierarchical directory tree and insert indicated
-# annotations into corresponding source files
+# Find JAIFs in hierarchical directory tree and insert the JAIFs'
+# annotations into corresponding source files.
+# Takes one argument, a Java source file.
+# Returns non-zero if a command failed.
 annotateSourceFile() {
     R=0
-    BASE="${JAIFDIR}/`dirname "$1"`/`basename "$1" .java`"
+    JAIFBASE="${JAIFDIR}/`dirname "$1"`/`basename "$1" .java`"
     # must insert annotations on inner classes as well
-    for f in ${BASE}.jaif ${BASE}\$*.jaif ; do
+    for f in ${JAIFBASE}.jaif ${JAIFBASE}\$*.jaif ; do
         if [ -r "$f" ] ; then
             insert-annotations-to-source "$f" "$1"
             [ $R -ne 0 ] || R=$?
@@ -98,9 +101,10 @@ annotateSourceFile() {
     return $R
 }
 
-# convert stubfile to JAIF
-# first arg is JAIF containing all necessary annotation definitions
+# Convert stubfile to JAIF.
+# Returns non-zero if a command failed.
 convertStub() {
+    # First arg is JAIF containing all necessary annotation definitions.
     java org.checkerframework.framework.stub.ToIndexFileConverter "${ADEFS}" $1
 }
 
