@@ -5,22 +5,37 @@
 # annotations from the sources to the JDK source, which will be the new
 # home for all the annotations associated with the checkers that are
 # distributed with the Checker Framework.
-#
-# Prerequisites:
+
+# To run:
 #
 # 1.  Clone and build the checker framework from source.
 #     git clone https://github.com/typetools/checker-framework
-#     cd checker-framework && ant
+#     cd checker-framework
+#     git checkout create-annotated-jdk
+#     ant
 #
 # 2.  Clone the OpenJDK 8u repository and sub-repositories.
 #     hg clone http://hg.openjdk.java.net/jdk8u/jdk8u  [yes, jdk8u*2]
 #     cd jdk8u && sh ./get_source
 #
-# This script should be run from the top-level OpenJDK directory
-# ("jdk8u" by default).
+# 3.  Run this script from the top-level OpenJDK directory
+#     ("jdk8u" by default); this takes about 2 hours.
+#     .../checker-framework/checker/jdk/annotate-jdk.sh
 #
-#
-# Build stages:
+# 4.  Compile the annotated JDK 8 source; this takes about 9 hours.
+#     .../checker-framework/checker/jdk/build-jdk-jar.sh
+#     (It may be necessary to edit some of the variable settings in the
+#     script.)  If successful, this will replace checker/dist/jdk8.jar
+#     with a .jar file containing annotations from the annotated JDK source.
+#   
+# 5.  Run the Checker Framework test suite
+#     0. save the newly created jdk8.jar somewhere;
+#     1. check out and build annotated-jdk branch;
+#     2. copy the newly created jdk8.jar to checker/dist; and
+#     3. run "ant tests-nobuildjdk" from Checker Framework's base directory.
+
+
+# Build stages for this script:
 #
 # 0.  Restore comments from old nullness JDK and stubfiles.
 #     (These comments explain non-intuitive annotation choices, etc.
@@ -33,19 +48,7 @@
 # 3.  Combine the results of the previous two stages.
 #
 # 4.  Insert annotations from JAIFs into JDK source files.
-#
-#
-# The end product of these stages is the annotated JDK 8 source.  To
-# build, invoke the Checker Framework script checker/jdk/build8.sh.
-# (It may be necessary to edit some of the variable settings in the
-# script.)  If successful, build8 will replace checker/dist/jdk8.jar
-# with a JAR containing annotations from the annotated JDK source.
-#
-# To run the Checker Framework test suite:
-# 0. save the newly created jdk8.jar somewhere;
-# 1. check out and build annotated-jdk branch;
-# 2. copy the newly created jdk8.jar to checker/dist; and
-# 3. run "ant tests-nobuildjdk" from Checker Framework's base directory.
+
 
 [ -r ${CHECKERFRAMEWORK} ] || exit 1
 
