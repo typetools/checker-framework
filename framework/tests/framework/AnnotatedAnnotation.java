@@ -11,7 +11,6 @@ import tests.util.*;
     @Odd int[] value();
 }
 
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @interface OddRec {
     OddIntArr[] value();
 }
