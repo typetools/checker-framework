@@ -3,16 +3,6 @@
 # Builds JDK jar for Checker Framework by inserting annotations from
 # annotated JDK class files into ct.sym.
 
-# ensure CHECKERFRAMEWORK set
-if [ -z "$CHECKERFRAMEWORK" ] ; then
-    if [ -z "$CHECKER_FRAMEWORK" ] ; then
-        export CHECKERFRAMEWORK=`(cd "$0/../.." && pwd)`
-    else
-        export CHECKERFRAMEWORK=${CHECKER_FRAMEWORK}
-    fi
-fi
-[ $? -eq 0 ] || (echo "CHECKERFRAMEWORK not set; exiting" && exit 1)
-
 # Debugging
 PRESERVE=1  # option to preserve intermediate files
 
