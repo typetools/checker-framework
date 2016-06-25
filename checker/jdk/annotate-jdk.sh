@@ -41,9 +41,10 @@
 #
 # 0.  Restore comments from old nullness JDK and stubfiles.
 #     (These comments explain non-intuitive annotation choices, etc.
-#     This stage should run only once.)
+#     This stage should run only once.  You have to edit this file
+#     to make this happen.)
 #
-# 1.  Extract annotations from the nullness JDK into JAIFs.
+# 1.  Extract annotations from the lock and nullness JDKs into JAIFs.
 #
 # 2.  Convert old stubfiles into JAIFs.
 #
@@ -77,18 +78,21 @@ export CLASSPATH=".:${JDK}/build/classes:${LTJAR}:${JDJAR}:${CFJAR}:${AFUJAR}:${
 export RET=0
 
 
-# generate @AnnotatedFor annotations
+# Generate @AnnotatedFor annotations.
+# Reads from stdin and writes to stdout.
 addAnnotatedFor() {
     java org.checkerframework.framework.stub.AddAnnotatedFor
 }
 
-# find JAIFs in hierarchical directory tree and insert indicated
-# annotations into corresponding source files
+# Find JAIFs in hierarchical directory tree and insert the JAIFs'
+# annotations into corresponding source files.
+# Takes one argument, a Java source file.
+# Returns non-zero if a command failed.
 annotateSourceFile() {
     R=0
-    BASE="${JAIFDIR}/`dirname "$1"`/`basename "$1" .java`"
+    JAIFBASE="${JAIFDIR}/`dirname "$1"`/`basename "$1" .java`"
     # must insert annotations on inner classes as well
-    for f in ${BASE}.jaif ${BASE}\$*.jaif ; do
+    for f in ${JAIFBASE}.jaif ${JAIFBASE}\$*.jaif ; do
         if [ -r "$f" ] ; then
             insert-annotations-to-source "$f" "$1"
             [ $R -ne 0 ] || R=$?
@@ -97,14 +101,16 @@ annotateSourceFile() {
     return $R
 }
 
-# convert stubfile to JAIF
-# first arg is JAIF containing all necessary annotation definitions
+# Convert stubfile to JAIF.
+# Returns non-zero if a command failed.
 convertStub() {
+    # First arg is JAIF containing all necessary annotation definitions.
     java org.checkerframework.framework.stub.ToIndexFileConverter "${ADEFS}" $1
 }
 
-# convert all stubfiles in Checker Framework repository into JAIF format
-# and emit to standard output
+# Convert all jdk.astub stubfiles in Checker Framework repository into JAIF format
+# and emit to standard output.
+# Takes no arguments.
 convertStubs() {
     R=0
     cd "${CHECKERFRAMEWORK}"
@@ -122,28 +128,33 @@ convertStubs() {
     return $R
 }
 
-# split up JAIF into files by package (directory) and class (JAIF)
+# Split up JAIF (piped in from stdin) into files by package (directory) and
+# class (JAIF), in $TMPDIR.
 splitJAIF() {
     awk '
         # save class sections from converted JAIFs to hierarchical JAIF dir.
         BEGIN {out="";adefs=ENVIRON["ADEFS"]}
         /^package / {
-            l=$0;i=index($2,":");d=(i?substr($2,1,i-1):$2)
-            if(d){gsub(/\./,"/",d)}else{d=""}
-            d=ENVIRON["TMPDIR"]"/"d
-        }  # most recent package line in l; corresponding directory in d
+            packageline=$0;
+            colonindex=index($2,":");
+            packagedir=(colonindex?substr($2,1,colonindex-1):$2)
+            if(packagedir){gsub(/\./,"/",packagedir)}else{packagedir=""}
+            packagedir=ENVIRON["TMPDIR"]"/"packagedir
+        }
         /^class / {
-            i=index($2,":");c=(i?substr($2,1,i-1):$2)
+            colonindex=index($2,":");
+            c=(colonindex?substr($2,1,colonindex-1):$2)
             if(c) {
-                o=d"/"c".jaif"
+                o=packagedir"/"c".jaif"
                 if (o!=out) {
-                    if(out){fflush(out);close(out)};out=o
+                    if(out){fflush(out);close(out)};
+                    out=o
                     if(system("[ -s \""out"\" ]")!=0) {
-                        system("mkdir -p "d" && cp "adefs" "out)
+                        system("mkdir -p "packagedir" && cp "adefs" "out)
                     }
-                    printf("%s\n",l)>>out  # current pkg decl
+                    printf("%s\n",packageline)>>out  # current pkg decl
                 }
-                printf("%s\n",l)>>out  # current pkg decl
+                printf("%s\n",packageline)>>out  # current pkg decl
             }
         }
         /^annotation / { out="" }
@@ -167,17 +178,17 @@ stripDefs() {
 
 COMMENTS=0  # non-zero to enable
 if [ ${COMMENTS} -ne 0 ] ; then
-(cd "${JDK}" && patch -p1 < ${SCRIPTDIR}/annotated-jdk-comment-patch.jaif)
+    (cd "${JDK}" && patch -p1 < ${SCRIPTDIR}/annotated-jdk-comment-patch.jaif)
 fi
 
 
-# Stage 1: extract JAIFs from lock and nullness JDKs
+# Stage 1: extract JAIFs from lock and nullness JDKs to ${TMPDIR}
 
 rm -rf "${TMPDIR}"
 mkdir "${TMPDIR}"
 
-for p in lock nullness ; do
-    cd "${CHECKERFRAMEWORK}/checker/jdk/$p/src" || exit 1
+for typesystem in lock nullness ; do
+    cd "${CHECKERFRAMEWORK}/checker/jdk/$typesystem/src" || exit 1
     [ -z "`ls`" ] && echo "no files" 1>&2 && exit 1
 
     mkdir -p ../build
@@ -212,7 +223,8 @@ echo "stage 2 complete" 1>&2
 # Stage 3: combine JAIFs from Stages 1 and 2
 
 rm -rf "${JAIFDIR}"
-# write out JAIFs from TMPDIR, replacing (bogus) annotation defs
+# Write out JAIFs from TMPDIR, replacing (bogus) annotation defs from
+# stubfile converter which makes up empty definitions.
 for f in `(cd "${TMPDIR}" && find * -name '*\.jaif' -print)` ; do
     g="${JAIFDIR}/$f"
     mkdir -p `dirname $g`
