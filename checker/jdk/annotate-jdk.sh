@@ -55,6 +55,7 @@ export JDK="${WD}/jdk"       # JDK to be annotated
 export TMPDIR="${WD}/tmp"    # directory for temporary files
 export JAIFDIR="${WD}/jaifs" # directory for generated JAIFs
 export PATCH=${SCRIPTDIR}/ad-hoc.diff
+export ADEFS=${SCRIPTDIR}/annotation-defs.jaif
 
 # parameters derived from environment
 export JSR308=`[ -d "${CHECKERFRAMEWORK}" ] && cd "${CHECKERFRAMEWORK}/.." && pwd`
@@ -94,7 +95,7 @@ annotateSourceFile() {
 # convert stubfile to JAIF
 # first arg is JAIF containing all necessary annotation definitions
 convertStub() {
-    java org.checkerframework.framework.stub.ToIndexFileConverter "${WD}/annotation-defs.jaif" $1
+    java org.checkerframework.framework.stub.ToIndexFileConverter "${ADEFS}" $1
 }
 
 # convert all stubfiles in Checker Framework repository into JAIF format
@@ -120,7 +121,7 @@ convertStubs() {
 splitJAIF() {
     awk '
         # save class sections from converted JAIFs to hierarchical JAIF dir.
-        BEGIN {out="";adefs=ENVIRON["WD"]"/annotation-defs.jaif"}
+        BEGIN {out="";adefs=ENVIRON["ADEFS"]}
         /^package / {
             l=$0;i=index($2,":");d=(i?substr($2,1,i-1):$2)
             if(d){gsub(/\./,"/",d)}else{d=""}
@@ -161,7 +162,7 @@ stripDefs() {
 
 COMMENTS=0  # non-zero to enable
 if [ ${COMMENTS} -ne 0 ] ; then
-(cd "${JDK}" && patch -p1 < ${WD}/annotated-jdk-comment-patch.jaif)
+(cd "${JDK}" && patch -p1 < ${SCRIPTDIR}/annotated-jdk-comment-patch.jaif)
 fi
 
 
@@ -211,12 +212,12 @@ for f in `(cd "${TMPDIR}" && find * -name '*\.jaif' -print)` ; do
     g="${JAIFDIR}/$f"
     mkdir -p `dirname $g`
     echo "$g" 1>&2
-    cp "${WD}/annotation-defs.jaif" "$g"
+    cp "${ADEFS}" "$g"
 
     # first write out standard annotation defs
     # then strip out empty annotation defs
     # also generate and insert @AnnotatedFor annotations
-    (cat "${WD}/annotation-defs.jaif" && stripDefs < "${TMPDIR}/$f") | addAnnotatedFor > "$g"
+    (cat "${ADEFS}" && stripDefs < "${TMPDIR}/$f") | addAnnotatedFor > "$g"
     [ ${RET} -ne 0 ] || RET=$?
 done
 
