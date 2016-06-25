@@ -17,11 +17,9 @@ public class ViewpointAdaptation2 {
     class LockExample {
         protected final Object myLock = new Object();
 
-        @GuardedBy("myLock")
-        protected Object locked;
+        protected @GuardedBy("myLock") Object locked;
 
-        @GuardedBy("this.myLock")
-        protected Object locked2;
+        protected @GuardedBy("this.myLock") Object locked2;
 
         public @GuardedBy("myLock") Object getLocked() {
             return locked;

@@ -18,10 +18,10 @@ public class Synchronization {
     public void flow() {
         Object o = null;
         o = "m";
-        synchronized(o) { }; // valid
+        synchronized(o) { } // valid
         o = null;
         //:: error: (locking.nullable)
-        synchronized(o) { }; // invalid
+        synchronized(o) { } // invalid
     }
 
     public Synchronization() {
