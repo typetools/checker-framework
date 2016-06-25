@@ -206,7 +206,7 @@ that contain the qualifiers using the \code{-AqualDirs} option, and add
 the directories to the boot classpath, for example:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.common.subtyping.SubtypingChecker \ttbs
         -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} YourProgram.java
 \end{alltt}
