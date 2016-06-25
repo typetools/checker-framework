@@ -185,7 +185,7 @@ for p in lock nullness ; do
     done
 
     for f in `find * -name '*\.jaif' -print` ; do
-        mkdir -p "${TMPDIR}/`dirname $f`" && mv "$f" "${TMPDIR}/$f"
+        mkdir -p "${TMPDIR}/`dirname $f`" && cat "$f" >> "${TMPDIR}/$f"
         [ ${RET} -eq 0 ] && RET=$?
     done
 done
