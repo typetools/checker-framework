@@ -123,23 +123,17 @@ If you define your own annotation(s), provide the name(s) of the annotation(s)
 through the \code{-Aquals} option, using a comma-no-space-separated notation:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.fenum.FenumChecker \ttbs
         -Aquals=\textit{myModule.qual.MyFenum} MyFile.java ...
 \end{alltt}
-
-The annotations listed in \code{-Aquals} must be accessible to
-the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac bootclasspath)
-before you run the Fenum Checker with \code{javac}.  It
-is not sufficient to supply their source files on the command line.
 
 You can also provide the fully-qualified paths to a set of directories
 that contain the annotations through the \code{-AqualDirs} option,
 using a colon-no-space-separated notation. For example:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.fenum.FenumChecker \ttbs
         -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java ...
 \end{alltt}

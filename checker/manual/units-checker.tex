@@ -255,16 +255,10 @@ annotations through the \code{-Aunits} option, using a comma-no-space-separated
 notation:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.units.UnitsChecker \ttbs
         -Aunits=\textit{myModule.qual.MyUnit},\textit{myModule.qual.MyOtherUnit} MyFile.java ...
 \end{alltt}
-
-The annotations listed in \code{-Aunits} must be accessible to
-the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac bootclasspath)
-before you run the Units Checker with \code{javac}.  It
-is not sufficient to supply their source files on the command line.
 
 \item
 You can also provide the fully-qualified paths to a set of directories
@@ -272,7 +266,7 @@ that contain units qualifiers through the \code{-AunitsDirs} option,
 using a colon-no-space-separated notation. For example:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.units.UnitsChecker \ttbs
         -AunitsDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java ...
 \end{alltt}
