@@ -189,9 +189,12 @@ class ChapterExamples {
     //:: error: (contracts.precondition.not.satisfied)
     boolean b4 = compare(p1, myMethod());
 
-
+    // An error is issued indicating that p2 might be dereferenced without
+    // "lock" being held. The method call need not be modified, since
+    // @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown,
+    // but the lock must be acquired prior to the method call.
     //:: error: (contracts.precondition.not.satisfied.field)
-    boolean b2 = compare(p1, p2); // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
+    boolean b2 = compare(p1, p2);
     //:: error: (contracts.precondition.not.satisfied.field)
     boolean b3 = compare(p1, this.p2);
     //:: error: (contracts.precondition.not.satisfied)
@@ -428,10 +431,9 @@ class ChapterExamples {
     if (myLock2.tryLock()) {
       x3.field = new Object(); // OK: the lock is held
       myMethod5();
-      x3.field = new Object(); // OK: the lock is still known to be held since myMethod is locking-free
+      x3.field = new Object(); // OK: the lock is still held since myMethod is locking-free
       mySideEffectFreeMethod();
-      x3.field = new Object(); // OK: the lock is still known to be held since mySideEffectFreeMethod
-      // is side-effect-free
+      x3.field = new Object(); // OK: the lock is still held since mySideEffectFreeMethod is side-effect-free
       myUnlockingMethod();
       //:: error: (contracts.precondition.not.satisfied.field)
       x3.field = new Object(); // ILLEGAL: myLockingMethod is not locking-free

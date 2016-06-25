@@ -17,8 +17,9 @@ public class GuardSatisfiedTest {
 
    // Test defaulting of parameters - they must default to @GuardedBy({}), not @GuardSatisfied
    void testDefaulting(Object mustDefaultToGuardedByNothing, @GuardSatisfied Object p) {
+       // Must assign in this direction to test the defaulting because assigning a RHS of @GuardedBy({}) to a LHS @GuardSatisfied is legal.
        //:: error: (assignment.type.incompatible)
-       mustDefaultToGuardedByNothing = p; // Must assign in this direction to test the defaulting because assigning a RHS of @GuardedBy({}) to a LHS @GuardSatisfied is legal.
+       mustDefaultToGuardedByNothing = p;
        @GuardedBy({}) Object q = mustDefaultToGuardedByNothing;
    }
 

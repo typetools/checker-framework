@@ -292,9 +292,11 @@ void testTreeTypes() {
     // throwing a guarded object - when throwing an exception, it must be @GuardedBy({}). Even @GuardedByUnknown is not allowed.
     //:: error: (throw.type.invalid)
     try { throw exception; } catch (Exception e) {}
+    // casting of a guarded object to an unguarded object
     //:: error: (assignment.type.incompatible)
-    @GuardedBy({}) Object e1 = (Object) exception; // casting of a guarded object to an unguarded object
-    Object e2 = (Object) exception; // OK, since the local variable's type gets refined to @GuardedBy("lock")
+    @GuardedBy({}) Object e1 = (Object) exception;
+    // OK, since the local variable's type gets refined to @GuardedBy("lock")
+    Object e2 = (Object) exception;
     //:: error: (contracts.precondition.not.satisfied.field)
     l = myParametrizedType.l; // dereference of guarded object having a parameterized type
 
