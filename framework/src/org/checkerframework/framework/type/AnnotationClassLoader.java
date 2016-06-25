@@ -372,8 +372,8 @@ public class AnnotationClassLoader {
      * it has access to
      *
      * The classpaths will be obtained in the order of: 1) extension
-     * paths (from java.ext.dirs) 3) classpaths (set in CLASSPATH, or through
-     * -classpath and -cp) 4) paths accessible and examined by the classloader
+     * paths (from java.ext.dirs) 2) classpaths (set in CLASSPATH, or through
+     * -classpath and -cp) 3) paths accessible and examined by the classloader
      *
      * In each of these paths, the order of the paths as specified in the
      * command line options or environment variables will be the order returned
