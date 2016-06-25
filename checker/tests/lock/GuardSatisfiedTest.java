@@ -182,7 +182,7 @@ public class GuardSatisfiedTest {
    final Object lock1 = new Object(), lock2 = new Object();
 
    void testAssignment(@GuardSatisfied Object o) {
-       @GuardedBy({"lock1", "lock2"}) Object p = new Object();;
+       @GuardedBy({"lock1", "lock2"}) Object p = new Object();
        //:: error: (contracts.precondition.not.satisfied.field)
        o = p;
        synchronized(lock1) {

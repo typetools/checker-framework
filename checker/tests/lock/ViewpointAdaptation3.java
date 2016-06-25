@@ -10,14 +10,12 @@ public class ViewpointAdaptation3 {
     class LockExample {
         protected final Object myLock = new Object();
 
-        @GuardedBy("myLock")
-        protected MyClass locked;
+        protected @GuardedBy("myLock") MyClass locked;
 
         @GuardedBy("this.myLock")
         MyClass m1;
 
-        @GuardedBy("this.myLock")
-        protected MyClass locked2;
+        protected @GuardedBy("this.myLock") MyClass locked2;
 
         public void accessLock() {
             synchronized(myLock) {
@@ -29,8 +27,7 @@ public class ViewpointAdaptation3 {
     class LockExampleSubclass extends LockExample {
         private final Object myLock = new Object();
 
-        @GuardedBy("this.myLock")
-        private MyClass locked;
+        private @GuardedBy("this.myLock") MyClass locked;
 
         @GuardedBy("this.myLock")
         MyClass m2;

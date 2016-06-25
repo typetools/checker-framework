@@ -14,16 +14,16 @@ class UnitsExtensionDemo {
         //:: error: (assignment.type.incompatible)
         frq = 5;
 
-        // surpress all warnings issued by the units checker for the d1 assignment statement
+        // suppress all warnings issued by the units checker for the d1 assignment statement
         @SuppressWarnings("units")
         @Hz int d1 = 9;
 
-        // specifically surpress warnings related to any frequency units for the d2 assigment statement
+        // specifically suppress warnings related to any frequency units for the d2 assigment statement
         @SuppressWarnings("frequency")
         @Hz int d2 = 10;
     }
 
-    // specifically surpresses warnings for the hz annotation for the toHz method
+    // specifically suppresses warnings for the hz annotation for the toHz method
     @SuppressWarnings("hz")
     static @Hz int toHz(int hz) {
         return hz;

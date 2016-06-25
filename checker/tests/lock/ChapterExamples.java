@@ -297,7 +297,9 @@ class ChapterExamples {
 
   @SuppressWarnings("lock:cast.unsafe")
   void someMethod2() {
-    o1 = (@GuardedBy({}) MyClass) o2; // A cast can be used if the user knows it is safe to do so. However the @SuppressWarnings must be added.
+    // A cast can be used if the user knows it is safe to do so.
+    // However, the @SuppressWarnings must be added.
+    o1 = (@GuardedBy({}) MyClass) o2;
   }
 
   final static Object myLock = new Object();
@@ -332,13 +334,15 @@ class ChapterExamples {
   @GuardedBy("lock") MyClass p2;
 
   void myMethod6() {
-    synchronized(lock) { // It is the responsibility of callers to 'compare' to acquire the lock.
+    // It is the responsibility of callers to 'compare' to acquire the lock.
+    synchronized(lock) {
       boolean b1 = compare(p1, p2); // OK. No error issued.
     }
     //:: error: (contracts.precondition.not.satisfied.field)
     p2.field = new Object();
+    // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
     //:: error: (contracts.precondition.not.satisfied.field)
-    boolean b2 = compare(p1, p2); // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
+    boolean b2 = compare(p1, p2);
   }
 
   void helper1(@GuardedBy("ChapterExamples.myLock") MyClass a) {
@@ -635,8 +639,9 @@ void boxingUnboxing() {
       s2 += param;
 
       String s3 = "a";
+      // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
       //:: error: (contracts.precondition.not.satisfied.field)
-      String s4 = s3 += param; // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
+      String s4 = s3 += param;
     }
     synchronized(lock) {
       String s1a = "a" + "a";
@@ -648,7 +653,8 @@ void boxingUnboxing() {
       s2 += param;
 
       String s3 = "a";
-      String s4 = s3 += param; // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
+      // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
+      String s4 = s3 += param;
     }
   }
 
@@ -704,11 +710,12 @@ void boxingUnboxing() {
     void method() {
       o = null;
       // Assume the following happens:
-      // Context switch to a different thread
-      // bar() is called on the other thread
-      // Context switch back to this thread
+      //  * Context switch to a different thread.
+      //  * bar() is called on the other thread.
+      //  * Context switch back to this thread.
+      // o is no longer null and an assignment.type.incompatible error should be issued.
       //:: error: (assignment.type.incompatible)
-      @GuardedBy("b") Object o2 = o; // o is no longer null and an assignment.type.incompatible error should be issued
+      @GuardedBy("b") Object o2 = o;
     }
 
     void bar() {
