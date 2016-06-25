@@ -182,13 +182,13 @@ if [ ${COMMENTS} -ne 0 ] ; then
 fi
 
 
-# Stage 1: extract JAIFs from lock and nullness JDKs
+# Stage 1: extract JAIFs from lock and nullness JDKs to ${TMPDIR}
 
 rm -rf "${TMPDIR}"
 mkdir "${TMPDIR}"
 
-for p in lock nullness ; do
-    cd "${CHECKERFRAMEWORK}/checker/jdk/$p/src" || exit 1
+for typesystem in lock nullness ; do
+    cd "${CHECKERFRAMEWORK}/checker/jdk/$typesystem/src" || exit 1
     [ -z "`ls`" ] && echo "no files" 1>&2 && exit 1
 
     mkdir -p ../build
@@ -223,7 +223,8 @@ echo "stage 2 complete" 1>&2
 # Stage 3: combine JAIFs from Stages 1 and 2
 
 rm -rf "${JAIFDIR}"
-# write out JAIFs from TMPDIR, replacing (bogus) annotation defs
+# Write out JAIFs from TMPDIR, replacing (bogus) annotation defs from
+# stubfile converter which makes up empty definitions.
 for f in `(cd "${TMPDIR}" && find * -name '*\.jaif' -print)` ; do
     g="${JAIFDIR}/$f"
     mkdir -p `dirname $g`
