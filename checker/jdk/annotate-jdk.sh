@@ -127,28 +127,33 @@ convertStubs() {
     return $R
 }
 
-# split up JAIF into files by package (directory) and class (JAIF)
+# Split up JAIF (piped in from stdin) into files by package (directory) and
+# class (JAIF), in $TMPDIR.
 splitJAIF() {
     awk '
         # save class sections from converted JAIFs to hierarchical JAIF dir.
         BEGIN {out="";adefs=ENVIRON["ADEFS"]}
         /^package / {
-            l=$0;i=index($2,":");d=(i?substr($2,1,i-1):$2)
-            if(d){gsub(/\./,"/",d)}else{d=""}
-            d=ENVIRON["TMPDIR"]"/"d
-        }  # most recent package line in l; corresponding directory in d
+            packageline=$0;
+            colonindex=index($2,":");
+            packagedir=(colonindex?substr($2,1,colonindex-1):$2)
+            if(packagedir){gsub(/\./,"/",packagedir)}else{packagedir=""}
+            packagedir=ENVIRON["TMPDIR"]"/"packagedir
+        }
         /^class / {
-            i=index($2,":");c=(i?substr($2,1,i-1):$2)
+            colonindex=index($2,":");
+            c=(colonindex?substr($2,1,colonindex-1):$2)
             if(c) {
-                o=d"/"c".jaif"
+                o=packagedir"/"c".jaif"
                 if (o!=out) {
-                    if(out){fflush(out);close(out)};out=o
+                    if(out){fflush(out);close(out)};
+                    out=o
                     if(system("[ -s \""out"\" ]")!=0) {
-                        system("mkdir -p "d" && cp "adefs" "out)
+                        system("mkdir -p "packagedir" && cp "adefs" "out)
                     }
-                    printf("%s\n",l)>>out  # current pkg decl
+                    printf("%s\n",packageline)>>out  # current pkg decl
                 }
-                printf("%s\n",l)>>out  # current pkg decl
+                printf("%s\n",packageline)>>out  # current pkg decl
             }
         }
         /^annotation / { out="" }
