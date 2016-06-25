@@ -20,6 +20,8 @@
 #
 # 3.  Run this script from the top-level OpenJDK directory
 #     ("jdk8u" by default); this takes about 2 hours.
+#     The first time you do so, edit this script to change "COMMENTS=0"
+#     to "COMMENTS=1", then edit the script to set it back afterward.
 #     .../checker-framework/checker/jdk/annotate-jdk.sh
 #
 # 4.  Compile the annotated JDK 8 source; this takes about 9 hours.
