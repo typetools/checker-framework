@@ -24,9 +24,10 @@
 #
 # 0.  Restore comments from old nullness JDK and stubfiles.
 #     (These comments explain non-intuitive annotation choices, etc.
-#     This stage should run only once.)
+#     This stage should run only once.  You have to edit this file
+#     to make this happen.)
 #
-# 1.  Extract annotations from the nullness JDK into JAIFs.
+# 1.  Extract annotations from the lock and nullness JDKs into JAIFs.
 #
 # 2.  Convert old stubfiles into JAIFs.
 #
