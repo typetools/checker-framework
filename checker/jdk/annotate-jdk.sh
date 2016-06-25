@@ -104,8 +104,9 @@ convertStub() {
     java org.checkerframework.framework.stub.ToIndexFileConverter "${ADEFS}" $1
 }
 
-# convert all stubfiles in Checker Framework repository into JAIF format
-# and emit to standard output
+# Convert all jdk.astub stubfiles in Checker Framework repository into JAIF format
+# and emit to standard output.
+# Takes no arguments.
 convertStubs() {
     R=0
     cd "${CHECKERFRAMEWORK}"
