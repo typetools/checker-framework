@@ -25,7 +25,8 @@
 #     .../checker-framework/checker/jdk/annotate-jdk.sh
 #
 # 4.  Compile the annotated JDK 8 source; this takes about 9 hours.
-#     .../checker-framework/checker/jdk/build-jdk-jar.sh
+#     [Will eventually be: .../checker-framework/checker/jdk/build-jdk-jar.sh]
+#     [Currently is: .../checker-framework/checker/jdk/build8.sh]
 #     (It may be necessary to edit some of the variable settings in the
 #     script.)  If successful, this will replace checker/dist/jdk8.jar
 #     with a .jar file containing annotations from the annotated JDK source.
@@ -224,17 +225,19 @@ echo "stage 2 complete" 1>&2
 # Stage 3: combine JAIFs from Stages 1 and 2
 
 rm -rf "${JAIFDIR}"
-# Write out JAIFs from TMPDIR, replacing (bogus) annotation defs from
-# stubfile converter which makes up empty definitions.
+# Copy JAIFs from TMPDIR to JAIFDIR.  Also makes some changes:
+#  * Replace (bogus) annotation defs from stubfile converter,
+#    which makes up empty definitions.
+#  * Add @AnnotatedFor annotations.
 for f in `(cd "${TMPDIR}" && find * -name '*\.jaif' -print)` ; do
     g="${JAIFDIR}/$f"
     mkdir -p `dirname $g`
     echo "$g" 1>&2
     cp "${ADEFS}" "$g"
 
-    # first write out standard annotation defs
-    # then strip out empty annotation defs
-    # also generate and insert @AnnotatedFor annotations
+    # First write out standard annotation defs,
+    # then strip out empty annotation defs from $f.
+    # Also generate and insert @AnnotatedFor annotations.
     (cat "${ADEFS}" && stripDefs < "${TMPDIR}/$f") | addAnnotatedFor > "$g"
     [ ${RET} -ne 0 ] || RET=$?
 done
