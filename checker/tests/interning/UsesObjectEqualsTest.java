@@ -19,11 +19,13 @@ public class UsesObjectEqualsTest {
 
     class D {}
 
+    @UsesObjectEquals
     //:: error: (superclass.notannotated)
-    @UsesObjectEquals class E extends D {}
+    class E extends D {}
 
+    @UsesObjectEquals
     //:: error: (overrides.equals)
-    @UsesObjectEquals class TestEquals {
+    class TestEquals {
 
         @org.checkerframework.dataflow.qual.Pure
         public boolean equals(Object o) {

@@ -66,6 +66,7 @@
     </sequential>
   </macrodef>
 
+  <!-- Pass arguments in the order: expected, actual. -->
   <macrodef name="my-diff">
     <attribute name="file1"/>
     <attribute name="file2"/>
