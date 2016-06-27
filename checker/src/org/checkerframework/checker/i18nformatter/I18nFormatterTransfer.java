@@ -6,6 +6,7 @@ import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -51,21 +52,13 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
             CFStore elseStore = thenStore.copy();
             ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
                     result.getResultValue(), thenStore, elseStore);
-
-            FlowExpressionContext context = FlowExpressionParseUtil.buildFlowExprContextForUse(node, atypeFactory.getContext());
-            try {
-                Receiver firstParam = FlowExpressionParseUtil
-                        .parse("#1", context, atypeFactory.getPath(node.getTree()));
-                Result<I18nConversionCategory[]> cats = tu.getHasFormatCallCategories(node);
-                if (cats.value() == null) {
-                    tu.failure(cats, "i18nformat.indirect.arguments");
-                } else {
-                    AnnotationMirror anno = atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
-                    thenStore.insertValue(firstParam, anno);
-                }
-            } catch (FlowExpressionParseException e) {
-                ErrorReporter.errorAbort("I18nFormatterTransfer.visitMethodInvocation: could not parse " +
-                        "flow expression \"#1\" with respect to MethodInvocationNode " + node.toString(), e);
+            Result<I18nConversionCategory[]> cats = tu.getHasFormatCallCategories(node);
+            if (cats.value() == null) {
+                tu.failure(cats, "i18nformat.indirect.arguments");
+            } else {
+                Receiver firstParam = FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
+                AnnotationMirror anno = atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
+                thenStore.insertValue(firstParam, anno);
             }
             return newResult;
         }
@@ -76,21 +69,11 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
             CFStore elseStore = thenStore.copy();
             ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
                     result.getResultValue(), thenStore, elseStore);
-
-            FlowExpressionContext context = FlowExpressionParseUtil.buildFlowExprContextForUse(node, atypeFactory.getContext());
-
-            try {
-                Receiver firstParam = FlowExpressionParseUtil
-                        .parse("#1", context, atypeFactory.getPath(node.getTree()));
-                AnnotationBuilder builder = new AnnotationBuilder(tu.processingEnv, I18nInvalidFormat.class.getCanonicalName());
-                // No need to set a value of @I18nInvalidFormat
-                builder.setValue("value", "");
-                elseStore.insertValue(firstParam, builder.build());
-
-            } catch (FlowExpressionParseException e) {
-                ErrorReporter.errorAbort("I18nFormatterTransfer.visitMethodInvocation: could not parse " +
-                        "flow expression \"#1\" with respect to MethodInvocationNode " + node.toString(), e);
-            }
+            Receiver firstParam = FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
+            AnnotationBuilder builder = new AnnotationBuilder(tu.processingEnv, I18nInvalidFormat.class.getCanonicalName());
+            // No need to set a value of @I18nInvalidFormat
+            builder.setValue("value", "");
+            elseStore.insertValue(firstParam, builder.build());
             return newResult;
         }
 

@@ -50,7 +50,8 @@ public class ParameterExpression {
   //:: warning: (contracts.postcondition.expression.parameter.name)
   public void m6(Object param) { param = new Object(); }
 
-  @EnsuresNonNull("field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  @EnsuresNonNull("field")
   // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
   //:: warning: (contracts.postcondition.expression.parameter.name)
   public void m7(Object field) { field = new Object(); }
@@ -63,7 +64,8 @@ public class ParameterExpression {
   //:: warning: (contracts.precondition.expression.parameter.name)
   public void m9(Object param) { }
 
-  @RequiresNonNull("field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  @RequiresNonNull("field")
   // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
   //:: warning: (contracts.precondition.expression.parameter.name)
   public void m10(Object field) { }
@@ -76,7 +78,8 @@ public class ParameterExpression {
   //:: warning: (contracts.conditional.postcondition.expression.parameter.name)
   public boolean m12(Object param) { param = new Object(); return true; }
 
-  @EnsuresNonNullIf(result=true, expression="field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  @EnsuresNonNullIf(result=true, expression="field")
   // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
   //:: warning: (contracts.conditional.postcondition.expression.parameter.name)
   public boolean m13(Object field) { field = new Object(); return true; }

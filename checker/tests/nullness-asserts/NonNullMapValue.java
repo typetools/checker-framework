@@ -169,7 +169,8 @@ public class NonNullMapValue {
     // We get an override warning, because we do not use the annotated JDK in the
     // test suite. Ignore this.
     @SuppressWarnings("override.return.invalid")
-    @org.checkerframework.dataflow.qual.Pure public @Nullable V get(@Nullable Object o);
+    @org.checkerframework.dataflow.qual.Pure
+    public @Nullable V get(@Nullable Object o);
   }
 
   private static final String KEY = "key";
@@ -206,7 +207,8 @@ public class NonNullMapValue {
     // @Nullable V, but I don't know how to say that.
     @EnsuresNonNullIf(result=true, expression="get(#1)")
     public abstract boolean containsKey(@Nullable Object a1);
-    public abstract @org.checkerframework.dataflow.qual.Pure @Nullable V get(@Nullable Object a1);
+    @org.checkerframework.dataflow.qual.Pure
+    public abstract @Nullable V get(@Nullable Object a1);
   }
 
   interface MyMap3<K, V> {

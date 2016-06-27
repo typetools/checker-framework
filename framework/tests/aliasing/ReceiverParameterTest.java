@@ -44,7 +44,10 @@ class ReceiverParameterTest {
     void nonLeaked(@NonLeaked ReceiverParameterTest this) {}
     void mayLeak() {}
 
-    void isUnique(@NonLeaked @Unique ReceiverParameterTest s) {} //@NonLeaked so it doesn't refine the type of the argument.
-    void isUnique(@NonLeaked @Unique String s) {} //@NonLeaked so it doesn't refine the type of the argument.
-    void isUnique(@NonLeaked @Unique StringBuffer s) {} //@NonLeaked so it doesn't refine the type of the argument.
+    // @NonLeaked so it doesn't refine the type of the argument.
+    void isUnique(@NonLeaked @Unique ReceiverParameterTest s) {}
+    // @NonLeaked so it doesn't refine the type of the argument.
+    void isUnique(@NonLeaked @Unique String s) {}
+    // @NonLeaked so it doesn't refine the type of the argument.
+    void isUnique(@NonLeaked @Unique StringBuffer s) {}
 }

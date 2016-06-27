@@ -442,7 +442,8 @@ public class CheckerMain {
                     // after it has been handed off to javac, for example. Ideally we would print
                     // the argfile filename as a comment but the resulting file couldn't then be run as
                     // a script on Unix or Windows.
-                    if (arg.startsWith("@")) { // Read argfile and include its parameters in the output file.
+                    if (arg.startsWith("@")) {
+                        // Read argfile and include its parameters in the output file.
                         String inputFilename = arg.substring(1);
 
                         BufferedReader br = new BufferedReader(new FileReader(inputFilename));
@@ -661,7 +662,8 @@ public class CheckerMain {
             ZipEntry entry;
             while ((entry = checkerJarIs.getNextEntry()) != null) {
                 final String name = entry.getName();
-                if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) { // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
+                // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
+                if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) {
                     // Forward slash is used instead of File.separator because checker.jar uses / as the separator.
                     checkerClassNames.add(PluginUtil.join(".", name.substring(0, name.length() - ".class".length()).split("/")));
                 }

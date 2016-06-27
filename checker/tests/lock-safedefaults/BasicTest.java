@@ -67,11 +67,13 @@ public class BasicTest {
         lock.lock();
         myAnnotatedMethod2();
         q.field = new Object();
-        myUnannotatedMethod2(); // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        myUnannotatedMethod2();
         //:: error: (contracts.precondition.not.satisfied.field)
         q.field = new Object();
         lock.lock();
-        unannotatedReleaseLock(lock); // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        unannotatedReleaseLock(lock);
         //:: error: (contracts.precondition.not.satisfied.field)
         q.field = new Object();
     }
