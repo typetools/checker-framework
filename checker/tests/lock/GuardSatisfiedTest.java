@@ -17,8 +17,9 @@ public class GuardSatisfiedTest {
 
    // Test defaulting of parameters - they must default to @GuardedBy({}), not @GuardSatisfied
    void testDefaulting(Object mustDefaultToGuardedByNothing, @GuardSatisfied Object p) {
+       // Must assign in this direction to test the defaulting because assigning a RHS of @GuardedBy({}) to a LHS @GuardSatisfied is legal.
        //:: error: (assignment.type.incompatible)
-       mustDefaultToGuardedByNothing = p; // Must assign in this direction to test the defaulting because assigning a RHS of @GuardedBy({}) to a LHS @GuardSatisfied is legal.
+       mustDefaultToGuardedByNothing = p;
        @GuardedBy({}) Object q = mustDefaultToGuardedByNothing;
    }
 
@@ -182,7 +183,7 @@ public class GuardSatisfiedTest {
    final Object lock1 = new Object(), lock2 = new Object();
 
    void testAssignment(@GuardSatisfied Object o) {
-       @GuardedBy({"lock1", "lock2"}) Object p = new Object();;
+       @GuardedBy({"lock1", "lock2"}) Object p = new Object();
        //:: error: (contracts.precondition.not.satisfied.field)
        o = p;
        synchronized(lock1) {

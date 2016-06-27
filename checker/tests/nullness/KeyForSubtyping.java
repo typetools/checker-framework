@@ -80,7 +80,8 @@ public class KeyForSubtyping {
         a = ab;
         // At this point, dataflow should have refined the type of a to @KeyFor({"this.mapA","this.mapB","this.mapC"})
 
-        abc = a; // This would not succeed without the previous two assignments, but should now because of dataflow.
+        // This would not succeed without the previous two assignments, but should now because of dataflow.
+        abc = a;
     }
 
     private void method1(@KeyFor("this.mapA") String a) {

@@ -3,6 +3,7 @@ package org.checkerframework.checker.experimental.regex_qual;
 import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
 import org.checkerframework.checker.regex.classic.RegexTransfer;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -65,24 +66,19 @@ public class RegexQualifiedTransfer extends QualTransfer<Regex> {
                 QualStore<Regex> elseStore = thenStore.copy();
                 ConditionalTransferResult<QualValue<Regex>, QualStore<Regex>> newResult = new ConditionalTransferResult<>(
                         result.getResultValue(), thenStore, elseStore);
-                FlowExpressionContext context = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.getContext());
-                try {
-                    Receiver firstParam = FlowExpressionParseUtil.parse(
-                            "#1", context, analysis.getContext().getTypeFactory().getPath(n.getTree()));
-                    // add annotation with correct group count (if possible,
-                    // regex annotation without count otherwise)
-                    Node count = n.getArgument(1);
-                    if (count instanceof IntegerLiteralNode) {
-                        IntegerLiteralNode iln = (IntegerLiteralNode) count;
-                        Integer groupCount = iln.getValue();
-                        Regex regex = new RegexVal(groupCount);
-                        thenStore.insertValue(firstParam, regex);
-                    } else {
-                        thenStore.insertValue(firstParam, new RegexVal(0));
-                    }
-                } catch (FlowExpressionParseException e) {
-                    assert false;
+                Receiver firstParam = FlowExpressions.internalReprOf(analysis.getContext().getAnnotationProvider(),
+                        n.getArgument(0));
+
+                // add annotation with correct group count (if possible,
+                // regex annotation without count otherwise)
+                Node count = n.getArgument(1);
+                if (count instanceof IntegerLiteralNode) {
+                    IntegerLiteralNode iln = (IntegerLiteralNode) count;
+                    Integer groupCount = iln.getValue();
+                    Regex regex = new RegexVal(groupCount);
+                    thenStore.insertValue(firstParam, regex);
+                } else {
+                    thenStore.insertValue(firstParam, new RegexVal(0));
                 }
                 return newResult;
 

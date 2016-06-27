@@ -30,7 +30,8 @@ class LambdaInit {
         f3.toString();
         return "";
     };
-    Object o1 = f1b = ""; // Test field value refinement after initializer. f1b should still be @Nullable in the lambda.
+    // Test field value refinement after initializer. f1b should still be @Nullable in the lambda.
+    Object o1 = f1b = "";
 
     String f4;
     {
@@ -163,7 +164,8 @@ class LambdaInit {
         sf3.toString();
         return "";
     };
-    static Object so1 = sf1b = ""; // Test field value refinement after initializer. f1b should still be null.
+    // Test field value refinement after initializer. f1b should still be null.
+    static Object so1 = sf1b = "";
 
     static String sf4;
     static

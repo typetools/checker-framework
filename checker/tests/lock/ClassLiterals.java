@@ -8,7 +8,8 @@ class ClassLiterals {
         return new Object();
     }
 
-    @Holding("ClassLiterals") // a class literal may not terminate a flow expression string
+    // a class literal may not terminate a flow expression string
+    @Holding("ClassLiterals")
     //:: error: (flowexpr.parse.error)
     static void method2() {
     }
@@ -21,7 +22,8 @@ class ClassLiterals {
     static void method4() {
     }
 
-    @Holding("testpackage.ClassLiterals") // a class literal may not terminate a flow expression string
+    // a class literal may not terminate a flow expression string
+    @Holding("testpackage.ClassLiterals")
     //:: error: (flowexpr.parse.error)
     static void method5() {
     }
