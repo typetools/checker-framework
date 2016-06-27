@@ -103,6 +103,8 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}"/>
