@@ -47,8 +47,8 @@ demo2:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
 	-J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR) \
-	-processor org.checkerframework.common.aliasing.AliasingChecker \
 	-classpath :$(PROJECTDIR) \
+	-processor org.checkerframework.common.aliasing.AliasingChecker \
 	-Anomsgtext \
 	-AprintErrorStack \
 	-Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
