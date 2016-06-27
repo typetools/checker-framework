@@ -20,13 +20,13 @@ import java.util.zip.ZipEntry;
 /**
  * This class behaves similarly to javac.  CheckerMain does the following:
  * <ul>
- *   <li>add the jsr308-langtools’ javac.jar to the runtime bootclasspath
+ *   <li>add the jsr308-langtools javac.jar to the runtime bootclasspath
  *     of the process that runs the Checker Framework.
  *     This specifies which classes are used to run javac</li>
  *   <li>add jdk7.jar or jdk8.jar to the compile time bootclasspath
  *     of the javac argument list passed to javac</li>
  *   <li>parse and implement any special options used by the Checker Framework,
- *     e.g., using “shortnames” for annotation processors</li>
+ *     e.g., using "shortnames" for annotation processors</li>
  *   <li>pass all remaining command-line arguments to the real javac</li>
  * </ul>
  *
@@ -372,7 +372,7 @@ public class CheckerMain {
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
 
-        // Prepend ("/p:") because our javac.jar doesn’t have all classes
+        // Prepend ("/p:") because our javac.jar doesn't have all classes
         // required by the Java runtime to execute the compiler.
         args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeBootClasspath));
         args.add("-ea");
