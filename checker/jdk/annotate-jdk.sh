@@ -16,7 +16,10 @@
 #
 # 2.  Clone the OpenJDK 8u repository and sub-repositories.
 #     hg clone http://hg.openjdk.java.net/jdk8u/jdk8u  [yes, jdk8u*2]
+#     cd jdk8u && hg clone http://hg.openjdk.java.net/jdk8/jdk8/jdk
+#     [Previously:
 #     cd jdk8u && sh ./get_source
+#     but you don't really need all those files.]
 #
 # 3.  Run this script from the top-level OpenJDK directory
 #     ("jdk8u" by default); this takes about 2 hours.
