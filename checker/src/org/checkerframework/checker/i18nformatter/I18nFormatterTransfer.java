@@ -68,7 +68,7 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
             CFStore elseStore = thenStore.copy();
             ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
                     result.getResultValue(), thenStore, elseStore);
-            Receiver firstParam = FlowExpressions.internalReprOf(atypeFactory, node.getArgument(1));
+            Receiver firstParam = FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
             AnnotationBuilder builder = new AnnotationBuilder(tu.processingEnv, I18nInvalidFormat.class.getCanonicalName());
             // No need to set a value of @I18nInvalidFormat
             builder.setValue("value", "");
