@@ -372,8 +372,10 @@
         <!-- With Ant 1.9.4 or later, add
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}" destdir="${api.doc}"
+        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+                 destdir="${api.doc}"
                  private="${javadoc.private}"
+                 encoding="UTF-8"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
