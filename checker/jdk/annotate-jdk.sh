@@ -92,12 +92,13 @@ annotateSourceFile() {
     R=0
     JAIFBASE="${JAIFDIR}/`dirname "$1"`/`basename "$1" .java`"
     # must insert annotations on inner classes as well
-    for f in ${JAIFBASE}.jaif ${JAIFBASE}\$*.jaif ; do
-        if [ -r "$f" ] ; then
-            insert-annotations-to-source "$f" "$1"
-            [ $R -ne 0 ] || R=$?
-        fi
-    done
+    JAIFS=`ls ${JAIFBASE}.jaif ${JAIFBASE}[$]*.jaif 2>/dev/null`
+    if [ ! -z "$JAIFS" ] ; then
+        echo insert-annotations-to-source $JAIFS "$1"
+        insert-annotations-to-source $JAIFS "$1"
+        R=$?
+        [ $R -eq 0 ] || echo iats failed with $R
+    fi
     return $R
 }
 
@@ -253,10 +254,11 @@ echo "stage 3 complete" 1>&2
 
     for f in `find * -name '*\.java' -print` ; do
         annotateSourceFile $f
-        [ ${RET} -ne 0 ] || RET=$?
+        RET=$?
+        [ ${RET} -eq 0 ] || echo "annotateSourceFile failed (${RET}) on $f"
     done
 
-    [ ${RET} -ne 0 ] && echo "stage 4 failed" 1>&2 && exit ${RET}
+    #[ ${RET} -ne 0 ] && echo "stage 4 failed" 1>&2 && exit ${RET}
 
     # copy annotated source files over originals
     rsync -au annotated/* .
