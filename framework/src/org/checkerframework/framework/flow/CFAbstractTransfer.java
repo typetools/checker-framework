@@ -64,8 +64,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -514,7 +512,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 continue;
             }
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(methodTree,
+                flowExprContext = FlowExpressionContext.buildContextForMethodDeclaration(methodTree,
                                 method.getClassTree(), analysis.checker.getContext());
             }
 
@@ -526,7 +524,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 // (same for other annotations)
                 expr = FlowExpressionParseUtil.parse(expression,
                         flowExprContext,
-                        analysis.atypeFactory.getPath(methodTree));
+                        analysis.atypeFactory.getPath(methodTree), false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
                 // report errors here
@@ -976,13 +974,13 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 continue;
             }
             if (flowExprContext == null) {
-               flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForUse(n, analysis.checker.getContext());
+               flowExprContext = FlowExpressionContext.buildContextForMethodUse(n, analysis.checker.getContext());
             }
 
             try {
                 FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
                             expression, flowExprContext,
-                            analysis.atypeFactory.getPath(tree));
+                            analysis.atypeFactory.getPath(tree), false);
                 store.insertValue(r, anno);
             } catch (FlowExpressionParseException e) {
                 // these errors are reported at the declaration, ignore here
@@ -1014,8 +1012,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 continue;
             }
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.checker.getContext());
+                flowExprContext = FlowExpressionContext
+                        .buildContextForMethodUse(n, analysis.checker.getContext());
             }
 
             try {
@@ -1023,7 +1021,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
                 r = FlowExpressionParseUtil.parse(
                         expression, flowExprContext,
-                        analysis.atypeFactory.getPath(tree));
+                        analysis.atypeFactory.getPath(tree), false);
                 if (result) {
                     thenStore.insertValue(r, anno);
                 } else {

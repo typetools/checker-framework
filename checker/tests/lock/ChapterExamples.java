@@ -916,7 +916,7 @@ void boxingUnboxing() {
 
     // TODO: Fix the flow expression parser so it can handle
     // @GuardedBy("c1.field.field.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field") Object guarded6;
-    // Currently it fails because the dotPattern incorrectly splits the "getFieldPure(...).field" field access into:
+    // Currently it fails because the memberselect incorrectly splits the "getFieldPure(...).field" field access into:
     // "getFieldPure(c1"
     // and
     // "field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field"

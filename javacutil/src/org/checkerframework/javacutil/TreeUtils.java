@@ -301,7 +301,7 @@ public final class TreeUtils {
 
     public static /*@Nullable*/ BlockTree enclosingTopLevelBlock(TreePath path) {
         TreePath parpath = path.getParentPath();
-        while (parpath!=null && parpath.getLeaf().getKind() != Tree.Kind.CLASS) {
+        while (parpath!=null && !classTreeKinds.contains(parpath.getLeaf().getKind())) {
             path = parpath;
             parpath = parpath.getParentPath();
         }
