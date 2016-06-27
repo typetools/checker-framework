@@ -260,7 +260,11 @@ notation:
         -Aunits=\textit{myModule.qual.MyUnit},\textit{myModule.qual.MyOtherUnit} MyFile.java ...
 \end{alltt}
 
-The annotations listed in \code{-Aquals} must be accessible to the compiler during compilation in the classpath.  In other words, they must already be compiled (and, typically, be on the javac classpath) before you run the Subtyping Checker with \code{javac}. It is not sufficient to supply their source files on the command line.
+The annotations listed in \code{-Aquals} must be accessible to
+the compiler during compilation in the classpath.  In other words, they must
+already be compiled (and, typically, be on the javac classpath)
+before you run the Subtyping Checker with \code{javac}.  It
+is not sufficient to supply their source files on the command line.
 
 \item
 You can also provide the fully-qualified paths to a set of directories
