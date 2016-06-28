@@ -72,9 +72,10 @@ public class Overriding {
     }
 
     class SubClass extends SuperClass {
-        @Holding({"a", "b"})  // error
+        @Holding({"a", "b"}) // error
+        @Override
         //:: error: (contracts.precondition.override.invalid)
-        @Override void guardedByOne() { }
+        void guardedByOne() {}
 
         @Holding({"a", "b"})
         @Override void guardedByTwo() { }
@@ -83,16 +84,19 @@ public class Overriding {
         @Override void guardedByThree() { }
 
         @MayReleaseLocks
+        @Override
         //:: error: (override.sideeffect.invalid)
-        @Override void rnlMethod() { }
+        void rnlMethod() {}
 
         @MayReleaseLocks
+        @Override
         //:: error: (override.sideeffect.invalid)
-        @Override void implicitRnlMethod() { }
+        void implicitRnlMethod() {}
 
         @ReleasesNoLocks
+        @Override
         //:: error: (override.sideeffect.invalid)
-        @Override void lfMethod() { }
+        void lfMethod() {}
 
         @MayReleaseLocks
         @Override void mrlMethod() { }
@@ -121,8 +125,9 @@ public class Overriding {
     // Test overriding @Holding with JCIP @GuardedBy.
     class SubClassJcip extends SuperClass {
         @net.jcip.annotations.GuardedBy({"a", "b"})
+        @Override
         //:: error: (contracts.precondition.override.invalid)
-        @Override void guardedByOne() { }
+        void guardedByOne() {}
 
         @net.jcip.annotations.GuardedBy({"a", "b"})
         @Override void guardedByTwo() { }
@@ -134,8 +139,9 @@ public class Overriding {
     // Test overriding @Holding with Javax @GuardedBy.
     class SubClassJavax extends SuperClass {
         @javax.annotation.concurrent.GuardedBy({"a", "b"})
+        @Override
         //:: error: (contracts.precondition.override.invalid)
-        @Override void guardedByOne() { }
+        void guardedByOne() {}
 
         @javax.annotation.concurrent.GuardedBy({"a", "b"})
         @Override void guardedByTwo() { }

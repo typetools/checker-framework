@@ -4,6 +4,6 @@ class LoaderTest {
     void foo() {
         @Unique Object o = new Object();
         //:: error: (unique.leaked)
-        Object[] ar = new Object[]{o};
+        Object[] ar = new Object[] {o};
     }
 }

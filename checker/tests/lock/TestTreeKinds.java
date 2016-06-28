@@ -265,36 +265,52 @@ void testTreeTypes() {
       }
     }
 
+    // method call on guarded object within parenthesized expression
     //:: error: (contracts.precondition.not.satisfied.field)
-    String s = (foo.field.toString()); // method call on guarded object within parenthesized expression
+    String s = (foo.field.toString());
     //:: error: (contracts.precondition.not.satisfied.field)
     foo.field.toString(); // method call on guarded object
     //:: error: (contracts.precondition.not.satisfied)
     getFoo().field.toString(); // method call on guarded object returned by a method
     //:: error: (contracts.precondition.not.satisfied.field)
     this.foo.field.toString(); // method call on guarded object using 'this' literal
+    // dereference of guarded object in labeled statement
+    label:
     //:: error: (contracts.precondition.not.satisfied.field)
-    label: foo.field.toString(); // dereference of guarded object in labeled statement
-    if (foo instanceof MyClass) {} // access to guarded object in instanceof expression (OK)
-    while (foo != null) { break; } // access to guarded object in while condition of while loop (OK)
-    if (false) {} else if (foo == o) {} // binary operator on guarded object in else if condition (OK)
-    //:: error: (contracts.precondition.not.satisfied.field)
-    Runnable rn = () -> { foo.field.toString(); }; // access to guarded object in a lambda expression
+    foo.field.toString();
+    // access to guarded object in instanceof expression (OK)
+    if (foo instanceof MyClass) {}
+    // access to guarded object in while condition of while loop (OK)
+    while (foo != null) { break; }
+    // binary operator on guarded object in else if condition (OK)
+    if (false) {} else if (foo == o) {}
+    // access to guarded object in a lambda expression
+        Runnable rn =
+                () -> {
+                    //:: error: (contracts.precondition.not.satisfied.field)
+                    foo.field.toString();
+                };
     //:: error: (contracts.precondition.not.satisfied.field)
     i = myClassInstance.i; // access to member field of guarded object
     // MemberReferenceTrees? how do they work
     fooArray = new MyClass[3]; // second allocation of guarded array (OK)
+    // dereference of guarded object in conditional expression tree
     //:: error: (contracts.precondition.not.satisfied.field)
-    s = i == 5 ? foo.field.toString() : f.field.toString(); // dereference of guarded object in conditional expression tree
+    s = i == 5 ? foo.field.toString() : f.field.toString();
+    // dereference of guarded object in conditional expression tree
     //:: error: (contracts.precondition.not.satisfied.field)
-    s = i == 5 ? f.field.toString() : foo.field.toString(); // dereference of guarded object in conditional expression tree
+    s = i == 5 ? f.field.toString() : foo.field.toString();
     // Testing of 'return' is done in getFooWithWrongReturnType()
     // throwing a guarded object - when throwing an exception, it must be @GuardedBy({}). Even @GuardedByUnknown is not allowed.
-    //:: error: (throw.type.invalid)
-    try { throw exception; } catch (Exception e) {}
+    try {
+      //:: error: (throw.type.invalid)
+      throw exception;
+    } catch (Exception e) {}
+    // casting of a guarded object to an unguarded object
     //:: error: (assignment.type.incompatible)
-    @GuardedBy({}) Object e1 = (Object) exception; // casting of a guarded object to an unguarded object
-    Object e2 = (Object) exception; // OK, since the local variable's type gets refined to @GuardedBy("lock")
+    @GuardedBy({}) Object e1 = (Object) exception;
+    // OK, since the local variable's type gets refined to @GuardedBy("lock")
+    Object e2 = (Object) exception;
     //:: error: (contracts.precondition.not.satisfied.field)
     l = myParametrizedType.l; // dereference of guarded object having a parameterized type
 

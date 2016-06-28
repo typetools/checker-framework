@@ -477,8 +477,9 @@ public final class TreeUtils {
 
         StatementTree st = node.getBody().getStatements().get(0);
         if (!(st instanceof ExpressionStatementTree)
-                || !(((ExpressionStatementTree)st).getExpression() instanceof MethodInvocationTree))
+                || !(((ExpressionStatementTree)st).getExpression() instanceof MethodInvocationTree)) {
             return false;
+        }
 
         MethodInvocationTree invocation = (MethodInvocationTree)
             ((ExpressionStatementTree)st).getExpression();

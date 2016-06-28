@@ -4,6 +4,7 @@ import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
 import org.checkerframework.checker.regex.classic.RegexTransfer;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -101,17 +102,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
             QualStore<QualParams<Regex>> elseStore = thenStore.copy();
             ConditionalTransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> newResult =
                     new ConditionalTransferResult<>(resultIn.getResultValue(), thenStore, elseStore);
-            FlowExpressionContext context = FlowExpressionParseUtil.buildFlowExprContextForUse(n,
-                    analysis.getContext());
-            Receiver firstParam;
-            try {
-                // TODO: is this the easiest way to do this?
-                firstParam = FlowExpressionParseUtil.parse("#1", context,
-                        analysis.getContext().getTypeFactory().getPath(n.getTree()));
-            } catch (FlowExpressionParseException e) {
-                firstParam = null;
-                assert false;
-            }
+            Receiver firstParam =
+                    FlowExpressions.internalReprOf(analysis.getContext().getAnnotationProvider(), n.getArgument(0));
 
             // add annotation with correct group count (if possible,
             // regex annotation without count otherwise)

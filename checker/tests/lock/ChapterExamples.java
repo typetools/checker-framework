@@ -189,9 +189,12 @@ class ChapterExamples {
     //:: error: (contracts.precondition.not.satisfied)
     boolean b4 = compare(p1, myMethod());
 
-
+    // An error is issued indicating that p2 might be dereferenced without
+    // "lock" being held. The method call need not be modified, since
+    // @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown,
+    // but the lock must be acquired prior to the method call.
     //:: error: (contracts.precondition.not.satisfied.field)
-    boolean b2 = compare(p1, p2); // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
+    boolean b2 = compare(p1, p2);
     //:: error: (contracts.precondition.not.satisfied.field)
     boolean b3 = compare(p1, this.p2);
     //:: error: (contracts.precondition.not.satisfied)
@@ -428,10 +431,9 @@ class ChapterExamples {
     if (myLock2.tryLock()) {
       x3.field = new Object(); // OK: the lock is held
       myMethod5();
-      x3.field = new Object(); // OK: the lock is still known to be held since myMethod is locking-free
+      x3.field = new Object(); // OK: the lock is still held since myMethod is locking-free
       mySideEffectFreeMethod();
-      x3.field = new Object(); // OK: the lock is still known to be held since mySideEffectFreeMethod
-      // is side-effect-free
+      x3.field = new Object(); // OK: the lock is still held since mySideEffectFreeMethod is side-effect-free
       myUnlockingMethod();
       //:: error: (contracts.precondition.not.satisfied.field)
       x3.field = new Object(); // ILLEGAL: myLockingMethod is not locking-free
@@ -669,12 +671,12 @@ void boxingUnboxing() {
      *
      * Suppose the following lines from method1 are executed on thread A.
      *
-     * @GuardedBy(“lock1”) MyClass local;
+     * @GuardedBy("lock1") MyClass local;
      * m = local;
      *
      * Then a context switch occurs to method2 on thread B and the following lines are executed:
      *
-     * @GuardedBy(“lock2”) MyClass local;
+     * @GuardedBy("lock2") MyClass local;
      * m = local;
      *
      * Then a context switch back to method1 on thread A occurs and the following lines are executed:
@@ -835,11 +837,14 @@ void boxingUnboxing() {
 
     // The following negative test cases are the same as the one above but with one modification in each.
 
-    //:: error: (lock.expression.not.final)
-    synchronized(c1.field.field2.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field) {
+    synchronized(
+                //:: error: (lock.expression.not.final)
+                c1.field.field2.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field) {
     }
-    //:: error: (lock.expression.not.final)
-    synchronized(c1.field.field.field.getFieldPure(c1.field, c1.getField().getFieldPure(c1, c1.field)).field) {
+    synchronized(
+                c1.field.field.field.getFieldPure(
+                                //:: error: (lock.expression.not.final)
+                                c1.field, c1.getField().getFieldPure(c1, c1.field)).field) {
     }
   }
 
@@ -886,15 +891,23 @@ void boxingUnboxing() {
 
     // The following negative test cases are the same as the one above but with one modification in each.
 
-    //:: error: (lock.expression.not.final)
-    c2.field.field2.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
-    //:: error: (lock.expression.not.final)
-    c2.field.field2.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
+    c2.field
+      //:: error: (lock.expression.not.final)
+      .field2
+      .field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
+    c2.field
+      //:: error: (lock.expression.not.final)
+      .field2
+      .field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
 
-    //:: error: (lock.expression.not.final)
-    c2.field.field.field.getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field)).field.lock();
-    //:: error: (lock.expression.not.final)
-    c2.field.field.field.getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field)).field.unlock();
+    c2.field.field.field
+      //:: error: (lock.expression.not.final)
+      .getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field))
+      .field.lock();
+    c2.field.field.field
+      //:: error: (lock.expression.not.final)
+      .getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field))
+      .field.unlock();
   }
 
   // Analogous to testSynchronizedExpressionIsFinal and testExplicitLockExpressionIsFinal, but for expressions in @GuardedBy annotations.
