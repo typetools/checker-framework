@@ -3,7 +3,6 @@ package org.checkerframework.checker.regex.classic;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
-import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -24,7 +23,6 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 
 public class RegexTransfer extends
         CFAbstractTransfer<CFValue, CFStore, RegexTransfer> {
