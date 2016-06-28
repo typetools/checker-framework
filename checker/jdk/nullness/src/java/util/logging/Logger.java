@@ -280,7 +280,7 @@ public class Logger {
      */
     protected Logger(@Nullable String name, @Nullable String resourceBundleName) { throw new RuntimeException(); }
 
-    Logger(@Nullable String name, @Nullable String resourceBundleName, @Nullable Class<?> caller) { throw new RuntimeException(); }
+    Logger(@Nullable String name, @Nullable String resourceBundleName, @Nullable Class<?> caller, LogManager manager, boolean isSystemLogger) { throw new RuntimeException(); }
 
     private void setCallersClassLoaderRef(@Nullable Class<?> caller) { throw new RuntimeException(); }
 

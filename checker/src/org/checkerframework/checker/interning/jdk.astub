@@ -323,14 +323,18 @@ public class BasicHTML {
 }
 package javax.swing.plaf.basic;
 public class BasicRootPaneUI {
+    class Actions() {
          public static final @Interned String PRESS = "press";
          public static final @Interned String RELEASE = "release";
          public static final @Interned String POST_POPUP = "postPopup";
+    };
 }
 package javax.swing.plaf.basic;
 public class BasicSliderUI {
+    class Actions() {
          public static final @Interned String MIN_SCROLL_INCREMENT = "minScroll";
          public static final @Interned String MAX_SCROLL_INCREMENT = "maxScroll";
+    }
 }
 package javax.swing.plaf.metal;
 public class MetalScrollBarUI {
