@@ -1,6 +1,6 @@
-diff -r -U3 annotated/java/beans/PropertyChangeSupport.java ameliorated/java/beans/PropertyChangeSupport.java
---- annotated/java/beans/PropertyChangeSupport.java	2016-06-12 02:58:22.218013832 -0700
-+++ ameliorated/java/beans/PropertyChangeSupport.java	2016-06-14 18:45:35.655683629 -0700
+diff -r -U3 a/java/beans/PropertyChangeSupport.java b/java/beans/PropertyChangeSupport.java
+--- a/java/beans/PropertyChangeSupport.java	2016-06-12 02:58:22.218013832 -0700
++++ b/java/beans/PropertyChangeSupport.java	2016-06-14 18:45:35.655683629 -0700
 @@ -186,7 +186,8 @@
       *         empty array if no listeners have been added
       * @since 1.4
@@ -21,9 +21,9 @@ diff -r -U3 annotated/java/beans/PropertyChangeSupport.java ameliorated/java/bea
          return this.map.getListeners(propertyName);
      }
  
-diff -r -U3 annotated/java/util/concurrent/Callable.java ameliorated/java/util/concurrent/Callable.java
---- annotated/java/util/concurrent/Callable.java	2016-06-12 04:25:16.756391555 -0700
-+++ ameliorated/java/util/concurrent/Callable.java	2016-06-14 18:45:35.663683668 -0700
+diff -r -U3 a/java/util/concurrent/Callable.java b/java/util/concurrent/Callable.java
+--- a/java/util/concurrent/Callable.java	2016-06-12 04:25:16.756391555 -0700
++++ b/java/util/concurrent/Callable.java	2016-06-14 18:45:35.663683668 -0700
 @@ -59,7 +59,6 @@
   */
  @FunctionalInterface
@@ -32,9 +32,9 @@ diff -r -U3 annotated/java/util/concurrent/Callable.java ameliorated/java/util/c
  public interface Callable<V extends @Nullable Object> {
      /**
       * Computes a result, or throws an exception if unable to do so.
-diff -r -U3 annotated/java/util/function/Consumer.java ameliorated/java/util/function/Consumer.java
---- annotated/java/util/function/Consumer.java	2016-06-12 04:29:31.189758927 -0700
-+++ ameliorated/java/util/function/Consumer.java	2016-06-14 18:45:35.670683703 -0700
+diff -r -U3 a/java/util/function/Consumer.java b/java/util/function/Consumer.java
+--- a/java/util/function/Consumer.java	2016-06-12 04:29:31.189758927 -0700
++++ b/java/util/function/Consumer.java	2016-06-14 18:45:35.670683703 -0700
 @@ -40,7 +40,6 @@
   * @since 1.8
   */
@@ -43,9 +43,9 @@ diff -r -U3 annotated/java/util/function/Consumer.java ameliorated/java/util/fun
  public interface Consumer<T> {
  
      /**
-diff -r -U3 annotated/java/util/function/DoubleConsumer.java ameliorated/java/util/function/DoubleConsumer.java
---- annotated/java/util/function/DoubleConsumer.java	2016-06-12 04:30:08.003956586 -0700
-+++ ameliorated/java/util/function/DoubleConsumer.java	2016-06-14 18:45:35.677683738 -0700
+diff -r -U3 a/java/util/function/DoubleConsumer.java b/java/util/function/DoubleConsumer.java
+--- a/java/util/function/DoubleConsumer.java	2016-06-12 04:30:08.003956586 -0700
++++ b/java/util/function/DoubleConsumer.java	2016-06-14 18:45:35.677683738 -0700
 @@ -40,7 +40,6 @@
   * @since 1.8
   */
@@ -54,9 +54,9 @@ diff -r -U3 annotated/java/util/function/DoubleConsumer.java ameliorated/java/ut
  public interface DoubleConsumer {
  
      /**
-diff -r -U3 annotated/java/util/function/Function.java ameliorated/java/util/function/Function.java
---- annotated/java/util/function/Function.java	2016-06-12 04:32:44.576796738 -0700
-+++ ameliorated/java/util/function/Function.java	2016-06-14 18:45:35.683683768 -0700
+diff -r -U3 a/java/util/function/Function.java b/java/util/function/Function.java
+--- a/java/util/function/Function.java	2016-06-12 04:32:44.576796738 -0700
++++ b/java/util/function/Function.java	2016-06-14 18:45:35.683683768 -0700
 @@ -39,7 +39,6 @@
   * @since 1.8
   */
@@ -65,9 +65,9 @@ diff -r -U3 annotated/java/util/function/Function.java ameliorated/java/util/fun
  public interface Function<T, R> {
  
      /**
-diff -r -U3 annotated/java/util/function/IntConsumer.java ameliorated/java/util/function/IntConsumer.java
---- annotated/java/util/function/IntConsumer.java	2016-06-12 04:32:22.837680137 -0700
-+++ ameliorated/java/util/function/IntConsumer.java	2016-06-14 18:45:35.689683797 -0700
+diff -r -U3 a/java/util/function/IntConsumer.java b/java/util/function/IntConsumer.java
+--- a/java/util/function/IntConsumer.java	2016-06-12 04:32:22.837680137 -0700
++++ b/java/util/function/IntConsumer.java	2016-06-14 18:45:35.689683797 -0700
 @@ -40,7 +40,6 @@
   * @since 1.8
   */
@@ -76,9 +76,9 @@ diff -r -U3 annotated/java/util/function/IntConsumer.java ameliorated/java/util/
  public interface IntConsumer {
  
      /**
-diff -r -U3 annotated/java/util/function/LongConsumer.java ameliorated/java/util/function/LongConsumer.java
---- annotated/java/util/function/LongConsumer.java	2016-06-12 04:33:43.973115242 -0700
-+++ ameliorated/java/util/function/LongConsumer.java	2016-06-14 18:45:35.696683832 -0700
+diff -r -U3 a/java/util/function/LongConsumer.java b/java/util/function/LongConsumer.java
+--- a/java/util/function/LongConsumer.java	2016-06-12 04:33:43.973115242 -0700
++++ b/java/util/function/LongConsumer.java	2016-06-14 18:45:35.696683832 -0700
 @@ -40,7 +40,6 @@
   * @since 1.8
   */
@@ -87,9 +87,9 @@ diff -r -U3 annotated/java/util/function/LongConsumer.java ameliorated/java/util
  public interface LongConsumer {
  
      /**
-diff -r -U3 annotated/src/share/classes/java/lang/reflect/Constructor.java ameliorated/src/share/classes/java/lang/reflect/Constructor.java
---- annotated/src/share/classes/java/lang/reflect/Constructor.java	2016-06-28 11:04:00.383595901 -0700
-+++ ameliorated/src/share/classesjava/lang/reflect/Constructor.java	2016-06-28 14:04:38.546407519 -0700
+diff -r -U3 a/java/lang/reflect/Constructor.java b/java/lang/reflect/Constructor.java
+--- a/java/lang/reflect/Constructor.java	2016-06-28 11:04:00.383595901 -0700
++++ b/lang/reflect/Constructor.java	2016-06-28 14:04:38.546407519 -0700
 @@ -514,7 +514,7 @@
       * @throws NullPointerException  {@inheritDoc}
       * @since 1.5
@@ -99,9 +99,9 @@ diff -r -U3 annotated/src/share/classes/java/lang/reflect/Constructor.java ameli
          return super.getAnnotation(annotationClass);
      }
  
-diff -r -U3 a/src/share/classes/java/util/logging/LogManager.java ameliorated/src/share/classes/java/util/logging/LogManager.java
---- annotated/src/share/classes/java/util/logging/LogManager.java	2016-06-28 12:02:20.923518020 -0700
-+++ ameliorated/src/share/classes/java/util/logging/LogManager.java	2016-06-28 14:02:14.006672785 -0700
+diff -r -U3 a/java/util/logging/LogManager.java b/java/util/logging/LogManager.java
+--- a/java/util/logging/LogManager.java	2016-06-28 12:02:20.923518020 -0700
++++ b/java/util/logging/LogManager.java	2016-06-28 14:02:14.006672785 -0700
 @@ -26,7 +26,7 @@
  
  package java.util.logging;
@@ -130,9 +130,9 @@ diff -r -U3 a/src/share/classes/java/util/logging/LogManager.java ameliorated/sr
  
          for (int i = 0; i < names.length; i++) {
              String word = names[i];
-diff -r -U3 annotated/src/share/classes/sun/reflect/Reflection.java ameliorated/src/share/classes/sun/reflect/Reflection.java
---- annotated/src/share/classes/sun/reflect/Reflection.java	Fri May 13 18:39:58 2016 +0300
-+++ ameliorated/src/share/classes/sun/reflect/Reflection.java	Tue Jun 28 14:53:05 2016 -0700
+diff -r -U3 a/sun/reflect/Reflection.java b/sun/reflect/Reflection.java
+--- a/sun/reflect/Reflection.java	Fri May 13 18:39:58 2016 +0300
++++ b/sun/reflect/Reflection.java	Tue Jun 28 14:53:05 2016 -0700
 @@ -56,6 +56,7 @@
          ignoring frames associated with java.lang.reflect.Method.invoke()
          and its implementation. */
