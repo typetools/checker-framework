@@ -11,6 +11,9 @@ public class Issue764 {
 
     static class MyClass {
         public void otherMethod() {
+            //:: error: (contracts.precondition.not.satisfied)
+            method();
+            Issue764.field = new Object();
             method();
         }
     }
