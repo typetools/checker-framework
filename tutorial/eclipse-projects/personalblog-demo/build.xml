@@ -10,7 +10,7 @@
 
 
   <presetdef name="jsr308.javac">
-    <javac fork="yes" executable="${checker-framework}/checker/bin/${cfJavac}" >
+    <javac fork="yes" executable="${checker-framework}/checker/bin/${cfJavac}" encoding="UTF-8">
       <!-- JSR308 related compiler arguments -->
       <compilerarg value="-version"/>
       <!-- optional, so .class files work with older JVMs: <compilerarg line="-target 5"/> -->

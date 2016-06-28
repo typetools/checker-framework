@@ -30,6 +30,8 @@
         <arg line="-processor @{checker}"/>
         <arg line="-implicit:none"/>
         <arg line="-source 1.8"/>
+        <arg value="-encoding"/>
+        <arg value="utf-8"/>
         <arg line="-Xprefer:newer"/>
         <arg line="@{files}"/>
         <arg line="-Alint=@{lint}"/>
@@ -58,6 +60,8 @@
         <arg line="-processor @{checker}"/>
         <arg line="-implicit:none"/>
         <arg line="-source 1.8"/>
+        <arg value="-encoding"/>
+        <arg value="utf-8"/>
         <arg line="-Xprefer:newer"/>
         <arg line="@{files}"/>
         <arg line="-Alint=@{lint}"/>
