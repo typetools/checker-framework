@@ -248,7 +248,7 @@ public class FlowExpressionParseUtil {
                     if (fieldElem != null) {
                         break;
                     }
-                    receiverType = getEnclosingType((DeclaredType) receiverType);
+                    receiverType = ((DeclaredType) receiverType).getEnclosingType();
 
                     originalReceiver = false;
                 }
@@ -264,7 +264,7 @@ public class FlowExpressionParseUtil {
                         if (fieldElem != null) {
                             break;
                         }
-                        receiverType = getEnclosingType((DeclaredType) receiverType);
+                        receiverType = ((DeclaredType) receiverType).getEnclosingType();
                     }
                 }
 
@@ -370,7 +370,7 @@ public class FlowExpressionParseUtil {
                     if (element.getKind() == ElementKind.METHOD) {
                         break;
                     }
-                    receiverType = getEnclosingType((DeclaredType) receiverType);
+                    receiverType = ((DeclaredType) receiverType).getEnclosingType();
                 }
 
                 if (element == null) {
@@ -475,35 +475,6 @@ public class FlowExpressionParseUtil {
                     isRemainingStringOfDotExpression);
         } else {
             throw constructParserException(s, "no matcher matched");
-        }
-    }
-
-    /**
-     * Returns the innermost enclosing type of the given type,
-     * or Type.noType if no such type was found.
-     *
-     * @param type a DeclaredType
-     * @return the innermost enclosing type, or Type.noType
-     */
-    private static TypeMirror getEnclosingType(DeclaredType type) {
-        if (type instanceof ClassType) {
-            // enclClass() needs to be called on tsym.owner,
-            // otherwise it simply returns tsym.
-            Symbol sym = ((ClassType) type).tsym.owner;
-
-            if (sym == null) {
-                return Type.noType;
-            }
-
-            ClassSymbol cs = sym.enclClass();
-
-            if (cs == null) {
-                return Type.noType;
-            }
-
-            return cs.asType();
-        } else {
-            return type.getEnclosingType();
         }
     }
 
