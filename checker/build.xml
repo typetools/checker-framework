@@ -1253,6 +1253,12 @@ So, use our own archived version.
       <ant dir="${basedir}/../../checker-framework-demos">
       </ant>
     </target>
+    <target name="check-demos-travis" depends="demos.check,-demos.pull,-demos.clone"
+        description="Test that the demos that work on Travis are working as expected">
+      <ant dir="${basedir}/../../checker-framework-demos">
+          <target name="check-demos-travis"/>
+      </ant>
+    </target>
 
 
     <target name="errorprone.check">
