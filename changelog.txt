@@ -2,7 +2,7 @@
 
 Version 2.1.0, 1 July 2016
 
-The new Unsignedness Checker prevents mixing of unsigned and signed
+The new Signedness Checker prevents mixing of unsigned and signed
 values and prevents meaningless operations on unsigned values.
 
 ---------------------------------------------------------------------------

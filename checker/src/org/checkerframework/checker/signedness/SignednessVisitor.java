@@ -1,7 +1,7 @@
-package org.checkerframework.checker.unsignedness;
+package org.checkerframework.checker.signedness;
 
-import org.checkerframework.checker.unsignedness.qual.Signed;
-import org.checkerframework.checker.unsignedness.qual.Unsigned;
+import org.checkerframework.checker.signedness.qual.Signed;
+import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
@@ -13,14 +13,14 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * The UnsignednessVisitor enforces the Unsignedness Checker rules. These rules
+ * The SignednessVisitor enforces the Signedness Checker rules. These rules
  * are described in detail in the Checker Framework Manual.
  *
- * @checker_framework.manual #unsignedness-checker Unsignedness Checker
+ * @checker_framework.manual #signedness-checker Signedness Checker
  */
-public class UnsignednessVisitor extends BaseTypeVisitor<UnsignednessAnnotatedTypeFactory> {
+public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFactory> {
 
-    public UnsignednessVisitor(BaseTypeChecker checker) {
+    public SignednessVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 

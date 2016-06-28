@@ -1,4 +1,4 @@
-import org.checkerframework.checker.unsignedness.qual.*;
+import org.checkerframework.checker.signedness.qual.*;
 
 public class LowerUpperBound {
 
@@ -8,7 +8,7 @@ public class LowerUpperBound {
 		@Unsigned int unsTest;
 		@Signed int sinTest;
 		@Constant int conTest;
-		@UnsignednessBottom int botTest;
+		@SignednessBottom int botTest;
 
 		unkTest = unknown + unknown;
 

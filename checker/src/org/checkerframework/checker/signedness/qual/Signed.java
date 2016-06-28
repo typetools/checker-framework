@@ -1,4 +1,4 @@
-package org.checkerframework.checker.unsignedness.qual;
+package org.checkerframework.checker.signedness.qual;
 
 import java.lang.annotation.*;
 
@@ -12,7 +12,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * That is, if the most significant bit in the bitwise representation is
  * set, then the bits should be interpreted as a negative number.
  *
- * @checker_framework.manual #unsignedness-checker Unsignedness Checker
+ * @checker_framework.manual #signedness-checker Signedness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

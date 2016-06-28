@@ -13,7 +13,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="unsignedness.svg">
+   sodipodi:docname="signedness.svg">
   <metadata
      id="metadata80">
     <rdf:RDF>
@@ -334,7 +334,7 @@
       <tspan
          x="820"
          y="405.85001"
-         id="tspan74-4">@UnsignednessBottom</tspan>
+         id="tspan74-4">@SignednessBottom</tspan>
     </text>
   </g>
   <path
