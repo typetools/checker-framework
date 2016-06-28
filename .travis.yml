@@ -1,67 +1,35 @@
+sudo: false
+
 language: java
 
-script: travis_wait 120 ./.travis-build.sh
+services:
+  - docker
 
-## Version for Ubuntu 14.04 Trusty.
-## Problem: The job times out on travis-ci.org, but the container-based version
-## does not.  Presumably container-based gets a bigger time limit.
-# sudo: required
-# dist: trusty
-# before_install:
-#   - sudo apt-get update -qq
-#   - sudo apt-get install -qq hevea librsvg2-bin texlive-fonts-recommended texlive-latex-base texlive-latex-extra
+before_script:
+- docker pull ubuntu
 
-## Version for container-based infrastructure: Ubuntu 12.04.
-## Problem:  Cannot build the manual because of problems generating fonts.
-sudo: false
-addons:
-  apt:
-    packages:
-      - junit4
-      # Reinstate jtreg when the build can use a standard Ubuntu jtreg install;
-      # for now, it needs to download and install the jtreg zipfile.
-      # - jtreg
-      # for rsvg-convert
-      - librsvg2-bin
-      ## Save time by not installing LaTeX which is needed only for the manual
-      # - hevea
-      # # both for ecrm1000 (a font)
-      # # This didn't help: - texlive-fonts-extra
-      # - texlive-fonts-recommended
-      # # for url.sty
-      # - texlive-latex-base
-      # # for fullpage.sty
-      # - texlive-latex-extra
+# Eventually, parameterize this by JDK version, branch name, etc.
+script:
+- docker run ubuntu /bin/sh -c "apt-get -qqy update && apt-get -y upgrade && apt-get -y install ant default-jdk git make mercurial unzip && export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/typetools/checker-framework.git && cd checker-framework && java -version && javac -version && ./.travis-build.sh"
 
-## Enable this when you wish to see JUnit reports.
-## Disable to minimize use of Amazon S3.
-# addons:
-#   artifacts:
-#     paths:
-#       - $(ls checker/build/reports/* | tr "\n" ":")
-#       - $(ls framework/build/reports/* | tr "\n" ":")
-#       - $(find -name 'hs_err_pid*.log' | tr "\n" ":")
-#     s3_region: "us-west-2"
-#     # debug: true
+# jdk:
+#   - oraclejdk8
+#   - oraclejdk7
+#   - openjdk7
+#   # openjdk8 is not a legal option: - openjdk8
 
-jdk:
-  - oraclejdk8
-  - oraclejdk7
-  - openjdk7
-  # openjdk8 is not a legal option: - openjdk8
-
-after_success:
-  - |
-      if [[ ($TRAVIS_BRANCH == master) &&
-            ($TRAVIS_PULL_REQUEST == false) &&
-            ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
-        curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-        sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
-        sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN
-        sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
-        sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
-        sh trigger-travis.sh typetools sparta $TRAVISTOKEN
-      fi
+# after_success:
+#   - |
+#       if [[ ($TRAVIS_BRANCH == master) &&
+#             ($TRAVIS_PULL_REQUEST == false) &&
+#             ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
+#         curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+#         sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
+#         sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN
+#         sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
+#         sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
+#         sh trigger-travis.sh typetools sparta $TRAVISTOKEN
+#       fi
 
 git:
   depth: 3
