@@ -222,8 +222,9 @@ public class GuardSatisfiedTest {
        }
        void testGuardSatisfiedOnArrayOfParameterizedType(MyParameterizedClass1<T> @GuardSatisfied[] array) {
        }
-       //:: error: (guardsatisfied.location.disallowed)
-       void testGuardSatisfiedOnArrayComponentOfParameterizedType(@GuardSatisfied MyParameterizedClass1<T>[] array) {
+       void testGuardSatisfiedOnArrayComponentOfParameterizedType(
+               //:: error: (guardsatisfied.location.disallowed)
+               @GuardSatisfied MyParameterizedClass1<T>[] array) {
        }
    };
 
@@ -272,8 +273,9 @@ class Foo
   }
 
   void m3(@GuardSatisfied Foo f) {
+      // TODO: Fix: This should error with method.invocation.invalid but it gets swallowed and only method.guarantee.violated is output.
       //:: error: (method.guarantee.violated)
-      f.m1(); // TODO: Fix: This should error with method.invocation.invalid but it gets swallowed and only method.guarantee.violated is output.
+      f.m1();
   }
 
   @MayReleaseLocks

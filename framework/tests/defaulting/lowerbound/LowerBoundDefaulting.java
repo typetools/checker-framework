@@ -13,11 +13,14 @@ public class LowerBoundDefaulting {
     public <IMP1 extends String> void implicitsTypeVar() {
 
         // should fail because @LB_IMPLICIT is below @LB_TOP
-        //:: error: (assignment.type.incompatible)
-        @LB_TOP MyArrayList<@LB_TOP ? extends @LB_TOP String> itLowerBoundIncompatible = new MyArrayList<IMP1>();
+        @LB_TOP MyArrayList<@LB_TOP ? extends @LB_TOP String> itLowerBoundIncompatible =
+          //:: error: (assignment.type.incompatible)
+          new MyArrayList<IMP1>();
 
-        //:: error: (assignment.type.incompatible) :: error: (type.argument.type.incompatible)
-        @LB_TOP MyArrayList<@LB_EXPLICIT ? extends @LB_TOP String> itLowerBoundStillIncompatible = new MyArrayList<IMP1>();
+        //:: error: (type.argument.type.incompatible)
+        @LB_TOP MyArrayList<@LB_EXPLICIT ? extends @LB_TOP String> itLowerBoundStillIncompatible =
+          //:: error: (assignment.type.incompatible)
+          new MyArrayList<IMP1>();
 
         @LB_TOP MyArrayList<@LB_IMPLICIT ? extends @LB_TOP String> itLowerBoundCompatible = new MyArrayList<IMP1>();
     }

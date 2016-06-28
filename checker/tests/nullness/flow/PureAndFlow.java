@@ -7,15 +7,19 @@ public abstract class PureAndFlow {
 
     void nonpure(String s1) {}
 
+    @org.checkerframework.dataflow.qual.Pure
     //:: warning: (purity.deterministic.void.method)
-    @org.checkerframework.dataflow.qual.Pure void pure(String s2) {}
+    void pure(String s2) {}
+    @org.checkerframework.dataflow.qual.Deterministic
     //:: warning: (purity.deterministic.void.method)
-    @org.checkerframework.dataflow.qual.Deterministic void det(String s3) {}
+    void det(String s3) {}
 
+    @org.checkerframework.dataflow.qual.Pure
     //:: warning: (purity.deterministic.void.method)
-    @org.checkerframework.dataflow.qual.Pure abstract void abstractpure(String s4);
+    abstract void abstractpure(String s4);
+    @org.checkerframework.dataflow.qual.Deterministic
     //:: warning: (purity.deterministic.void.method)
-    @org.checkerframework.dataflow.qual.Deterministic abstract void abstractdet(String s4);
+    abstract void abstractdet(String s4);
 
     void withNonRow() {
         if (s2 != null) {
@@ -33,16 +37,20 @@ public abstract class PureAndFlow {
     }
 
     interface IFace {
+        @org.checkerframework.dataflow.qual.Pure
         //:: warning: (purity.deterministic.void.method)
-        @org.checkerframework.dataflow.qual.Pure void ifacepure(String s);
+        void ifacepure(String s);
+        @org.checkerframework.dataflow.qual.Deterministic
         //:: warning: (purity.deterministic.void.method)
-        @org.checkerframework.dataflow.qual.Deterministic void ifacedet(String s);
+        void ifacedet(String s);
     }
 
     class Cons {
+        @org.checkerframework.dataflow.qual.Pure
         //:: warning: (purity.deterministic.constructor)
-        @org.checkerframework.dataflow.qual.Pure Cons(String s) {}
+        Cons(String s) {}
+        @org.checkerframework.dataflow.qual.Deterministic
         //:: warning: (purity.deterministic.constructor)
-        @org.checkerframework.dataflow.qual.Deterministic Cons(int i) {}
+        Cons(int i) {}
     }
 }

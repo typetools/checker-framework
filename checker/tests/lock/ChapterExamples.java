@@ -837,11 +837,14 @@ void boxingUnboxing() {
 
     // The following negative test cases are the same as the one above but with one modification in each.
 
-    //:: error: (lock.expression.not.final)
-    synchronized(c1.field.field2.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field) {
+    synchronized(
+                //:: error: (lock.expression.not.final)
+                c1.field.field2.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field) {
     }
-    //:: error: (lock.expression.not.final)
-    synchronized(c1.field.field.field.getFieldPure(c1.field, c1.getField().getFieldPure(c1, c1.field)).field) {
+    synchronized(
+                c1.field.field.field.getFieldPure(
+                                //:: error: (lock.expression.not.final)
+                                c1.field, c1.getField().getFieldPure(c1, c1.field)).field) {
     }
   }
 
@@ -888,15 +891,23 @@ void boxingUnboxing() {
 
     // The following negative test cases are the same as the one above but with one modification in each.
 
-    //:: error: (lock.expression.not.final)
-    c2.field.field2.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
-    //:: error: (lock.expression.not.final)
-    c2.field.field2.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
+    c2.field
+      //:: error: (lock.expression.not.final)
+      .field2
+      .field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
+    c2.field
+      //:: error: (lock.expression.not.final)
+      .field2
+      .field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
 
-    //:: error: (lock.expression.not.final)
-    c2.field.field.field.getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field)).field.lock();
-    //:: error: (lock.expression.not.final)
-    c2.field.field.field.getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field)).field.unlock();
+    c2.field.field.field
+      //:: error: (lock.expression.not.final)
+      .getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field))
+      .field.lock();
+    c2.field.field.field
+      //:: error: (lock.expression.not.final)
+      .getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field))
+      .field.unlock();
   }
 
   // Analogous to testSynchronizedExpressionIsFinal and testExplicitLockExpressionIsFinal, but for expressions in @GuardedBy annotations.
