@@ -10,7 +10,7 @@ before_script:
 
 # Eventually, parameterize this by JDK version, branch name, etc.
 script:
-- docker run ubuntu /bin/sh -c "apt-get -qqy update && apt-get -qqy upgrade && apt-get -qqy install ant default-jdk git make mercurial unzip && export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git && cd checker-framework && java -version && javac -version && ./.travis-build.sh"
+- docker run ubuntu /bin/sh -c "apt-get -qqy update && apt-get -qqy upgrade && apt-get -qqy install ant default-jdk git make mercurial unzip && export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh"
 
 # jdk:
 #   - oraclejdk8
