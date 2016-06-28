@@ -697,6 +697,14 @@
         </antcall>
     </target>
 
+    <target name="lowerbound-tests" depends="jar,build-tests"
+            description="Run tests for the Lower Bound Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.LowerBoundTest"/>
+        </antcall>
+    </target>
+
+    
     <target name="interning-tests" depends="jar,build-tests"
             description="Run tests for the Interning Checker">
         <antcall target="-run-tests">
