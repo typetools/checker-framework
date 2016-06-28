@@ -10,7 +10,7 @@ before_script:
 
 # Eventually, parameterize this by JDK version, branch name, etc.
 script:
-- docker run ubuntu /bin/sh -c "apt-get -qqy update && apt-get -qqy upgrade && apt-get -qqy install  default-jdk  ant dia git hevea librsvg2-bin make mercurial texlive-fonts-recommended texlive-latex-base unzip && export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh"
+- docker run ubuntu /bin/sh -c "apt-get -qqy update && apt-get -qqy upgrade && apt-get -qqy install  default-jdk  ant dia git hevea librsvg2-bin make mercurial texlive-fonts-recommended texlive-latex-base texlive-latex-recommended unzip && export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh"
 
 # jdk:
 #   - oraclejdk8
