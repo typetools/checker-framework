@@ -51,8 +51,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
@@ -248,8 +246,7 @@ public class FlowExpressionParseUtil {
                     if (fieldElem != null) {
                         break;
                     }
-                    receiverType = ((DeclaredType) receiverType).getEnclosingType();
-
+                    receiverType = ((DeclaredType)receiverType).getEnclosingType();
                     originalReceiver = false;
                 }
 
@@ -264,7 +261,7 @@ public class FlowExpressionParseUtil {
                         if (fieldElem != null) {
                             break;
                         }
-                        receiverType = ((DeclaredType) receiverType).getEnclosingType();
+                        receiverType = ((DeclaredType)receiverType).getEnclosingType();
                     }
                 }
 
@@ -370,7 +367,7 @@ public class FlowExpressionParseUtil {
                     if (element.getKind() == ElementKind.METHOD) {
                         break;
                     }
-                    receiverType = ((DeclaredType) receiverType).getEnclosingType();
+                    receiverType = ((DeclaredType)receiverType).getEnclosingType();
                 }
 
                 if (element == null) {
