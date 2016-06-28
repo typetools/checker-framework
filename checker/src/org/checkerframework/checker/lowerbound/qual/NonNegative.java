@@ -3,15 +3,15 @@ package org.checkerframework.checker.lowerbound.qual;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.checker.lowerbound.qual.Unknown;
+import org.checkerframework.checker.lowerbound.qual.NegativeOnePlus;
 
 /**
  * In the Lower Bound Checker's type system, this type
- * represents any integer >= -1
+ * represents any integer >= 0
  *
  * @checker_framework.manual #lowerbound-checker Lower Bound Checker
  */
 
-@SubtypeOf({Unknown.class})
+@SubtypeOf({NegativeOnePlus.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface NegativeOnePlus {}
+public @interface NonNegative {}

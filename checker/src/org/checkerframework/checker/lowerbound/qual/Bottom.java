@@ -11,5 +11,5 @@ import javax.lang.model.type.TypeKind;
  * @checker_framework.manual #lowerbound-checker Lower Bound Checker
  */
 @Target({ElementType.TYPE_USE})
-@SubtypeOf( { NegativeOnePlus.class } )
+@SubtypeOf( { Positive.class } )
 public @interface Bottom { }
