@@ -363,8 +363,7 @@ public class FlowExpressionParseUtil {
             if (fieldElem != null) {
                 break;
             }
-            receiverType = ElementUtils.enclosingClass(((DeclaredType) receiverType).asElement()
-                    .getEnclosingElement()).asType();
+            receiverType = ((DeclaredType) receiverType).getEnclosingType();
             originalReceiver = false;
         }
 
@@ -474,8 +473,7 @@ public class FlowExpressionParseUtil {
                 if (element.getKind() == ElementKind.METHOD) {
                     break;
                 }
-                receiverType = ElementUtils.enclosingClass(((DeclaredType) receiverType)
-                        .asElement().getEnclosingElement()).asType();
+                receiverType = ((DeclaredType) receiverType).getEnclosingType();
             }
 
             if (element == null) {
