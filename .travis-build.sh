@@ -2,6 +2,10 @@
 
 # Fail the whole script if any command fails
 set -e
+# Output lines of this script as they are read.
+set -o verbose
+# Output expanded lines of this script as they are executed.
+set -o xtrace
 
 export SHELLOPTS
 
