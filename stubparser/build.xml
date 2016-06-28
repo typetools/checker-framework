@@ -61,6 +61,7 @@
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
         <javadoc destdir="${api.doc}"
                  private="${javadoc.private}"
+                 encoding="UTF-8"
                  failonerror="true"
             >
             <!-- To add later:    additionalParam="-Xdoclint:all,-missing" -->

@@ -179,8 +179,9 @@ public class CollectionToArrayHeuristics {
         assert collection != null;
 
         if (collection.getTypeArguments().isEmpty()
-            || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL))
+            || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL)) {
             return false;
+        }
         return true;
     }
 

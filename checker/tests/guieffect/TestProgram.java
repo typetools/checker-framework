@@ -35,8 +35,9 @@ public class TestProgram {
                 safecons.runAsync(this); // Should be okay, this:@AlwaysSafe
             }
         });
-        //:: error: (argument.type.incompatible)
-        safecons.runAsync(new @UI IGenericTask() {
+        safecons.runAsync(
+            //:: error: (argument.type.incompatible)
+            new @UI IGenericTask() {
             final UIElement e2 = e;
             @Override
             public void doGenericStuff() { // Should be inst. w/ @UI
@@ -57,8 +58,9 @@ public class TestProgram {
         });
         safecons.runAsync(new IGenericTask() {
             @Override
+            @UIEffect
             //:: error: (override.effect.invalid.nonui)
-            @UIEffect public void doGenericStuff() {
+            public void doGenericStuff() {
                 UIByPackageDecl.implicitlyUI();
             }
         });
