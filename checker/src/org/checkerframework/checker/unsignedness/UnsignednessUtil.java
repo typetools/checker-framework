@@ -199,9 +199,9 @@ public final class UnsignednessUtil {
     @SuppressWarnings("unsignedness")
     private static @Unsigned BigInteger toUnsignedBigInteger(@Unsigned long l) {
         // Java 8 version: return Long.toUnsignedBigInteger(l);
-        if (l >= 0L)
+        if (l >= 0L) {
             return BigInteger.valueOf(l);
-        else {
+        } else {
             int upper = (int) (l >>> 32);
             int lower = (int) l;
 

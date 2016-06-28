@@ -371,10 +371,9 @@ public class AnnotationClassLoader {
      * environment variables, and by examining the classloader to see what paths
      * it has access to
      *
-     * The classpaths will be obtained in the order of: 1) boot classpaths (set
-     * using -bootclasspath -Xbootclasspath or -J-Xbootclasspath) 2) extension
-     * paths (from java.ext.dirs) 3) classpaths (set in CLASSPATH, or through
-     * -classpath and -cp) 4) paths accessible and examined by the classloader
+     * The classpaths will be obtained in the order of: 1) extension
+     * paths (from java.ext.dirs) 2) classpaths (set in CLASSPATH, or through
+     * -classpath and -cp) 3) paths accessible and examined by the classloader
      *
      * In each of these paths, the order of the paths as specified in the
      * command line options or environment variables will be the order returned
@@ -384,9 +383,6 @@ public class AnnotationClassLoader {
      */
     private final Set<String> getClasspaths() {
         Set<String> paths = new LinkedHashSet<String>();
-
-        // add all paths in Xbootclasspath
-        paths.addAll(Arrays.asList(System.getProperty("sun.boot.class.path").split(":")));
 
         // add all extension paths
         paths.addAll(Arrays.asList(System.getProperty("java.ext.dirs").split(":")));
@@ -677,7 +673,7 @@ public class AnnotationClassLoader {
 
         try {
             // load the class
-            cls = Class.forName(fullyQualifiedClassName);
+            cls = Class.forName(fullyQualifiedClassName, true, getAppClassLoader());
         } catch (ClassNotFoundException e) {
             // do nothing: projects can have annotation class files and regular
             // source files located within the same directory, and as such when

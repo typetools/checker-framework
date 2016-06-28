@@ -189,8 +189,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
-    protected static final Pattern thisPattern = Pattern.compile("^(this)$");
-
     /**
      * @param checker
      *            the type-checker associated with this visitor (for callbacks to
@@ -1124,14 +1122,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected FlowExpressions.Receiver parseExpressionString(String expression,
             FlowExpressionContext flowExprContext,
             TreePath path, Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
-        expression = expression.trim();
-
-        Matcher thisMatcher = thisPattern.matcher(expression);
-        if (thisMatcher.matches()) {
-            // It is possible that expression == "this" after this call.
-            expression = flowExprContext.receiver.toString().trim();
-        }
-
         return FlowExpressionParseUtil.parse(expression, flowExprContext, path);
     }
 
