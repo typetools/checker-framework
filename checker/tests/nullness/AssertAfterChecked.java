@@ -90,8 +90,7 @@ public class AssertAfterChecked {
 
     void testInit1b() {
       init(this);
-      // TODO: the explicit this does not work :-((
-      // this.get(this).toString();
+      this.get(this).toString();
     }
 
     void testInit2(TestParams p) {
