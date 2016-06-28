@@ -11,6 +11,7 @@ class Issue67{
     if (map.containsKey(KEY)) {
       map.get(KEY).toString();  // no problem
     }
+    //:: warning: (known.nonnull)
     if (map.containsKey(KEY2) && map.get(KEY2).toString() != null) { // error
       // do nothing
     }
