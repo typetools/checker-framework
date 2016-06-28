@@ -209,7 +209,7 @@ public class FlowExpressionParseUtil {
         }
 
         if (memberSelected.equals("class")) {
-            if (receiver instanceof FlowExpressions.ClassName) {
+            if (receiver instanceof FlowExpressions.ClassName && !context.parsingMember) {
                 return receiver;
             } else {
                 throw constructParserException(s, "class is not a legal identifier");
