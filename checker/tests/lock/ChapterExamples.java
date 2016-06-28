@@ -671,12 +671,12 @@ void boxingUnboxing() {
      *
      * Suppose the following lines from method1 are executed on thread A.
      *
-     * @GuardedBy("lock1”) MyClass local;
+     * @GuardedBy("lock1") MyClass local;
      * m = local;
      *
      * Then a context switch occurs to method2 on thread B and the following lines are executed:
      *
-     * @GuardedBy("lock2”) MyClass local;
+     * @GuardedBy("lock2") MyClass local;
      * m = local;
      *
      * Then a context switch back to method1 on thread A occurs and the following lines are executed:
