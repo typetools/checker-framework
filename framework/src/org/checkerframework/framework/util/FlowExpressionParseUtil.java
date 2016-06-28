@@ -358,12 +358,13 @@ public class FlowExpressionParseUtil {
         VariableElement fieldElem = null;
 
         // Search for field in each enclosing class.
-        while (receiverType == null && receiverType.getKind() == TypeKind.DECLARED) {
+        while (receiverType.getKind() == TypeKind.DECLARED) {
             fieldElem = resolver.findField(s, receiverType, path);
             if (fieldElem != null) {
                 break;
             }
-            receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+            receiverType = ElementUtils.enclosingClass(((DeclaredType) receiverType).asElement()
+                    .getEnclosingElement()).asType();
             originalReceiver = false;
         }
 
@@ -378,21 +379,6 @@ public class FlowExpressionParseUtil {
             return new ClassName(classType);
         }
         throw constructParserException(s, "identifier not found");
-    }
-
-    private static TypeMirror getTypeOfEnclosingClass(DeclaredType receiverType) {
-        // receiverType.getEnclosingType() returns the type of the enclosing class if
-        // it's not static where as this method returns the type of the enclosing class
-        // even if it is static
-        Element enclosing = receiverType.asElement()
-                .getEnclosingElement();
-        if (enclosing == null)
-            return null;
-        Element enclosingClass = ElementUtils.enclosingClass(enclosing);
-        if (enclosingClass == null) {
-            return null;
-        }
-        return enclosingClass.asType();
     }
 
     private static Receiver getReceiverField(String s, FlowExpressionContext context,
@@ -483,12 +469,13 @@ public class FlowExpressionParseUtil {
             TypeMirror receiverType = context.receiver.getType();
 
             // Search for method in each enclosing class.
-            while (receiverType == null && receiverType.getKind() == TypeKind.DECLARED) {
+            while (receiverType.getKind() == TypeKind.DECLARED) {
                 element = resolver.findMethod(methodName, receiverType, path, parameterTypes);
                 if (element.getKind() == ElementKind.METHOD) {
                     break;
                 }
-                receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
+                receiverType = ElementUtils.enclosingClass(((DeclaredType) receiverType)
+                        .asElement().getEnclosingElement()).asType();
             }
 
             if (element == null) {
