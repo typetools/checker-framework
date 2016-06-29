@@ -736,7 +736,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Removes all annotations on this type.
+     * Removes all primary annotations on this type.
      * Make sure to add an annotation again, e.g. Unqualified.
      *
      * This method should only be used in very specific situations.
