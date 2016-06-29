@@ -28,13 +28,13 @@ import com.sun.source.tree.Tree;
  * regular type system.  Namely, the nullness of the returned array
  * component depends on the receiver type argument.  So
  *
- * <pre>
- *     Collection&lt;@NonNull String&gt; c1 = ...;
+ * <pre>{@code
+ *     Collection<@NonNull String> c1 = ...;
  *     c1.toArray();    // returns @NonNull Object []
  *
- *     Collection&lt;@Nullable String&gt; c2 = ...;
+ *     Collection<@Nullable String> c2 = ...;
  *     c2.toArray();    // returns @Nullable Object []
- * </pre>
+ * }</pre>
  *
  * In the case of {@link Collection#toArray(Object[])
  * Collection.toArray(T[])}, the type of the returned array depends on the

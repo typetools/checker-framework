@@ -4,7 +4,7 @@ import java.io.*;
 
 // AK: XXX This code is copied and modified from somewhere. I don't remember from where.
 /**
- * The important method in this class is <code>exec(String[])</code>. It
+ * The important method in this class is {@code exec(String[])}. It
  * executes its argument and pipes both stdout and stderr to System.out. Each
  * line in the piped output from stdout is prefixed with "OUT>" and the output
  * from stderr is prefixed with "ERR>"

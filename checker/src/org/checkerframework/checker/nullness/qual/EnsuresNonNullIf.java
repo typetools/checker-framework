@@ -18,28 +18,28 @@ import java.lang.annotation.Target;
  * <p>
  *
  * <b>Method parameters:</b>
- * A common example is that the <code>equals</code> method is annotated as follows:
- * <pre><code>   @EnsuresNonNullIf(expression="#1", result=true)
- *   public boolean equals(@Nullable Object obj) { ... }</code></pre>
- * because, if <code>equals</code> returns true, then the first (#1) argument to
- * <code>equals</code> was not null.
+ * A common example is that the {@code equals} method is annotated as follows:
+ * <pre>{@code    @EnsuresNonNullIf(expression="#1", result=true)
+ *   public boolean equals(@Nullable Object obj) { ... }}</pre>
+ * because, if {@code equals} returns true, then the first (#1) argument to
+ * {@code equals} was not null.
  * <p>
  *
  * <b>Fields:</b>
  * The value expressions can refer to fields, even private ones.  For example:
- * <pre><code>   @EnsuresNonNullIf(expression="this.derived", result=true)
+ * <pre>{@code    @EnsuresNonNullIf(expression="this.derived", result=true)
  *   public boolean isDerived() {
  *     return (this.derived != null);
- *   }</code></pre>
- * As another example, an <code>Iterator</code> may cache the next value that
- * will be returned, in which case its <code>hasNext</code> method could be
+ *   }}</pre>
+ * As another example, an {@code Iterator} may cache the next value that
+ * will be returned, in which case its {@code hasNext} method could be
  * annotated as:
- * <pre><code>   @EnsuresNonNullIf(expression="next_cache", result=true)
+ * <pre>{@code    @EnsuresNonNullIf(expression="next_cache", result=true)
  *   public boolean hasNext() {
  *     if (next_cache == null) return false;
  *     ...
- *   }</code></pre>
- * An <code>EnsuresNonNullIf</code> annotation that refers to a private field is
+ *   }}</pre>
+ * An {@code EnsuresNonNullIf} annotation that refers to a private field is
  * useful for verifying that client code performs needed checks in the right
  * order, even if the client code cannot directly affect the field.
  * <p>
@@ -47,8 +47,8 @@ import java.lang.annotation.Target;
  * <b>Method calls:</b>
  * If {@link Class#isArray()} returns true, then {@link Class#getComponentType()}
  * returns non-null.  You can express this relationship as:
- * <pre><code>   @EnsuresNonNullIf(expression="getComponentType()", result=true)
- *   public native @Pure boolean isArray();</code></pre>
+ * <pre>{@code    @EnsuresNonNullIf(expression="getComponentType()", result=true)
+ *   public native @Pure boolean isArray();}</pre>
  *
  * @see NonNull
  * @see EnsuresNonNull

@@ -106,7 +106,7 @@ public class CustomPreferencesPage extends PreferencePage implements
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-            	customCheckers.remove(customCheckers.getSelectionIndices());
+                customCheckers.remove(customCheckers.getSelectionIndices());
             }
 
             @Override
@@ -116,7 +116,7 @@ public class CustomPreferencesPage extends PreferencePage implements
         });
 
         customCheckers =
-        	new org.eclipse.swt.widgets.List(customGroup, SWT.MULTI);
+            new org.eclipse.swt.widgets.List(customGroup, SWT.MULTI);
 
         /*
          * customClassAuto = new Button(customGroup, SWT.CHECK);
@@ -175,21 +175,21 @@ public class CustomPreferencesPage extends PreferencePage implements
             }
 
             for (final String cn : classNames) {
-            	if (!contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
-            	    customCheckers.add(cn);
-            	}
+                if (!contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
+                    customCheckers.add(cn);
+                }
             }
         }
     }
 
     private boolean contains(final String className) {
-    	for (final String str : customCheckers.getItems()) {
-    		if (str.equals(className)) {
-    			return true;
-    		}
-    	}
-    	
-    	return false;
+        for (final String str : customCheckers.getItems()) {
+            if (str.equals(className)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -201,7 +201,7 @@ public class CustomPreferencesPage extends PreferencePage implements
         final String storedItems = store.getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES);
 
         if (!storedItems.equals("")) {
-        	customCheckers.setItems(storedItems.split(","));
+            customCheckers.setItems(storedItems.split(","));
         }
         /*
          * customClassAuto .setSelection(store
@@ -214,7 +214,7 @@ public class CustomPreferencesPage extends PreferencePage implements
         IPreferenceStore store = doGetPreferenceStore();
 
         store.setValue(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES,
-        		PluginUtil.join(",", customCheckers.getItems()));
+                PluginUtil.join(",", customCheckers.getItems()));
 
         /*
          * store.setValue(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASS_AUTOBUILD,

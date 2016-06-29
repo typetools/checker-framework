@@ -84,13 +84,13 @@ public abstract class RunCheckerAction extends CheckerHandler
             final String actualNames;
 
             if (!usePrefs && !useCustom && !useSingleCustom) {
-            	actualNames = checkerName;
+                actualNames = checkerName;
             }
             else if (!usePrefs && !useSingleCustom) {
-            	actualNames = customClasses;
+                actualNames = customClasses;
             }
             else if (useSingleCustom) {
-            	actualNames = event.getParameter("checker-framework-eclipse-plugin.checker");
+                actualNames = event.getParameter("checker-framework-eclipse-plugin.checker");
             } else {
                 List<String> names = getClassNameFromPrefs();
                 actualNames = PluginUtil.join(",", names);

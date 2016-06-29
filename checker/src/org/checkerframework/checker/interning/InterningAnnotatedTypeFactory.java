@@ -172,7 +172,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Unbox type and replace any interning type annotatiosn with @Interned since all
+     * Unbox type and replace any interning type annotations with @Interned since all
      * all primitives can safely use ==. See case 4 in the class comments.
      */
     @Override

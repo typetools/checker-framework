@@ -24,7 +24,6 @@ import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.NarrowingConversionNode;
@@ -45,6 +44,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
+import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
+import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -395,6 +396,11 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
 
         // add properties about fields (static information from type)
         boolean isNotFullyInitializedReceiver = isNotFullyInitializedReceiver(methodTree);
+        if (isNotFullyInitializedReceiver &&  !TreeUtils.isConstructor(methodTree)) {
+            // cannot add information about fields if the receiver isn't initialized
+            // and the method isn't a constructor
+            return;
+        }
         for (Tree member : classTree.getMembers()) {
             if (member instanceof VariableTree) {
                 VariableTree vt = (VariableTree) member;
@@ -409,9 +415,8 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 }
                 V value = analysis.createAbstractValue(type);
                 if (value == null) continue;
-                if (isNotFullyInitializedReceiver) {
-                    // if we are in a constructor (or another method where
-                    // the receiver might not yet be fully initialized),
+                if (TreeUtils.isConstructor(methodTree)) {
+                    // if we are in a constructor,
                     // then we can still use the static type, but only
                     // if there is also an initializer that already does
                     // some initialization.
@@ -499,12 +504,12 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
             MethodTree methodTree, ExecutableElement methodElement) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
-        Set<Pair<String, String>> preconditions = contracts.getPreconditions(methodElement);
+        Set<PreOrPostcondition> preconditions = contracts.getPreconditions(methodElement);
 
-        for (Pair<String, String> p : preconditions) {
-            String expression = p.first;
+        for (PreOrPostcondition p : preconditions) {
+            String expression = p.expression;
             AnnotationMirror annotation = AnnotationUtils.fromName(analysis.getTypeFactory().getElementUtils(),
-                    p.second);
+                    p.annotationString);
 
             // Only check if the postcondition concerns this checker
             if (!analysis.getTypeFactory().isSupportedQualifier(annotation)) {
@@ -959,14 +964,14 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     protected void processPostconditions(MethodInvocationNode n, S store,
             ExecutableElement methodElement, Tree tree) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<Pair<String, String>> postconditions = contracts.getPostconditions(methodElement);
+        Set<PreOrPostcondition> postconditions = contracts.getPostconditions(methodElement);
 
         FlowExpressionContext flowExprContext = null;
 
-        for (Pair<String, String> p : postconditions) {
-            String expression = p.first;
+        for (PreOrPostcondition p : postconditions) {
+            String expression = p.expression;
             AnnotationMirror anno = AnnotationUtils.fromName(analysis.getTypeFactory().getElementUtils(),
-                    p.second);
+                    p.annotationString);
 
             // Only check if the postcondition concerns this checker
             if (!analysis.getTypeFactory().isSupportedQualifier(anno)) {
@@ -1043,16 +1048,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
     protected void processConditionalPostconditions(MethodInvocationNode n,
             ExecutableElement methodElement, Tree tree, S thenStore, S elseStore) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<Pair<String, Pair<Boolean, String>>> conditionalPostconditions =
+        Set<ConditionalPostcondition> conditionalPostconditions =
                 contracts.getConditionalPostconditions(methodElement);
 
         FlowExpressionContext flowExprContext = null;
 
-        for (Pair<String, Pair<Boolean, String>> p : conditionalPostconditions) {
-            String expression = p.first;
+        for (ConditionalPostcondition p : conditionalPostconditions) {
+            String expression = p.expression;
             AnnotationMirror anno = AnnotationUtils.fromName(analysis
-                    .getTypeFactory().getElementUtils(), p.second.second);
-            boolean result = p.second.first;
+                    .getTypeFactory().getElementUtils(), p.annotationString);
+            boolean result = p.annoResult;
 
             // Only check if the postcondition concerns this checker
             if (!analysis.getTypeFactory().isSupportedQualifier(anno)) {

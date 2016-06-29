@@ -28,8 +28,8 @@ public class Util {
      *
      * @param resource
      *            The resource to check.
-     * @return <code>true</code> if the given resource is a Java source file,
-     *         <code>false</code> otherwise.
+     * @return {@code true} if the given resource is a Java source file,
+     *         {@code false} otherwise.
      */
     public static boolean isJavaFile(IResource resource) {
         return isFileWithExtension(resource, "java");
@@ -40,8 +40,8 @@ public class Util {
      *
      * @param resource
      *            The resource to check.
-     * @return <code>true</code> if the given resource is a class file,
-     *         <code>false</code> otherwise.
+     * @return {@code true} if the given resource is a class file,
+     *         {@code false} otherwise.
      */
     public static boolean isClassFile(IResource resource) {
         return isFileWithExtension(resource, "class");
@@ -53,8 +53,8 @@ public class Util {
      *
      * @param resource
      *            The resource to check.
-     * @return <code>true</code> if the given resource is a Java artifact.
-     *         <code>false</code> otherwise.
+     * @return {@code true} if the given resource is a Java artifact.
+     *         {@code false} otherwise.
      */
     public static boolean isJavaArtifact(IResource resource) {
         return isJavaFile(resource) || isClassFile(resource);

@@ -220,17 +220,17 @@ public enum ConversionCategory {
         }
         if ((a == CHAR_AND_INT && b == INT_AND_TIME) ||
             (a == INT_AND_TIME && b == CHAR_AND_INT)) {
-        	// This is special-cased because the union of a.types and b.types
-        	// does not include BigInteger.class, whereas the types for INT does.
-        	// Returning INT here to prevent returning GENERAL below.
-        	return INT;
+            // This is special-cased because the union of a.types and b.types
+            // does not include BigInteger.class, whereas the types for INT does.
+            // Returning INT here to prevent returning GENERAL below.
+            return INT;
         }
 
         Set<Class<? extends Object>> as = arrayToSet(a.types);
         Set<Class<? extends Object>> bs = arrayToSet(b.types);
         as.addAll(bs);  // union
         for (ConversionCategory v : new ConversionCategory[] { NULL, CHAR_AND_INT, INT_AND_TIME,
-        		CHAR, INT, FLOAT, TIME }) {
+                                                               CHAR, INT, FLOAT, TIME }) {
             Set<Class<? extends Object>> vs = arrayToSet(v.types);
             if (vs.equals(as)) {
                 return v;

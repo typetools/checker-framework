@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  *   System.exit(1);
  * }
  * </pre>
- * the Nullness Checker can determine that <code>x</code> is non-null.
+ * the Nullness Checker can determine that {@code x} is non-null.
  *
  * <p>
  * The annotation is a <em>trusted</em> annotation, meaning that it is not

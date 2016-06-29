@@ -27,7 +27,7 @@ public class CheckerManager {
     }
 
     public static List<CheckerInfo> getCheckerInfos() {
-    	return CheckerInfo.getCheckers();
+        return CheckerInfo.getCheckers();
     }
 
     /**

@@ -3,6 +3,7 @@ package assuper;
 import org.checkerframework.dataflow.qual.Pure;
 
 import java.util.Date;
+import java.util.List;
 import java.lang.reflect.Field;
 import java.lang.ref.WeakReference;
 
@@ -81,5 +82,13 @@ class AsSuperTest {
     @Pure
     void bar() {
         bar();
+    }
+
+    public static <Z> void copy(List<? super Z> dest, List<? extends Z> src) {
+        dest.set(0, src.get(0));
+    }
+
+    public static <F, E extends F> void copy2(List<? super F> dest, List<E> src) {
+        dest.set(0, src.get(0));
     }
 }

@@ -72,7 +72,7 @@ public class AliasingVisitor extends
      * is annotated as {@literal @}LeakedToResult AND the result of the method
      * call is not being stored (the method call is a statement).
      * <p>
-     * The private method <code>isUniqueCheck</code> handles cases 2 and 3.
+     * The private method {@code isUniqueCheck} handles cases 2 and 3.
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {

@@ -1488,7 +1488,7 @@ Section~\ref{extending-visitor}).
   Note that this argument cannot be included in a file containing command-line arguments
   passed to the compiler using the @argfile syntax.
 
-  Example usage: \code{-AoutputArgsToFile=/home/username/scriptfile}
+  Example usage: \code{-AoutputArgsToFile=\$HOME/scriptfile}
 
 \end{itemize}
 
@@ -1720,8 +1720,15 @@ That is part of the documentation and is the first thing that many users
 may see.  Also ensure that the Javadoc links back to the manual, using the
 \<@checker\_framework.manual> custom Javadoc tag.
 
-You should also integrate your new checker with the Eclipse plugin.
-% TODO: document how to do that.
+There are several other miscellaneous tasks:
+\begin{itemize}
+\item
+  Add its \<messages.properties> file to the \<check-compilermsgs> target in
+  file \<checker/build.xml>.
+\item
+  Integrate your new checker with the Eclipse plugin.
+  % TODO: document how to do that.
+\end{itemize}
 
 
 \section{javac implementation survival guide\label{javac-tips}}

@@ -357,15 +357,10 @@ public class StubGenerator {
 
     /**
      * Return a string representation of the list in the form of
-     * <code>
-     *    item1, item2, item3, ...
-     * </code>
+     * {@code item1, item2, item3, ...}
      *
      * instead of the default representation,
-     * <code>
-     *    [item1, item2, item3, ...]
-     * </code>
-     *
+     * {@code [item1, item2, item3, ...]}
      */
     private String formatList(List<?> lst) {
         StringBuilder sb = new StringBuilder();

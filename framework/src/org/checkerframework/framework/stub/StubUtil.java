@@ -361,9 +361,9 @@ public class StubUtil {
     }
 
     /**
-     * Side-effects <code>resources</code> by adding to it either
-     * <code>stub</code> if it is a stub file, or all the contained stub
-     * files if <code>stub</code> is a jar file or a directory.
+     * Side-effects {@code resources} by adding to it either
+     * {@code stub} if it is a stub file, or all the contained stub
+     * files if {@code stub} is a jar file or a directory.
      */
     private static void allStubFiles(File stub, List<StubResource> resources) {
         if (isStub(stub)) {

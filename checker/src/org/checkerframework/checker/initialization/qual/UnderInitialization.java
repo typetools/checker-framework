@@ -49,8 +49,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * currently not implemented), because there might be subclasses with
  * uninitialized fields. The following example shows why:
  *
- * <pre>
- * <code>
+ * <pre>{@code
  *   class A {
  *      &#64;NonNull String a;
  *      public A() {
@@ -73,8 +72,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *          b.toString();
  *      }
  *   }
- * </code>
- * </pre>
+ * }</pre>
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  */

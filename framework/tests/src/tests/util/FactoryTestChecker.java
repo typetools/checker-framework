@@ -46,8 +46,8 @@ import com.sun.tools.javac.tree.JCTree;
  * </ul>
  *
  * The specified types are allowed to use simple names (e.g.,
- * <i>List&lt;String&gt;</i>), instead of fully qualified names (e.g.,
- * <i>java.util.List&lt;java.lang.String&gt;</i>).
+ * {@code List<String>}), instead of fully qualified names (e.g.,
+ * {@code java.util.List<java.lang.String>}).
  *
  * Example:
  *

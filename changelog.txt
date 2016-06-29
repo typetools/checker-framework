@@ -1,5 +1,12 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.0, 1 July 2016
+
+The new Unsignedness Checker prevents mixing of unsigned and signed
+values and prevents meaningless operations on unsigned values.
+
+---------------------------------------------------------------------------
+
 Version 2.0.1, 1 June 2016
 
 We renamed method annotateImplicit to addComputedTypeAnnotations.  If you
@@ -14,8 +21,8 @@ depends on classes in the Checker Framework, then you should add those
 classes to the classpath when you run the compiler.
 
 Closed issues:
-738, 689, 720, 696, 707, 291, 740, 706, 705, 523, 736, 723, 698, 171, 250, 721,
-577, 728, 688, 691, 704, 672, 702, 680, 695, 690.
+171, 250, 291, 523, 577, 672, 680, 688, 689, 690, 691, 695, 696, 698, 702,
+704, 705, 706, 707, 720, 721, 723, 728, 736, 738, 740.
 
 ---------------------------------------------------------------------------
 
@@ -1459,14 +1466,14 @@ Functionality
   Added more performance optimizations
   nullness: Added support for netbeans nullness annotations
   nullness: better semantics for redundant nullness tests
-	related to redundant tests in assertions
+    related to redundant tests in assertions
   lock: Added support for JCIP annotation in the Lock Checker
   tainting: Added support for polymorphism
   Lock Checker supports the JCIP GuardedBy annotation
 
 Bug fixes
   Fixed a crashing bug related to interaction between
-	generic types and wildcards
+    generic types and wildcards
   Fixed a bug in stub file parser related to vararg annotations
   Fixed few bugs in skeleton file generators
 

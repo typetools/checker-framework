@@ -66,11 +66,11 @@ import com.sun.tools.javac.code.Type.ClassType;
  *   <li>The inferred type of an element that should be written into a .jaif
  *       file is a subtype of the upper bounds of this element's currently-written
  *       type on the source code.</li>
- *   <li>The annotation annotates a <code>null</code> literal, except when
+ *   <li>The annotation annotates a {@code null} literal, except when
  *       doing inference for the NullnessChecker.  (The rationale for this
- *       is that <code>null</code> is a frequently-used default value, and
+ *       is that {@code null} is a frequently-used default value, and
  *       it would be undesirable to compute any inferred type if
- *       <code>null</code> were the only value passed as an argument.)</li>
+ *       {@code null} were the only value passed as an argument.)</li>
  * </ol>
  * When outputting a .jaif file, if:
  * <ol>

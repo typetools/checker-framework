@@ -1493,7 +1493,7 @@ public class CFGBuilder {
 
         /**
          * Extend the list of extended nodes with a node, where
-         * <code>node</code> might throw the exception <code>cause</code>.
+         * {@code node} might throw the exception {@code cause}.
          *
          * @param node
          *            The node to add.
@@ -1508,8 +1508,8 @@ public class CFGBuilder {
 
         /**
          * Extend the list of extended nodes with a node, where
-         * <code>node</code> might throw any of the exception in
-         * <code>causes</code>.
+         * {@code node} might throw any of the exception in
+         * {@code causes}.
          *
          * @param node
          *            The node to add.
@@ -1531,9 +1531,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Insert <code>node</code> after <code>pred</code> in
+         * Insert {@code node} after {@code pred} in
          * the list of extended nodes, or append to the list if
-         * <code>pred</code> is not present.
+         * {@code pred} is not present.
          *
          * @param node
          *            The node to add.
@@ -1548,9 +1548,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Insert a <code>node</code> that might throw the exception
-         * <code>cause</code> after <code>pred</code> in the list of
-         * extended nodes, or append to the list if <code>pred</code>
+         * Insert a {@code node} that might throw the exception
+         * {@code cause} after {@code pred} in the list of
+         * extended nodes, or append to the list if {@code pred}
          * is not present.
          *
          * @param node
@@ -1585,8 +1585,8 @@ public class CFGBuilder {
         }
 
         /**
-         * Insert <code>n</code> after the node <code>pred</code> in the
-         * list of extended nodes, or append <code>n</code> if <code>pred</code>
+         * Insert {@code n} after the node {@code pred} in the
+         * list of extended nodes, or append {@code n} if {@code pred}
          * is not present.
          *
          * @param n
@@ -2560,7 +2560,7 @@ public class CFGBuilder {
         }
 
         /**
-         * Note 1: Requires <code>tree</code> to be a field or method access
+         * Note 1: Requires {@code tree} to be a field or method access
          * tree.
          * <p>
          * Note 2: Visits the receiver and adds all necessary blocks to the CFG.
@@ -3904,12 +3904,12 @@ public class CFGBuilder {
         }
 
         /**
-         * Maps a <code>Tree</code> its directly enclosing <code>ParenthesizedTree</code> if one exists.
+         * Maps a {@code Tree} its directly enclosing {@code ParenthesizedTree} if one exists.
          *
          * This map is used by {@link CFGTranslationPhaseOne#addToLookupMap(Node)} to
-         * associate a <code>ParenthesizedTree</code> with the dataflow <code>Node</code> that was used
+         * associate a {@code ParenthesizedTree} with the dataflow {@code Node} that was used
          * during inference. This map is necessary because dataflow does
-         * not create a <code>Node</code> for a <code>ParenthesizedTree.</code>
+         * not create a {@code Node} for a {@code ParenthesizedTree.}
          */
         private final Map<Tree, ParenthesizedTree> parenMapping = new HashMap<>();
 
