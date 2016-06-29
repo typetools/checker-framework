@@ -640,33 +640,33 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
   }
 
   /**
-   * Attempts to resolve class name with respect to import.
+   * Combines an import with a name, yield a fully-qualified name.
    *
    * @param prefix name of imported package
    * @param base name of class, possibly qualified
    * @return fully qualified class name if resolution succeeds, null otherwise
    */
-  private static String mergePackage(String packageName, String className) {
-    if (packageName.isEmpty() || packageName.equals(className)) {
+  private static String mergeImport(String importName, String className) {
+    if (importName.isEmpty() || importName.equals(className)) {
       return className;
     }
-    String[] packageSplit = packageName.split("\\.");
+    String[] importSplit = importName.split("\\.");
     String[] classSplit = className.split("\\.");
-    String packageEnd = packageSplit[packageSplit.length-1];
-    if ("*".equals(packageEnd)) {
-      int n = packageSplit.length-1;
-      String[] a = Arrays.copyOf(packageSplit, n + classSplit.length);
-      for (int i = 0; i < classSplit.length; i++) { a[n+i] = classSplit[i]; }
-      return PluginUtil.join(".", a);
+    String importEnd = importSplit[importSplit.length-1];
+    if ("*".equals(importEnd)) {
+      return importName.substring(0, importName.length()-1) + className;
     } else {
-      int i = packageSplit.length;
+      // find overlap such as in
+      //   import a.b.C.D;
+      //   C.D myvar;
+      int i = importSplit.length;
       int n = i - classSplit.length;
       while (--i >= n) {
-        if (!classSplit[i-n].equals(packageSplit[i])) {
+        if (!classSplit[i-n].equals(importSplit[i])) {
           return null;
         }
       }
-      return packageName;
+      return importName;
     }
   }
 
