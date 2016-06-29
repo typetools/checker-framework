@@ -37,15 +37,18 @@ import annotations.io.ParseException;
 
 /**
  * Utility that generates {@code @AnnotatedFor} class annotations.
- * The {@link #main} method acts as a filter: it reads a JAIF from
- * standard input and writes an augmented JAIF to standard output.
+ * The {@link #main} method acts as a filter.  It reads a JAIF from
+ * standard input (or from the first argument, if provided, and
+ * it writes an augmented JAIF to standard output.
  *
  * @author dbro
  */
 public class AddAnnotatedFor {
+
   /** Definition of {@code @AnnotatedFor} annotation. */
   private static AnnotationDef adAnnotatedFor;
 
+  // initialize the adAnnotatedFor field
   static {
     Class<?> annotatedFor =
         org.checkerframework.framework.qual.AnnotatedFor.class;
@@ -69,9 +72,15 @@ public class AddAnnotatedFor {
    */
   public static void main(String[] args)
       throws IOException, DefException, ParseException {
+    if (args.length > 1) {
+      System.err.println("Call AddAnnotatedFor with 0 or 1 arguments");
+      System.exit(1);
+    }
+
     AScene scene = new AScene();
-    Reader r = args.length > 0 ? new FileReader(args[0])
-        : new InputStreamReader(System.in);
+    Reader r = (args.length > 0
+                ? new FileReader(args[0])
+                : new InputStreamReader(System.in));
     IndexFileParser.parse(new LineNumberReader(r), scene);
     scene.prune();
     addAnnotatedFor(scene);
