@@ -27,8 +27,7 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitVariable(VariableTree node,
                                              AnnotatedTypeFactory f) {
-        AnnotatedTypeMirror result = f.fromTypeTree(node.getType());
-        result.clearAnnotations();
+        AnnotatedTypeMirror result = f.type(node.getType());
         Element elt = TreeUtils.elementFromDeclaration(node);
 
         ElementAnnotationApplier.apply(result, elt, f);
