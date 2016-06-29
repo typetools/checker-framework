@@ -2,7 +2,7 @@ import org.checkerframework.checker.lowerbound.qual.*;
 
 public class IntroRules{
 
-    void test(){
+    void test() {
 	@Positive int a = 10;
 	@NonNegative int b = 9;
 	@NegativeOnePlus int c = 8;
@@ -28,5 +28,4 @@ public class IntroRules{
 	//:: error: (assignment.type.incompatible)
 	@NegativeOnePlus int o = -9;
     }
-    
 }

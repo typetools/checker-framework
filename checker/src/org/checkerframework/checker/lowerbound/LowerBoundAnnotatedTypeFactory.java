@@ -20,7 +20,7 @@ import com.sun.source.tree.LiteralTree;
 public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror N1P, NN, POS;//, UNKNOWN;
 
-    public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker){
+    public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
 	super(checker);
 	N1P = AnnotationUtils.fromClass(elements, NegativeOnePlus.class);
 	NN = AnnotationUtils.fromClass(elements, NonNegative.class);
@@ -30,15 +30,14 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	this.postInit();
     }
 
-    
     // this is apparently just a required thing
     @Override
-    public TreeAnnotator createTreeAnnotator(){
+    public TreeAnnotator createTreeAnnotator() {
 	return new LowerBoundTreeAnnotator(this);
     }
 
     private class LowerBoundTreeAnnotator extends TreeAnnotator{
-	public LowerBoundTreeAnnotator(AnnotatedTypeFactory annotatedTypeFactory){
+	public LowerBoundTreeAnnotator(AnnotatedTypeFactory annotatedTypeFactory) {
 	    super(annotatedTypeFactory);
 	}
 
@@ -48,11 +47,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // if this is an Integer specifically
             if (tree.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int) tree.getValue();
-		if(val == -1){
+		if (val == -1) {
 		    type.addAnnotation(N1P);
-		}else if (val == 0) {
+		} else if (val == 0) {
                     type.addAnnotation(NN);
-                }else if(val > 0) {
+                } else if (val > 0) {
 		    type.addAnnotation(POS);
 		}
             } // no else, only annotate Integers
