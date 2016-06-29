@@ -9,10 +9,6 @@ set -o xtrace
 
 export SHELLOPTS
 
-## TEMPORARY, to speed up testing
-make -C checker/manual all
-
-
 ./.travis-build-without-test.sh
 
 ## Code style
