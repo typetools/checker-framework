@@ -870,11 +870,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             }
             AnnotationPair other = (AnnotationPair)o;
             if (AnnotationUtils.areSameIgnoringValues(a1, other.a1)
-                    && AnnotationUtils.areSameIgnoringValues(a2, other.a2))
+                    && AnnotationUtils.areSameIgnoringValues(a2, other.a2)) {
                 return true;
+            }
             if (AnnotationUtils.areSameIgnoringValues(a2, other.a1)
-                    && AnnotationUtils.areSameIgnoringValues(a1, other.a2))
+                    && AnnotationUtils.areSameIgnoringValues(a1, other.a2)) {
                 return true;
+            }
             return false;
         }
 

@@ -1,5 +1,5 @@
-import org.checkerframework.checker.unsignedness.UnsignednessUtil;
-import org.checkerframework.checker.unsignedness.qual.*;
+import org.checkerframework.checker.signedness.Signednessutil;
+import org.checkerframework.checker.signedness.qual.*;
 
 import java.nio.ByteBuffer;
 
@@ -10,19 +10,19 @@ public class Utils {
         @Unsigned byte[] ubyteArr, @Signed byte[] sbyteArr, ByteBuffer b) {
 
         //:: error: (assignment.type.incompatible)
-        sshort = UnsignednessUtil.getUnsignedShort(b);
+        sshort = Signednessutil.getUnsignedShort(b);
 
-        ushort = UnsignednessUtil.getUnsignedShort(b);
+        ushort = Signednessutil.getUnsignedShort(b);
 
         //:: error: (assignment.type.incompatible)
-        sbyte = UnsignednessUtil.getUnsigned(b);
+        sbyte = Signednessutil.getUnsigned(b);
 
-        ubyte = UnsignednessUtil.getUnsigned(b);
+        ubyte = Signednessutil.getUnsigned(b);
 
         //:: error: (argument.type.incompatible)
-        UnsignednessUtil.getUnsigned(b, sbyteArr);
+        Signednessutil.getUnsigned(b, sbyteArr);
 
-        UnsignednessUtil.getUnsigned(b, ubyteArr);
+        Signednessutil.getUnsigned(b, ubyteArr);
     }
 
     public void compTests(@Unsigned long ulong, @Signed long slong,
@@ -33,51 +33,51 @@ public class Utils {
         int res;
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(slong, slong);
+        res = Signednessutil.compareUnsigned(slong, slong);
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(slong, ulong);
+        res = Signednessutil.compareUnsigned(slong, ulong);
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(ulong, slong);
+        res = Signednessutil.compareUnsigned(ulong, slong);
 
-        res = UnsignednessUtil.compareUnsigned(ulong, ulong);
-
-
-        //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(sint, sint);
-
-        //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(sint, uint);
-
-        //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(uint, sint);
-
-        res = UnsignednessUtil.compareUnsigned(uint, uint);
+        res = Signednessutil.compareUnsigned(ulong, ulong);
 
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(sshort, sshort);
+        res = Signednessutil.compareUnsigned(sint, sint);
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(sshort, ushort);
+        res = Signednessutil.compareUnsigned(sint, uint);
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(ushort, sshort);
+        res = Signednessutil.compareUnsigned(uint, sint);
 
-        res = UnsignednessUtil.compareUnsigned(ushort, ushort);
+        res = Signednessutil.compareUnsigned(uint, uint);
+
+
+        //:: error: (argument.type.incompatible)
+        res = Signednessutil.compareUnsigned(sshort, sshort);
+
+        //:: error: (argument.type.incompatible)
+        res = Signednessutil.compareUnsigned(sshort, ushort);
+
+        //:: error: (argument.type.incompatible)
+        res = Signednessutil.compareUnsigned(ushort, sshort);
+
+        res = Signednessutil.compareUnsigned(ushort, ushort);
 
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(sbyte, sbyte);
+        res = Signednessutil.compareUnsigned(sbyte, sbyte);
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(sbyte, ubyte);
+        res = Signednessutil.compareUnsigned(sbyte, ubyte);
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.compareUnsigned(ubyte, sbyte);
+        res = Signednessutil.compareUnsigned(ubyte, sbyte);
 
-        res = UnsignednessUtil.compareUnsigned(ubyte, ubyte);
+        res = Signednessutil.compareUnsigned(ubyte, ubyte);
     }
 
     public void stringTests(@Unsigned long ulong, @Signed long slong,
@@ -88,46 +88,46 @@ public class Utils {
         String res;
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.toUnsignedString(slong);
+        res = Signednessutil.toUnsignedString(slong);
 
-        res = UnsignednessUtil.toUnsignedString(ulong);
-
-        //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.toUnsignedString(slong, 10);
-
-        res = UnsignednessUtil.toUnsignedString(ulong, 10);
-
+        res = Signednessutil.toUnsignedString(ulong);
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.toUnsignedString(sint);
+        res = Signednessutil.toUnsignedString(slong, 10);
 
-        res = UnsignednessUtil.toUnsignedString(uint);
-
-        //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.toUnsignedString(sint, 10);
-
-        res = UnsignednessUtil.toUnsignedString(uint, 10);
+        res = Signednessutil.toUnsignedString(ulong, 10);
 
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.toUnsignedString(sshort);
+        res = Signednessutil.toUnsignedString(sint);
 
-        res = UnsignednessUtil.toUnsignedString(ushort);
-
-        //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.toUnsignedString(sshort, 10);
-
-        res = UnsignednessUtil.toUnsignedString(ushort, 10);
-
+        res = Signednessutil.toUnsignedString(uint);
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.toUnsignedString(sbyte);
+        res = Signednessutil.toUnsignedString(sint, 10);
 
-        res = UnsignednessUtil.toUnsignedString(ubyte);
+        res = Signednessutil.toUnsignedString(uint, 10);
+
 
         //:: error: (argument.type.incompatible)
-        res = UnsignednessUtil.toUnsignedString(sbyte, 10);
+        res = Signednessutil.toUnsignedString(sshort);
 
-        res = UnsignednessUtil.toUnsignedString(ubyte, 10);
+        res = Signednessutil.toUnsignedString(ushort);
+
+        //:: error: (argument.type.incompatible)
+        res = Signednessutil.toUnsignedString(sshort, 10);
+
+        res = Signednessutil.toUnsignedString(ushort, 10);
+
+
+        //:: error: (argument.type.incompatible)
+        res = Signednessutil.toUnsignedString(sbyte);
+
+        res = Signednessutil.toUnsignedString(ubyte);
+
+        //:: error: (argument.type.incompatible)
+        res = Signednessutil.toUnsignedString(sbyte, 10);
+
+        res = Signednessutil.toUnsignedString(ubyte, 10);
     }
 }

@@ -302,8 +302,9 @@ public class AnnotatedTypes {
 
             // Check if it's the same name
             if (!supdt.getUnderlyingType().asElement().equals(
-                    subdt.getUnderlyingType().asElement()))
+                    subdt.getUnderlyingType().asElement())) {
                 return false;
+            }
 
             return true;
         }

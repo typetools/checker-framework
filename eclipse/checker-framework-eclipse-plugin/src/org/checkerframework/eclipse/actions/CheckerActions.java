@@ -14,7 +14,7 @@ import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
 import org.checkerframework.checker.tainting.TaintingChecker;
 import org.checkerframework.checker.units.UnitsChecker;
-import org.checkerframework.checker.unsignedness.UnsignednessChecker;
+import org.checkerframework.checker.signedness.SignednessChecker;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.common.value.ValueChecker;
@@ -130,11 +130,11 @@ public class CheckerActions
         }
     }
 
-    public static class UnsignednessAction extends RunCheckerAction
+    public static class SignednessAction extends RunCheckerAction
     {
-        public UnsignednessAction()
+        public SignednessAction()
         {
-            super(UnsignednessChecker.class.getCanonicalName());
+            super(SignednessChecker.class.getCanonicalName());
         }
     }
 

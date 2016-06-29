@@ -232,7 +232,7 @@
                     <include name="**/NullnessUtil*"/>
                     <include name="**/RegexUtil*"/>
                     <include name="**/UnitsTools*"/>
-                    <include name="**/UnsignednessUtil*"/>
+                    <include name="**/SignednessUtil*"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -450,7 +450,7 @@
             <include name="**/NullnessUtil*"/>
             <include name="**/RegexUtil*"/>
             <include name="**/UnitsTools*"/>
-            <include name="**/UnsignednessUtil*"/>
+            <include name="**/SignednessUtil*"/>
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
                 <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
@@ -470,7 +470,7 @@
             <include name="**/NullnessUtil*"/>
             <include name="**/RegexUtil*"/>
             <include name="**/UnitsTools*"/>
-            <include name="**/UnsignednessUtil*"/>
+            <include name="**/SignednessUtil*"/>
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
                 <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
@@ -771,10 +771,10 @@
         </antcall>
     </target>
 
-    <target name="unsignedness-tests" depends="jar,build-tests"
-            description="Run tests for the Unsignedness Checker">
+    <target name="signedness-tests" depends="jar,build-tests"
+            description="Run tests for the Signedness Checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.UnsignednessTest"/>
+            <param name="param" value="tests.SignednessTest"/>
         </antcall>
     </target>
 
@@ -1234,7 +1234,7 @@ So, use our own archived version.
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
 
-            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/unsignedness/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties"/>
+            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/signedness/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties"/>
         </antcall>
     </target>
 

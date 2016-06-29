@@ -178,8 +178,9 @@ public class ReferenceInfoUtil {
             }
 
             if (properName.equals(actualName) &&
-                areEquals(expected, anno.position))
+                areEquals(expected, anno.position)) {
                 return anno;
+            }
         }
         return null;
     }
