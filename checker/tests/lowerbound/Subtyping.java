@@ -3,9 +3,8 @@ import org.checkerframework.checker.lowerbound.qual.*;
 class Subtyping{
 
     void foo() {
-	// this error should go away when we add the intro rules
-	//:: error: (assignment.type.incompatible)
-	@NegativeOnePlus int i = 0;
+
+	@NegativeOnePlus int i = -1;
 
 	@Unknown int j = i;
 
@@ -15,12 +14,8 @@ class Subtyping{
 	//:: error: (assignment.type.incompatible)
 	@NegativeOnePlus int l = k;
 
-	// this error should go away when we add the intro rules
-	//:: error: (assignment.type.incompatible)
 	@NonNegative int n = 0;
 
-	// this error should go away when we add the intro rules
-	//:: error: (assignment.type.incompatible)
 	@Positive int a = 1;
 
 	// check that everything is aboveboard
