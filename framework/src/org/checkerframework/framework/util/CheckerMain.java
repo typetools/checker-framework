@@ -359,7 +359,7 @@ public class CheckerMain {
         return actualArgs;
     }
 
-    protected void addMainArgs(final List<String> args) {
+    protected void addMainToArgs(final List<String> args) {
         args.add("com.sun.tools.javac.Main");
     }
 
@@ -381,7 +381,7 @@ public class CheckerMain {
 
         args.addAll(jvmOpts);
 
-        addMainArgs(args);
+        addMainToArgs(args);
 
         // No classes on the compilation bootclasspath will be loaded
         // during compilation, but the classes are read by the compiler
