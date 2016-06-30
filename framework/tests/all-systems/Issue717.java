@@ -1,6 +1,5 @@
 // A test case that should not longer crash once issue #717 is fixed
 // https://github.com/typetools/checker-framework/issues/717
-// @skip-test
 public class Issue717{
 
     public static <T extends  Interface<? super T>> void foo2(T a, T b) {

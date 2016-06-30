@@ -2,15 +2,24 @@ package org.checkerframework.framework.util.typeinference.constraint;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.TypesUtils;
 
-import javax.lang.model.type.TypeKind;
 import java.util.List;
 import java.util.Set;
+
+import javax.lang.model.type.TypeKind;
 
 /**
  * Takes a single step in reducing a AFConstraint.
@@ -134,10 +143,11 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             return null;
         }
 
-        AnnotatedDeclaredType subAsSuper = DefaultTypeHierarchy.castedAsSuper(subtype, supertype);
-        if (subAsSuper == null) {
+        if (!TypesUtils.isErasedSubtype(typeFactory.getContext().getTypeUtils(),
+                subtype.getUnderlyingType(), supertype.getUnderlyingType())) {
             return null;
         }
+        AnnotatedDeclaredType subAsSuper = DefaultTypeHierarchy.castedAsSuper(subtype, supertype);
 
         final List<AnnotatedTypeMirror> subTypeArgs = subAsSuper.getTypeArguments();
         final List<AnnotatedTypeMirror> superTypeArgs = supertype.getTypeArguments();

@@ -408,14 +408,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitDeclared_Declared(AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
         AnnotatedDeclaredType subtypeAsSuper = castedAsSuper(subtype, supertype);
-        if (subtypeAsSuper == null) {
-            //TODO: The old framework did the following.  I am still doing this to cover the case where we don't
-            //TODO: convert object to Strings in compound assignment  str += obj;
-            if (TypesUtils.isDeclaredOfName(supertype.getUnderlyingType(), "java.lang.String")) {
-                return isPrimarySubtype(subtype, supertype);
-            }
-            return false;
-        }
 
         if (!isPrimarySubtype(subtypeAsSuper, supertype)) {
             return false;
@@ -896,7 +888,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         final Types types = subtype.atypeFactory.getProcessingEnv().getTypeUtils();
         final Elements elements = subtype.atypeFactory.getProcessingEnv().getElementUtils();
 
-        final AnnotatedTypeMirror asSuperType = AnnotatedTypes.asSuper( types, subtype.atypeFactory, subtype, supertype);
+        final T asSuperType = AnnotatedTypes.asSuper(subtype.atypeFactory, subtype, supertype);
 
         fixUpRawTypes(subtype, asSuperType, supertype, types);
 
@@ -921,7 +913,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
                 return (T) resultAtd;
             }
         }
-        return (T) AnnotatedTypes.asSuper( types, subtype.atypeFactory, subtype, supertype);
+        return asSuperType;
     }
 
     /**

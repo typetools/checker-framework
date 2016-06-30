@@ -1222,12 +1222,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         AnnotatedArrayType passedAsArray = (AnnotatedArrayType)passed;
 
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(node);
-        AnnotatedDeclaredType receiverAsVector = (AnnotatedDeclaredType) AnnotatedTypes
-                .asSuper(checker.getProcessingEnvironment().getTypeUtils(),
-                        atypeFactory, receiver, vectorType);
-        if (receiverAsVector == null
-                || receiverAsVector.getTypeArguments().isEmpty())
+        AnnotatedDeclaredType receiverAsVector = AnnotatedTypes.asSuper(atypeFactory, receiver, vectorType);
+        if (receiverAsVector.getTypeArguments().isEmpty()) {
             return;
+        }
 
         commonAssignmentCheck(
                 passedAsArray.getComponentType(),
@@ -2200,7 +2198,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // An anonymous class invokes the constructor of it's super class, so the underlying
             // types of invocation and returnType are not the same.  Call asSuper so they are the
             // same and the is subtype tests below work correctly
-            invocation = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(types, atypeFactory, invocation, returnType);
+            invocation = AnnotatedTypes.asSuper(atypeFactory, invocation, returnType);
         }
 
         // The return type of the constructor (returnType) must be comparable to the type of the

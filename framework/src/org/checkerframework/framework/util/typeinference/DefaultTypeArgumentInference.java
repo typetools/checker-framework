@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.typeinference;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
@@ -306,10 +307,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (AnnotatedTypeVariable targetDecl : targetDeclarations ) {
             InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
             if (inferred != null && inferred instanceof InferredType) {
-                final AnnotatedTypeMirror lowerBoundAsArgument =
-                        AnnotatedTypes.asSuper(types, typeFactory, targetDecl.getLowerBound(), ((InferredType) inferred).type);
-
-
+                final AnnotatedTypeMirror lowerBoundAsArgument = targetDecl.getLowerBound();
                 for (AnnotationMirror top : tops) {
                     final AnnotationMirror lowerBoundAnno = lowerBoundAsArgument.getEffectiveAnnotationInHierarchy(top);
                     final AnnotationMirror argAnno = ((InferredType) inferred).type.getEffectiveAnnotationInHierarchy(top);

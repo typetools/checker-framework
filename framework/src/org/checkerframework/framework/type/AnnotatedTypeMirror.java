@@ -818,6 +818,7 @@ public abstract class AnnotatedTypeMirror {
         atypeFactory.fromElement(
                 atypeFactory.elements.getTypeElement(
                         Object.class.getCanonicalName()));
+        objectType.declaration = false;
         return objectType;
     }
 
@@ -2197,7 +2198,40 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
-    /** @see Types#directSupertypes(TypeMirror) */
+    /**
+     * This method returns a list of AnnotatedTypeMirrors where the Java type of each ATM is an
+     * immediate supertype (class or interface) of the Java type of this.  If the directSuperType
+     * has type arguments, then the annotations on those type arguments are taken with proper
+     * translation from the declaration of the Java type of this.
+     * <p>
+     * For example,
+     * <pre>
+     * {@code class B<T> { ... } }
+     * {@code class A extends B<@NonNull String> { ... } }
+     * {@code @Nullable A a;}
+     * </pre>
+     * The direct supertype of the ATM {@code @Nullable A} is {@code @Nullable B<@NonNull String>}.
+     * <p>
+     * An example with more complex type arguments:
+     * <pre>
+     * {@code class D<Q,R> { ... } }
+     * {@code class A<T,S> extends D<S,T> { ... } }
+     * {@code @Nullable A<@NonNull String, @NonNull Object> a;}
+     * </pre>
+     * The direct supertype of the ATM {@code @Nullable A<@NonNull String, @NonNull
+     * Object>} is {@code @Nullable B<@NonNull Object, @NonNull String>}.
+     * <p>
+     * An example with more than one direct supertype:
+     * <pre>
+     * {@code class B<T> implements List<Integer> { ... } }
+     * {@code class A extends B<@NonNull String> implements List<Integer> { ... } }
+     * {@code @Nullable A a;}
+     * </pre>
+     * The direct supertypes of the ATM {@code @Nullable A} are {@code @Nullable B <@NonNull
+     * String>} and {@code @Nullable List<@NonNull Integer>}.
+     *
+     * @see Types#directSupertypes(TypeMirror)
+     */
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {
         return SupertypeFinder.directSuperTypes(this);
     }
