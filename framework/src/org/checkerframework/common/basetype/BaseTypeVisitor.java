@@ -72,8 +72,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -188,8 +186,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
-
-    protected static final Pattern thisPattern = Pattern.compile("^(this)$");
 
     /**
      * @param checker
@@ -591,8 +587,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 continue;
             }
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(node,
+                flowExprContext = FlowExpressionContext
+                        .buildContextForMethodDeclaration(node,
                                 getCurrentPath(), checker.getContext());
             }
 
@@ -603,7 +599,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // optimized to store the result the first time. (same for
                 // other annotations)
                 expr = FlowExpressionParseUtil.parse(expression,
-                        flowExprContext, getCurrentPath());
+                        flowExprContext, getCurrentPath(), false);
 
                 CFAbstractStore<?, ?> exitStore = atypeFactory
                         .getRegularExitStore(node);
@@ -650,8 +646,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     p.annotationString);
 
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(node,
+                flowExprContext = FlowExpressionContext
+                        .buildContextForMethodDeclaration(node,
                                 getCurrentPath(), checker.getContext());
             }
 
@@ -667,7 +663,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             try {
                 FlowExpressionParseUtil.parse(expression,
-                        flowExprContext, getCurrentPath());
+                        flowExprContext, getCurrentPath(), false);
             } catch (FlowExpressionParseException e) {
                 // ignore expressions that do not parse
                 continue;
@@ -697,8 +693,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 continue;
             }
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(node,
+                flowExprContext = FlowExpressionContext
+                        .buildContextForMethodDeclaration(node,
                                 getCurrentPath(), checker.getContext());
             }
 
@@ -709,7 +705,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // optimized to store the result the first time. (same for
                 // other annotations)
                 expr = FlowExpressionParseUtil.parse(expression,
-                        flowExprContext, getCurrentPath());
+                        flowExprContext, getCurrentPath(), false);
 
                 // check return type of method
                 boolean booleanReturnType = TypesUtils.isBooleanType(InternalUtils.typeOf(node.getReturnType()));
@@ -785,8 +781,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     p.annotationString);
 
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(node,
+                flowExprContext = FlowExpressionContext
+                        .buildContextForMethodDeclaration(node,
                                 getCurrentPath(), checker.getContext());
             }
 
@@ -802,7 +798,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             try {
                 FlowExpressionParseUtil.parse(expression,
-                        flowExprContext, getCurrentPath());
+                        flowExprContext, getCurrentPath(), false);
             } catch (FlowExpressionParseException e) {
                 // ignore expressions that do not parse
                 continue;
@@ -1017,7 +1013,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             try {
                 FlowExpressions.Receiver expr = parseExpressionString(expression, flowExprContext,
-                        getCurrentPath(), node, treeForErrorReporting);
+                        getCurrentPath(), node, treeForErrorReporting, false);
 
                 CFAbstractStore<?, ?> store = atypeFactory.getStoreBefore(node);
 
@@ -1056,11 +1052,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         FlowExpressionContext flowExprContext = null;
 
         if (node instanceof MethodInvocationNode) {
-            flowExprContext = FlowExpressionParseUtil
-                    .buildFlowExprContextForUse(
+            flowExprContext = FlowExpressionContext
+                    .buildContextForMethodUse(
                             (MethodInvocationNode) node, checker.getContext());
         } else if (node instanceof FieldAccessNode) {
-            // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
+            // Adapted from FlowExpressionParseUtil.buildContextForMethodUse
 
             Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory,
                 ((FieldAccessNode) node).getReceiver());
@@ -1080,7 +1076,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             flowExprContext = new FlowExpressionContext(
                     internalReceiver, null, checker.getContext());
         } else if (node instanceof ArrayAccessNode) {
-            // Adapted from FlowExpressionParseUtil.buildFlowExprContextForUse
+            // Adapted from FlowExpressionParseUtil.buildContextForMethodUse
 
             Receiver internalReceiver = FlowExpressions.internalReprOfArrayAccess(atypeFactory,
                 (ArrayAccessNode) node);
@@ -1116,16 +1112,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected FlowExpressions.Receiver parseExpressionString(String expression,
             FlowExpressionContext flowExprContext,
-            TreePath path, Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
-        expression = expression.trim();
-
-        Matcher thisMatcher = thisPattern.matcher(expression);
-        if (thisMatcher.matches()) {
-            // It is possible that expression == "this" after this call.
-            expression = flowExprContext.receiver.toString().trim();
-        }
-
-        return FlowExpressionParseUtil.parse(expression, flowExprContext, path);
+            TreePath path, Node node, Tree treeForErrorReporting, boolean use) throws
+            FlowExpressionParseException {
+        return FlowExpressionParseUtil.parse(expression, flowExprContext, path, use);
     }
 
     /**
@@ -1148,8 +1137,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     .fromName(elements, p.annotationString);
 
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(node,
+                flowExprContext = FlowExpressionContext
+                        .buildContextForMethodDeclaration(node,
                                 getCurrentPath(), checker.getContext());
             }
 
@@ -1165,7 +1154,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             try {
                 FlowExpressionParseUtil.parse(expression, flowExprContext,
-                        getCurrentPath());
+                        getCurrentPath(), false);
             } catch (FlowExpressionParseException e) {
                 // ignore expressions that do not parse
                 continue;
@@ -2908,8 +2897,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 continue;
             }
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForDeclaration(methodTree, method
+                flowExprContext = FlowExpressionContext
+                        .buildContextForMethodDeclaration(methodTree, method
                                 .getReceiverType().getUnderlyingType(),
                                 checker.getContext());
             }
@@ -2920,7 +2909,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 // be optimized to store the result the first time.
                 // (same for other annotations)
                 FlowExpressions.Receiver expr = FlowExpressionParseUtil.parse(
-                        expression, flowExprContext, path);
+                        expression, flowExprContext, path, false);
                 result.add(Pair.of(expr, annotation));
             } catch (FlowExpressionParseException e) {
                 // errors are reported elsewhere + ignore this contract

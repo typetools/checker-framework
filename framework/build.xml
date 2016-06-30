@@ -168,6 +168,8 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}"/>
@@ -204,8 +206,13 @@
              mirrors javadoc dependencies. If changing project
              dependencies, change the Javadoc dependencies to keep
              them in sync (and vice versa). -->
-        <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}" destdir="${api.doc}"
+        <!-- With Ant 1.9.4 or later, add
+            failonwarning="true"
+            but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
+        <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+                 destdir="${api.doc}"
                  private="${javadoc.private}"
+                 encoding="UTF-8"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
@@ -269,6 +276,8 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${tests}"/>
@@ -721,6 +730,8 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}:${checker-jdk}"/>

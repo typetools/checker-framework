@@ -20,13 +20,13 @@ import java.util.zip.ZipEntry;
 /**
  * This class behaves similarly to javac.  CheckerMain does the following:
  * <ul>
- *   <li>add the jsr308-langtools’ javac.jar to the runtime bootclasspath
+ *   <li>add the jsr308-langtools javac.jar to the runtime bootclasspath
  *     of the process that runs the Checker Framework.
  *     This specifies which classes are used to run javac</li>
  *   <li>add jdk7.jar or jdk8.jar to the compile time bootclasspath
  *     of the javac argument list passed to javac</li>
  *   <li>parse and implement any special options used by the Checker Framework,
- *     e.g., using “shortnames” for annotation processors</li>
+ *     e.g., using "shortnames" for annotation processors</li>
  *   <li>pass all remaining command-line arguments to the real javac</li>
  * </ul>
  *
@@ -359,7 +359,7 @@ public class CheckerMain {
         return actualArgs;
     }
 
-    protected void addMainArgs(final List<String> args) {
+    protected void addMainToArgs(final List<String> args) {
         args.add("com.sun.tools.javac.Main");
     }
 
@@ -372,7 +372,7 @@ public class CheckerMain {
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
 
-        // Prepend ("/p:") because our javac.jar doesn’t have all classes
+        // Prepend ("/p:") because our javac.jar doesn't have all classes
         // required by the Java runtime to execute the compiler.
         args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, runtimeBootClasspath));
         args.add("-ea");
@@ -381,7 +381,7 @@ public class CheckerMain {
 
         args.addAll(jvmOpts);
 
-        addMainArgs(args);
+        addMainToArgs(args);
 
         // No classes on the compilation bootclasspath will be loaded
         // during compilation, but the classes are read by the compiler
@@ -442,7 +442,8 @@ public class CheckerMain {
                     // after it has been handed off to javac, for example. Ideally we would print
                     // the argfile filename as a comment but the resulting file couldn't then be run as
                     // a script on Unix or Windows.
-                    if (arg.startsWith("@")) { // Read argfile and include its parameters in the output file.
+                    if (arg.startsWith("@")) {
+                        // Read argfile and include its parameters in the output file.
                         String inputFilename = arg.substring(1);
 
                         BufferedReader br = new BufferedReader(new FileReader(inputFilename));
@@ -661,7 +662,8 @@ public class CheckerMain {
             ZipEntry entry;
             while ((entry = checkerJarIs.getNextEntry()) != null) {
                 final String name = entry.getName();
-                if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) { // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
+                // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
+                if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) {
                     // Forward slash is used instead of File.separator because checker.jar uses / as the separator.
                     checkerClassNames.add(PluginUtil.join(".", name.substring(0, name.length() - ".class".length()).split("/")));
                 }

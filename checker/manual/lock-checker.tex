@@ -639,10 +639,9 @@ void clientMethod() {
   if (lock.tryLock()) {
     x.toString(); // OK: the lock is held
     myMethod();
-    x.toString(); // OK: the lock is still known to be held since myMethod is locking-free
+    x.toString(); // OK: the lock is still held since myMethod is locking-free
     mySideEffectFreeMethod();
-    x.toString(); // OK: the lock is still known to be held since mySideEffectFreeMethod
-                  // is side-effect-free
+    x.toString(); // OK: the lock is still held since mySideEffectFreeMethod is side-effect-free
     myUnlockingMethod();
     x.toString(); // ILLEGAL: myUnlockingMethod may have released a lock
   }

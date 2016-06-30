@@ -89,16 +89,18 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
         // No checking unless the operator is "==" or "!=".
         if (!(node.getKind() == Tree.Kind.EQUAL_TO ||
-              node.getKind() == Tree.Kind.NOT_EQUAL_TO))
+              node.getKind() == Tree.Kind.NOT_EQUAL_TO)) {
             return super.visitBinary(node, p);
+        }
 
         ExpressionTree leftOp = node.getLeftOperand();
         ExpressionTree rightOp = node.getRightOperand();
 
         // Check passes if either arg is null.
         if (leftOp.getKind() == Tree.Kind.NULL_LITERAL ||
-            rightOp.getKind() == Tree.Kind.NULL_LITERAL)
+            rightOp.getKind() == Tree.Kind.NULL_LITERAL) {
             return super.visitBinary(node, p);
+        }
 
         AnnotatedTypeMirror left = atypeFactory.getAnnotatedType(leftOp);
         AnnotatedTypeMirror right = atypeFactory.getAnnotatedType(rightOp);

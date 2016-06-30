@@ -10,21 +10,26 @@ public class UIChild extends UIParent {
     }
 
     // Should be an error to make this @UI
+    @Override
+    @UIEffect
     //:: error: (override.effect.invalid)
-    @Override @UIEffect public void doingSafeStuff() {}
+    public void doingSafeStuff() {}
 
     public void shouldNotBeUI() {
         //:: error: (call.invalid.ui)
         thingy.dangerous();
     }
 
+    @UIEffect
+    @SafeEffect
     //:: error: (annotations.conflicts)
-    @UIEffect @SafeEffect public void doubleAnnot1() {
-    }
+    public void doubleAnnot1() {}
+    @UIEffect
+    @PolyUIEffect
     //:: error: (annotations.conflicts)
-    @UIEffect @PolyUIEffect public void doubleAnnot2() {
-    }
+    public void doubleAnnot2() {}
+    @PolyUIEffect
+    @SafeEffect
     //:: error: (annotations.conflicts)
-    @PolyUIEffect @SafeEffect public void doubleAnnot3() {
-    }
+    public void doubleAnnot3() {}
 }

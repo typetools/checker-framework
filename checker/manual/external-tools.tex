@@ -649,47 +649,45 @@ To run a checker within IntelliJ:
 
 \item
   Set the language level for your project to 8.  To do so, go to the
-  "Project Structure" menu via (File>Project Structure) or
-  (Ctrl-Alt-Shift-S), and set the "Project language level" field in the
-  "Project" sub-menu to 8.
+  ``Project Structure'' menu via (File>Project Structure) or
+  (Ctrl-Alt-Shift-S), and set the ``Project language level'' field in the
+  ``Project'' sub-menu to 8.
+
+  Note: under MacOS, the menu is ``Preferences'' rather than ``Project Structure''.
 
 \item
-  Add the Checker Framework libraries.  In this same "Project Structure"
-  menu, navigate to the "Libraries" sub-menu.  Click on the green "+" that
-  appears in this menu, select "Java" in the resulting pop-down menu,
+  Add the Checker Framework libraries.  In this same ``Project Structure''
+  menu, navigate to the ``Libraries'' sub-menu.  Click on the green ``+'' that
+  appears in this menu, select ``Java'' in the resulting pop-down menu,
   select \<CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
-  and click "OK". Repeat this step for
+  and click ``OK''. Repeat this step for
   \<CHECKERFRAMEWORK/checker/dist/javac.jar>.
 
 \item
   Add the annotated JDK library.
-  Go to the "Settings" menu via (File>Settings) or (Ctrl-Alt-S) and
-  navigate to the "Java Compiler" sub-menu via (Build, Execution,
+  Go to the ``Settings'' menu via (File>Settings) or (Ctrl-Alt-S) and
+  navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
   Deployment>Compiler>Java Compiler).  Add the following to the field
-  "Additional command line parameters":
+  ``Additional command line parameters'':
   \<-Xbootclasspath/p:CHECKERFRAMEWORK/checker/dist/jdk8.jar>
 
 \item
   Create an annotation profile and specify which checkers to run.
-  Directly under the "Java Compiler" sub-menu is the "Annotation
-  Processors" sub-menu. Navigate here and click on the green "+" to create
+  Directly under the ``Java Compiler'' sub-menu is the ``Annotation
+  Processors'' sub-menu. Navigate here and click on the green ``+'' to create
   a new Annotation Processor profile. Select the modules you would like to
-  use checkers with from under the "Default" profile and move them to your
-  new profile via the button directly right of the "-" button.
+  use checkers with from under the ``Default'' profile and move them to your
+  new profile via the button directly right of the ``-'' button.
 
-  Now select your new profile and check the "Enable annotation processing"
-  option. Select the "Processor path" radio button and enter
+  Now select your new profile and check the ``Enable annotation processing''
+  option. Select the ``Processor path'' radio button and enter
   \<CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
   of it. To add a checker to be run during compilation, click on the green
-  "+" in the "Processor FQ Name" section and write that checker's
+  ``+'' in the ``Processor FQ Name'' section and write that checker's
   fully-qualified name
   (\<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>) in
-  the resulting text field, and press the "ENTER" key.
+  the resulting text field, and press the ``ENTER'' key.
   % Without the ENTER key, the setting won't be saved.
-
-   %% This seems obvious, so I removed it to keep the text shorter
-   % To remove a checker, simply select it from this list and click
-   % the red "-" button.
 
 \end{enumerate}
 
