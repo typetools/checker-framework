@@ -71,6 +71,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	    case MINUS:
                 minusHelper(left, right, type);
                 break;
+	    case MULTIPLY:
+		timesHelper(left, right, type);
+		break;
             default:
                 break;
             }
@@ -111,7 +114,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return;
                 }
 		else if (val == 2) {
-		    if(leftType.hasAnnotation(N1P)) {
+		    if (leftType.hasAnnotation(N1P)) {
 			type.addAnnotation(POS);
 			return;
 		    }
@@ -175,6 +178,54 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 		    }
 		    return;
 		}
+	    }
+	}
+	public void timesHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
+			       AnnotatedTypeMirror type) {
+	    AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+
+            // if left is literal 1/0 and right is not a literal swap them because we already handle the transfer for that
+            // and it would be redundant to repeat it all again
+            // we don't want right to be a literal too b/c we could be swapping forever
+            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
+		!(rightExpr.getKind() == Tree.Kind.INT_LITERAL)) {
+                int val = (int)((LiteralTree)leftExpr).getValue();
+                if (val == 1 || val == 0) {
+                    plusHelper(rightExpr, leftExpr, type);
+                    return;
+                }
+            }
+
+	    // if the right side is a literal we do some special stuff(specifically for 1 and 0)
+            if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
+                int val = (int)((LiteralTree)rightExpr).getValue();
+                if (val == 1) {
+		    type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
+                    return;
+                }
+		else if (val == 0) {
+		    type.addAnnotation(NN);
+                    return;
+                }
+	    }
+
+	    // deal with two things for which we have reasonable annotations
+	    // pos * pos -> pos
+	    // nn * pos -> nn
+	    // nn * nn -> nn
+	    if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
+		type.addAnnotation(POS);
+		return;
+	    }
+	    if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(NN)) ||
+		(leftType.hasAnnotation(NN) && rightType.hasAnnotation(POS))) {
+		type.addAnnotation(NN);
+		return;
+	    }
+	    if (leftType.hasAnnotation(NN) && rightType.hasAnnotation(NN)) {
+		type.addAnnotation(NN);
+		return;
 	    }
 	}
     }
