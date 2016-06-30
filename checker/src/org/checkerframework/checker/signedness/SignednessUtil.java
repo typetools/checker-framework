@@ -1,6 +1,6 @@
-package org.checkerframework.checker.unsignedness;
+package org.checkerframework.checker.signedness;
 
-import org.checkerframework.checker.unsignedness.qual.*;
+import org.checkerframework.checker.signedness.qual.*;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -11,9 +11,9 @@ import java.nio.ByteBuffer;
  * making it available in earlier versions of Java.
  * Others provide new functionality.
  */
-public final class UnsignednessUtil {
+public final class SignednessUtil {
 
-    private UnsignednessUtil() {
+    private SignednessUtil() {
         throw new Error("Do not instantiate");
     }
 
@@ -22,7 +22,7 @@ public final class UnsignednessUtil {
      * Wraps {@link java.nio.ByteBuffer#getShort() getShort()},
      * but assumes that the result should be interpreted as unsigned.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static @Unsigned short getUnsignedShort(ByteBuffer b) {
         return b.getShort();
     }
@@ -32,7 +32,7 @@ public final class UnsignednessUtil {
      * Wraps {@link java.nio.ByteBuffer#get() get()},
      * but assumes that the result should be interpreted as unsigned.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static @Unsigned byte getUnsigned(ByteBuffer b) {
         return b.get();
     }
@@ -43,7 +43,7 @@ public final class UnsignednessUtil {
      * Wraps {@link java.nio.ByteBuffer#get(byte[]) get(byte[])},
      * but assumes that the array of bytes should be interpreted as unsigned.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static void getUnsigned(ByteBuffer b, @Unsigned byte[] bs) {
         b.get(bs);
     }
@@ -58,7 +58,7 @@ public final class UnsignednessUtil {
      *         a positive number iff x {@literal >} y,
      *         and zero iff x == y.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned long x, @Unsigned long y) {
         // Java 8 version: return Long.compareUnsigned(x, y);
         return Long.compare(x + Long.MIN_VALUE, y + Long.MIN_VALUE);
@@ -74,7 +74,7 @@ public final class UnsignednessUtil {
      *         a positive number iff x {@literal >} y,
      *         and zero iff x == y.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned int x, @Unsigned int y) {
         // Java 8 version: return Integer.compareUnsigned(x, y);
         return Integer.compare(x + Integer.MIN_VALUE, y + Integer.MIN_VALUE);
@@ -87,7 +87,7 @@ public final class UnsignednessUtil {
      *         a positive number iff x {@literal >} y,
      *         and zero iff x == y.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned short x, @Unsigned short y) {
         // Java 8 version: return Integer.compareUnsigned(Short.toUnsignedInt(x), Short.toUnsignedInt(y));
         return compareUnsigned(toUnsignedInt(x), toUnsignedInt(y));
@@ -100,7 +100,7 @@ public final class UnsignednessUtil {
      *         a positive number iff x {@literal >} y,
      *         and zero iff x == y.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static int compareUnsigned(@Unsigned byte x, @Unsigned byte y) {
         // Java 8 version: return Integer.compareUnsigned(Byte.toUnsignedInt(x), Byte.toUnsignedInt(y));
         return compareUnsigned(toUnsignedInt(x), toUnsignedInt(y));
@@ -112,7 +112,7 @@ public final class UnsignednessUtil {
      * This is a reimplementation of Java 8's
      * {@code Long.toUnsignedString(long)}.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned long l) {
         // Java 8 version: return Long.toUnsignedString(l);
         return toUnsignedBigInteger(l).toString();
@@ -124,7 +124,7 @@ public final class UnsignednessUtil {
      * This is a reimplementation of Java 8's
      * {@code Long.toUnsignedString(long, int)}.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned long l, int radix) {
         // Java 8 version: return Long.toUnsignedString(l, radix);
         return toUnsignedBigInteger(l).toString(radix);
@@ -136,7 +136,7 @@ public final class UnsignednessUtil {
      * This is a reimplementation of Java 8's
      * {@code Integer.toUnsignedString(int)}.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned int i) {
         // Java 8 version: return Integer.toUnsignedString(i);
         return Long.toString(toUnsignedLong(i));
@@ -148,7 +148,7 @@ public final class UnsignednessUtil {
      * This is a reimplementation of Java 8's
      * {@code Integer.toUnsignedString(int, int)}.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned int i, int radix) {
         // Java 8 version: return Integer.toUnsignedString(i, radix);
         return Long.toString(toUnsignedLong(i), radix);
@@ -157,7 +157,7 @@ public final class UnsignednessUtil {
     /**
      * Produces a string representation of the unsigned short s.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned short s) {
         // Java 8 version: return Integer.toUnsignedString(Short.toUnsignedInt(s));
         return Long.toString(toUnsignedLong(s));
@@ -166,7 +166,7 @@ public final class UnsignednessUtil {
     /**
      * Produces a string representation of the unsigned short s in base radix.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned short s, int radix) {
         // Java 8 version: return Integer.toUnsignedString(Short.toUnsignedInt(s), radix);
         return Long.toString(toUnsignedLong(s), radix);
@@ -175,7 +175,7 @@ public final class UnsignednessUtil {
     /**
      * Produces a string representation of the unsigned byte b.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned byte b) {
         // Java 8 version: return Integer.toUnsignedString(Byte.toUnsignedInt(b));
         return Long.toString(toUnsignedLong(b));
@@ -184,7 +184,7 @@ public final class UnsignednessUtil {
     /**
      * Produces a string representation of the unsigned byte b in base radix.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     public static String toUnsignedString(@Unsigned byte b, int radix) {
         // Java 8 version: return Integer.toUnsignedString(Byte.toUnsignedInt(b), radix);
         return Long.toString(toUnsignedLong(b), radix);
@@ -196,12 +196,12 @@ public final class UnsignednessUtil {
      * This is a reimplementation of Java 8's
      * {@code Long.toUnsignedBigInteger(long)}.
      */
-    @SuppressWarnings("unsignedness")
+    @SuppressWarnings("signedness")
     private static @Unsigned BigInteger toUnsignedBigInteger(@Unsigned long l) {
         // Java 8 version: return Long.toUnsignedBigInteger(l);
-        if (l >= 0L)
+        if (l >= 0L) {
             return BigInteger.valueOf(l);
-        else {
+        } else {
             int upper = (int) (l >>> 32);
             int lower = (int) l;
 

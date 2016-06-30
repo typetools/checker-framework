@@ -34,7 +34,8 @@ public class NonEmptyCollection {
 
   public class PriorityQueue1<E> {
     @SuppressWarnings("purity") // object creation is forbidden in pure methods
-    public @Nullable @org.checkerframework.dataflow.qual.Pure E poll() { throw new RuntimeException("skeleton method"); }
+    @org.checkerframework.dataflow.qual.Pure
+    public @Nullable E poll() { throw new RuntimeException("skeleton method"); }
     public E remove() { throw new RuntimeException("skeleton method"); }
 
     @EnsuresNonNullIf(result=false, expression="poll()")

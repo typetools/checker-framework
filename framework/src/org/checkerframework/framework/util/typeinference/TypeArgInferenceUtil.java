@@ -141,8 +141,9 @@ public class TypeArgInferenceUtil {
             MethodInvocationTree methodInvocation = (MethodInvocationTree)assignmentContext;
             // TODO move to getAssignmentContext
             if (methodInvocation.getMethodSelect() instanceof MemberSelectTree
-                    && ((MemberSelectTree)methodInvocation.getMethodSelect()).getExpression() == path.getLeaf())
+                    && ((MemberSelectTree)methodInvocation.getMethodSelect()).getExpression() == path.getLeaf()) {
                 return null;
+            }
             ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(methodInvocation);
             return assignedToExecutable(atypeFactory, path, methodElt, receiver, methodInvocation.getArguments());

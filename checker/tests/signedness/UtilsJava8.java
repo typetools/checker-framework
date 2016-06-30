@@ -1,5 +1,5 @@
 // @below-java8-jdk-skip-test
-import org.checkerframework.checker.unsignedness.qual.*;
+import org.checkerframework.checker.signedness.qual.*;
 
 // Test Java 8 unsigned utils
 public class UtilsJava8 {

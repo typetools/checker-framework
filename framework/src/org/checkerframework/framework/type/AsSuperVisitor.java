@@ -40,14 +40,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     }
 
     /**
-     * Implements asSuper {@link AnnotatedTypes#asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror,
-     * AnnotatedTypeMirror)}
+     * Implements asSuper.
+     * See {@link AnnotatedTypes#asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror,
+     * AnnotatedTypeMirror)} for details.
      *
      * @param type      Type from which to copy annotations
-     * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
-     *                  type.
-     * @return {@code superType} with annotations copied from {@code type} and type variables
-     * substituted from {@code type}.
+     * @param superType a type whose erased Java type is a supertype of {@code type}'s erased
+     *                  Java type.
+     * @return A copy of {@code superType} with annotations copied from {@code type} and type
+     * variables substituted from {@code type}.
      */
     @SuppressWarnings("unchecked")
     public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
@@ -57,8 +58,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         } else if (type == superType) {
             return (T) type.deepCopy();
         }
+
+        // This visitor modifies superType and may return type, so pass it copies so that it that
+        // parameters to asSuper are not changed and a copy is returned.
+        AnnotatedTypeMirror copyType = type.deepCopy();
         AnnotatedTypeMirror copySuperType = superType.deepCopy(false);
-        AnnotatedTypeMirror result = visit(type.deepCopy(), copySuperType, null);
+        AnnotatedTypeMirror result = visit(copyType, copySuperType, null);
 
         if (result == null) {
             ErrorReporter.errorAbort(

@@ -1,4 +1,4 @@
-import org.checkerframework.checker.unsignedness.qual.*;
+import org.checkerframework.checker.signedness.qual.*;
 
 public class Defaults {
 
@@ -6,7 +6,7 @@ public class Defaults {
 
         //Test bytes with literal values
         @Constant byte conByte;
-        @UnsignednessBottom byte botByte;
+        @SignednessBottom byte botByte;
 
         byte testByte = 0;
 
@@ -17,7 +17,7 @@ public class Defaults {
 
         //Test shorts with literal values
         @Constant short conShort;
-        @UnsignednessBottom short botShort;
+        @SignednessBottom short botShort;
 
         short testShort = 128;
 
@@ -28,7 +28,7 @@ public class Defaults {
 
         //Test ints with literal values
         @Constant int conInt;
-        @UnsignednessBottom int botInt;
+        @SignednessBottom int botInt;
 
         int testInt = 32768;
 
@@ -39,7 +39,7 @@ public class Defaults {
 
         //Test longs with literal values
         @Constant long conLong;
-        @UnsignednessBottom long botLong;
+        @SignednessBottom long botLong;
 
         long testLong = 2147483648L;
 
@@ -50,7 +50,7 @@ public class Defaults {
 
         //Test chars with literal values
         @Constant char conChar;
-        @UnsignednessBottom char botChar;
+        @SignednessBottom char botChar;
 
         char testChar = 'a';
 
@@ -166,9 +166,9 @@ public class Defaults {
         */
     }
 
-    public void UnsignednessBottom() {
+    public void SignednessBottom() {
 
-        @UnsignednessBottom Object botObj;
+        @SignednessBottom Object botObj;
 
         Object testObj = null;
 

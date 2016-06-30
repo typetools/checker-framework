@@ -1,4 +1,4 @@
-package org.checkerframework.checker.unsignedness.qual;
+package org.checkerframework.checker.signedness.qual;
 
 import java.lang.annotation.*;
 
@@ -9,10 +9,10 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The value's signedness is not known to the Unsignedness Checker.
+ * The value's signedness is not known to the Signedness Checker.
  * This is also used for non-numeric values, which cannot have a signedness.
  *
- * @checker_framework.manual #unsignedness-checker Unsignedness Checker
+ * @checker_framework.manual #signedness-checker Signedness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

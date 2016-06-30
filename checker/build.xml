@@ -61,8 +61,21 @@
                    file="${framework.loc}/build.xml"/>
         <antcall target="-prep-framework-compile"/>
 
+        <!-- Ant's copy task does not retain file permissions,
+             so use <exec executable="cp"> instead.
         <copy file="bin-devel/git.post-merge" tofile="../.git/hooks/post-merge" preservelastmodified="true" />
         <copy file="bin-devel/git.pre-commit" tofile="../.git/hooks/pre-commit" preservelastmodified="true" />
+        -->
+        <exec executable="cp">
+            <arg value="-p"/>
+            <arg value="bin-devel/git.post-merge"/>
+            <arg value="../.git/hooks/post-merge"/>
+        </exec>
+        <exec executable="cp">
+            <arg value="-p"/>
+            <arg value="bin-devel/git.pre-commit"/>
+            <arg value="../.git/hooks/pre-commit"/>
+        </exec>
     </target>
 
     <target name="-prep-framework-compile" if="framework.project"
@@ -219,7 +232,7 @@
                     <include name="**/NullnessUtil*"/>
                     <include name="**/RegexUtil*"/>
                     <include name="**/UnitsTools*"/>
-                    <include name="**/UnsignednessUtil*"/>
+                    <include name="**/SignednessUtil*"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -263,6 +276,8 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}"/>
@@ -287,6 +302,8 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}"/>
@@ -311,6 +328,8 @@
             <arg value="6"/>
             <arg value="-target"/>
             <arg value="6"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <!-- Instead of providing -sourcepath as we do above, use -classpath
@@ -350,8 +369,13 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}" destdir="${api.doc}"
+        <!-- With Ant 1.9.4 or later, add
+            failonwarning="true"
+            but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
+        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+                 destdir="${api.doc}"
                  private="${javadoc.private}"
+                 encoding="UTF-8"
                  additionalParam="-Xdoclint:all,-missing"
                  failonerror="true"
                  executable="${javadoc.bin}"
@@ -426,7 +450,7 @@
             <include name="**/NullnessUtil*"/>
             <include name="**/RegexUtil*"/>
             <include name="**/UnitsTools*"/>
-            <include name="**/UnsignednessUtil*"/>
+            <include name="**/SignednessUtil*"/>
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
                 <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
@@ -446,7 +470,7 @@
             <include name="**/NullnessUtil*"/>
             <include name="**/RegexUtil*"/>
             <include name="**/UnitsTools*"/>
-            <include name="**/UnsignednessUtil*"/>
+            <include name="**/SignednessUtil*"/>
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
                 <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
@@ -476,6 +500,8 @@
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${tests}"/>
@@ -745,10 +771,10 @@
         </antcall>
     </target>
 
-    <target name="unsignedness-tests" depends="jar,build-tests"
-            description="Run tests for the Unsignedness Checker">
+    <target name="signedness-tests" depends="jar,build-tests"
+            description="Run tests for the Signedness Checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.UnsignednessTest"/>
+            <param name="param" value="tests.SignednessTest"/>
         </antcall>
     </target>
 
@@ -1179,6 +1205,8 @@ So, use our own archived version.
             <arg value="7"/>
             <arg value="-target"/>
             <arg value="7"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}:${checker-jdk}"/>
@@ -1206,7 +1234,7 @@ So, use our own archived version.
         <antcall target="-run-checker">
             <param name="checker-name" value="org.checkerframework.checker.compilermsgs.CompilerMessagesChecker"/>
 
-            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/unsignedness/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties"/>
+            <param name="checker-args" value="-Apropfiles=${framework.loc}/src/org/checkerframework/framework/source/messages.properties:${framework.loc}/src/org/checkerframework/common/aliasing/messages.properties:${framework.loc}/src/org/checkerframework/common/basetype/messages.properties:./src/org/checkerframework/checker/lock/messages.properties:./src/org/checkerframework/checker/interning/messages.properties:./src/org/checkerframework/checker/nullness/messages.properties:./src/org/checkerframework/checker/initialization/messages.properties:./src/org/checkerframework/checker/linear/messages.properties:./src/org/checkerframework/checker/signedness/messages.properties:./src/org/checkerframework/checker/regex/messages.properties:${framework.loc}/src/org/checkerframework/common/util/report/messages.properties:./src/org/checkerframework/checker/formatter/messages.properties:./src/org/checkerframework/checker/i18nformatter/messages.properties:${framework.loc}/src/org/checkerframework/common/value/messages.properties:./src/org/checkerframework/checker/guieffect/messages.properties:${framework.loc}/src/org/checkerframework/common/reflection/messages.properties"/>
         </antcall>
     </target>
 
@@ -1253,12 +1281,6 @@ So, use our own archived version.
       <ant dir="${basedir}/../../checker-framework-demos">
       </ant>
     </target>
-    <target name="check-demos-travis" depends="demos.check,-demos.pull,-demos.clone"
-        description="Test that the demos that work on Travis are working as expected">
-      <ant dir="${basedir}/../../checker-framework-demos">
-          <target name="check-demos-travis"/>
-      </ant>
-    </target>
 
 
     <target name="errorprone.check">
@@ -1293,7 +1315,8 @@ So, use our own archived version.
                 includes="**/*.java"
                 excludes="**/javacutil/dist/**"
                 compiler="com.google.errorprone.ErrorProneAntCompilerAdapter"
-                destdir="${build}">
+                destdir="${build}"
+                encoding="UTF-8">
             <compilerclasspath>
               <pathelement location="${errorprone.lib}"/>
             </compilerclasspath>
