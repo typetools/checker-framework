@@ -16,7 +16,7 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFactory> {
 
     private static final /*@CompilerMessageKey*/ String LOWER_BOUND = "array.access.unsafe.low";
-    
+
     public LowerBoundVisitor(BaseTypeChecker checker) {
 	super(checker);
     }
@@ -26,7 +26,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
 	ExpressionTree index = tree.getIndex();
 	String arrName = tree.getExpression().toString();
 	AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(index);
-	if(!(indexType.hasAnnotation(NonNegative.class) || indexType.hasAnnotation(Positive.class))) {
+	if (!(indexType.hasAnnotation(NonNegative.class) || indexType.hasAnnotation(Positive.class))) {
 	    checker.report(Result.warning(LOWER_BOUND, indexType.toString(), arrName), index);
 	}
 
