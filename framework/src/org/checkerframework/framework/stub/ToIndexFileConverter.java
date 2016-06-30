@@ -631,7 +631,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
     if (resolved == null) {
       for (String declName : imports) {
-        qualifiedName = mergePackage(declName, className);
+        qualifiedName = mergeImport(declName, className);
         if (qualifiedName != null) { return qualifiedName; }
       }
       return className;
@@ -687,5 +687,4 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
       return null;
     }
   }
-
 }

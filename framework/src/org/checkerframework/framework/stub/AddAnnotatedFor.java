@@ -38,7 +38,7 @@ import annotations.io.ParseException;
 /**
  * Utility that generates {@code @AnnotatedFor} class annotations.
  * The {@link #main} method acts as a filter.  It reads a JAIF from
- * standard input (or from the first argument, if provided, and
+ * standard input (or from the first argument, if provided), and
  * it writes an augmented JAIF to standard output.
  *
  * @author dbro
