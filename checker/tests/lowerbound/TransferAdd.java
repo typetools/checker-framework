@@ -1,13 +1,15 @@
 import org.checkerframework.checker.lowerbound.qual.*;
 
-public class TransferAdd{
+public class TransferAdd {
 
     void test() {
 
-	// adding zero and one
+	// adding zero and one and two
 	
 	int a = -1;
 
+	@Positive int a1 = a + 2;
+	
 	@NonNegative int b = a + 1;
 	@NonNegative int c = 1 + a;
 
@@ -23,6 +25,28 @@ public class TransferAdd{
 
 	@Positive int i = h + 1;
 	@Positive int j = h + 0;
+
+	// adding values
+
+       	@Positive int k = i + j;
+	//:: error: (assignment.type.incompatible)
+	@Positive int l = b + c;
+	//:: error: (assignment.type.incompatible)
+	@Positive int m = d + c;
+	//:: error: (assignment.type.incompatible)
+	@Positive int n = d + e;
+
+	@Positive int o = h + g;
+	//:: error: (assignment.type.incompatible)
+	@Positive int p = h + d;
+
+	@NonNegative int q = b + c;
+	//:: error: (assignment.type.incompatible)
+	@NonNegative int r = q + d;
+
+	@NonNegative int s = k + d;
+	@NegativeOnePlus int t = s + d;
+
     }
 
 }
