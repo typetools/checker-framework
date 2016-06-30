@@ -531,10 +531,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     public Boolean visitIntersection_Declared(AnnotatedIntersectionType subtype, AnnotatedDeclaredType supertype, VisitHistory visited) {
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             Types types = checker.getTypeUtils();
-            if (TypesUtils.isErasedSubtype(types, subtypeI.getUnderlyingType(), supertype.getUnderlyingType())) {
-                if (isSubtype(subtypeI, supertype)) {
-                    return true;
-                }
+            if (TypesUtils.isErasedSubtype(types, subtypeI.getUnderlyingType(), supertype.getUnderlyingType())
+                    && isSubtype(subtypeI, supertype)) {
+                return true;
             }
         }
         return false;
@@ -555,10 +554,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         Types types = checker.getTypeUtils();
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             for (AnnotatedDeclaredType supertypeI : supertype.directSuperTypes()) {
-                if (TypesUtils.isErasedSubtype(types, subtypeI.getUnderlyingType(), supertypeI.getUnderlyingType())) {
-                    if (!isSubtype(subtypeI, supertypeI)) {
-                        return false;
-                    }
+                if (TypesUtils.isErasedSubtype(types, subtypeI.getUnderlyingType(), supertypeI.getUnderlyingType())
+                        && !isSubtype(subtypeI, supertypeI)) {
+                    return false;
                 }
             }
         }
@@ -582,10 +580,9 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
         // this can occur through capture conversion/comparing bounds
         for (AnnotatedDeclaredType subtypeI : subtype.directSuperTypes()) {
             Types types = checker.getTypeUtils();
-            if (TypesUtils.isErasedSubtype(types, subtypeI.getUnderlyingType(), supertype.getUnderlyingType())) {
-                if (isSubtype(subtypeI, supertype)) {
-                    return true;
-                }
+            if (TypesUtils.isErasedSubtype(types, subtypeI.getUnderlyingType(), supertype.getUnderlyingType())
+                    && isSubtype(subtypeI, supertype)) {
+                return true;
             }
         }
         return false;

@@ -178,8 +178,9 @@ public class CollectionToArrayHeuristics {
         AnnotatedDeclaredType collection = AnnotatedTypes.asSuper(atypeFactory, receiver, collectionType);
 
         if (collection.getTypeArguments().isEmpty()
-            || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL))
+            || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL)) {
             return false;
+        }
         return true;
     }
 

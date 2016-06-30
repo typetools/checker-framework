@@ -64,8 +64,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -120,8 +118,6 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
      * Indicates that the whole-program inference is on.
      */
     private final boolean infer;
-
-    protected static final Pattern thisPattern = Pattern.compile("^(this)$");
 
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
         this.analysis = analysis;
@@ -516,7 +512,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 continue;
             }
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(methodTree,
+                flowExprContext = FlowExpressionContext.buildContextForMethodDeclaration(methodTree,
                                 method.getClassTree(), analysis.checker.getContext());
             }
 
@@ -528,7 +524,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 // (same for other annotations)
                 expr = FlowExpressionParseUtil.parse(expression,
                         flowExprContext,
-                        analysis.atypeFactory.getPath(methodTree));
+                        analysis.atypeFactory.getPath(methodTree), false);
                 info.insertValue(expr, annotation);
             } catch (FlowExpressionParseException e) {
                 // report errors here
@@ -969,7 +965,7 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
         FlowExpressionContext flowExprContext = null;
 
         for (PreOrPostcondition p : postconditions) {
-            String expression = p.expression;
+            String expression = p.expression.trim();
             AnnotationMirror anno = AnnotationUtils.fromName(analysis.getTypeFactory().getElementUtils(),
                     p.annotationString);
 
@@ -978,61 +974,13 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 continue;
             }
             if (flowExprContext == null) {
-               flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForUse(n, analysis.checker.getContext());
+               flowExprContext = FlowExpressionContext.buildContextForMethodUse(n, analysis.checker.getContext());
             }
 
             try {
-                FlowExpressions.Receiver r = null;
-
-                String s = expression.trim();
-
-                Matcher selfMatcher = thisPattern.matcher(s);
-                if (selfMatcher.matches()) {
-                    s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
-
-                    if (flowExprContext.receiver instanceof FieldAccess) {
-                        // This changes the receiver from the one expressed in the postcondition
-                        // declaration to the actual receiver at the site of the postcondition evaluation.
-
-                        // For example, it will ensure that in the call to myLock.lock(),
-                        // the receiver is myLock (and not the instance of foo):
-
-                        // public class ReentrantLock {
-                        //     @EnsuresLockHeld("this")
-                        //     void lock();
-                        // }
-
-                        // public class foo {
-                        //     ReentrantLock myLock = new ReentrantLock();
-                        //     void lockTheLock() {
-                        //         myLock.lock();
-                        //     }
-                        // }
-
-                        FieldAccess foo = ((FieldAccess) flowExprContext.receiver);
-                        Receiver bar = foo.getReceiver();
-
-                        flowExprContext = flowExprContext.changeReceiver(bar);
-                    }
-                }
-
-
-                Tree methodDecl = flowExprContext.checkerContext.getTreeUtils().getTree(methodElement);
-
-                /*TODO: This just preserve the old behavior in the cases we don't have the tree
-                 *TODO: (i.e. in byte code and different compilation units).  The symbols
-                 *TODO: should instead be searched for in the element API (in fact for both cases
-                 *TODO: we likely want to do this)
-                 */
-                if (methodDecl == null) {
-                    r = FlowExpressionParseUtil.parse(
-                            s, flowExprContext,
-                            analysis.atypeFactory.getPath(tree));
-                } else {
-                    r = FlowExpressionParseUtil.parse(
-                            s, flowExprContext,
-                            analysis.atypeFactory.getPath(methodDecl));
-                }
+                FlowExpressions.Receiver r = FlowExpressionParseUtil.parse(
+                            expression, flowExprContext,
+                            analysis.atypeFactory.getPath(tree), false);
                 store.insertValue(r, anno);
             } catch (FlowExpressionParseException e) {
                 // these errors are reported at the declaration, ignore here
@@ -1064,45 +1012,16 @@ public abstract class CFAbstractTransfer<V extends CFAbstractValue<V>,
                 continue;
             }
             if (flowExprContext == null) {
-                flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.checker.getContext());
+                flowExprContext = FlowExpressionContext
+                        .buildContextForMethodUse(n, analysis.checker.getContext());
             }
 
             try {
                 FlowExpressions.Receiver r = null;
 
-                String s = expression.trim();
-
-                Matcher selfMatcher = thisPattern.matcher(s);
-                if (selfMatcher.matches()) {
-                    s = flowExprContext.receiver.toString(); // it is possible that s == "this" after this call
-
-                    if (flowExprContext.receiver instanceof FieldAccess) {
-                        // This changes the receiver from the one expressed in the postcondition
-                        // declaration to the actual receiver at the site of the postcondition evaluation.
-
-                        // For example, it will ensure that in the call to myLock.tryLock(),
-                        // the receiver is myLock (and not the instance of foo):
-
-                        // public class ReentrantLock {
-                        //     @EnsuresLockHeldIf(expression="this", result=true)
-                        //     boolean tryLock();
-                        // }
-
-                        // public class foo {
-                        //     ReentrantLock myLock = new ReentrantLock();
-                        //     boolean tryToLockTheLock() {
-                        //         return myLock.tryLock();
-                        //     }
-                        // }
-
-                        flowExprContext = flowExprContext.changeReceiver(((FieldAccess) flowExprContext.receiver).getReceiver());
-                    }
-                }
-
                 r = FlowExpressionParseUtil.parse(
-                        s, flowExprContext,
-                        analysis.atypeFactory.getPath(tree));
+                        expression, flowExprContext,
+                        analysis.atypeFactory.getPath(tree), false);
                 if (result) {
                     thenStore.insertValue(r, anno);
                 } else {

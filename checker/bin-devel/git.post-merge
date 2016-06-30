@@ -6,4 +6,5 @@
 # Fail if any command fails
 set -e
 
-ant -e check-style
+# This doesn't seem't necessary.
+# ant -e check-style

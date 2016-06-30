@@ -774,8 +774,9 @@ public class AnnotatedTypes {
                 final Set<? extends AnnotationMirror>  annos = findEffectiveLowerBoundAnnotations(qualifierHierarchy, type);
                 if (lowerBounds.isEmpty()) {
                     lowerBounds = annos;
-                } else if (!annos.isEmpty()) { // for some reason this algorithm some times adds the lub itself
-                                               // into the list of type which may lead to an empty annos set
+                } else if (!annos.isEmpty()) {
+                    // For some reason this algorithm sometimes adds the lub itself
+                    // into the list of type which may lead to an empty annos set.
                     lowerBounds = qualifierHierarchy.greatestLowerBounds(lowerBounds, annos);
                 }
             }

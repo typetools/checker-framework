@@ -81,7 +81,8 @@ public class SubtypesSolver {
 
                 for (AnnotationMirror top : entry.getValue()) {
                     final Set<AnnotationMirror> superAnnos = primaries.get(top);
-                    if (superAnnos != null) { // if it is null we're just going to use the anno already on supertype
+                    // if it is null we're just going to use the anno already on supertype
+                    if (superAnnos != null) {
                         final AnnotationMirror supertypeAnno = supertype.getAnnotationInHierarchy(top);
                         superAnnos.add(supertypeAnno);
                     }

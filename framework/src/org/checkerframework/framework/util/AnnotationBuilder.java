@@ -403,8 +403,9 @@ public class AnnotationBuilder {
 
         if (expected.getKind() == TypeKind.DECLARED
                 && TypesUtils.isClass(expected)
-                && givenValue instanceof TypeMirror)
+                && givenValue instanceof TypeMirror) {
             return true;
+        }
 
         TypeMirror found;
         boolean isSubtype;
