@@ -58,8 +58,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         } else if (type == superType) {
             return (T) type.deepCopy();
         }
+
+        // This visitor modifies superType and may return type, so pass it copies so that it that
+        // parameters to asSuper are not changed and a copy is returned.
+        AnnotatedTypeMirror copyType = type.deepCopy();
         AnnotatedTypeMirror copySuperType = superType.deepCopy(false);
-        AnnotatedTypeMirror result = visit(type.deepCopy(), copySuperType, null);
+        AnnotatedTypeMirror result = visit(copyType, copySuperType, null);
 
         if (result == null) {
             ErrorReporter.errorAbort(
