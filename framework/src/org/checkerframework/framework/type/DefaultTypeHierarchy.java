@@ -394,6 +394,11 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     }
 
     @Override
+    public Boolean visitArray_Intersection(AnnotatedArrayType subtype, AnnotatedIntersectionType supertype, VisitHistory visitHistory) {
+        return isSubtype(castedAsSuper(subtype, supertype), supertype);
+    }
+
+    @Override
     public Boolean visitArray_Wildcard(AnnotatedArrayType subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
         return visitWildcardSupertype(subtype, supertype, visited);
     }
