@@ -7,6 +7,10 @@ values and prevents meaningless operations on unsigned values.
 
 We renamed the special lock expression "itself" to "<self>".
 
+Closed issues:
+701, 717, 767, 358, 752, 794, 808, 408, 779, 807, 756, 625, 273, 692, 594, 166,
+759, 783, 471, 484, 711, 700, 763.
+
 ---------------------------------------------------------------------------
 
 Version 2.0.1, 1 June 2016
