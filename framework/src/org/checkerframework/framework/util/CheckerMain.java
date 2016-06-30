@@ -30,7 +30,9 @@ import java.util.zip.ZipEntry;
  *   <li>pass all remaining command-line arguments to the real javac</li>
  * </ul>
  *
- * To debug this class, use the {@code -AoutputArgsToFile=FILENAME} command-line argument.
+ * To debug this class, use the {@code -AoutputArgsToFile=FILENAME}
+ * command-line argument or {@code -AoutputArgsToFile=-} to output to
+ * standard out.
  * <p>
  *
  * "To run the Checker Framework" really means to run java, where the
@@ -281,7 +283,7 @@ public class CheckerMain {
     protected static final Pattern JVM_OPTS_REGEX = Pattern.compile("^(?:-J)(.*)$");
 
     /**
-     * Remove all -J arguments from args and add them to the returned list
+     * Remove all -J arguments from args and add them to the returned list (without the -J prefix)
      * @param args the arguments to extract from
      * @return all -J arguments (without the -J prefix) or an empty list if there were none
      */
@@ -432,7 +434,9 @@ public class CheckerMain {
             String errorMessage = null;
 
             try {
-                PrintWriter writer = new PrintWriter(outputFilename, "UTF-8");
+                PrintWriter writer = (outputFilename.equals("-")
+                                      ? new PrintWriter(System.out)
+                                      : new PrintWriter(outputFilename, "UTF-8"));
                 for (int i = 0; i < args.size(); i++) {
                     String arg = args.get(i);
 
