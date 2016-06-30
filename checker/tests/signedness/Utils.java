@@ -1,4 +1,4 @@
-import org.checkerframework.checker.signedness.Signednessutil;
+import org.checkerframework.checker.signedness.SignednessUtil;
 import org.checkerframework.checker.signedness.qual.*;
 
 import java.nio.ByteBuffer;
