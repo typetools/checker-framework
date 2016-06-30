@@ -5,6 +5,8 @@ Version 2.1.0, 1 July 2016
 The new Signedness Checker prevents mixing of unsigned and signed
 values and prevents meaningless operations on unsigned values.
 
+We renamed the special lock expression "itself" to "<self>".
+
 ---------------------------------------------------------------------------
 
 Version 2.0.1, 1 June 2016
