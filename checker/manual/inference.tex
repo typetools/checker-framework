@@ -161,8 +161,8 @@ git clone https://github.com/mernst/plume-lib.git
 cd plume-lib
 make jar
 $CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
-    "LockChecker,NullnessChecker" java/plume.jar    \
-    -AprintErrorStack  \
+    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar \
+    -AprintErrorStack \
     `find java/src/plume/ -name "*.java"`
 # View the results
 git diff
