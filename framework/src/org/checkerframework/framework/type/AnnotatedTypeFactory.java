@@ -953,9 +953,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
 
         AnnotatedTypeMirror type;
-        if (TreeUtils.isClassTree(tree)) {
-            type = fromClass((ClassTree)tree);
-        } else if (tree.getKind() == Tree.Kind.METHOD ||
+        if (tree.getKind() == Tree.Kind.METHOD ||
                 tree.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(tree);
         } else if (TreeUtils.isExpressionTree(tree)) {
