@@ -1,6 +1,5 @@
 // Test case for Issue 810
 // https://github.com/typetools/checker-framework/issues/810
-// @skip-test
 
 import java.util.*;
 

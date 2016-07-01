@@ -1677,7 +1677,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // we created, e.g. when desugaring enhanced-for-loops.
             enclosingClass = getCurrentClassTree(tree);
         }
-        AnnotatedDeclaredType type = getAnnotatedType(enclosingClass);
+        AnnotatedDeclaredType type = getAnnotatedTypeOfClassTree(enclosingClass);
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
         if (enclosingClass.getSimpleName().length() != 0 &&
@@ -1695,6 +1695,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 type.addAnnotations(methodReceiver.getAnnotations());
             }
         }
+        return type;
+    }
+
+    /**
+     * Get the AnnotatedDeclaredType for a classTree without kicking off dataflow or calling
+     * {@link #postProcessClassTree(ClassTree)}.  Call this method instead of getAnnotatedType in
+     * order to avoid infinite recursion if computing the type of a tree enclosed in {@code
+     * classTree}
+     *
+     * @param classTree classTree
+     * @return AnnotatedDeclaredType of {@code classTree}
+     */
+    // TODO: It would be better to move the code that starts dataflow and calls
+    // postProcessClassTree out of getAnnotatedType, but it's not clear where/when those calls
+    // should happen.
+    protected AnnotatedDeclaredType getAnnotatedTypeOfClassTree(ClassTree classTree) {
+        if (shouldCache && treeCache.containsKey(classTree)) {
+            return (AnnotatedDeclaredType) treeCache.get(classTree).deepCopy();
+        }
+        AnnotatedDeclaredType type = fromClass(classTree);
+        addComputedTypeAnnotations(classTree, type);
         return type;
     }
 
