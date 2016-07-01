@@ -18,6 +18,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.UnaryTree;
 
 public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private final AnnotationMirror N1P, NN, POS, UNKNOWN;
@@ -61,6 +62,50 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
 	@Override
+	public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror type) {
+	    AnnotatedTypeMirror leftType = getAnnotatedType(tree.getExpression());
+	    switch (tree.getKind()) {
+	    case PREFIX_INCREMENT:
+	    case POSTFIX_INCREMENT:
+		incrementHelper(leftType, type);
+		break;
+	    case PREFIX_DECREMENT:
+	    case POSTFIX_DECREMENT:
+		decrementHelper(leftType, type);
+		break;
+	    default:
+		break;
+	    }
+	    return super.visitUnary(tree, type);
+	}
+
+	// an increment is just adding one. Use the same code.
+	public void incrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type){
+	    if (leftType.hasAnnotation(N1P)) {
+		type.addAnnotation(NN);
+	    } else if (leftType.hasAnnotation(NN)) {
+		type.addAnnotation(POS);
+	    } else if (leftType.hasAnnotation(POS)) {
+		type.addAnnotation(POS);
+	    } else {
+		type.addAnnotation(UNKNOWN);
+	    }
+	    return;
+	}
+
+	// an increment is just adding one. Use the same code.
+	public void decrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type){
+	    if (leftType.hasAnnotation(NN)) {
+		type.addAnnotation(N1P);
+	    } else if (leftType.hasAnnotation(POS)) {
+		type.addAnnotation(NN);
+	    } else {
+		type.addAnnotation(UNKNOWN);
+	    }
+	    return;
+	}
+	
+	@Override
 	public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             ExpressionTree left = tree.getLeftOperand();
             ExpressionTree right = tree.getRightOperand();
@@ -99,14 +144,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
                 if (val == 1) {
-		    if (leftType.hasAnnotation(N1P)) {
-			type.addAnnotation(NN);
-		    } else if (leftType.hasAnnotation(NN)) {
-			type.addAnnotation(POS);
-		    } else if (leftType.hasAnnotation(POS)) {
-			type.addAnnotation(POS);
-		    }
-                    return;
+		    incrementHelper(leftType, type);
+		    return;
                 }
                 // if we are adding 0 dont change type
                 else if (val == 0) {
@@ -158,14 +197,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
                 if (val == 1) {
-		    if (leftType.hasAnnotation(N1P)) {
-			type.addAnnotation(UNKNOWN);
-		    } else if (leftType.hasAnnotation(NN)) {
-			type.addAnnotation(N1P);
-		    } else if (leftType.hasAnnotation(POS)) {
-			type.addAnnotation(NN);
-		    }
-                    return;
+		    decrementHelper(leftType, type);
+		    return;
                 }
                 // if we are adding 0 dont change type
                 else if (val == 0) {

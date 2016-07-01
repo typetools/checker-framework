@@ -36,5 +36,23 @@ public class TransferSub {
 	@NonNegative int o = b - j;
 	//:: error: (assignment.type.incompatible)
 	@NegativeOnePlus int p = i - d;
+
+	// decrements
+
+	//:: error: (assignment.type.incompatible)
+	@Positive int q = --k;
+	//:: error: (assignment.type.incompatible)
+	@Positive int r = k--;
+
+	@NonNegative int s = k--;
+	@NonNegative int t = --k;
+
+	@NegativeOnePlus int u = j--;
+	@NegativeOnePlus int v = --j;
+
+	//:: error: (assignment.type.incompatible)
+	@NegativeOnePlus int w = --u;
+	//:: error: (assignment.type.incompatible)
+	@NegativeOnePlus int x = u--;
     }
 }

@@ -47,6 +47,21 @@ public class TransferAdd {
 	@NonNegative int s = k + d;
 	@NegativeOnePlus int t = s + d;
 
+	// increments
+
+	@Positive int u = b++;
+	@Positive int v = ++c;
+
+	int n1p1 = -1, n1p2 = -1;
+	
+	@NonNegative int w = ++n1p1;
+	@NonNegative int x = n1p2++;
+
+	//:: error: (assignment.type.incompatible)
+	@Positive int y = ++d;
+	//:: error: (assignment.type.incompatible)
+	@Positive int z = e++;
+
     }
 
 }
