@@ -942,6 +942,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return treeCache.get(tree).deepCopy();
         }
 
+        if (TreeUtils.isClassTree(tree)) {
+            ClassTree classTree = (ClassTree) tree;
+            AnnotatedTypeMirror type = getAnnotatedTypeOfClassTree(classTree);
+            if (shouldCache) {
+                treeCache.put(tree, type.deepCopy());
+            }
+            postProcessClassTree(classTree);
+            return type;
+        }
+
         AnnotatedTypeMirror type;
         if (TreeUtils.isClassTree(tree)) {
             type = fromClass((ClassTree)tree);
@@ -959,18 +969,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         addComputedTypeAnnotations(tree, type);
 
-        if (TreeUtils.isClassTree(tree) ||
-            tree.getKind() == Tree.Kind.METHOD) {
+        if (tree.getKind() == Tree.Kind.METHOD) {
             // Don't cache VARIABLE
             if (shouldCache) {
                 treeCache.put(tree, type.deepCopy());
             }
         } else {
             // No caching otherwise
-        }
-
-        if (TreeUtils.isClassTree(tree)) {
-            postProcessClassTree((ClassTree) tree);
         }
 
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
