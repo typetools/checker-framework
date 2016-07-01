@@ -61,7 +61,5 @@ public class TransferAdd {
 	@Positive int y = ++d;
 	//:: error: (assignment.type.incompatible)
 	@Positive int z = e++;
-
     }
-
 }

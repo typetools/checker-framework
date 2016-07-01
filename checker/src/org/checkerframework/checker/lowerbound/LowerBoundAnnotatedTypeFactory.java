@@ -80,7 +80,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	}
 
 	// an increment is just adding one. Use the same code.
-	public void incrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type){
+	public void incrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
 	    if (leftType.hasAnnotation(N1P)) {
 		type.addAnnotation(NN);
 	    } else if (leftType.hasAnnotation(NN)) {
@@ -93,8 +93,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	    return;
 	}
 
-	// an increment is just adding one. Use the same code.
-	public void decrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type){
+	// a decrement is just adding one. Use the same code.
+	public void decrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
 	    if (leftType.hasAnnotation(NN)) {
 		type.addAnnotation(N1P);
 	    } else if (leftType.hasAnnotation(POS)) {
