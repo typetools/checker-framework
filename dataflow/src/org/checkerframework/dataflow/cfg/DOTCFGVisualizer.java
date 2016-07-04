@@ -353,7 +353,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
         // split input representation to two lines
         this.sbStore.append("Before:");
         S thenStore = input.getThenStore();
-        if (thenStore == null) {
+        if (!input.containsTwoStores()) {
             S regularStore = input.getRegularStore();
             this.sbStore.append('[');
             visualizeStore(regularStore);
