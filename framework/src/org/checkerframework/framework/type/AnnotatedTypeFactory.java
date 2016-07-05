@@ -337,8 +337,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.loader = new AnnotationClassLoader(checker);
-        this.supportedQuals = createSupportedTypeQualifiers();
-        checkSupportedQuals();
+        this.supportedQuals = new HashSet<>();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
@@ -358,6 +357,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             this.elementCache = null;
             this.elementToTreeCache = null;
         }
+
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
 
@@ -869,7 +869,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *         empty set if no qualifiers are supported
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
-        return supportedQuals;
+        if (this.supportedQuals.isEmpty()) {
+            supportedQuals.addAll(createSupportedTypeQualifiers());
+            checkSupportedQuals();
+        }
+        return Collections.unmodifiableSet(supportedQuals);
     }
 
     // **********************************************************************
