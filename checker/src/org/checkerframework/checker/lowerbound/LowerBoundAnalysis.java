@@ -32,7 +32,7 @@ public class LowerBoundAnalysis extends CFAbstractAnalysis<LowerBoundValue, Lowe
     public LowerBoundStore createCopiedStore(LowerBoundStore s) {
 	return new LowerBoundStore(s);
     }
-    
+
     @Override
     public LowerBoundStore createEmptyStore(boolean sequentialSemantics) {
         return new LowerBoundStore(this, sequentialSemantics);

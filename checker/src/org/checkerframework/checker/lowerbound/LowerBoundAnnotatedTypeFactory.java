@@ -47,7 +47,7 @@ public class LowerBoundAnnotatedTypeFactory extends
 	    List<Pair<VariableElement, LowerBoundValue>> fieldValues) {
 	return new LowerBoundAnalysis(checker, this, fieldValues);
     }
-    
+
     // this is apparently just a required thing
     @Override
     public TreeAnnotator createTreeAnnotator() {
@@ -108,7 +108,7 @@ public class LowerBoundAnnotatedTypeFactory extends
 	    return;
 	}
 
-	// a decrement is just adding one. Use the same code.
+	// a decrement is just subtracting one. Use the same code.
 	public void decrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
 	    if (leftType.hasAnnotation(NN)) {
 		type.addAnnotation(N1P);
