@@ -161,14 +161,16 @@ git clone https://github.com/mernst/plume-lib.git
 cd plume-lib
 make jar
 $CHECKERFRAMEWORK/checker/bin/infer-and-annotate.sh \
-    "LockChecker,NullnessChecker" java/plume.jar    \
-    -AprintErrorStack  \
+    "LockChecker,NullnessChecker" java/plume.jar:java/lib/junit-4.12.jar \
+    -AprintErrorStack \
     `find java/src/plume/ -name "*.java"`
 # View the results
 git diff
 \end{Verbatim}
 
 You may need to wait a few minutes for the command to complete.
+You can ignore warnings that the command outputs while trying different
+annotations in your code.
 
 It is recommended that you run \<infer-and-annotate.sh> on a copy of your
 code, so that you can see what changes it made and so that it does not
@@ -197,18 +199,25 @@ from the class declaration of any class you wish to infer types for.
 As noted below, whole-program inference requires invocations of your code, or
 assignments to your methods, to generalize from.  If a field is set via
 reflection (such as via injection), then whole-program inference would produce
-an inaccurate result.  You probably have an annotation such as
+an inaccurate result.  There are two ways to make whole-program inference
+ignore such a field.
+%
+(1)
+You probably have an annotation such as
 \javaeejavadocanno{javax/inject/Inject.html}{Inject}
 or
 \href{http://types.cs.washington.edu/plume-lib/api/plume/Option.html}{\<@Option>}
 that indicates such fields.  Meta-annotate the declaration of the \<Inject>
 or \<Option> annotation with
-\refqualclass{framework/qual}{IgnoreInWholeProgramInference} and whole-program
-inference will not produce any inference results for fields annotated with
-\<@Inject> or \<@Option>.
+\refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
+%
+(2)
+Annotate the field to be ignored with
+\refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
 
 Whole-program inference, for a type-checker other than the Nullness Checker,
 ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
+
 
 \subsubsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
 
@@ -218,7 +227,7 @@ results.
 \begin{itemize}
 \item
 Whole-program inference can produce undesired results when your code has
-non-representative calls to a particular method or assignments to a
+non-representative or erroneous calls to a particular method or assignments to a
 particular field, as explained below.
 This is especially noticeable when the arguments or assignments are literals.
 
@@ -234,26 +243,40 @@ to the corresponding upper bounds of the type variable declaration.
 
 Whole-program inference determines a method parameter's type
 annotation based on what arguments are passed to the method, but not on how the
-parameter is used within the method body.  If the program contains
-no errors, the tool's annotations are legal for the program as
-currently written but may not be as general as possible and may not
-accommodate future program changes.  If the program contains errors, the
-tool's annotations may reflect those errors.
+parameter is used within the method body.
 
-For example, suppose that your program currently calls
+\begin{itemize}
+\item
+If the program contains erroneous calls, the
+inferred annotations may reflect those errors.
+
+Suppose you intend method \<m2> to be called with
+non-null arguments, but your program contains an error and one of the calls
+to \<m2> passes \<null> as the argument.  Then the tool will infer that
+\<m2>'s parameter has \<@Nullable> type.
+You should correct the bug and re-run inference.
+
+\item
+The tool's annotations are legal for the program as
+currently written but may not be as general as possible and may not
+accommodate future program changes.
+
+Suppose that your program currently calls
 method \<m1> with non-null
 arguments.  This tool will infer that \<m1>'s parameter has
 \<@NonNull> type.  If you had intended the method to be able to
 take \<null> as an argument and you later add such a call, the type-checker
 will issue a warning because the automatically-inserted \<@NonNull>
 annotation is inconsistent with the new call.
-You can fix the inference problem by adding tests that pass \<null> to \<m1>.
+You can correct the inferred results manually, or you can
+add tests that pass \<null> to \<m1> then re-run inference.
 
-As another example, suppose you intend method \<m2> to be called with
-non-null arguments, but your program contains an error and one of the calls
-to \<m2> passes \<null> as the argument.  Then the tool will infer that
-\<m2>'s parameter has \<@Nullable> type.
-You can fix the inference problem by correcting the bug.
+On the other hand, if the inferred type is the bottom type, such as
+\<@GuardedByBottom>, then perhaps your program only passes the \<null>
+argument.  You should also correct this manually or expand your test suite
+and re-run inference.
+
+\end{itemize}
 
 
 \subsubsection{How whole-program inference works\label{how-whole-program-inference-works}}
