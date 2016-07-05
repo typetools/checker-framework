@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Types;
 
 /**
@@ -322,12 +323,18 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         final AnnotatedTypeMirror t1;
         final AnnotatedTypeMirror t2;
 
-        if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
+        if (type1.getKind() == TypeKind.NULL && type2.getKind() == TypeKind.NULL) {
+            return areEqual(type1, type2);
+        }
+        if (type1.getKind() == TypeKind.NULL || type2.getKind() == TypeKind.NULL) {
             t1 = type1;
-            t2 = AnnotatedTypes.asSuper(types, type1.atypeFactory, type2, type1);
+            t2 = type2;
+        } else if (types.isSubtype(type2.getUnderlyingType(), type1.getUnderlyingType())) {
+            t1 = type1;
+            t2 = AnnotatedTypes.asSuper(type1.atypeFactory, type2, type1);
 
         } else if (types.isSubtype(type1.getUnderlyingType(), type2.getUnderlyingType())) {
-            t1 = AnnotatedTypes.asSuper(types, type1.atypeFactory, type1, type2);
+            t1 = AnnotatedTypes.asSuper(type1.atypeFactory, type1, type2);
             t2 = type2;
 
         } else {

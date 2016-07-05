@@ -3,6 +3,7 @@ package org.checkerframework.framework.type;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
@@ -108,33 +109,20 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
         AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
         AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
+        if (trueType.getKind() == TypeKind.NULL) {
+            return AnnotatedTypes.lubWithNull((AnnotatedNullType) trueType, falseType, f);
+        } else if (falseType.getKind() == TypeKind.NULL) {
+            return AnnotatedTypes.lubWithNull((AnnotatedNullType) falseType, trueType, f);
+        }
 
-        // here
         if (trueType.equals(falseType)) {
             return trueType;
         }
 
-        // TODO: We would want this:
-        /*
         AnnotatedTypeMirror alub = f.type(node);
-        trueType = f.atypes.asSuper(trueType, alub);
-        falseType = f.atypes.asSuper(falseType, alub);
-        */
 
-        // instead of:
-        AnnotatedTypeMirror alub = f.type(node);
-        AnnotatedTypeMirror assuper;
-        assuper = AnnotatedTypes.asSuper(f.types, f, trueType, alub);
-        if (assuper != null) {
-            trueType = assuper;
-        }
-        assuper = AnnotatedTypes.asSuper(f.types, f, falseType, alub);
-        if (assuper != null) {
-            falseType = assuper;
-        }
-        // however, asSuper returns null for compound types,
-        // e.g. see Ternary test case for Nullness Checker.
-        // TODO: Can we adapt asSuper to handle those correctly?
+        trueType = AnnotatedTypes.asSuper(f, trueType, alub);
+        falseType = AnnotatedTypes.asSuper(f, falseType, alub);
 
         if (trueType.equals(falseType)) {
             return trueType;
