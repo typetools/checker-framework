@@ -3,16 +3,23 @@ package org.checkerframework.checker.lowerbound;
 import org.checkerframework.checker.lowerbound.qual.*;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.VariableElement;
 
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+
+import java.util.List;
+
+import org.checkerframework.javacutil.Pair;
+
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
@@ -20,7 +27,9 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.UnaryTree;
 
-public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class LowerBoundAnnotatedTypeFactory extends
+ GenericAnnotatedTypeFactory<LowerBoundValue, LowerBoundStore, LowerBoundTransfer, LowerBoundAnalysis> {
+
     private final AnnotationMirror N1P, NN, POS, UNKNOWN;
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -29,10 +38,16 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 	NN = AnnotationUtils.fromClass(elements, NonNegative.class);
 	POS = AnnotationUtils.fromClass(elements, Positive.class);
 	UNKNOWN = AnnotationUtils.fromClass(elements, Unknown.class);
-
+	
 	this.postInit();
     }
 
+    @Override
+    protected LowerBoundAnalysis createFlowAnalysis(
+	    List<Pair<VariableElement, LowerBoundValue>> fieldValues) {
+	return new LowerBoundAnalysis(checker, this, fieldValues);
+    }
+    
     // this is apparently just a required thing
     @Override
     public TreeAnnotator createTreeAnnotator() {
