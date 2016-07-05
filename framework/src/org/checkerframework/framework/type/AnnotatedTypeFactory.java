@@ -1702,7 +1702,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Get the AnnotatedDeclaredType for a classTree without kicking off dataflow or calling
+     * Get the AnnotatedDeclaredType for a classTree without calling
      * {@link #postProcessClassTree(ClassTree)}.  Call this method instead of getAnnotatedType in
      * order to avoid infinite recursion if computing the type of a tree enclosed in {@code
      * classTree}
@@ -1710,7 +1710,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @param classTree classTree
      * @return AnnotatedDeclaredType of {@code classTree}
      */
-    // TODO: It would be better to move the code that starts dataflow and calls
+    // TODO: It would be better to move the code that calls
     // postProcessClassTree out of getAnnotatedType, but it's not clear where/when those calls
     // should happen.
     protected AnnotatedDeclaredType getAnnotatedTypeOfClassTree(ClassTree classTree) {
