@@ -107,19 +107,26 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitConditionalExpression(
             ConditionalExpressionTree node, AnnotatedTypeFactory f) {
 
+        // The Java type of a conditional expression is generally the LUB of the boxed types
+        // of the true and false expressions, but with a few exceptions. See JLS 15.25.
+        // So, use the type of the ConditionalExpressionTree instead of InternalUtils#leastUpperBound
+        AnnotatedTypeMirror alub = f.type(node);
+
         AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
         AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
+
         if (trueType.getKind() == TypeKind.NULL) {
-            return AnnotatedTypes.lubWithNull((AnnotatedNullType) trueType, falseType, f);
+            AnnotatedTypeMirror falseTypeAsLub = AnnotatedTypes.asSuper(f, falseType, alub);
+            return AnnotatedTypes.lubWithNull((AnnotatedNullType) trueType, falseTypeAsLub, f);
         } else if (falseType.getKind() == TypeKind.NULL) {
-            return AnnotatedTypes.lubWithNull((AnnotatedNullType) falseType, trueType, f);
+            AnnotatedTypeMirror trueTypeAsLub = AnnotatedTypes.asSuper(f, trueType, alub);
+            return AnnotatedTypes.lubWithNull((AnnotatedNullType) falseType, trueTypeAsLub, f);
         }
 
         if (trueType.equals(falseType)) {
             return trueType;
         }
 
-        AnnotatedTypeMirror alub = f.type(node);
 
         trueType = AnnotatedTypes.asSuper(f, trueType, alub);
         falseType = AnnotatedTypes.asSuper(f, falseType, alub);
