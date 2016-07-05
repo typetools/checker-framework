@@ -199,18 +199,25 @@ from the class declaration of any class you wish to infer types for.
 As noted below, whole-program inference requires invocations of your code, or
 assignments to your methods, to generalize from.  If a field is set via
 reflection (such as via injection), then whole-program inference would produce
-an inaccurate result.  You probably have an annotation such as
+an inaccurate result.  There are two ways to make whole-program inference
+ignore such a field.
+%
+(1)
+You probably have an annotation such as
 \javaeejavadocanno{javax/inject/Inject.html}{Inject}
 or
 \href{http://types.cs.washington.edu/plume-lib/api/plume/Option.html}{\<@Option>}
 that indicates such fields.  Meta-annotate the declaration of the \<Inject>
 or \<Option> annotation with
-\refqualclass{framework/qual}{IgnoreInWholeProgramInference} and whole-program
-inference will not produce any inference results for fields annotated with
-\<@Inject> or \<@Option>.
+\refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
+%
+(2)
+Annotate the field to be ignored with
+\refqualclass{framework/qual}{IgnoreInWholeProgramInference}.
 
 Whole-program inference, for a type-checker other than the Nullness Checker,
 ignores (pseudo-)assignments where the right-hand-side is the \<null> literal.
+
 
 \subsubsection{Manually checking whole-program inference results\label{whole-program-inference-manual-checking}}
 
