@@ -59,23 +59,34 @@ public class LowerBoundAnnotatedTypeFactory extends
 	    super(annotatedTypeFactory);
 	}
 
-	// annotate literal integers appropriately
+	/** does the actual work of annotating a literal so that we can call this from
+	    elsewhere in this program (e.g. plusHelper w/ two literals) */
+	private void literalHelper(int val, AnnotatedTypeMirror type) {
+	    if (val == -1) {
+		type.addAnnotation(N1P);
+	    } else if (val == 0) {
+		type.addAnnotation(NN);
+	    } else if (val > 0) {
+		type.addAnnotation(POS);
+	    } else {
+		type.addAnnotation(UNKNOWN);
+	    }
+	}
+	
+	/** 
+	 * annotate literal integers appropriately
+	 */
 	@Override
 	public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            // if this is an Integer specifically
+            /** only annotate integers */
             if (tree.getKind() == Tree.Kind.INT_LITERAL) {
-                int val = (int) tree.getValue();
-		if (val == -1) {
-		    type.addAnnotation(N1P);
-		} else if (val == 0) {
-                    type.addAnnotation(NN);
-                } else if (val > 0) {
-		    type.addAnnotation(POS);
-		}
-            } // no else, only annotate Integers
+		int val = (int) tree.getValue();
+                literalHelper(val, type);
+            }
             return super.visitLiteral(tree, type);
         }
 
+	/** call increment and decrement helper functions */
 	@Override
 	public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror type) {
 	    AnnotatedTypeMirror leftType = getAnnotatedType(tree.getExpression());
@@ -94,7 +105,7 @@ public class LowerBoundAnnotatedTypeFactory extends
 	    return super.visitUnary(tree, type);
 	}
 
-	// an increment is just adding one. Use the same code.
+	/** handles x+1, x++, ++x, and all equivalent statements */
 	public void incrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
 	    if (leftType.hasAnnotation(N1P)) {
 		type.addAnnotation(NN);
@@ -108,7 +119,7 @@ public class LowerBoundAnnotatedTypeFactory extends
 	    return;
 	}
 
-	// a decrement is just subtracting one. Use the same code.
+	/** handles x-1, x--, --x, and all equivalent statements */
 	public void decrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
 	    if (leftType.hasAnnotation(NN)) {
 		type.addAnnotation(N1P);
@@ -119,7 +130,9 @@ public class LowerBoundAnnotatedTypeFactory extends
 	    }
 	    return;
 	}
-	
+
+	/** dispatch to binary operator helper methods. the lower bound checker currently
+	 *  handles addition, subtraction, multiplication, division, and modular division */
 	@Override
 	public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             ExpressionTree left = tree.getLeftOperand();
@@ -134,51 +147,95 @@ public class LowerBoundAnnotatedTypeFactory extends
 	    case MULTIPLY:
 		timesHelper(left, right, type);
 		break;
+	    case DIVIDE:
+		divideHelper(left, right, type);
+		break
+	    case REMAINDER:
+		modHelper(left, right, type);
+		break;
             default:
                 break;
             }
 	    return super.visitBinary(tree, type);
         }
 
+	/**   plusHelper handles the following cases:
+	       int lit + int lit -> do the math
+	       lit 0 + * -> *
+	       lit 1 + * -> call increment
+	       lit -1 + * -> call decrement
+	       lit >= 2 + n1p, nn, or pos -> pos
+	       lit -2 + pos -> n1p
+	       let all other lits fall through:
+	       pos + pos -> pos
+	       pos + nn -> pos
+	       nn + nn -> nn
+	       pos + n1p -> nn
+	       nn + n1p -> n1p
+	       * + * -> lbu
+	 */
+	
 	public void plusHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
 			       AnnotatedTypeMirror type) {
 	    AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-            // if left is literal 1/0/2 and right is not a literal swap them because we already handle the transfer for that
-            // and it would be redundant to repeat it all again
-            // we don't want right to be a literal too b/c we could be swapping forever
-            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
-		!(rightExpr.getKind() == Tree.Kind.INT_LITERAL)) {
+
+	    /** if both left and right are literals, do the math...*/
+	    if(leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
+	       rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
+		int valLeft = (int)((LiteralTree)leftExpr).getValue();
+		int valRight = (int)((LiteralTree)rightExpr).getValue();
+		int valResult = valLeft + valRight;
+		literalHelper(valResult, type);
+		return;
+	    }
+	    
+	    /** if the left side is a literal, commute it to the right 
+		and rerun to avoid duplicating code */
+	    if (leftExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)leftExpr).getValue();
-                if (val == 1 || val == 0 || val == 2) {
+                if (val >= -1) {
                     plusHelper(rightExpr, leftExpr, type);
                     return;
                 }
             }
-            // if the right side is a literal we do some special stuff(specifically for 1 and 0)
+
+	    /** handle the case where one of the two is an interesting literal */
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
-                if (val == 1) {
-		    incrementHelper(leftType, type);
+		if (val == -2) {
+		    if (leftType.hasAnnotation(POS)) {
+			type.addAnnotation(N1P);
+			return;
+		    }
+		}
+		else if (val == -1) {
+		    decrementHelper(leftType, type);
 		    return;
                 }
-                // if we are adding 0 dont change type
-                else if (val == 0) {
+		else if (val == 0) {
 		    type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
                     return;
                 }
-		else if (val == 2) {
-		    if (leftType.hasAnnotation(N1P)) {
+		else if (val == 1) {
+		    incrementHelper(leftType, type);
+		    return;
+                }
+		else if (val >= 2) {
+		    if (leftType.hasAnnotation(N1P) || leftType.hasAnnotation(NN) ||
+			leftType.hasAnnotation(POS)) {
 			type.addAnnotation(POS);
 			return;
 		    }
 		}
 	    }
+	    /**
 	    // pos + pos -> pos
 	    // pos + nn -> pos
 	    // nn + nn -> nn
 	    // pos + n1p -> nn
 	    // nn + n1p -> n1p
+	    */
 	    if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
 		type.addAnnotation(POS);
 		return;
@@ -202,8 +259,11 @@ public class LowerBoundAnnotatedTypeFactory extends
 		type.addAnnotation(N1P);
 		return;
 	    }
-
+	    /** * + * -> lbu */
+	    type.addAnnotation(UNKNOWN);
+	    return;
 	}
+	
 	public void minusHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
 			       AnnotatedTypeMirror type) {
 	    AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);

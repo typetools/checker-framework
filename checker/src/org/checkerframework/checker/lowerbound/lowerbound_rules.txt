@@ -1,0 +1,69 @@
+This is mostly just a list of the intro and transfer rules for the LBC:
+
+Intro rules:
+
+Int lit -> use its literal value
+
+Increment:     pos -> pos
+               Nn -> pos
+               N1p -> nn
+               * -> lbu
+
+Decrement:     pos -> nn
+               Nn -> n1p
+               * -> lbu
+
+Plus:	       int lit + int lit -> do the math
+	       lit 0 + * -> *
+	       lit 1 + * -> call increment
+	       lit -1 + * -> call decrement
+	       lit >= 2 + n1p, nn, or pos -> pos
+	       lit -2 + pos -> n1p
+	       let all other lits fall through:
+	       pos + pos -> pos
+	       pos + nn -> pos
+	       nn + nn -> nn
+	       pos + n1p -> nn
+	       nn + n1p -> n1p
+	       * + * -> lbu
+
+Minus:
+	       int lit - int lit -> do the math
+	       * - lit 0 -> *
+	       * - lit 1 -> call decrement
+	       * - lit -1 -> call increment
+	       pos - lit 2 -> n1p
+	       n1p, nn, pos - lit <= -2 -> pos
+	       * - * -> lbu
+
+Multiply:
+
+	       int lit * int lit -> do the math
+	       * * lit 0 -> nn (=0)
+	       * * lit 1 -> *
+	       pos * pos -> pos
+	       pos * nn -> nn
+	       nn * nn -> nn
+	       * * * -> lbu
+
+Divide:
+	       int lit / int lit -> do the math
+	       lit 0 / * -> nn
+	       * / lit 1 -> *
+	       pos / pos -> nn
+	       nn / pos -> nn
+	       pos / nn -> nn
+	       nn / nn -> nn
+	       pos / n1p -> n1p
+	       nn / n1p -> n1p
+	       n1p / n1p -> nn
+	       * / * -> lbu
+
+Mod:
+
+	       int lit % int lit -> do the math
+	       * % 1 -> nn
+	       pos/nn % pos/nn -> nn
+	       nn/pos % n1p -> nn
+	       n1p % n1p/nn/pos -> n1p
+	       * % * -> lbu
