@@ -402,8 +402,11 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     public void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis) {
         this.sbBlock.append(prepareString(t.toString()) + "   [ " + prepareNodeType(t) + " ]");
         A value = null;
-        if (analysis != null && (value = analysis.getValue(t)) != null) {
-            this.sbBlock.append("    > " + prepareString(value.toString()));
+        if (analysis != null) {
+            value = analysis.getValue(t);
+            if (value != null) {
+                this.sbBlock.append("    > " + prepareString(value.toString()));
+            }
         }
     }
 
