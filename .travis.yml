@@ -1,6 +1,6 @@
 sudo: false
 
-language: java
+language: generic
 
 services:
   - docker
