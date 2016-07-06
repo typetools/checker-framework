@@ -17,13 +17,15 @@
 # That will leave a more svelte docker image for the main execution.
 # (The full one is 2GB.  Is that excessive?)
 
-# Run this command:
+# Run this command, from this directory docker-ubuntu:
+#   docker login
 #   # No tag number; we'll just depend on the "latest" tag.
 #   docker build -t mdernst/ubuntu-for-cf .
 #   # List the available images
 #   docker images
 #   # Upload to Docker Hub
 #   docker push mdernst/ubuntu-for-cf
+#   # Browse to https://hub.docker.com/ to verify that it exists
 
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
