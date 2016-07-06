@@ -33,9 +33,8 @@ public class LocalizableKeyAnnotatedTypeFactory extends
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new LinkedHashSet<Class<? extends Annotation>>(
-                        Arrays.asList(LocalizableKey.class, PropertyKey.class, PropertyKeyBottom.class, UnknownPropertyKey.class)));
+        return new LinkedHashSet<Class<? extends Annotation>>(
+                        Arrays.asList(LocalizableKey.class, PropertyKey.class, PropertyKeyBottom.class, UnknownPropertyKey.class));
     }
 
     @Override

@@ -157,7 +157,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // copy all loaded external Units to qual set
         qualSet.addAll(externalQualsMap.values());
 
-        return Collections.unmodifiableSet(qualSet);
+        return qualSet;
     }
 
     private void loadAllExternalUnits() {

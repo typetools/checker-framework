@@ -118,10 +118,9 @@ public class KeyForAnnotatedTypeFactory extends
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new LinkedHashSet<Class<? extends Annotation>>(
+        return new LinkedHashSet<Class<? extends Annotation>>(
                         Arrays.asList(KeyFor.class, UnknownKeyFor.class, KeyForBottom.class,
-                                PolyKeyFor.class, PolyAll.class)));
+                                PolyKeyFor.class, PolyAll.class));
     }
 
     @Override

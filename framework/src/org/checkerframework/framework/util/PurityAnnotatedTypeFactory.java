@@ -17,8 +17,7 @@ public class PurityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(PurityUnqualified.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(PurityUnqualified.class));
     }
 }
