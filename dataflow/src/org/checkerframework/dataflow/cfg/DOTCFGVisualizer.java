@@ -348,7 +348,7 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
     @Override
     public void visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis) {
-        assert analysis != null : "analysis should be non-null when visualize transfer input of a block";
+        assert analysis != null : "analysis should be non-null when visualizeBlockTransferInput() get called.";
 
         TransferInput<A, S> input = analysis.getInput(bb);
         this.sbStore.setLength(0);
@@ -401,8 +401,8 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
     @Override
     public void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis) {
         this.sbBlock.append(prepareString(t.toString()) + "   [ " + prepareNodeType(t) + " ]");
-        A value = null;
         if (analysis != null) {
+            A value = null;
             value = analysis.getValue(t);
             if (value != null) {
                 this.sbBlock.append("    > " + prepareString(value.toString()));
