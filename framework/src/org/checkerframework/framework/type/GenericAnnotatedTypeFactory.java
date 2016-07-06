@@ -198,6 +198,18 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Preforms flow-sensitive type refinement on {@code classTree} if this type factory is
+     * configured to do so.
+     * @param classTree tree on which to preform flow-sensitive type refinement
+     */
+    @Override
+    public void preProcessClassTree(ClassTree classTree) {
+        if (this.everUseFlow) {
+            checkAndPerformFlowAnalysis(classTree);
+        }
+    }
+
+    /**
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
      *
@@ -1044,18 +1056,6 @@ public abstract class GenericAnnotatedTypeFactory<
     protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         assert root != null : "GenericAnnotatedTypeFactory.addComputedTypeAnnotations: " +
                 " root needs to be set when used on trees; factory: " + this.getClass();
-
-        if (iUseFlow) {
-             /**
-             * We perform flow analysis on each {@link ClassTree} that is
-             * passed to addComputedTypeAnnotations.  This works correctly when
-             * a {@link ClassTree} is passed to this method before any of its
-             * sub-trees.  It also helps to satisfy the requirement that a
-             * {@link ClassTree} has been advanced to annotation before we
-             * analyze it.
-             */
-            checkAndPerformFlowAnalysis(tree);
-        }
 
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);

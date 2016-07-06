@@ -30,7 +30,7 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 
     @Override
-    protected void postProcessClassTree(ClassTree tree) {
+    public void postProcessClassTree(ClassTree tree) {
         // Do not store the qualifiers determined by this factory.
         // This factory adds declaration annotations as type annotations,
         // because TypeFromElement needs to read declaration annotations
