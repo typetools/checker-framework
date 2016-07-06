@@ -348,7 +348,8 @@ public class DOTCFGVisualizer<A extends AbstractValue<A>,
 
     @Override
     public void visualizeBlockTransferInput(Block bb, Analysis<A, S, T> analysis) {
-        assert analysis != null : "analysis should be non-null when visualizeBlockTransferInput() get called.";
+        assert analysis != null :
+            "analysis should be non-null when visualizeBlockTransferInput() get called.";
 
         TransferInput<A, S> input = analysis.getInput(bb);
         this.sbStore.setLength(0);
