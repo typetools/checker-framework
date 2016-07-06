@@ -146,9 +146,9 @@ public class LowerBoundAnnotatedTypeFactory extends
             case MULTIPLY:
                 timesHelper(left, right, type);
                 break;
-            // case DIVIDE:
-            //     divideHelper(left, right, type);
-            //     break;
+            case DIVIDE:
+                divideHelper(left, right, type);
+                break;
             // case REMAINDER:
             //     modHelper(left, right, type);
             //     break;
@@ -387,6 +387,86 @@ public class LowerBoundAnnotatedTypeFactory extends
                 type.addAnnotation(NN);
                 return;
             }
+        }
+
+        /**
+	       int lit / int lit -> do the math
+	       lit 0 / * -> nn
+	       * / lit 1 -> *
+	       pos / pos -> nn
+	       nn / pos -> nn
+	       pos / nn -> nn
+	       nn / nn -> nn
+	       pos / n1p -> n1p
+	       nn / n1p -> n1p
+	       n1p / n1p -> nn
+	       * / * -> lbu
+         */
+        public void divideHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
+                               AnnotatedTypeMirror type) {
+            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+
+            /** if both left and right are literals, do the math...*/
+            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
+               rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
+                int valLeft = (int)((LiteralTree)leftExpr).getValue();
+                int valRight = (int)((LiteralTree)rightExpr).getValue();
+                int valResult = valLeft / valRight;
+                literalHelper(valResult, type);
+                return;
+            }
+
+            /** handle dividing zero by anything */
+            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL) {
+                int val = (int)((LiteralTree)leftExpr).getValue();
+                if (val == 0) {
+                    type.addAnnotation(NN);
+                    return;
+                }
+            }
+
+            /** handle dividing by one. We assume that you aren't dividing by literal zero... */
+            if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
+                int val = (int)((LiteralTree)rightExpr).getValue();
+                if (val == 1) {
+                    type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
+                    return;
+                }
+            }
+
+            /** this section handles generic annotations
+	       pos / pos -> nn
+	       nn / pos -> nn
+	       pos / nn -> nn
+	       nn / nn -> nn
+	       n1p / pos -> n1p
+	       n1p / nn -> n1p
+            */
+            if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
+                type.addAnnotation(NN);
+                return;
+            }
+            if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(NN)) ||
+                (leftType.hasAnnotation(NN) && rightType.hasAnnotation(POS))) {
+                type.addAnnotation(NN);
+                return;
+            }
+            if (leftType.hasAnnotation(NN) && rightType.hasAnnotation(NN)) {
+                type.addAnnotation(NN);
+                return;
+            }
+            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(POS)) {
+                type.addAnnotation(N1P);
+                return;
+            }
+            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(NN)) {
+                type.addAnnotation(N1P);
+                return;
+            }
+            /** we don't know anything about other stuff. */
+            type.addAnnotation(UNKNOWN);
+            return;
         }
     }
 }

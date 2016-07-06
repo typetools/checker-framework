@@ -54,9 +54,8 @@ Divide:
 	       nn / pos -> nn
 	       pos / nn -> nn
 	       nn / nn -> nn
-	       pos / n1p -> n1p
-	       nn / n1p -> n1p
-	       n1p / n1p -> nn
+	       n1p / pos -> n1p
+	       n1p / nn -> n1p
 	       * / * -> lbu
 
 Mod:
