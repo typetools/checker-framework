@@ -149,9 +149,9 @@ public class LowerBoundAnnotatedTypeFactory extends
             case DIVIDE:
                 divideHelper(left, right, type);
                 break;
-            // case REMAINDER:
-            //     modHelper(left, right, type);
-            //     break;
+            case REMAINDER:
+                modHelper(left, right, type);
+                break;
             default:
                 break;
             }
@@ -464,6 +464,87 @@ public class LowerBoundAnnotatedTypeFactory extends
                 type.addAnnotation(N1P);
                 return;
             }
+            /** we don't know anything about other stuff. */
+            type.addAnnotation(UNKNOWN);
+            return;
+        }
+        /**
+           int lit % int lit -> do the math
+           * % 1 -> nn
+           pos/nn % pos/nn -> nn
+           nn/pos % n1p -> nn
+           n1p % n1p/nn/pos -> n1p
+           * % * -> lbu
+         */
+        public void modHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
+                               AnnotatedTypeMirror type) {
+            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+
+            /** if both left and right are literals, do the math...*/
+            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
+               rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
+                int valLeft = (int)((LiteralTree)leftExpr).getValue();
+                int valRight = (int)((LiteralTree)rightExpr).getValue();
+                int valResult = valLeft % valRight;
+                literalHelper(valResult, type);
+                return;
+            }
+
+            /** handle modding by one/negative one. */
+            if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
+                int val = (int)((LiteralTree)rightExpr).getValue();
+                if (val == 1 || val == -1) {
+                    type.addAnnotation(NN);
+                    return;
+                }
+            }
+
+            /** this section handles generic annotations
+	       pos % pos -> nn
+	       nn % pos -> nn
+	       pos % nn -> nn
+	       nn % nn -> nn
+               pos % n1p -> nn
+               nn % n1p -> nn
+	       n1p % pos -> n1p
+	       n1p % nn -> n1p
+               n1p % n1p -> n1p
+            */
+            if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
+                type.addAnnotation(NN);
+                return;
+            }
+            if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(NN)) ||
+                (leftType.hasAnnotation(NN) && rightType.hasAnnotation(POS))) {
+                type.addAnnotation(NN);
+                return;
+            }
+            if (leftType.hasAnnotation(NN) && rightType.hasAnnotation(NN)) {
+                type.addAnnotation(NN);
+                return;
+            }
+            if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(N1P)) {
+                type.addAnnotation(NN);
+                return;
+            }
+            if (leftType.hasAnnotation(NN) && rightType.hasAnnotation(N1P)) {
+                type.addAnnotation(NN);
+                return;
+            }
+            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(POS)) {
+                type.addAnnotation(N1P);
+                return;
+            }
+            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(NN)) {
+                type.addAnnotation(N1P);
+                return;
+            }
+            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(N1P)) {
+                type.addAnnotation(N1P);
+                return;
+            }
+
             /** we don't know anything about other stuff. */
             type.addAnnotation(UNKNOWN);
             return;
