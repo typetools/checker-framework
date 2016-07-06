@@ -746,11 +746,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * </pre>
      *
      * The set of qualifiers returned by
-     * {@link #createSupportedTypeQualifiers()} could be mutable
+     * {@link #createSupportedTypeQualifiers()} must be a fresh, mutable
      * set. The methods
      * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} and
      * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} each
-     * could return a mutable set.
+     * must return a fresh, mutable set
      * </li>
      * </ol>
      *
