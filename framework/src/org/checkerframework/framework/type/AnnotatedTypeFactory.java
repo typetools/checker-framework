@@ -657,7 +657,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns a mutable set of annotation classes that are supported by a checker
      * <p>
-     * Subclasses may override this method and to return an mutable set
+     * Subclasses may override this method and to return a mutable set
      * of their supported type qualifiers through one of the 5 approaches shown below.
      * <p>
      * Subclasses should not call this method; they should call
@@ -736,7 +736,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <li>
      * Supporting only annotations that are explicitly listed:
      * Override
-     * {@link #createSupportedTypeQualifiers()} and return an mutable
+     * {@link #createSupportedTypeQualifiers()} and return a mutable
      * set of the supported annotations. Code example:
      * <pre>
      * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
@@ -750,7 +750,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * set. The methods
      * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} and
      * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} each
-     * could return an mutable set.
+     * could return a mutable set.
      * </li>
      * </ol>
      *
@@ -774,7 +774,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            a varargs array of explicitly listed annotation classes to be
      *            added to the returned set. For example, it is used frequently
      *            to add Bottom qualifiers.
-     * @return an mutable set of the loaded and listed annotation classes, as
+     * @return a mutable set of the loaded and listed annotation classes, as
      *         well as {@link PolyAll}.
      */
     @SafeVarargs
@@ -796,7 +796,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            a varargs array of explicitly listed annotation classes to be
      *            added to the returned set. For example, it is used frequently
      *            to add Bottom qualifiers.
-     * @return an mutable set of the loaded, and listed annotation classes
+     * @return a mutable set of the loaded, and listed annotation classes
      */
     @SafeVarargs
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithoutPolyAll(Class<? extends Annotation>... explicitlyListedAnnotations) {
