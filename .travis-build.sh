@@ -11,39 +11,33 @@ export SHELLOPTS
 
 ./.travis-build-without-test.sh
 
-## Code style
-ant check-style
+# Optional argument $1 is one of:  jdk7, jdk8, jdkany
+# If it is omitted, this script does everything.
 
-## Documentation
-ant javadoc-private
-make -C checker/manual all
+if [[ "$1" != "jdk7" && "$1" != "jdk8" ]]; then
+  ## jdkany tests: miscellaneous tests that shouldn't depend on JDK version.
+  ## (Maybe they don't even need the full ./.travis-build-without-test.sh .)
 
-## Tests
-# The JDK was built above; there is no need to rebuild it again.
-# Don't use "-d" to debug ant, because that results in a log so long
-# that Travis truncates the log and terminates the job.
+  # Code style
+  ant check-style
 
-## Alternative 1 (desired alternative):
-ant tests-nobuildjdk
-## This should be redundant because it's run by tests-nobuildjdk
-# (cd checker && ant check-compilermsgs check-purity check-tutorial)
+  # Documentation
+  ant javadoc-private
+  make -C checker/manual all
+fi
 
-# ## Alternative 2 (because alternative 1 currently crashes);
-# ## just run tests that Travis doesn't crash on.
-# ## Eventually, we will remove this alternative from the file.
-# # Run framework tests.
-# (cd framework && ant all-tests-nojtreg-nobuild)
-# # Subset of all-tests
-# # Also runs framework jtreg-tests
-# (cd checker && ant jtreg-tests)
-# (cd checker && ant command-line-tests)
-# (cd checker && ant example-tests-nobuildjdk)
-# (cd checker && ant check-tutorial)
-# # If too many checker tests are run, the tests crash, so run one.
-# (cd checker && ant nullness-base-tests regex-qual-tests lock-tests lock-safedefaults-tests)
+if [[ "$1" != "jdkany" ]]; then
+  ## jdk7 or jdk8 tests: the real tests
 
-## end of alternatives for tests
+  # The JDK was built already; there is no need to rebuild it again.
+  # Don't use "-d" to debug ant, because that results in a log so long
+  # that Travis truncates the log and terminates the job.
 
-# It's cheaper to run the demos test here than to trigger the
-# checker-framework-demos job, which has to build the whole Checker Framework.
-(cd checker && ant check-demos)
+  # ant tests-nobuildjdk
+  ## Slightly more efficient than "ant tests-nobuildjdk", maybe:
+  ant all-tests-nojtreg-nobuild jtreg-tests
+
+  # It's cheaper to run the demos test here than to trigger the
+  # checker-framework-demos job, which has to build the whole Checker Framework.
+  (cd checker && ant check-demos)
+fi
