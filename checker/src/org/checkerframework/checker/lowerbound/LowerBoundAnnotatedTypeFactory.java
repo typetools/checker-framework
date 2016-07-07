@@ -20,6 +20,8 @@ import java.util.List;
 import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.LiteralTree;
@@ -28,7 +30,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.UnaryTree;
 
 public class LowerBoundAnnotatedTypeFactory extends
- GenericAnnotatedTypeFactory<LowerBoundValue, LowerBoundStore, LowerBoundTransfer, LowerBoundAnalysis> {
+ GenericAnnotatedTypeFactory<CFValue, CFStore, LowerBoundTransfer, LowerBoundAnalysis> {
 
     private final AnnotationMirror N1P, NN, POS, UNKNOWN;
 
@@ -37,13 +39,13 @@ public class LowerBoundAnnotatedTypeFactory extends
         N1P = AnnotationUtils.fromClass(elements, NegativeOnePlus.class);
         NN = AnnotationUtils.fromClass(elements, NonNegative.class);
         POS = AnnotationUtils.fromClass(elements, Positive.class);
-        UNKNOWN = AnnotationUtils.fromClass(elements, Unknown.class);
+        UNKNOWN = AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
         this.postInit();
     }
 
     @Override
     protected LowerBoundAnalysis createFlowAnalysis(
-            List<Pair<VariableElement, LowerBoundValue>> fieldValues) {
+            List<Pair<VariableElement, CFValue>> fieldValues) {
         return new LowerBoundAnalysis(checker, this, fieldValues);
     }
 

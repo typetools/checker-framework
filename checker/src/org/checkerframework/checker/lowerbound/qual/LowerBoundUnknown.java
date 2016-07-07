@@ -15,4 +15,4 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Unknown {}
+public @interface LowerBoundUnknown {}

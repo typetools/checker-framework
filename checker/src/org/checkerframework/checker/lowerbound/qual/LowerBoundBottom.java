@@ -12,4 +12,4 @@ import javax.lang.model.type.TypeKind;
  */
 @Target({ElementType.TYPE_USE})
 @SubtypeOf( { Positive.class } )
-public @interface Bottom { }
+public @interface LowerBoundBottom { }

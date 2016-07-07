@@ -1,6 +1,8 @@
 package org.checkerframework.checker.lowerbound;
 
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 
 import java.util.List;
 
@@ -12,9 +14,9 @@ import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
-public class LowerBoundAnalysis extends CFAbstractAnalysis<LowerBoundValue, LowerBoundStore, LowerBoundTransfer> {
+public class LowerBoundAnalysis extends CFAbstractAnalysis<CFValue, CFStore, LowerBoundTransfer> {
     public LowerBoundAnalysis(BaseTypeChecker checker, LowerBoundAnnotatedTypeFactory factory,
-                              List<Pair<VariableElement, LowerBoundValue>> fieldValues) {
+                              List<Pair<VariableElement, CFValue>> fieldValues) {
         super(checker, factory, fieldValues);
     }
 
@@ -24,17 +26,17 @@ public class LowerBoundAnalysis extends CFAbstractAnalysis<LowerBoundValue, Lowe
     }
 
     @Override
-    public LowerBoundValue createAbstractValue(AnnotatedTypeMirror type) {
-        return new LowerBoundValue(this, type);
+    public CFValue createAbstractValue(AnnotatedTypeMirror type) {
+        return new CFValue(this, type);
     }
 
     @Override
-    public LowerBoundStore createCopiedStore(LowerBoundStore s) {
-        return new LowerBoundStore(s);
+    public CFStore createCopiedStore(CFStore s) {
+        return new CFStore(this, s);
     }
 
     @Override
-    public LowerBoundStore createEmptyStore(boolean sequentialSemantics) {
-        return new LowerBoundStore(this, sequentialSemantics);
+    public CFStore createEmptyStore(boolean sequentialSemantics) {
+        return new CFStore(this, sequentialSemantics);
     }
 }

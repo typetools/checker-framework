@@ -7,12 +7,12 @@ public class Errors{
 
         // unsafe
         @NegativeOnePlus int n1p = -1;
-        @Unknown int u = -10;
+        @LowerBoundUnknown int u = -10;
 
         // safe
         @NonNegative int nn = 0;
         @Positive int p = 1;
-        
+
         //:: warning: (array.access.unsafe.low)
         int a = arr[n1p];
 

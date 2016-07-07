@@ -5,17 +5,17 @@ public class TransferAdd {
     void test() {
 
         // adding zero and one and two
-        
+
         int a = -1;
 
         @Positive int a1 = a + 2;
-        
+
         @NonNegative int b = a + 1;
         @NonNegative int c = 1 + a;
 
         @NegativeOnePlus int d = a + 0;
         @NegativeOnePlus int e = 0 + a;
-        
+
         //:: error: (assignment.type.incompatible)
         @Positive int f = a + 1;
 
@@ -53,7 +53,7 @@ public class TransferAdd {
         @Positive int v = ++c;
 
         int n1p1 = -1, n1p2 = -1;
-        
+
         @NonNegative int w = ++n1p1;
         @NonNegative int x = n1p2++;
 

@@ -6,7 +6,7 @@ class Subtyping{
 
         @NegativeOnePlus int i = -1;
 
-        @Unknown int j = i;
+        @LowerBoundUnknown int j = i;
 
         int k = -4;
 
@@ -23,9 +23,9 @@ class Subtyping{
         j = n;
         l = n;
         n = a;
-        
+
         // error cases
-        
+
         //:: error: (assignment.type.incompatible)
         @NonNegative int p = i;
         //:: error: (assignment.type.incompatible)
@@ -38,8 +38,5 @@ class Subtyping{
 
         //:: error: (assignment.type.incompatible)
         @Positive int d = r;
-        
-        
-        
     }
 }
