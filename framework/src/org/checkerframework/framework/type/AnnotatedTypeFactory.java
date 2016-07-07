@@ -942,10 +942,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return treeCache.get(tree).deepCopy();
         }
 
-        AnnotatedTypeMirror type;
         if (TreeUtils.isClassTree(tree)) {
-            type = fromClass((ClassTree)tree);
-        } else if (tree.getKind() == Tree.Kind.METHOD ||
+            ClassTree classTree = (ClassTree) tree;
+            AnnotatedTypeMirror type = getAnnotatedTypeOfClassTree(classTree);
+            if (shouldCache) {
+                treeCache.put(tree, type.deepCopy());
+            }
+            postProcessClassTree(classTree);
+            return type;
+        }
+
+        AnnotatedTypeMirror type;
+        if (tree.getKind() == Tree.Kind.METHOD ||
                 tree.getKind() == Tree.Kind.VARIABLE) {
             type = fromMember(tree);
         } else if (TreeUtils.isExpressionTree(tree)) {
@@ -959,18 +967,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         addComputedTypeAnnotations(tree, type);
 
-        if (TreeUtils.isClassTree(tree) ||
-            tree.getKind() == Tree.Kind.METHOD) {
+        if (tree.getKind() == Tree.Kind.METHOD) {
             // Don't cache VARIABLE
             if (shouldCache) {
                 treeCache.put(tree, type.deepCopy());
             }
         } else {
             // No caching otherwise
-        }
-
-        if (TreeUtils.isClassTree(tree)) {
-            postProcessClassTree((ClassTree) tree);
         }
 
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
@@ -1677,7 +1680,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // we created, e.g. when desugaring enhanced-for-loops.
             enclosingClass = getCurrentClassTree(tree);
         }
-        AnnotatedDeclaredType type = getAnnotatedType(enclosingClass);
+        AnnotatedDeclaredType type = getAnnotatedTypeOfClassTree(enclosingClass);
 
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
         if (enclosingClass.getSimpleName().length() != 0 &&
@@ -1695,6 +1698,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 type.addAnnotations(methodReceiver.getAnnotations());
             }
         }
+        return type;
+    }
+
+    /**
+     * Get the AnnotatedDeclaredType for a classTree without calling
+     * {@link #postProcessClassTree(ClassTree)}.  Call this method instead of getAnnotatedType in
+     * order to avoid infinite recursion if computing the type of a tree enclosed in {@code
+     * classTree}
+     *
+     * @param classTree classTree
+     * @return AnnotatedDeclaredType of {@code classTree}
+     */
+    // TODO: It would be better to move the code that calls
+    // postProcessClassTree out of getAnnotatedType, but it's not clear where/when those calls
+    // should happen.
+    protected AnnotatedDeclaredType getAnnotatedTypeOfClassTree(ClassTree classTree) {
+        if (shouldCache && treeCache.containsKey(classTree)) {
+            return (AnnotatedDeclaredType) treeCache.get(classTree).deepCopy();
+        }
+        AnnotatedDeclaredType type = fromClass(classTree);
+        addComputedTypeAnnotations(classTree, type);
         return type;
     }
 
