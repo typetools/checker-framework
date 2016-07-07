@@ -1,5 +1,7 @@
 # Create a Docker image that is ready to run the full Checker Framework tests,
 # including building the manual and Javadoc.
+# But it's used primarily for running miscellaneous tests such as the manual
+# and Javadoc.
 
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
@@ -9,18 +11,22 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 #  * Put "apt-get update" and "apt-get install" in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 RUN apt-get -qqy update && apt-get -qqy install \
+  software-properties-common \
+&& add-apt-repository ppa:openjdk-r/ppa \
+&& apt-get -qqy update && apt-get -qqy install \
   ant \
-  dia \
   git \
-  hevea \
-  librsvg2-bin \
   make \
   mercurial \
+  unzip \
+  openjdk-7-jdk \
+&& apt-get -qqy install \
+  dia \
+  hevea \
+  librsvg2-bin \
   texlive-fonts-recommended \
   texlive-latex-base \
   texlive-latex-extra \
   texlive-latex-recommended \
-  unzip \
-  openjdk-7-jdk \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
