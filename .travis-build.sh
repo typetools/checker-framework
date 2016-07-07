@@ -36,7 +36,7 @@ if [[ "$1" != "jdkany" ]]; then
 
   # ant tests-nobuildjdk
   ## Slightly more efficient than "ant tests-nobuildjdk", maybe:
-  ant all-tests-nojtreg-nobuild jtreg-tests
+  (cd checker && ant all-tests-nojtreg-nobuild jtreg-tests)
 
   # It's cheaper to run the demos test here than to trigger the
   # checker-framework-demos job, which has to build the whole Checker Framework.
