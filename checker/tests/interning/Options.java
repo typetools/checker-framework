@@ -60,13 +60,17 @@ class Options {
             if ((ch == '\'') || (ch == '"')) {
                 arg += ch;
                 ii++;
-                while ((ii < args.length()) && (args.charAt(ii) != ch)) arg += args.charAt(ii++);
+                while ((ii < args.length()) && (args.charAt(ii) != ch)) {
+                  arg += args.charAt(ii++);
+                }
                 arg += ch;
             } else if (Character.isWhitespace(ch)) {
                 // System.out.printf ("adding argument '%s'%n", arg);
                 arg_list.add(arg);
                 arg = "";
-                while ((ii < args.length()) && Character.isWhitespace(args.charAt(ii))) ii++;
+                while ((ii < args.length()) && Character.isWhitespace(args.charAt(ii))) {
+                  ii++;
+                }
                 if (ii < args.length()) {
                     ii--;
                 }

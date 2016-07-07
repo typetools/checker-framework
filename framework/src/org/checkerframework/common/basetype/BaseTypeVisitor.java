@@ -3231,7 +3231,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     protected Tree enclosingStatement(Tree tree) {
         TreePath path = this.getCurrentPath();
-        while (path != null && path.getLeaf() != tree) path = path.getParentPath();
+        while (path != null && path.getLeaf() != tree) {
+            path = path.getParentPath();
+        }
 
         if (path != null) {
             return path.getParentPath().getLeaf();
