@@ -589,8 +589,16 @@
     </target>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
-    <target name="all-tests-nojtreg-nobuild" depends="build-tests"
+    <target name="all-tests-nojtreg-nobuild"
+            depends="junit-tests-nojtreg-nobuild,nonjunit-tests-nojtreg-nobuild"
             description="Run tests for all checkers, WITHOUT building anything">
+    </target>
+
+
+
+    <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
+    <target name="junit-tests-nojtreg-nobuild" depends="build-tests"
+            description="Run junit tests for all checkers, WITHOUT building anything">
 
         <condition property="should.emit.debug.str" value="true" else="false">
             <isset property="emit.test.debug"/>
@@ -599,13 +607,6 @@
         <condition property="debugger.str" value="-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" else="">
             <isset property="debugger.on"/>
         </condition>
-
-        <ant dir="${framework.loc}">
-            <target name="all-tests-nojtreg-nobuild"/>
-        </ant>
-
-        <!-- Note that the order of the ant vs junit calls matters
-             for the Jenkins setup. The junit call must come last. -->
 
         <!-- Delete directory because we will rerun all tests -->
         <delete dir="${build.reports}"/>
@@ -645,6 +646,29 @@
                 </fileset>
             </batchtest>
         </junit>
+
+    </target>
+
+    <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
+    <target name="nonjunit-tests-nojtreg-nobuild" depends="build-tests"
+            description="Run tests, other than junit tests for all checkers, WITHOUT building anything">
+
+        <condition property="should.emit.debug.str" value="true" else="false">
+            <isset property="emit.test.debug"/>
+        </condition>
+
+        <condition property="debugger.str" value="-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" else="">
+            <isset property="debugger.on"/>
+        </condition>
+
+        <ant dir="${framework.loc}">
+            <target name="all-tests-nojtreg-nobuild"/>
+        </ant>
+
+        <!-- Delete directory because we will rerun all tests -->
+        <delete dir="${build.reports}"/>
+        <!-- Copied from -run-tests target -->
+        <mkdir dir="${build.reports}"/>
 
         <antcall target="nullness-extra-tests-nobuildjdk"/>
 

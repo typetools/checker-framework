@@ -6,18 +6,19 @@ services:
   - docker
 
 env:
-  matrix:
-   - GROUP=jdkany
-   - GROUP=jdk7
-   - GROUP=jdk8
+  - JDKVER=jdk7 GROUP=junit
+  - JDKVER=jdk7 GROUP=nonjunit
+  - JDKVER=jdk8 GROUP=junit
+  - JDKVER=jdk8 GROUP=nonjunit
+  - JDKVER=jdk7 GROUP=misc
 
 before_script:
-- docker pull mdernst/ubuntu-for-cf-$GROUP
+- docker pull mdernst/ubuntu-for-cf-$JDKVER
 
 # Eventually, parameterize this by JDK version, branch name, etc.
 script:
 # - docker run ubuntu /bin/sh -c "apt-get -qqy update && apt-get -qqy upgrade && apt-get -qqy install  default-jdk  ant dia git hevea librsvg2-bin make mercurial texlive-fonts-recommended texlive-latex-base texlive-latex-extra texlive-latex-recommended unzip && export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh"
-- docker run mdernst/ubuntu-for-cf-$GROUP /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
+- docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
 
 ## TODO: reinstate this.
 # after_success:
