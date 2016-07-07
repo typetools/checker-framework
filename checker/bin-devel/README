@@ -2,3 +2,28 @@ This directory contains a version of the scripts suitable for Checker
 Framework developers.  The scripts use locally-compiled .class files in
 preference to .jar files, because just creating .class files leads to a
 faster edit-compile-test cycle than generating .jar files.
+
+
+This directory also contains Dockerfiles to create new Docker images for
+running Checker Framework tests reproducibly.
+To build new Docker images:
+
+  # Obtain Docker credentials
+  docker login
+
+  # Create the Docker images, in an empty directory
+  mkdir empty-dir
+  cd empty-dir
+  docker build -f ../Dockerfile-jdk7 -t mdernst/ubuntu-for-cf-jdk7 .
+  docker build -f ../Dockerfile-jdk8 -t mdernst/ubuntu-for-cf-jdk8 .
+  docker build -f ../Dockerfile-jdkany -t mdernst/ubuntu-for-cf-jdkany .
+  cd ..
+  rm -rf empty-dir
+
+  # Optionally, list the available images
+  # docker images
+
+  # Upload to Docker Hub
+  docker push mdernst/ubuntu-for-cf-jdk7
+  docker push mdernst/ubuntu-for-cf-jdk8
+  docker push mdernst/ubuntu-for-cf-jdkany

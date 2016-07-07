@@ -5,21 +5,21 @@ language: generic
 services:
   - docker
 
+env:
+  matrix:
+   - GROUP=jdkany
+   - GROUP=jdk7
+   - GROUP=jdk8
+
 before_script:
-#- docker pull ubuntu
-- docker pull mdernst/ubuntu-for-cf
+- docker pull mdernst/ubuntu-for-cf-$GROUP
 
 # Eventually, parameterize this by JDK version, branch name, etc.
 script:
 # - docker run ubuntu /bin/sh -c "apt-get -qqy update && apt-get -qqy upgrade && apt-get -qqy install  default-jdk  ant dia git hevea librsvg2-bin make mercurial texlive-fonts-recommended texlive-latex-base texlive-latex-extra texlive-latex-recommended unzip && export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh"
-- docker run mdernst/ubuntu-for-cf /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh"
+- docker run mdernst/ubuntu-for-cf-$GROUP /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
 
-# jdk:
-#   - oraclejdk8
-#   - oraclejdk7
-#   - openjdk7
-#   # openjdk8 is not a legal option: - openjdk8
-
+## TODO: reinstate this.
 # after_success:
 #   - |
 #       if [[ ($TRAVIS_BRANCH == master) &&
