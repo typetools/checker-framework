@@ -2,24 +2,22 @@ package org.checkerframework.qualframework.base;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
-
 import org.checkerframework.qualframework.util.ExtendedArrayType;
 import org.checkerframework.qualframework.util.ExtendedDeclaredType;
 import org.checkerframework.qualframework.util.ExtendedExecutableType;
 import org.checkerframework.qualframework.util.ExtendedIntersectionType;
 import org.checkerframework.qualframework.util.ExtendedNoType;
 import org.checkerframework.qualframework.util.ExtendedNullType;
+import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
 import org.checkerframework.qualframework.util.ExtendedPrimitiveType;
+import org.checkerframework.qualframework.util.ExtendedTypeDeclaration;
+import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 import org.checkerframework.qualframework.util.ExtendedTypeVariable;
 import org.checkerframework.qualframework.util.ExtendedUnionType;
 import org.checkerframework.qualframework.util.ExtendedWildcardType;
-import org.checkerframework.qualframework.util.ExtendedTypeDeclaration;
-import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
-import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 /**
  * A {@link ExtendedTypeMirror} with a qualifier for the top level and for
@@ -62,7 +60,7 @@ public abstract class QualifiedTypeMirror<Q> {
     }
 
     /** Applies a {@link QualifiedTypeVisitor} to this qualified type. */
-    public abstract <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p);
+    public abstract <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p);
 
     /** Gets the underlying {@link ExtendedTypeMirror}. */
     public ExtendedTypeMirror getUnderlyingType() {
@@ -85,17 +83,14 @@ public abstract class QualifiedTypeMirror<Q> {
             return false;
         }
         @SuppressWarnings("unchecked")
-        QualifiedTypeMirror<Q> other = (QualifiedTypeMirror<Q>)obj;
-        return this.qualifier.equals(other.qualifier)
-            && this.underlying.equals(other.underlying);
+        QualifiedTypeMirror<Q> other = (QualifiedTypeMirror<Q>) obj;
+        return this.qualifier.equals(other.qualifier) && this.underlying.equals(other.underlying);
     }
 
     @Override
     public int hashCode() {
-        return this.qualifier.hashCode() * 17
-            + this.underlying.hashCode() * 37;
+        return this.qualifier.hashCode() * 17 + this.underlying.hashCode() * 37;
     }
-
 
     /** Check that the underlying ExtendedTypeMirror has a specific TypeKind, and
      * throw an exception if it does not.  This is a helper method for
@@ -106,16 +101,18 @@ public abstract class QualifiedTypeMirror<Q> {
      * with {@code isDeclaration} set to have kind {@code TYPEVAR DECLARATION},
      * which is distinct from ordinary {@code TYPEVAR}.
      */
-    private static void checkUnderlyingKind(ExtendedTypeMirror underlying,
-            TypeKind expectedKind, boolean expectedDeclaration) {
+    private static void checkUnderlyingKind(
+            ExtendedTypeMirror underlying, TypeKind expectedKind, boolean expectedDeclaration) {
         TypeKind actualKind = underlying.getKind();
         boolean actualDeclaration = underlying.isDeclaration();
         if (actualKind != expectedKind || actualDeclaration != expectedDeclaration) {
             String actualKindName = actualKind + (actualDeclaration ? " DECLARATION" : "");
             String expectedKindName = expectedKind + (expectedDeclaration ? " DECLARATION" : "");
             throw new IllegalArgumentException(
-                    "underlying ExtendedTypeMirror must have kind " + expectedKindName +
-                    ", not " + actualKindName);
+                    "underlying ExtendedTypeMirror must have kind "
+                            + expectedKindName
+                            + ", not "
+                            + actualKindName);
         }
     }
 
@@ -131,14 +128,17 @@ public abstract class QualifiedTypeMirror<Q> {
      * DECLARATION} kind.  There is no flag to indicate that a declaration is
      * expected, unlike {@link checkUnderlyingKind}.
      */
-    private static void checkUnderlyingKindIsOneOf(ExtendedTypeMirror underlying, TypeKind... validKinds) {
+    private static void checkUnderlyingKindIsOneOf(
+            ExtendedTypeMirror underlying, TypeKind... validKinds) {
         TypeKind actualKind = underlying.getKind();
 
         if (underlying.isDeclaration()) {
             throw new IllegalArgumentException(
-                    "underlying ExtendedTypeMirror must have one of the kinds " +
-                    java.util.Arrays.toString(validKinds) + ", not " +
-                    actualKind + " DECLARATION");
+                    "underlying ExtendedTypeMirror must have one of the kinds "
+                            + java.util.Arrays.toString(validKinds)
+                            + ", not "
+                            + actualKind
+                            + " DECLARATION");
         }
 
         for (TypeKind kind : validKinds) {
@@ -148,8 +148,10 @@ public abstract class QualifiedTypeMirror<Q> {
             }
         }
         throw new IllegalArgumentException(
-                "underlying ExtendedTypeMirror must have one of the kinds " +
-                java.util.Arrays.toString(validKinds) + ", not " + actualKind);
+                "underlying ExtendedTypeMirror must have one of the kinds "
+                        + java.util.Arrays.toString(validKinds)
+                        + ", not "
+                        + actualKind);
     }
 
     /** Check that the underlying ExtendedTypeMirror has a primitive TypeKind, and
@@ -165,29 +167,27 @@ public abstract class QualifiedTypeMirror<Q> {
         }
     }
 
-
     /** Helper function to raise an appropriate exception in case of a mismatch
      * between qualified and unqualified versions of the same ExtendedTypeMirror.
      */
-    private static <Q> void checkTypeMirrorsMatch(String description,
-            QualifiedTypeMirror<Q> qualified, ExtendedTypeMirror unqualified) {
+    private static <Q> void checkTypeMirrorsMatch(
+            String description, QualifiedTypeMirror<Q> qualified, ExtendedTypeMirror unqualified) {
         if (!typeMirrorsMatch(qualified, unqualified)) {
             throw new IllegalArgumentException(
-                    "qualified and unqualified " + description +
-                    " TypeMirrors must be identical");
+                    "qualified and unqualified " + description + " TypeMirrors must be identical");
         }
     }
 
     /** Check if the underlying types of a list of QualifiedTypeMirrors match
      * the actual TypeMirrors from a second list.
      */
-    private static <Q> void checkTypeMirrorListsMatch(String description,
+    private static <Q> void checkTypeMirrorListsMatch(
+            String description,
             List<? extends QualifiedTypeMirror<Q>> qualified,
             List<? extends ExtendedTypeMirror> unqualified) {
         if (!typeMirrorListsMatch(qualified, unqualified)) {
             throw new IllegalArgumentException(
-                    "qualified and unqualified " + description +
-                    " TypeMirrors must be identical");
+                    "qualified and unqualified " + description + " TypeMirrors must be identical");
         }
     }
 
@@ -200,8 +200,9 @@ public abstract class QualifiedTypeMirror<Q> {
             return true;
         }
 
-        if (qualified == null || unqualified == null ||
-                !qualified.getUnderlyingType().equals(unqualified)) {
+        if (qualified == null
+                || unqualified == null
+                || !qualified.getUnderlyingType().equals(unqualified)) {
             return false;
         }
 
@@ -234,7 +235,6 @@ public abstract class QualifiedTypeMirror<Q> {
         return true;
     }
 
-
     /** Helper function for subclass toString methods.  Concatenates together
      * the results of calling toString on each of 'objs', with 'punct' between
      * each pair of elements. */
@@ -257,28 +257,27 @@ public abstract class QualifiedTypeMirror<Q> {
         return punctuatedList(", ", objs);
     }
 
-
     public static final class QualifiedArrayType<Q> extends QualifiedTypeMirror<Q> {
         private final QualifiedTypeMirror<Q> componentType;
 
-        public QualifiedArrayType(ExtendedTypeMirror underlying, Q qualifier,
-                QualifiedTypeMirror<Q> componentType) {
+        public QualifiedArrayType(
+                ExtendedTypeMirror underlying, Q qualifier, QualifiedTypeMirror<Q> componentType) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.ARRAY);
-            checkTypeMirrorsMatch("component",
-                    componentType, getUnderlyingType().getComponentType());
+            checkTypeMirrorsMatch(
+                    "component", componentType, getUnderlyingType().getComponentType());
 
             this.componentType = componentType;
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitArray(this, p);
         }
 
         @Override
         public ExtendedArrayType getUnderlyingType() {
-            return (ExtendedArrayType)super.getUnderlyingType();
+            return (ExtendedArrayType) super.getUnderlyingType();
         }
 
         public QualifiedTypeMirror<Q> getComponentType() {
@@ -297,39 +296,39 @@ public abstract class QualifiedTypeMirror<Q> {
             }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
-            QualifiedArrayType<Q> other = (QualifiedArrayType<Q>)obj;
+            QualifiedArrayType<Q> other = (QualifiedArrayType<Q>) obj;
             return this.componentType.equals(other.componentType);
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode()
-                + componentType.hashCode() * 43;
+            return super.hashCode() + componentType.hashCode() * 43;
         }
     }
-
 
     public static final class QualifiedDeclaredType<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> typeArguments;
 
-        public QualifiedDeclaredType(ExtendedTypeMirror underlying, Q qualifier,
+        public QualifiedDeclaredType(
+                ExtendedTypeMirror underlying,
+                Q qualifier,
                 List<? extends QualifiedTypeMirror<Q>> typeArguments) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.DECLARED);
-            checkTypeMirrorListsMatch("argument",
-                    typeArguments, getUnderlyingType().getTypeArguments());
+            checkTypeMirrorListsMatch(
+                    "argument", typeArguments, getUnderlyingType().getTypeArguments());
 
             this.typeArguments = new ArrayList<>(typeArguments);
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitDeclared(this, p);
         }
 
         @Override
         public ExtendedDeclaredType getUnderlyingType() {
-            return (ExtendedDeclaredType)super.getUnderlyingType();
+            return (ExtendedDeclaredType) super.getUnderlyingType();
         }
 
         public List<? extends QualifiedTypeMirror<Q>> getTypeArguments() {
@@ -356,17 +355,15 @@ public abstract class QualifiedTypeMirror<Q> {
             }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
-            QualifiedDeclaredType<Q> other = (QualifiedDeclaredType<Q>)obj;
+            QualifiedDeclaredType<Q> other = (QualifiedDeclaredType<Q>) obj;
             return this.typeArguments.equals(other.typeArguments);
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode()
-                + typeArguments.hashCode() * 43;
+            return super.hashCode() + typeArguments.hashCode() * 43;
         }
     }
-
 
     public static final class QualifiedExecutableType<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> parameterTypes;
@@ -375,7 +372,8 @@ public abstract class QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> thrownTypes;
         private final List<? extends QualifiedParameterDeclaration<Q>> typeParameters;
 
-        public QualifiedExecutableType(ExtendedTypeMirror underlying,
+        public QualifiedExecutableType(
+                ExtendedTypeMirror underlying,
                 List<? extends QualifiedTypeMirror<Q>> parameterTypes,
                 QualifiedTypeMirror<Q> receiverType,
                 QualifiedTypeMirror<Q> returnType,
@@ -383,16 +381,13 @@ public abstract class QualifiedTypeMirror<Q> {
                 List<? extends QualifiedParameterDeclaration<Q>> typeParameters) {
             super(underlying);
             checkUnderlyingKind(underlying, TypeKind.EXECUTABLE);
-            checkTypeMirrorListsMatch("parameter",
-                    parameterTypes, getUnderlyingType().getParameterTypes());
-            checkTypeMirrorsMatch("receiver",
-                    receiverType, getUnderlyingType().getReceiverType());
-            checkTypeMirrorsMatch("return",
-                    returnType, getUnderlyingType().getReturnType());
-            checkTypeMirrorListsMatch("thrown",
-                    thrownTypes, getUnderlyingType().getThrownTypes());
-            checkTypeMirrorListsMatch("type parameter",
-                    typeParameters, getUnderlyingType().getTypeParameters());
+            checkTypeMirrorListsMatch(
+                    "parameter", parameterTypes, getUnderlyingType().getParameterTypes());
+            checkTypeMirrorsMatch("receiver", receiverType, getUnderlyingType().getReceiverType());
+            checkTypeMirrorsMatch("return", returnType, getUnderlyingType().getReturnType());
+            checkTypeMirrorListsMatch("thrown", thrownTypes, getUnderlyingType().getThrownTypes());
+            checkTypeMirrorListsMatch(
+                    "type parameter", typeParameters, getUnderlyingType().getTypeParameters());
 
             this.parameterTypes = new ArrayList<>(parameterTypes);
             this.receiverType = receiverType;
@@ -402,13 +397,13 @@ public abstract class QualifiedTypeMirror<Q> {
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitExecutable(this, p);
         }
 
         @Override
         public ExtendedExecutableType getUnderlyingType() {
-            return (ExtendedExecutableType)super.getUnderlyingType();
+            return (ExtendedExecutableType) super.getUnderlyingType();
         }
 
         public List<? extends QualifiedTypeMirror<Q>> getParameterTypes() {
@@ -463,50 +458,51 @@ public abstract class QualifiedTypeMirror<Q> {
             }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
-            QualifiedExecutableType<Q> other = (QualifiedExecutableType<Q>)obj;
+            QualifiedExecutableType<Q> other = (QualifiedExecutableType<Q>) obj;
             return this.parameterTypes.equals(other.parameterTypes)
-                && (this.receiverType == null ?
-                        other.receiverType == null :
-                        this.receiverType.equals(other.receiverType))
-                && (this.returnType == null ?
-                        other.returnType == null :
-                        this.returnType.equals(other.returnType))
-                && this.thrownTypes.equals(other.thrownTypes)
-                && this.typeParameters.equals(other.typeParameters);
+                    && (this.receiverType == null
+                            ? other.receiverType == null
+                            : this.receiverType.equals(other.receiverType))
+                    && (this.returnType == null
+                            ? other.returnType == null
+                            : this.returnType.equals(other.returnType))
+                    && this.thrownTypes.equals(other.thrownTypes)
+                    && this.typeParameters.equals(other.typeParameters);
         }
 
         @Override
         public int hashCode() {
             return super.hashCode()
-                + parameterTypes.hashCode() * 43
-                + (this.receiverType == null ? 0 : this.receiverType.hashCode() * 67)
-                + (this.returnType == null ? 0 : this.returnType.hashCode() * 83)
-                + thrownTypes.hashCode() * 109
-                + typeParameters.hashCode() * 127;
+                    + parameterTypes.hashCode() * 43
+                    + (this.receiverType == null ? 0 : this.receiverType.hashCode() * 67)
+                    + (this.returnType == null ? 0 : this.returnType.hashCode() * 83)
+                    + thrownTypes.hashCode() * 109
+                    + typeParameters.hashCode() * 127;
         }
     }
 
     public static final class QualifiedIntersectionType<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> bounds;
 
-        public QualifiedIntersectionType(ExtendedTypeMirror underlying, Q qualifier,
+        public QualifiedIntersectionType(
+                ExtendedTypeMirror underlying,
+                Q qualifier,
                 List<? extends QualifiedTypeMirror<Q>> bounds) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.INTERSECTION);
-            checkTypeMirrorListsMatch("bounds",
-                    bounds, getUnderlyingType().getBounds());
+            checkTypeMirrorListsMatch("bounds", bounds, getUnderlyingType().getBounds());
 
             this.bounds = new ArrayList<>(bounds);
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitIntersection(this, p);
         }
 
         @Override
         public ExtendedIntersectionType getUnderlyingType() {
-            return (ExtendedIntersectionType)super.getUnderlyingType();
+            return (ExtendedIntersectionType) super.getUnderlyingType();
         }
 
         public List<? extends QualifiedTypeMirror<Q>> getBounds() {
@@ -525,14 +521,13 @@ public abstract class QualifiedTypeMirror<Q> {
             }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
-            QualifiedIntersectionType<Q> other = (QualifiedIntersectionType<Q>)obj;
+            QualifiedIntersectionType<Q> other = (QualifiedIntersectionType<Q>) obj;
             return this.bounds.equals(other.bounds);
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode()
-                + bounds.hashCode() * 43;
+            return super.hashCode() + bounds.hashCode() * 43;
         }
     }
 
@@ -541,18 +536,17 @@ public abstract class QualifiedTypeMirror<Q> {
             super(underlying, qualifier);
             // According to the ExtendedNoType javadocs, valid kinds are NONE, PACKAGE,
             // and VOID.
-            checkUnderlyingKindIsOneOf(underlying,
-                    TypeKind.NONE, TypeKind.PACKAGE, TypeKind.VOID);
+            checkUnderlyingKindIsOneOf(underlying, TypeKind.NONE, TypeKind.PACKAGE, TypeKind.VOID);
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitNoType(this, p);
         }
 
         @Override
         public ExtendedNoType getUnderlyingType() {
-            return (ExtendedNoType)super.getUnderlyingType();
+            return (ExtendedNoType) super.getUnderlyingType();
         }
 
         @Override
@@ -570,13 +564,13 @@ public abstract class QualifiedTypeMirror<Q> {
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitNull(this, p);
         }
 
         @Override
         public ExtendedNullType getUnderlyingType() {
-            return (ExtendedNullType)super.getUnderlyingType();
+            return (ExtendedNullType) super.getUnderlyingType();
         }
 
         @Override
@@ -594,13 +588,13 @@ public abstract class QualifiedTypeMirror<Q> {
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitPrimitive(this, p);
         }
 
         @Override
         public ExtendedPrimitiveType getUnderlyingType() {
-            return (ExtendedPrimitiveType)super.getUnderlyingType();
+            return (ExtendedPrimitiveType) super.getUnderlyingType();
         }
 
         @Override
@@ -635,23 +629,24 @@ public abstract class QualifiedTypeMirror<Q> {
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitTypeVariable(this, p);
         }
 
         @Override
         public ExtendedTypeVariable getUnderlyingType() {
-            return (ExtendedTypeVariable)super.getUnderlyingType();
+            return (ExtendedTypeVariable) super.getUnderlyingType();
         }
 
         public TypeParameterElement asElement() {
-            return (TypeParameterElement)getUnderlyingType().asElement();
+            return (TypeParameterElement) getUnderlyingType().asElement();
         }
 
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(getQualifier()).append(" ")
+            sb.append(getQualifier())
+                    .append(" ")
                     .append(getUnderlyingType().asElement().getSimpleName());
             return sb.toString();
         }
@@ -666,24 +661,26 @@ public abstract class QualifiedTypeMirror<Q> {
     public static final class QualifiedUnionType<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedTypeMirror<Q>> alternatives;
 
-        public QualifiedUnionType(ExtendedTypeMirror underlying, Q qualifier,
+        public QualifiedUnionType(
+                ExtendedTypeMirror underlying,
+                Q qualifier,
                 List<? extends QualifiedTypeMirror<Q>> alternatives) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.UNION);
-            checkTypeMirrorListsMatch("alternative",
-                    alternatives, getUnderlyingType().getAlternatives());
+            checkTypeMirrorListsMatch(
+                    "alternative", alternatives, getUnderlyingType().getAlternatives());
 
             this.alternatives = new ArrayList<>(alternatives);
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitUnion(this, p);
         }
 
         @Override
         public ExtendedUnionType getUnderlyingType() {
-            return (ExtendedUnionType)super.getUnderlyingType();
+            return (ExtendedUnionType) super.getUnderlyingType();
         }
 
         public List<? extends QualifiedTypeMirror<Q>> getAlternatives() {
@@ -702,14 +699,13 @@ public abstract class QualifiedTypeMirror<Q> {
             }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
-            QualifiedUnionType<Q> other = (QualifiedUnionType<Q>)obj;
+            QualifiedUnionType<Q> other = (QualifiedUnionType<Q>) obj;
             return this.alternatives.equals(other.alternatives);
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode()
-                + alternatives.hashCode() * 43;
+            return super.hashCode() + alternatives.hashCode() * 43;
         }
     }
 
@@ -717,28 +713,28 @@ public abstract class QualifiedTypeMirror<Q> {
         private final QualifiedTypeMirror<Q> extendsBound;
         private final QualifiedTypeMirror<Q> superBound;
 
-        public QualifiedWildcardType(ExtendedTypeMirror underlying,
+        public QualifiedWildcardType(
+                ExtendedTypeMirror underlying,
                 QualifiedTypeMirror<Q> extendsBound,
                 QualifiedTypeMirror<Q> superBound) {
             super(underlying);
             checkUnderlyingKind(underlying, TypeKind.WILDCARD);
-            checkTypeMirrorsMatch("extends bound",
-                        extendsBound, getUnderlyingType().getExtendsBound());
-            checkTypeMirrorsMatch("super bound",
-                    superBound, getUnderlyingType().getSuperBound());
+            checkTypeMirrorsMatch(
+                    "extends bound", extendsBound, getUnderlyingType().getExtendsBound());
+            checkTypeMirrorsMatch("super bound", superBound, getUnderlyingType().getSuperBound());
 
             this.extendsBound = extendsBound;
             this.superBound = superBound;
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitWildcard(this, p);
         }
 
         @Override
         public ExtendedWildcardType getUnderlyingType() {
-            return (ExtendedWildcardType)super.getUnderlyingType();
+            return (ExtendedWildcardType) super.getUnderlyingType();
         }
 
         public QualifiedTypeMirror<Q> getExtendsBound() {
@@ -752,9 +748,12 @@ public abstract class QualifiedTypeMirror<Q> {
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(getQualifier()).append(" ?")
-                    .append(" extends ").append(extendsBound)
-                    .append(" super ").append(superBound);
+            sb.append(getQualifier())
+                    .append(" ?")
+                    .append(" extends ")
+                    .append(extendsBound)
+                    .append(" super ")
+                    .append(superBound);
             return sb.toString();
         }
 
@@ -765,43 +764,44 @@ public abstract class QualifiedTypeMirror<Q> {
             }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
-            QualifiedWildcardType<Q> other = (QualifiedWildcardType<Q>)obj;
+            QualifiedWildcardType<Q> other = (QualifiedWildcardType<Q>) obj;
             return this.extendsBound.equals(other.extendsBound)
-                && (this.superBound == null ?
-                        other.superBound == null :
-                        this.superBound.equals(other.superBound));
+                    && (this.superBound == null
+                            ? other.superBound == null
+                            : this.superBound.equals(other.superBound));
         }
 
         @Override
         public int hashCode() {
             return super.hashCode()
-                + extendsBound.hashCode() * 43
-                + (superBound == null ? 0 : superBound.hashCode() * 67);
+                    + extendsBound.hashCode() * 43
+                    + (superBound == null ? 0 : superBound.hashCode() * 67);
         }
     }
-
 
     public static final class QualifiedTypeDeclaration<Q> extends QualifiedTypeMirror<Q> {
         private final List<? extends QualifiedParameterDeclaration<Q>> typeParameters;
 
-        public QualifiedTypeDeclaration(ExtendedTypeMirror underlying, Q qualifier,
+        public QualifiedTypeDeclaration(
+                ExtendedTypeMirror underlying,
+                Q qualifier,
                 List<? extends QualifiedParameterDeclaration<Q>> typeParameters) {
             super(underlying, qualifier);
             checkUnderlyingKind(underlying, TypeKind.DECLARED, true);
-            checkTypeMirrorListsMatch("parameter",
-                    typeParameters, getUnderlyingType().getTypeParameters());
+            checkTypeMirrorListsMatch(
+                    "parameter", typeParameters, getUnderlyingType().getTypeParameters());
 
             this.typeParameters = new ArrayList<>(typeParameters);
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitTypeDeclaration(this, p);
         }
 
         @Override
         public ExtendedTypeDeclaration getUnderlyingType() {
-            return (ExtendedTypeDeclaration)super.getUnderlyingType();
+            return (ExtendedTypeDeclaration) super.getUnderlyingType();
         }
 
         public List<? extends QualifiedParameterDeclaration<Q>> getTypeParameters() {
@@ -828,17 +828,15 @@ public abstract class QualifiedTypeMirror<Q> {
             }
             // super.equals ensures that 'obj.getClass() == this.getClass()'.
             @SuppressWarnings("unchecked")
-            QualifiedTypeDeclaration<Q> other = (QualifiedTypeDeclaration<Q>)obj;
+            QualifiedTypeDeclaration<Q> other = (QualifiedTypeDeclaration<Q>) obj;
             return this.typeParameters.equals(other.typeParameters);
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode()
-                + typeParameters.hashCode() * 43;
+            return super.hashCode() + typeParameters.hashCode() * 43;
         }
     }
-
 
     public static final class QualifiedParameterDeclaration<Q> extends QualifiedTypeMirror<Q> {
         // This class has no fields.  Its upper and lower bounds are stored in
@@ -854,23 +852,24 @@ public abstract class QualifiedTypeMirror<Q> {
         }
 
         @Override
-        public <R,P> R accept(QualifiedTypeVisitor<Q,R,P> visitor, P p) {
+        public <R, P> R accept(QualifiedTypeVisitor<Q, R, P> visitor, P p) {
             return visitor.visitParameterDeclaration(this, p);
         }
 
         @Override
         public ExtendedParameterDeclaration getUnderlyingType() {
-            return (ExtendedParameterDeclaration)super.getUnderlyingType();
+            return (ExtendedParameterDeclaration) super.getUnderlyingType();
         }
 
         public TypeParameterElement asElement() {
-            return (TypeParameterElement)getUnderlyingType().asElement();
+            return (TypeParameterElement) getUnderlyingType().asElement();
         }
 
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(getQualifier()).append(" ")
+            sb.append(getQualifier())
+                    .append(" ")
                     .append(getUnderlyingType().asElement().getSimpleName());
             return sb.toString();
         }

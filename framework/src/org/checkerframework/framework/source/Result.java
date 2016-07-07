@@ -10,7 +10,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.HashCodeUtils;
@@ -27,7 +26,9 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 public final class Result {
 
     private static enum Type {
-        SUCCESS, FAILURE, WARNING;
+        SUCCESS,
+        FAILURE,
+        WARNING;
 
         /**
          * @return whichever of the given types is most serious
@@ -61,10 +62,9 @@ public final class Result {
      *            optional arguments to be included in the message
      * @return the failure result
      */
-    public static Result failure(/*@CompilerMessageKey*/ String messageKey,
-            /*@Nullable*/ Object... args) {
-        return new Result(Type.FAILURE, Collections
-                .singleton(new DiagMessage(messageKey, args)));
+    public static Result failure(
+            /*@CompilerMessageKey*/ String messageKey, /*@Nullable*/ Object... args) {
+        return new Result(Type.FAILURE, Collections.singleton(new DiagMessage(messageKey, args)));
     }
 
     /**
@@ -76,10 +76,9 @@ public final class Result {
      *            optional arguments to be included in the message
      * @return the warning result
      */
-    public static Result warning(/*@CompilerMessageKey*/ String messageKey,
-            /*@Nullable*/ Object... args) {
-        return new Result(Type.WARNING, Collections
-                .singleton(new DiagMessage(messageKey, args)));
+    public static Result warning(
+            /*@CompilerMessageKey*/ String messageKey, /*@Nullable*/ Object... args) {
+        return new Result(Type.WARNING, Collections.singleton(new DiagMessage(messageKey, args)));
     }
 
     private Result(Type type, Collection<DiagMessage> messagePairs) {
@@ -167,13 +166,13 @@ public final class Result {
     @Override
     public String toString() {
         switch (type) {
-        case FAILURE:
-            return "FAILURE: " + messages;
-        case WARNING:
-            return "WARNING: " + messages;
-        case SUCCESS:
-        default:
-            return "SUCCESS";
+            case FAILURE:
+                return "FAILURE: " + messages;
+            case WARNING:
+                return "WARNING: " + messages;
+            case SUCCESS:
+            default:
+                return "SUCCESS";
         }
     }
 
@@ -222,14 +221,13 @@ public final class Result {
 
             DiagMessage other = (DiagMessage) obj;
 
-            return (message.equals(other.message) && Arrays.equals(args,
-                    other.args));
+            return (message.equals(other.message) && Arrays.equals(args, other.args));
         }
 
         @Pure
         @Override
         public int hashCode() {
-            return  HashCodeUtils.hash(this.message, this.args);
+            return HashCodeUtils.hash(this.message, this.args);
         }
 
         @SideEffectFree

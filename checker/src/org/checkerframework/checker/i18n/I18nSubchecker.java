@@ -8,5 +8,4 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
-public class I18nSubchecker extends BaseTypeChecker {
-}
+public class I18nSubchecker extends BaseTypeChecker {}

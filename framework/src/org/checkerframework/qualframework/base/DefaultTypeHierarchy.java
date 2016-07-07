@@ -8,13 +8,11 @@ import javax.lang.model.type.TypeKind;
 public class DefaultTypeHierarchy<Q> implements TypeHierarchy<Q> {
     private TypeHierarchyAdapter<Q> adapter;
 
-    public DefaultTypeHierarchy() {
-    }
+    public DefaultTypeHierarchy() {}
 
     void setAdapter(TypeHierarchyAdapter<Q> adapter) {
         this.adapter = adapter;
     }
-
 
     @Override
     public boolean isSubtype(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {

@@ -1,14 +1,11 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.LinkedList;
-
-import org.checkerframework.dataflow.util.HashCodeUtils;
-
-import org.checkerframework.javacutil.InternalUtils;
-
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.Tree;
+import java.util.Collection;
+import java.util.LinkedList;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for an array access:
@@ -23,7 +20,6 @@ import com.sun.source.tree.Tree;
  * @author Charlie Garrett
  *
  */
-
 public class ArrayAccessNode extends Node {
 
     protected Tree tree;
@@ -68,8 +64,7 @@ public class ArrayAccessNode extends Node {
             return false;
         }
         ArrayAccessNode other = (ArrayAccessNode) obj;
-        return getArray().equals(other.getArray())
-                && getIndex().equals(other.getIndex());
+        return getArray().equals(other.getArray()) && getIndex().equals(other.getIndex());
     }
 
     @Override

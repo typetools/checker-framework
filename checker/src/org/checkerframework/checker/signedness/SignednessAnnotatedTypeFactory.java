@@ -1,27 +1,25 @@
 package org.checkerframework.checker.signedness;
 
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.Tree;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.signedness.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.Tree;
-
-import javax.lang.model.element.AnnotationMirror;
-
 /**
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
-public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
+public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final AnnotationMirror UNSIGNED;
     private final AnnotationMirror SIGNED;
@@ -49,7 +47,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
      * {@inheritDoc}
      */
     @Override
-    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+    protected void addComputedTypeAnnotations(
+            Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         // When it is possible to default types based on their TypeKinds,
         // this method will no longer be needed.
         // Currently, it is adding the LOCAL_VARIABLE default for
@@ -69,16 +68,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
         switch (type.getKind()) {
-        case BYTE:
-        case SHORT:
-        case INT:
-        case LONG:
-        case FLOAT:
-        case DOUBLE:
-        case CHAR:
-            QualifierDefaults defaults = new QualifierDefaults(elements, this);
-            defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
-            defaults.annotate(tree, type);
+            case BYTE:
+            case SHORT:
+            case INT:
+            case LONG:
+            case FLOAT:
+            case DOUBLE:
+            case CHAR:
+                QualifierDefaults defaults = new QualifierDefaults(elements, this);
+                defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
+                defaults.annotate(tree, type);
         }
 
         // This code commented out until issues with making boxed implicitly signed
@@ -102,9 +101,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-            new SignednessTreeAnnotator(this),
-            super.createTreeAnnotator()
-        );
+                new SignednessTreeAnnotator(this), super.createTreeAnnotator());
     }
 
     /**

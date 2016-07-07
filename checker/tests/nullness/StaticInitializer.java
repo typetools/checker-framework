@@ -1,8 +1,7 @@
 import java.util.ArrayList;
-
+import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.*;
-import org.checkerframework.checker.initialization.qual.*;
 
 class Initializer {
 
@@ -14,8 +13,7 @@ class Initializer {
         a = "";
     }
 
-    public Initializer() {
-    }
+    public Initializer() {}
 }
 
 //:: error: (initialization.fields.uninitialized)
@@ -31,6 +29,7 @@ class Initializer3 {
 class Initializer4 {
     public static String a = "";
     public static String b;
+
     static {
         b = "";
     }

@@ -5,11 +5,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
 import org.checkerframework.checker.nullness.NullnessRawnessChecker;
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * This type qualifier belongs to the rawness type-system for tracking
@@ -87,10 +86,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SubtypeOf({})
-@DefaultFor({ TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE })
+@DefaultFor({TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Raw {
     /**
      * The type-frame down to which the expression (of this type) has been

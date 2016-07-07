@@ -1,13 +1,11 @@
 package org.checkerframework.checker.i18n;
 
 import com.sun.source.tree.Tree;
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.checker.propkey.qual.PropertyKey;
@@ -24,8 +22,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
  *
  * @author wmdietl
  */
-public class LocalizableKeyAnnotatedTypeFactory extends
-        PropertyKeyAnnotatedTypeFactory {
+public class LocalizableKeyAnnotatedTypeFactory extends PropertyKeyAnnotatedTypeFactory {
 
     public LocalizableKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -35,7 +32,11 @@ public class LocalizableKeyAnnotatedTypeFactory extends
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
                 new LinkedHashSet<Class<? extends Annotation>>(
-                        Arrays.asList(LocalizableKey.class, PropertyKey.class, PropertyKeyBottom.class, UnknownPropertyKey.class)));
+                        Arrays.asList(
+                                LocalizableKey.class,
+                                PropertyKey.class,
+                                PropertyKeyBottom.class,
+                                UnknownPropertyKey.class)));
     }
 
     @Override

@@ -4,23 +4,20 @@ package org.checkerframework.framework.source;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
-import org.checkerframework.javacutil.ErrorReporter;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * An AST visitor that provides a variety of compiler utilities and interfaces
  * to facilitate type-checking.
  */
-public abstract class SourceVisitor<R, P>
-        extends TreePathScanner<R, P> {
+public abstract class SourceVisitor<R, P> extends TreePathScanner<R, P> {
 
     /** The {@link Trees} instance to use for scanning. */
     protected final Trees trees;
@@ -33,7 +30,6 @@ public abstract class SourceVisitor<R, P>
 
     /** The root of the AST that this {@link SourceVisitor} will scan. */
     protected CompilationUnitTree root;
-
 
     /**
      * Creates a {@link SourceVisitor} to use for scanning a source tree.

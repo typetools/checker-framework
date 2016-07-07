@@ -3,9 +3,8 @@
 // @below-java8-jdk-skip-test
 
 import java.util.Optional;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Test {
     static Optional<@NonNull String> getPossiblyEmptyString() {

@@ -1,10 +1,8 @@
 package org.checkerframework.checker.compilermsgs;
 
 import com.sun.source.tree.Tree;
-
 import java.lang.annotation.Annotation;
 import java.util.Set;
-
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
 import org.checkerframework.checker.propkey.qual.PropertyKey;
@@ -30,8 +28,7 @@ public class CompilerMessagesAnnotatedTypeFactory extends PropertyKeyAnnotatedTy
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return getBundledTypeQualifiersWithoutPolyAll(
-                UnknownPropertyKey.class,
-                PropertyKey.class, PropertyKeyBottom.class);
+                UnknownPropertyKey.class, PropertyKey.class, PropertyKeyBottom.class);
     }
 
     @Override
@@ -42,7 +39,6 @@ public class CompilerMessagesAnnotatedTypeFactory extends PropertyKeyAnnotatedTy
         return new ListTreeAnnotator(
                 new PropagationTreeAnnotator(this),
                 implicitsTreeAnnotator,
-                new KeyLookupTreeAnnotator(this, CompilerMessageKey.class)
-        );
+                new KeyLookupTreeAnnotator(this, CompilerMessageKey.class));
     }
 }

@@ -7,6 +7,7 @@ abstract class Issue329 {
     interface Flag<T> {}
 
     abstract <X> void setExtension(X value);
+
     abstract <T> T getValue(Flag<T> flag);
 
     void f(Flag<String> flag) {
@@ -22,6 +23,7 @@ abstract class Issue329NN {
 
     // Explicit bound makes it NonNull
     abstract <X extends Object> void setExtension(X value);
+
     abstract <T> T getValue(Flag<T> flag);
 
     void f1(Flag<@Nullable String> flag) {

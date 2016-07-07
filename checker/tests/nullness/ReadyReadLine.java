@@ -3,27 +3,24 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.qual.Pure;
 
-
 class ReadyReadLine {
 
-  void m(BufferedReader buf) throws Exception {
-    if (buf.ready()) {
-      String line = buf.readLine();
-      line.toString();
-    }
+    void m(BufferedReader buf) throws Exception {
+        if (buf.ready()) {
+            String line = buf.readLine();
+            line.toString();
+        }
 
-    if (buf.readLine() != null) {
-        //:: error: (dereference.of.nullable)
-        buf.readLine().toString();
+        if (buf.readLine() != null) {
+            //:: error: (dereference.of.nullable)
+            buf.readLine().toString();
+        }
     }
-  }
-
 }
 
 // this is a replication of the JDK BufferedReader (with only the relevant methods)
 class BufferedReader {
-    public @Nullable
-    String readLine() throws Exception {
+    public @Nullable String readLine() throws Exception {
         return null;
     }
 

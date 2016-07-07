@@ -7,70 +7,70 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
-
 import org.codehaus.plexus.compiler.CompilerError;
 import org.codehaus.plexus.compiler.javac.JavacCompiler;
 
 /**
-* Parser for errors emitted by {@code javac}. This is derived from the
-* {@link JavacCompiler#parseModernStream} and
-* {@link JavacCompiler#parseModernError} methods of {@link JavacCompiler}.
-*/
+ * Parser for errors emitted by {@code javac}. This is derived from the
+ * {@link JavacCompiler#parseModernStream} and
+ * {@link JavacCompiler#parseModernError} methods of {@link JavacCompiler}.
+ */
 public class JavacErrorMessagesParser {
     protected static final String EOL = System.getProperty("line.separator");
 
     private static final String ERROR_PREFIX = "error: ";
     private static final String WARNING_PREFIX = "warning: ";
 
-    private JavacErrorMessagesParser() { /* Prevent instantiation */ }
+    private JavacErrorMessagesParser() {
+        /* Prevent instantiation */
+    }
 
     /**
-    * Parses the compiler error output into a list of {@code CompilerError} objects.
-    *
-    * @param input the compiler error output
-    * @return the parsed error output
-    */
-
+     * Parses the compiler error output into a list of {@code CompilerError} objects.
+     *
+     * @param input the compiler error output
+     * @return the parsed error output
+     */
     public static List<CompilerError> parseMessages(String input) {
         List<CompilerError> errors = new ArrayList<CompilerError>();
 
         try {
-        final BufferedReader reader = new BufferedReader(new StringReader(input));
-        try {
-            final StringBuilder errorBuffer = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (line.isEmpty()) {
-                    continue;
+            final BufferedReader reader = new BufferedReader(new StringReader(input));
+            try {
+                final StringBuilder errorBuffer = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.isEmpty()) {
+                        continue;
+                    }
+
+                    // Skip summary of warnings/errors
+                    if (Character.isDigit(line.charAt(0))) {
+                        continue;
+                    }
+
+                    // Start of a new message?
+                    if (errorBuffer.length() > 0 && !Character.isWhitespace(line.charAt(0))) {
+                        errors.add(parseMessage(errorBuffer.toString()));
+                        errorBuffer.setLength(0);
+                    }
+                    errorBuffer.append(line).append(EOL);
                 }
 
-                // Skip summary of warnings/errors
-                if (Character.isDigit(line.charAt(0))) {
-                    continue;
-                }
-
-                // Start of a new message?
-                if (errorBuffer.length() > 0 && !Character.isWhitespace(line.charAt(0))) {
+                // Handle the last message
+                if (errorBuffer.length() > 0) {
                     errors.add(parseMessage(errorBuffer.toString()));
-                    errorBuffer.setLength(0);
                 }
-                errorBuffer.append(line).append(EOL);
-            }
 
-            // Handle the last message
-            if (errorBuffer.length() > 0) {
-                errors.add(parseMessage(errorBuffer.toString()));
+                return errors;
+            } finally {
+                reader.close();
             }
-
-            return errors;
-        } finally {
-            reader.close();
+        } catch (IOException e) {
+            // Should never happen
+            throw new RuntimeException(e);
         }
-    } catch (IOException e) {
-        // Should never happen
-        throw new RuntimeException(e);
     }
-}
 
     /**
      * Parses a single error message.
@@ -112,16 +112,18 @@ public class JavacErrorMessagesParser {
                 endColumn = context.length();
             }
 
-                // Extra context
+            // Extra context
             if (tokens.hasMoreTokens()) {
                 do {
                     buffer.append(EOL).append(tokens.nextToken(EOL));
                 } while (tokens.hasMoreTokens());
             }
 
-            return new CompilerError(file, isError, line, startColumn, line, endColumn, buffer.toString());
+            return new CompilerError(
+                    file, isError, line, startColumn, line, endColumn, buffer.toString());
         } catch (NoSuchElementException e) {
-            return new CompilerError("no more tokens - could not parse error message: " + message, isError);
+            return new CompilerError(
+                    "no more tokens - could not parse error message: " + message, isError);
         } catch (NumberFormatException e) {
             return new CompilerError("could not parse error message: " + message, isError);
         } catch (Exception e) {

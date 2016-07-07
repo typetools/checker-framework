@@ -1,13 +1,12 @@
 package org.checkerframework.checker.lock;
 
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.TypesUtils;
-
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.Tree.Kind;
 
 public class LockTreeAnnotator extends TreeAnnotator {
 
@@ -25,8 +24,8 @@ public class LockTreeAnnotator extends TreeAnnotator {
         // is @GuardedBy({}) since for such operators, both operands are of type
         // @GuardedBy({}) boolean to begin with.
 
-        if (isBinaryComparisonOrInstanceOfOperator(node.getKind()) ||
-            TypesUtils.isString(type.getUnderlyingType())) {
+        if (isBinaryComparisonOrInstanceOfOperator(node.getKind())
+                || TypesUtils.isString(type.getUnderlyingType())) {
             // A boolean or String is always @GuardedBy({}). LockVisitor determines whether
             // the LHS and RHS of this operation can be legally dereferenced.
             type.replaceAnnotation(((LockAnnotatedTypeFactory) atypeFactory).GUARDEDBY);
@@ -39,11 +38,11 @@ public class LockTreeAnnotator extends TreeAnnotator {
 
     /** Indicates that the result of the operation is a boolean value. */
     private static boolean isBinaryComparisonOrInstanceOfOperator(Kind opKind) {
-        switch(opKind) {
+        switch (opKind) {
             case EQUAL_TO:
             case NOT_EQUAL_TO:
-            // Technically, <=, <, > and >= are irrelevant for visitBinary, since currently boxed primitives
-            // cannot be annotated with @GuardedBy(...), but they are left here in case that rule changes.
+                // Technically, <=, <, > and >= are irrelevant for visitBinary, since currently boxed primitives
+                // cannot be annotated with @GuardedBy(...), but they are left here in case that rule changes.
             case LESS_THAN:
             case LESS_THAN_EQUAL:
             case GREATER_THAN:
@@ -57,8 +56,7 @@ public class LockTreeAnnotator extends TreeAnnotator {
     }
 
     @Override
-    public Void visitCompoundAssignment(CompoundAssignmentTree node,
-            AnnotatedTypeMirror type) {
+    public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
         if (TypesUtils.isString(type.getUnderlyingType())) {
             type.replaceAnnotation(((LockAnnotatedTypeFactory) atypeFactory).GUARDEDBY);
         }

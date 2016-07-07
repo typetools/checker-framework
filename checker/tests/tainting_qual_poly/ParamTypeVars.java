@@ -6,22 +6,26 @@ import org.checkerframework.checker.tainting.qual.*;
 @ClassTaintingParam("Param1")
 class List<T> {
     // (T + MAIN) head
-    @Var(arg="Param1", param="Param2") T head;
+    @Var(arg = "Param1", param = "Param2") T head;
     // List<T><<MAIN>>
-    @Var(arg="Param1", param="Param1") List<T> tail;
+    @Var(arg = "Param1", param = "Param1") List<T> tail;
 }
 
 @ClassTaintingParam("Param2")
-class A { }
+class A {}
 
 abstract class Test {
-    abstract @Tainted(param="Param1")   List<@Tainted(param="Param2")   A> makeTT();
-    abstract @Untainted(param="Param1") List<@Tainted(param="Param2")   A> makeUT();
-    abstract @Tainted(param="Param1")   List<@Untainted(param="Param2") A> makeTU();
-    abstract @Untainted(param="Param1") List<@Untainted(param="Param2") A> makeUU();
+    abstract @Tainted(param = "Param1") List<@Tainted(param = "Param2") A> makeTT();
 
-    abstract void takeT(@Tainted(param="Param2")   A x);
-    abstract void takeU(@Untainted(param="Param2") A x);
+    abstract @Untainted(param = "Param1") List<@Tainted(param = "Param2") A> makeUT();
+
+    abstract @Tainted(param = "Param1") List<@Untainted(param = "Param2") A> makeTU();
+
+    abstract @Untainted(param = "Param1") List<@Untainted(param = "Param2") A> makeUU();
+
+    abstract void takeT(@Tainted(param = "Param2") A x);
+
+    abstract void takeU(@Untainted(param = "Param2") A x);
 
     void test() {
         takeT(makeTT().head);

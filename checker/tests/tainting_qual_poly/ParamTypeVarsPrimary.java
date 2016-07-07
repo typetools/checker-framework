@@ -5,18 +5,22 @@ import org.checkerframework.checker.tainting.qual.*;
 @ClassTaintingParam("Main")
 class List<T> {
     // (T + MAIN) head
-    @Var(arg="Main") T head;
+    @Var(arg = "Main") T head;
     // List<T><<MAIN>>
-    @Var(arg="Main") List<T> tail;
+    @Var(arg = "Main") List<T> tail;
 }
 
 abstract class Test {
-    abstract @Tainted(param="Main")   List<@Tainted Integer> makeTT();
-    abstract @Untainted(param="Main") List<@Tainted Integer> makeUT();
-    abstract @Tainted(param="Main")   List<@Untainted Integer> makeTU();
-    abstract @Untainted(param="Main") List<@Untainted Integer> makeUU();
+    abstract @Tainted(param = "Main") List<@Tainted Integer> makeTT();
+
+    abstract @Untainted(param = "Main") List<@Tainted Integer> makeUT();
+
+    abstract @Tainted(param = "Main") List<@Untainted Integer> makeTU();
+
+    abstract @Untainted(param = "Main") List<@Untainted Integer> makeUU();
 
     abstract void takeT(@Tainted Integer x);
+
     abstract void takeU(@Untainted Integer x);
 
     void test() {
@@ -32,6 +36,5 @@ abstract class Test {
         //:: error: (argument.type.incompatible)
         takeU(makeTU().head);
         takeU(makeUU().head);
-
     }
 }

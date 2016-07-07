@@ -2,23 +2,30 @@
 interface Supplier<R> {
     R supply();
 }
+
 interface Function<T, R> {
     R apply(T t);
 }
+
 interface Consumer<T> {
     void consume(T t);
 }
+
 interface BiFunction<T, U, R> {
     R apply(T t, U u);
 }
-
 
 /** super # instMethod */
 // SUPER(ReferenceMode.INVOKE, false),
 class Super {
 
-    Object func1 (Object o) { return o; }
-    <T> T func2 (T o) { return o; }
+    Object func1(Object o) {
+        return o;
+    }
+
+    <T> T func2(T o) {
+        return o;
+    }
 
     class Sub extends Super {
         void context() {
@@ -31,9 +38,10 @@ class Super {
         }
     }
 }
+
 class SuperWithArg<U> {
 
-    void func1 (U o) { }
+    void func1(U o) {}
 
     class Sub extends SuperWithArg<Number> {
         void context() {
@@ -45,16 +53,20 @@ class SuperWithArg<U> {
 /** Type # instMethod */
 // UNBOUND(ReferenceMode.INVOKE, true),
 class Unbound {
-    <T> T func1 (T o) { return o; }
+    <T> T func1(T o) {
+        return o;
+    }
 
     void context() {
         Function<String, String> f1 = String::toString;
         // TODO: Issue 802: type argument inference
         BiFunction<Unbound, String, String> f2 = Unbound::func1;
         @SuppressWarnings("nullness:type.argument.type.incompatible")
-        BiFunction<? extends Unbound, ? super Integer, ? extends Integer> f3 = Unbound::<Integer>func1;
+        BiFunction<? extends Unbound, ? super Integer, ? extends Integer> f3 =
+                Unbound::<Integer>func1;
     }
 }
+
 abstract class UnboundWithArg<U> {
     abstract U func1();
 
@@ -71,7 +83,10 @@ abstract class UnboundWithArg<U> {
 /** Type # staticMethod */
 // STATIC(ReferenceMode.INVOKE, false),
 class Static {
-    static <T> T func1 (T o) { return o; }
+    static <T> T func1(T o) {
+        return o;
+    }
+
     void context() {
         // TODO: Issue 802: type argument inference
         Function<String, String> f1 = Static::func1;
@@ -82,7 +97,10 @@ class Static {
 ///** Expr # instMethod */
 // BOUND(ReferenceMode.INVOKE, false),
 class Bound {
-    <T> T func1 (T o) { return o; }
+    <T> T func1(T o) {
+        return o;
+    }
+
     void context(Bound bound) {
         // TODO: Issue 802: type argument inference
         Function<String, String> f1 = bound::func1;
@@ -92,8 +110,10 @@ class Bound {
         Function<? extends String, ? extends String> f4 = this::<String>func1;
     }
 }
+
 class BoundWithArg<U> {
-    void func1 (U param) { }
+    void func1(U param) {}
+
     void context(BoundWithArg<Number> bound) {
         Consumer<Number> f1 = bound::func1;
         Consumer<Integer> f2 = bound::func1;
@@ -106,27 +126,28 @@ class Outer {
     void context(Outer other) {
         Supplier<Inner> f1 = Inner::new;
     }
-    class Inner extends Outer {
 
-    }
+    class Inner extends Outer {}
 }
+
 class OuterWithArg {
     void context() {
         // TODO: Issue 802: type argument inference
         Supplier<Inner<String>> f1 = Inner::new;
         Supplier<? extends Inner<Number>> f2 = Inner<Number>::new;
         Supplier<? extends Inner<? extends Number>> f3 = Inner<Integer>::new;
-
     }
 
-    class Inner<T> extends OuterWithArg { }
+    class Inner<T> extends OuterWithArg {}
 }
 
 /** Toplevel # new */
 // TOPLEVEL(ReferenceMode.NEW, false),
 class TopLevel {
     TopLevel() {}
+
     <T> TopLevel(T s) {}
+
     void context() {
         Supplier<TopLevel> f1 = TopLevel::new;
         // TODO: Issue 802: type argument inference
@@ -134,9 +155,12 @@ class TopLevel {
         Function<String, TopLevel> f3 = TopLevel::<String>new;
     }
 }
+
 class TopLevelWithArg<T> {
     TopLevelWithArg() {}
+
     <U> TopLevelWithArg(U s) {}
+
     void context() {
         // TODO: Issue 802: type argument inference
         Supplier<TopLevelWithArg<String>> f1 = TopLevelWithArg::new;
@@ -157,6 +181,5 @@ class ArrayType {
         Function<Integer, String[]> string = String[]::new;
         Function<String[], String[]> clone = String[]::clone;
         Function<String[], String> toString = String[]::toString;
-
     }
 }

@@ -6,7 +6,9 @@ import tests.util.*;
  */
 class GenericTest7 {
     interface A {}
+
     interface B<T> {}
+
     interface C<U> {}
 
     public <I extends B<A> & C<A>> void one(I i) {

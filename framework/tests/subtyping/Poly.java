@@ -1,5 +1,4 @@
 import java.util.*;
-
 import tests.util.*;
 
 class Poly {
@@ -9,21 +8,21 @@ class Poly {
         @Encrypted String s = encrypt("as0d78f9(*#4j");
         String t = "foo";
 
-        @Encrypted String x1 = id(s);   // valid
+        @Encrypted String x1 = id(s); // valid
         //:: error: (assignment.type.incompatible)
-        @Encrypted String x2 = id(t);   // error
-        String x3 = id(s);              // valid
-        String x4 = id(t);              // valid
+        @Encrypted String x2 = id(t); // error
+        String x3 = id(s); // valid
+        String x4 = id(t); // valid
 
-        @Encrypted String y01 = combine(s, s);   // valid
+        @Encrypted String y01 = combine(s, s); // valid
         //:: error: (assignment.type.incompatible)
-        @Encrypted String y02 = combine(s, t);   // error
+        @Encrypted String y02 = combine(s, t); // error
         //:: error: (assignment.type.incompatible)
-        @Encrypted String y03 = combine(t, t);   // error
+        @Encrypted String y03 = combine(t, t); // error
 
-        String y11 = combine(s, s);     // valid
-        String y12 = combine(s, t);     // valid
-        String y13 = combine(t, t);     // valid
+        String y11 = combine(s, s); // valid
+        String y12 = combine(s, t); // valid
+        String y13 = combine(t, t); // valid
     }
 
     @PolyEncrypted String id(@PolyEncrypted String s) {
@@ -36,8 +35,7 @@ class Poly {
         return s;
     }
 
-    void sendOverNet(@Encrypted String msg) {
-    }
+    void sendOverNet(@Encrypted String msg) {}
 
     List<@PolyEncrypted String> duplicate(@PolyEncrypted String s) {
         return null;
@@ -74,10 +72,10 @@ class Poly {
     // Test assignment to poly
     @PolyEncrypted String test4(@PolyEncrypted String s) {
         if (s == null) {
-            return encrypt(null);  // valid
+            return encrypt(null); // valid
         } else {
             //:: error: (return.type.incompatible)
-            return "m";  // invalid
+            return "m"; // invalid
         }
     }
 

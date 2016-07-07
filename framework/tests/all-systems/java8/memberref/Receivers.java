@@ -3,18 +3,20 @@
  * Bound and unbound constraints.
  */
 interface Unbound {
-    void consume(/*1*/ Unbound this , /*2*/ MyClass my, String s);
+    void consume(/*1*/ Unbound this, /*2*/ MyClass my, String s);
 }
+
 interface Bound {
     void consume(/*4*/ Bound this, String s);
 }
+
 interface Supplier<R> {
     R supply();
 }
 
 class MyClass {
 
-    void take(/*6*/ MyClass this, String s) { }
+    void take(/*6*/ MyClass this, String s) {}
 
     void context(/*7*/ MyClass my) {
         /*8*/ Unbound u1 = /*9*/ MyClass::take;
@@ -43,13 +45,15 @@ class MyClass {
 @SuppressWarnings("lock")
 class Outer {
     class Inner {
-        Inner(/*1*/ Outer Outer.this) { }
+        Inner(/*1*/ Outer Outer.this) {}
+
         void context() {
             Supplier<String> o = Outer.super::toString;
         }
     }
+
     void context(/*2*/ Outer this) {
         // This one is unbound and needs an Outer as a param
-        Supplier</*3*/Inner> f = /*4*/Inner::new;
+        Supplier</*3*/ Inner> f = /*4*/ Inner::new;
     }
 }

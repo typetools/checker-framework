@@ -2,20 +2,18 @@
 // langtools/test/tools/javac/annotations/typeAnnotations/referenceinfos/ReferenceInfoUtil.java
 // Adapted to handled the same type qualifier appearing multiple times.
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.sun.tools.classfile.Attribute;
 import com.sun.tools.classfile.ClassFile;
 import com.sun.tools.classfile.Code_attribute;
-import com.sun.tools.classfile.TypeAnnotation;
+import com.sun.tools.classfile.ConstantPool.InvalidIndex;
+import com.sun.tools.classfile.ConstantPool.UnexpectedEntry;
 import com.sun.tools.classfile.Field;
 import com.sun.tools.classfile.Method;
 import com.sun.tools.classfile.RuntimeTypeAnnotations_attribute;
-import com.sun.tools.classfile.ConstantPool.InvalidIndex;
-import com.sun.tools.classfile.ConstantPool.UnexpectedEntry;
-
+import com.sun.tools.classfile.TypeAnnotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.checkerframework.javacutil.Pair;
 
 public class ReferenceInfoUtil {
@@ -36,7 +34,7 @@ public class ReferenceInfoUtil {
         for (Field f : cf.fields) {
             findAnnotations(cf, f, annos);
         }
-        for (Method m: cf.methods) {
+        for (Method m : cf.methods) {
             findAnnotations(cf, m, annos);
         }
     }
@@ -60,7 +58,7 @@ public class ReferenceInfoUtil {
         if (index != -1) {
             Attribute attr = cf.attributes.get(index);
             assert attr instanceof RuntimeTypeAnnotations_attribute;
-            RuntimeTypeAnnotations_attribute tAttr = (RuntimeTypeAnnotations_attribute)attr;
+            RuntimeTypeAnnotations_attribute tAttr = (RuntimeTypeAnnotations_attribute) attr;
             annos.addAll(Arrays.asList(tAttr.annotations));
         }
     }
@@ -69,12 +67,13 @@ public class ReferenceInfoUtil {
      * Test the result of Attributes.getIndex according to expectations
      * encoded in the method's name.
      */
-    private static void findAnnotations(ClassFile cf, Method m, String name, List<TypeAnnotation> annos) {
+    private static void findAnnotations(
+            ClassFile cf, Method m, String name, List<TypeAnnotation> annos) {
         int index = m.attributes.getIndex(cf.constant_pool, name);
         if (index != -1) {
             Attribute attr = m.attributes.get(index);
             assert attr instanceof RuntimeTypeAnnotations_attribute;
-            RuntimeTypeAnnotations_attribute tAttr = (RuntimeTypeAnnotations_attribute)attr;
+            RuntimeTypeAnnotations_attribute tAttr = (RuntimeTypeAnnotations_attribute) attr;
             annos.addAll(Arrays.asList(tAttr.annotations));
         }
 
@@ -82,12 +81,12 @@ public class ReferenceInfoUtil {
         if (cindex != -1) {
             Attribute cattr = m.attributes.get(cindex);
             assert cattr instanceof Code_attribute;
-            Code_attribute cAttr = (Code_attribute)cattr;
+            Code_attribute cAttr = (Code_attribute) cattr;
             index = cAttr.attributes.getIndex(cf.constant_pool, name);
             if (index != -1) {
                 Attribute attr = cAttr.attributes.get(index);
                 assert attr instanceof RuntimeTypeAnnotations_attribute;
-                RuntimeTypeAnnotations_attribute tAttr = (RuntimeTypeAnnotations_attribute)attr;
+                RuntimeTypeAnnotations_attribute tAttr = (RuntimeTypeAnnotations_attribute) attr;
                 annos.addAll(Arrays.asList(tAttr.annotations));
             }
         }
@@ -97,12 +96,13 @@ public class ReferenceInfoUtil {
      * Test the result of Attributes.getIndex according to expectations
      * encoded in the method's name.
      */
-    private static void findAnnotations(ClassFile cf, Field m, String name, List<TypeAnnotation> annos) {
+    private static void findAnnotations(
+            ClassFile cf, Field m, String name, List<TypeAnnotation> annos) {
         int index = m.attributes.getIndex(cf.constant_pool, name);
         if (index != -1) {
             Attribute attr = m.attributes.get(index);
             assert attr instanceof RuntimeTypeAnnotations_attribute;
-            RuntimeTypeAnnotations_attribute tAttr = (RuntimeTypeAnnotations_attribute)attr;
+            RuntimeTypeAnnotations_attribute tAttr = (RuntimeTypeAnnotations_attribute) attr;
             annos.addAll(Arrays.asList(tAttr.annotations));
         }
     }
@@ -113,10 +113,10 @@ public class ReferenceInfoUtil {
     }
 
     private static boolean areEquals(int[] a, int[] a2) {
-        if (a==a2) {
+        if (a == a2) {
             return true;
         }
-        if (a==null || a2==null) {
+        if (a == null || a2 == null) {
             return false;
         }
 
@@ -125,7 +125,7 @@ public class ReferenceInfoUtil {
             return false;
         }
 
-        for (int i=0; i<length; i++) {
+        for (int i = 0; i < length; i++) {
             if (areEquals(a[i], a2[i])) {
                 return false;
             }
@@ -143,32 +143,74 @@ public class ReferenceInfoUtil {
         }
 
         boolean result =
-                   ((p1.type == p2.type)
-                && (p1.location.equals(p2.location))
-                && areEquals(p1.offset, p2.offset)
-                && areEquals(p1.lvarOffset, p2.lvarOffset)
-                && areEquals(p1.lvarLength, p2.lvarLength)
-                && areEquals(p1.lvarIndex, p2.lvarIndex)
-                && areEquals(p1.bound_index, p2.bound_index)
-                && areEquals(p1.parameter_index, p2.parameter_index)
-                && areEquals(p1.type_index, p2.type_index)
-                && areEquals(p1.exception_index, p2.exception_index));
+                ((p1.type == p2.type)
+                        && (p1.location.equals(p2.location))
+                        && areEquals(p1.offset, p2.offset)
+                        && areEquals(p1.lvarOffset, p2.lvarOffset)
+                        && areEquals(p1.lvarLength, p2.lvarLength)
+                        && areEquals(p1.lvarIndex, p2.lvarIndex)
+                        && areEquals(p1.bound_index, p2.bound_index)
+                        && areEquals(p1.parameter_index, p2.parameter_index)
+                        && areEquals(p1.type_index, p2.type_index)
+                        && areEquals(p1.exception_index, p2.exception_index));
         return result;
     }
 
-    public static String positionCompareStr(TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
-        return "type = " + p1.type + ", " + p2.type + "\n"
-             + "offset = " + p1.offset + ", " + p2.offset + "\n"
-             + "lvarOffset = " + p1.lvarOffset + ", " + p2.lvarOffset + "\n"
-             + "lvarLength = " + p1.lvarLength + ", " + p2.lvarLength + "\n"
-             + "lvarIndex = " + p1.lvarIndex + ", " + p2.lvarIndex + "\n"
-             + "bound_index = " + p1.bound_index + ", " + p2.bound_index + "\n"
-             + "parameter_index = " + p1.parameter_index + ", " + p2.parameter_index + "\n"
-             + "type_index = " + p1.type_index + ", " + p2.type_index + "\n"
-             + "exception_index = " + p1.exception_index + ", " + p2.exception_index + "\n";
+    public static String positionCompareStr(
+            TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
+        return "type = "
+                + p1.type
+                + ", "
+                + p2.type
+                + "\n"
+                + "offset = "
+                + p1.offset
+                + ", "
+                + p2.offset
+                + "\n"
+                + "lvarOffset = "
+                + p1.lvarOffset
+                + ", "
+                + p2.lvarOffset
+                + "\n"
+                + "lvarLength = "
+                + p1.lvarLength
+                + ", "
+                + p2.lvarLength
+                + "\n"
+                + "lvarIndex = "
+                + p1.lvarIndex
+                + ", "
+                + p2.lvarIndex
+                + "\n"
+                + "bound_index = "
+                + p1.bound_index
+                + ", "
+                + p2.bound_index
+                + "\n"
+                + "parameter_index = "
+                + p1.parameter_index
+                + ", "
+                + p2.parameter_index
+                + "\n"
+                + "type_index = "
+                + p1.type_index
+                + ", "
+                + p2.type_index
+                + "\n"
+                + "exception_index = "
+                + p1.exception_index
+                + ", "
+                + p2.exception_index
+                + "\n";
     }
 
-    private static TypeAnnotation findAnnotation(String name, TypeAnnotation.Position expected, List<TypeAnnotation> annotations, ClassFile cf) throws InvalidIndex, UnexpectedEntry {
+    private static TypeAnnotation findAnnotation(
+            String name,
+            TypeAnnotation.Position expected,
+            List<TypeAnnotation> annotations,
+            ClassFile cf)
+            throws InvalidIndex, UnexpectedEntry {
         String properName = "L" + name + ";";
         for (TypeAnnotation anno : annotations) {
             String actualName = cf.constant_pool.getUTF8Value(anno.annotation.type_index);
@@ -177,20 +219,21 @@ public class ReferenceInfoUtil {
                 System.out.println("For Anno: " + actualName);
             }
 
-            if (properName.equals(actualName) &&
-                areEquals(expected, anno.position)) {
+            if (properName.equals(actualName) && areEquals(expected, anno.position)) {
                 return anno;
             }
         }
         return null;
     }
 
-    public static boolean compare(List<Pair<String, TypeAnnotation.Position>> expectedAnnos,
-            List<TypeAnnotation> actualAnnos, ClassFile cf) throws InvalidIndex, UnexpectedEntry {
+    public static boolean compare(
+            List<Pair<String, TypeAnnotation.Position>> expectedAnnos,
+            List<TypeAnnotation> actualAnnos,
+            ClassFile cf)
+            throws InvalidIndex, UnexpectedEntry {
         if (actualAnnos.size() != expectedAnnos.size()) {
-            throw new ComparisionException("Wrong number of annotations",
-                    expectedAnnos,
-                    actualAnnos);
+            throw new ComparisionException(
+                    "Wrong number of annotations", expectedAnnos, actualAnnos);
         }
 
         for (Pair<String, TypeAnnotation.Position> e : expectedAnnos) {
@@ -198,9 +241,10 @@ public class ReferenceInfoUtil {
             TypeAnnotation.Position expected = e.second;
             TypeAnnotation actual = findAnnotation(aName, expected, actualAnnos, cf);
             if (actual == null) {
-                throw new ComparisionException("Expected annotation not found: " + aName + " position: " + expected,
-                    expectedAnnos,
-                    actualAnnos);
+                throw new ComparisionException(
+                        "Expected annotation not found: " + aName + " position: " + expected,
+                        expectedAnnos,
+                        actualAnnos);
             }
         }
         return true;
@@ -213,7 +257,10 @@ class ComparisionException extends RuntimeException {
     public final List<Pair<String, TypeAnnotation.Position>> expected;
     public final List<TypeAnnotation> found;
 
-    public ComparisionException(String message, List<Pair<String, TypeAnnotation.Position>> expected, List<TypeAnnotation> found) {
+    public ComparisionException(
+            String message,
+            List<Pair<String, TypeAnnotation.Position>> expected,
+            List<TypeAnnotation> found) {
         super(message);
         this.expected = expected;
         this.found = found;
@@ -222,9 +269,16 @@ class ComparisionException extends RuntimeException {
     public String toString() {
         String str = super.toString();
         if (expected != null && found != null) {
-            str += "\n\tExpected: " + expected.size() + " annotations; but found: " + found.size() + " annotations\n" +
-                   "  Expected: " + expected +
-                   "\n  Found: " + found;
+            str +=
+                    "\n\tExpected: "
+                            + expected.size()
+                            + " annotations; but found: "
+                            + found.size()
+                            + " annotations\n"
+                            + "  Expected: "
+                            + expected
+                            + "\n  Found: "
+                            + found;
         }
         return str;
     }

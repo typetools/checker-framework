@@ -2,7 +2,8 @@ import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.*;
 
 class PureTest {
-    @org.checkerframework.dataflow.qual.Pure @Nullable Object puremethod(@Nullable Object a) {
+    @org.checkerframework.dataflow.qual.Pure
+    @Nullable Object puremethod(@Nullable Object a) {
         return a;
     }
 
@@ -44,7 +45,6 @@ class PureTest {
 
         //:: error: (assignment.type.incompatible)
         @NonNull Object l4 = puremethod("n");
-
     }
 
     public @org.checkerframework.dataflow.qual.Pure @Nullable Object getSuperclass() {
@@ -53,14 +53,14 @@ class PureTest {
 
     static void shortCircuitAnd(PureTest pt) {
         if ((pt.getSuperclass() != null)
-            && pt.getSuperclass().toString().equals("java.lang.Enum")) {
+                && pt.getSuperclass().toString().equals("java.lang.Enum")) {
             // empty body
         }
     }
 
     static void shortCircuitOr(PureTest pt) {
         if ((pt.getSuperclass() == null)
-            ||  pt.getSuperclass().toString().equals("java.lang.Enum")) {
+                || pt.getSuperclass().toString().equals("java.lang.Enum")) {
             // empty body
         }
     }
@@ -103,7 +103,7 @@ class PureTest {
     }
 
     static void testContinue(PureTest pt) {
-        for (;;) {
+        for (; ; ) {
             if (pt.getSuperclass() == null) {
                 System.out.println("m");
                 continue;
@@ -131,5 +131,4 @@ class PureTest {
     public String toString() {
         return "foo";
     }
-
 }

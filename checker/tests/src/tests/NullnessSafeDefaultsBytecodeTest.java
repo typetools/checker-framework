@@ -1,9 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-
 import java.io.File;
-
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -12,7 +10,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessSafeDefaultsBytecodeTest extends CheckerFrameworkTest {
 
     public NullnessSafeDefaultsBytecodeTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-AuseDefaultsForUncheckedCode=bytecode",
@@ -21,7 +20,6 @@ public class NullnessSafeDefaultsBytecodeTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"nullness-safedefaultsbytecode"};
+        return new String[] {"nullness-safedefaultsbytecode"};
     }
-
 }

@@ -46,7 +46,7 @@ public enum I18nConversionCategory {
     /**
      * Use if the parameter can be of date, time, or number types
      */
-    DATE(new Class<?>[] { Date.class, Number.class }, new String[] { "date", "time" }),
+    DATE(new Class<?>[] {Date.class, Number.class}, new String[] {"date", "time"}),
 
     /**
      * Use if the parameter can be of number or choice types.
@@ -59,7 +59,7 @@ public enum I18nConversionCategory {
      * This will print "2 is more than 1".
      *
      */
-    NUMBER(new Class<?>[] { Number.class }, new String[] { "number", "choice" });
+    NUMBER(new Class<?>[] {Number.class}, new String[] {"number", "choice"});
 
     public final Class<? extends Object>[] types;
     public final String[] strings;
@@ -78,7 +78,7 @@ public enum I18nConversionCategory {
      */
     public static I18nConversionCategory stringToI18nConversionCategory(String string) {
         string = string.toLowerCase();
-        for (I18nConversionCategory v : new I18nConversionCategory[] { DATE, NUMBER }) {
+        for (I18nConversionCategory v : new I18nConversionCategory[] {DATE, NUMBER}) {
             for (String s : v.strings) {
                 if (s.equals(string)) {
                     return v;
@@ -110,7 +110,8 @@ public enum I18nConversionCategory {
      *
      * </blockquote>
      */
-    public static I18nConversionCategory intersect(I18nConversionCategory a, I18nConversionCategory b) {
+    public static I18nConversionCategory intersect(
+            I18nConversionCategory a, I18nConversionCategory b) {
         if (a == UNUSED) {
             return b;
         }
@@ -127,7 +128,7 @@ public enum I18nConversionCategory {
         Set<Class<? extends Object>> as = arrayToSet(a.types);
         Set<Class<? extends Object>> bs = arrayToSet(b.types);
         as.retainAll(bs); // intersection
-        for (I18nConversionCategory v : new I18nConversionCategory[] { DATE, NUMBER }) {
+        for (I18nConversionCategory v : new I18nConversionCategory[] {DATE, NUMBER}) {
             Set<Class<? extends Object>> vs = arrayToSet(v.types);
             if (vs.equals(as)) {
                 return v;

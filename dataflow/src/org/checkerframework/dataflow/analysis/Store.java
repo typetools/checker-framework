@@ -28,12 +28,12 @@ public interface Store<S extends Store<S>> {
 
     /** A flow rule describes how stores flow along one edge between basic blocks. */
     public static enum FlowRule {
-        EACH_TO_EACH,       // The normal case, then store flows to the then store
-                            // and else store flows to the else store.
-        THEN_TO_BOTH,       // Then store flows to both then and else of successor.
-        ELSE_TO_BOTH,       // Else store flows to both then and else of successor.
-        THEN_TO_THEN,       // Then store flows to the then of successor.  Else store is ignored.
-        ELSE_TO_ELSE,       // Else store flows to the else of successor.  Then store is ignored.
+        EACH_TO_EACH, // The normal case, then store flows to the then store
+        // and else store flows to the else store.
+        THEN_TO_BOTH, // Then store flows to both then and else of successor.
+        ELSE_TO_BOTH, // Else store flows to both then and else of successor.
+        THEN_TO_THEN, // Then store flows to the then of successor.  Else store is ignored.
+        ELSE_TO_ELSE, // Else store flows to the else of successor.  Then store is ignored.
     }
 
     /** @return an exact copy of this store. */
@@ -61,8 +61,7 @@ public interface Store<S extends Store<S>> {
      * conservative answer (i.e., returns {@code true} if not enough information
      * is available to determine aliasing).
      */
-    boolean canAlias(FlowExpressions.Receiver a,
-                     FlowExpressions.Receiver b);
+    boolean canAlias(FlowExpressions.Receiver a, FlowExpressions.Receiver b);
 
     /**
      * Delegate visualization responsibility to a visualizer.

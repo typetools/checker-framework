@@ -1,14 +1,11 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.checkerframework.dataflow.util.HashCodeUtils;
-
-import org.checkerframework.javacutil.InternalUtils;
-
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
+import java.util.Collection;
+import java.util.Collections;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for a conditional not expression:

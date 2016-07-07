@@ -1,5 +1,5 @@
-import org.checkerframework.checker.interning.qual.*;
 import java.util.*;
+import org.checkerframework.checker.interning.qual.*;
 
 /**
  * This class illustrates a correct use of the @{@link Interned} type annotation.
@@ -13,18 +13,16 @@ import java.util.*;
  */
 public class InterningExample {
 
-  public void example() {
+    public void example() {
 
-    // These type annotations are redundant -- the Interning Checker will
-    // infer them, but they are written here in the example for emhpasis.
-    // In general, you do not have to annotate local variables.
-    @Interned String foo = "foo";
-    @Interned String bar = "bar";
+        // These type annotations are redundant -- the Interning Checker will
+        // infer them, but they are written here in the example for emhpasis.
+        // In general, you do not have to annotate local variables.
+        @Interned String foo = "foo";
+        @Interned String bar = "bar";
 
-    if (foo == bar) {
-        System.out.println("foo == bar");
+        if (foo == bar) {
+            System.out.println("foo == bar");
+        }
     }
-
-  }
-
 }

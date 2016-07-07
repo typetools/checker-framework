@@ -3,57 +3,63 @@ import org.checkerframework.checker.nullness.qual.*;
 class MethodTypeVars5 {
     class B<S extends @Nullable Object> {
         S t;
-        B( S t ) { this.t = t; }
-        S get( ) { return t; }
+
+        B(S t) {
+            this.t = t;
+        }
+
+        S get() {
+            return t;
+        }
     }
 
     B<String> b = new B<String>("Hello World");
 
-    String doit1( ) {
-        return doit1( b );
+    String doit1() {
+        return doit1(b);
     }
 
-    <U extends @Nullable Object> U doit1( B<U> x ) {
-        return x.get( );
+    <U extends @Nullable Object> U doit1(B<U> x) {
+        return x.get();
     }
 
-    String doit2( ) {
+    String doit2() {
         // Passing the null argument has no effect on the inferred type argument:
         // the second parameter type doesn't contain the type variable at all.
-        return doit2( b, null );
+        return doit2(b, null);
     }
 
-    <T extends @Nullable Object> T doit2( B<T> x, @Nullable String y ) {
-        return x.get( );
+    <T extends @Nullable Object> T doit2(B<T> x, @Nullable String y) {
+        return x.get();
     }
 
-    String doit3( ) {
+    String doit3() {
         // Passing the null argument has no effect on the inferred type argument:
         // the type variable only appears as nested type.
-        return doit3( null );
+        return doit3(null);
     }
 
-    String doit3b( ) {
-        return doit3( new B<String>("Hi") );
+    String doit3b() {
+        return doit3(new B<String>("Hi"));
     }
 
-    String doit3c( ) {
+    String doit3c() {
         //:: error: (return.type.incompatible)
-        return doit3( new B<@Nullable String>("Hi") );
+        return doit3(new B<@Nullable String>("Hi"));
     }
 
-    void doit3d( ) {
+    void doit3d() {
         //:: error: (assignment.type.incompatible)
-        @NonNull String s = doit3( new B<@Nullable String>("Hi") );
+        @NonNull String s = doit3(new B<@Nullable String>("Hi"));
     }
 
-    void doit3e( ) {
-        String s = doit3( new B<String>("Hi") );
+    void doit3e() {
+        String s = doit3(new B<String>("Hi"));
     }
 
-    <T extends @Nullable Object> T doit3( @Nullable B<T> x ) {
+    <T extends @Nullable Object> T doit3(@Nullable B<T> x) {
         if (x != null) {
-            return x.get( );
+            return x.get();
         } else {
             // This won't work at runtime, but whatever.
             @SuppressWarnings("unchecked")
@@ -62,14 +68,14 @@ class MethodTypeVars5 {
         }
     }
 
-    String doit4( ) {
+    String doit4() {
         // Passing the null argument has an impact on the inferred type argument:
         // the type variable appears as the top-level type.
         //:: error: (return.type.incompatible)
-        return doit4( "Ha!", null );
+        return doit4("Ha!", null);
     }
 
-    <T extends @Nullable Object> T doit4( T x, T y ) {
+    <T extends @Nullable Object> T doit4(T x, T y) {
         return x;
     }
 }

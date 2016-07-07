@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class LazyInitialization {
     @Nullable Object nullable;
-    @NonNull  Object nonnull;
+    @NonNull Object nonnull;
     @MonotonicNonNull Object lazy;
     @MonotonicNonNull Object lazy2 = null;
     final @Nullable Object lazy3;
@@ -12,12 +12,12 @@ public class LazyInitialization {
         nonnull = new Object();
     }
 
-    void randomMethod() { }
+    void randomMethod() {}
 
     void testAssignment() {
         lazy = "m";
         //:: error: (assignment.type.incompatible)
-        lazy = null;    // null
+        lazy = null; // null
     }
 
     void testLazyBeingNull() {
@@ -25,7 +25,7 @@ public class LazyInitialization {
         nullable.toString(); // error
         nonnull.toString();
         //:: error: (dereference.of.nullable)
-        lazy.toString();    // error
+        lazy.toString(); // error
         //:: error: (dereference.of.nullable)
         lazy3.toString(); // error
     }
@@ -41,7 +41,7 @@ public class LazyInitialization {
         randomMethod();
 
         //:: error: (dereference.of.nullable)
-        nullable.toString();    // error
+        nullable.toString(); // error
         nonnull.toString();
         lazy.toString();
         lazy3.toString();
@@ -50,13 +50,13 @@ public class LazyInitialization {
     private double @MonotonicNonNull [] intersect;
 
     public void check_modified(double[] a, int count) {
-        if (intersect!=null) {
+        if (intersect != null) {
             double @NonNull [] nnda = intersect;
         }
     }
 
     class PptRelation1 {
-        public void init_hierarchy_new (PptTopLevel ppt, Object eq) {
+        public void init_hierarchy_new(PptTopLevel ppt, Object eq) {
             ppt.equality_view = eq;
             ppt.equality_view.toString();
         }
@@ -69,7 +69,7 @@ public class LazyInitialization {
     class PptRelation1b {
         // This is the same code as in PptRelation1, but comes after the class
         // declaration of PptTopLevel. This works as expected.
-        public void init_hierarchy_new (PptTopLevel ppt, Object eq) {
+        public void init_hierarchy_new(PptTopLevel ppt, Object eq) {
             ppt.equality_view = eq;
             ppt.equality_view.toString();
         }
@@ -77,7 +77,8 @@ public class LazyInitialization {
 
     class PptRelation2 {
         public @MonotonicNonNull Object equality_view2;
-        public void init_hierarchy_new (PptRelation2 pr1, PptRelation2 pr2, Object eq) {
+
+        public void init_hierarchy_new(PptRelation2 pr1, PptRelation2 pr2, Object eq) {
             //:: error: (dereference.of.nullable)
             pr1.equality_view2.toString();
 

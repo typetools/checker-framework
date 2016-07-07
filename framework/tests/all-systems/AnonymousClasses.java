@@ -6,32 +6,26 @@ import java.util.Date;
 public class AnonymousClasses {
     // test anonymous classes
     private void testAnonymous() {
-        Foo x = new Foo() {
-        };
+        Foo x = new Foo() {};
         new Object() {
             public boolean equals(Object o) {
                 return true;
             }
         }.equals(null);
 
-        Date d = new Date() {
-        };
+        Date d = new Date() {};
     }
 
     private <T extends Comparator<T>> void testGenericAnonymous() {
-        Gen<T> g = new Gen<T>() {
-        };
-        GenInter<T> gi = new GenInter<T>() {
-        };
+        Gen<T> g = new Gen<T>() {};
+        GenInter<T> gi = new GenInter<T>() {};
     }
+
     class Gen<F extends Object> {
-        public Gen() {
-        }
+        public Gen() {}
     }
 
-    interface GenInter<E> {
-    }
+    interface GenInter<E> {}
 
-    interface Foo {
-    }
+    interface Foo {}
 }
