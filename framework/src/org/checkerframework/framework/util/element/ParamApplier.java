@@ -6,6 +6,7 @@ import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.partitionByTargetType;
 
@@ -229,5 +230,11 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
                     " parent ( " + methodChildElem.getEnclosingElement() + " ) ");
         }
         return (Symbol.MethodSymbol) methodChildElem.getEnclosingElement();
+    }
+
+    @Override
+    public void extractAndApply() {
+        addAnnotationsFromElement(type, element.getAnnotationMirrors());
+        super.extractAndApply();
     }
 }
