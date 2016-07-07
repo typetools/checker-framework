@@ -14,23 +14,23 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 public class LowerBoundAnalysis extends CFAbstractAnalysis<LowerBoundValue, LowerBoundStore, LowerBoundTransfer> {
     public LowerBoundAnalysis(BaseTypeChecker checker, LowerBoundAnnotatedTypeFactory factory,
-			      List<Pair<VariableElement, LowerBoundValue>> fieldValues) {
-	super(checker, factory, fieldValues);
+                              List<Pair<VariableElement, LowerBoundValue>> fieldValues) {
+        super(checker, factory, fieldValues);
     }
 
     @Override
     public LowerBoundTransfer createTransferFunction() {
-	return new LowerBoundTransfer(this);
+        return new LowerBoundTransfer(this);
     }
 
     @Override
     public LowerBoundValue createAbstractValue(AnnotatedTypeMirror type) {
-	return new LowerBoundValue(this, type);
+        return new LowerBoundValue(this, type);
     }
 
     @Override
     public LowerBoundStore createCopiedStore(LowerBoundStore s) {
-	return new LowerBoundStore(s);
+        return new LowerBoundStore(s);
     }
 
     @Override

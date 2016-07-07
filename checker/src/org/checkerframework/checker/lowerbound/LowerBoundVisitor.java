@@ -18,18 +18,18 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
     private static final /*@CompilerMessageKey*/ String LOWER_BOUND = "array.access.unsafe.low";
 
     public LowerBoundVisitor(BaseTypeChecker checker) {
-	super(checker);
+        super(checker);
     }
 
     @Override
     public Void visitArrayAccess(ArrayAccessTree tree, Void type) {
-	ExpressionTree index = tree.getIndex();
-	String arrName = tree.getExpression().toString();
-	AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(index);
-	if (!(indexType.hasAnnotation(NonNegative.class) || indexType.hasAnnotation(Positive.class))) {
-	    checker.report(Result.warning(LOWER_BOUND, indexType.toString(), arrName), index);
-	}
+        ExpressionTree index = tree.getIndex();
+        String arrName = tree.getExpression().toString();
+        AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(index);
+        if (!(indexType.hasAnnotation(NonNegative.class) || indexType.hasAnnotation(Positive.class))) {
+            checker.report(Result.warning(LOWER_BOUND, indexType.toString(), arrName), index);
+        }
 
-	return super.visitArrayAccess(tree, type);
+        return super.visitArrayAccess(tree, type);
     }
 }

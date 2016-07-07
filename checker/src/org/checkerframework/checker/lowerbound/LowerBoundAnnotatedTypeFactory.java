@@ -266,13 +266,13 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /** minusHelper handles the following cases:
-	       int lit - int lit -> do the math
-	       * - lit 0 -> *
-	       * - lit 1 -> call decrement
-	       * - lit -1 -> call increment
-	       pos - lit 2 -> n1p
-	       n1p, nn, pos - lit <= -2 -> pos
-	       * - * -> lbu
+               int lit - int lit -> do the math
+               * - lit 0 -> *
+               * - lit 1 -> call decrement
+               * - lit -1 -> call increment
+               pos - lit 2 -> n1p
+               n1p, nn, pos - lit <= -2 -> pos
+               * - * -> lbu
          */
         public void minusHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
@@ -325,13 +325,13 @@ public class LowerBoundAnnotatedTypeFactory extends
 
         /**
              timesHelper handles the following cases:
-	       int lit * int lit -> do the math
-	       * * lit 0 -> nn (=0)
-	       * * lit 1 -> *
-	       pos * pos -> pos
-	       pos * nn -> nn
-	       nn * nn -> nn
-	       * * * -> lbu
+               int lit * int lit -> do the math
+               * * lit 0 -> nn (=0)
+               * * lit 1 -> *
+               pos * pos -> pos
+               pos * nn -> nn
+               nn * nn -> nn
+               * * * -> lbu
          */
         public void timesHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
@@ -390,17 +390,17 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /**
-	       int lit / int lit -> do the math
-	       lit 0 / * -> nn
-	       * / lit 1 -> *
-	       pos / pos -> nn
-	       nn / pos -> nn
-	       pos / nn -> nn
-	       nn / nn -> nn
-	       pos / n1p -> n1p
-	       nn / n1p -> n1p
-	       n1p / n1p -> nn
-	       * / * -> lbu
+               int lit / int lit -> do the math
+               lit 0 / * -> nn
+               * / lit 1 -> *
+               pos / pos -> nn
+               nn / pos -> nn
+               pos / nn -> nn
+               nn / nn -> nn
+               pos / n1p -> n1p
+               nn / n1p -> n1p
+               n1p / n1p -> nn
+               * / * -> lbu
          */
         public void divideHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
@@ -436,12 +436,12 @@ public class LowerBoundAnnotatedTypeFactory extends
             }
 
             /** this section handles generic annotations
-	       pos / pos -> nn
-	       nn / pos -> nn
-	       pos / nn -> nn
-	       nn / nn -> nn
-	       n1p / pos -> n1p
-	       n1p / nn -> n1p
+               pos / pos -> nn
+               nn / pos -> nn
+               pos / nn -> nn
+               nn / nn -> nn
+               n1p / pos -> n1p
+               n1p / nn -> n1p
             */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(NN);
@@ -501,14 +501,14 @@ public class LowerBoundAnnotatedTypeFactory extends
             }
 
             /** this section handles generic annotations
-	       pos % pos -> nn
-	       nn % pos -> nn
-	       pos % nn -> nn
-	       nn % nn -> nn
+               pos % pos -> nn
+               nn % pos -> nn
+               pos % nn -> nn
+               nn % nn -> nn
                pos % n1p -> nn
                nn % n1p -> nn
-	       n1p % pos -> n1p
-	       n1p % nn -> n1p
+               n1p % pos -> n1p
+               n1p % nn -> n1p
                n1p % n1p -> n1p
             */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {

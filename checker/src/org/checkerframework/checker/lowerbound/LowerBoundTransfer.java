@@ -6,7 +6,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<LowerBoundValue, Lowe
     protected LowerBoundAnalysis analysis;
 
     public LowerBoundTransfer(LowerBoundAnalysis analysis) {
-	super(analysis);
-	this.analysis = analysis;
+        super(analysis);
+        this.analysis = analysis;
     }
 }
