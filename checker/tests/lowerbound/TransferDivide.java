@@ -39,7 +39,7 @@ public class TransferDivide {
 
         /** nn / nn -> nn */
         @NonNegative int s = b / q;
-	//:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         @Positive int t = b / q;
 
         /** n1p / pos -> n1p */
@@ -50,7 +50,7 @@ public class TransferDivide {
 
         /** n1p / nn -> n1p */
         @NegativeOnePlus int x = a / l;
-	//:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         @NonNegative int y = a / l;
     }
 }
