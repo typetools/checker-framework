@@ -2,7 +2,7 @@ package org.checkerframework.checker.lowerbound;
 
 import org.checkerframework.checker.lowerbound.qual.*;
 
-y
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 
 import org.checkerframework.javacutil.AnnotationUtils;
