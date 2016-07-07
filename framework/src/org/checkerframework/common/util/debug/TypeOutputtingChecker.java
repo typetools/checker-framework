@@ -1,27 +1,24 @@
 package org.checkerframework.common.util.debug;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.Elements;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.javacutil.TreeUtils;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
-
 
 /**
  * A testing class that can be used to test {@link TypeElement}.  In particular
@@ -94,7 +91,6 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
             // Don't dig deeper
             return null;
         }
-
     }
 
     public static void main(String[] args) {
@@ -128,10 +124,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
         // output fields and methods
         for (Element enclosedElt : typeElt.getEnclosedElements()) {
             if (enclosedElt instanceof TypeElement) {
-                printClassType((TypeElement)enclosedElt, atypeFactory);
+                printClassType((TypeElement) enclosedElt, atypeFactory);
             }
-            if (!enclosedElt.getKind().isField()
-                    && !(enclosedElt instanceof ExecutableElement))
+            if (!enclosedElt.getKind().isField() && !(enclosedElt instanceof ExecutableElement))
                 continue;
             AnnotatedTypeMirror memberType = atypeFactory.fromElement(enclosedElt);
             System.out.println(simpleName + "." + enclosedElt + "\t\t" + memberType);

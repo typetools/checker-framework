@@ -11,22 +11,36 @@ public class TaintingQualChecker extends QualifierParameterChecker<Tainting> {
         return new TaintingQualifiedTypeFactory(this);
     }
 
-
     @Override
-    protected SurfaceSyntaxFormatterConfiguration<Tainting> createSurfaceSyntaxFormatterConfiguration() {
+    protected SurfaceSyntaxFormatterConfiguration<Tainting>
+            createSurfaceSyntaxFormatterConfiguration() {
         return new TaintingSurfaceSyntaxConfiguration();
     }
 
-    private class TaintingSurfaceSyntaxConfiguration extends SurfaceSyntaxFormatterConfiguration<Tainting> {
+    private class TaintingSurfaceSyntaxConfiguration
+            extends SurfaceSyntaxFormatterConfiguration<Tainting> {
 
         public TaintingSurfaceSyntaxConfiguration() {
-            super(Tainting.TAINTED, Tainting.UNTAINTED,
-                    TaintingQualChecker.this.getContext().getTypeFactory().getQualifierHierarchy().getTop(),
-                    TaintingQualChecker.this.getContext().getTypeFactory().getQualifierHierarchy().getBottom());
+            super(
+                    Tainting.TAINTED,
+                    Tainting.UNTAINTED,
+                    TaintingQualChecker
+                            .this
+                            .getContext()
+                            .getTypeFactory()
+                            .getQualifierHierarchy()
+                            .getTop(),
+                    TaintingQualChecker
+                            .this
+                            .getContext()
+                            .getTypeFactory()
+                            .getQualifierHierarchy()
+                            .getBottom());
         }
 
         @Override
-        protected boolean shouldPrintAnnotation(AnnotationParts anno, boolean printInvisibleQualifiers) {
+        protected boolean shouldPrintAnnotation(
+                AnnotationParts anno, boolean printInvisibleQualifiers) {
             return printInvisibleQualifiers;
         }
 

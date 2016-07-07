@@ -1,5 +1,6 @@
 public class ReferencesDefaults {
-    @org.checkerframework.framework.qual.DefaultQualifier(org.checkerframework.checker.nullness.qual.Nullable.class)
+    @org.checkerframework.framework.qual.DefaultQualifier(
+            org.checkerframework.checker.nullness.qual.Nullable.class)
     class Decl {
         Object test() {
             // legal, because of changed default.

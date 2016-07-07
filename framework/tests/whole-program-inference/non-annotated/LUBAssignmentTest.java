@@ -1,4 +1,5 @@
 import tests.wholeprograminference.qual.*;
+
 public class LUBAssignmentTest {
     // The default type for fields is @DefaultType.
     private static int privateField;
@@ -24,9 +25,11 @@ public class LUBAssignmentTest {
     }
 
     void expectsParent(@Parent int t) {}
+
     static @Sibling1 int getSibling1() {
         return 0;
     }
+
     static @Sibling2 int getSibling2() {
         return 0;
     }
@@ -42,5 +45,4 @@ public class LUBAssignmentTest {
             return s;
         }
     }
-
 }

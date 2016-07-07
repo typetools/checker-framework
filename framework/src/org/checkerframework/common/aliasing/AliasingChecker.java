@@ -11,7 +11,7 @@ import org.checkerframework.framework.qual.StubFiles;
  */
 @StubFiles({"android.astub"})
 public class AliasingChecker extends BaseTypeChecker {
-//    @Override
-//    public void report(Result r, Object src) {
-//    }
+    //    @Override
+    //    public void report(Result r, Object src) {
+    //    }
 }

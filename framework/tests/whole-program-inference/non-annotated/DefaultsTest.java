@@ -24,6 +24,4 @@ public class DefaultsTest {
             return s;
         }
     }
-
-
 }

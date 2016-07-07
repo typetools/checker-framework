@@ -14,5 +14,4 @@ public class ReflectionTestChecker extends BaseTypeChecker {
     protected BaseTypeVisitor<?> createSourceVisitor() {
         return new ReflectionTestVisitor(this);
     }
-
 }

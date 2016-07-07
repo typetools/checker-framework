@@ -5,6 +5,6 @@
 import java.util.*;
 
 class Issue810 {
-    Map<String, String>  m = new HashMap<>();
+    Map<String, String> m = new HashMap<>();
     Set<String> n = m.keySet();
 }

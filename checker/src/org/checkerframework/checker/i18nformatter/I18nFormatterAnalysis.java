@@ -1,9 +1,7 @@
 package org.checkerframework.checker.i18nformatter;
 
 import java.util.List;
-
 import javax.lang.model.element.VariableElement;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -20,8 +18,11 @@ import org.checkerframework.javacutil.Pair;
  *                           Format String Checker
  * @author Siwakorn Srisakaokul
  */
-public class I18nFormatterAnalysis extends CFAbstractAnalysis<CFValue, CFStore, I18nFormatterTransfer> {
-    public I18nFormatterAnalysis(BaseTypeChecker checker, I18nFormatterAnnotatedTypeFactory factory,
+public class I18nFormatterAnalysis
+        extends CFAbstractAnalysis<CFValue, CFStore, I18nFormatterTransfer> {
+    public I18nFormatterAnalysis(
+            BaseTypeChecker checker,
+            I18nFormatterAnnotatedTypeFactory factory,
             List<Pair<VariableElement, CFValue>> fieldValues) {
         super(checker, factory, fieldValues);
     }

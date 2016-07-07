@@ -1,7 +1,6 @@
 package qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.UnitsRelations;
 import org.checkerframework.framework.qual.*;

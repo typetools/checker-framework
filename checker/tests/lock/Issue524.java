@@ -4,7 +4,6 @@
 // https://github.com/typetools/checker-framework/issues/524
 
 import java.util.concurrent.locks.ReentrantLock;
-
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 // WARNING: this test is nondeterministic, and has already been
@@ -19,18 +18,20 @@ import org.checkerframework.checker.lock.qual.GuardedBy;
 // Unfortunately a test case that always fails to typecheck using a Checker Framework build
 // prior to the fix for issue 524 has not been found.
 class Issue524 {
-    class MyClass { public Object field; }
+    class MyClass {
+        public Object field;
+    }
 
     void testLocalVariables() {
         @GuardedBy({}) ReentrantLock localLock = new ReentrantLock();
 
         {
-                @GuardedBy("localLock") MyClass q = new MyClass();
-                localLock.lock();
-                localLock.lock();
-                // Without a fix for issue 524 in place, the error contracts.precondition.not.satisfied.field
-                // (unguarded access to field, variable or parameter 'q' guarded by 'localLock') is issued for the following line.
-                q.field.toString();
+            @GuardedBy("localLock") MyClass q = new MyClass();
+            localLock.lock();
+            localLock.lock();
+            // Without a fix for issue 524 in place, the error contracts.precondition.not.satisfied.field
+            // (unguarded access to field, variable or parameter 'q' guarded by 'localLock') is issued for the following line.
+            q.field.toString();
         }
     }
 }

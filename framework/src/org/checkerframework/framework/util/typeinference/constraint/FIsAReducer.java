@@ -1,5 +1,8 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -13,11 +16,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.PluginUtil;
-
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.type.TypeKind;
 
 /**
  * FIsAReducer takes an FIsA constraint that is not irreducible (@see AFConstraint.isIrreducible)
@@ -48,7 +46,6 @@ public class FIsAReducer implements AFReducer {
         }
     }
 
-
     /**
      * Given an FIsA constraint of the form:
      * FIsA( typeFromFormalParameter, typeFromMethodArgument )
@@ -73,33 +70,54 @@ public class FIsAReducer implements AFReducer {
      */
     class FIsAReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFConstraint>> {
         @Override
-        protected String defaultErrorMessage(AnnotatedTypeMirror argument, AnnotatedTypeMirror parameter, Set<AFConstraint> afConstraints) {
+        protected String defaultErrorMessage(
+                AnnotatedTypeMirror argument,
+                AnnotatedTypeMirror parameter,
+                Set<AFConstraint> afConstraints) {
             return "Unexpected FIsA Combination:\n"
-                 + "argument=" + argument + "\n"
-                 + "parameter=" + parameter + "\n"
-                 + "constraints=[\n" + PluginUtil.join(", ", afConstraints) + "\n]";
+                    + "argument="
+                    + argument
+                    + "\n"
+                    + "parameter="
+                    + parameter
+                    + "\n"
+                    + "constraints=[\n"
+                    + PluginUtil.join(", ", afConstraints)
+                    + "\n]";
         }
         //------------------------------------------------------------------------
         // Arrays as arguments
 
         @Override
-        public Void visitArray_Array(AnnotatedArrayType parameter, AnnotatedArrayType argument, Set<AFConstraint> constraints) {
+        public Void visitArray_Array(
+                AnnotatedArrayType parameter,
+                AnnotatedArrayType argument,
+                Set<AFConstraint> constraints) {
             constraints.add(new FIsA(parameter.getComponentType(), argument.getComponentType()));
             return null;
         }
 
         @Override
-        public Void visitArray_Declared(AnnotatedArrayType parameter, AnnotatedDeclaredType argument, Set<AFConstraint> constraints) {
+        public Void visitArray_Declared(
+                AnnotatedArrayType parameter,
+                AnnotatedDeclaredType argument,
+                Set<AFConstraint> constraints) {
             return null;
         }
 
         @Override
-        public Void visitArray_Null(AnnotatedArrayType parameter, AnnotatedNullType argument, Set<AFConstraint> constraints) {
+        public Void visitArray_Null(
+                AnnotatedArrayType parameter,
+                AnnotatedNullType argument,
+                Set<AFConstraint> constraints) {
             return null;
         }
 
         @Override
-        public Void visitArray_Wildcard(AnnotatedArrayType parameter, AnnotatedWildcardType argument, Set<AFConstraint> constraints) {
+        public Void visitArray_Wildcard(
+                AnnotatedArrayType parameter,
+                AnnotatedWildcardType argument,
+                Set<AFConstraint> constraints) {
             constraints.add(new FIsA(parameter, argument.getExtendsBound()));
             return null;
         }
@@ -107,18 +125,25 @@ public class FIsAReducer implements AFReducer {
         //------------------------------------------------------------------------
         // Declared as argument
         @Override
-        public Void visitDeclared_Array(AnnotatedDeclaredType parameter, AnnotatedArrayType argument, Set<AFConstraint> constraints) {
+        public Void visitDeclared_Array(
+                AnnotatedDeclaredType parameter,
+                AnnotatedArrayType argument,
+                Set<AFConstraint> constraints) {
             // should this be Array<String> - T[] the new A2F(String, T)
             return null;
         }
 
         @Override
-        public Void visitDeclared_Declared(AnnotatedDeclaredType parameter, AnnotatedDeclaredType argument, Set<AFConstraint> constraints) {
+        public Void visitDeclared_Declared(
+                AnnotatedDeclaredType parameter,
+                AnnotatedDeclaredType argument,
+                Set<AFConstraint> constraints) {
             if (argument.wasRaw() || parameter.wasRaw()) {
                 return null;
             }
 
-            AnnotatedDeclaredType argumentAsParam = DefaultTypeHierarchy.castedAsSuper(argument, parameter);
+            AnnotatedDeclaredType argumentAsParam =
+                    DefaultTypeHierarchy.castedAsSuper(argument, parameter);
             if (argumentAsParam == null) {
                 return null;
             }
@@ -134,13 +159,13 @@ public class FIsAReducer implements AFReducer {
 
                     if (argTypeArg.getKind() == TypeKind.WILDCARD) {
                         final AnnotatedWildcardType argWc = (AnnotatedWildcardType) argTypeArg;
-                        constraints.add(new FIsA(paramWc.getExtendsBound(), argWc.getExtendsBound()));
-                        constraints.add(new FIsA(paramWc.getSuperBound(),   argWc.getSuperBound()));
+                        constraints.add(
+                                new FIsA(paramWc.getExtendsBound(), argWc.getExtendsBound()));
+                        constraints.add(new FIsA(paramWc.getSuperBound(), argWc.getSuperBound()));
                     }
 
                 } else {
                     constraints.add(new FIsA(paramTypeArgs.get(i), argTypeArgs.get(i)));
-
                 }
             }
 
@@ -148,33 +173,50 @@ public class FIsAReducer implements AFReducer {
         }
 
         @Override
-        public Void visitDeclared_Null(AnnotatedDeclaredType parameter, AnnotatedNullType argument, Set<AFConstraint> constraints) {
+        public Void visitDeclared_Null(
+                AnnotatedDeclaredType parameter,
+                AnnotatedNullType argument,
+                Set<AFConstraint> constraints) {
             return null;
         }
 
         @Override
-        public Void visitDeclared_Primitive(AnnotatedDeclaredType parameter, AnnotatedPrimitiveType argument, Set<AFConstraint> constraints) {
+        public Void visitDeclared_Primitive(
+                AnnotatedDeclaredType parameter,
+                AnnotatedPrimitiveType argument,
+                Set<AFConstraint> constraints) {
             return null;
         }
 
         @Override
-        public Void visitDeclared_Union(AnnotatedDeclaredType parameter, AnnotatedUnionType argument, Set<AFConstraint> constraints) {
-            return null;  //TODO: NOT SUPPORTED AT THE MOMENT
+        public Void visitDeclared_Union(
+                AnnotatedDeclaredType parameter,
+                AnnotatedUnionType argument,
+                Set<AFConstraint> constraints) {
+            return null; //TODO: NOT SUPPORTED AT THE MOMENT
         }
 
         @Override
-        public Void visitIntersection_Intersection(AnnotatedIntersectionType parameter, AnnotatedIntersectionType argument, Set<AFConstraint> constraints) {
-            return null;  //TODO: NOT SUPPORTED AT THE MOMENT
+        public Void visitIntersection_Intersection(
+                AnnotatedIntersectionType parameter,
+                AnnotatedIntersectionType argument,
+                Set<AFConstraint> constraints) {
+            return null; //TODO: NOT SUPPORTED AT THE MOMENT
         }
 
-
         @Override
-        public Void visitIntersection_Null(AnnotatedIntersectionType parameter, AnnotatedNullType argument, Set<AFConstraint> constraints) {
+        public Void visitIntersection_Null(
+                AnnotatedIntersectionType parameter,
+                AnnotatedNullType argument,
+                Set<AFConstraint> constraints) {
             return null;
         }
 
         @Override
-        public Void visitNull_Null(AnnotatedNullType parameter, AnnotatedNullType argument, Set<AFConstraint> afConstraints) {
+        public Void visitNull_Null(
+                AnnotatedNullType parameter,
+                AnnotatedNullType argument,
+                Set<AFConstraint> afConstraints) {
             // we sometimes get these when we have captured types passed as arguments
             // regardless they don't give any information
             return null;
@@ -183,7 +225,10 @@ public class FIsAReducer implements AFReducer {
         //------------------------------------------------------------------------
         // Primitive as argument
         @Override
-        public Void visitPrimitive_Declared(AnnotatedPrimitiveType parameter, AnnotatedDeclaredType argument, Set<AFConstraint> constraints) {
+        public Void visitPrimitive_Declared(
+                AnnotatedPrimitiveType parameter,
+                AnnotatedDeclaredType argument,
+                Set<AFConstraint> constraints) {
             // we may be able to eliminate this case, since I believe the corresponding constraint will just be discarded
             // as the parameter must be a boxed primitive
             constraints.add(new FIsA(typeFactory.getBoxedType(parameter), argument));
@@ -191,20 +236,28 @@ public class FIsAReducer implements AFReducer {
         }
 
         @Override
-        public Void visitPrimitive_Primitive(AnnotatedPrimitiveType parameter, AnnotatedPrimitiveType argument, Set<AFConstraint> constraints) {
+        public Void visitPrimitive_Primitive(
+                AnnotatedPrimitiveType parameter,
+                AnnotatedPrimitiveType argument,
+                Set<AFConstraint> constraints) {
             return null;
         }
 
         @Override
-        public Void visitTypevar_Typevar(AnnotatedTypeVariable parameter, AnnotatedTypeVariable argument, Set<AFConstraint> constraints) {
+        public Void visitTypevar_Typevar(
+                AnnotatedTypeVariable parameter,
+                AnnotatedTypeVariable argument,
+                Set<AFConstraint> constraints) {
             // if we've reached this point and the two are corresponding type variables, then they are NOT ones that
             // may have a type variable we are inferring types for and therefore we can discard this constraint
             return null;
         }
 
-
         @Override
-        public Void visitTypevar_Null(AnnotatedTypeVariable argument, AnnotatedNullType parameter, Set<AFConstraint> constraints) {
+        public Void visitTypevar_Null(
+                AnnotatedTypeVariable argument,
+                AnnotatedNullType parameter,
+                Set<AFConstraint> constraints) {
             return null;
         }
     }

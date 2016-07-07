@@ -2,18 +2,18 @@ import java.util.ArrayList;
 import java.util.Formatter;
 
 public class Varargs {
-    public static void main(String ... p) {
+    public static void main(String... p) {
         Formatter f = new Formatter();
 
         // vararg as parameter
         //:: warning: non-varargs call of varargs method with inexact argument type for last parameter; :: warning: (format.indirect.arguments)
         f.format("Nothing", null); // equivalent to (Object[])null
         //:: warning: (format.indirect.arguments)
-        f.format("Nothing", (Object[])null);
+        f.format("Nothing", (Object[]) null);
         //:: warning: (format.indirect.arguments)
-        f.format("%s", (Object[])null);
+        f.format("%s", (Object[]) null);
         //:: warning: (format.indirect.arguments)
-        f.format("%s %d %x", (Object[])null);
+        f.format("%s %d %x", (Object[]) null);
         //:: warning: non-varargs call of varargs method with inexact argument type for last parameter; :: warning: (format.indirect.arguments)
         f.format("%s %d %x", null); // equivalent to (Object[])null
         //:: warning: (format.indirect.arguments)
@@ -40,7 +40,7 @@ public class Varargs {
         //:: warning: (format.excess.arguments)
         f.format("", 213);
         //:: warning: (format.excess.arguments)
-        f.format("%d", 232,132);
+        f.format("%d", 232, 132);
         //:: warning: (format.excess.arguments)
         f.format("%s", "a", "b");
         //:: warning: (format.excess.arguments)
@@ -50,7 +50,7 @@ public class Varargs {
         //:: error: (format.missing.arguments)
         f.format("%s");
         //:: error: (format.missing.arguments)
-        f.format("%d %s",545);
+        f.format("%d %s", 545);
         //:: error: (format.missing.arguments)
         f.format("%s %c %c", 'c', 'c');
 

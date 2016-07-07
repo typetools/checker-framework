@@ -3,15 +3,14 @@
 import java.util.*;
 
 interface A<T> {
-  public abstract int transform(List<? super T> function);
+    public abstract int transform(List<? super T> function);
 }
 
 class B implements A<Object> {
-  @Override
-  public int transform(List<Object> function) {
-    return 0;
-  }
+    @Override
+    public int transform(List<Object> function) {
+        return 0;
+    }
 }
 
-public class TestExtSup {
-}
+public class TestExtSup {}

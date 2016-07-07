@@ -55,5 +55,5 @@ abstract class TypeInvalid {
     // and method return types. Maybe these should be improved.
 
     //:: error: (type.invalid)
-    void athro() throws @Tainted @Untainted Exception { }
+    void athro() throws @Tainted @Untainted Exception {}
 }

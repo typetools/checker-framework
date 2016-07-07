@@ -1,5 +1,8 @@
 package org.checkerframework.checker.tainting;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.tainting.qual.ClassTaintingParam;
 import org.checkerframework.checker.tainting.qual.MethodTaintingParam;
 import org.checkerframework.checker.tainting.qual.MultiTainted;
@@ -14,27 +17,26 @@ import org.checkerframework.qualframework.poly.AnnotationConverterConfiguration;
 import org.checkerframework.qualframework.poly.CombiningOperation.Lub;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 
-import javax.lang.model.element.AnnotationMirror;
-import java.util.Arrays;
-import java.util.HashSet;
-
-public class TaintingAnnotationConverter extends SimpleQualifierParameterAnnotationConverter<Tainting> {
+public class TaintingAnnotationConverter
+        extends SimpleQualifierParameterAnnotationConverter<Tainting> {
 
     public TaintingAnnotationConverter() {
-        super(new AnnotationConverterConfiguration<>(
-                new Lub<>(new TaintingQualifierHierarchy()),
-                new Lub<>(new TaintingQualifierHierarchy()),
-                MultiTainted.class.getPackage().getName() + ".Multi",
-                new HashSet<>(Arrays.asList(Tainted.class.getName(), Untainted.class.getName())),
-                null,
-                ClassTaintingParam.class,
-                MethodTaintingParam.class,
-                PolyTainted.class,
-                Var.class,
-                Wild.class,
-                Tainting.TAINTED,
-                Tainting.UNTAINTED,
-                Tainting.TAINTED));
+        super(
+                new AnnotationConverterConfiguration<>(
+                        new Lub<>(new TaintingQualifierHierarchy()),
+                        new Lub<>(new TaintingQualifierHierarchy()),
+                        MultiTainted.class.getPackage().getName() + ".Multi",
+                        new HashSet<>(
+                                Arrays.asList(Tainted.class.getName(), Untainted.class.getName())),
+                        null,
+                        ClassTaintingParam.class,
+                        MethodTaintingParam.class,
+                        PolyTainted.class,
+                        Var.class,
+                        Wild.class,
+                        Tainting.TAINTED,
+                        Tainting.UNTAINTED,
+                        Tainting.TAINTED));
     }
 
     /**
@@ -48,7 +50,9 @@ public class TaintingAnnotationConverter extends SimpleQualifierParameterAnnotat
         } else if (name.equals(Untainted.class.getName())) {
             return Tainting.UNTAINTED;
         } else {
-            ErrorReporter.errorAbort("Unexpected AnnotationMirror encountered when processing supported qualifiers:" + name);
+            ErrorReporter.errorAbort(
+                    "Unexpected AnnotationMirror encountered when processing supported qualifiers:"
+                            + name);
             return null; // Dead
         }
     }

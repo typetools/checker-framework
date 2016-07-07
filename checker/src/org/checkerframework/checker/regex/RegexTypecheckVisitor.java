@@ -5,7 +5,9 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.javacutil.TreeUtils;
@@ -13,10 +15,6 @@ import org.checkerframework.qualframework.base.CheckerAdapter;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.TypecheckVisitorAdapter;
 import org.checkerframework.qualframework.poly.QualParams;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
 
 /**
  * The {@link org.checkerframework.common.basetype.BaseTypeVisitor} for the Regex-Qual-Param type system.
@@ -75,11 +73,16 @@ public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<QualParams<Re
                 int paramGroups = (Integer) literal.getValue();
                 ExpressionTree receiver = TreeUtils.getReceiverTree(node);
                 int annoGroups = 0;
-                QualifiedTypeMirror<QualParams<Regex>> receiverType = context.getTypeFactory().getQualifiedType(receiver);
+                QualifiedTypeMirror<QualParams<Regex>> receiverType =
+                        context.getTypeFactory().getQualifiedType(receiver);
                 Regex regex = receiverType.getQualifier().getPrimary().getMaximum();
-                if (paramGroups > 0 &&
-                        (!regex.isRegexVal() || ((Regex.RegexVal) regex).getCount() < paramGroups)) {
-                    checker.report(Result.failure("group.count.invalid", paramGroups, annoGroups, receiver), group);
+                if (paramGroups > 0
+                        && (!regex.isRegexVal()
+                                || ((Regex.RegexVal) regex).getCount() < paramGroups)) {
+                    checker.report(
+                            Result.failure(
+                                    "group.count.invalid", paramGroups, annoGroups, receiver),
+                            group);
                 }
             } else {
                 checker.report(Result.warning("group.count.unknown"), group);

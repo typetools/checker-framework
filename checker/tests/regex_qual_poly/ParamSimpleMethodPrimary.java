@@ -14,9 +14,11 @@ abstract class Test {
     }
 
     abstract @Regex Integer makeTainted();
+
     abstract @Regex(1) Integer makeUntainted();
 
     abstract void takeTainted(@Regex Integer o);
+
     abstract void takeUntainted(@Regex(1) Integer o);
 
     void test() {

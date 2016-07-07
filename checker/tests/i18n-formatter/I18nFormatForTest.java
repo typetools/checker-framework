@@ -6,18 +6,14 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.Locale;
-
-import org.junit.Assert;
 import org.checkerframework.checker.i18nformatter.*;
 import org.checkerframework.checker.i18nformatter.qual.*;
-
+import org.junit.Assert;
 
 public class I18nFormatForTest {
 
     static class A {
-        public void methodA(@I18nFormatFor("#2") String format, Object... args) {
-
-        }
+        public void methodA(@I18nFormatFor("#2") String format, Object... args) {}
     }
 
     public static void main(String[] args) {
@@ -31,7 +27,6 @@ public class I18nFormatForTest {
         a1.methodA("'{0{}", 1);
         a1.methodA("{0}", "A");
 
-
         //:: error: (i18nformat.string.invalid)
         a(1, 1.2, "{0, number", 1.2, new Date(12));
         a(1, 1.2, "{0, number}{1}", 1.2, 1, "A");
@@ -44,9 +39,9 @@ public class I18nFormatForTest {
         //:: error: (i18nformat.string.invalid)
         b("{0, number", new Date(12));
         b("{0, number}{1}", 1, "A");
-        b("{0}",  "a string");
+        b("{0}", "a string");
         //:: error: (argument.type.incompatible)
-        b("{0, number}",  "a string");
+        b("{0, number}", "a string");
 
         //:: error: (i18nformat.invalid.formatfor)
         c("{0, number}{1}", 1, "A");
@@ -54,7 +49,7 @@ public class I18nFormatForTest {
         //:: error: (i18nformat.invalid.formatfor)
         e(1, 2);
 
-        f("{0}",  2);
+        f("{0}", 2);
 
         //:: error: (i18nformat.invalid.formatfor)
         h("{0}", "a string");
@@ -73,7 +68,12 @@ public class I18nFormatForTest {
     }
 
     // @II18nFormatFor can be annotated anywhere
-    static void a(int dummy1, double dummy2, @I18nFormatFor("#5") String f, Object dummy3, Object... args2) {
+    static void a(
+            int dummy1,
+            double dummy2,
+            @I18nFormatFor("#5") String f,
+            Object dummy3,
+            Object... args2) {
         MessageFormat.format(f, args2);
     }
 
@@ -83,7 +83,7 @@ public class I18nFormatForTest {
     }
 
     // @I18nFormatFor needs to be annotated to a string.
-    static void e(@I18nFormatFor("#2") int f, Object... args) { }
+    static void e(@I18nFormatFor("#2") int f, Object... args) {}
 
     // The parameter type is not necessary to an array of objects
     static void f(@I18nFormatFor("#2") String f, int args) {

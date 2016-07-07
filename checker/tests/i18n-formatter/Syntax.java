@@ -16,7 +16,6 @@ public class Syntax {
         MessageFormat.format("'{0{}", 1);
         //:: warning: (i18nformat.excess.arguments)
         MessageFormat.format("'{0{}'", 1);
-
     }
 
     // Test 2.1.2.1: The argument number needs to be an integer

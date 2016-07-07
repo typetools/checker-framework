@@ -1,6 +1,5 @@
-import org.checkerframework.checker.nullness.qual.*;
-
 import java.util.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 class FlowCompound {
 
@@ -21,41 +20,39 @@ class FlowCompound {
         tmp = "hello";
         notNull = tmp;
         notNull = tmp = "hello";
-
     }
 
-  public static boolean equal(@Nullable Object a, @Nullable Object b) {
-      assert b != null : "suppress nullness";
-    return a == b || (a != null && a.equals(b));
-  }
+    public static boolean equal(@Nullable Object a, @Nullable Object b) {
+        assert b != null : "suppress nullness";
+        return a == b || (a != null && a.equals(b));
+    }
 
+    public static void testCompoundAssignmentWithString() {
+        String s = "m";
+        s += "n";
+        s.toString();
+    }
 
-  public static void testCompoundAssignmentWithString() {
-      String s = "m";
-      s += "n";
-      s.toString();
-  }
+    public static void testCompoundAssignmentWithChar() {
+        String s = "m";
+        s += 'n';
+        s.toString();
+    }
 
-  public static void testCompoundAssignmentWithChar() {
-      String s = "m";
-      s += 'n';
-      s.toString();
-  }
+    public static void testCompoundAssignWithNull() {
+        String s = "m";
+        s += null;
+        s.toString();
+    }
 
-  public static void testCompoundAssignWithNull() {
-      String s = "m";
-      s += null;
-      s.toString();
-  }
+    public static void testPrimitiveArray() {
+        int[] a = {0};
+        a[0] += 2;
+        System.out.println(a[0]);
+    }
 
-  public static void testPrimitiveArray() {
-      int[] a = {0};
-      a[0] += 2;
-      System.out.println(a[0]);
-  }
-
-  public static void testPrimitive() {
-      Integer i = 1;
-      i -= 2;
-  }
+    public static void testPrimitive() {
+        Integer i = 1;
+        i -= 2;
+    }
 }

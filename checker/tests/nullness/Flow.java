@@ -200,8 +200,11 @@ public class Flow {
     void orderOfEvaluation() {
         class MyClass {
             @org.checkerframework.dataflow.qual.Pure
-            public boolean equals(@Nullable Object o) { return true; }
-            void test(@Nullable Object a, @Nullable Object b) { }
+            public boolean equals(@Nullable Object o) {
+                return true;
+            }
+
+            void test(@Nullable Object a, @Nullable Object b) {}
         }
         MyClass m = new MyClass();
         m.equals(m = null);
@@ -212,7 +215,7 @@ public class Flow {
 
         MyClass o = null;
         //:: error: (dereference.of.nullable)
-        o.equals(o == new MyClass());   // error
+        o.equals(o == new MyClass()); // error
     }
 
     void instanceOf(@Nullable Object o) {
@@ -228,7 +231,7 @@ public class Flow {
     public static void checkConditional1(@Nullable Object a) {
         if (a == null) {
         } else {
-            a.getClass();         // not an error
+            a.getClass(); // not an error
         }
     }
 
@@ -236,11 +239,11 @@ public class Flow {
         if (a == null) {
         } else if (a instanceof String) {
         } else {
-            a.getClass();         // not an error
+            a.getClass(); // not an error
         }
     }
 
-    public static String spf (String format, @NonNull Object[] args) {
+    public static String spf(String format, @NonNull Object[] args) {
         int current_arg = 0;
         Object arg = args[current_arg];
         if (false) {
@@ -263,15 +266,13 @@ public class Flow {
         System.out.println(o1.toString());
     }
 
-
-
     @org.checkerframework.dataflow.qual.Pure
     public boolean equals(@Nullable Object o) {
         if (!(o instanceof Integer)) {
             return false;
         }
         @NonNull Object nno = o;
-        @NonNull Integer nni = (Integer)o;
+        @NonNull Integer nni = (Integer) o;
         return true;
     }
 
@@ -294,6 +295,7 @@ public class Flow {
     @Nullable Object returnNullable() {
         return null;
     }
+
     void testNullableCall() {
         if (returnNullable() != null) {
             //:: error: (dereference.of.nullable)
@@ -304,33 +306,34 @@ public class Flow {
     void nonNullArg(@NonNull Object arg) {
         // empty body
     }
+
     void testNonNullArg(@Nullable Object arg) {
         //:: error: (argument.type.incompatible)
-        nonNullArg(arg);        // error
-        nonNullArg(arg);        // no error
+        nonNullArg(arg); // error
+        nonNullArg(arg); // no error
     }
 
     void test() {
         String[] s = null;
         //:: error: (dereference.of.nullable)
-        for (int i = 0; i < s.length; ++i) {    // error
-            String m = s[i];    // fine.. s cannot be null
+        for (int i = 0; i < s.length; ++i) { // error
+            String m = s[i]; // fine.. s cannot be null
         }
     }
 
-    private double @MonotonicNonNull [] intersect;// = null; TODO: do we want to allow assignments of null to MonotonicNonNull?
+    private double @MonotonicNonNull []
+            intersect; // = null; TODO: do we want to allow assignments of null to MonotonicNonNull?
 
     public void add_modified(double[] a, int count) {
         // System.out.println ("common: " + ArraysMDE.toString (a));
         //:: warning: (known.nonnull)
         if (a == null) {
             return;
-        } else if (intersect==null) {
+        } else if (intersect == null) {
             intersect = a;
             return;
         }
 
         double[] tmp = new double[intersect.length];
     }
-
 }

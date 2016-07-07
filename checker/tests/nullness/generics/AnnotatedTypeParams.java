@@ -1,8 +1,10 @@
-import org.checkerframework.checker.nullness.qual.*;
 import java.util.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 class MyClass<@Nullable T> {
-    T get() { throw new RuntimeException(); }
+    T get() {
+        throw new RuntimeException();
+    }
 
     void testPositive() {
         MyClass<@Nullable String> l = new MyClass<@Nullable String>();

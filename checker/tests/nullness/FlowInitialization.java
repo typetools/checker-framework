@@ -1,6 +1,6 @@
 
-import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.*;
 
 public class FlowInitialization {
@@ -9,9 +9,7 @@ public class FlowInitialization {
     @Nullable String g;
 
     //:: error: (initialization.fields.uninitialized)
-    public FlowInitialization() {
-
-    }
+    public FlowInitialization() {}
 
     public FlowInitialization(long l) {
         g = "";
@@ -44,7 +42,7 @@ public class FlowInitialization {
         setField();
     }
 
-    @EnsuresQualifier(expression="f", qualifier=NonNull.class)
+    @EnsuresQualifier(expression = "f", qualifier = NonNull.class)
     public void setField(@UnknownInitialization @Raw FlowInitialization this) {
         f = "";
     }

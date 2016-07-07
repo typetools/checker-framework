@@ -1,13 +1,11 @@
 package org.checkerframework.dataflow.util;
 
-import org.checkerframework.javacutil.TypesUtils;
-
-import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
+import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * A utility class to operate on a given {@link Node}.

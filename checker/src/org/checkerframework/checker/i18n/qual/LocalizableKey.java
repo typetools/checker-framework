@@ -1,7 +1,6 @@
 package org.checkerframework.checker.i18n.qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.checker.propkey.qual.PropertyKey;
 import org.checkerframework.framework.qual.SubtypeOf;
 

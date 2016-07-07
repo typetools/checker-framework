@@ -28,9 +28,9 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Covariant {
-  /**
-   * The zero-based indices of the type parameters that should be treated
-   * covariantly.
-   */
-  int[] value();
+    /**
+     * The zero-based indices of the type parameters that should be treated
+     * covariantly.
+     */
+    int[] value();
 }

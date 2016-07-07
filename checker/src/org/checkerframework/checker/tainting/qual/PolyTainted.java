@@ -1,8 +1,7 @@
 package org.checkerframework.checker.tainting.qual;
 
-import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
-
 import java.lang.annotation.*;
+import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

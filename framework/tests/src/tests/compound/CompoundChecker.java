@@ -1,7 +1,6 @@
 package tests.compound;
 
 import java.util.LinkedHashSet;
-
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -12,7 +11,6 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  *  AnotherCompoundChecker relies on the Alaising Checker, too.
  *  This is so that the order of subcheckers is tested.
  */
-
 public class CompoundChecker extends BaseTypeChecker {
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> subcheckers = new LinkedHashSet<>();

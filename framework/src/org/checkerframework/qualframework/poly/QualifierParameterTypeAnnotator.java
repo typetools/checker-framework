@@ -1,11 +1,9 @@
 package org.checkerframework.qualframework.poly;
 
 import java.util.*;
-
 import javax.lang.model.element.Element;
-
-import org.checkerframework.qualframework.base.TypeAnnotator;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
+import org.checkerframework.qualframework.base.TypeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedDeclaredType;
 import org.checkerframework.qualframework.util.ExtendedExecutableType;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
@@ -37,7 +35,7 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
     }
 
     public QualifierParameterAnnotationConverter<Q> getAnnotationConverter() {
-        return (QualifierParameterAnnotationConverter<Q>)super.getAnnotationConverter();
+        return (QualifierParameterAnnotationConverter<Q>) super.getAnnotationConverter();
     }
 
     @Override
@@ -51,16 +49,26 @@ public class QualifierParameterTypeAnnotator<Q> extends TypeAnnotator<QualParams
         Set<String> names;
         switch (type.getKind()) {
             case DECLARED:
-                Element declElt = ((ExtendedDeclaredType)type).asElement();
-                names = getAnnotationConverter().getDeclaredParameters(declElt,
-                        qualContext.getTypeFactory().getDeclAnnotations(declElt),
-                        qualContext.getTypeFactory().getDecoratedElement(declElt));
+                Element declElt = ((ExtendedDeclaredType) type).asElement();
+                names =
+                        getAnnotationConverter()
+                                .getDeclaredParameters(
+                                        declElt,
+                                        qualContext.getTypeFactory().getDeclAnnotations(declElt),
+                                        qualContext.getTypeFactory().getDecoratedElement(declElt));
                 break;
             case EXECUTABLE:
-                Element executableElt = ((ExtendedExecutableType)type).asElement();
-                names = getAnnotationConverter().getDeclaredParameters(executableElt,
-                        qualContext.getTypeFactory().getDeclAnnotations(executableElt),
-                        qualContext.getTypeFactory().getDecoratedElement(executableElt));
+                Element executableElt = ((ExtendedExecutableType) type).asElement();
+                names =
+                        getAnnotationConverter()
+                                .getDeclaredParameters(
+                                        executableElt,
+                                        qualContext
+                                                .getTypeFactory()
+                                                .getDeclAnnotations(executableElt),
+                                        qualContext
+                                                .getTypeFactory()
+                                                .getDecoratedElement(executableElt));
                 break;
             case VOID:
             case PACKAGE:

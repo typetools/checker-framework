@@ -1,15 +1,14 @@
 package org.checkerframework.checker.regex.qual;
 
-import org.checkerframework.checker.regex.classic.qual.UnknownRegex;
-import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
-import org.checkerframework.qualframework.poly.qual.Wildcard;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.checker.regex.classic.qual.UnknownRegex;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
+import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 /**
  * If a type is annotated as {@code @Regex(n)}, then the run-time value is

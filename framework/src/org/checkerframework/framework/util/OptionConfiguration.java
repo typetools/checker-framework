@@ -8,8 +8,12 @@ import java.util.Set;
  */
 public interface OptionConfiguration {
     String getOption(String name);
+
     Map<String, String> getOptions();
+
     boolean hasOption(String name);
+
     String getOption(String name, String def);
+
     Set<String> getSupportedOptions();
 }

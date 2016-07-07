@@ -8,18 +8,18 @@ public class Issue759 {
         lowercase3(enumType.getEnumConstants());
     }
 
-    <T extends Enum<T>> void lowercase(final T... items) {
-    }
+    <T extends Enum<T>> void lowercase(final T... items) {}
 
-    <T extends Enum<T>> void lowercase2(final T[] items) {
-    }
+    <T extends Enum<T>> void lowercase2(final T[] items) {}
 
-    <T> void lowercase3(final T items) {
-    }
+    <T> void lowercase3(final T items) {}
 }
+
 @SuppressWarnings("nullness")
 class Gen<T extends Gen<T>> {
-    T[] getConstants() { return null; }
+    T[] getConstants() {
+        return null;
+    }
 }
 
 @SuppressWarnings("nullness")
@@ -28,6 +28,5 @@ class IncompatibleTypes {
         lowercase(genType.getConstants());
     }
 
-    <S> void lowercase(final S items) {
-    }
+    <S> void lowercase(final S items) {}
 }

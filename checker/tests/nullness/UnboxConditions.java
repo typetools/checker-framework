@@ -6,19 +6,27 @@ public class UnboxConditions {
         Boolean b3 = null;
         Boolean b4 = null;
         //:: error: (condition.nullable)
-        if (b) { ; }
+        if (b) {
+            ;
+        }
         //:: error: (condition.nullable)
         b = b1 ? b : b;
         //:: error: (condition.nullable)
-        while (b2) { ; }
+        while (b2) {
+            ;
+        }
         do {
             ;
             //:: error: (condition.nullable)
         } while (b3);
         //:: error: (condition.nullable)
-        for (;b4;) { ; }
+        for (; b4; ) {
+            ;
+        }
         // legal!
-        for (;;) { break; }
+        for (; ; ) {
+            break;
+        }
         // Eliding the condition in a "while" is illegal Java syntax.
         // while () {}
     }

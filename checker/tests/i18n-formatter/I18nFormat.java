@@ -1,14 +1,17 @@
 import java.text.MessageFormat;
-
 import java.util.Date;
-
-
 
 public class I18nFormat {
 
     void test() {
 
-        MessageFormat.format("{0} {1, number} {2, time} {3, date} {4, choice, 0#zero}", "S", 1, new Date(), new Date(), 0);
+        MessageFormat.format(
+                "{0} {1, number} {2, time} {3, date} {4, choice, 0#zero}",
+                "S",
+                1,
+                new Date(),
+                new Date(),
+                0);
         MessageFormat.format("{0, number}{1, number}", 1, 2);
         MessageFormat.format("{0, number}{0}", 1);
 
@@ -30,7 +33,6 @@ public class I18nFormat {
         //:: warning: (i18nformat.indirect.arguments)
         MessageFormat.format("{0, number}", new Object[2]);
 
-
         MessageFormat.format("{0}", "S");
         MessageFormat.format("{0}", 1);
         MessageFormat.format("{0}", new Date());
@@ -51,5 +53,4 @@ public class I18nFormat {
         MessageFormat.format("{0, date}", 1);
         MessageFormat.format("{0, date}", new Date());
     }
-
 }

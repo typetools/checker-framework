@@ -1,6 +1,5 @@
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.common.reflection.qual.MethodVal;
 
@@ -15,8 +14,14 @@ public class NullnessReflectionExampleTest {
         return new Location();
     }
 
-    String getCurrentCity() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        @MethodVal(className="NullnessReflectionExampleTest", methodName="getCurrentLocation", params=0)
+    String getCurrentCity()
+            throws NoSuchMethodException, SecurityException, IllegalAccessException,
+                    IllegalArgumentException, InvocationTargetException {
+        @MethodVal(
+            className = "NullnessReflectionExampleTest",
+            methodName = "getCurrentLocation",
+            params = 0
+        )
         Method toLowerCase = getClass().getMethod("getCurrentLocation");
         Location currentLocation = (Location) toLowerCase.invoke(this);
         return currentLocation.nameOfCity();
@@ -24,5 +29,7 @@ public class NullnessReflectionExampleTest {
 }
 
 class Location {
-   String nameOfCity() { return "Seattle"; }
+    String nameOfCity() {
+        return "Seattle";
+    }
 }

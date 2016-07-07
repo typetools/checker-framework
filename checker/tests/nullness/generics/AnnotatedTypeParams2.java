@@ -1,8 +1,10 @@
-import org.checkerframework.checker.nullness.qual.*;
 import java.util.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 class MyClass<@Nullable T> {
-    T get() { throw new RuntimeException(); }
+    T get() {
+        throw new RuntimeException();
+    }
 }
 
 class OtherClass {
@@ -17,5 +19,4 @@ class OtherClass {
         //:: error: (type.argument.type.incompatible)
         MyClass<@NonNull String> l;
     }
-
 }

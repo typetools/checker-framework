@@ -36,7 +36,9 @@ public class RegexQualifierHierarchy implements QualifierHierarchy<Regex> {
             return ((RegexVal) subtype).getCount() >= ((RegexVal) supertype).getCount();
 
         } else if (subtype.isPartialRegex() && supertype.isPartialRegex()) {
-            return ((PartialRegex) subtype).getPartialValue().equals(((PartialRegex) supertype).getPartialValue());
+            return ((PartialRegex) subtype)
+                    .getPartialValue()
+                    .equals(((PartialRegex) supertype).getPartialValue());
 
         } else {
             return false;

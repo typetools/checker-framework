@@ -1,13 +1,12 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.javacutil.Pair;
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.javacutil.Pair;
 
 /**
  * Represents the state of a visitor.  Stores the relevant information to find
@@ -113,7 +112,8 @@ public class VisitorState {
     @SideEffectFree
     @Override
     public String toString() {
-        return String.format("method %s (%s) / class %s (%s)",
+        return String.format(
+                "method %s (%s) / class %s (%s)",
                 (mt != null ? mt.getName() : "null"),
                 mrt,
                 (ct != null ? ct.getSimpleName() : "null"),

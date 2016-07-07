@@ -1,18 +1,17 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-import org.checkerframework.framework.test.TestUtilities;
-
-import org.junit.runners.Parameterized.Parameters;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
+import org.checkerframework.framework.test.TestUtilities;
+import org.junit.runners.Parameterized.Parameters;
 
 public class RegexQualTest extends CheckerFrameworkTest {
 
     public RegexQualTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.experimental.regex_qual.RegexCheckerAdapter.class,
                 "regex_qual",
                 "-Anomsgtext");
