@@ -8,6 +8,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  * of type {@code @Unusable}, and any further use is a compile-time error.
  *
  * @checker_framework.manual #linear-checker Linear Checker
-
+ *
  */
-public class LinearChecker extends BaseTypeChecker { }
+public class LinearChecker extends BaseTypeChecker {}

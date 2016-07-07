@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 class Issue807 {
 
-    class MyEntry<K,V> {
+    class MyEntry<K, V> {
         MyEntry(MyEntry<? extends K, ? extends V> e) {}
     }
 
@@ -19,5 +19,4 @@ class Issue807 {
         Consumer<MyEntry<K, V>> res = e -> action.accept(new MyEntry<>(e));
         return res;
     }
-
 }

@@ -1,26 +1,25 @@
 package assuper;
 
-import org.checkerframework.dataflow.qual.Pure;
-
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
-import java.lang.reflect.Field;
-import java.lang.ref.WeakReference;
+import org.checkerframework.dataflow.qual.Pure;
 
 // This class has code that used to cause AsSuper to crash
 @SuppressWarnings("")
 class AsSuperTest {
-// TODO: Value Checker crashes on this
-/*    void primitiveNarrowing() {
-        Byte b = 100;
-        Character c = 100;
-        Short s = 100;
+    // TODO: Value Checker crashes on this
+    /*    void primitiveNarrowing() {
+            Byte b = 100;
+            Character c = 100;
+            Short s = 100;
 
-        byte bb = 100;
-        char cc = 100;
-        short ss = 100;
-    }
-*/
+            byte bb = 100;
+            char cc = 100;
+            short ss = 100;
+        }
+    */
 
     // test anonymous classes
     private void testAnonymous() {
@@ -30,8 +29,7 @@ class AsSuperTest {
             }
         }.equals(null);
 
-        Date d = new Date() {
-        };
+        Date d = new Date() {};
     }
 
     private void apply(Field field) {
@@ -76,8 +74,7 @@ class AsSuperTest {
         new WeakReference<Class<? extends I2>>(c.asSubclass(I2.class));
     }
 
-    interface I2 {
-    }
+    interface I2 {}
 
     @Pure
     void bar() {

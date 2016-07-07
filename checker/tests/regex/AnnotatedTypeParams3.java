@@ -1,24 +1,20 @@
-import java.lang.reflect.*;
 import java.lang.annotation.Annotation;
-
+import java.lang.reflect.*;
+import org.checkerframework.checker.regex.qual.Regex;
 import org.junit.Ignore;
 
-import org.checkerframework.checker.regex.qual.Regex;
-
 class AnnotatedTypeParams3 {
-    private <T extends Annotation> T
-            safeGetAnnotation(Field f, Class<T> annotationClass) {
+    private <T extends Annotation> T safeGetAnnotation(Field f, Class<T> annotationClass) {
         T annotation;
         try {
-            annotation = f.getAnnotation( (Class<T>) annotationClass);
+            annotation = f.getAnnotation((Class<T>) annotationClass);
         } catch (Exception e) {
             annotation = null;
         }
         return annotation;
     }
 
-    private <T extends Annotation> T
-    safeGetAnnotation2(Field f, Class<T> annotationClass) {
+    private <T extends Annotation> T safeGetAnnotation2(Field f, Class<T> annotationClass) {
         T annotation;
         try {
             annotation = f.getAnnotation(annotationClass);
@@ -43,7 +39,6 @@ class AnnotatedTypeParams3 {
         T o = p;
         @Regex T re = o;
     }
-
 }
 
 class OuterClass<E> {

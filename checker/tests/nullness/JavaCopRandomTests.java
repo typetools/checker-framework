@@ -10,7 +10,7 @@ class RandomTests {
         a = 2;
     }
 
-    RandomTests(String s) throws Exception{
+    RandomTests(String s) throws Exception {
         // this();
         a = 2;
         if (a > 1) {
@@ -24,5 +24,4 @@ class RandomTests {
         c = 4;
         // throw new Exception("dude");
     }
-
 }

@@ -3,7 +3,8 @@ class GenericTest12b {
     class Cell<T1 extends Object> {}
 
     class Node<CONTENT extends Object> {
-        public Node(Cell<CONTENT> userObject) { }
+        public Node(Cell<CONTENT> userObject) {}
+
         void nodecall(Cell<CONTENT> userObject) {}
     }
 
@@ -13,6 +14,7 @@ class GenericTest12b {
             call(new Cell<Void>());
             nodecall(new Cell<Void>());
         }
+
         void call(Cell<Void> userObject) {}
     }
 }

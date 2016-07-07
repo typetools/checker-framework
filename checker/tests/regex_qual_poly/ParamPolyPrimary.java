@@ -5,12 +5,15 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 // Polymorphic qualifiers, for primary annotations
 abstract class Test {
     abstract void test(@PolyRegex Integer i, @PolyRegex Integer j);
+
     abstract @PolyRegex Integer id(@PolyRegex Integer i);
 
     abstract @Regex Integer makeTainted();
+
     abstract @Regex(1) Integer makeUntainted();
 
     abstract void takeTainted(@Regex Integer o);
+
     abstract void takeUntainted(@Regex(1) Integer o);
 
     void test() {

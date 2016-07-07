@@ -11,10 +11,8 @@ abstract class Helper<C> {
     abstract <D> Interface<C> helperMethod(Interface<D> anInterface);
 }
 
-interface Interface<E> {
-}
+interface Interface<E> {}
 
 final class SomeGenericClass<F> {
-    SomeGenericClass(Interface<F> s) {
-    }
+    SomeGenericClass(Interface<F> s) {}
 }

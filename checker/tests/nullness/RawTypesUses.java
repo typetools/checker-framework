@@ -29,6 +29,7 @@ public abstract class RawTypesUses {
     }
 
     abstract Generic rawReturn();
+
     void bar() {
         //:: warning: [unchecked] unchecked conversion
         Generic<@Nullable String> notRawNullable = rawReturn();

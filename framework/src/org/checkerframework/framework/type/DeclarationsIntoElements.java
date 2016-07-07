@@ -1,21 +1,18 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
-
-import java.util.Set;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Attribute.Compound;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.util.List;
+import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
  * A helper class that puts the declaration annotations from a method declaration
@@ -34,8 +31,8 @@ public class DeclarationsIntoElements {
      * @param atypeFactory the type factory
      * @param tree the ClassTree to process
      */
-    public static void store(ProcessingEnvironment env,
-            AnnotatedTypeFactory atypeFactory, ClassTree tree) {
+    public static void store(
+            ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory, ClassTree tree) {
         for (Tree mem : tree.getMembers()) {
             if (mem.getKind() == Tree.Kind.METHOD) {
                 storeMethod(env, atypeFactory, (MethodTree) mem);
@@ -50,8 +47,8 @@ public class DeclarationsIntoElements {
      * @param atypeFactory the type factory
      * @param meth the MethodTree to add the annotations
      */
-    private static void storeMethod(ProcessingEnvironment env,
-            AnnotatedTypeFactory atypeFactory, MethodTree meth) {
+    private static void storeMethod(
+            ProcessingEnvironment env, AnnotatedTypeFactory atypeFactory, MethodTree meth) {
         ExecutableElement element = TreeUtils.elementFromDeclaration(meth);
         MethodSymbol sym = (MethodSymbol) element;
         java.util.List<? extends AnnotationMirror> elementAnnos = element.getAnnotationMirrors();
@@ -68,5 +65,4 @@ public class DeclarationsIntoElements {
 
         sym.appendAttributes(tcs);
     }
-
 }

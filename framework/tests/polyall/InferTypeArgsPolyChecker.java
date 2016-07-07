@@ -2,7 +2,6 @@
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import polyall.quals.*;
 
 class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
@@ -29,7 +28,9 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
 
     //----------------------------------------------------------
     // Test Case - C
-    <C extends List<? extends Object>> C methodC(C c1, C c2) { return null;}
+    <C extends List<? extends Object>> C methodC(C c1, C c2) {
+        return null;
+    }
 
     void contextC(List<@H1S1 @H2S2 ? extends @H1S1 @H2S2 String> l1, List<@H1S1 @H2S2 String> l2) {
         List<@H1S1 @H2S2 ?> str = methodC(l1, l2);
@@ -38,8 +39,13 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     //----------------------------------------------------------
     // Test Case - D
 
-    <D extends OUTER_SCOPE_TV, DD> D methodD(D d1, D d2, DD dd)  { return null;}
-    <D extends OUTER_SCOPE_TV, DD> DD methodD2(D d1, D d2, DD dd) { return null;}
+    <D extends OUTER_SCOPE_TV, DD> D methodD(D d1, D d2, DD dd) {
+        return null;
+    }
+
+    <D extends OUTER_SCOPE_TV, DD> DD methodD2(D d1, D d2, DD dd) {
+        return null;
+    }
 
     void contextD(OUTER_SCOPE_TV os1, @H1S1 @H2S1 OUTER_SCOPE_TV os2) {
         OUTER_SCOPE_TV osNaked1 = methodD(os1, os1, os2);
@@ -51,28 +57,28 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         //
         // A similar, more useful example in the Nullness type system would be:
         /*
-            class Gen<OUTER> {
-               public List<OUTER> listo;
+           class Gen<OUTER> {
+              public List<OUTER> listo;
 
-               <T extends OUTER> void addToListo(T t1, T T2) {
-                   listo.add(t1);
-                   listo.add(t2);
-               }
+              <T extends OUTER> void addToListo(T t1, T T2) {
+                  listo.add(t1);
+                  listo.add(t2);
+              }
 
-               void launder(@NonNull OUTER arg1, @Nullable OUTER arg2) {
-                   addToListo(arg1, arg2); // T is inferred to be <@Nullable OUTER>
-                                           // if we did not mark this as type.argument.type.incompatible
-                                           // then we would have no idea that in the last
-                                           // line of this example we are putting a null value into
-                                           // a List of @NonNull Strings
-               }
+              void launder(@NonNull OUTER arg1, @Nullable OUTER arg2) {
+                  addToListo(arg1, arg2); // T is inferred to be <@Nullable OUTER>
+                                          // if we did not mark this as type.argument.type.incompatible
+                                          // then we would have no idea that in the last
+                                          // line of this example we are putting a null value into
+                                          // a List of @NonNull Strings
+              }
 
-            }
+           }
 
-            Gen<@NonNull String> g = ...;
-            g.listo = new ArrayList<@NonNull String>();
-            g.launder("", null);    // during this method call null would be added to g.listo
-         */
+           Gen<@NonNull String> g = ...;
+           g.listo = new ArrayList<@NonNull String>();
+           g.launder("", null);    // during this method call null would be added to g.listo
+        */
         //:: error: (type.argument.type.incompatible)
         OUTER_SCOPE_TV osNaked2 = methodD(os1, os2, "");
 
@@ -90,18 +96,21 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         return null;
     } // pass an array to one of these to cover A2FReducer.visitArray_Typevar
 
-    void contextE(String [] strArr, String [][] strArrArr, OUTER_SCOPE_TV os, OUTER_SCOPE_TV [] aos) {
-        String [] strArrLocal = methodE(strArr, strArrArr);
+    void contextE(String[] strArr, String[][] strArrArr, OUTER_SCOPE_TV os, OUTER_SCOPE_TV[] aos) {
+        String[] strArrLocal = methodE(strArr, strArrArr);
         OUTER_SCOPE_TV osLocal = methodE(os, aos);
     }
 
-
     //----------------------------------------------------------
     // Test Case - C
-    <F> List<? super F> methodF(List<? extends F> lExtF, List<? super F> lSupF) { return null;}
+    <F> List<? super F> methodF(List<? extends F> lExtF, List<? super F> lSupF) {
+        return null;
+    }
 
-    void contextF(List<@H1Bot @H2Bot? extends @H1Top @H2S1  String> l1, List<? super @H1S1 @H2S2 String> l2,
-                  List<@H1S1 @H2S2 ? extends @H1Top @H2Top String> l3) {
+    void contextF(
+            List<@H1Bot @H2Bot ? extends @H1Top @H2S1 String> l1,
+            List<? super @H1S1 @H2S2 String> l2,
+            List<@H1S1 @H2S2 ? extends @H1Top @H2Top String> l3) {
 
         //:: error: (argument.type.incompatible)
         List<? super @H1Bot @H2Bot String> lstr1 = methodF(l1, l2);
@@ -123,7 +132,7 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
     // add test case for Array<String> vs. String[]
     // add test case of E extends F, F extends G, H extends List<? super E> and other craziness
 
-    <M, N extends M> Map<M,N> method() {
+    <M, N extends M> Map<M, N> method() {
         return null;
     }
 
@@ -136,10 +145,10 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         Map<? super @H1S1 @H2S2 CharSequence, @H1Top @H2Top ? super String> mnl = method();
     }
 
-//    class Pair<PONE,PTWO> {
-//        PONE _1;
-//        PTWO _2;
-//    }
+    //    class Pair<PONE,PTWO> {
+    //        PONE _1;
+    //        PTWO _2;
+    //    }
 
     <O extends P, P> @H1Top @H2Top P methodOP(@H1Top @H2Top P p, O o) {
         return null;
@@ -151,18 +160,17 @@ class InferTypeArgsPolyChecker<OUTER_SCOPE_TV> {
         @H1Bot @H2Bot String loc = methodOP(s1, s2);
     }
 
-
-//    class Triplet<L,M,N> {
-//        L l;
-//        M m;
-//        N n;
-//    }
-//
-//    <X extends Y, Y extends Z, Z> Triplet<X,Y,Z> methodXYZ() {
-//        return null;
-//    }
-//
-//    void contextXYZ() {
-//        Triplet<@H1S>
-//    }
+    //    class Triplet<L,M,N> {
+    //        L l;
+    //        M m;
+    //        N n;
+    //    }
+    //
+    //    <X extends Y, Y extends Z, Z> Triplet<X,Y,Z> methodXYZ() {
+    //        return null;
+    //    }
+    //
+    //    void contextXYZ() {
+    //        Triplet<@H1S>
+    //    }
 }

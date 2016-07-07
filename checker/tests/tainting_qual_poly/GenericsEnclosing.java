@@ -10,11 +10,12 @@ import org.checkerframework.checker.tainting.qual.*;
  */
 class MyG<X> {
     X f;
+
     void m(X p) {}
 }
 
 class ExtMyG extends MyG<@Untainted Object> {
-    class EInner1{
+    class EInner1 {
         class EInner2 {
             void bar() {
                 //:: error: (assignment.type.incompatible)

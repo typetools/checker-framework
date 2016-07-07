@@ -1,7 +1,5 @@
 package org.checkerframework.framework.test;
 
-import org.checkerframework.framework.util.PluginUtil;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.checkerframework.framework.util.PluginUtil;
 
 /**
  * Used to create an instance of TestConfiguration, TestConfigurationBuilder follows the standard
@@ -50,15 +49,16 @@ public class TestConfigurationBuilder {
             List<String> options,
             boolean shouldEmitDebugInfo) {
 
-        TestConfigurationBuilder configBuilder = new TestConfigurationBuilder()
-                .setShouldEmitDebugInfo(shouldEmitDebugInfo)
-                .addProcessors(processors)
-                .addOption("-Xmaxerrs", "9999")
-                .addOption("-g")
-                .addOption("-Xlint:unchecked")
-                .addOption("-XDrawDiagnostics")  // use short javac diagnostics
-                .addOption("-AprintErrorStack")
-                .addSourceFiles(testSourceFiles);
+        TestConfigurationBuilder configBuilder =
+                new TestConfigurationBuilder()
+                        .setShouldEmitDebugInfo(shouldEmitDebugInfo)
+                        .addProcessors(processors)
+                        .addOption("-Xmaxerrs", "9999")
+                        .addOption("-g")
+                        .addOption("-Xlint:unchecked")
+                        .addOption("-XDrawDiagnostics") // use short javac diagnostics
+                        .addOption("-AprintErrorStack")
+                        .addSourceFiles(testSourceFiles);
 
         if (outputClassDirectory != null) {
             configBuilder.addOption("-d", outputClassDirectory.getAbsolutePath());
@@ -89,18 +89,25 @@ public class TestConfigurationBuilder {
      * @param shouldEmitDebugInfo whether or not debug information should be emitted
      * @return the builder that will create an immutable test configuration
      */
-    public static TestConfigurationBuilder getDefaultConfigurationBuilder(String testSourcePath,
-                                                                          File testFile,
-                                                                          String checkerName,
-                                                                          List<String> options,
-                                                                          boolean shouldEmitDebugInfo) {
+    public static TestConfigurationBuilder getDefaultConfigurationBuilder(
+            String testSourcePath,
+            File testFile,
+            String checkerName,
+            List<String> options,
+            boolean shouldEmitDebugInfo) {
 
         String classpath = getDefaultClassPath();
         File outputDir = getOutputDirFromProperty();
         List<File> javaFiles = Arrays.asList(testFile);
         List<String> processors = Arrays.asList(checkerName);
-        return getDefaultConfigurationBuilder(testSourcePath, outputDir, classpath, javaFiles, processors,
-                options, shouldEmitDebugInfo);
+        return getDefaultConfigurationBuilder(
+                testSourcePath,
+                outputDir,
+                classpath,
+                javaFiles,
+                processors,
+                options,
+                shouldEmitDebugInfo);
     }
 
     /**
@@ -115,16 +122,23 @@ public class TestConfigurationBuilder {
      * @return a TestConfiguration with input parameters added plus the normal default options, compiler,
      *         and file manager used by Checker Framework tests
      */
-    public static TestConfiguration buildDefaultConfiguration(String testSourcePath,
-                                                              File outputClassDirectory,
-                                                              String classPath,
-                                                              Iterable<File> testSourceFiles,
-                                                              Iterable<String> processors,
-                                                              List<String> options,
-                                                              boolean shouldEmitDebugInfo) {
+    public static TestConfiguration buildDefaultConfiguration(
+            String testSourcePath,
+            File outputClassDirectory,
+            String classPath,
+            Iterable<File> testSourceFiles,
+            Iterable<String> processors,
+            List<String> options,
+            boolean shouldEmitDebugInfo) {
         TestConfigurationBuilder builder =
-                getDefaultConfigurationBuilder(testSourcePath, outputClassDirectory, classPath,
-                        testSourceFiles, processors, options, shouldEmitDebugInfo);
+                getDefaultConfigurationBuilder(
+                        testSourcePath,
+                        outputClassDirectory,
+                        classPath,
+                        testSourceFiles,
+                        processors,
+                        options,
+                        shouldEmitDebugInfo);
         return builder.validateThenBuild(true);
     }
 
@@ -142,14 +156,16 @@ public class TestConfigurationBuilder {
      * @return a TestConfiguration with input parameters added plus the normal default options, compiler,
      *         and file manager used by Checker Framework tests
      */
-    public static TestConfiguration buildDefaultConfiguration(String testSourcePath,
-                                                              File testFile,
-                                                              String checkerName,
-                                                              List<String> options,
-                                                              boolean shouldEmitDebugInfo) {
+    public static TestConfiguration buildDefaultConfiguration(
+            String testSourcePath,
+            File testFile,
+            String checkerName,
+            List<String> options,
+            boolean shouldEmitDebugInfo) {
 
         TestConfigurationBuilder builder =
-                getDefaultConfigurationBuilder(testSourcePath, testFile, checkerName, options, shouldEmitDebugInfo);
+                getDefaultConfigurationBuilder(
+                        testSourcePath, testFile, checkerName, options, shouldEmitDebugInfo);
         return builder.validateThenBuild(true);
     }
 
@@ -262,7 +278,6 @@ public class TestConfigurationBuilder {
         return this;
     }
 
-
     public TestConfigurationBuilder setOptions(Map<String, String> options) {
         this.options.setOptions(options);
         return this;
@@ -277,7 +292,6 @@ public class TestConfigurationBuilder {
         this.options.addOption(option, value);
         return this;
     }
-
 
     public TestConfigurationBuilder addOptionIfValueNonEmpty(String option, String value) {
         if (value != null && !value.isEmpty()) {
@@ -338,8 +352,12 @@ public class TestConfigurationBuilder {
      * validated first
      */
     public TestConfiguration build() {
-        return new ImmutableTestConfiguration(diagnosticFiles, testSourceFiles, new ArrayList<>(processors),
-                                              options.getOptions(), shouldEmitDebugInfo);
+        return new ImmutableTestConfiguration(
+                diagnosticFiles,
+                testSourceFiles,
+                new ArrayList<>(processors),
+                options.getOptions(),
+                shouldEmitDebugInfo);
     }
 
     /**
@@ -348,15 +366,18 @@ public class TestConfigurationBuilder {
      * @param requireProcessors whether or not there should be at least 1 processor specified, see method validate
      */
     public TestConfiguration validateThenBuild(boolean requireProcessors) {
-        List<String> errors = validate(requireProcessors) ;
+        List<String> errors = validate(requireProcessors);
         if (errors.isEmpty()) {
             return build();
         }
 
-        throw new RuntimeException("Attempted to build invalid test configuration:\n"
-                                 + "Errors:\n"
-                                 + PluginUtil.join("\n", errors) + "\n"
-                                 + this.toString() + "\n");
+        throw new RuntimeException(
+                "Attempted to build invalid test configuration:\n"
+                        + "Errors:\n"
+                        + PluginUtil.join("\n", errors)
+                        + "\n"
+                        + this.toString()
+                        + "\n");
     }
 
     /**
@@ -369,16 +390,24 @@ public class TestConfigurationBuilder {
     @Override
     public String toString() {
         return "TestConfigurationBuilder:\n"
-             + "testSourceFiles="  + ( testSourceFiles == null ? "null" : PluginUtil.join(" ", testSourceFiles) ) + "\n"
-             + "processors="       + ( processors == null      ? "null" : PluginUtil.join(", ", processors)     ) + "\n"
-             + "options="          + ( options == null         ? "null" : PluginUtil.join(", ", options.getOptionsAsList())  ) + "\n"
-             + "shouldEmitDebugInfo=" + shouldEmitDebugInfo;
+                + "testSourceFiles="
+                + (testSourceFiles == null ? "null" : PluginUtil.join(" ", testSourceFiles))
+                + "\n"
+                + "processors="
+                + (processors == null ? "null" : PluginUtil.join(", ", processors))
+                + "\n"
+                + "options="
+                + (options == null ? "null" : PluginUtil.join(", ", options.getOptionsAsList()))
+                + "\n"
+                + "shouldEmitDebugInfo="
+                + shouldEmitDebugInfo;
     }
 
     /**
      * @return a list that first has the items from parameter list then the items from iterable
      */
-    private static <T> List<T> catListAndIterable(final List<T> list, final Iterable<? extends T> iterable) {
+    private static <T> List<T> catListAndIterable(
+            final List<T> list, final Iterable<? extends T> iterable) {
         final List<T> newList = new ArrayList<T>();
 
         for (T listObject : list) {
@@ -393,20 +422,27 @@ public class TestConfigurationBuilder {
     }
 
     public static final String TESTS_OUTPUTDIR = "tests.outputDir";
+
     public static File getOutputDirFromProperty() {
-        return new File(System.getProperty("tests.outputDir",
+        return new File(
+                System.getProperty(
+                        "tests.outputDir",
                         "tests" + File.separator + "build" + File.separator + "testclasses"));
     }
 
     public static String getDefaultClassPath() {
-        String classpath = System.getProperty("tests.classpath",
-                "tests" + File.separator + "build");
+        String classpath =
+                System.getProperty("tests.classpath", "tests" + File.separator + "build");
         String globalclasspath = System.getProperty("java.class.path", "");
-        return "build" + File.pathSeparator +
-               "junit-4.12.jar" + File.pathSeparator +
-               "hamcrest-core-1.3.jar" + File.pathSeparator +
-               classpath + File.pathSeparator +
-               globalclasspath;
+        return "build"
+                + File.pathSeparator
+                + "junit-4.12.jar"
+                + File.pathSeparator
+                + "hamcrest-core-1.3.jar"
+                + File.pathSeparator
+                + classpath
+                + File.pathSeparator
+                + globalclasspath;
     }
 
     /**
@@ -415,5 +451,4 @@ public class TestConfigurationBuilder {
     public static String getJdkJarPathFromProperty() {
         return System.getProperty("JDK_JAR");
     }
-
 }

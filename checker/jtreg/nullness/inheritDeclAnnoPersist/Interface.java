@@ -6,5 +6,4 @@ public interface Interface {
     public void setf();
 
     public void setg();
-
 }

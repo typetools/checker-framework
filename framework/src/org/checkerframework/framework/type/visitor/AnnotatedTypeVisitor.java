@@ -61,7 +61,7 @@ public interface AnnotatedTypeVisitor<R, P> {
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
-//    public R visitType(AnnotatedTypeMirror type, P p);
+    //    public R visitType(AnnotatedTypeMirror type, P p);
 
     /**
      * Visits a declared type.
@@ -124,7 +124,6 @@ public interface AnnotatedTypeVisitor<R, P> {
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
-
     public R visitPrimitive(AnnotatedPrimitiveType type, P p);
 
     /**

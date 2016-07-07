@@ -1,4 +1,5 @@
 import tests.wholeprograminference.qual.*;
+
 public class StringConcatenationTest {
 
     private String options_str;
@@ -22,5 +23,4 @@ public class StringConcatenationTest {
         //:: warning: (cast.unsafe)
         return (@Sibling1 String) " ";
     }
-
 }

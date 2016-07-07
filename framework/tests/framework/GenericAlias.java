@@ -1,16 +1,15 @@
-import tests.util.*;
 import java.util.*;
+import tests.util.*;
 
 public class GenericAlias {
 
-    public static class SuperSetOne extends HashSet<@Odd Map<@Odd List<@Odd String>, @Odd String>> {
-
-    }
+    public static class SuperSetOne
+            extends HashSet<@Odd Map<@Odd List<@Odd String>, @Odd String>> {}
 
     public void test() {
         Set<@Odd Map<@Odd List<@Odd String>, @Odd String>> s = new SuperSetOne();
         @Odd Map<@Odd List<@Odd String>, @Odd String> mapA =
-            new @Odd HashMap<@Odd List<@Odd String>, @Odd String>();
+                new @Odd HashMap<@Odd List<@Odd String>, @Odd String>();
         s.add(mapA);
     }
 

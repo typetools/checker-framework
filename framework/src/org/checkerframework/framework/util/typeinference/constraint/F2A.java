@@ -20,7 +20,8 @@ public class F2A extends AFConstraint {
     }
 
     @Override
-    protected F2A construct(AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
+    protected F2A construct(
+            AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
         return new F2A(newFormalParameter, newArgument);
     }
 

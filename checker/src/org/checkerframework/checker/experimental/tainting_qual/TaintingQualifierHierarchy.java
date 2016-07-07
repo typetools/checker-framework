@@ -1,8 +1,8 @@
 package org.checkerframework.checker.experimental.tainting_qual;
 
-import org.checkerframework.qualframework.base.QualifierHierarchy;
-
 import static org.checkerframework.checker.experimental.tainting_qual.Tainting.*;
+
+import org.checkerframework.qualframework.base.QualifierHierarchy;
 
 public class TaintingQualifierHierarchy implements QualifierHierarchy<Tainting> {
     @Override

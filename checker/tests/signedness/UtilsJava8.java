@@ -4,9 +4,13 @@ import org.checkerframework.checker.signedness.qual.*;
 // Test Java 8 unsigned utils
 public class UtilsJava8 {
 
-    public void annotatedJDKTests(@Unsigned long ulong, @Signed long slong,
-        @Unsigned int uint, @Signed int sint,
-        char[] buf, String s) {
+    public void annotatedJDKTests(
+            @Unsigned long ulong,
+            @Signed long slong,
+            @Unsigned int uint,
+            @Signed int sint,
+            char[] buf,
+            String s) {
 
         String resString;
         int resInt;
@@ -17,24 +21,20 @@ public class UtilsJava8 {
 
         resString = Long.toUnsignedString(ulong, sint);
 
-
         //:: error: (argument.type.incompatible)
         resString = Long.toUnsignedString(slong);
 
         resString = Long.toUnsignedString(ulong);
-
 
         //:: error: (assignment.type.incompatible)
         slong = Long.parseUnsignedLong(s, sint);
 
         ulong = Long.parseUnsignedLong(s, sint);
 
-
         //:: error: (assignment.type.incompatible)
         slong = Long.parseUnsignedLong(s);
 
         ulong = Long.parseUnsignedLong(s);
-
 
         //:: error: (argument.type.incompatible)
         resInt = Long.compareUnsigned(slong, slong);
@@ -46,7 +46,6 @@ public class UtilsJava8 {
         resInt = Long.compareUnsigned(ulong, slong);
 
         resInt = Long.compareUnsigned(ulong, ulong);
-
 
         //:: error: (argument.type.incompatible)
         ulong = Long.divideUnsigned(slong, slong);
@@ -62,7 +61,6 @@ public class UtilsJava8 {
 
         ulong = Long.divideUnsigned(ulong, ulong);
 
-
         //:: error: (argument.type.incompatible)
         ulong = Long.remainderUnsigned(slong, slong);
 
@@ -77,31 +75,25 @@ public class UtilsJava8 {
 
         ulong = Long.remainderUnsigned(ulong, ulong);
 
-
-
         //:: error: (argument.type.incompatible)
         resString = Integer.toUnsignedString(sint, sint);
 
         resString = Integer.toUnsignedString(uint, sint);
-
 
         //:: error: (argument.type.incompatible)
         resString = Integer.toUnsignedString(sint);
 
         resString = Integer.toUnsignedString(uint);
 
-
         //:: error: (assignment.type.incompatible)
         sint = Integer.parseUnsignedInt(s, sint);
 
         uint = Integer.parseUnsignedInt(s, sint);
 
-
         //:: error: (assignment.type.incompatible)
         sint = Integer.parseUnsignedInt(s);
 
         uint = Integer.parseUnsignedInt(s);
-
 
         //:: error: (argument.type.incompatible)
         resInt = Integer.compareUnsigned(sint, sint);
@@ -114,12 +106,10 @@ public class UtilsJava8 {
 
         resInt = Integer.compareUnsigned(uint, uint);
 
-
         //:: error: (argument.type.incompatible)
         resLong = Integer.toUnsignedLong(sint);
 
         resLong = Integer.toUnsignedLong(uint);
-
 
         //:: error: (argument.type.incompatible)
         uint = Integer.divideUnsigned(sint, sint);
@@ -134,7 +124,6 @@ public class UtilsJava8 {
         sint = Integer.divideUnsigned(uint, uint);
 
         uint = Integer.divideUnsigned(uint, uint);
-
 
         //:: error: (argument.type.incompatible)
         uint = Integer.remainderUnsigned(sint, sint);

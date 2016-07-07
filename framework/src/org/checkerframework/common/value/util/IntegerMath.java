@@ -1,4 +1,5 @@
 package org.checkerframework.common.value.util;
+
 public class IntegerMath extends NumberMath<Integer> {
     int number;
 
@@ -225,13 +226,14 @@ public class IntegerMath extends NumberMath<Integer> {
 
     @Override
     public Number unaryPlus() {
-       return +number;
+        return +number;
     }
 
     @Override
     public Number unaryMinus() {
         return -number;
     }
+
     @Override
     public Number bitwiseComplement() {
         return ~number;

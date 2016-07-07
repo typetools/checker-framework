@@ -1,7 +1,7 @@
 import org.checkerframework.checker.regex.qual.Regex;
 
 public class PartialRegex {
-    void m (@Regex String re, String non) {
+    void m(@Regex String re, String non) {
         String l = "(";
         String r = ")";
 

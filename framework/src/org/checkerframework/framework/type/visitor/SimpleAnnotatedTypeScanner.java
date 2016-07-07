@@ -117,5 +117,4 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
         defaultAction(type, p);
         return super.visitWildcard(type, p);
     }
-
 }

@@ -1,13 +1,10 @@
 package org.checkerframework.dataflow.cfg.node;
 
+import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.Collections;
-
 import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.dataflow.util.HashCodeUtils;
-
-import com.sun.source.tree.Tree;
 
 /**
  * A node for the string conversion operation. See JLS 5.1.11 for the definition

@@ -5,9 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
@@ -16,8 +14,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * @author Stefan Heule
  *
  */
-public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
-        ExceptionBlock {
+public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements ExceptionBlock {
 
     /** Set of exceptional successors. */
     protected Map<TypeMirror, Set<Block>> exceptionalSuccessors;
@@ -46,8 +43,7 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
     /**
      * Add an exceptional successor.
      */
-    public void addExceptionalSuccessor(BlockImpl b,
-            TypeMirror cause) {
+    public void addExceptionalSuccessor(BlockImpl b, TypeMirror cause) {
         if (exceptionalSuccessors == null) {
             exceptionalSuccessors = new HashMap<>();
         }
@@ -72,5 +68,4 @@ public class ExceptionBlockImpl extends SingleSuccessorBlockImpl implements
     public String toString() {
         return "ExceptionBlock(" + node + ")";
     }
-
 }

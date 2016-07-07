@@ -1,11 +1,10 @@
 package org.checkerframework.framework.util;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 
 /**
  * An annotation intended solely for representing an unqualified type in
@@ -18,5 +17,5 @@ import java.lang.annotation.Target;
 @InvisibleQualifier
 @SubtypeOf({})
 @DefaultQualifierInHierarchy
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-public @interface PurityUnqualified { }
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface PurityUnqualified {}

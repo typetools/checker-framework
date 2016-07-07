@@ -18,8 +18,7 @@ class ReentrantLock {
     }
 
     @Holding("myfield")
-    void notLock() {
-    }
+    void notLock() {}
 
     boolean b = false;
 
@@ -35,6 +34,7 @@ class ReentrantLock {
 
 class Foo {
     final ReentrantLock myLock = new ReentrantLock();
+
     @GuardedBy("myLock") Bar bar = new Bar();
 
     @Holding("myLock.myfield")

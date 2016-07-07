@@ -1,5 +1,9 @@
 package tests.util;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
+import com.sun.tools.javac.tree.JCTree;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,23 +14,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.annotation.processing.SupportedOptions;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.tools.JavaFileObject;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.TreeUtils;
-
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.Tree;
-import com.sun.tools.javac.tree.JCTree;
 
 /**
  * A specialized checker for testing purposes.  It compares an expression's
@@ -77,7 +74,7 @@ import com.sun.tools.javac.tree.JCTree;
  * it in the future.  - Mahmood
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-@SupportedOptions( { "checker" } )
+@SupportedOptions({"checker"})
 public class FactoryTestChecker extends BaseTypeChecker {
     SourceChecker checker;
 
@@ -112,11 +109,12 @@ public class FactoryTestChecker extends BaseTypeChecker {
         // We don't have any properties
         // '\n' doesn't need to be replaced here
         Properties prop = new Properties();
-        prop.setProperty("type.unexpected",
-                "unexpected type for the given tree\n" +
-                "Tree       : %s\n" +
-                "Found      : %s\n" +
-                "Expected   : %s\n");
+        prop.setProperty(
+                "type.unexpected",
+                "unexpected type for the given tree\n"
+                        + "Tree       : %s\n"
+                        + "Found      : %s\n"
+                        + "Expected   : %s\n");
         return prop;
     }
 
@@ -228,23 +226,26 @@ public class FactoryTestChecker extends BaseTypeChecker {
     private static class TreeSpec {
         public final String treeString;
         public final long lineNumber;
+
         public TreeSpec(String treeString, long lineNumber) {
             this.treeString = canonizeTreeString(treeString);
             this.lineNumber = lineNumber;
         }
+
         @Override
         public int hashCode() {
             return (int) (31 + 3 * treeString.hashCode() + 7 * lineNumber);
         }
+
         @Override
         public boolean equals(Object o) {
             if (o instanceof TreeSpec) {
                 TreeSpec other = (TreeSpec) o;
-                return treeString.equals(other.treeString)
-                    && lineNumber == other.lineNumber;
+                return treeString.equals(other.treeString) && lineNumber == other.lineNumber;
             }
             return false;
         }
+
         @Override
         public String toString() {
             return lineNumber + ":" + treeString;
@@ -268,24 +269,29 @@ public class FactoryTestChecker extends BaseTypeChecker {
             if (TreeUtils.isExpressionTree(tree)) {
                 ExpressionTree expTree = (ExpressionTree) tree;
                 TreeSpec treeSpec =
-                    new TreeSpec(expTree.toString().trim(),
-                            root.getLineMap().getLineNumber(((JCTree)expTree).pos));
+                        new TreeSpec(
+                                expTree.toString().trim(),
+                                root.getLineMap().getLineNumber(((JCTree) expTree).pos));
                 if (expected.containsKey(treeSpec)) {
-                    String actualType = canonizeTypeString(atypeFactory.getAnnotatedType(expTree).toString());
+                    String actualType =
+                            canonizeTypeString(atypeFactory.getAnnotatedType(expTree).toString());
                     String expectedType = expected.get(treeSpec);
                     if (!actualType.equals(expectedType)) {
                         /*>>>
                         // The key is added above using a setProperty call, which is not supported by the CompilerMessageChecker
                         @SuppressWarnings("compilermessages")
                         */
-                        Result res = Result.failure("type.unexpected", tree.toString(), actualType, expectedType);
+                        Result res =
+                                Result.failure(
+                                        "type.unexpected",
+                                        tree.toString(),
+                                        actualType,
+                                        expectedType);
                         FactoryTestChecker.this.report(res, tree);
                     }
                 }
             }
             return super.scan(tree, p);
         }
-
     }
-
 }

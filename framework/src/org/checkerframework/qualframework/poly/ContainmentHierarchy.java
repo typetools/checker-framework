@@ -29,7 +29,7 @@ public class ContainmentHierarchy<Q> implements QualifierHierarchy<Wildcard<Q>> 
         // SUPER.  SUPER contains SUB if the bounds of SUPER lie outside the
         // bounds of SUB.
         return polyQualHierarchy.isSubtype(supertype.getLowerBound(), subtype.getLowerBound())
-            && polyQualHierarchy.isSubtype(subtype.getUpperBound(), supertype.getUpperBound());
+                && polyQualHierarchy.isSubtype(subtype.getUpperBound(), supertype.getUpperBound());
     }
 
     @Override
@@ -59,8 +59,10 @@ public class ContainmentHierarchy<Q> implements QualifierHierarchy<Wildcard<Q>> 
             return b;
         }
 
-        PolyQual<Q> newLower = polyQualHierarchy.leastUpperBound(a.getLowerBound(), b.getLowerBound());
-        PolyQual<Q> newUpper = polyQualHierarchy.greatestLowerBound(a.getUpperBound(), b.getUpperBound());
+        PolyQual<Q> newLower =
+                polyQualHierarchy.leastUpperBound(a.getLowerBound(), b.getLowerBound());
+        PolyQual<Q> newUpper =
+                polyQualHierarchy.greatestLowerBound(a.getUpperBound(), b.getUpperBound());
 
         if (!polyQualHierarchy.isSubtype(newLower, newUpper)) {
             return Wildcard.empty();

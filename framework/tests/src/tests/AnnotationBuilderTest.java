@@ -3,23 +3,20 @@ package tests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import tests.util.AnnoWithStringArg;
 import tests.util.Encrypted;
 import tests.util.TestChecker;
-
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
 
 public class AnnotationBuilderTest {
 
@@ -80,27 +77,32 @@ public class AnnotationBuilderTest {
         builder.setValue("value", 1);
     }
 
-    public static @interface A { int[] numbers(); }
-    public static @interface B { String[] strings(); }
+    public static @interface A {
+        int[] numbers();
+    }
+
+    public static @interface B {
+        String[] strings();
+    }
 
     @Test
     public void listArrayPrimitive() {
         AnnotationBuilder builder = new AnnotationBuilder(env, A.class);
-        builder.setValue("numbers", new Integer[] { 34, 32, 43});
+        builder.setValue("numbers", new Integer[] {34, 32, 43});
         assertEquals(1, builder.build().getElementValues().size());
     }
 
     @Test
     public void listArrayObject() {
         AnnotationBuilder builder = new AnnotationBuilder(env, B.class);
-        builder.setValue("strings", new String[] { "m", "n"});
+        builder.setValue("strings", new String[] {"m", "n"});
         assertEquals(1, builder.build().getElementValues().size());
     }
 
     @Test(expected = SourceChecker.CheckerError.class)
     public void listArrayObjectWrongType() {
         AnnotationBuilder builder = new AnnotationBuilder(env, B.class);
-        builder.setValue("strings", new Object[] { "m", "n", 1});
+        builder.setValue("strings", new Object[] {"m", "n", 1});
         assertEquals(1, builder.build().getElementValues().size());
     }
 
@@ -111,7 +113,9 @@ public class AnnotationBuilderTest {
         assertEquals(1, builder.build().getElementValues().size());
     }
 
-    public static @interface Prim { int a(); }
+    public static @interface Prim {
+        int a();
+    }
 
     @Test
     public void primitiveValue() {
@@ -128,7 +132,11 @@ public class AnnotationBuilderTest {
     }
 
     // Multiple values
-    public static @interface Mult { int a(); String b(); }
+    public static @interface Mult {
+        int a();
+
+        String b();
+    }
 
     @Test
     public void multiple1() {
@@ -152,7 +160,9 @@ public class AnnotationBuilderTest {
         assertEquals(2, builder.build().getElementValues().size());
     }
 
-    public static @interface ClassElt { Class<?> value(); }
+    public static @interface ClassElt {
+        Class<?> value();
+    }
 
     @Test
     public void testClassPositive() {
@@ -161,7 +171,8 @@ public class AnnotationBuilderTest {
         builder.setValue("value", int.class);
         builder.setValue("value", int[].class);
         builder.setValue("value", void.class);
-        Object storedValue = builder.build().getElementValues().values().iterator().next().getValue();
+        Object storedValue =
+                builder.build().getElementValues().values().iterator().next().getValue();
         assertTrue("storedValue is " + storedValue.getClass(), storedValue instanceof TypeMirror);
     }
 
@@ -171,7 +182,9 @@ public class AnnotationBuilderTest {
         builder.setValue("value", 2);
     }
 
-    public static @interface RestrictedClassElt { Class<? extends Number> value(); }
+    public static @interface RestrictedClassElt {
+        Class<? extends Number> value();
+    }
 
     @Test
     public void testRestClassPositive() {
@@ -188,10 +201,18 @@ public class AnnotationBuilderTest {
         builder.setValue("value", String.class);
     }
 
-    enum MyEnum { OK, NOT; }
-    enum OtherEnum { TEST; }
+    enum MyEnum {
+        OK,
+        NOT;
+    }
 
-    public static @interface EnumElt { MyEnum value(); }
+    enum OtherEnum {
+        TEST;
+    }
+
+    public static @interface EnumElt {
+        MyEnum value();
+    }
 
     @Test
     public void testEnumPositive() {
@@ -212,7 +233,11 @@ public class AnnotationBuilderTest {
         builder.setValue("value", OtherEnum.TEST);
     }
 
-    public static @interface Anno { String value(); int[] can(); }
+    public static @interface Anno {
+        String value();
+
+        int[] can();
+    }
 
     @Test
     public void testToString1() {
@@ -239,7 +264,9 @@ public class AnnotationBuilderTest {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
         builder.setValue("value", "m");
         builder.setValue("can", new Object[] {1});
-        assertEquals("@tests.AnnotationBuilderTest.Anno(value=\"m\", can={1})", builder.build().toString());
+        assertEquals(
+                "@tests.AnnotationBuilderTest.Anno(value=\"m\", can={1})",
+                builder.build().toString());
     }
 
     @Test
@@ -247,18 +274,25 @@ public class AnnotationBuilderTest {
         AnnotationBuilder builder = new AnnotationBuilder(env, Anno.class);
         builder.setValue("can", new Object[] {1});
         builder.setValue("value", "m");
-        assertEquals("@tests.AnnotationBuilderTest.Anno(can={1}, value=\"m\")", builder.build().toString());
+        assertEquals(
+                "@tests.AnnotationBuilderTest.Anno(can={1}, value=\"m\")",
+                builder.build().toString());
     }
 
-    public static @interface MyAnno { }
-    public static @interface ContainingAnno { MyAnno value(); }
+    public static @interface MyAnno {}
+
+    public static @interface ContainingAnno {
+        MyAnno value();
+    }
 
     @Test
     public void testAnnoAsArgPositive() {
         AnnotationMirror anno = AnnotationUtils.fromClass(env.getElementUtils(), MyAnno.class);
         AnnotationBuilder builder = new AnnotationBuilder(env, ContainingAnno.class);
         builder.setValue("value", anno);
-        assertEquals("@tests.AnnotationBuilderTest.ContainingAnno(@tests.AnnotationBuilderTest.MyAnno)", builder.build().toString());
+        assertEquals(
+                "@tests.AnnotationBuilderTest.ContainingAnno(@tests.AnnotationBuilderTest.MyAnno)",
+                builder.build().toString());
     }
 
     @Test(expected = SourceChecker.CheckerError.class)

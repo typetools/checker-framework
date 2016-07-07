@@ -6,7 +6,7 @@ import java.util.Formatter;
 import java.util.Locale;
 
 public class FormatMethods {
-    public static void main(String ... p) {
+    public static void main(String... p) {
         Formatter f = new Formatter();
         f.format("%d", 1337);
         f.format(Locale.GERMAN, "%d", 1337);

@@ -5,25 +5,31 @@
 
 interface List<ZZ> {
     ZZ getZZ();
+
     void setZZ(ZZ ZZ);
 }
 
-interface Map<K,V> {
+interface Map<K, V> {
     K getK();
+
     V getV();
 
     void setK(K k);
+
     void setV(V v);
 }
 
-class MyRec<E extends List<E>> {
-
-}
+class MyRec<E extends List<E>> {}
 
 class RecList extends MyRec<RecList> implements List<RecList> {
     @SuppressWarnings("return.type.incompatible")
-    public RecList getZZ() { return null; }
-    public void setZZ(RecList rl) { return; }
+    public RecList getZZ() {
+        return null;
+    }
+
+    public void setZZ(RecList rl) {
+        return;
+    }
 }
 
 class Context2 {
@@ -36,11 +42,12 @@ class Context2 {
 }
 
 interface Rec<T extends Rec<T>> {}
+
 class MyRec2<E extends Rec<? extends E>> {}
 
 class RecImpl implements Rec<RecImpl> {}
-class SubRec extends RecImpl {}
 
+class SubRec extends RecImpl {}
 
 class CrazyGen2<TT extends List<EE>, EE extends Map<TT, TT>> {
     TT t2;
@@ -70,7 +77,6 @@ class CrazyGen3<TTT extends List<TTT>, EEE extends Map<TTT, TTT>> {
         e3.setK(t3);
         e3.setK(t3.getZZ());
     }
-
 }
 
 class MyClass {

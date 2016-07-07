@@ -4,26 +4,28 @@ import org.checkerframework.checker.tainting.qual.*;
 @ClassTaintingParam("Main")
 class A {
     // B<<Main + TAINTED>> x;
-    public @Var(arg="Main", param="Main2") @Tainted(param="Main2") B x;
+    public @Var(arg = "Main", param = "Main2") @Tainted(param = "Main2") B x;
     // B<<Main + UNTAINTED>> y;
-    public @Var(arg="Main", param="Main2") @Untainted(param="Main2") B y;
+    public @Var(arg = "Main", param = "Main2") @Untainted(param = "Main2") B y;
     // B<<Main>> z;
-    public @Var(arg="Main", param="Main2") B z;
+    public @Var(arg = "Main", param = "Main2") B z;
 }
 
 @ClassTaintingParam("Main2")
-class B { }
+class B {}
 
 abstract class Test {
-    abstract @Tainted(param="Main") A makeTainted();
-    abstract @Untainted(param="Main") A makeUntainted();
+    abstract @Tainted(param = "Main") A makeTainted();
 
-    abstract void takeTainted(@Tainted(param="Main2") B o);
-    abstract void takeUntainted(@Untainted(param="Main2") B o);
+    abstract @Untainted(param = "Main") A makeUntainted();
+
+    abstract void takeTainted(@Tainted(param = "Main2") B o);
+
+    abstract void takeUntainted(@Untainted(param = "Main2") B o);
 
     void test() {
-        @Tainted(param="Main") A ta = makeTainted();
-        @Untainted(param="Main") A ua = makeUntainted();
+        @Tainted(param = "Main") A ta = makeTainted();
+        @Untainted(param = "Main") A ua = makeUntainted();
 
         takeTainted(ta.x);
         takeTainted(ta.y);

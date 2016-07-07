@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * method terminates the execution of the program. This can be used to
  * annotate methods such as {@code System.exit()}.
  * <p>
-
+ *
  * The annotation enables flow-sensitive type refinement to be more
  * precise.  For example, after
  * <pre>
@@ -33,6 +33,5 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-public @interface TerminatesExecution {
-}
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+public @interface TerminatesExecution {}

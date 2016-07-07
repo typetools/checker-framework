@@ -5,7 +5,6 @@ class WildcardCharPrimitive {
 
     static abstract class Matcher {
 
-
         public abstract boolean matches(char character);
     }
 
@@ -21,6 +20,5 @@ class WildcardCharPrimitive {
                 return value;
             }
         };
-
     }
 }
