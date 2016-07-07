@@ -2,7 +2,7 @@ package org.checkerframework.checker.lowerbound;
 
 import org.checkerframework.checker.lowerbound.qual.*;
 
-import javax.lang.model.element.AnnotationMirror;
+y
 import javax.lang.model.element.VariableElement;
 
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -41,6 +41,22 @@ public class LowerBoundAnnotatedTypeFactory extends
         POS = AnnotationUtils.fromClass(elements, Positive.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
         this.postInit();
+    }
+
+    public AnnotationMirror getN1P() {
+        return N1P;
+    }
+
+    public AnnotationMirror getNN() {
+        return NN;
+    }
+
+    public AnnotationMirror getPOS() {
+        return POS;
+    }
+
+    public AnnotationMirror getUNKNOWN() {
+        return UNKNOWN;
     }
 
     @Override
