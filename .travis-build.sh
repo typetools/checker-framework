@@ -18,8 +18,9 @@ if [[ "$1" != "jdk7" && "$1" != "jdk8" ]]; then
   ## jdkany tests: miscellaneous tests that shouldn't depend on JDK version.
   ## (Maybe they don't even need the full ./.travis-build-without-test.sh .)
 
-  # Code style
+  # Code style and formatting
   ant check-style
+  release/checkPluginUtil.sh
 
   # Documentation
   ant javadoc-private
