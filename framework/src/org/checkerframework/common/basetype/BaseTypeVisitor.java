@@ -307,7 +307,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             /* Visit the extends and implements clauses.
              * The superclass also visits them, but only calls visitParameterizedType, which
-             * looses a main modifier.
+             * loses a main modifier.
              */
             Tree ext = node.getExtendsClause();
             if (ext != null) {
