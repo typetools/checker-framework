@@ -107,10 +107,10 @@ x <= y           y >= x        x > y
 There's also ==, which is a special case. We only know
 things about the THEN branch:
 
-EXPR             THEN
-x == y           x >= y && y >= x
+EXPR             THEN                   ELSE
+x == y           x >= y && y >= x       nothing known
 
 finally, not equal:
 
-EXPR             ELSE
-x != y           x >= y && y >= x
+EXPR             THEN                   ELSE
+x != y           nothing known          x >= y && y >= x
