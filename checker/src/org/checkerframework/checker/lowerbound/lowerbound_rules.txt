@@ -4,24 +4,19 @@ The type hierarchy is:
 
    Top = lbu (unknown)
     |
-   N1p
+   n1p ("Negative One Plus")
     |
-   NN
+   nn  ("NonNegative")
     |
-   Pos
+   pos ("Positive")
 
-[[We can get rid of Bot, it seems.]]
-    |
-   Bot
-
-
-Intro rules:
+Intro rules (LowerBoundAnnotatedTypeFactory):
 
 Int lit -> use its literal value
 
 Increment:     pos -> pos
-               Nn -> pos
-               N1p -> nn
+               nn -> pos
+               n1p -> nn
                * -> lbu
 
 Decrement:     pos -> nn
@@ -80,3 +75,38 @@ Mod:
 	       pos/nn % * -> nn
 	       n1p % * -> n1p
 	       lbu % * -> lbu
+
+
+Refinement/transfer rules for conditionals (LowerBoundTransfer.java):
+
+There are two "primitives":
+
+x > y, which implies things about x based on y's type:
+
+y has type:    implies x has type:
+  n1p                  nn
+  nn                   pos
+  pos                  pos
+
+and x >= y:
+
+y has type:    implies x has type:
+  n1p                  n1p
+  nn                   nn
+  pos                  pos
+
+Then, we can use these two "building blocks" to make all
+other conditional expressions:
+
+EXPR             THEN          ELSE
+x > y            x > y         y >= x
+x >= y           x >= y        y > x
+x < y            y > x         x >= y
+x <= y           y >= x        x > y
+
+There's also ==, which is a special case. We only know
+things about the THEN branch:
+
+EXPR             THEN
+x == y           x >= y && y >= x
+
