@@ -1,10 +1,16 @@
 # Tests that are currently passing
-PASSING_TESTS = Bug109 multiple-errors package-anno issue265 issue309 compat shorthand issue502 issue559 issue594 issue607
+PASSING_TESTS = Bug109 compat issue265 issue309 issue502 issue594 issue607 multiple-errors package-anno shorthand
+ifneq (,$(findstring 1.7,$(shell javac -version)))
+  PASSING_TESTS_JDK8 = issue559
+else
+  PASSING_TESTS_JDK8 =
+endif
+
 # Tests that are currently not passing
-FAILING_TESTS = issue559
+FAILING_TESTS =
 
 # Tests that are currently passing
-all: ${PASSING_TESTS}
+all: ${PASSING_TESTS} ${PASSING_TESTS_JDK8}
 
 # Tests that are currently not passing
 skipped: ${FAILING_TESTS}
@@ -16,34 +22,34 @@ Bug109:
 
 
 compat:
-	make -C compat
+	$(MAKE) -C compat
 
 issue265:
-	make -C issue265
+	$(MAKE) -C issue265
 
 issue309:
-	make -C issue309
+	$(MAKE) -C issue309
 
 issue502:
-	make -C issue502
+	$(MAKE) -C issue502
 
 issue559:
-	make -C issue559
+	$(MAKE) -C issue559
 
 issue594:
-	make -C issue594
+	$(MAKE) -C issue594
 
 multiple-errors:
-	make -C multiple-errors
+	$(MAKE) -C multiple-errors
 
 package-anno:
-	make -C package-anno
+	$(MAKE) -C package-anno
 
 shorthand:
-	make -C shorthand
+	$(MAKE) -C shorthand
 
 issue607:
-	make -C issue607
+	$(MAKE) -C issue607
 
 # All tests: passing and failing
 .PHONY: all skipped ${PASSING_TESTS}
