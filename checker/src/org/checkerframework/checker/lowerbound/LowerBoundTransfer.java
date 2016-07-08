@@ -58,7 +58,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
         /** inverse */
         gteHelper(right, left, elseStore);
-        
+
         return newResult;
     }
 
@@ -79,7 +79,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
         /** call the inverse */
         gtHelper(right, left, elseStore);
-        
+
         return newResult;
     }
 
@@ -96,7 +96,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
         /** equivalent to a flipped GTE */
         gteHelper(right, left, thenStore);
-        
+
         /** call the inverse */
         gtHelper(left, right, elseStore);
         return newResult;
@@ -115,7 +115,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
         /** x < y ~ y > x */
         gtHelper(right, left, thenStore);
-        
+
         /** inverse */
         gteHelper(left, right, elseStore);
         return newResult;

@@ -519,46 +519,14 @@ public class LowerBoundAnnotatedTypeFactory extends
             }
 
             /** this section handles generic annotations
-               pos % pos -> nn
-               nn % pos -> nn
-               pos % nn -> nn
-               nn % nn -> nn
-               pos % n1p -> nn
-               nn % n1p -> nn
-               n1p % pos -> n1p
-               n1p % nn -> n1p
-               n1p % n1p -> n1p
-            */
-            if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
+                pos/nn % * -> nn
+                n1p % * -> n1p
+             */
+            if (leftType.hasAnnotation(POS) || leftType.hasAnnotation(NN)) {
                 type.addAnnotation(NN);
                 return;
             }
-            if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(NN)) ||
-                (leftType.hasAnnotation(NN) && rightType.hasAnnotation(POS))) {
-                type.addAnnotation(NN);
-                return;
-            }
-            if (leftType.hasAnnotation(NN) && rightType.hasAnnotation(NN)) {
-                type.addAnnotation(NN);
-                return;
-            }
-            if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(N1P)) {
-                type.addAnnotation(NN);
-                return;
-            }
-            if (leftType.hasAnnotation(NN) && rightType.hasAnnotation(N1P)) {
-                type.addAnnotation(NN);
-                return;
-            }
-            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(POS)) {
-                type.addAnnotation(N1P);
-                return;
-            }
-            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(NN)) {
-                type.addAnnotation(N1P);
-                return;
-            }
-            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(N1P)) {
+            if (leftType.hasAnnotation(N1P)) {
                 type.addAnnotation(N1P);
                 return;
             }
