@@ -8,7 +8,7 @@ This directory also contains Dockerfiles to create new Docker images for
 running Checker Framework tests reproducibly.
 To build new Docker images:
 
-  # Obtain Docker credentials
+  # Obtain Docker credentials.  (Is this necessary?  Are credentials cached?)
   docker login
 
   # Create the Docker images, in an empty directory, and upload to Docker Hub.
