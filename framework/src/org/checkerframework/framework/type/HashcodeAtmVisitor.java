@@ -53,7 +53,6 @@ public class HashcodeAtmVisitor extends AnnotatedTypeScanner<Integer, Void> {
         }
 
         return type.getAnnotations().toString().hashCode() * 17
-             + type.getUnderlyingType().toString().hashCode() * 13;
+                + type.getUnderlyingType().toString().hashCode() * 13;
     }
-
 }

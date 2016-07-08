@@ -1,8 +1,7 @@
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
-import org.checkerframework.checker.nullness.qual.*;
-
-import java.util.*;
 import java.io.*;
+import java.util.*;
+import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
 public class NonNullMapValue {
 

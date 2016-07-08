@@ -2,7 +2,6 @@ package org.checkerframework.checker.units;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /*>>>

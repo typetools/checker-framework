@@ -1,9 +1,7 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.List;
-
 import javax.lang.model.element.VariableElement;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -16,10 +14,11 @@ import org.checkerframework.javacutil.Pair;
  *
  * @author Stefan Heule
  */
-public class NullnessAnalysis extends
-        CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {
+public class NullnessAnalysis
+        extends CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> {
 
-    public NullnessAnalysis(BaseTypeChecker checker,
+    public NullnessAnalysis(
+            BaseTypeChecker checker,
             NullnessAnnotatedTypeFactory factory,
             List<Pair<VariableElement, NullnessValue>> fieldValues) {
         super(checker, factory, fieldValues);

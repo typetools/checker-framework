@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.cfg.block;
 
 import java.util.List;
-
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
@@ -34,5 +33,4 @@ public interface RegularBlock extends SingleSuccessorBlock {
      * Is this block empty (i.e., does it not contain any contents).
      */
     boolean isEmpty();
-
 }

@@ -1,20 +1,17 @@
 package org.checkerframework.qualframework.base;
 
+import com.sun.source.util.Trees;
+import java.util.HashSet;
+import java.util.Set;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.checkerframework.framework.util.OptionConfiguration;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.qualframework.base.format.DefaultQualFormatter;
 import org.checkerframework.qualframework.base.format.DefaultQualifiedTypeFormatter;
 import org.checkerframework.qualframework.base.format.QualifiedTypeFormatter;
 import org.checkerframework.qualframework.util.QualifierContext;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
-
-import com.sun.source.util.Trees;
 
 /** Main entry point for a pluggable type system.  Each type system must
  * provide an implementation of this abstract class that produces an
@@ -104,8 +101,7 @@ public abstract class Checker<Q> implements QualifierContext<Q> {
                 new DefaultQualFormatter<Q>(getInvisibleQualifiers()),
                 getContext().getCheckerAdapter().getTypeMirrorConverter(),
                 getContext().getOptionConfiguration().hasOption("printVerboseGenerics"),
-                getContext().getOptionConfiguration().hasOption("printAllQualifiers")
-        );
+                getContext().getOptionConfiguration().hasOption("printAllQualifiers"));
     }
 
     /**
@@ -114,7 +110,6 @@ public abstract class Checker<Q> implements QualifierContext<Q> {
     protected Set<?> getInvisibleQualifiers() {
         return new HashSet<>();
     }
-
 
     // TODO: support for checker-defined visitor
 }

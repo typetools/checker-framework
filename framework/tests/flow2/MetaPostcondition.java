@@ -1,7 +1,6 @@
-import org.checkerframework.framework.test.*;
-
 import java.util.*;
 import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.test.*;
 import tests.util.*;
 
 class Postcondition {
@@ -10,7 +9,6 @@ class Postcondition {
     Postcondition p;
 
     /***** normal postcondition ******/
-
     @EnsuresOdd("f1")
     void oddF1() {
         f1 = null;
@@ -28,18 +26,15 @@ class Postcondition {
 
     @EnsuresOdd("f1")
     //:: error: (contracts.postcondition.not.satisfied)
-    void oddF1_error() {
-    }
+    void oddF1_error() {}
 
     @EnsuresOdd("---")
     //:: error: (flowexpr.parse.error)
-    void error() {
-    }
+    void error() {}
 
     @EnsuresOdd("#1.#2")
     //:: error: (flowexpr.parse.error)
-    void error2(final String p1, final String p2) {
-    }
+    void error2(final String p1, final String p2) {}
 
     @EnsuresOdd("f1")
     void exception() {
@@ -47,10 +42,9 @@ class Postcondition {
     }
 
     @EnsuresOdd("#1")
-    void param1(final @Odd String f) {
-    }
+    void param1(final @Odd String f) {}
 
-    @EnsuresOdd({"#1","#2"})
+    @EnsuresOdd({"#1", "#2"})
     //:: error: (flowexpr.parameter.not.final)
     void param2(@Odd String f, @Odd String g) {
         f = g;
@@ -58,8 +52,7 @@ class Postcondition {
 
     @EnsuresOdd("#1")
     //:: error: (flowexpr.parse.index.too.big)
-    void param3() {
-    }
+    void param3() {}
 
     // basic postcondition test
     void t1(@Odd String p1, String p2) {
@@ -107,8 +100,7 @@ class Postcondition {
     }
 
     /***** conditional postcondition ******/
-
-    @EnsuresOddIf(result=true, expression="f1")
+    @EnsuresOddIf(result = true, expression = "f1")
     boolean condOddF1(boolean b) {
         if (b) {
             f1 = null;
@@ -117,7 +109,7 @@ class Postcondition {
         return false;
     }
 
-    @EnsuresOddIf(result=false, expression="f1")
+    @EnsuresOddIf(result = false, expression = "f1")
     boolean condOddF1False(boolean b) {
         if (b) {
             return true;
@@ -126,7 +118,7 @@ class Postcondition {
         return false;
     }
 
-    @EnsuresOddIf(result=false, expression="f1")
+    @EnsuresOddIf(result = false, expression = "f1")
     boolean condOddF1Invalid(boolean b) {
         if (b) {
             f1 = null;
@@ -136,12 +128,11 @@ class Postcondition {
         return false;
     }
 
-    @EnsuresOddIf(result=false, expression="f1")
+    @EnsuresOddIf(result = false, expression = "f1")
     //:: error: (contracts.conditional.postcondition.invalid.returntype)
-    void wrongReturnType() {
-    }
+    void wrongReturnType() {}
 
-    @EnsuresOddIf(result=false, expression="f1")
+    @EnsuresOddIf(result = false, expression = "f1")
     //:: error: (contracts.conditional.postcondition.invalid.returntype)
     String wrongReturnType2() {
         f1 = null;

@@ -17,6 +17,7 @@ public class CollectionUtils {
         return new LinkedHashMap<K, V>() {
 
             private static final long serialVersionUID = 5261489276168775084L;
+
             @Override
             protected boolean removeEldestEntry(Map.Entry<K, V> entry) {
                 return size() > size;

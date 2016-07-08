@@ -36,8 +36,13 @@ public class UnitsTools {
     public static final @radians double rad = 1;
     public static final @degrees double deg = 1;
 
-    public static @radians double toRadians(@degrees double angdeg) { return Math.toRadians(angdeg); }
-    public static @degrees double toDegrees(@radians double angrad) { return Math.toDegrees(angrad); }
+    public static @radians double toRadians(@degrees double angdeg) {
+        return Math.toRadians(angdeg);
+    }
+
+    public static @degrees double toDegrees(@radians double angrad) {
+        return Math.toDegrees(angrad);
+    }
 
     // Area
     public static final @mm2 int mm2 = 1;
@@ -55,24 +60,45 @@ public class UnitsTools {
     public static final @m int m = 1;
     public static final @km int km = 1;
 
-    public static @m int fromMilliMeterToMeter(@mm int mm) { return mm / 1000; }
-    public static @mm int fromMeterToMilliMeter(@m int m) { return m * 1000; }
-    public static @km int fromMeterToKiloMeter(@m int m) { return m / 1000; }
-    public static @m int fromKiloMeterToMeter(@km int km) { return km * 1000; }
+    public static @m int fromMilliMeterToMeter(@mm int mm) {
+        return mm / 1000;
+    }
+
+    public static @mm int fromMeterToMilliMeter(@m int m) {
+        return m * 1000;
+    }
+
+    public static @km int fromMeterToKiloMeter(@m int m) {
+        return m / 1000;
+    }
+
+    public static @m int fromKiloMeterToMeter(@km int km) {
+        return km * 1000;
+    }
 
     // Mass
     public static final @g int g = 1;
     public static final @kg int kg = 1;
 
-    public static @kg int fromGramToKiloGram(@g int g) { return g / 1000; }
-    public static @g int fromKiloGramToGram(@kg int kg) { return kg * 1000; }
+    public static @kg int fromGramToKiloGram(@g int g) {
+        return g / 1000;
+    }
+
+    public static @g int fromKiloGramToGram(@kg int kg) {
+        return kg * 1000;
+    }
 
     // Speed
     public static final @mPERs int mPERs = 1;
     public static final @kmPERh int kmPERh = 1;
 
-    public static @kmPERh double fromMeterPerSecondToKiloMeterPerHour(@mPERs double mps) { return mps * 3.6d; }
-    public static @mPERs double fromKiloMeterPerHourToMeterPerSecond(@kmPERh double kmph) { return kmph / 3.6d; }
+    public static @kmPERh double fromMeterPerSecondToKiloMeterPerHour(@mPERs double mps) {
+        return mps * 3.6d;
+    }
+
+    public static @mPERs double fromKiloMeterPerHourToMeterPerSecond(@kmPERh double kmph) {
+        return kmph / 3.6d;
+    }
 
     // Substance
     public static final @mol int mol = 1;
@@ -81,16 +107,32 @@ public class UnitsTools {
     public static final @K int K = 1;
     public static final @C int C = 1;
 
-    public static @C int fromKelvinToCelsius(@K int k) { return k - (int)273.15; }
-    public static @K int fromCelsiusToKelvin(@C int c) { return c + (int)273.15; }
+    public static @C int fromKelvinToCelsius(@K int k) {
+        return k - (int) 273.15;
+    }
+
+    public static @K int fromCelsiusToKelvin(@C int c) {
+        return c + (int) 273.15;
+    }
 
     // Time
     public static final @s int s = 1;
     public static final @min int min = 1;
     public static final @h int h = 1;
 
-    public static @min int fromSecondToMinute(@s int s) { return s / 60; }
-    public static @s int fromMinuteToSecond(@min int min) { return min * 60; }
-    public static @h int fromMinuteToHour(@min int min) { return min / 60; }
-    public static @min int fromHourToMinute(@h int h) { return h * 60; }
+    public static @min int fromSecondToMinute(@s int s) {
+        return s / 60;
+    }
+
+    public static @s int fromMinuteToSecond(@min int min) {
+        return min * 60;
+    }
+
+    public static @h int fromMinuteToHour(@min int min) {
+        return min / 60;
+    }
+
+    public static @min int fromHourToMinute(@h int h) {
+        return h * 60;
+    }
 }

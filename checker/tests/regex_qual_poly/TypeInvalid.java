@@ -56,5 +56,5 @@ abstract class TypeInvalid {
     // and method return types. Maybe these should be improved.
 
     //:: error: (type.invalid)
-    void athro() throws @Regex @Regex(1) Exception { }
+    void athro() throws @Regex @Regex(1) Exception {}
 }

@@ -1,13 +1,17 @@
+import java.nio.ByteBuffer;
 import org.checkerframework.checker.signedness.SignednessUtil;
 import org.checkerframework.checker.signedness.qual.*;
 
-import java.nio.ByteBuffer;
-
 public class Utils {
 
-    public void getTests(@Unsigned short ushort, @Signed short sshort,
-        @Unsigned byte ubyte, @Signed byte sbyte,
-        @Unsigned byte[] ubyteArr, @Signed byte[] sbyteArr, ByteBuffer b) {
+    public void getTests(
+            @Unsigned short ushort,
+            @Signed short sshort,
+            @Unsigned byte ubyte,
+            @Signed byte sbyte,
+            @Unsigned byte[] ubyteArr,
+            @Signed byte[] sbyteArr,
+            ByteBuffer b) {
 
         //:: error: (assignment.type.incompatible)
         sshort = SignednessUtil.getUnsignedShort(b);
@@ -25,10 +29,15 @@ public class Utils {
         SignednessUtil.getUnsigned(b, ubyteArr);
     }
 
-    public void compTests(@Unsigned long ulong, @Signed long slong,
-        @Unsigned int uint, @Signed int sint,
-        @Unsigned short ushort, @Signed short sshort,
-        @Unsigned byte ubyte, @Signed byte sbyte) {
+    public void compTests(
+            @Unsigned long ulong,
+            @Signed long slong,
+            @Unsigned int uint,
+            @Signed int sint,
+            @Unsigned short ushort,
+            @Signed short sshort,
+            @Unsigned byte ubyte,
+            @Signed byte sbyte) {
 
         int res;
 
@@ -43,7 +52,6 @@ public class Utils {
 
         res = SignednessUtil.compareUnsigned(ulong, ulong);
 
-
         //:: error: (argument.type.incompatible)
         res = SignednessUtil.compareUnsigned(sint, sint);
 
@@ -55,7 +63,6 @@ public class Utils {
 
         res = SignednessUtil.compareUnsigned(uint, uint);
 
-
         //:: error: (argument.type.incompatible)
         res = SignednessUtil.compareUnsigned(sshort, sshort);
 
@@ -66,7 +73,6 @@ public class Utils {
         res = SignednessUtil.compareUnsigned(ushort, sshort);
 
         res = SignednessUtil.compareUnsigned(ushort, ushort);
-
 
         //:: error: (argument.type.incompatible)
         res = SignednessUtil.compareUnsigned(sbyte, sbyte);
@@ -80,10 +86,15 @@ public class Utils {
         res = SignednessUtil.compareUnsigned(ubyte, ubyte);
     }
 
-    public void stringTests(@Unsigned long ulong, @Signed long slong,
-        @Unsigned int uint, @Signed int sint,
-        @Unsigned short ushort, @Signed short sshort,
-        @Unsigned byte ubyte, @Signed byte sbyte) {
+    public void stringTests(
+            @Unsigned long ulong,
+            @Signed long slong,
+            @Unsigned int uint,
+            @Signed int sint,
+            @Unsigned short ushort,
+            @Signed short sshort,
+            @Unsigned byte ubyte,
+            @Signed byte sbyte) {
 
         String res;
 
@@ -97,7 +108,6 @@ public class Utils {
 
         res = SignednessUtil.toUnsignedString(ulong, 10);
 
-
         //:: error: (argument.type.incompatible)
         res = SignednessUtil.toUnsignedString(sint);
 
@@ -108,7 +118,6 @@ public class Utils {
 
         res = SignednessUtil.toUnsignedString(uint, 10);
 
-
         //:: error: (argument.type.incompatible)
         res = SignednessUtil.toUnsignedString(sshort);
 
@@ -118,7 +127,6 @@ public class Utils {
         res = SignednessUtil.toUnsignedString(sshort, 10);
 
         res = SignednessUtil.toUnsignedString(ushort, 10);
-
 
         //:: error: (argument.type.incompatible)
         res = SignednessUtil.toUnsignedString(sbyte);

@@ -2,7 +2,6 @@ package org.checkerframework.framework.test;
 
 import java.util.Collections;
 import java.util.List;
-
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
@@ -15,9 +14,11 @@ public class CompilationResult {
     private final Iterable<? extends JavaFileObject> javaFileObjects;
     private final List<Diagnostic<? extends JavaFileObject>> diagnostics;
 
-    CompilationResult(boolean compiledWithoutError, String javacOutput,
-                      Iterable<? extends JavaFileObject> javaFileObjects,
-                      List<Diagnostic<? extends JavaFileObject>> diagnostics) {
+    CompilationResult(
+            boolean compiledWithoutError,
+            String javacOutput,
+            Iterable<? extends JavaFileObject> javaFileObjects,
+            List<Diagnostic<? extends JavaFileObject>> diagnostics) {
         this.compiledWithoutError = compiledWithoutError;
         this.javacOutput = javacOutput;
         this.javaFileObjects = javaFileObjects;
@@ -51,5 +52,4 @@ public class CompilationResult {
     public List<Diagnostic<? extends JavaFileObject>> getDiagnostics() {
         return diagnostics;
     }
-
 }

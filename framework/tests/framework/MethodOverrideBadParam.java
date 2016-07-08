@@ -1,5 +1,5 @@
-import tests.util.*;
 import java.util.*;
+import tests.util.*;
 
 public abstract class MethodOverrideBadParam {
 
@@ -7,8 +7,6 @@ public abstract class MethodOverrideBadParam {
 
     public static class SubclassA extends MethodOverrideBadParam {
         //:: error: (override.param.invalid)
-        public void method(@Odd String s) {
-
-        }
+        public void method(@Odd String s) {}
     }
 }

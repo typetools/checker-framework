@@ -11,7 +11,7 @@ import java.util.Arrays;
 
 public class ExecUtil {
 
-    public static int execute(final String [] cmd, final OutputStream std, final OutputStream err)  {
+    public static int execute(final String[] cmd, final OutputStream std, final OutputStream err) {
 
         final Redirection outRedirect = new Redirection(std, BLOCK_SIZE);
         final Redirection errRedirect = new Redirection(err, BLOCK_SIZE);
@@ -36,9 +36,11 @@ public class ExecUtil {
             return exitStatus;
 
         } catch (InterruptedException e) {
-            throw new RuntimeException("Exception executing command: " + PluginUtil.join(" ", Arrays.asList(cmd)), e);
+            throw new RuntimeException(
+                    "Exception executing command: " + PluginUtil.join(" ", Arrays.asList(cmd)), e);
         } catch (IOException e) {
-            throw new RuntimeException("Exception executing command: " + PluginUtil.join(" ", Arrays.asList(cmd)), e);
+            throw new RuntimeException(
+                    "Exception executing command: " + PluginUtil.join(" ", Arrays.asList(cmd)), e);
         }
     }
 
@@ -53,37 +55,37 @@ public class ExecUtil {
 
         public Redirection(final OutputStream out, final int bufferSize) {
             this.buffer = new char[bufferSize];
-            this.out    = new OutputStreamWriter(out);
+            this.out = new OutputStreamWriter(out);
         }
 
         public void redirect(final InputStream inStream) {
 
-            exception   = null;
+            exception = null;
 
-            this.thread = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        final InputStreamReader in = new InputStreamReader(inStream);
-                        try {
+            this.thread =
+                    new Thread(
+                            new Runnable() {
+                                @Override
+                                public void run() {
+                                    final InputStreamReader in = new InputStreamReader(inStream);
+                                    try {
 
-                            int read = 0;
-                            while (read > -1) {
-                                read = in.read(buffer);
-                                if (read > 0) {
-                                    out.write(buffer, 0, read);
+                                        int read = 0;
+                                        while (read > -1) {
+                                            read = in.read(buffer);
+                                            if (read > 0) {
+                                                out.write(buffer, 0, read);
+                                            }
+                                        }
+                                        out.flush();
+
+                                    } catch (IOException exc) {
+                                        exception = exc;
+                                    } finally {
+                                        quietlyClose(in);
+                                    }
                                 }
-                            }
-                            out.flush();
-
-                        } catch (IOException exc) {
-                            exception = exc;
-                        } finally {
-                            quietlyClose(in);
-                        }
-                    }
-                }
-            );
+                            });
             thread.start();
         }
 

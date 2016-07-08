@@ -1,7 +1,7 @@
-import org.checkerframework.checker.initialization.qual.UnknownInitialization;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
-import org.checkerframework.checker.nullness.qual.*;
 import java.util.*;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 class RawAssertNonNull {
     class Test1 {
@@ -59,7 +59,7 @@ class RawAssertNonNull {
             // If one has some additional information that the type system hasn't
             // one can suppress the error from Test1c using an assertion,
             // which is nicer than suppressing the warning.
-            assert this.g!=null : "@AssumeAssertion(nullness)";
+            assert this.g != null : "@AssumeAssertion(nullness)";
         }
 
         @EnsuresNonNull({"f"})

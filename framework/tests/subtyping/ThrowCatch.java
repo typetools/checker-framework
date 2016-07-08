@@ -1,5 +1,4 @@
 import java.util.*;
-
 import tests.util.Critical;
 
 /**
@@ -10,35 +9,34 @@ import tests.util.Critical;
  */
 abstract class ThrowCatch {
 
-  void throwsNoncritical() throws Exception {
-    throw new Exception();
-  }
-
-  void throwsCritical() throws @Critical Exception {
-    throw new @Critical Exception();
-  }
-
-  void catches() {
-    try {
-      throwsNoncritical();
-    } catch (Exception e) {
+    void throwsNoncritical() throws Exception {
+        throw new Exception();
     }
 
-    try {
-      throwsNoncritical();
-    //:: error: (type.incompatible)
-    } catch (@Critical Exception e) {
+    void throwsCritical() throws @Critical Exception {
+        throw new @Critical Exception();
     }
 
-    try {
-      throwsCritical();
-    } catch (Exception e) {
-    }
+    void catches() {
+        try {
+            throwsNoncritical();
+        } catch (Exception e) {
+        }
 
-    try {
-      throwsCritical();
-    } catch (@Critical Exception e) {
-    }
-  }
+        try {
+            throwsNoncritical();
+            //:: error: (type.incompatible)
+        } catch (@Critical Exception e) {
+        }
 
+        try {
+            throwsCritical();
+        } catch (Exception e) {
+        }
+
+        try {
+            throwsCritical();
+        } catch (@Critical Exception e) {
+        }
+    }
 }

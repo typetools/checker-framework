@@ -4,7 +4,8 @@ import org.checkerframework.checker.guieffect.qual.UIEffect;
 
 // Should not inherit @UI!
 public class UIChild extends UIParent {
-    @Override public void doingUIStuff() {
+    @Override
+    public void doingUIStuff() {
         //:: error: (call.invalid.ui)
         thingy.dangerous();
     }
@@ -24,10 +25,12 @@ public class UIChild extends UIParent {
     @SafeEffect
     //:: error: (annotations.conflicts)
     public void doubleAnnot1() {}
+
     @UIEffect
     @PolyUIEffect
     //:: error: (annotations.conflicts)
     public void doubleAnnot2() {}
+
     @PolyUIEffect
     @SafeEffect
     //:: error: (annotations.conflicts)

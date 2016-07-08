@@ -1,7 +1,6 @@
 package org.checkerframework.dataflow.analysis;
 
 import java.util.Map;
-
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -78,8 +77,12 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      * this class (including use through aliases). Complete control over the
      * objects is transfered to this class.
      */
-    public ConditionalTransferResult(A value, S thenStore, S elseStore,
-            Map<TypeMirror, S> exceptionalStores, boolean storeChanged) {
+    public ConditionalTransferResult(
+            A value,
+            S thenStore,
+            S elseStore,
+            Map<TypeMirror, S> exceptionalStores,
+            boolean storeChanged) {
         super(value);
         this.exceptionalStores = exceptionalStores;
         this.thenStore = thenStore;
@@ -87,8 +90,8 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
         this.storeChanged = storeChanged;
     }
 
-    public ConditionalTransferResult(A value, S thenStore, S elseStore,
-        Map<TypeMirror, S> exceptionalStores) {
+    public ConditionalTransferResult(
+            A value, S thenStore, S elseStore, Map<TypeMirror, S> exceptionalStores) {
         this(value, thenStore, elseStore, exceptionalStores, false);
     }
 
@@ -131,7 +134,6 @@ public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Sto
      */
     @Override
     public boolean storeChanged() {
-      return storeChanged;
+        return storeChanged;
     }
-
 }

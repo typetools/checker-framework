@@ -1,14 +1,11 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.LinkedList;
-
-import org.checkerframework.dataflow.util.HashCodeUtils;
-
-import org.checkerframework.javacutil.InternalUtils;
-
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.Collection;
+import java.util.LinkedList;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for the numerical addition:
@@ -28,8 +25,7 @@ public class NumericalAdditionNode extends Node {
 
     public NumericalAdditionNode(Tree tree, Node left, Node right) {
         super(InternalUtils.typeOf(tree));
-        assert tree.getKind() == Kind.PLUS
-                || tree.getKind() == Kind.PLUS_ASSIGNMENT;
+        assert tree.getKind() == Kind.PLUS || tree.getKind() == Kind.PLUS_ASSIGNMENT;
         this.tree = tree;
         this.left = left;
         this.right = right;

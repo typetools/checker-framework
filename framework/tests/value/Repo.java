@@ -1,6 +1,5 @@
-import org.checkerframework.common.value.qual.*;
 import java.util.BitSet;
-
+import org.checkerframework.common.value.qual.*;
 
 class Binaries {
     private BitSet bitmap;

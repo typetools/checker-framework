@@ -8,4 +8,4 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
-public class SignednessChecker extends BaseTypeChecker { }
+public class SignednessChecker extends BaseTypeChecker {}

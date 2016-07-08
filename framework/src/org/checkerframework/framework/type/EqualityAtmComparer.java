@@ -18,29 +18,33 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void> {
 
-
     /**
      * Called when a visit method is called on two types that do not have the same class,
      * i.e. when !type1.getClass().equals(type2.getClass())
      */
     @Override
-    protected String defaultErrorMessage(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
+    protected String defaultErrorMessage(
+            AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
         throw new UnsupportedOperationException(
-            "Comparing two different subclasses of AnnotatedTypeMirror!\n"
-          + "type1=" + type1 + "\n"
-          + "type2=" + type2 + "\n");
+                "Comparing two different subclasses of AnnotatedTypeMirror!\n"
+                        + "type1="
+                        + type1
+                        + "\n"
+                        + "type2="
+                        + type2
+                        + "\n");
     }
 
     /**
      * Return true if type1 and type2 have equivalent sets of annotations.
      */
-    protected boolean arePrimeAnnosEqual(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
+    protected boolean arePrimeAnnosEqual(
+            final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
         return AnnotationUtils.areSame(type1.getAnnotations(), type2.getAnnotations());
     }
 
     protected boolean compare(final AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-        if ((type1 == null && type2 != null)
-           || (type1 != null && type2 == null)) {
+        if ((type1 == null && type2 != null) || (type1 != null && type2 == null)) {
             return false;
         }
 
@@ -53,7 +57,8 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
     }
 
     @Override
-    protected Boolean scanWithNull(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void aVoid) {
+    protected Boolean scanWithNull(
+            AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void aVoid) {
         // one of them should be null, therefore they are only equal if they other is null
         return type1 == type2;
     }
@@ -62,7 +67,6 @@ public class EqualityAtmComparer extends EquivalentAtmComboScanner<Boolean, Void
     protected Boolean scan(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, Void v) {
         return compare(type1, type2) && reduce(true, super.scan(type1, type2, v));
     }
-
 
     /**
      * Used to combine the results from component types or a type and its component types

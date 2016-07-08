@@ -1,5 +1,6 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
 import org.checkerframework.checker.regex.classic.RegexTransfer;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -24,8 +25,6 @@ import org.checkerframework.qualframework.base.dataflow.QualStore;
 import org.checkerframework.qualframework.base.dataflow.QualTransfer;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
 
-import javax.lang.model.element.ExecutableElement;
-
 /**
  * A reimplementation of {@link RegexTransfer} using {@link QualifiedTypeMirror}s
  * instead of {@link AnnotatedTypeMirror}s.
@@ -43,7 +42,8 @@ public class RegexQualifiedTransfer extends QualTransfer<Regex> {
     public TransferResult<QualValue<Regex>, QualStore<Regex>> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<QualValue<Regex>, QualStore<Regex>> in) {
 
-        TransferResult<QualValue<Regex>, QualStore<Regex>> result = super.visitMethodInvocation(n, in);
+        TransferResult<QualValue<Regex>, QualStore<Regex>> result =
+                super.visitMethodInvocation(n, in);
 
         // refine result for some helper methods
         MethodAccessNode target = n.getTarget();
@@ -56,18 +56,20 @@ public class RegexQualifiedTransfer extends QualTransfer<Regex> {
         String receiverName = cn.getElement().toString();
 
         if (isRegexUtil(receiverName)) {
-            if (ElementUtils.matchesElement(method,
-                    IS_REGEX_METHOD_NAME, String.class, int.class)) {
+            if (ElementUtils.matchesElement(
+                    method, IS_REGEX_METHOD_NAME, String.class, int.class)) {
                 // RegexUtil.isRegex(s, groups) method
                 // (No special case is needed for isRegex(String) because of
                 // the annotation on that method's definition.)
 
                 QualStore<Regex> thenStore = result.getRegularStore();
                 QualStore<Regex> elseStore = thenStore.copy();
-                ConditionalTransferResult<QualValue<Regex>, QualStore<Regex>> newResult = new ConditionalTransferResult<>(
-                        result.getResultValue(), thenStore, elseStore);
-                Receiver firstParam = FlowExpressions.internalReprOf(analysis.getContext().getAnnotationProvider(),
-                        n.getArgument(0));
+                ConditionalTransferResult<QualValue<Regex>, QualStore<Regex>> newResult =
+                        new ConditionalTransferResult<>(
+                                result.getResultValue(), thenStore, elseStore);
+                Receiver firstParam =
+                        FlowExpressions.internalReprOf(
+                                analysis.getContext().getAnnotationProvider(), n.getArgument(0));
 
                 // add annotation with correct group count (if possible,
                 // regex annotation without count otherwise)
@@ -82,8 +84,8 @@ public class RegexQualifiedTransfer extends QualTransfer<Regex> {
                 }
                 return newResult;
 
-            } else if (ElementUtils.matchesElement(method,
-                    AS_REGEX_METHOD_NAME, String.class, int.class)) {
+            } else if (ElementUtils.matchesElement(
+                    method, AS_REGEX_METHOD_NAME, String.class, int.class)) {
                 // RegexUtil.asRegex(s, groups) method
                 // (No special case is needed for asRegex(String) because of
                 // the annotation on that method's definition.)
@@ -99,14 +101,16 @@ public class RegexQualifiedTransfer extends QualTransfer<Regex> {
                 } else {
                     regex = new RegexVal(0);
                 }
-                QualValue<Regex> newResultValue = analysis
-                        .createSingleAnnotationValue(regex,
-                                result.getResultValue().getType().getUnderlyingType().getOriginalType());
-                return new RegularTransferResult<>(newResultValue,
-                        result.getRegularStore());
+                QualValue<Regex> newResultValue =
+                        analysis.createSingleAnnotationValue(
+                                regex,
+                                result.getResultValue()
+                                        .getType()
+                                        .getUnderlyingType()
+                                        .getOriginalType());
+                return new RegularTransferResult<>(newResultValue, result.getRegularStore());
             }
         }
-
 
         return result;
     }

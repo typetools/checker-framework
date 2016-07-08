@@ -1,6 +1,5 @@
-import org.checkerframework.checker.nullness.qual.*;
-
 import java.util.Map;
+import org.checkerframework.checker.nullness.qual.*;
 
 public class ParameterExpression {
   public void m1(@Nullable Object o, @Nullable Object o1, @Nullable Object o2, @Nullable Object o3) {

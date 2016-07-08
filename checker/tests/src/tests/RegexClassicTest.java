@@ -3,16 +3,15 @@ package tests;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.checkerframework.framework.test.TestUtilities;
-
 import org.junit.runners.Parameterized.Parameters;
 
 public class RegexClassicTest extends CheckerFrameworkTest {
 
     public RegexClassicTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.regex.classic.RegexClassicChecker.class,
                 "regex_classic",
                 "-Anomsgtext");

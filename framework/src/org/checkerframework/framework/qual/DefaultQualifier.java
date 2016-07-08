@@ -1,11 +1,5 @@
 package org.checkerframework.framework.qual;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.LOCAL_VARIABLE;
@@ -13,6 +7,12 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE;
+
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Applied to a declaration of a package, type, method, variable, etc.,
@@ -52,5 +52,5 @@ public @interface DefaultQualifier {
     Class<? extends Annotation> value();
 
     /** @return the locations to which the annotation should be applied */
-    TypeUseLocation[] locations() default { TypeUseLocation.ALL };
+    TypeUseLocation[] locations() default {TypeUseLocation.ALL};
 }

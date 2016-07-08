@@ -1,8 +1,7 @@
-import java.util.List;
 import java.util.ArrayList;
-
-import org.checkerframework.checker.nullness.qual.*;
+import java.util.List;
 import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.*;
 
 // Test case for a mysterious error.
@@ -21,9 +20,9 @@ abstract class EnsuresNonNullIfTest2a {
                 //:: error: (flowexpr.parse.error)
                 isFoo();
 
-                // One error for dereferencing possibly-null list
-                return list.size() != 5;
-            }
+            // One error for dereferencing possibly-null list
+            return list.size() != 5;
+        }
     }
 }
 
@@ -41,10 +40,10 @@ abstract class EnsuresNonNullIfTest2b {
                 //:: error: (flowexpr.parse.error)
                 isFoo();
 
-                // assert list != null : "@AssumeAssertion(nullness)";
+            // assert list != null : "@AssumeAssertion(nullness)";
 
-                // One error for dereferencing possibly-null split_children
-                return list.size() != 5;
-            }
+            // One error for dereferencing possibly-null split_children
+            return list.size() != 5;
+        }
     }
 }

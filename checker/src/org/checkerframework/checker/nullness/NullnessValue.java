@@ -17,9 +17,8 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
 
     protected boolean isPolyNullNull;
 
-    public NullnessValue(CFAbstractAnalysis<NullnessValue, ?, ?> analysis,
-            AnnotatedTypeMirror type) {
+    public NullnessValue(
+            CFAbstractAnalysis<NullnessValue, ?, ?> analysis, AnnotatedTypeMirror type) {
         super(analysis, type);
     }
-
 }

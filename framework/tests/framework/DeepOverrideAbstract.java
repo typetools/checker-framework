@@ -1,5 +1,5 @@
-import tests.util.*;
 import java.util.*;
+import tests.util.*;
 
 public class DeepOverrideAbstract {
 
@@ -11,9 +11,7 @@ public class DeepOverrideAbstract {
         public abstract @Odd String abstractMethod();
     }
 
-    public static abstract class B extends A implements I {
-
-    }
+    public static abstract class B extends A implements I {}
 
     public static class C extends B {
         public @Odd String interfaceMethod() {
@@ -24,5 +22,4 @@ public class DeepOverrideAbstract {
             return "";
         }
     }
-
 }

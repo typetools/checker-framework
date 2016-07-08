@@ -16,9 +16,7 @@ class Issue496 {
         }
     }
 
-    public static <T> Optional<Entity<T>> testCase(
-        Class<T> targetClass
-    ) {
+    public static <T> Optional<Entity<T>> testCase(Class<T> targetClass) {
         return Optional.<T>empty().map((T val) -> new Entity<T>(val, targetClass));
     }
 }

@@ -1,6 +1,5 @@
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.reflection.qual.MethodVal;
@@ -16,30 +15,43 @@ public class NullnessReflectionTest {
     }
 
     void testReturnNonNull(
-            @MethodVal(className = "NullnessReflectionTest", methodName = "returnNonNull", params = 0) Method m)
+            @MethodVal(
+                className = "NullnessReflectionTest",
+                methodName = "returnNonNull",
+                params = 0
+            )
+            Method m)
             throws Exception {
         @NonNull Object o = m.invoke(this);
     }
 
-    void paramNullable(@Nullable Object param1, @Nullable Object param2) {
-    }
+    void paramNullable(@Nullable Object param1, @Nullable Object param2) {}
 
     void testParamNullable(
-            @MethodVal(className = "NullnessReflectionTest", methodName = "paramNullable", params = 2) Method m)
+            @MethodVal(
+                className = "NullnessReflectionTest",
+                methodName = "paramNullable",
+                params = 2
+            )
+            Method m)
             throws Exception {
         @NonNull Object o = m.invoke(this, null, null);
     }
 
-    static @NonNull Object paramAndReturnNonNullStatic(@Nullable Object param1,
-            @Nullable Object param2) {
+    static @NonNull Object paramAndReturnNonNullStatic(
+            @Nullable Object param1, @Nullable Object param2) {
         return new Object();
     }
 
     void testParamAndReturnNonNullStatic(
-            @MethodVal(className = "NullnessReflectionTest", methodName = "paramAndReturnNonNullStatic", params = 2) Method m)
+            @MethodVal(
+                className = "NullnessReflectionTest",
+                methodName = "paramAndReturnNonNullStatic",
+                params = 2
+            )
+            Method m)
             throws Exception {
         @NonNull Object o1 = m.invoke(this, null, null);
         @NonNull Object o2 = m.invoke(null, null, null);
     }
-
 }

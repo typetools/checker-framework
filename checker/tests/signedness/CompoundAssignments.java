@@ -2,7 +2,8 @@ import org.checkerframework.checker.signedness.qual.*;
 
 public class CompoundAssignments {
 
-    public void DivModTest(@Unsigned int unsigned, @UnknownSignedness int unknown, @Constant int constant) {
+    public void DivModTest(
+            @Unsigned int unsigned, @UnknownSignedness int unknown, @Constant int constant) {
 
         //:: error: (compound.assignment.unsigned.expression)
         unknown /= unsigned;

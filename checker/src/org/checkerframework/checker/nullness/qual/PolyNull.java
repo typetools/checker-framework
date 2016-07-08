@@ -1,10 +1,8 @@
 package org.checkerframework.checker.nullness.qual;
 
+import java.lang.annotation.*;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.lang.annotation.*;
-
 import org.checkerframework.framework.qual.*;
 
 /**
@@ -21,6 +19,5 @@ import org.checkerframework.framework.qual.*;
 @Documented
 @PolymorphicQualifier(Nullable.class)
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-public @interface PolyNull {
-}
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface PolyNull {}

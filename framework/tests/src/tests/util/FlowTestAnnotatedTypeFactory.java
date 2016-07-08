@@ -5,9 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.Bottom;
@@ -40,7 +38,12 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
                 new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(Value.class, Odd.class, MonotonicOdd.class, Unqualified.class, Bottom.class)));
+                        Arrays.asList(
+                                Value.class,
+                                Odd.class,
+                                MonotonicOdd.class,
+                                Unqualified.class,
+                                Bottom.class)));
     }
 
     @Override
@@ -58,15 +61,14 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     class FlowQualifierHierarchy extends GraphQualifierHierarchy {
 
-        public FlowQualifierHierarchy(MultiGraphFactory f,
-                AnnotationMirror bottom) {
+        public FlowQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {
             super(f, bottom);
         }
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(lhs, VALUE) &&
-                    AnnotationUtils.areSameIgnoringValues(rhs, VALUE)) {
+            if (AnnotationUtils.areSameIgnoringValues(lhs, VALUE)
+                    && AnnotationUtils.areSameIgnoringValues(rhs, VALUE)) {
                 return AnnotationUtils.areSame(lhs, rhs);
             }
             if (AnnotationUtils.areSameIgnoringValues(lhs, VALUE)) {

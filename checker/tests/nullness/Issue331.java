@@ -1,8 +1,8 @@
 // Test case for Issue 331:
 // https://github.com/typetools/checker-framework/issues/331
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 class TestTeranry {
     void foo(boolean b, List<Object> res) {
