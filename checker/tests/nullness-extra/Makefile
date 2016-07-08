@@ -1,11 +1,13 @@
-# All tests: passing and failing
-.PHONY: all skipped Bug109 multiple-errors package-anno issue265 issue309 compat shorthand issue502 issue559 issue594 issue607
+# Tests that are currently passing
+PASSING_TESTS = Bug109 multiple-errors package-anno issue265 issue309 compat shorthand issue502 issue559 issue594 issue607
+# Tests that are currently not passing
+FAILING_TESTS = issue559
 
 # Tests that are currently passing
-all: Bug109 compat issue265 issue309 issue502 multiple-errors package-anno shorthand issue607 issue594
+all: ${PASSING_TESTS}
 
 # Tests that are currently not passing
-skipped: issue559
+skipped: ${FAILING_TESTS}
 
 
 Bug109:
@@ -42,3 +44,6 @@ shorthand:
 
 issue607:
 	make -C issue607
+
+# All tests: passing and failing
+.PHONY: all skipped ${PASSING_TESTS}
