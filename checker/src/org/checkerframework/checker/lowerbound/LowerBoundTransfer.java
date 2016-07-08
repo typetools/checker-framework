@@ -54,7 +54,11 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
             new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
         /** do things here */
-        greaterThanHelper(left, right, thenStore);
+        gtHelper(left, right, thenStore);
+
+        /** inverse */
+        gteHelper(right, left, elseStore);
+        
         return newResult;
     }
 
@@ -71,7 +75,11 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
         /** this makes sense because they have the same result in the chart. If I'm wrong about
             that, then we'd need to make something else to put here */
-        equalToHelper(left, right, thenStore);
+        gteHelper(left, right, thenStore);
+
+        /** call the inverse */
+        gtHelper(right, left, elseStore);
+        
         return newResult;
     }
 
@@ -86,11 +94,14 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         ConditionalTransferResult<CFValue, CFStore> newResult =
             new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
-        /** call the inverse, because a LTE only gives us info for the else branch */
-        greaterThanHelper(right, left, elseStore);
+        /** equivalent to a flipped GTE */
+        gteHelper(right, left, thenStore);
+        
+        /** call the inverse */
+        gtHelper(left, right, elseStore);
         return newResult;
     }
-    
+
     @Override
     public TransferResult<CFValue, CFStore> visitLessThan(LessThanNode node,
                                                              TransferInput<CFValue, CFStore> in) {
@@ -102,12 +113,14 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         ConditionalTransferResult<CFValue, CFStore> newResult =
             new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
-        /** call the inverse, because a LT only gives us info for the else branch */
-        /** nb if we change GreaterThanOrEqual we need to change this too */
-        equalToHelper(right, left, elseStore);
+        /** x < y ~ y > x */
+        gtHelper(right, left, thenStore);
+        
+        /** inverse */
+        gteHelper(left, right, elseStore);
         return newResult;
     }
-    
+
     @Override
     public TransferResult<CFValue, CFStore>
         visitEqualTo(EqualToNode node, TransferInput<CFValue, CFStore> in) {
@@ -121,12 +134,12 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
         /** have to call this in both directions since it only adjusts the first argument */
         /** trust me, this is the simpler way to do this */
-        equalToHelper(left, right, thenStore);
-        equalToHelper(right, left, thenStore);
+        gteHelper(left, right, thenStore);
+        gteHelper(right, left, thenStore);
         return newResult;
     }
-    
-    private void greaterThanHelper(Node left, Node right, CFStore store) {
+
+    private void gtHelper(Node left, Node right, CFStore store) {
         AnnotatedTypeMirror rightType = atypeFactory.getAnnotatedType(right.getTree());
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
         if (rightType.hasAnnotation(N1P)) {
@@ -144,8 +157,8 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
     }
 
     /** this works by elevating left to the level of right, basically */
-    /** if you're actually checking equality, you'd want to call this twice - once in each direction */
-    private void equalToHelper(Node left, Node right, CFStore store) {
+    /** to check equality, you'd want to call this twice - once in each direction */
+    private void gteHelper(Node left, Node right, CFStore store) {
         AnnotatedTypeMirror rightType = atypeFactory.getAnnotatedType(right.getTree());
         AnnotatedTypeMirror leftType = atypeFactory.getAnnotatedType(left.getTree());
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
@@ -160,7 +173,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
             store.insertValue(leftRec, NN);
             return;
         }
-        if(leftType.hasAnnotation(NN)) {
+        if (leftType.hasAnnotation(NN)) {
             return;
         }
         if (rightType.hasAnnotation(N1P)) {
