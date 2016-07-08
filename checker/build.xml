@@ -369,7 +369,7 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <!-- With Ant 1.9.4 or later, add
+        <!-- With Ant 1.9.4 or later, add to each javadoc task:
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
