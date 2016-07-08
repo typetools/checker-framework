@@ -1002,9 +1002,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * checked.
      * @param classTree ClassTree on which to perfrom preprocessing
      */
-    public void preProcessClassTree(ClassTree classTree) {
-
-    }
+    public void preProcessClassTree(ClassTree classTree) {}
 
     /**
      * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} after the ClassTree has been

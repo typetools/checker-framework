@@ -316,7 +316,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     validateTypeOf(im);
                 }
             }
-            Void returnValue =  super.visitClass(node, p);
+            Void returnValue = super.visitClass(node, p);
             atypeFactory.postProcessClassTree(node);
             return returnValue;
         } finally {
