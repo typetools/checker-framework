@@ -61,7 +61,7 @@ class Options {
                 arg += ch;
                 ii++;
                 while ((ii < args.length()) && (args.charAt(ii) != ch)) {
-                  arg += args.charAt(ii++);
+                    arg += args.charAt(ii++);
                 }
                 arg += ch;
             } else if (Character.isWhitespace(ch)) {
@@ -69,7 +69,7 @@ class Options {
                 arg_list.add(arg);
                 arg = "";
                 while ((ii < args.length()) && Character.isWhitespace(args.charAt(ii))) {
-                  ii++;
+                    ii++;
                 }
                 if (ii < args.length()) {
                     ii--;
