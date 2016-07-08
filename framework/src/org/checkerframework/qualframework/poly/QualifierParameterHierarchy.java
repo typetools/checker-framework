@@ -1,9 +1,7 @@
 package org.checkerframework.qualframework.poly;
 
 import java.util.*;
-
 import org.checkerframework.javacutil.Pair;
-
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
 /** This class provides a {@code QualifierHierarchy} implementation for
@@ -21,7 +19,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     /** The top QualParams in the QualifierHierarchy */
     public QualParams<Q> PARAMS_TOP;
 
-    public QualifierParameterHierarchy(QualifierHierarchy<Wildcard<Q>> containmentHierarchy,
+    public QualifierParameterHierarchy(
+            QualifierHierarchy<Wildcard<Q>> containmentHierarchy,
             QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
         this.containmentHierarchy = containmentHierarchy;
         this.polyQualHierarchy = polyQualHierarchy;
@@ -36,7 +35,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     /** Construct an instance from a {@link ContainmentHierarchy} or
      * equivalent.
      */
-    public static <Q> QualifierParameterHierarchy<Q> fromContainment(QualifierHierarchy<Wildcard<Q>> containmentHierarchy,
+    public static <Q> QualifierParameterHierarchy<Q> fromContainment(
+            QualifierHierarchy<Wildcard<Q>> containmentHierarchy,
             QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
         return new QualifierParameterHierarchy<>(containmentHierarchy, polyQualHierarchy);
     }
@@ -44,7 +44,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     /** Construct an instance from a {@link PolyQualHierarchy} or equivalent,
      * using the default {@link ContainmentHierarchy} implementation.
      */
-    public static <Q> QualifierParameterHierarchy<Q> fromPolyQual(QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
+    public static <Q> QualifierParameterHierarchy<Q> fromPolyQual(
+            QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
         return fromContainment(new ContainmentHierarchy<Q>(polyQualHierarchy), polyQualHierarchy);
     }
 
@@ -52,10 +53,10 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
      * default {@link PolyQualHierarchy} and {@link ContainmentHierarchy}
      * implementations.
      */
-    public static <Q> QualifierParameterHierarchy<Q> fromGround(QualifierHierarchy<Q> groundHierarchy) {
+    public static <Q> QualifierParameterHierarchy<Q> fromGround(
+            QualifierHierarchy<Q> groundHierarchy) {
         return fromPolyQual(new PolyQualHierarchy<Q>(groundHierarchy));
     }
-
 
     /** Get the containment hierarchy that is used to compare wildcards. */
     protected QualifierHierarchy<Wildcard<Q>> getContaintmentHierarchy() {
@@ -70,7 +71,6 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     public void setConstraintTarget(List<Pair<Wildcard<Q>, Wildcard<Q>>> constraintTarget) {
         this.constraintTarget = constraintTarget;
     }
-
 
     @Override
     public boolean isSubtype(QualParams<Q> subtype, QualParams<Q> supertype) {
@@ -89,8 +89,9 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
             return true;
         }
 
-        if (subtype == PARAMS_TOP || supertype == PARAMS_BOTTOM ||
-                !subtype.keySet().equals(supertype.keySet())) {
+        if (subtype == PARAMS_TOP
+                || supertype == PARAMS_BOTTOM
+                || !subtype.keySet().equals(supertype.keySet())) {
             if (constraintTarget == null) {
                 return false;
             } else {
@@ -105,7 +106,10 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
                     return false;
                 }
             } else {
-                constraintTarget.add(Pair.of(new Wildcard<>(subtype.getPrimary()), new Wildcard<>(supertype.getPrimary())));
+                constraintTarget.add(
+                        Pair.of(
+                                new Wildcard<>(subtype.getPrimary()),
+                                new Wildcard<>(supertype.getPrimary())));
             }
         }
 
@@ -125,7 +129,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     @Override
     public QualParams<Q> leastUpperBound(QualParams<Q> a, QualParams<Q> b) {
         if (this.constraintTarget != null) {
-            throw new UnsupportedOperationException("unexpected leastUpperBound when generating constraints");
+            throw new UnsupportedOperationException(
+                    "unexpected leastUpperBound when generating constraints");
         }
 
         if (a == PARAMS_BOTTOM) {
@@ -166,7 +171,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     @Override
     public QualParams<Q> greatestLowerBound(QualParams<Q> a, QualParams<Q> b) {
         if (this.constraintTarget != null) {
-            throw new UnsupportedOperationException("unexpected leastUpperBound when generating constraints");
+            throw new UnsupportedOperationException(
+                    "unexpected leastUpperBound when generating constraints");
         }
 
         if (a == PARAMS_TOP) {
@@ -211,20 +217,24 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
      * Create and set the top of the qual params hierarchy
      */
     private void setTop(final QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
-        PARAMS_TOP = new QualParams<Q>(polyQualHierarchy.getTop()) {
-            public String toString() {
-                return PARAMS_TOP_TO_STRING;
-            }};
+        PARAMS_TOP =
+                new QualParams<Q>(polyQualHierarchy.getTop()) {
+                    public String toString() {
+                        return PARAMS_TOP_TO_STRING;
+                    }
+                };
     }
 
     /**
      * Create and set the bottom of the qual params hierarchy
      */
     private void setBottom(final QualifierHierarchy<PolyQual<Q>> polyQualHierarchy) {
-        PARAMS_BOTTOM = new QualParams<Q>(polyQualHierarchy.getBottom()) {
-            public String toString() {
-                return PARAMS_BOTTOM_TO_STRING;
-            }};
+        PARAMS_BOTTOM =
+                new QualParams<Q>(polyQualHierarchy.getBottom()) {
+                    public String toString() {
+                        return PARAMS_BOTTOM_TO_STRING;
+                    }
+                };
     }
 
     @Override

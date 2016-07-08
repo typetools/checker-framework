@@ -5,9 +5,7 @@ public abstract class VarInfoName {
 
     public abstract static class Visitor<T extends Object> {}
 
-    public abstract static class BooleanAndVisitor
-        extends Visitor<Boolean>
-    {
+    public abstract static class BooleanAndVisitor extends Visitor<Boolean> {
         private boolean result;
 
         public BooleanAndVisitor(VarInfoName name) {

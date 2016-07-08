@@ -4,23 +4,25 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 class A {
-  static class T {
-    void xyz() {}
-  }
+    static class T {
+        void xyz() {}
+    }
 
-  interface U {
-    void method();
-  }
+    interface U {
+        void method();
+    }
 
-  private final @NonNull T tField;
-  private U uField;
-  public A(@NonNull T t) {
-    tField = t;
-    uField = new U() {
-      @Override
-      public void method() {
-        tField.xyz();
-      }
-    };
-  }
+    private final @NonNull T tField;
+    private U uField;
+
+    public A(@NonNull T t) {
+        tField = t;
+        uField =
+                new U() {
+                    @Override
+                    public void method() {
+                        tField.xyz();
+                    }
+                };
+    }
 }

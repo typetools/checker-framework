@@ -1,14 +1,12 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-
-import java.util.Collection;
-import java.util.LinkedList;
-
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.Tree;
+import java.util.Collection;
+import java.util.LinkedList;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for member references and lambdas.

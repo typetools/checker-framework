@@ -1,16 +1,14 @@
 package org.checkerframework.framework.util.element;
 
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.TargetType;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.TargetType;
 
 /**
  * Applies the annotations present for a class type parameter onto an AnnotatedTypeVariable.  See
@@ -18,7 +16,8 @@ import com.sun.tools.javac.code.TargetType;
  */
 public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
 
-    public static void apply(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
+    public static void apply(
+            AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
         new ClassTypeParamApplier(type, element, typeFactory).extractAndApply();
     }
 
@@ -26,8 +25,8 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
      * @return true if element represents a type parameter for a class
      */
     public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
-        return element.getKind() == ElementKind.TYPE_PARAMETER &&
-               element.getEnclosingElement() instanceof Symbol.ClassSymbol;
+        return element.getKind() == ElementKind.TYPE_PARAMETER
+                && element.getEnclosingElement() instanceof Symbol.ClassSymbol;
     }
 
     /**
@@ -35,12 +34,18 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
      */
     private final Symbol.ClassSymbol enclosingClass;
 
-    ClassTypeParamApplier(AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
+    ClassTypeParamApplier(
+            AnnotatedTypeVariable type, Element element, AnnotatedTypeFactory typeFactory) {
         super(type, element, typeFactory);
 
-        if (!( element.getEnclosingElement() instanceof Symbol.ClassSymbol )) {
-            ErrorReporter.errorAbort("TypeParameter not enclosed by class?  Type( " + type + " ) " +
-                    "Element ( " + element + " ) ");
+        if (!(element.getEnclosingElement() instanceof Symbol.ClassSymbol)) {
+            ErrorReporter.errorAbort(
+                    "TypeParameter not enclosed by class?  Type( "
+                            + type
+                            + " ) "
+                            + "Element ( "
+                            + element
+                            + " ) ");
         }
 
         enclosingClass = (Symbol.ClassSymbol) element.getEnclosingElement();
@@ -72,7 +77,7 @@ public class ClassTypeParamApplier extends TypeParamElementAnnotationApplier {
 
     @Override
     protected TargetType[] validTargets() {
-        return new TargetType[]{ TargetType.CLASS_EXTENDS };
+        return new TargetType[] {TargetType.CLASS_EXTENDS};
     }
 
     /**

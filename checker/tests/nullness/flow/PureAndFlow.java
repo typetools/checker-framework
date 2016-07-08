@@ -10,6 +10,7 @@ public abstract class PureAndFlow {
     @org.checkerframework.dataflow.qual.Pure
     //:: warning: (purity.deterministic.void.method)
     void pure(String s2) {}
+
     @org.checkerframework.dataflow.qual.Deterministic
     //:: warning: (purity.deterministic.void.method)
     void det(String s3) {}
@@ -17,6 +18,7 @@ public abstract class PureAndFlow {
     @org.checkerframework.dataflow.qual.Pure
     //:: warning: (purity.deterministic.void.method)
     abstract void abstractpure(String s4);
+
     @org.checkerframework.dataflow.qual.Deterministic
     //:: warning: (purity.deterministic.void.method)
     abstract void abstractdet(String s4);
@@ -40,6 +42,7 @@ public abstract class PureAndFlow {
         @org.checkerframework.dataflow.qual.Pure
         //:: warning: (purity.deterministic.void.method)
         void ifacepure(String s);
+
         @org.checkerframework.dataflow.qual.Deterministic
         //:: warning: (purity.deterministic.void.method)
         void ifacedet(String s);
@@ -49,6 +52,7 @@ public abstract class PureAndFlow {
         @org.checkerframework.dataflow.qual.Pure
         //:: warning: (purity.deterministic.constructor)
         Cons(String s) {}
+
         @org.checkerframework.dataflow.qual.Deterministic
         //:: warning: (purity.deterministic.constructor)
         Cons(int i) {}

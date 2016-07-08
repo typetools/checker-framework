@@ -1,9 +1,8 @@
 // Keep somewhat in sync with
 // ../defaultsPersist/Driver.java and ../PersistUtil.
 
-
-
-
+import com.sun.tools.classfile.Annotation;
+import com.sun.tools.classfile.ClassFile;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -15,9 +14,6 @@ import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.sun.tools.classfile.ClassFile;
-import com.sun.tools.classfile.Annotation;
 
 public class Driver {
 
@@ -44,12 +40,13 @@ public class Driver {
                 continue;
             }
             if (method.getReturnType() != String.class) {
-                throw new IllegalArgumentException("Test method needs to return a string: " + method);
+                throw new IllegalArgumentException(
+                        "Test method needs to return a string: " + method);
             }
             String testClass = PersistUtil.testClassOf(method);
 
             try {
-                String compact = (String)method.invoke(object);
+                String compact = (String) method.invoke(object);
                 String fullFile = PersistUtil.wrap(compact);
                 ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
                 List<Annotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
@@ -100,7 +97,6 @@ public class Driver {
     private String expectedOf(ADescription d) {
         return d.annotation();
     }
-
 }
 
 @Retention(RetentionPolicy.RUNTIME)

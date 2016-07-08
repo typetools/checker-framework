@@ -4,6 +4,7 @@ package org.checkerframework.dataflow.cfg;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import java.util.Map;
 import org.checkerframework.dataflow.analysis.AbstractValue;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -13,14 +14,12 @@ import org.checkerframework.dataflow.cfg.block.Block;
 import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
-import java.util.Map;
-
 /**
  * Perform some visualization on a control flow graph.
  * The particular operations depend on the implementation.
  */
-public interface CFGVisualizer<A extends AbstractValue<A>,
-        S extends Store<S>, T extends TransferFunction<A, S>> {
+public interface CFGVisualizer<
+        A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
     /**
      * Initialization method guaranteed to be called once before the
      * first invocation of {@link visualize}.
@@ -50,8 +49,8 @@ public interface CFGVisualizer<A extends AbstractValue<A>,
      *            indicate that this information should not be output.
      * @return possible analysis results, e.g. generated file names.
      */
-    /*@Nullable*/ Map<String, Object> visualize(ControlFlowGraph cfg, Block entry,
-            /*@Nullable*/ Analysis<A, S, T> analysis);
+    /*@Nullable*/ Map<String, Object> visualize(
+            ControlFlowGraph cfg, Block entry, /*@Nullable*/ Analysis<A, S, T> analysis);
 
     /**
      * Delegate the visualization responsibility

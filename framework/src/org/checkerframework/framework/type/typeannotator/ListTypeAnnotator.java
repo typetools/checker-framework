@@ -1,10 +1,9 @@
 package org.checkerframework.framework.type.typeannotator;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * ListTypeAnnotator is a TypeAnnotator that executes a list of {@link TypeAnnotator}

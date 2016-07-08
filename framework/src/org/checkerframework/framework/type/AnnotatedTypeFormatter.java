@@ -27,5 +27,4 @@ public interface AnnotatedTypeFormatter {
      */
     @SideEffectFree
     public String format(AnnotatedTypeMirror type, boolean printVerbose);
-
 }

@@ -1,7 +1,10 @@
 package org.checkerframework.common.wholeprograminference;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import javax.lang.model.element.ExecutableElement;
-
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -10,11 +13,6 @@ import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
 import org.checkerframework.dataflow.cfg.node.ReturnNode;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.tools.javac.code.Symbol.ClassSymbol;
 
 /**
  * Interface for a whole-program inference implementation.
@@ -38,7 +36,8 @@ public interface WholeProgramInference {
      * type hierarchy will be used to update the constructor's parameters' types.
      */
     void updateInferredConstructorParameterTypes(
-            ObjectCreationNode objectCreationNode, ExecutableElement constructorElt,
+            ObjectCreationNode objectCreationNode,
+            ExecutableElement constructorElt,
             AnnotatedTypeFactory atf);
 
     /**
@@ -52,8 +51,10 @@ public interface WholeProgramInference {
      * type hierarchy will be used to update the method parameters' types.
      */
     void updateInferredMethodParameterTypes(
-            MethodInvocationNode methodInvNode, Tree receiverTree,
-            ExecutableElement methodElt, AnnotatedTypeFactory atf);
+            MethodInvocationNode methodInvNode,
+            Tree receiverTree,
+            ExecutableElement methodElt,
+            AnnotatedTypeFactory atf);
 
     /**
      * Updates the parameter types of the method {@code methodTree} based on the
@@ -66,8 +67,10 @@ public interface WholeProgramInference {
      * type hierarchy will be used to update the parameter type.
      */
     void updateInferredMethodParameterTypes(
-            MethodTree methodTree, ExecutableElement methodElt,
-            AnnotatedExecutableType overriddenMethod, AnnotatedTypeFactory atf);
+            MethodTree methodTree,
+            ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod,
+            AnnotatedTypeFactory atf);
 
     /**
      * Updates the receiver type of the method {@code methodElt} based on the
@@ -80,8 +83,10 @@ public interface WholeProgramInference {
      * type hierarchy will be used to update the receiver type.
      */
     void updateInferredMethodReceiverType(
-            MethodTree methodTree, ExecutableElement methodElt,
-            AnnotatedExecutableType overriddenMethod, AnnotatedTypeFactory atf);
+            MethodTree methodTree,
+            ExecutableElement methodElt,
+            AnnotatedExecutableType overriddenMethod,
+            AnnotatedTypeFactory atf);
 
     /**
      * Updates the type of {@code parameter} based on an assignment of
@@ -93,8 +98,11 @@ public interface WholeProgramInference {
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the parameter type.
      */
-    void updateInferredParameterType(LocalVariableNode parameter,
-            Node rhs, ClassTree classTree, MethodTree methodTree,
+    void updateInferredParameterType(
+            LocalVariableNode parameter,
+            Node rhs,
+            ClassTree classTree,
+            MethodTree methodTree,
             AnnotatedTypeFactory atf);
 
     /**
@@ -106,8 +114,8 @@ public interface WholeProgramInference {
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the field's type.
      */
-    void updateInferredFieldType(FieldAccessNode field, Node rhs,
-            ClassTree classTree, AnnotatedTypeFactory atf);
+    void updateInferredFieldType(
+            FieldAccessNode field, Node rhs, ClassTree classTree, AnnotatedTypeFactory atf);
 
     /**
      * Updates the return type of the method {@code methodTree} based on
@@ -119,13 +127,15 @@ public interface WholeProgramInference {
      * @param atf the annotated type factory of a given type system, whose
      * type hierarchy will be used to update the method's return type.
      */
-    void updateInferredMethodReturnType(ReturnNode returnedExpression,
-            ClassSymbol classSymbol, MethodTree methodTree,
+    void updateInferredMethodReturnType(
+            ReturnNode returnedExpression,
+            ClassSymbol classSymbol,
+            MethodTree methodTree,
             AnnotatedTypeFactory atf);
 
     /**
      * Saves the inferred results. Ideally should be called at the end of the
      * type-checking process.
      */
-     void saveResults();
+    void saveResults();
 }

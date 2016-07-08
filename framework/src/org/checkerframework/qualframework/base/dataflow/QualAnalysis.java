@@ -1,5 +1,6 @@
 package org.checkerframework.qualframework.base.dataflow;
 
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -9,8 +10,6 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.TypeMirrorConverter;
 import org.checkerframework.qualframework.util.QualifierContext;
-
-import javax.lang.model.type.TypeMirror;
 
 /**
  * Checkers should extend a QualAnalysis to customize the TransferFunction for their checker.
@@ -49,7 +48,8 @@ public class QualAnalysis<Q> extends Analysis<QualValue<Q>, QualStore<Q>, QualTr
     }
 
     public QualStore<Q> createCopiedStore(QualStore<Q> qualStore) {
-        return new QualStore<>(this, adapter.createCopiedStore(qualStore.getUnderlyingStore().copy()));
+        return new QualStore<>(
+                this, adapter.createCopiedStore(qualStore.getUnderlyingStore().copy()));
     }
 
     public QualValue<Q> createAbstractValue(QualifiedTypeMirror<Q> type) {
@@ -62,7 +62,8 @@ public class QualAnalysis<Q> extends Analysis<QualValue<Q>, QualStore<Q>, QualTr
     }
 
     public QualValue<Q> createSingleAnnotationValue(Q qual, TypeMirror underlyingType) {
-        CFValue atm = adapter.createSingleAnnotationValue(converter.getAnnotation(qual), underlyingType);
+        CFValue atm =
+                adapter.createSingleAnnotationValue(converter.getAnnotation(qual), underlyingType);
         return new QualValue<>(converter.getQualifiedType(atm.getType()), this);
     }
 

@@ -18,7 +18,7 @@ class Enumerate {
         this.current = node;
     }
 
-    @EnsuresNonNullIf(expression="current", result=true)
+    @EnsuresNonNullIf(expression = "current", result = true)
     public boolean hasMoreElements() {
         return (current != null);
     }

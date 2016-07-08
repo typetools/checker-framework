@@ -14,6 +14,5 @@ import java.lang.annotation.Target;
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
-public @interface StaticallyExecutable {
-}
+@Target({ElementType.METHOD})
+public @interface StaticallyExecutable {}

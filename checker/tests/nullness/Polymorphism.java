@@ -17,16 +17,16 @@ public class Polymorphism {
 
         // test flow
         nullable = "m";
-        nonNull = identity(nullable);  // valid
+        nonNull = identity(nullable); // valid
     }
 
     // Test within a method
     @PolyNull String random(@PolyNull String m) {
         if (m == "d") {
             //:: error: (return.type.incompatible)
-            return null;    // invalid
+            return null; // invalid
         }
-        return "m";         // valid
+        return "m"; // valid
     }
 
     public static @PolyNull Object staticIdentity(@PolyNull Object a) {
@@ -37,5 +37,4 @@ public class Polymorphism {
         @Nullable Object nullable2 = staticIdentity(nullable);
         @NonNull Object nonnull2 = staticIdentity(nonnull);
     }
-
 }

@@ -4,12 +4,11 @@ package org.checkerframework.dataflow.analysis;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import java.util.List;
 import org.checkerframework.dataflow.cfg.UnderlyingAST;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NodeVisitor;
-
-import java.util.List;
 
 /**
  * Interface of a transfer function for the abstract interpretation used for the
@@ -44,6 +43,5 @@ public interface TransferFunction<A extends AbstractValue<A>, S extends Store<S>
      * @return the initial store to be used by the org.checkerframework.dataflow analysis.
      *         {@code parameters} is only set if the underlying AST is a method.
      */
-    S initialStore(UnderlyingAST underlyingAST,
-            /*@Nullable*/ List<LocalVariableNode> parameters);
+    S initialStore(UnderlyingAST underlyingAST, /*@Nullable*/ List<LocalVariableNode> parameters);
 }

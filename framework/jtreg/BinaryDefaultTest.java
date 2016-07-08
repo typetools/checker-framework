@@ -9,7 +9,7 @@
 import lubglb.quals.*;
 
 class BinaryDefaultTest {
-  void test1(@B BinaryDefaultTestInterface bar) {
-    @F BinaryDefaultTestBinary foo = BinaryDefaultTestBinary.foo(bar);
-  }
+    void test1(@B BinaryDefaultTestInterface bar) {
+        @F BinaryDefaultTestBinary foo = BinaryDefaultTestBinary.foo(bar);
+    }
 }

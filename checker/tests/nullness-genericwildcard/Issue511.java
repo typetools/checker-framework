@@ -1,11 +1,9 @@
 // Addtional test case for issue #511:
 // https://github.com/typetools/checker-framework/issues/511
-class MyGeneric<T extends Number> {
-}
+class MyGeneric<T extends Number> {}
 
 class MySuperClass {
-    public void method(MyGeneric<? extends Object> x) {
-    }
+    public void method(MyGeneric<? extends Object> x) {}
 }
 
 public class Issue511 extends MySuperClass {
@@ -23,8 +21,8 @@ public class Issue511 extends MySuperClass {
 
 }
 
-class Use{
-    MyGeneric<? extends  Object> wildCardExtendsObject = new MyGeneric<>();
+class Use {
+    MyGeneric<? extends Object> wildCardExtendsObject = new MyGeneric<>();
     MyGeneric<? extends Number> wildCardExtendsNumber = wildCardExtendsObject;
     MyGeneric<?> wildCardNoBound = new MyGeneric<>();
     MyGeneric<? extends Number> wildCardExtendsNumber2 = wildCardNoBound;

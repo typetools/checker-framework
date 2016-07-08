@@ -33,5 +33,4 @@ public interface Block {
      * @return the unique identifier of this block
      */
     long getId();
-
 }

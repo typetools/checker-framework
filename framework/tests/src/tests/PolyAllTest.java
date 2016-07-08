@@ -1,7 +1,6 @@
 package tests;
 
 import java.io.File;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -10,7 +9,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class PolyAllTest extends CheckerFrameworkTest {
 
     public PolyAllTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 polyall.PolyAllChecker.class,
                 "polyall",
                 "-Anomsgtext",
@@ -18,7 +18,7 @@ public class PolyAllTest extends CheckerFrameworkTest {
     }
 
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"polyall"};
+    public static String[] getTestDirs() {
+        return new String[] {"polyall"};
     }
 }

@@ -1,19 +1,15 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import javax.lang.model.element.VariableElement;
-
-import org.checkerframework.dataflow.util.HashCodeUtils;
-
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import java.util.Collection;
+import java.util.Collections;
+import javax.lang.model.element.VariableElement;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A node for a field access, including a method accesses:
@@ -45,7 +41,7 @@ public class FieldAccessNode extends Node {
             this.element = (VariableElement) TreeUtils.elementFromUse((MemberSelectTree) tree);
         } else {
             assert tree instanceof IdentifierTree;
-            this.element =  (VariableElement) TreeUtils.elementFromUse((IdentifierTree) tree);
+            this.element = (VariableElement) TreeUtils.elementFromUse((IdentifierTree) tree);
         }
     }
 

@@ -18,12 +18,12 @@ class SubEnumerate {
         this.current = node;
     }
 
-    @EnsuresNonNullIf(expression="current", result=true)
+    @EnsuresNonNullIf(expression = "current", result = true)
     public boolean hasMoreElements() {
         return (current != null);
     }
-
 }
+
 class Enumerate extends SubEnumerate {
 
     public Enumerate(Node node) {
@@ -33,7 +33,6 @@ class Enumerate extends SubEnumerate {
     public boolean hasMoreElements() {
         return (current != null);
     }
-
 }
 
 class Main {
@@ -41,7 +40,6 @@ class Main {
         Node n2 = new Node(2, null);
         Node n1 = new Node(1, n2);
         Enumerate e = new Enumerate(n1);
-        while (e.hasMoreElements()) {
-        }
+        while (e.hasMoreElements()) {}
     }
 }

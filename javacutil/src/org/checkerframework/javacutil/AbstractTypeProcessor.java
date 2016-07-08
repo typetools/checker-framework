@@ -1,25 +1,22 @@
 package org.checkerframework.javacutil;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.processing.*;
-import javax.lang.model.element.Name;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementFilter;
-
-import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.comp.CompileStates.CompileState;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Log;
-
 import com.sun.source.tree.ClassTree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.comp.CompileStates.CompileState;
+import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Log;
+import java.util.HashSet;
+import java.util.Set;
+import javax.annotation.processing.*;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.ElementFilter;
 
 /**
  * This class is an abstract annotation processor designed to be a
@@ -106,7 +103,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
     /**
      * Constructor for subclasses to call.
      */
-    protected AbstractTypeProcessor() { }
+    protected AbstractTypeProcessor() {}
 
     /**
      * {@inheritDoc}
@@ -119,8 +116,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
         JavacTask.instance(env).addTaskListener(listener);
         Context ctx = ((JavacProcessingEnvironment) processingEnv).getContext();
         JavaCompiler compiler = JavaCompiler.instance(ctx);
-        compiler.shouldStopPolicyIfNoError = CompileState.max(compiler.shouldStopPolicyIfNoError,
-                                                           CompileState.FLOW);
+        compiler.shouldStopPolicyIfNoError =
+                CompileState.max(compiler.shouldStopPolicyIfNoError, CompileState.FLOW);
     }
 
     /**
@@ -129,8 +126,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * It registers the names of elements to process.
      */
     @Override
-    public final boolean process(Set<? extends TypeElement> annotations,
-            RoundEnvironment roundEnv) {
+    public final boolean process(
+            Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (TypeElement elem : ElementFilter.typesIn(roundEnv.getRootElements())) {
             elements.add(elem.getQualifiedName());
         }
@@ -166,7 +163,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * <p>If an error (a Java error or a processor error) is reported, this
      * method is not guaranteed to be invoked.
      */
-    public void typeProcessingOver() { }
+    public void typeProcessingOver() {}
 
     /**
      * A task listener that invokes the processor whenever a class is fully
@@ -215,6 +212,6 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
         }
 
         @Override
-        public void started(TaskEvent e) { }
+        public void started(TaskEvent e) {}
     }
 }

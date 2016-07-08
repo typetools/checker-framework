@@ -1,7 +1,6 @@
 package org.checkerframework.common.reflection;
 
 import java.util.LinkedHashSet;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueChecker;
@@ -29,6 +28,7 @@ public class ClassValChecker extends BaseTypeChecker {
         subCheckers.add(ValueChecker.class);
         return subCheckers;
     }
+
     @Override
     public boolean shouldResolveReflection() {
         // Because this checker is a subchecker of MethodVal,

@@ -8,5 +8,4 @@ public class FlowAssignment {
         String t = s;
         t.startsWith("f");
     }
-
 }

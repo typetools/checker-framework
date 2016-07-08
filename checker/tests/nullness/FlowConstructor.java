@@ -22,7 +22,7 @@ public class FlowConstructor {
     public FlowConstructor(double p) {
         a = "m";
         //:: error: (method.invocation.invalid)
-        nonRawMethod();  // error
+        nonRawMethod(); // error
         b = "n";
     }
 
@@ -31,9 +31,10 @@ public class FlowConstructor {
         b.toString();
     }
 
-    void semiRawMethod(@Raw(FlowConstructor.class) @UnderInitialization(FlowConstructor.class) FlowConstructor this) {
+    void semiRawMethod(
+            @Raw(FlowConstructor.class) @UnderInitialization(FlowConstructor.class) FlowConstructor
+                    this) {
         a.toString();
         b.toString();
     }
-
 }

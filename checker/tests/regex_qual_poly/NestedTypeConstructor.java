@@ -6,6 +6,6 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 // Not regex-specific, but a convenient location.
 class NestedTypeConstructor {
     class Inner {
-        @Regex Inner() { }
+        @Regex Inner() {}
     }
 }

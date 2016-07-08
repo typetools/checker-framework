@@ -1,5 +1,8 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -15,11 +18,6 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.TypesUtils;
-
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.type.TypeKind;
 
 /**
  * Takes a single step in reducing a AFConstraint.
@@ -43,28 +41,40 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     public final Class<? extends AFConstraint> reducerType;
     public final AnnotatedTypeFactory typeFactory;
 
-    public AFReducingVisitor(final Class<? extends AFConstraint> reducerType,
-                             final AnnotatedTypeFactory typeFactory) {
+    public AFReducingVisitor(
+            final Class<? extends AFConstraint> reducerType,
+            final AnnotatedTypeFactory typeFactory) {
         this.reducerType = reducerType;
         this.typeFactory = typeFactory;
     }
 
-    public abstract AFConstraint makeConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
-    public abstract AFConstraint makeInverseConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
-    public abstract AFConstraint makeEqualityConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
+    public abstract AFConstraint makeConstraint(
+            AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
 
-    public void addConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype,
-                              Set<AFConstraint> constraints) {
+    public abstract AFConstraint makeInverseConstraint(
+            AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
+
+    public abstract AFConstraint makeEqualityConstraint(
+            AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype);
+
+    public void addConstraint(
+            AnnotatedTypeMirror subtype,
+            AnnotatedTypeMirror supertype,
+            Set<AFConstraint> constraints) {
         constraints.add(makeConstraint(subtype, supertype));
     }
 
-    public void addInverseConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype,
-                                     Set<AFConstraint> constraints) {
+    public void addInverseConstraint(
+            AnnotatedTypeMirror subtype,
+            AnnotatedTypeMirror supertype,
+            Set<AFConstraint> constraints) {
         constraints.add(makeInverseConstraint(subtype, supertype));
     }
 
-    public void addEqualityConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype,
-                                     Set<AFConstraint> constraints) {
+    public void addEqualityConstraint(
+            AnnotatedTypeMirror subtype,
+            AnnotatedTypeMirror supertype,
+            Set<AFConstraint> constraints) {
         constraints.add(makeEqualityConstraint(subtype, supertype));
     }
 
@@ -75,11 +85,22 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
      * in a constraint.
      */
     @Override
-    protected String defaultErrorMessage(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, Set<AFConstraint> constraints) {
-        return "Unexpected " + reducerType.getSimpleName() + " + Combination:\b"
-                + "subtype="  + subtype + "\n"
-                + "supertype=" + supertype + "\n"
-                + "constraints=[\n" + PluginUtil.join(", ", constraints) + "\n]";
+    protected String defaultErrorMessage(
+            AnnotatedTypeMirror subtype,
+            AnnotatedTypeMirror supertype,
+            Set<AFConstraint> constraints) {
+        return "Unexpected "
+                + reducerType.getSimpleName()
+                + " + Combination:\b"
+                + "subtype="
+                + subtype
+                + "\n"
+                + "supertype="
+                + supertype
+                + "\n"
+                + "constraints=[\n"
+                + PluginUtil.join(", ", constraints)
+                + "\n]";
     }
 
     //------------------------------------------------------------------------
@@ -90,27 +111,38 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     //    to the constraint V << U or U << V (depending on the constraint type).
 
     @Override
-    public Void visitArray_Array(AnnotatedArrayType subtype, AnnotatedArrayType supertype, Set<AFConstraint> constraints) {
+    public Void visitArray_Array(
+            AnnotatedArrayType subtype,
+            AnnotatedArrayType supertype,
+            Set<AFConstraint> constraints) {
         addConstraint(subtype.getComponentType(), supertype.getComponentType(), constraints);
         return null;
     }
 
     @Override
-    public Void visitArray_Declared(AnnotatedArrayType subtype, AnnotatedDeclaredType supertype, Set<AFConstraint> constraints) {
+    public Void visitArray_Declared(
+            AnnotatedArrayType subtype,
+            AnnotatedDeclaredType supertype,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
     @Override
-    public Void visitArray_Null(AnnotatedArrayType subtype, AnnotatedNullType supertype, Set<AFConstraint> constraints) {
+    public Void visitArray_Null(
+            AnnotatedArrayType subtype,
+            AnnotatedNullType supertype,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
     @Override
-    public Void visitArray_Wildcard(AnnotatedArrayType subtype, AnnotatedWildcardType supertype, Set<AFConstraint> constraints) {
+    public Void visitArray_Wildcard(
+            AnnotatedArrayType subtype,
+            AnnotatedWildcardType supertype,
+            Set<AFConstraint> constraints) {
         visitWildcardAsSuperType(subtype, supertype, constraints);
         return null;
     }
-
 
     // despite the above the comment at the beginning of the "array as arguments" section, a type variable cannot
     // actually have an array type as its upper bound (e.g. <T extends Integer[]> is not allowed).
@@ -131,20 +163,28 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
      * is is because of idiosyncrasies with the Checker Framework .  We're going to skip this case for now.
      */
     @Override
-    public Void visitDeclared_Array(AnnotatedDeclaredType subtype, AnnotatedArrayType supertype, Set<AFConstraint> constraints) {
+    public Void visitDeclared_Array(
+            AnnotatedDeclaredType subtype,
+            AnnotatedArrayType supertype,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
     // From the JLS Spec:
     //  If F has the form G<..., Yk-1,U, Yk+1, ...>, where U involves Tj
     @Override
-    public Void visitDeclared_Declared(AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype, Set<AFConstraint> constraints) {
+    public Void visitDeclared_Declared(
+            AnnotatedDeclaredType subtype,
+            AnnotatedDeclaredType supertype,
+            Set<AFConstraint> constraints) {
         if (subtype.wasRaw() || supertype.wasRaw()) {
             return null;
         }
 
-        if (!TypesUtils.isErasedSubtype(typeFactory.getContext().getTypeUtils(),
-                subtype.getUnderlyingType(), supertype.getUnderlyingType())) {
+        if (!TypesUtils.isErasedSubtype(
+                typeFactory.getContext().getTypeUtils(),
+                subtype.getUnderlyingType(),
+                supertype.getUnderlyingType())) {
             return null;
         }
         AnnotatedDeclaredType subAsSuper = DefaultTypeHierarchy.castedAsSuper(subtype, supertype);
@@ -164,7 +204,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
                 if (subTypeArg.getKind() == TypeKind.WILDCARD) {
                     final AnnotatedWildcardType subWc = (AnnotatedWildcardType) subTypeArg;
                     addConstraint(subWc.getExtendsBound(), superWc.getExtendsBound(), constraints);
-                    addInverseConstraint(superWc.getSuperBound(), subWc.getSuperBound(), constraints);
+                    addInverseConstraint(
+                            superWc.getSuperBound(), subWc.getSuperBound(), constraints);
                 } else {
                     addConstraint(subTypeArg, superWc.getExtendsBound(), constraints);
                     addInverseConstraint(superWc.getSuperBound(), subTypeArg, constraints);
@@ -173,7 +214,6 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
             } else {
                 // if F has the form G<..., Yk-1, U, Yk+1, ...>, where U is a type expression that involves Tj
                 addEqualityConstraint(subTypeArg, superTypeArg, constraints);
-
             }
         }
 
@@ -181,7 +221,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     }
 
     @Override
-    public Void visitDeclared_Intersection(AnnotatedDeclaredType subtype, AnnotatedIntersectionType supertype, Set<AFConstraint> constraints) {
+    public Void visitDeclared_Intersection(
+            AnnotatedDeclaredType subtype,
+            AnnotatedIntersectionType supertype,
+            Set<AFConstraint> constraints) {
 
         // Note: AnnotatedIntersectionTypes cannot have a type variable as one of the direct parameters but
         // a type variable may be the type subtype to an intersection bound <e.g.   <T extends Serializable & Iterable<T>>
@@ -197,18 +240,27 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
 
     // Remember that NULL types can come from lower bounds
     @Override
-    public Void visitDeclared_Null(AnnotatedDeclaredType subtype, AnnotatedNullType supertype, Set<AFConstraint> constraints) {
+    public Void visitDeclared_Null(
+            AnnotatedDeclaredType subtype,
+            AnnotatedNullType supertype,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
     // a primitive supertype provides us no information on the type of any type parameters for that method
     @Override
-    public Void visitDeclared_Primitive(AnnotatedDeclaredType subtype, AnnotatedPrimitiveType supertype, Set<AFConstraint> constraints) {
+    public Void visitDeclared_Primitive(
+            AnnotatedDeclaredType subtype,
+            AnnotatedPrimitiveType supertype,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
     @Override
-    public Void visitDeclared_Typevar(AnnotatedDeclaredType subtype, AnnotatedTypeVariable supertype, Set<AFConstraint> constraints) {
+    public Void visitDeclared_Typevar(
+            AnnotatedDeclaredType subtype,
+            AnnotatedTypeVariable supertype,
+            Set<AFConstraint> constraints) {
         // Note: We expect the A2F constraints where F == a targeted type supertype to already be removed
         // Note: Therefore, supertype should NOT be a target
         addConstraint(subtype, supertype, constraints);
@@ -216,12 +268,18 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     }
 
     @Override
-    public Void visitDeclared_Union(AnnotatedDeclaredType subtype, AnnotatedUnionType supertype, Set<AFConstraint> constraints) {
-        return null;  //TODO: NOT SUPPORTED AT THE MOMENT
+    public Void visitDeclared_Union(
+            AnnotatedDeclaredType subtype,
+            AnnotatedUnionType supertype,
+            Set<AFConstraint> constraints) {
+        return null; //TODO: NOT SUPPORTED AT THE MOMENT
     }
 
     @Override
-    public Void visitDeclared_Wildcard(AnnotatedDeclaredType subtype, AnnotatedWildcardType supertype, Set<AFConstraint> constraints) {
+    public Void visitDeclared_Wildcard(
+            AnnotatedDeclaredType subtype,
+            AnnotatedWildcardType supertype,
+            Set<AFConstraint> constraints) {
         visitWildcardAsSuperType(subtype, supertype, constraints);
         return null;
     }
@@ -229,10 +287,14 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     //------------------------------------------------------------------------
     // Intersection as subtype
     @Override
-    public Void visitIntersection_Declared(AnnotatedIntersectionType subtype, AnnotatedDeclaredType supertype, Set<AFConstraint> constraints) {
+    public Void visitIntersection_Declared(
+            AnnotatedIntersectionType subtype,
+            AnnotatedDeclaredType supertype,
+            Set<AFConstraint> constraints) {
 
         // at least one of the intersection bound types must be convertible to the param type
-        final AnnotatedDeclaredType subtypeAsParam = DefaultTypeHierarchy.castedAsSuper(subtype, supertype);
+        final AnnotatedDeclaredType subtypeAsParam =
+                DefaultTypeHierarchy.castedAsSuper(subtype, supertype);
         if (subtypeAsParam != null && !subtypeAsParam.equals(subtype)) {
             addConstraint(subtypeAsParam, supertype, constraints);
         }
@@ -241,13 +303,19 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     }
 
     @Override
-    public Void visitIntersection_Intersection(AnnotatedIntersectionType argument, AnnotatedIntersectionType parameter, Set<AFConstraint> constraints) {
-        return null;  //TODO: NOT SUPPORTED AT THE MOMENT
+    public Void visitIntersection_Intersection(
+            AnnotatedIntersectionType argument,
+            AnnotatedIntersectionType parameter,
+            Set<AFConstraint> constraints) {
+        return null; //TODO: NOT SUPPORTED AT THE MOMENT
     }
 
     // provides no information as the AnnotatedNullType cannot refer to a type parameter
     @Override
-    public Void visitIntersection_Null(AnnotatedIntersectionType argument, AnnotatedNullType parameter, Set<AFConstraint> constraints) {
+    public Void visitIntersection_Null(
+            AnnotatedIntersectionType argument,
+            AnnotatedNullType parameter,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
@@ -259,7 +327,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
      * parameter type and therefore has no relationship to these primary annotations
      */
     @Override
-    public Void visitNull_Array(AnnotatedNullType argument, AnnotatedArrayType parameter, Set<AFConstraint> constraints) {
+    public Void visitNull_Array(
+            AnnotatedNullType argument,
+            AnnotatedArrayType parameter,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
@@ -268,7 +339,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
      * parameter type and therefore has no relationship to these primary annotations
      */
     @Override
-    public Void visitNull_Declared(AnnotatedNullType argument, AnnotatedDeclaredType parameter, Set<AFConstraint> constraints) {
+    public Void visitNull_Declared(
+            AnnotatedNullType argument,
+            AnnotatedDeclaredType parameter,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
@@ -280,7 +354,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
      * reduction (especially since we don't implement capture at the moment).
      */
     @Override
-    public Void visitNull_Typevar(AnnotatedNullType subtype, AnnotatedTypeVariable supertype, Set<AFConstraint> constraints) {
+    public Void visitNull_Typevar(
+            AnnotatedNullType subtype,
+            AnnotatedTypeVariable supertype,
+            Set<AFConstraint> constraints) {
         // Note: We would expect that parameter is not one of the targets or else it would already be removed
         // NOTE: Therefore we compare NULL against its bound
         addConstraint(subtype, supertype.getLowerBound(), constraints);
@@ -288,19 +365,28 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     }
 
     @Override
-    public Void visitNull_Wildcard(AnnotatedNullType subtype, AnnotatedWildcardType supertype, Set<AFConstraint> constraints) {
+    public Void visitNull_Wildcard(
+            AnnotatedNullType subtype,
+            AnnotatedWildcardType supertype,
+            Set<AFConstraint> constraints) {
         // we don't use visitSupertype because Null types won't have interesting components
         constraints.add(new A2F(subtype, supertype.getSuperBound()));
         return null;
     }
 
     @Override
-    public Void visitNull_Null(AnnotatedNullType argument, AnnotatedNullType parameter, Set<AFConstraint> constraints) {
+    public Void visitNull_Null(
+            AnnotatedNullType argument,
+            AnnotatedNullType parameter,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
     @Override
-    public Void visitNull_Union(AnnotatedNullType argument, AnnotatedUnionType parameter, Set<AFConstraint> constraints) {
+    public Void visitNull_Union(
+            AnnotatedNullType argument,
+            AnnotatedUnionType parameter,
+            Set<AFConstraint> constraints) {
         return null; //TODO: UNIONS ARE NOT YET SUPPORTED
     }
 
@@ -308,13 +394,19 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     // only have primary annotations.  Since type parameters cannot be a member of the intersection's bounds
     //(though they can be component types), we do not need to do anything further
     @Override
-    public Void visitNull_Intersection(AnnotatedNullType argument, AnnotatedIntersectionType parameter, Set<AFConstraint> constraints) {
+    public Void visitNull_Intersection(
+            AnnotatedNullType argument,
+            AnnotatedIntersectionType parameter,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
     // Primitive parameter types tell us nothing about the type parameters
     @Override
-    public Void visitNull_Primitive(AnnotatedNullType argument, AnnotatedPrimitiveType parameter, Set<AFConstraint> constraints) {
+    public Void visitNull_Primitive(
+            AnnotatedNullType argument,
+            AnnotatedPrimitiveType parameter,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
@@ -322,7 +414,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     // Primitive as argument
 
     @Override
-    public Void visitPrimitive_Declared(AnnotatedPrimitiveType subtype, AnnotatedDeclaredType supertype, Set<AFConstraint> constraints) {
+    public Void visitPrimitive_Declared(
+            AnnotatedPrimitiveType subtype,
+            AnnotatedDeclaredType supertype,
+            Set<AFConstraint> constraints) {
         // we may be able to eliminate this case, since I believe the corresponding constraint will just be discarded
         // as the parameter must be a boxed primitive
         addConstraint(typeFactory.getBoxedType(subtype), supertype, constraints);
@@ -331,12 +426,18 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
 
     // Primitive parameter types tell us nothing about the type parameters
     @Override
-    public Void visitPrimitive_Primitive(AnnotatedPrimitiveType subtype, AnnotatedPrimitiveType supertype, Set<AFConstraint> constraints) {
+    public Void visitPrimitive_Primitive(
+            AnnotatedPrimitiveType subtype,
+            AnnotatedPrimitiveType supertype,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
     @Override
-    public Void visitPrimitive_Intersection(AnnotatedPrimitiveType subtype, AnnotatedIntersectionType supertype, Set<AFConstraint> constraints) {
+    public Void visitPrimitive_Intersection(
+            AnnotatedPrimitiveType subtype,
+            AnnotatedIntersectionType supertype,
+            Set<AFConstraint> constraints) {
         addConstraint(typeFactory.getBoxedType(subtype), supertype, constraints);
         return null;
     }
@@ -344,7 +445,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     //------------------------------------------------------------------------
     // Union as argument
     @Override
-    public Void visitUnion_Declared(AnnotatedUnionType argument, AnnotatedDeclaredType parameter, Set<AFConstraint> constraints) {
+    public Void visitUnion_Declared(
+            AnnotatedUnionType argument,
+            AnnotatedDeclaredType parameter,
+            Set<AFConstraint> constraints) {
         return null; //TODO: UNIONS ARE NOT CURRENTLY SUPPORTED
     }
 
@@ -353,16 +457,23 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     // If we've reached this point, the typevar is NOT one of the types we are inferring.
 
     @Override
-    public Void visitTypevar_Declared(AnnotatedTypeVariable subtype, AnnotatedDeclaredType supertype, Set<AFConstraint> constraints) {
+    public Void visitTypevar_Declared(
+            AnnotatedTypeVariable subtype,
+            AnnotatedDeclaredType supertype,
+            Set<AFConstraint> constraints) {
         addConstraint(subtype.getUpperBound(), supertype, constraints);
         return null;
     }
 
     @Override
-    public Void visitTypevar_Typevar(AnnotatedTypeVariable subtype, AnnotatedTypeVariable supertype, Set<AFConstraint> constraints) {
+    public Void visitTypevar_Typevar(
+            AnnotatedTypeVariable subtype,
+            AnnotatedTypeVariable supertype,
+            Set<AFConstraint> constraints) {
         // if we've reached this point and the two are corresponding type variables, then they are NOT ones that
         // may have a type variable we are inferring types for and therefore we can discard this constraint
-        if (!AnnotatedTypes.areCorrespondingTypeVariables(typeFactory.getElementUtils(), subtype, supertype)) {
+        if (!AnnotatedTypes.areCorrespondingTypeVariables(
+                typeFactory.getElementUtils(), subtype, supertype)) {
             addConstraint(subtype.getUpperBound(), supertype.getLowerBound(), constraints);
         }
 
@@ -370,13 +481,19 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     }
 
     @Override
-    public Void visitTypevar_Null(AnnotatedTypeVariable subtype, AnnotatedNullType supertype, Set<AFConstraint> constraints) {
+    public Void visitTypevar_Null(
+            AnnotatedTypeVariable subtype,
+            AnnotatedNullType supertype,
+            Set<AFConstraint> constraints) {
         addConstraint(subtype.getUpperBound(), supertype, constraints);
         return null;
     }
 
     @Override
-    public Void visitTypevar_Wildcard(AnnotatedTypeVariable subtype, AnnotatedWildcardType supertype, Set<AFConstraint> constraints) {
+    public Void visitTypevar_Wildcard(
+            AnnotatedTypeVariable subtype,
+            AnnotatedWildcardType supertype,
+            Set<AFConstraint> constraints) {
         visitWildcardAsSuperType(subtype, supertype, constraints);
         return null;
     }
@@ -384,36 +501,54 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     //------------------------------------------------------------------------
     // wildcard as subtype
     @Override
-    public Void visitWildcard_Array(AnnotatedWildcardType subtype, AnnotatedArrayType supertype, Set<AFConstraint> constraints) {
+    public Void visitWildcard_Array(
+            AnnotatedWildcardType subtype,
+            AnnotatedArrayType supertype,
+            Set<AFConstraint> constraints) {
         addConstraint(subtype.getExtendsBound(), supertype, constraints);
         return null;
     }
 
     @Override
-    public Void visitWildcard_Declared(AnnotatedWildcardType subtype, AnnotatedDeclaredType supertype, Set<AFConstraint> constraints) {
+    public Void visitWildcard_Declared(
+            AnnotatedWildcardType subtype,
+            AnnotatedDeclaredType supertype,
+            Set<AFConstraint> constraints) {
         addConstraint(subtype.getExtendsBound(), supertype, constraints);
         return null;
     }
 
     @Override
-    public Void visitWildcard_Intersection(AnnotatedWildcardType subtype, AnnotatedIntersectionType supertype, Set<AFConstraint> constraints) {
+    public Void visitWildcard_Intersection(
+            AnnotatedWildcardType subtype,
+            AnnotatedIntersectionType supertype,
+            Set<AFConstraint> constraints) {
         addConstraint(subtype.getExtendsBound(), supertype, constraints);
         return null;
     }
 
     @Override
-    public Void visitWildcard_Primitive(AnnotatedWildcardType subtype, AnnotatedPrimitiveType supertype, Set<AFConstraint> constraints) {
+    public Void visitWildcard_Primitive(
+            AnnotatedWildcardType subtype,
+            AnnotatedPrimitiveType supertype,
+            Set<AFConstraint> constraints) {
         return null;
     }
 
     @Override
-    public Void visitWildcard_Typevar(AnnotatedWildcardType subtype, AnnotatedTypeVariable supertype, Set<AFConstraint> constraints) {
+    public Void visitWildcard_Typevar(
+            AnnotatedWildcardType subtype,
+            AnnotatedTypeVariable supertype,
+            Set<AFConstraint> constraints) {
         addConstraint(subtype.getExtendsBound(), supertype, constraints);
         return null;
     }
 
     @Override
-    public Void visitWildcard_Wildcard(AnnotatedWildcardType subtype, AnnotatedWildcardType supertype, Set<AFConstraint> constraints) {
+    public Void visitWildcard_Wildcard(
+            AnnotatedWildcardType subtype,
+            AnnotatedWildcardType supertype,
+            Set<AFConstraint> constraints) {
         // since wildcards are handled in visitDeclared_Declared this could only occur if two wildcards
         // were passed to type subtype inference at the top level.  This can only occur because we do not implement
         // capture conversion
@@ -422,8 +557,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     }
 
     // should the same logic apply to typevars?
-    public void visitWildcardAsSuperType(AnnotatedTypeMirror subtype, AnnotatedWildcardType supertype,
-                                         Set<AFConstraint> constraints) {
+    public void visitWildcardAsSuperType(
+            AnnotatedTypeMirror subtype,
+            AnnotatedWildcardType supertype,
+            Set<AFConstraint> constraints) {
         // this case occur only when supertype should actually be capture converted (which we don't do)
         // because all other wildcard cases would be handled via Declared_Declared
         addConstraint(subtype, supertype.getSuperBound(), constraints);

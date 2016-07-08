@@ -1,40 +1,42 @@
-import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 public class RawCheckRep {
 
-  Object x;
+    Object x;
 
-  RawCheckRep() {
-    x = "hello";
-    checkRep();
-    checkRep2(this);
-    checkRepb();
-    checkRep2b(this);
-  }
+    RawCheckRep() {
+        x = "hello";
+        checkRep();
+        checkRep2(this);
+        checkRepb();
+        checkRep2b(this);
+    }
 
-  void checkRep(@UnderInitialization(RawCheckRep.class) @Raw(RawCheckRep.class) RawCheckRep this) {
-    x.toString();
-  }
+    void checkRep(
+            @UnderInitialization(RawCheckRep.class) @Raw(RawCheckRep.class) RawCheckRep this) {
+        x.toString();
+    }
 
-  static void checkRep2(@UnderInitialization(RawCheckRep.class) @Raw(RawCheckRep.class) RawCheckRep o) {
-    o.x.toString();
-  }
+    static void checkRep2(
+            @UnderInitialization(RawCheckRep.class) @Raw(RawCheckRep.class) RawCheckRep o) {
+        o.x.toString();
+    }
 
-  void checkRepb(@UnderInitialization(Object.class) @Raw(Object.class) RawCheckRep this) {
-    //:: error: (dereference.of.nullable)
-    x.toString();
-  }
+    void checkRepb(@UnderInitialization(Object.class) @Raw(Object.class) RawCheckRep this) {
+        //:: error: (dereference.of.nullable)
+        x.toString();
+    }
 
-  static void checkRep2b(@UnderInitialization(Object.class) @Raw(Object.class) RawCheckRep o) {
-    //:: error: (dereference.of.nullable)
-    o.x.toString();
-  }
-
+    static void checkRep2b(@UnderInitialization(Object.class) @Raw(Object.class) RawCheckRep o) {
+        //:: error: (dereference.of.nullable)
+        o.x.toString();
+    }
 }
 
 class A {
     String a;
+
     public A() {
         a = "";
     }

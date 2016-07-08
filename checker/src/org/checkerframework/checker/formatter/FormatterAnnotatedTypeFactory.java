@@ -1,5 +1,11 @@
 package org.checkerframework.checker.formatter;
 
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
+import java.lang.annotation.Annotation;
+import java.util.IllegalFormatException;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
@@ -18,15 +24,6 @@ import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-import java.lang.annotation.Annotation;
-import java.util.IllegalFormatException;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.Tree;
-
 /**
  * Adds {@link Format} to the type of tree, if it is a {@code String} or
  * {@code char} literal that represents a satisfiable format. The annotation's
@@ -37,8 +34,9 @@ import com.sun.source.tree.Tree;
  *
  * @author Konstantin Weitz
  */
-public class FormatterAnnotatedTypeFactory extends
-        GenericAnnotatedTypeFactory<CFValue, CFStore, FormatterTransfer, FormatterAnalysis> {
+public class FormatterAnnotatedTypeFactory
+        extends GenericAnnotatedTypeFactory<
+                CFValue, CFStore, FormatterTransfer, FormatterAnalysis> {
 
     protected final AnnotationMirror UNKNOWNFORMAT;
     protected final AnnotationMirror FORMAT;
@@ -61,8 +59,7 @@ public class FormatterAnnotatedTypeFactory extends
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithoutPolyAll(
-                UnknownFormat.class, FormatBottom.class);
+        return getBundledTypeQualifiersWithoutPolyAll(UnknownFormat.class, FormatBottom.class);
     }
 
     @Override
@@ -72,10 +69,7 @@ public class FormatterAnnotatedTypeFactory extends
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                super.createTreeAnnotator(),
-                new FormatterTreeAnnotator(this)
-        );
+        return new ListTreeAnnotator(super.createTreeAnnotator(), new FormatterTreeAnnotator(this));
     }
 
     private class FormatterTreeAnnotator extends TreeAnnotator {
@@ -96,9 +90,13 @@ public class FormatterAnnotatedTypeFactory extends
                     AnnotationMirror anno;
                     try {
                         ConversionCategory[] cs = FormatUtil.formatParameterCategories(format);
-                        anno = FormatterAnnotatedTypeFactory.this.treeUtil.categoriesToFormatAnnotation(cs);
+                        anno =
+                                FormatterAnnotatedTypeFactory.this.treeUtil
+                                        .categoriesToFormatAnnotation(cs);
                     } catch (IllegalFormatException e) {
-                        anno = FormatterAnnotatedTypeFactory.this.treeUtil.exceptionToInvalidFormatAnnotation(e);
+                        anno =
+                                FormatterAnnotatedTypeFactory.this.treeUtil
+                                        .exceptionToInvalidFormatAnnotation(e);
                     }
                     type.addAnnotation(anno);
                 }
@@ -115,12 +113,10 @@ public class FormatterAnnotatedTypeFactory extends
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(rhs, FORMAT) &&
-                AnnotationUtils.areSameIgnoringValues(lhs, FORMAT)) {
-                ConversionCategory[] rhsArgTypes =
-                        treeUtil.formatAnnotationToCategories(rhs);
-                ConversionCategory[] lhsArgTypes =
-                        treeUtil.formatAnnotationToCategories(lhs);
+            if (AnnotationUtils.areSameIgnoringValues(rhs, FORMAT)
+                    && AnnotationUtils.areSameIgnoringValues(lhs, FORMAT)) {
+                ConversionCategory[] rhsArgTypes = treeUtil.formatAnnotationToCategories(rhs);
+                ConversionCategory[] lhsArgTypes = treeUtil.formatAnnotationToCategories(lhs);
 
                 if (rhsArgTypes.length > lhsArgTypes.length) {
                     return false;
@@ -150,16 +146,15 @@ public class FormatterAnnotatedTypeFactory extends
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror anno1,
-                AnnotationMirror anno2) {
+        public AnnotationMirror leastUpperBound(AnnotationMirror anno1, AnnotationMirror anno2) {
             if (AnnotationUtils.areSameIgnoringValues(anno1, FORMATBOTTOM)) {
                 return anno2;
             }
             if (AnnotationUtils.areSameIgnoringValues(anno2, FORMATBOTTOM)) {
                 return anno1;
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, FORMAT) &&
-                AnnotationUtils.areSameIgnoringValues(anno2, FORMAT)) {
+            if (AnnotationUtils.areSameIgnoringValues(anno1, FORMAT)
+                    && AnnotationUtils.areSameIgnoringValues(anno2, FORMAT)) {
                 ConversionCategory[] shorterArgTypesList =
                         treeUtil.formatAnnotationToCategories(anno1);
                 ConversionCategory[] longerArgTypesList =
@@ -178,15 +173,17 @@ public class FormatterAnnotatedTypeFactory extends
                         new ConversionCategory[longerArgTypesList.length];
 
                 for (int i = 0; i < shorterArgTypesList.length; ++i) {
-                    resultArgTypes[i] = ConversionCategory.intersect(shorterArgTypesList[i], longerArgTypesList[i]);
+                    resultArgTypes[i] =
+                            ConversionCategory.intersect(
+                                    shorterArgTypesList[i], longerArgTypesList[i]);
                 }
                 for (int i = shorterArgTypesList.length; i < longerArgTypesList.length; ++i) {
                     resultArgTypes[i] = longerArgTypesList[i];
                 }
                 return treeUtil.categoriesToFormatAnnotation(resultArgTypes);
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT) &&
-                AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
+            if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT)
+                    && AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
                 assert !anno1.getElementValues().isEmpty();
                 assert !anno2.getElementValues().isEmpty();
 
@@ -195,28 +192,28 @@ public class FormatterAnnotatedTypeFactory extends
                 }
 
                 return treeUtil.stringToInvalidFormatAnnotation(
-                        "(" + treeUtil.invalidFormatAnnotationToErrorMessage(anno1) + " or " +
-                              treeUtil.invalidFormatAnnotationToErrorMessage(anno2) + ")");
+                        "("
+                                + treeUtil.invalidFormatAnnotationToErrorMessage(anno1)
+                                + " or "
+                                + treeUtil.invalidFormatAnnotationToErrorMessage(anno2)
+                                + ")");
             }
 
             return UNKNOWNFORMAT;
         }
 
         @Override
-        public AnnotationMirror greatestLowerBound(AnnotationMirror anno1,
-                AnnotationMirror anno2) {
+        public AnnotationMirror greatestLowerBound(AnnotationMirror anno1, AnnotationMirror anno2) {
             if (AnnotationUtils.areSameIgnoringValues(anno1, UNKNOWNFORMAT)) {
                 return anno2;
             }
             if (AnnotationUtils.areSameIgnoringValues(anno2, UNKNOWNFORMAT)) {
                 return anno1;
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, FORMAT) &&
-                AnnotationUtils.areSameIgnoringValues(anno2, FORMAT)) {
-                ConversionCategory[] anno1ArgTypes =
-                        treeUtil.formatAnnotationToCategories(anno1);
-                ConversionCategory[] anno2ArgTypes =
-                        treeUtil.formatAnnotationToCategories(anno2);
+            if (AnnotationUtils.areSameIgnoringValues(anno1, FORMAT)
+                    && AnnotationUtils.areSameIgnoringValues(anno2, FORMAT)) {
+                ConversionCategory[] anno1ArgTypes = treeUtil.formatAnnotationToCategories(anno1);
+                ConversionCategory[] anno2ArgTypes = treeUtil.formatAnnotationToCategories(anno2);
 
                 // From the manual:
                 // It is legal to use a format string with fewer format specifiers
@@ -226,16 +223,15 @@ public class FormatterAnnotatedTypeFactory extends
                     length = anno2ArgTypes.length;
                 }
 
-                ConversionCategory[] anno3ArgTypes =
-                        new ConversionCategory[length];
+                ConversionCategory[] anno3ArgTypes = new ConversionCategory[length];
 
                 for (int i = 0; i < length; ++i) {
                     anno3ArgTypes[i] = ConversionCategory.union(anno1ArgTypes[i], anno2ArgTypes[i]);
                 }
                 return treeUtil.categoriesToFormatAnnotation(anno3ArgTypes);
             }
-            if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT) &&
-                AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
+            if (AnnotationUtils.areSameIgnoringValues(anno1, INVALIDFORMAT)
+                    && AnnotationUtils.areSameIgnoringValues(anno2, INVALIDFORMAT)) {
                 assert !anno1.getElementValues().isEmpty();
                 assert !anno2.getElementValues().isEmpty();
 
@@ -244,8 +240,11 @@ public class FormatterAnnotatedTypeFactory extends
                 }
 
                 return treeUtil.stringToInvalidFormatAnnotation(
-                        "(" + treeUtil.invalidFormatAnnotationToErrorMessage(anno1) + " and " +
-                              treeUtil.invalidFormatAnnotationToErrorMessage(anno2) + ")");
+                        "("
+                                + treeUtil.invalidFormatAnnotationToErrorMessage(anno1)
+                                + " and "
+                                + treeUtil.invalidFormatAnnotationToErrorMessage(anno2)
+                                + ")");
             }
 
             return FORMATBOTTOM;

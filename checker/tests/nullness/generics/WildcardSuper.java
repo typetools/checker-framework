@@ -38,6 +38,8 @@ class WildcardSuper {
     }
 
     class Cell<E extends @Nullable Object> {
-        E get() { throw new RuntimeException(); }
+        E get() {
+            throw new RuntimeException();
+        }
     }
 }

@@ -43,8 +43,7 @@ public class PluginUtil {
      * Option name for specifying an alternative jdk.jar location.  The accompanying value
      * MUST be the path to the jar file (NOT the path to its encompassing directory)
      */
-    public static final String JDK_PATH_OPT   = "-jdkJar";
-
+    public static final String JDK_PATH_OPT = "-jdkJar";
 
     public static List<File> toFiles(final List<String> fileNames) {
         final List<File> files = new ArrayList<File>(fileNames.size());
@@ -62,7 +61,8 @@ public class PluginUtil {
      * @param destination the fofn file we are writing.  This file will contain newline separated list of absolute file paths
      * @param files the files to write to the destination file
      */
-    public static void writeFofn(final File destination, final List<File> files) throws IOException {
+    public static void writeFofn(final File destination, final List<File> files)
+            throws IOException {
         final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
         try {
             for (final File file : files) {
@@ -83,12 +83,16 @@ public class PluginUtil {
      * @param destination the fofn file we are writing.  This file will contain newline separated list of absolute file paths
      * @param files the files to write to the destination file
      */
-    public static void writeFofn(final File destination, final File ... files) throws IOException {
+    public static void writeFofn(final File destination, final File... files) throws IOException {
         writeFofn(destination, Arrays.asList(files));
     }
 
-    public static File writeTmpFofn(final String prefix, final String suffix, final boolean deleteOnExit,
-                                    final List<File> files) throws IOException {
+    public static File writeTmpFofn(
+            final String prefix,
+            final String suffix,
+            final boolean deleteOnExit,
+            final List<File> files)
+            throws IOException {
         final File tmpFile = File.createTempFile(prefix, suffix);
         if (deleteOnExit) {
             tmpFile.deleteOnExit();
@@ -101,8 +105,12 @@ public class PluginUtil {
      * Write the strings to a temporary file.
      * @param deleteOnExit if true, delete the file on program exit
      */
-    public static File writeTmpFile(final String prefix, final String suffix, final boolean deleteOnExit,
-                                       final List<String> args) throws IOException {
+    public static File writeTmpFile(
+            final String prefix,
+            final String suffix,
+            final boolean deleteOnExit,
+            final List<String> args)
+            throws IOException {
         final File tmpFile = File.createTempFile(prefix, suffix);
         if (deleteOnExit) {
             tmpFile.deleteOnExit();
@@ -112,7 +120,8 @@ public class PluginUtil {
     }
 
     /** Write the strings to the file, one per line. */
-    public static void writeFile(final File destination, final List<String> contents) throws IOException {
+    public static void writeFile(final File destination, final List<String> contents)
+            throws IOException {
         final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
         try {
             for (String line : contents) {
@@ -124,7 +133,6 @@ public class PluginUtil {
             bw.close();
         }
     }
-
 
     /** Return a list of Strings, one per line of the file. */
     public static List<String> readFile(final File argFile) throws IOException {
@@ -170,10 +178,11 @@ public class PluginUtil {
         return sb.toString();
     }
 
-
-    public static List<String> getStringProp(final Map<CheckerProp, Object> props,
-                                             final CheckerProp prop, final String tag,
-                                             final String ... extras) {
+    public static List<String> getStringProp(
+            final Map<CheckerProp, Object> props,
+            final CheckerProp prop,
+            final String tag,
+            final String... extras) {
         final List<String> out = new ArrayList<String>();
         final String strProp = (String) props.get(prop);
         if (strProp != null && !strProp.isEmpty()) {
@@ -186,8 +195,8 @@ public class PluginUtil {
         return out;
     }
 
-    public static List<String> getBooleanProp(final Map<CheckerProp, Object> props,
-                                              final CheckerProp prop, final String tag) {
+    public static List<String> getBooleanProp(
+            final Map<CheckerProp, Object> props, final CheckerProp prop, final String tag) {
         Boolean aSkip = (Boolean) props.get(prop);
         if (aSkip != null && aSkip) {
             return Arrays.asList(tag);
@@ -262,7 +271,6 @@ public class PluginUtil {
         };
 
         public abstract List<String> getCmdLine(final Map<CheckerProp, Object> props);
-
     }
 
     /**
@@ -270,20 +278,26 @@ public class PluginUtil {
      * @param cmd    a list to which the options should be added
      * @param props  the map of checker properties too search for options in
      */
-    private static void addOptions(final List<String> cmd, Map<CheckerProp,Object> props) {
+    private static void addOptions(final List<String> cmd, Map<CheckerProp, Object> props) {
         for (CheckerProp cp : CheckerProp.values()) {
             cmd.addAll(cp.getCmdLine(props));
         }
     }
 
-    public static File writeTmpSrcFofn(final String prefix, final boolean deleteOnExit,
-                                       final List<File> files) throws IOException {
+    public static File writeTmpSrcFofn(
+            final String prefix, final boolean deleteOnExit, final List<File> files)
+            throws IOException {
         return writeTmpFofn(prefix, ".src_files", deleteOnExit, files);
     }
 
-    public static File writeTmpCpFile(final String prefix, final boolean deleteOnExit,
-                                      final String classpath) throws IOException {
-        return writeTmpFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", wrapArg(classpath)));
+    public static File writeTmpCpFile(
+            final String prefix, final boolean deleteOnExit, final String classpath)
+            throws IOException {
+        return writeTmpFile(
+                prefix,
+                ".classpath",
+                deleteOnExit,
+                Arrays.asList("-classpath", wrapArg(classpath)));
     }
 
     public static boolean isWindows() {
@@ -316,7 +330,7 @@ public class PluginUtil {
             return "java";
         }
 
-        final File java    = new File(javaHome, "bin" + File.separator + "java");
+        final File java = new File(javaHome, "bin" + File.separator + "java");
         final File javaExe = new File(javaHome, "bin" + File.separator + "java.exe");
         if (java.exists()) {
             return java.getAbsolutePath();
@@ -324,9 +338,13 @@ public class PluginUtil {
             return javaExe.getAbsolutePath();
         } else {
             if (out != null) {
-                out.println("Could not find java executable at: ( " + java.getAbsolutePath()    + "," +
-                        javaExe.getAbsolutePath() + ")" +
-                        "\n  Using \"java\" command.\n");
+                out.println(
+                        "Could not find java executable at: ( "
+                                + java.getAbsolutePath()
+                                + ","
+                                + javaExe.getAbsolutePath()
+                                + ")"
+                                + "\n  Using \"java\" command.\n");
             }
             return "java";
         }
@@ -336,19 +354,25 @@ public class PluginUtil {
         return "@" + fileArg.getAbsolutePath();
     }
 
-
     //TODO: Perhaps unify this with CheckerMain as it violates DRY
-    public static List<String> getCmd(final String executable,  final File javacPath, final File jdkPath,
-                                      final File srcFofn, final String processors,
-                                      final String checkerHome, final String javaHome,
-                                      final File classPathFofn, final String bootClassPath,
-                                      final Map<CheckerProp, Object> props, PrintStream out,
-                                      final boolean procOnly, final String outputDirectory) {
+    public static List<String> getCmd(
+            final String executable,
+            final File javacPath,
+            final File jdkPath,
+            final File srcFofn,
+            final String processors,
+            final String checkerHome,
+            final String javaHome,
+            final File classPathFofn,
+            final String bootClassPath,
+            final Map<CheckerProp, Object> props,
+            PrintStream out,
+            final boolean procOnly,
+            final String outputDirectory) {
 
         final List<String> cmd = new ArrayList<String>();
 
-        final String java    = ( executable != null ) ? executable
-                : getJavaCommand(javaHome, out);
+        final String java = (executable != null) ? executable : getJavaCommand(javaHome, out);
 
         cmd.add(java);
         cmd.add("-jar");
@@ -362,7 +386,7 @@ public class PluginUtil {
         }
 
         if (bootClassPath != null && !bootClassPath.trim().isEmpty()) {
-            cmd.add("-Xbootclasspath/p:" +  bootClassPath);
+            cmd.add("-Xbootclasspath/p:" + bootClassPath);
         }
 
         if (javacPath != null) {
@@ -375,7 +399,7 @@ public class PluginUtil {
             cmd.add(jdkPath.getAbsolutePath());
         }
 
-        if (classPathFofn != null ) {
+        if (classPathFofn != null) {
             cmd.add(fileArgToStr(classPathFofn));
         }
 
@@ -388,7 +412,6 @@ public class PluginUtil {
         cmd.add(fileArgToStr(srcFofn));
 
         return cmd;
-
     }
 
     public static List<String> toJavaOpts(final List<String> opts) {
@@ -400,31 +423,66 @@ public class PluginUtil {
         return outOpts;
     }
 
-    public static List<String> getCmdArgsOnly(final File srcFofn, final String processors,
-                                              final String checkerHome, final String javaHome,
-                                              final File classpathFofn,   final String bootClassPath,
-                                              final Map<CheckerProp, Object> props, PrintStream out,
-                                              final boolean procOnly, final String outputDirectory) {
+    public static List<String> getCmdArgsOnly(
+            final File srcFofn,
+            final String processors,
+            final String checkerHome,
+            final String javaHome,
+            final File classpathFofn,
+            final String bootClassPath,
+            final Map<CheckerProp, Object> props,
+            PrintStream out,
+            final boolean procOnly,
+            final String outputDirectory) {
 
-        final List<String> cmd = getCmd(null, null, null, srcFofn, processors,
-                checkerHome, javaHome, classpathFofn, bootClassPath, props, out,
-                procOnly, outputDirectory);
+        final List<String> cmd =
+                getCmd(
+                        null,
+                        null,
+                        null,
+                        srcFofn,
+                        processors,
+                        checkerHome,
+                        javaHome,
+                        classpathFofn,
+                        bootClassPath,
+                        props,
+                        out,
+                        procOnly,
+                        outputDirectory);
         cmd.remove(0);
         return cmd;
     }
 
+    public static List<String> getCmdArgsOnly(
+            final File javacPath,
+            final File jdkPath,
+            final File srcFofn,
+            final String processors,
+            final String checkerHome,
+            final String javaHome,
+            final File classpathFofn,
+            final String bootClassPath,
+            final Map<CheckerProp, Object> props,
+            PrintStream out,
+            final boolean procOnly,
+            final String outputDirectory) {
 
-
-    public static List<String> getCmdArgsOnly(final File javacPath, final File jdkPath,
-                                              final File srcFofn, final String processors,
-                                              final String checkerHome, final String javaHome,
-                                              final File classpathFofn,   final String bootClassPath,
-                                              final Map<CheckerProp, Object> props, PrintStream out,
-                                              final boolean procOnly, final String outputDirectory) {
-
-        final List<String> cmd = getCmd(null, javacPath, jdkPath, srcFofn, processors,
-                checkerHome, javaHome, classpathFofn, bootClassPath, props, out,
-                procOnly, outputDirectory);
+        final List<String> cmd =
+                getCmd(
+                        null,
+                        javacPath,
+                        jdkPath,
+                        srcFofn,
+                        processors,
+                        checkerHome,
+                        javaHome,
+                        classpathFofn,
+                        bootClassPath,
+                        props,
+                        out,
+                        procOnly,
+                        outputDirectory);
         cmd.remove(0);
         return cmd;
     }
@@ -435,14 +493,15 @@ public class PluginUtil {
      */
     public static double getJreVersion() {
         final Pattern versionPattern = Pattern.compile("^(\\d\\.\\d+)\\..*$");
-        final String  jreVersionStr = System.getProperty("java.version");
+        final String jreVersionStr = System.getProperty("java.version");
         final Matcher versionMatcher = versionPattern.matcher(jreVersionStr);
 
         final double version;
         if (versionMatcher.matches()) {
             version = Double.parseDouble(versionMatcher.group(1));
         } else {
-            throw new RuntimeException("Could not determine version from property java.version=" + jreVersionStr);
+            throw new RuntimeException(
+                    "Could not determine version from property java.version=" + jreVersionStr);
         }
 
         return version;
@@ -481,5 +540,4 @@ public class PluginUtil {
         final String fileName = getJdkJarPrefix() + ".jar";
         return fileName;
     }
-
 }
