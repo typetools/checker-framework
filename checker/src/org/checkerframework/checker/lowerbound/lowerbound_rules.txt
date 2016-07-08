@@ -1,5 +1,20 @@
 This is mostly just a list of the intro and transfer rules for the LBC:
 
+The type hierarchy is:
+
+   Top = lbu (unknown)
+    |
+   N1p
+    |
+   NN
+    |
+   Pos
+
+[[We can get rid of Bot, it seems.]]
+    |
+   Bot
+
+
 Intro rules:
 
 Int lit -> use its literal value
@@ -48,7 +63,7 @@ Multiply:
 
 Divide:
 	       int lit / int lit -> do the math
-	       lit 0 / * -> nn
+	       lit 0 / * -> nn (=0)
 	       * / lit 1 -> *
 	       pos / pos -> nn
 	       nn / pos -> nn
@@ -61,8 +76,7 @@ Divide:
 Mod:
 
 	       int lit % int lit -> do the math
-	       * % 1 -> nn
-	       pos/nn % pos/nn -> nn
-	       nn/pos % n1p -> nn
-	       n1p % n1p/nn/pos -> n1p
-	       * % * -> lbu
+	       * % 1/-1 -> nn (=0)
+	       pos/nn % * -> nn
+	       n1p % * -> n1p
+	       lbu % * -> lbu
