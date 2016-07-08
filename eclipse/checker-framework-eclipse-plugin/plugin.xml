@@ -167,8 +167,8 @@
             style="push">
            </command>
            <command
-            commandId="checkers.eclipse.rununsignednesschecker"
-            label="Unsignedness Checker"
+            commandId="checkers.eclipse.runsignednesschecker"
+            label="Signedness Checker"
             style="push">
            </command>
           <command
@@ -296,9 +296,9 @@
     </command>
     <command
       categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$UnsignednessAction"
-      id="checkers.eclipse.rununsignednesschecker"
-      name="Run Unsignedness Checker">
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$signednessAction"
+      id="checkers.eclipse.runsignednesschecker"
+      name="Run Signedness Checker">
     </command>
     <command
       categoryId="checkers.eclipse.category"

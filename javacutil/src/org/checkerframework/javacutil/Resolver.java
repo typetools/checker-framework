@@ -191,7 +191,7 @@ public class Resolver {
      *            The tree path to the local scope.
      * @return the element for the local variable
      */
-    public VariableElement findLocalVariableOrParameter(String name, TreePath path) {
+    public VariableElement findLocalVariableOrParameterOrField(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler =
             new Log.DiscardDiagnosticHandler(log);
         try {
@@ -200,7 +200,8 @@ public class Resolver {
             Element res = wrapInvocationOnResolveInstance(FIND_VAR, env,
                     names.fromString(name));
             if (res.getKind() == ElementKind.LOCAL_VARIABLE
-             || res.getKind() == ElementKind.PARAMETER) {
+             || res.getKind() == ElementKind.PARAMETER
+                    || res.getKind() == ElementKind.FIELD) {
                 return (VariableElement) res;
             } else {
                 // Most likely didn't find the variable and the Element is a SymbolNotFoundError

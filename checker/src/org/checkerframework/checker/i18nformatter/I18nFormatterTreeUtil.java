@@ -282,14 +282,15 @@ public class I18nFormatterTreeUtil {
                         // Invalid FormatFor invocation
                         return ;
                     }
-                    FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                                .buildFlowExprContextForUse(node, checker.getContext());
+                    FlowExpressionContext flowExprContext = FlowExpressionContext
+                                .buildContextForMethodUse(node, checker.getContext());
                     String formatforArg = AnnotationUtils.getElementValue(paramType.getAnnotation(I18nFormatFor.class)
                             , "value", String.class, false);
                     if (flowExprContext != null) {
                         try {
                             paramArg = FlowExpressionParseUtil
-                                .parse(formatforArg, flowExprContext, atypeFactory.getPath(tree));
+                                .parse(formatforArg, flowExprContext, atypeFactory.getPath(tree),
+                                        true);
                             paramIndex = flowExprContext.arguments.indexOf(paramArg);
                         } catch (FlowExpressionParseException e) {
                             // report errors here

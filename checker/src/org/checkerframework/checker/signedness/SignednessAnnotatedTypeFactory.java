@@ -1,6 +1,6 @@
-package org.checkerframework.checker.unsignedness;
+package org.checkerframework.checker.signedness;
 
-import org.checkerframework.checker.unsignedness.qual.*;
+import org.checkerframework.checker.signedness.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -19,9 +19,9 @@ import com.sun.source.tree.Tree;
 import javax.lang.model.element.AnnotationMirror;
 
 /**
- * @checker_framework.manual #unsignedness-checker Unsignedness Checker
+ * @checker_framework.manual #signedness-checker Signedness Checker
  */
-public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
+public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
 
     private final AnnotationMirror UNSIGNED;
     private final AnnotationMirror SIGNED;
@@ -36,7 +36,7 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
     private final String JAVA_LANG_LONG = "java.lang.Long";
     */
 
-    public UnsignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
+    public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNSIGNED = AnnotationUtils.fromClass(elements, Unsigned.class);
         SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
@@ -102,7 +102,7 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-            new UnsignednessTreeAnnotator(this),
+            new SignednessTreeAnnotator(this),
             super.createTreeAnnotator()
         );
     }
@@ -111,9 +111,9 @@ public class UnsignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory{
      * This TreeAnnotator ensures that booleans expressions are not
      * given Unsigned or Signed annotations by {@link PropagationTreeAnnotator}
      */
-    private class UnsignednessTreeAnnotator extends TreeAnnotator {
+    private class SignednessTreeAnnotator extends TreeAnnotator {
 
-        public UnsignednessTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
+        public SignednessTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 

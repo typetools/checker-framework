@@ -55,6 +55,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 
 import java.io.File;
@@ -1063,7 +1064,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             type = fromTypeTree(decl);
         } else {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.fromElement: cannot be here! decl: " + decl.getKind() +
-                    " elt: " + elt, null);
+                    " elt: " + elt);
             type = null; // dead code
         }
 
@@ -2100,6 +2101,43 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
+     * Returns AnnotatedDeclaredType with underlying type String and annotations copied from type.
+     * Subclasses may change the annotations.
+     * @param type type to convert to String
+     * @return AnnotatedTypeMirror that results from converting type to a String type
+     */
+    // TODO: Test that this is called in all the correct locations
+    // See Issue #715
+    // https://github.com/typetools/checker-framework/issues/715
+    public AnnotatedDeclaredType getStringType(AnnotatedTypeMirror type) {
+        TypeMirror stringTypeMirror = TypesUtils.typeFromClass(types, elements, String.class);
+        AnnotatedDeclaredType stringATM = (AnnotatedDeclaredType)
+                AnnotatedTypeMirror.createType(stringTypeMirror, this, type.isDeclaration());
+        stringATM.addAnnotations(type.getEffectiveAnnotations());
+        return stringATM;
+    }
+
+    /**
+     * Returns AnnotatedPrimitiveType with underlying type {@code narrowedTypeMirror} and
+     * annotations copied from {@code type}.
+     *
+     * Currently this method is called only for primitives that are narrowed at assignments from
+     * literal ints, for example, {@code byte b = 1;}.  All other narrowing conversions happen at
+     * typecasts.
+     *
+     * @param type type to narrow.
+     * @param narrowedTypeMirror underlying type for the returned type mirror
+     * @return result of converting {@code type} to {@code narrowedTypeMirror}
+     */
+    public AnnotatedPrimitiveType getNarrowedPrimitive(AnnotatedPrimitiveType type,
+                                                       TypeMirror narrowedTypeMirror) {
+        AnnotatedPrimitiveType narrowed = (AnnotatedPrimitiveType)
+                AnnotatedTypeMirror.createType(narrowedTypeMirror, this, type.isDeclaration());
+        narrowed.addAnnotations(type.getAnnotations());
+        return narrowed;
+    }
+
+    /**
      * Returns the VisitorState instance used by the factory to infer types
      */
     public VisitorState getVisitorState() {
@@ -3064,7 +3102,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         final TypeMirror wildcardUpperBoundTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
         if (!types.isSubtype(wildcardUpperBoundTypeMirror, toModifyTypeMirror)
                 && types.isSubtype(toModifyTypeMirror, wildcardUpperBoundTypeMirror)) {
-            return AnnotatedTypes.asSuper(types, this, annotatedTypeMirror, wildcard);
+            return AnnotatedTypes.asSuper(this, annotatedTypeMirror, wildcard);
         }
 
         return annotatedTypeMirror;

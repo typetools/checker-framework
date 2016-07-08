@@ -5,17 +5,17 @@ import java.io.File;
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class UnsignednessTest extends CheckerFrameworkTest {
+public class SignednessTest extends CheckerFrameworkTest {
 
-    public UnsignednessTest(File testFile) {
+    public SignednessTest(File testFile) {
         super(testFile,
-                org.checkerframework.checker.unsignedness.UnsignednessChecker.class,
-                "unsignedness",
+                org.checkerframework.checker.signedness.SignednessChecker.class,
+                "signedness",
                 "-Anomsgtext");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"unsignedness", "all-systems"};
+        return new String[]{"signedness", "all-systems"};
     }
 }

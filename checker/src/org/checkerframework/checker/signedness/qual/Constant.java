@@ -1,4 +1,4 @@
-package org.checkerframework.checker.unsignedness.qual;
+package org.checkerframework.checker.signedness.qual;
 
 import java.lang.annotation.*;
 
@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.*;
  * The value is a compile-time constant, and could be
  * {@link Signed} or {@link Unsigned}.
  *
- * @checker_framework.manual #unsignedness-checker Unsignedness Checker
+ * @checker_framework.manual #signedness-checker Signedness Checker
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

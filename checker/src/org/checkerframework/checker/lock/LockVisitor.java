@@ -952,10 +952,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
         MethodTree enclMethod = TreeUtils.enclosingMethod(path);
         FlowExpressionContext flowExprContext;
         if (enclMethod != null) {
-            flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclMethod, path, checker.getContext());
+            flowExprContext = FlowExpressionContext
+                    .buildContextForMethodDeclaration(enclMethod, path, checker.getContext());
         } else {
             ClassTree enclosingClass = TreeUtils.enclosingClass(path);
-            flowExprContext = FlowExpressionParseUtil.buildFlowExprContextForDeclaration(enclosingClass, path, checker.getContext());
+            flowExprContext = FlowExpressionContext
+                    .buildContextForClassDeclaration(enclosingClass, checker.getContext());
         }
 
         // Adapted from BaseTypeVisitor.checkPreconditions
@@ -979,7 +981,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 // Attempt to parse the lock expression.
                 // This will also issue errors if the lock expressions are not final
                 parseExpressionString(lockExpression, flowExprContext,
-                                      pathForLocalVariableRetrieval, null, tree);
+                                      pathForLocalVariableRetrieval, null, tree, true);
             } catch (FlowExpressionParseException e) {
                 checker.report(e.getResult(), tree);
             }
@@ -1131,7 +1133,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     protected FlowExpressions.Receiver parseExpressionString(String expression,
             FlowExpressionContext flowExprContext,
             TreePath path,
-            Node node, Tree treeForErrorReporting) throws FlowExpressionParseException {
+            Node node, Tree treeForErrorReporting, boolean use) throws
+            FlowExpressionParseException {
         FlowExpressions.Receiver expr = null;
         expression = expression.trim();
 
@@ -1152,7 +1155,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 expr = FlowExpressions.internalReprOf(atypeFactory,
                         node);
             } else {
-                // TODO: The proper way to do this is to call flowExprContext.changeReceiver to set the
+                // TODO: The proper way to do this is to call flowExprContext.copyChangeToParsingMemberOfReceiver to set the
                 // receiver to the <self> expression, and then call FlowExpressionParseUtil.parse on the
                 // remaining expression string with the new flow expression context. However, this currently
                 // results in a FlowExpressions.Receiver that has a different hash code than if
@@ -1162,10 +1165,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 // For now, convert the "<self>" portion to the node's string representation, and parse
                 // the entire string:
 
-                expr = FlowExpressionParseUtil.parse(node.toString() + "." + remainingExpression, flowExprContext, path);
+                expr = FlowExpressionParseUtil.parse(node.toString() + "." + remainingExpression,
+                        flowExprContext, path, true);
             }
         } else {
-            expr = super.parseExpressionString(expression, flowExprContext, path, node, treeForErrorReporting);
+            expr = super.parseExpressionString(expression, flowExprContext, path, node,
+                    treeForErrorReporting, true);
         }
 
         ensureExpressionIsEffectivelyFinal(expr, expression, treeForErrorReporting);

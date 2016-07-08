@@ -40,10 +40,6 @@ class IntersectionAsMemberOf {
     }
 
     <T extends Object & MyGenericInterface<@NonNull String>> void foo(T param) {
-      //TODO: this error is due to a bug in asSuper
-      // See Issue 717
-      // https://github.com/typetools/checker-framework/issues/717
-       //:: error: (assignment.type.incompatible)
        @NonNull String s = param.getF();
     }
 }
@@ -72,10 +68,6 @@ class UnionAsMemberOf {
         try {
             bar();
         } catch (MyExceptionA | MyExceptionB ex1) {
-            //TODO: this error is due to a bug in asSuper
-            // See Issue 717
-            // https://github.com/typetools/checker-framework/issues/717
-            //:: error: (assignment.type.incompatible)
             @NonNull String s = ex1.getT();
         }
     }
