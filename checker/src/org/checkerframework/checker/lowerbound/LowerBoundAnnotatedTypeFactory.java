@@ -1,33 +1,31 @@
 package org.checkerframework.checker.lowerbound;
 
-import org.checkerframework.checker.lowerbound.qual.*;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
+
+import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 
-import org.checkerframework.javacutil.AnnotationUtils;
-
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.checker.lowerbound.qual.*;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
-
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
-import java.util.List;
-
-import org.checkerframework.javacutil.Pair;
 
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.UnaryTree;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.Pair;
 
 public class LowerBoundAnnotatedTypeFactory extends
  GenericAnnotatedTypeFactory<CFValue, CFStore, LowerBoundTransfer, LowerBoundAnalysis> {
@@ -43,6 +41,7 @@ public class LowerBoundAnnotatedTypeFactory extends
         this.postInit();
     }
 
+    /** These getter methods exist so that LowerBoundTransfer can use these objects */
     public AnnotationMirror getN1P() {
         return N1P;
     }
@@ -65,7 +64,7 @@ public class LowerBoundAnnotatedTypeFactory extends
         return new LowerBoundAnalysis(checker, this, fieldValues);
     }
 
-    // this is apparently just a required thing
+    /** this is apparently just a required thing */
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new LowerBoundTreeAnnotator(this);
@@ -488,10 +487,9 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
         /**
            int lit % int lit -> do the math
-           * % 1 -> nn
-           pos/nn % pos/nn -> nn
-           nn/pos % n1p -> nn
-           n1p % n1p/nn/pos -> n1p
+           * % 1/-1 -> nn
+           pos/nn % * -> nn
+           n1p % * -> n1p
            * % * -> lbu
          */
         public void modHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
