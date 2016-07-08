@@ -232,7 +232,10 @@
 
   <target name="check-format"
           description="Check Java code formatting">
-    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true" ignoreerrors="true"/>
+    <!-- If I add   quiet="true"   to the get invocation, the result is:
+           get doesn't support the "quiet" attribute
+         -->
+    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" ignoreerrors="true"/>
     <chmod file="checker/bin-devel/check-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" failonerror="true">
       <arg value="./checker/bin-devel/check-google-java-format.py"/>
