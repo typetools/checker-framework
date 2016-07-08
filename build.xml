@@ -236,6 +236,7 @@
     <chmod file="checker/bin-devel/check-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" failonerror="true">
       <arg value="./checker/bin-devel/check-google-java-format.py"/>
+      <arg value="--aosp"/>    <!-- 4-space indentation -->
       <fileset refid="formatted.java.files"/>
     </apply>
   </target>
