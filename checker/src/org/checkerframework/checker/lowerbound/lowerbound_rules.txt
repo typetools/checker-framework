@@ -4,7 +4,7 @@ The type hierarchy is:
 
    Top = lbu (unknown)
     |
-   n1p ("Negative One Plus")
+   gte-1 ("Greater than or equal to -1")
     |
    nn  ("NonNegative")
     |
@@ -16,25 +16,25 @@ Int lit -> use its literal value
 
 Increment:     pos -> pos
                nn -> pos
-               n1p -> nn
+               gte-1 -> nn
                * -> lbu
 
 Decrement:     pos -> nn
-               Nn -> n1p
+               Nn -> gte-1
                * -> lbu
 
 Plus:	       int lit + int lit -> do the math
 	       lit 0 + * -> *
 	       lit 1 + * -> call increment
 	       lit -1 + * -> call decrement
-	       lit >= 2 + n1p, nn, or pos -> pos
-	       lit -2 + pos -> n1p
+	       lit >= 2 + gte-1, nn, or pos -> pos
+	       lit -2 + pos -> gte-1
 	       let all other lits fall through:
 	       pos + pos -> pos
 	       pos + nn -> pos
 	       nn + nn -> nn
-	       pos + n1p -> nn
-	       nn + n1p -> n1p
+	       pos + gte-1 -> nn
+	       nn + gte-1 -> gte-1
 	       * + * -> lbu
 
 Minus:
@@ -42,8 +42,8 @@ Minus:
 	       * - lit 0 -> *
 	       * - lit 1 -> call decrement
 	       * - lit -1 -> call increment
-	       pos - lit 2 -> n1p
-	       n1p, nn, pos - lit <= -2 -> pos
+	       pos - lit 2 -> gte-1
+	       gte-1, nn, pos - lit <= -2 -> pos
 	       * - * -> lbu
 
 Multiply:
@@ -64,8 +64,8 @@ Divide:
 	       nn / pos -> nn
 	       pos / nn -> nn
 	       nn / nn -> nn
-	       n1p / pos -> n1p
-	       n1p / nn -> n1p
+	       gte-1 / pos -> gte-1
+	       gte-1 / nn -> gte-1
 	       * / * -> lbu
 
 Mod:
@@ -73,7 +73,7 @@ Mod:
 	       int lit % int lit -> do the math
 	       * % 1/-1 -> nn (=0)
 	       pos/nn % * -> nn
-	       n1p % * -> n1p
+	       gte-1 % * -> gte-1
 	       lbu % * -> lbu
 
 
@@ -84,14 +84,14 @@ There are two "primitives":
 x > y, which implies things about x based on y's type:
 
 y has type:    implies x has type:
-  n1p                  nn
+  gte-1                nn
   nn                   pos
   pos                  pos
 
 and x >= y:
 
 y has type:    implies x has type:
-  n1p                  n1p
+  gte-1                gte-1
   nn                   nn
   pos                  pos
 
