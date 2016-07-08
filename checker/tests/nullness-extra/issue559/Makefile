@@ -5,4 +5,4 @@ all: clean
 	diff -u Expected.txt Out.txt
 
 clean:
-	-rm Issue559.class Out.txt
+	rm -f Issue559.class Out.txt
