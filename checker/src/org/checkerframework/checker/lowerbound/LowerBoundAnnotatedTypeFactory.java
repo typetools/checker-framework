@@ -22,6 +22,10 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
+
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -64,10 +68,12 @@ public class LowerBoundAnnotatedTypeFactory extends
         return new LowerBoundAnalysis(checker, this, fieldValues);
     }
 
-    /** this is apparently just a required thing */
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new LowerBoundTreeAnnotator(this);
+        return new ListTreeAnnotator(
+                new LowerBoundTreeAnnotator(this),
+                new PropagationTreeAnnotator(this)
+        );
     }
 
     private class LowerBoundTreeAnnotator extends TreeAnnotator{
@@ -193,8 +199,6 @@ public class LowerBoundAnnotatedTypeFactory extends
 
         public void plusHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
 
             /** if both left and right are literals, do the math...*/
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
@@ -212,12 +216,15 @@ public class LowerBoundAnnotatedTypeFactory extends
             */
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)leftExpr).getValue();
-                if (val >= -1) {
+                if (val >= -2) {
                     plusHelper(rightExpr, leftExpr, type);
                     return;
                 }
             }
 
+            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+//TODO: Make helper method
             /** handle the case where one of the two is an interesting literal. */
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
