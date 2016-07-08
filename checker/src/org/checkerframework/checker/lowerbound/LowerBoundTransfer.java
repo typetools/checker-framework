@@ -53,6 +53,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         ConditionalTransferResult<CFValue, CFStore> newResult =
             new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
+        // in.getValueOfSubNode(node.getLeftOperand()).getType();
         /** do things here */
         gtHelper(left, right, thenStore);
 
