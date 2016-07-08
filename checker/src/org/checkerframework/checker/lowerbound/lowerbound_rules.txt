@@ -109,3 +109,8 @@ things about the THEN branch:
 
 EXPR             THEN
 x == y           x >= y && y >= x
+
+finally, not equal:
+
+EXPR             ELSE
+x != y           x >= y && y >= x

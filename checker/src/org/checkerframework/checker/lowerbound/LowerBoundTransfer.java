@@ -17,6 +17,7 @@ import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFStore;
@@ -136,6 +137,24 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         /** trust me, this is the simpler way to do this */
         gteHelper(left, right, thenStore);
         gteHelper(right, left, thenStore);
+        return newResult;
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore>
+        visitNotEqual(NotEqualNode node, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitNotEqual(node, in);
+        Node left = node.getLeftOperand();
+        Node right = node.getRightOperand();
+        CFStore thenStore = result.getRegularStore();
+        CFStore elseStore = thenStore.copy();
+        ConditionalTransferResult<CFValue, CFStore> newResult =
+                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+
+        /** have to call this in both directions since it only adjusts the first argument */
+        /** trust me, this is the simpler way to do this */
+        gteHelper(left, right, elseStore);
+        gteHelper(right, left, elseStore);
         return newResult;
     }
 
