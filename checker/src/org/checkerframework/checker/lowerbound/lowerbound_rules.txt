@@ -109,4 +109,3 @@ things about the THEN branch:
 
 EXPR             THEN
 x == y           x >= y && y >= x
-
