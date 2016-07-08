@@ -9,5 +9,4 @@ public class SamFileValidator {
             return new AbstractMap.SimpleEntry("hello", "goodbye");
         }
     }
-
 }

@@ -1,11 +1,9 @@
+import com.sun.tools.javac.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
-import com.sun.tools.javac.util.List;
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
 class Explosion {
-    public static class ExplosiveException extends Exception{
-
-    }
+    public static class ExplosiveException extends Exception {}
 
     @NonNull Integer m_nni = 1;
     final String m_astring;
@@ -37,19 +35,20 @@ class Explosion {
         System.out.println("Possibly cause null pointer with this: " + s2.length());
         //:: warning: (known.nonnull)
         if (s2 == null) {
-            ;// do nothing
+            ; // do nothing
         } else {
             System.out.println("Can't cause null pointer here: " + s2.length());
             s = s2;
         }
         //:: warning: (known.nonnull)
-        if (s==null?s2!=null:s2!=null) {
+        if (s == null ? s2 != null : s2 != null) {
             s = s2;
         }
         System.out.println("Hello " + s);
         System.out.println("Hello " + s.length());
         f();
     }
+
     static private int f() {
         while (true) {
             try {
@@ -60,8 +59,8 @@ class Explosion {
                 // throw new RuntimeException();
             }
         }
-
     }
+
     static public int foo() {
         final int v;
         int x;
@@ -111,15 +110,14 @@ class Explosion {
         for (@NonNull String s : ss) {
             a = s;
         }
-        if (b==null || b.length() == 0) {
+        if (b == null || b.length() == 0) {
             System.out.println("hey");
         }
         if (b != null) {
             //:: error: (dereference.of.nullable)
-            for (; b.length() > 0 ; b = null) {
+            for (; b.length() > 0; b = null) {
                 System.out.println(b.length());
             }
         }
     }
-
 }

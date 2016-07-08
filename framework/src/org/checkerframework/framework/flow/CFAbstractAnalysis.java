@@ -1,25 +1,24 @@
 package org.checkerframework.framework.flow;
 
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.Pair;
-
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.*;
@@ -43,9 +42,10 @@ import org.checkerframework.checker.nullness.qual.*;
  * @author Stefan Heule
  *
  */
-public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
-            S extends CFAbstractStore<V, S>,
-            T extends CFAbstractTransfer<V, S, T>>
+public abstract class CFAbstractAnalysis<
+                V extends CFAbstractValue<V>,
+                S extends CFAbstractStore<V, S>,
+                T extends CFAbstractTransfer<V, S, T>>
         extends Analysis<V, S, T> {
     /**
      * The qualifier hierarchy for which to track annotations.
@@ -60,7 +60,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     /**
      * A type factory that can provide static type annotations for AST Trees.
      */
-    protected final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> atypeFactory;
+    protected final GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
+            atypeFactory;
 
     /**
      * A checker used to do error reporting.
@@ -73,7 +74,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
      */
     protected final List<Pair<VariableElement, V>> fieldValues;
 
-    public CFAbstractAnalysis(BaseTypeChecker checker,
+    public CFAbstractAnalysis(
+            BaseTypeChecker checker,
             GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory,
             List<Pair<VariableElement, V>> fieldValues) {
         super(checker.getProcessingEnvironment());
@@ -119,7 +121,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
      */
     public CFValue defaultCreateAbstractValue(
             CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        if (!AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
+        if (type instanceof AnnotatedNoType
+                || !AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
             // If the type is not valid, we return null, which is the same as
             // 'no information'.
             return null;
@@ -131,7 +134,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
         return typeHierarchy;
     }
 
-    public GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> getTypeFactory() {
+    public GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>>
+            getTypeFactory() {
         return atypeFactory;
     }
 
@@ -147,12 +151,11 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
      * annotation {@code anno}, and 'top' for all other hierarchies. The
      * underlying type is {@link Object}.
      */
-    public V createSingleAnnotationValue(AnnotationMirror anno,
-            TypeMirror underlyingType) {
-        AnnotatedTypeMirror type = AnnotatedTypeMirror.createType(
-                underlyingType, getTypeFactory(), false);
-        Set<? extends AnnotationMirror> tops = getTypeFactory().getQualifierHierarchy()
-                .getTopAnnotations();
+    public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
+        AnnotatedTypeMirror type =
+                AnnotatedTypeMirror.createType(underlyingType, getTypeFactory(), false);
+        Set<? extends AnnotationMirror> tops =
+                getTypeFactory().getQualifierHierarchy().getTopAnnotations();
         makeTop(type, tops);
         type.replaceAnnotation(anno);
         return createAbstractValue(type);
@@ -187,7 +190,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     /**
      * @see GenericAnnotatedTypeFactory#getTypeFactoryOfSubchecker(Class)
      */
-    public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker> W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
+    public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
+            W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return atypeFactory.getTypeFactoryOfSubchecker(checkerClass);
     }
 }

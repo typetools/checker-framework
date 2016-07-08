@@ -1,8 +1,7 @@
 package org.checkerframework.framework.test.diagnostics;
 
-import org.checkerframework.framework.util.PluginUtil;
-
 import java.util.List;
+import org.checkerframework.framework.util.PluginUtil;
 
 /**
  * Represents an entire line of TestDiagnostics which is essentially a list of diagnostics
@@ -12,7 +11,8 @@ public class TestDiagnosticLine {
     private final String originalLine;
     private final List<TestDiagnostic> diagnostics;
 
-    public TestDiagnosticLine(long lineNumber, String originalLine, List<TestDiagnostic> diagnostics) {
+    public TestDiagnosticLine(
+            long lineNumber, String originalLine, List<TestDiagnostic> diagnostics) {
         this.lineNumber = lineNumber;
         this.originalLine = originalLine;
         this.diagnostics = diagnostics;
@@ -35,7 +35,8 @@ public class TestDiagnosticLine {
      * from the original line if there was no original line, the original line had extraneous whitespace
      */
     public String asSourceString() {
-        return "//:: " + PluginUtil.join(" :: ", TestDiagnosticUtils.diagnosticsToString(diagnostics));
+        return "//:: "
+                + PluginUtil.join(" :: ", TestDiagnosticUtils.diagnosticsToString(diagnostics));
     }
 
     public List<TestDiagnostic> getDiagnostics() {

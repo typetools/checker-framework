@@ -10,7 +10,5 @@ class ClassNotFound {
         int a = 0;
         //:: warning: (class.find.failed)
         foo(a);
-
     }
-
 }

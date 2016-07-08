@@ -1,7 +1,6 @@
 package org.checkerframework.checker.regex.classic.qual;
 
 import java.lang.annotation.Target;
-
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 

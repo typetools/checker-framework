@@ -8,8 +8,7 @@ class TryFinallyBreak {
         while (this.hashCode() > 10000) {
             try {
                 // empty body
-            }
-            finally {
+            } finally {
                 ans = null;
             }
         }
@@ -23,8 +22,7 @@ class TryFinallyBreak {
             try {
                 // Note the additional break;
                 break;
-            }
-            finally {
+            } finally {
                 ans = null;
             }
         }

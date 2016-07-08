@@ -1,10 +1,9 @@
 package org.checkerframework.framework.type.treeannotator;
 
+import com.sun.source.tree.Tree;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import com.sun.source.tree.Tree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**

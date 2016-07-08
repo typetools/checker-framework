@@ -1,11 +1,10 @@
-import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 // This example is taken from the FBC paper, figure 1 (and has some additional code in main below).
 // We made the list generic.
 public class List<T> {
-    @NotOnlyInitialized
-    Node<T> sentinel;
+    @NotOnlyInitialized Node<T> sentinel;
 
     public List() {
         this.sentinel = new Node<T>(this);
@@ -23,17 +22,13 @@ public class List<T> {
 }
 
 class Node<T> {
-    @NotOnlyInitialized
-    Node<T> prev;
+    @NotOnlyInitialized Node<T> prev;
 
-    @NotOnlyInitialized
-    Node<T> next;
+    @NotOnlyInitialized Node<T> next;
 
-    @NotOnlyInitialized
-    List parent;
+    @NotOnlyInitialized List parent;
 
-    @Nullable
-    T data;
+    @Nullable T data;
 
     // for sentinel construction
     Node(@UnderInitialization List parent) {

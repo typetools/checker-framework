@@ -12,8 +12,7 @@ import org.checkerframework.dataflow.analysis.Store;
  * @author Stefan Heule
  *
  */
-public abstract class SingleSuccessorBlockImpl extends BlockImpl implements
-        SingleSuccessorBlock {
+public abstract class SingleSuccessorBlockImpl extends BlockImpl implements SingleSuccessorBlock {
 
     /** Internal representation of the successor. */
     protected /*@Nullable*/ BlockImpl successor;

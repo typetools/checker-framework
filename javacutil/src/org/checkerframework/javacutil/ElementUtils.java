@@ -8,6 +8,7 @@ import static com.sun.tools.javac.code.Flags.ABSTRACT;
 import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
 import static com.sun.tools.javac.code.Flags.FINAL;
 
+import com.sun.tools.javac.code.Symbol;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +17,6 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -31,15 +31,15 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
-import com.sun.tools.javac.code.Symbol;
-
 /**
  * A Utility class for analyzing {@code Element}s.
  */
 public class ElementUtils {
 
     // Class cannot be instantiated.
-    private ElementUtils() { throw new AssertionError("Class ElementUtils cannot be instantiated."); }
+    private ElementUtils() {
+        throw new AssertionError("Class ElementUtils cannot be instantiated.");
+    }
 
     /**
      * Returns the innermost type element enclosing the given element
@@ -49,8 +49,7 @@ public class ElementUtils {
      */
     public static TypeElement enclosingClass(final Element elem) {
         Element result = elem;
-        while (result != null && !result.getKind().isClass()
-                && !result.getKind().isInterface()) {
+        while (result != null && !result.getKind().isClass() && !result.getKind().isInterface()) {
             /*@Nullable*/ Element encl = result.getEnclosingElement();
             result = encl;
         }
@@ -129,8 +128,8 @@ public class ElementUtils {
      */
     public static boolean isEffectivelyFinal(Element element) {
         Symbol sym = (Symbol) element;
-        if (sym.getEnclosingElement().getKind() == ElementKind.METHOD &&
-                (sym.getEnclosingElement().flags() & ABSTRACT) != 0) {
+        if (sym.getEnclosingElement().getKind() == ElementKind.METHOD
+                && (sym.getEnclosingElement().flags() & ABSTRACT) != 0) {
             return true;
         }
         return (sym.flags() & (FINAL | EFFECTIVELY_FINAL)) != 0;
@@ -145,7 +144,7 @@ public class ElementUtils {
      */
     public static TypeMirror getType(Element element) {
         if (element.getKind() == ElementKind.METHOD) {
-            return ((ExecutableElement)element).getReturnType();
+            return ((ExecutableElement) element).getReturnType();
         } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
             return enclosingClass(element).asType();
         } else {
@@ -181,9 +180,9 @@ public class ElementUtils {
      * Returns a verbose name that identifies the element.
      */
     public static String getVerboseName(Element elt) {
-        if (elt.getKind() == ElementKind.PACKAGE ||
-                elt.getKind().isClass() ||
-                elt.getKind().isInterface()) {
+        if (elt.getKind() == ElementKind.PACKAGE
+                || elt.getKind().isClass()
+                || elt.getKind().isInterface()) {
             return getQualifiedClassName(elt).toString();
         } else {
             return getQualifiedClassName(elt) + "." + elt.toString();
@@ -205,8 +204,9 @@ public class ElementUtils {
      */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
-            && (elt.getKind() == ElementKind.FIELD || elt.getKind() == ElementKind.LOCAL_VARIABLE)
-            && ((VariableElement)elt).getConstantValue() != null;
+                && (elt.getKind() == ElementKind.FIELD
+                        || elt.getKind() == ElementKind.LOCAL_VARIABLE)
+                && ((VariableElement) elt).getConstantValue() != null;
     }
 
     /**
@@ -242,9 +242,9 @@ public class ElementUtils {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if (null != clss.classfile) {
                 // The class file could be a .java file
-                return (clss.classfile.getName().endsWith(".class") ||
-                        clss.classfile.getName().endsWith(".class)") ||
-                        clss.classfile.getName().endsWith(".class)]"));
+                return (clss.classfile.getName().endsWith(".class")
+                        || clss.classfile.getName().endsWith(".class)")
+                        || clss.classfile.getName().endsWith(".class)]"));
             } else {
                 return false;
             }
@@ -256,7 +256,7 @@ public class ElementUtils {
      * Returns the field of the class
      */
     public static VariableElement findFieldInType(TypeElement type, String name) {
-        for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
+        for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (field.getSimpleName().toString().equals(name)) {
                 return field;
             }
@@ -264,9 +264,10 @@ public class ElementUtils {
         return null;
     }
 
-    public static Set<VariableElement> findFieldsInType(TypeElement type, Collection<String> names) {
+    public static Set<VariableElement> findFieldsInType(
+            TypeElement type, Collection<String> names) {
         Set<VariableElement> results = new HashSet<VariableElement>();
-        for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
+        for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (names.contains(field.getSimpleName().toString())) {
                 results.add(field);
             }
@@ -275,7 +276,9 @@ public class ElementUtils {
     }
 
     public static boolean isError(Element element) {
-        return element.getClass().getName().equals("com.sun.tools.javac.comp.Resolve$SymbolNotFoundError");
+        return element.getClass()
+                .getName()
+                .equals("com.sun.tools.javac.comp.Resolve$SymbolNotFoundError");
     }
 
     /**
@@ -286,9 +289,9 @@ public class ElementUtils {
      * @return whether the element requires a receiver for accesses
      */
     public static boolean hasReceiver(Element element) {
-        return (element.getKind().isField() ||
-                element.getKind() == ElementKind.METHOD ||
-                element.getKind() == ElementKind.CONSTRUCTOR)
+        return (element.getKind().isField()
+                        || element.getKind() == ElementKind.METHOD
+                        || element.getKind() == ElementKind.CONSTRUCTOR)
                 && !ElementUtils.isStatic(element);
     }
 
@@ -317,14 +320,14 @@ public class ElementUtils {
             // add it to our superelems set.
             TypeMirror supertypecls = current.getSuperclass();
             if (supertypecls.getKind() != TypeKind.NONE) {
-                TypeElement supercls = (TypeElement) ((DeclaredType)supertypecls).asElement();
+                TypeElement supercls = (TypeElement) ((DeclaredType) supertypecls).asElement();
                 if (!superelems.contains(supercls)) {
                     stack.push(supercls);
                     superelems.add(supercls);
                 }
             }
             for (TypeMirror supertypeitf : current.getInterfaces()) {
-                TypeElement superitf = (TypeElement) ((DeclaredType)supertypeitf).asElement();
+                TypeElement superitf = (TypeElement) ((DeclaredType) supertypeitf).asElement();
                 if (!superelems.contains(superitf)) {
                     stack.push(superitf);
                     superelems.add(superitf);
@@ -375,8 +378,8 @@ public class ElementUtils {
 
     public static boolean isTypeDeclaration(Element elt) {
         switch (elt.getKind()) {
-            // These tree kinds are always declarations.  Uses of the declared
-            // types have tree kind IDENTIFIER.
+                // These tree kinds are always declarations.  Uses of the declared
+                // types have tree kind IDENTIFIER.
             case ANNOTATION_TYPE:
             case CLASS:
             case ENUM:
@@ -400,9 +403,8 @@ public class ElementUtils {
      * @param parameters the formal parameters' Classes
      * @return true if the method matches
      */
-    public static boolean matchesElement(ExecutableElement method,
-            String methodName,
-            Class<?> ... parameters) {
+    public static boolean matchesElement(
+            ExecutableElement method, String methodName, Class<?>... parameters) {
 
         if (!method.getSimpleName().toString().equals(methodName)) {
             return false;
@@ -412,8 +414,11 @@ public class ElementUtils {
             return false;
         } else {
             for (int i = 0; i < method.getParameters().size(); i++) {
-                if (!method.getParameters().get(i).asType().toString().equals(
-                        parameters[i].getName())) {
+                if (!method.getParameters()
+                        .get(i)
+                        .asType()
+                        .toString()
+                        .equals(parameters[i].getName())) {
 
                     return false;
                 }

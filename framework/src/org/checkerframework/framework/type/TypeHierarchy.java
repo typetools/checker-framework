@@ -1,9 +1,8 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.framework.util.AnnotatedTypes;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.framework.util.AnnotatedTypes;
 
 /**
  * Compares AnnotatedTypeMirrors for subtype relationships.
@@ -29,7 +28,8 @@ public interface TypeHierarchy {
      * <li> Unboxing conversions: isSubtype calls {@link AnnotatedTypes#asSuper(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}
      *      which calls {@link AnnotatedTypeFactory#getUnboxedType}
      * <li> Capture conversions:  Wildcards are treated as though they were converted to type variables
-     * <li> String conversions: Any type to String. Special case in {@link DefaultTypeHierarchy#visitDeclared_Declared}.
+     * <li> String conversions: Any type to String. isSubtype calls {@link AnnotatedTypes#asSuper}
+     *      which calls {@link AnnotatedTypeFactory#getStringType(AnnotatedTypeMirror)}
      * </ul>
      *
      * 1 happens elsewhere:
@@ -42,7 +42,7 @@ public interface TypeHierarchy {
      * <ul>
      * <li> Identity conversions: type to same type
      * <li> Widening primitive conversions: primitive to primitive (no loss of information, byte to short for example)
-     * <li> Narrowing primitive conversions: primitive to primitive (possibly loss information, short to byte for example)
+     * <li> Narrowing primitive conversions: primitive to primitive (possibly loss of information, short to byte for example)
      * <li> Widening and Narrowing Primitive Conversion: byte to char
      * <li> Widening reference conversions: Upcast
      * <li> Narrowing reference conversions: Downcast
@@ -65,5 +65,6 @@ public interface TypeHierarchy {
      * @return Returns true if {@code subtype} is a subtype of {@code supertype} in the qualifier hierarchy
      * whose top is {@code top}
      */
-    boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top);
+    boolean isSubtype(
+            AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top);
 }

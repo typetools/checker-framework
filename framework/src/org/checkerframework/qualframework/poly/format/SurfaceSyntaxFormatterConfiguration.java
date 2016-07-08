@@ -18,7 +18,8 @@ public abstract class SurfaceSyntaxFormatterConfiguration<Q> {
     /** The bottom ground qualifier **/
     private QualParams<Q> qualBottom;
 
-    public SurfaceSyntaxFormatterConfiguration(Q top, Q bottom, QualParams<Q> qualTop, QualParams<Q> qualBottom) {
+    public SurfaceSyntaxFormatterConfiguration(
+            Q top, Q bottom, QualParams<Q> qualTop, QualParams<Q> qualBottom) {
         this.top = top;
         this.bottom = bottom;
         this.qualTop = qualTop;
@@ -32,7 +33,8 @@ public abstract class SurfaceSyntaxFormatterConfiguration<Q> {
      * @param printInvisibleQualifiers if printingInvisibleQualifiers is enabled
      * @return true if the annotation should be printed
      */
-    protected abstract boolean shouldPrintAnnotation(AnnotationParts anno, boolean printInvisibleQualifiers);
+    protected abstract boolean shouldPrintAnnotation(
+            AnnotationParts anno, boolean printInvisibleQualifiers);
 
     /**
      * Return an AnnotationParts object that represents the equivalent

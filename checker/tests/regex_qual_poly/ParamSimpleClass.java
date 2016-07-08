@@ -5,24 +5,26 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 // Test qual param on a class
 @ClassRegexParam("Main")
 class A {
-    public @Regex(param="Main2") B x;
-    public @Regex(value=1, param="Main2") B y;
-    public @Var(arg="Main", param="Main2") B z;
+    public @Regex(param = "Main2") B x;
+    public @Regex(value = 1, param = "Main2") B y;
+    public @Var(arg = "Main", param = "Main2") B z;
 }
 
 @ClassRegexParam("Main2")
-class B { }
+class B {}
 
 abstract class Test {
-    abstract @Regex(param="Main") A makeTainted();
-    abstract @Regex(value=1, param="Main") A makeUntainted();
+    abstract @Regex(param = "Main") A makeTainted();
 
-    abstract void takeTainted(@Regex(param="Main2") B o);
-    abstract void takeUntainted(@Regex(value=1, param="Main2") B o);
+    abstract @Regex(value = 1, param = "Main") A makeUntainted();
+
+    abstract void takeTainted(@Regex(param = "Main2") B o);
+
+    abstract void takeUntainted(@Regex(value = 1, param = "Main2") B o);
 
     void test() {
-        @Regex(param="Main") A ta = makeTainted();
-        @Regex(value=1, param="Main") A ua = makeUntainted();
+        @Regex(param = "Main") A ta = makeTainted();
+        @Regex(value = 1, param = "Main") A ua = makeUntainted();
 
         takeTainted(ta.x);
         //:: error: (argument.type.incompatible)
@@ -34,7 +36,6 @@ abstract class Test {
         takeTainted(ua.y);
         //:: error: (argument.type.incompatible)
         takeTainted(ua.z);
-
 
         //:: error: (argument.type.incompatible)
         takeUntainted(ta.x);

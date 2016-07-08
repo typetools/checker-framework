@@ -1,5 +1,5 @@
-import org.checkerframework.checker.nullness.qual.*;
 import java.util.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 // @skip-test
 // This test is broken as it uses multiple classes.  Javac halts
@@ -8,6 +8,7 @@ class RawSuper {
 
     class A {
         @NonNull Object afield;
+
         A() {
             super();
             mRA(this);
@@ -17,16 +18,20 @@ class RawSuper {
             mRA(this);
             mA(this);
         }
+
         A(int ignore) {
             this.raw();
             afield = new Object();
         }
-        void raw(@Raw A this) { }
-        void nonRaw() { }
+
+        void raw(@Raw A this) {}
+
+        void nonRaw() {}
     }
 
     class B extends A {
         @NonNull Object bfield;
+
         B() {
             mRA(this);
             mA(this);
@@ -48,6 +53,7 @@ class RawSuper {
     // This test may be extraneous
     class C extends B {
         @NonNull Object cfield;
+
         C() {
             mRA(this);
             mA(this);
@@ -66,11 +72,15 @@ class RawSuper {
         }
     }
 
-    void mA(@NonRaw A a) { }
-    void mRA(@Raw A a) { }
-    void mB(@NonRaw B b) { }
-    void mRB(@Raw B b) { }
-    void mC(@NonRaw C c) { }
-    void mRC(@Raw C c) { }
+    void mA(@NonRaw A a) {}
 
+    void mRA(@Raw A a) {}
+
+    void mB(@NonRaw B b) {}
+
+    void mRB(@Raw B b) {}
+
+    void mC(@NonRaw C c) {}
+
+    void mRC(@Raw C c) {}
 }

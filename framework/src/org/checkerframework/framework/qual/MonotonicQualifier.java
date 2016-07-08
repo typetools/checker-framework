@@ -43,7 +43,7 @@ import java.lang.annotation.Target;
  *
  * @author Stefan Heule
  */
-@Target({ ElementType.ANNOTATION_TYPE })
+@Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface MonotonicQualifier {
     Class<? extends Annotation> value();

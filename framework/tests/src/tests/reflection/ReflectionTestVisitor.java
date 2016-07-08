@@ -8,8 +8,8 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  *
  * @author rjust
  */
-public final class ReflectionTestVisitor extends
-        BaseTypeVisitor<ReflectionTestAnnotatedTypeFactory> {
+public final class ReflectionTestVisitor
+        extends BaseTypeVisitor<ReflectionTestAnnotatedTypeFactory> {
 
     public ReflectionTestVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -19,5 +19,4 @@ public final class ReflectionTestVisitor extends
     protected ReflectionTestAnnotatedTypeFactory createTypeFactory() {
         return new ReflectionTestAnnotatedTypeFactory(checker);
     }
-
 }

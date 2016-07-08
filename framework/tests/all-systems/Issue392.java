@@ -4,6 +4,6 @@
 public class Issue392<T> {
 
     public <T> void getFields(T t) {
-        Object o = new Object[] { t, t };
+        Object o = new Object[] {t, t};
     }
 }

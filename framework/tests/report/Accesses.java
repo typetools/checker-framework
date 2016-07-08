@@ -2,14 +2,14 @@ import org.checkerframework.common.util.report.qual.*;
 
 class Accesses {
     class Demo {
-        @ReportReadWrite
-        Object read;
+        @ReportReadWrite Object read;
 
-        @ReportWrite
-        Object write;
+        @ReportWrite Object write;
 
         @ReportCall
-        Object foo(Object p) { return null; }
+        Object foo(Object p) {
+            return null;
+        }
 
         void implicitRead() {
             //:: error: (fieldreadwrite)

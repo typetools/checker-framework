@@ -1,9 +1,7 @@
 package org.checkerframework.checker.signedness.qual;
 
 import java.lang.annotation.*;
-
 import javax.lang.model.type.TypeKind;
-
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
@@ -17,7 +15,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf( { UnknownSignedness.class } )
+@SubtypeOf({UnknownSignedness.class})
 @ImplicitFor(
     types = {
         TypeKind.BYTE,
@@ -39,4 +37,4 @@ import org.checkerframework.framework.qual.SubtypeOf;
         java.lang.Integer.class,
         java.lang.Long.class
     }*/ )
-public @interface Signed { }
+public @interface Signed {}

@@ -30,12 +30,13 @@ public class FlowNegation {
     void testInvalidCase1() {
         String s = "m";
         //:: warning: (known.nonnull)
-        if (s != null) { s = null;
+        if (s != null) {
+            s = null;
         } else {
             // nothing to do
         }
         //:: error: (dereference.of.nullable)
-        s.toString();   // error
+        s.toString(); // error
     }
 
     void testInvalidCase2() {
@@ -47,7 +48,7 @@ public class FlowNegation {
             s = null;
         }
         //:: error: (dereference.of.nullable)
-        s.toString();   // error
+        s.toString(); // error
     }
 
     void testSimpleValidTernary() {
@@ -74,7 +75,7 @@ public class FlowNegation {
         //:: warning: (known.nonnull)
         Object m = (s != null) ? (s = null) : "n";
         //:: error: (dereference.of.nullable)
-        s.toString();   // error
+        s.toString(); // error
     }
 
     void testTernaryInvalidCase2() {
@@ -82,7 +83,7 @@ public class FlowNegation {
         //:: warning: (known.nonnull)
         Object m = (s != null) ? "m" : (s = null);
         //:: error: (dereference.of.nullable)
-        s.toString();   // error
+        s.toString(); // error
     }
 
     void testAssignInCond() {

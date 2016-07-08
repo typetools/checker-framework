@@ -1,10 +1,14 @@
 package org.checkerframework.checker.regex.classic;
 
-
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-
 import org.checkerframework.checker.regex.qual.Regex;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -13,13 +17,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.javacutil.TreeUtils;
-
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * A type-checking visitor for the Regex type system.
@@ -79,12 +76,12 @@ public class RegexClassicVisitor extends BaseTypeVisitor<RegexClassicAnnotatedTy
                 }
             }
         } else if (TreeUtils.isMethodInvocation(node, matchResultEnd, env)
-                  || TreeUtils.isMethodInvocation(node, matchResultGroup, env)
-                  || TreeUtils.isMethodInvocation(node, matchResultStart, env)) {
-          /**
-           * Case 3: Checks calls to {@code MatchResult.start}, {@code MatchResult.end}
-           * and {@code MatchResult.group} to ensure that a valid group number is passed.
-           */
+                || TreeUtils.isMethodInvocation(node, matchResultGroup, env)
+                || TreeUtils.isMethodInvocation(node, matchResultStart, env)) {
+            /**
+             * Case 3: Checks calls to {@code MatchResult.start}, {@code MatchResult.end}
+             * and {@code MatchResult.group} to ensure that a valid group number is passed.
+             */
             ExpressionTree group = node.getArguments().get(0);
             if (group.getKind() == Kind.INT_LITERAL) {
                 LiteralTree literal = (LiteralTree) group;
@@ -93,10 +90,14 @@ public class RegexClassicVisitor extends BaseTypeVisitor<RegexClassicAnnotatedTy
                 int annoGroups = 0;
                 AnnotatedTypeMirror receiverType = atypeFactory.getAnnotatedType(receiver);
                 if (receiverType.hasAnnotation(Regex.class)) {
-                    annoGroups = atypeFactory.getGroupCount(receiverType.getAnnotation(Regex.class));
+                    annoGroups =
+                            atypeFactory.getGroupCount(receiverType.getAnnotation(Regex.class));
                 }
                 if (paramGroups > annoGroups) {
-                    checker.report(Result.failure("group.count.invalid", paramGroups, annoGroups, receiver), group);
+                    checker.report(
+                            Result.failure(
+                                    "group.count.invalid", paramGroups, annoGroups, receiver),
+                            group);
                 }
             } else {
                 checker.report(Result.warning("group.count.unknown"), group);
@@ -115,8 +116,8 @@ public class RegexClassicVisitor extends BaseTypeVisitor<RegexClassicAnnotatedTy
     }*/
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-                             AnnotatedDeclaredType useType, Tree tree) {
+    public boolean isValidUse(
+            AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         // TODO: only allow Regex and PolyRegex annotations on types in legalReferenceTypes.
         // This is pending an implementation of AnnotatedTypeMirror.getExplicitAnnotations
         // that supports local variables, array types and parameterized types.
@@ -144,5 +145,4 @@ public class RegexClassicVisitor extends BaseTypeVisitor<RegexClassicAnnotatedTy
         }*/
         return super.isValidUse(type, tree);
     }
-
 }

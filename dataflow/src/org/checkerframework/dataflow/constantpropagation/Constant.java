@@ -5,7 +5,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import java.util.Objects;
-
 import org.checkerframework.dataflow.analysis.AbstractValue;
 
 public class Constant implements AbstractValue<Constant> {
@@ -17,7 +16,9 @@ public class Constant implements AbstractValue<Constant> {
     protected /*@Nullable*/ Integer value;
 
     public enum Type {
-        CONSTANT, TOP, BOTTOM,
+        CONSTANT,
+        TOP,
+        BOTTOM,
     }
 
     public Constant(Type type) {
@@ -88,12 +89,12 @@ public class Constant implements AbstractValue<Constant> {
     @Override
     public String toString() {
         switch (type) {
-        case TOP:
-            return "T";
-        case BOTTOM:
-            return "-";
-        case CONSTANT:
-            return value.toString();
+            case TOP:
+                return "T";
+            case BOTTOM:
+                return "-";
+            case CONSTANT:
+                return value.toString();
         }
         assert false;
         return "???";

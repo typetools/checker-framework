@@ -1,5 +1,11 @@
 package org.checkerframework.checker.nullness.qual;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
 import org.checkerframework.framework.qual.DefaultFor;
@@ -9,14 +15,6 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import javax.lang.model.type.TypeKind;
 
 /**
  * {@link NonNull} is a type annotation that indicates that an expression is
@@ -45,17 +43,25 @@ import javax.lang.model.type.TypeKind;
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SubtypeOf(MonotonicNonNull.class)
-@ImplicitFor(types = { TypeKind.PACKAGE,
-                       TypeKind.INT, TypeKind.BOOLEAN, TypeKind.CHAR,
-                       TypeKind.DOUBLE, TypeKind.FLOAT, TypeKind.LONG,
-                       TypeKind.SHORT, TypeKind.BYTE },
+@ImplicitFor(
+    types = {
+        TypeKind.PACKAGE,
+        TypeKind.INT,
+        TypeKind.BOOLEAN,
+        TypeKind.CHAR,
+        TypeKind.DOUBLE,
+        TypeKind.FLOAT,
+        TypeKind.LONG,
+        TypeKind.SHORT,
+        TypeKind.BYTE
+    },
     // All literals except NULL_LITERAL:
-    literals = { LiteralKind.STRING })
+    literals = {LiteralKind.STRING}
+)
 @DefaultQualifierInHierarchy
-@DefaultFor({ TypeUseLocation.EXCEPTION_PARAMETER })
-@DefaultInUncheckedCodeFor({ TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND })
+@DefaultFor({TypeUseLocation.EXCEPTION_PARAMETER})
+@DefaultInUncheckedCodeFor({TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND})
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
-public @interface NonNull {
-}
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+public @interface NonNull {}

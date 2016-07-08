@@ -1,7 +1,5 @@
-import org.checkerframework.checker.interning.qual.*;
-
 import java.util.*;
-
+import org.checkerframework.checker.interning.qual.*;
 
 public class Enumerations {
 
@@ -15,10 +13,10 @@ public class Enumerations {
 
         // check that receiver is OK
         @org.checkerframework.dataflow.qual.Pure
-        public String toString() { return "StudentYear: ..."; }
-
+        public String toString() {
+            return "StudentYear: ...";
+        }
     }
-
 
     public boolean isSophomore(StudentYear sy) {
         return sy == StudentYear.SOPHOMORE;

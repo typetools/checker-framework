@@ -9,8 +9,7 @@ public class QualifiedTypeParameterBounds<Q> {
     private final QualifiedTypeMirror<Q> lowerBound;
 
     public QualifiedTypeParameterBounds(
-            QualifiedTypeMirror<Q> upperBound,
-            QualifiedTypeMirror<Q> lowerBound) {
+            QualifiedTypeMirror<Q> upperBound, QualifiedTypeMirror<Q> lowerBound) {
         this.upperBound = upperBound;
         this.lowerBound = lowerBound;
     }

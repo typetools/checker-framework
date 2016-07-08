@@ -1,8 +1,7 @@
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.checker.initialization.qual.*;
-
 import java.util.*;
+import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
 class NNOEStaticFields {
     static @Nullable String nullable = null;
@@ -30,16 +29,15 @@ class NNOEStaticFields {
 
     class Inner {
         void m1(NNOEStaticFields out) {
-                NNOEStaticFields.nullable = "haha!";
-                out.testF4();
+            NNOEStaticFields.nullable = "haha!";
+            out.testF4();
         }
 
         @RequiresNonNull("NNOEStaticFields.nullable")
         void m2(NNOEStaticFields out) {
-                out.testF4();
+            out.testF4();
         }
     }
-
 
     @RequiresNonNull("NoClueWhatThisShouldBe")
     //:: error: (flowexpr.parse.error)
@@ -91,7 +89,7 @@ class NNOEStaticFields {
 
         private static boolean doPurity = false;
 
-        @EnsuresNonNullIf(result=true, expression="ChicoryPremain1.pureMethods")
+        @EnsuresNonNullIf(result = true, expression = "ChicoryPremain1.pureMethods")
         // this postcondition cannot be proved with the Checker Framework, as the relation
         // between doPurity and pureMethods is not explicit
         public static boolean shouldDoPurity() {
@@ -103,17 +101,14 @@ class NNOEStaticFields {
         public static Set<String> getPureMethods() {
             return Collections.unmodifiableSet(pureMethods);
         }
-
     }
 
     static class ClassInfo1 {
         @SuppressWarnings("contracts.precondition.not.satisfied") // TODO FIXME
         public void initViaReflection() {
             if (ChicoryPremain1.shouldDoPurity()) {
-                for (String pureMeth: ChicoryPremain1.getPureMethods()) {
-                }
+                for (String pureMeth : ChicoryPremain1.getPureMethods()) {}
             }
         }
     }
-
 }

@@ -11,7 +11,7 @@ class Test {
     void chars() {
         String s = "$-hello@";
         // Not Implemented.
-//        char @StringVal("$-hello@") [] chars = s.toCharArray();
-//        @StringVal("$-hello@") String s2 = new String(chars);
+        //        char @StringVal("$-hello@") [] chars = s.toCharArray();
+        //        @StringVal("$-hello@") String s2 = new String(chars);
     }
 }

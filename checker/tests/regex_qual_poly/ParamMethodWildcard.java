@@ -3,18 +3,24 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 // Test wildcards with method qualifier parameters.
 // No corresponding primary test.
 @ClassRegexParam("Main")
-class A { }
+class A {}
 
 abstract class Test {
-    static void test1(@Regex(param="Main") A i, @Regex(param="Main", wildcard=Wildcard.EXTENDS) A j) { }
+    static void test1(
+            @Regex(param = "Main") A i, @Regex(param = "Main", wildcard = Wildcard.EXTENDS) A j) {}
+
     @MethodRegexParam("Main")
-    static void test2(@Var(arg="Main", param="Main") A i, @Var(arg="Main", param="Main", wildcard=Wildcard.EXTENDS) A j) { }
+    static void test2(
+            @Var(arg = "Main", param = "Main") A i,
+            @Var(arg = "Main", param = "Main", wildcard = Wildcard.EXTENDS) A j) {}
 
-    abstract @Regex(param="Main") A makeTainted();
-    abstract @Regex(value=1, param="Main") A makeUntainted();
+    abstract @Regex(param = "Main") A makeTainted();
 
-    abstract void takeTainted(@Regex(param="Main") A o);
-    abstract void takeUntainted(@Regex(value=1, param="Main") A o);
+    abstract @Regex(value = 1, param = "Main") A makeUntainted();
+
+    abstract void takeTainted(@Regex(param = "Main") A o);
+
+    abstract void takeUntainted(@Regex(value = 1, param = "Main") A o);
 
     void test() {
         test1(makeTainted(), makeTainted());

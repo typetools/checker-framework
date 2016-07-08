@@ -4,6 +4,8 @@ package org.checkerframework.qualframework.base;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
 
+import java.util.Collection;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -12,9 +14,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.qualframework.base.format.QualifiedTypeFormatter;
-
-import javax.lang.model.element.AnnotationMirror;
-import java.util.Collection;
 
 /** Adapter class for {@link Checker}, extending
  * {@link BaseTypeChecker org.checkerframework.common.basetype.BaseTypeChecker}.
@@ -40,8 +39,7 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
      * and its component adapters. */
     public TypeMirrorConverter<Q> getTypeMirrorConverter() {
         if (this.typeMirrorConverter == null) {
-            this.typeMirrorConverter =
-                new TypeMirrorConverter<Q>(getProcessingEnvironment(), this);
+            this.typeMirrorConverter = new TypeMirrorConverter<Q>(getProcessingEnvironment(), this);
         }
         return this.typeMirrorConverter;
     }
@@ -82,24 +80,23 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
         final QualAnnotationFormatterAdapter formatterAdapter =
                 new QualAnnotationFormatterAdapter(underlying.createQualifiedTypeFormatter());
 
-        QualifiedTypeFactoryAdapter<Q> factoryAdapter = new QualifiedTypeFactoryAdapter<Q>(
-                underlyingFactory,
-                this) {
+        QualifiedTypeFactoryAdapter<Q> factoryAdapter =
+                new QualifiedTypeFactoryAdapter<Q>(underlyingFactory, this) {
 
-            @Override
-            protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
-                return formatterAdapter;
-            }
+                    @Override
+                    protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
+                        return formatterAdapter;
+                    }
 
-            @Override
-            protected AnnotationFormatter createAnnotationFormatter() {
-                return formatterAdapter;
-            }
-        };
+                    @Override
+                    protected AnnotationFormatter createAnnotationFormatter() {
+                        return formatterAdapter;
+                    }
+                };
 
         if (underlyingFactory instanceof DefaultQualifiedTypeFactory) {
             DefaultQualifiedTypeFactory<Q> defaultFactory =
-                (DefaultQualifiedTypeFactory<Q>)underlyingFactory;
+                    (DefaultQualifiedTypeFactory<Q>) underlyingFactory;
             defaultFactory.setAdapter(factoryAdapter);
         }
 
@@ -109,7 +106,8 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
     /**
      * Adapter to convert an AnnotatedTypeFormatter to a QualifiedTypeFormatter.
      */
-    protected class QualAnnotationFormatterAdapter implements AnnotatedTypeFormatter, AnnotationFormatter {
+    protected class QualAnnotationFormatterAdapter
+            implements AnnotatedTypeFormatter, AnnotationFormatter {
 
         private final QualifiedTypeFormatter<Q> qualifiedTypeFormatter;
 
@@ -124,15 +122,21 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
 
         @Override
         public String format(AnnotatedTypeMirror type, boolean printVerbose) {
-            return qualifiedTypeFormatter.format(getTypeMirrorConverter().getQualifiedType(type), printVerbose);
+            return qualifiedTypeFormatter.format(
+                    getTypeMirrorConverter().getQualifiedType(type), printVerbose);
         }
 
         @Override
-        public String formatAnnotationString(Collection<? extends AnnotationMirror> annos, boolean printInvisible) {
+        public String formatAnnotationString(
+                Collection<? extends AnnotationMirror> annos, boolean printInvisible) {
             StringBuilder sb = new StringBuilder();
             for (AnnotationMirror anno : annos) {
-                String result = qualifiedTypeFormatter.getQualFormatter().format(
-                        getTypeMirrorConverter().getQualifier(anno), printInvisible);
+                String result =
+                        qualifiedTypeFormatter
+                                .getQualFormatter()
+                                .format(
+                                        getTypeMirrorConverter().getQualifier(anno),
+                                        printInvisible);
 
                 if (result != null) {
                     sb.append(result);
@@ -144,8 +148,9 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
 
         @Override
         public String formatAnnotationMirror(AnnotationMirror anno) {
-            return qualifiedTypeFormatter.getQualFormatter().format(getTypeMirrorConverter().getQualifier(anno));
-
+            return qualifiedTypeFormatter
+                    .getQualFormatter()
+                    .format(getTypeMirrorConverter().getQualifier(anno));
         }
     }
 
@@ -165,12 +170,14 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
 
     public void setupDefaults(QualifierDefaults defaults) {
         defaults.addCheckedCodeDefault(
-                getTypeMirrorConverter().getAnnotation(
-                        underlying.getTypeFactory().getQualifierHierarchy().getBottom()),
+                getTypeMirrorConverter()
+                        .getAnnotation(
+                                underlying.getTypeFactory().getQualifierHierarchy().getBottom()),
                 TypeUseLocation.IMPLICIT_LOWER_BOUND);
         defaults.addCheckedCodeDefault(
-                getTypeMirrorConverter().getAnnotation(
-                        underlying.getTypeFactory().getQualifierHierarchy().getTop()),
+                getTypeMirrorConverter()
+                        .getAnnotation(
+                                underlying.getTypeFactory().getQualifierHierarchy().getTop()),
                 TypeUseLocation.LOCAL_VARIABLE);
     }
 }

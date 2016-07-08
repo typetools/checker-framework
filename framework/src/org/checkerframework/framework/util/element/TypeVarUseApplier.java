@@ -1,5 +1,22 @@
 package org.checkerframework.framework.util.element;
 
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.getTypeAtLocation;
+
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.TargetType;
+import com.sun.tools.javac.code.TypeAnnotationPosition;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeParameterElement;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -8,37 +25,23 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.getTypeAtLocation;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeParameterElement;
-
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
-import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.TargetType;
-import com.sun.tools.javac.code.TypeAnnotationPosition;
-
 /**
  * Apply annotations to the use of a type parameter declaration
  */
 public class TypeVarUseApplier {
 
-    public static void apply(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory)  {
+    public static void apply(
+            final AnnotatedTypeMirror type,
+            final Element element,
+            final AnnotatedTypeFactory typeFactory) {
         new TypeVarUseApplier(type, element, typeFactory).extractAndApply();
     }
 
     private static ElementKind[] acceptedKinds = {
-        ElementKind.PARAMETER, ElementKind.FIELD, ElementKind.LOCAL_VARIABLE, ElementKind.RESOURCE_VARIABLE,
+        ElementKind.PARAMETER,
+        ElementKind.FIELD,
+        ElementKind.LOCAL_VARIABLE,
+        ElementKind.RESOURCE_VARIABLE,
         ElementKind.METHOD
     };
 
@@ -47,13 +50,13 @@ public class TypeVarUseApplier {
      *         and the element is not a TYPE_PARAMETER
      */
     public static boolean accepts(AnnotatedTypeMirror type, Element element) {
-        return ( type instanceof AnnotatedTypeVariable || isGenericArrayType(type)) &&
-                contains(element.getKind(), acceptedKinds);
+        return (type instanceof AnnotatedTypeVariable || isGenericArrayType(type))
+                && contains(element.getKind(), acceptedKinds);
     }
 
     private static boolean isGenericArrayType(AnnotatedTypeMirror type) {
-        return type instanceof AnnotatedArrayType &&
-               getNestedComponentType(type) instanceof AnnotatedTypeVariable;
+        return type instanceof AnnotatedArrayType
+                && getNestedComponentType(type) instanceof AnnotatedTypeVariable;
     }
 
     private static AnnotatedTypeMirror getNestedComponentType(AnnotatedTypeMirror type) {
@@ -64,7 +67,6 @@ public class TypeVarUseApplier {
         }
 
         return componentType;
-
     }
 
     // In order to avoid sprinkling code for type parameter uses all over the various locations
@@ -77,26 +79,35 @@ public class TypeVarUseApplier {
 
     private AnnotatedTypeFactory typeFactory;
 
-    TypeVarUseApplier(final AnnotatedTypeMirror type, final Element element, final AnnotatedTypeFactory typeFactory) {
+    TypeVarUseApplier(
+            final AnnotatedTypeMirror type,
+            final Element element,
+            final AnnotatedTypeFactory typeFactory) {
         if (!accepts(type, element)) {
-            ErrorReporter.errorAbort("TypeParamUseApplier does not accept type/element combination (" +
-                                     " type ( " + type + " ) element ( " + element + " ) ");
+            ErrorReporter.errorAbort(
+                    "TypeParamUseApplier does not accept type/element combination ("
+                            + " type ( "
+                            + type
+                            + " ) element ( "
+                            + element
+                            + " ) ");
         }
 
         if (isGenericArrayType(type)) {
-            this.arrayType    = (AnnotatedArrayType) type;
+            this.arrayType = (AnnotatedArrayType) type;
             this.typeVariable = (AnnotatedTypeVariable) getNestedComponentType(type);
-            this.declarationElem =  (TypeParameterElement) typeVariable.getUnderlyingType().asElement();
+            this.declarationElem =
+                    (TypeParameterElement) typeVariable.getUnderlyingType().asElement();
             this.useElem = element;
             this.typeFactory = typeFactory;
 
         } else {
             this.arrayType = null;
             this.typeVariable = (AnnotatedTypeVariable) type;
-            this.declarationElem =  (TypeParameterElement) typeVariable.getUnderlyingType().asElement();
+            this.declarationElem =
+                    (TypeParameterElement) typeVariable.getUnderlyingType().asElement();
             this.useElem = element;
             this.typeFactory = typeFactory;
-
         }
     }
 
@@ -110,7 +121,7 @@ public class TypeVarUseApplier {
         // apply declaration annotations
         ElementAnnotationApplier.apply(typeVariable, declarationElem, typeFactory);
 
-        final List<Attribute.TypeCompound> annotations = getAnnotations( useElem, declarationElem );
+        final List<Attribute.TypeCompound> annotations = getAnnotations(useElem, declarationElem);
 
         final List<Attribute.TypeCompound> typeVarAnnotations;
         if (arrayType != null) {
@@ -143,10 +154,11 @@ public class TypeVarUseApplier {
         }
     }
 
-    private List<Attribute.TypeCompound> removeComponentAnnotations(final AnnotatedArrayType arrayType,
-                                                                    final List<Attribute.TypeCompound> annotations) {
+    private List<Attribute.TypeCompound> removeComponentAnnotations(
+            final AnnotatedArrayType arrayType, final List<Attribute.TypeCompound> annotations) {
 
-        final List<Attribute.TypeCompound> componentAnnotations = new ArrayList<Attribute.TypeCompound>();
+        final List<Attribute.TypeCompound> componentAnnotations =
+                new ArrayList<Attribute.TypeCompound>();
 
         if (arrayType != null) {
             for (int i = 0; i < annotations.size(); ) {
@@ -163,8 +175,11 @@ public class TypeVarUseApplier {
         return componentAnnotations;
     }
 
-    private boolean isBaseComponent(final AnnotatedArrayType arrayType, final Attribute.TypeCompound anno) {
-        return getTypeAtLocation(arrayType, anno.getPosition().location).getClass().equals(AnnotatedTypeVariable.class);
+    private boolean isBaseComponent(
+            final AnnotatedArrayType arrayType, final Attribute.TypeCompound anno) {
+        return getTypeAtLocation(arrayType, anno.getPosition().location)
+                .getClass()
+                .equals(AnnotatedTypeVariable.class);
     }
 
     /**
@@ -172,28 +187,35 @@ public class TypeVarUseApplier {
      * be stored with different annotation positions.  getAnnotations finds the correct annotations
      * by annotation position and element kind and returns them
      */
-    private static List<Attribute.TypeCompound> getAnnotations(final Element useElem, final Element declarationElem) {
+    private static List<Attribute.TypeCompound> getAnnotations(
+            final Element useElem, final Element declarationElem) {
         final List<Attribute.TypeCompound> annotations;
         switch (useElem.getKind()) {
             case METHOD:
-                annotations = getReturnAnnos( useElem );
+                annotations = getReturnAnnos(useElem);
                 break;
 
             case PARAMETER:
-                annotations = getParameterAnnos( useElem );
+                annotations = getParameterAnnos(useElem);
                 break;
 
             case FIELD:
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
-                annotations = getVariableAnnos( useElem );
+                annotations = getVariableAnnos(useElem);
                 break;
 
             default:
-                ErrorReporter.errorAbort("TypeVarUseApplier::extractAndApply : "        +
-                        "Unhandled element kind " + useElem.getKind() +
-                        "useElem ( " + useElem + " ) "                +
-                        "declarationElem ( " + declarationElem + " ) ");
+                ErrorReporter.errorAbort(
+                        "TypeVarUseApplier::extractAndApply : "
+                                + "Unhandled element kind "
+                                + useElem.getKind()
+                                + "useElem ( "
+                                + useElem
+                                + " ) "
+                                + "declarationElem ( "
+                                + declarationElem
+                                + " ) ");
                 annotations = null; // dead code
         }
 
@@ -235,8 +257,12 @@ public class TypeVarUseApplier {
     private static List<Attribute.TypeCompound> getParameterAnnos(final Element paramElem) {
         final Element enclosingElement = paramElem.getEnclosingElement();
         if (!(enclosingElement instanceof ExecutableElement)) {
-            ErrorReporter.errorAbort("Bad element passed to TypeFromElement.getTypeParameterAnnotationAttributes: " +
-                    "element: " + paramElem + " not found in enclosing executable: " + enclosingElement);
+            ErrorReporter.errorAbort(
+                    "Bad element passed to TypeFromElement.getTypeParameterAnnotationAttributes: "
+                            + "element: "
+                            + paramElem
+                            + " not found in enclosing executable: "
+                            + enclosingElement);
         }
 
         final MethodSymbol enclosingMethod = (MethodSymbol) paramElem.getEnclosingElement();
@@ -261,7 +287,8 @@ public class TypeVarUseApplier {
      */
     private static List<Attribute.TypeCompound> getReturnAnnos(final Element methodElem) {
         if (!(methodElem instanceof ExecutableElement)) {
-            ErrorReporter.errorAbort("Bad element passed to TypeVarUseApplier.getReturnAnnos:" + methodElem);
+            ErrorReporter.errorAbort(
+                    "Bad element passed to TypeVarUseApplier.getReturnAnnos:" + methodElem);
         }
 
         final MethodSymbol enclosingMethod = (MethodSymbol) methodElem;

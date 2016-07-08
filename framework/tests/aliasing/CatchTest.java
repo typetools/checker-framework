@@ -1,4 +1,5 @@
 import org.checkerframework.common.aliasing.qual.Unique;
+
 class CatchTest {
 
     void foo() {
@@ -13,5 +14,4 @@ class CatchTest {
             // are not allowed to have a @Unique parameter.
         }
     }
-
 }

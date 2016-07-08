@@ -4,5 +4,4 @@ import java.lang.annotation.*;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface CheckForNull {
-}
+public @interface CheckForNull {}

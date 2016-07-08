@@ -1,7 +1,6 @@
 package org.checkerframework.checker.units.qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.framework.qual.*;
 
 /**
@@ -13,5 +12,4 @@ import org.checkerframework.framework.qual.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf(Angle.class)
-public @interface degrees {
-}
+public @interface degrees {}

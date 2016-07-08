@@ -6,11 +6,9 @@ package org.checkerframework.framework.flow;
  * @author Stefan Heule
  *
  */
-public class CFTransfer extends
-        CFAbstractTransfer<CFValue, CFStore, CFTransfer> {
+public class CFTransfer extends CFAbstractTransfer<CFValue, CFStore, CFTransfer> {
 
     public CFTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
     }
-
 }

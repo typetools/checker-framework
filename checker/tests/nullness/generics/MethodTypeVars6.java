@@ -1,20 +1,24 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 class Pair<S extends @Nullable Object, T extends @Nullable Object> {
-    static <U extends @Nullable Object, V extends @Nullable Object>
-    Pair<U, V> of(U p1, V p2) { return new Pair<U, V>(); }
+    static <U extends @Nullable Object, V extends @Nullable Object> Pair<U, V> of(U p1, V p2) {
+        return new Pair<U, V>();
+    }
 }
 
-class PairSub<SS extends @Nullable Object, TS extends @Nullable Object>
-    extends Pair<SS, TS> {
-    static <US extends @Nullable Object, VS extends @Nullable Object>
-    PairSub<US, VS> of(US p1, VS p2) { return new PairSub<US, VS>(); }
+class PairSub<SS extends @Nullable Object, TS extends @Nullable Object> extends Pair<SS, TS> {
+    static <US extends @Nullable Object, VS extends @Nullable Object> PairSub<US, VS> of(
+            US p1, VS p2) {
+        return new PairSub<US, VS>();
+    }
 }
 
 class PairSubSwitching<SS extends @Nullable Object, TS extends @Nullable Object>
-    extends Pair<TS, SS> {
-    static <US extends @Nullable Object, VS extends @Nullable Object>
-    PairSubSwitching<US, VS> of2(US p1, VS p2) { return new PairSubSwitching<US, VS>(); }
+        extends Pair<TS, SS> {
+    static <US extends @Nullable Object, VS extends @Nullable Object> PairSubSwitching<US, VS> of2(
+            US p1, VS p2) {
+        return new PairSubSwitching<US, VS>();
+    }
 }
 
 class Test1<X extends @Nullable Object> {

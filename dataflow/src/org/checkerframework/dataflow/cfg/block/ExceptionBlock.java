@@ -2,9 +2,7 @@ package org.checkerframework.dataflow.cfg.block;
 
 import java.util.Map;
 import java.util.Set;
-
 import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
@@ -34,5 +32,4 @@ public interface ExceptionBlock extends SingleSuccessorBlock {
      * @return the list of exceptional successor blocks as an unmodifiable map
      */
     Map<TypeMirror, Set<Block>> getExceptionalSuccessors();
-
 }

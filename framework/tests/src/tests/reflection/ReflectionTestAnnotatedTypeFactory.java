@@ -1,8 +1,6 @@
 package tests.reflection;
 
 import javax.lang.model.element.AnnotationMirror;
-
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.*;
@@ -13,10 +11,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-
 import tests.reflection.qual.ReflectBottom;
-
-
 
 /**
  * AnnotatedTypeFactory with reflection resolution enabled. The used qualifier
@@ -24,33 +19,27 @@ import tests.reflection.qual.ReflectBottom;
  *
  * @author rjust, smillst
  */
-public final class ReflectionTestAnnotatedTypeFactory extends
-        BaseAnnotatedTypeFactory {
+public final class ReflectionTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public ReflectionTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         postInit();
-        AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
-                ReflectBottom.class);
+        AnnotationMirror bottom = AnnotationUtils.fromClass(elements, ReflectBottom.class);
         addTypeNameImplicit(java.lang.Void.class, bottom);
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
         ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
-                ReflectBottom.class);
-        implicitsTreeAnnotator.addTreeKind(
-                com.sun.source.tree.Tree.Kind.NULL_LITERAL, bottom);
-        implicitsTreeAnnotator.addTreeKind(
-                com.sun.source.tree.Tree.Kind.INT_LITERAL, bottom);
+        AnnotationMirror bottom = AnnotationUtils.fromClass(elements, ReflectBottom.class);
+        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, bottom);
+        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.INT_LITERAL, bottom);
 
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
     }
 
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        AnnotationMirror bottom = AnnotationUtils.fromClass(elements,
-                ReflectBottom.class);
+        AnnotationMirror bottom = AnnotationUtils.fromClass(elements, ReflectBottom.class);
         return new GraphQualifierHierarchy(factory, bottom);
     }
 }

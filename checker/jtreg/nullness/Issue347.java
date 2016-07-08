@@ -32,5 +32,4 @@ class Issue347 {
         // error expected in concurrent semantics only
         nble.toString();
     }
-
 }

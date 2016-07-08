@@ -1,5 +1,4 @@
 // Code to test that LUB of two AnnotatedTypeMirror does not crash.
-// ArrayTypes.foo3() and TypeVarTypeVar.foo5() crash
 // See Issue 643
 // https://github.com/typetools/checker-framework/issues/643
 
@@ -22,7 +21,8 @@ public class ConditionalExpressions {
             Number o3 = flag ? tExtendsNumber : sExtendsInteger;
         }
 
-        <T extends Number, S extends CharSequence> void foo4(T tExtendsNumber, S sExtendsCharSequence) {
+        <T extends Number, S extends CharSequence> void foo4(
+                T tExtendsNumber, S sExtendsCharSequence) {
             Object o2 = flag ? tExtendsNumber : sExtendsCharSequence;
         }
 

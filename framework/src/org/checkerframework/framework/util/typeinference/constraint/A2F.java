@@ -20,7 +20,8 @@ public class A2F extends AFConstraint {
     }
 
     @Override
-    protected A2F construct(AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
+    protected A2F construct(
+            AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
         return new A2F(newArgument, newFormalParameter);
     }
 
@@ -28,6 +29,4 @@ public class A2F extends AFConstraint {
     public String toString() {
         return "A2F( " + argument + " << " + formalParameter + " )";
     }
-
-
 }

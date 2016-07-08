@@ -23,10 +23,8 @@ public class ConstantPropagationPlayground {
         // run the analysis and create a PDF file
         ConstantPropagationTransfer transfer = new ConstantPropagationTransfer();
         // TODO: correct processing environment
-        Analysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer> analysis = new Analysis<>(
-                null, transfer);
-        JavaSource2CFGDOT.generateDOTofCFG(inputFile, outputDir, method,
-                clazz, true, analysis);
+        Analysis<Constant, ConstantPropagationStore, ConstantPropagationTransfer> analysis =
+                new Analysis<>(null, transfer);
+        JavaSource2CFGDOT.generateDOTofCFG(inputFile, outputDir, method, clazz, true, analysis);
     }
-
 }

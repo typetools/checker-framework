@@ -4,9 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.annotation.processing.SupportedOptions;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
@@ -28,11 +26,12 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  *
  * @checker_framework.manual #subtyping-checker Subtying Checker
  */
-@SupportedOptions( { "quals", "qualDirs" })
+@SupportedOptions({"quals", "qualDirs"})
 public final class SubtypingChecker extends BaseTypeChecker {
     @Override
     public Collection<String> getSuppressWarningsKeys() {
-        Set<Class<? extends Annotation>> annos = ((BaseTypeVisitor<?>)visitor).getTypeFactory().getSupportedTypeQualifiers();
+        Set<Class<? extends Annotation>> annos =
+                ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
         if (annos.isEmpty()) {
             return super.getSuppressWarningsKeys();
         }

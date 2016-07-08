@@ -1,4 +1,5 @@
 import tests.wholeprograminference.qual.*;
+
 public class AnnotationWithFieldTest {
 
     private String fields;
@@ -17,17 +18,37 @@ public class AnnotationWithFieldTest {
         expectsSiblingWithEmptyFields(emptyFields);
     }
 
-    void expectsSiblingWithFields(@SiblingWithFields(value={"test", "test2"}, value2="test3") String s) {}
-    void expectsSiblingWithEmptyFields(@SiblingWithFields(value={}, value2="") String s) {}
+    void expectsSiblingWithFields(
+            @SiblingWithFields(
+                value = {"test", "test2"},
+                value2 = "test3"
+            )
+            String s) {}
+
+    void expectsSiblingWithEmptyFields(
+            @SiblingWithFields(
+                value = {},
+                value2 = ""
+            )
+            String s) {}
 
     String getSiblingWithFields() {
         //:: warning: (cast.unsafe)
-        return (@SiblingWithFields(value={"test", "test2"}, value2="test3") String) "";
+        return (@SiblingWithFields(
+                    value = {"test", "test2"},
+                    value2 = "test3"
+                )
+                String)
+                "";
     }
 
     String getSiblingWithFieldsEmpty() {
         //:: warning: (cast.unsafe)
-        return (@SiblingWithFields(value={}, value2="") String) "";
+        return (@SiblingWithFields(
+                    value = {},
+                    value2 = ""
+                )
+                String)
+                "";
     }
-
 }

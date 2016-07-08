@@ -1,13 +1,11 @@
 package encrypted;
 
-
 /*>>>
 import myqual.Encrypted;
 */
 
 public class EncryptionDemo {
     private final int OFFSET = 13;
-
 
     public /*@Encrypted*/ String encrypt(String text) {
         /*@Encrypted*/ String encryptedText = new /*@Encrypted*/ String();

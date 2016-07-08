@@ -6,22 +6,27 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 @ClassRegexParam("Param1")
 class List<T> {
     // (T + MAIN) head
-    @Var(arg="Param1", param="Param2") T head;
+    @Var(arg = "Param1", param = "Param2") T head;
     // List<T><<MAIN>>
-    @Var(arg="Param1", param="Param1") List<T> tail;
+    @Var(arg = "Param1", param = "Param1") List<T> tail;
 }
 
 @ClassRegexParam("Param2")
-class A { }
+class A {}
 
 abstract class Test {
-    abstract @Regex(param="Param1")   List<@Regex(param="Param2")   A> makeTT();
-    abstract @Regex(value=1, param="Param1") List<@Regex(param="Param2")   A> makeUT();
-    abstract @Regex(param="Param1")   List<@Regex(value=1, param="Param2") A> makeTU();
-    abstract @Regex(value=1, param="Param1") List<@Regex(value=1, param="Param2") A> makeUU();
+    abstract @Regex(param = "Param1") List<@Regex(param = "Param2") A> makeTT();
 
-    abstract void takeT(@Regex(param="Param2")   A x);
-    abstract void takeU(@Regex(value=1, param="Param2") A x);
+    abstract @Regex(value = 1, param = "Param1") List<@Regex(param = "Param2") A> makeUT();
+
+    abstract @Regex(param = "Param1") List<@Regex(value = 1, param = "Param2") A> makeTU();
+
+    abstract @Regex(value = 1, param = "Param1") List<@Regex(value = 1, param = "Param2") A>
+            makeUU();
+
+    abstract void takeT(@Regex(param = "Param2") A x);
+
+    abstract void takeU(@Regex(value = 1, param = "Param2") A x);
 
     void test() {
         takeT(makeTT().head);

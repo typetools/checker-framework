@@ -1,9 +1,8 @@
 package org.checkerframework.checker.signedness;
 
-import org.checkerframework.checker.signedness.qual.*;
-
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import org.checkerframework.checker.signedness.qual.*;
 
 /**
  * Provides static utility methods for unsigned values.
@@ -206,8 +205,9 @@ public final class SignednessUtil {
             int lower = (int) l;
 
             // return (upper << 32) + lower
-            return (BigInteger.valueOf(toUnsignedLong(upper))).shiftLeft(32).
-                add(BigInteger.valueOf(toUnsignedLong(lower)));
+            return (BigInteger.valueOf(toUnsignedLong(upper)))
+                    .shiftLeft(32)
+                    .add(BigInteger.valueOf(toUnsignedLong(lower)));
         }
     }
 
@@ -256,5 +256,4 @@ public final class SignednessUtil {
     public static @Unsigned short toUnsignedShort(@Unsigned byte b) {
         return (short) (((int) b) & 0xff);
     }
-
 }

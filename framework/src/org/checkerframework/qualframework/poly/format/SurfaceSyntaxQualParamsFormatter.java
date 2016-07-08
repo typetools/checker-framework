@@ -1,5 +1,10 @@
 package org.checkerframework.qualframework.poly.format;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.PolyQual.Combined;
@@ -8,18 +13,12 @@ import org.checkerframework.qualframework.poly.PolyQual.QualVar;
 import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.Wildcard;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 /**
  * SurfaceSyntaxQualParamsFormatter formats QualParams qualifiers into their annotation equivalent.
  *
  * Not all Qualifiers can be converted into annotations that could be written by the user, so the output
  * is not exact.
-*/
+ */
 public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
 
     /* Object to hold the type-system specific information required to conver the quals to annotations. */
@@ -77,7 +76,8 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
         // Qualifier Parameters
         boolean addSpace = printedPrimary;
         for (Entry<String, Wildcard<Q>> entry : params.entrySet()) {
-            List<AnnotationParts> annos = createAnnotations(entry.getValue(), entry.getKey(), printInvisible);
+            List<AnnotationParts> annos =
+                    createAnnotations(entry.getValue(), entry.getKey(), printInvisible);
             for (AnnotationParts anno : annos) {
                 if (addSpace) {
                     sb.append(" ");
@@ -127,7 +127,8 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
      * @param printInvisible flag to enable printing invisible qualifiers
      * @return a List of AnnotationParts that correspond wildcard
      */
-    private List<AnnotationParts> createAnnotations(Wildcard<Q> wildcard, String paramName, boolean printInvisible) {
+    private List<AnnotationParts> createAnnotations(
+            Wildcard<Q> wildcard, String paramName, boolean printInvisible) {
         if (wildcard.isEmpty()) {
             ErrorReporter.errorAbort("Unable to convert wildcard: " + wildcard);
         }
@@ -138,14 +139,14 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
         Map<AnnotationParts, org.checkerframework.qualframework.poly.qual.Wildcard> bounds =
                 new HashMap<>();
 
-        for (AnnotationParts part: upper) {
+        for (AnnotationParts part : upper) {
             part.putQuoted("param", paramName);
             bounds.put(part, org.checkerframework.qualframework.poly.qual.Wildcard.EXTENDS);
         }
         results.addAll(upper);
 
         List<AnnotationParts> lower = createAnnotations(wildcard.getLowerBound(), printInvisible);
-        for (AnnotationParts part: lower) {
+        for (AnnotationParts part : lower) {
             part.putQuoted("param", paramName);
             // If we have both an Upper and Lower entry for the annotation, we can omit the wildcard
             if (upper.contains(part)) {
@@ -201,7 +202,8 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
             }
 
         } else if (polyQual instanceof GroundQual) {
-            AnnotationParts anno = config.getTargetTypeSystemAnnotation(((GroundQual<Q>) polyQual).getQualifier());
+            AnnotationParts anno =
+                    config.getTargetTypeSystemAnnotation(((GroundQual<Q>) polyQual).getQualifier());
             if (anno != null) {
                 result.add(anno);
             }
@@ -218,8 +220,8 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
 
             // This is a range, there is no real annotation equivalent, so use a "range" field.
             if (lower != null || upper != null) {
-                lower = lower == null? "" : lower;
-                upper = upper == null? "" : upper;
+                lower = lower == null ? "" : lower;
+                upper = upper == null ? "" : upper;
                 anno.putQuoted("range", " ∈ [" + lower + ".." + upper + "]");
             }
             result.add(anno);
@@ -251,7 +253,8 @@ public class SurfaceSyntaxQualParamsFormatter<Q> implements QualParamsFormatter<
     /**
      * Format a wildcard enum to include the Wildcard classname.
      */
-    private String createWildcardString(org.checkerframework.qualframework.poly.qual.Wildcard wildcardType) {
+    private String createWildcardString(
+            org.checkerframework.qualframework.poly.qual.Wildcard wildcardType) {
         return wildcardType.getDeclaringClass().getSimpleName() + "." + wildcardType;
     }
 

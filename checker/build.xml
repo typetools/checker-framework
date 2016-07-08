@@ -1416,7 +1416,7 @@ So, use our own archived version.
 
     </target>
 
-    <target name="dist-release" depends="clean, dist-all, all-tests-nojtreg-nobuild, javadoc.jar, sources.jar"
+    <target name="dist-release" depends="clean, dist-all,  javadoc.jar, sources.jar"
             description="Everything necessary to prepare this project for distribution: binary distribution, testing, and documentation.">
     </target>
 

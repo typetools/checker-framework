@@ -1,7 +1,6 @@
-import org.checkerframework.checker.nullness.qual.Nullable;
-
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Issue326 {
     {
