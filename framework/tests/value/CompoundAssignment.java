@@ -5,7 +5,6 @@
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 
-
 public class CompoundAssignment {
 
     @StringVal("hello") String field;
@@ -58,5 +57,4 @@ public class CompoundAssignment {
         @StringVal("hello") String s = "hello";
         s += "";
     }
-
 }

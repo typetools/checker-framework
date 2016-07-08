@@ -4,7 +4,6 @@
 // @skip-test
 import java.util.HashMap;
 import java.util.Map;
-
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 

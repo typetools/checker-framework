@@ -4,9 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.annotation.processing.SupportedOptions;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
@@ -21,7 +19,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  *
  * @checker_framework.manual #units-checker Units Checker
  */
-@SupportedOptions({ "units", "unitsDirs" })
+@SupportedOptions({"units", "unitsDirs"})
 public class UnitsChecker extends BaseTypeChecker {
 
     /*
@@ -37,10 +35,9 @@ public class UnitsChecker extends BaseTypeChecker {
      */
     @Override
     public Collection<String> getSuppressWarningsKeys() {
-        Set<String> swKeys = new HashSet<String>(
-                super.getSuppressWarningsKeys());
-        Set<Class<? extends Annotation>> annos = ((BaseTypeVisitor<?>) visitor)
-                .getTypeFactory().getSupportedTypeQualifiers();
+        Set<String> swKeys = new HashSet<String>(super.getSuppressWarningsKeys());
+        Set<Class<? extends Annotation>> annos =
+                ((BaseTypeVisitor<?>) visitor).getTypeFactory().getSupportedTypeQualifiers();
 
         for (Class<? extends Annotation> anno : annos) {
             swKeys.add(anno.getSimpleName().toLowerCase());

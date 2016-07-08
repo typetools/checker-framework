@@ -9,5 +9,4 @@ public class NullnessChecker extends AbstractNullnessChecker {
     public NullnessChecker() {
         super(true);
     }
-
 }

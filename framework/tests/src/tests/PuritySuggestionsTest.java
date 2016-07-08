@@ -1,10 +1,8 @@
 package tests;
 
 import java.io.File;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
-
 import tests.util.FlowTestChecker;
 
 /**
@@ -15,14 +13,17 @@ import tests.util.FlowTestChecker;
 public class PuritySuggestionsTest extends CheckerFrameworkTest {
 
     public PuritySuggestionsTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 FlowTestChecker.class,
                 "flow",
-                "-Anomsgtext", "-AsuggestPureMethods", "-AcheckPurityAnnotations");
+                "-Anomsgtext",
+                "-AsuggestPureMethods",
+                "-AcheckPurityAnnotations");
     }
 
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"purity-suggestions"};
+    public static String[] getTestDirs() {
+        return new String[] {"purity-suggestions"};
     }
 }

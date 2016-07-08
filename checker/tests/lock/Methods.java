@@ -5,35 +5,35 @@ public class Methods {
     final Object lock = new Object();
 
     @Holding("lock")
-    void lockedByLock() { }
+    void lockedByLock() {}
 
     @Holding("this")
-    void lockedByThis() { }
+    void lockedByThis() {}
 
     // unguarded calls
     void unguardedCalls() {
         //:: error: (contracts.precondition.not.satisfied)
-        lockedByLock();     // error
+        lockedByLock(); // error
         //:: error: (contracts.precondition.not.satisfied)
-        lockedByThis();     // error
+        lockedByThis(); // error
     }
 
     @Holding("lock")
     void usingHolding1() {
         lockedByLock();
         //:: error: (contracts.precondition.not.satisfied)
-        lockedByThis();     // error
+        lockedByThis(); // error
     }
 
     @Holding("this")
     void usingHolding2() {
         //:: error: (contracts.precondition.not.satisfied)
-        lockedByLock();     // error
+        lockedByLock(); // error
         lockedByThis();
     }
 
     void usingSynchronization1() {
-        synchronized(lock) {
+        synchronized (lock) {
             lockedByLock();
             //:: error: (contracts.precondition.not.satisfied)
             lockedByThis(); // error
@@ -41,7 +41,7 @@ public class Methods {
     }
 
     void usingSynchronization2() {
-        synchronized(this) {
+        synchronized (this) {
             //:: error: (contracts.precondition.not.satisfied)
             lockedByLock(); // error
             lockedByThis();
@@ -50,8 +50,7 @@ public class Methods {
 
     synchronized void usingMethodModifier() {
         //:: error: (contracts.precondition.not.satisfied)
-        lockedByLock();     // error
+        lockedByLock(); // error
         lockedByThis();
     }
-
 }

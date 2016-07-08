@@ -2,7 +2,6 @@ package org.checkerframework.framework.type.visitor;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
-
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -14,7 +13,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-
 
 /**
  * A TypeVisitor that visits all the child tree nodes. To visit types
@@ -71,7 +69,7 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
     // To prevent infinite loops
     protected final Map<AnnotatedTypeMirror, R> visitedNodes =
-        new IdentityHashMap<AnnotatedTypeMirror, R>();
+            new IdentityHashMap<AnnotatedTypeMirror, R>();
 
     /**
      * Reset the scanner to allow reuse of the same instance.

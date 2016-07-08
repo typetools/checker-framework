@@ -1,6 +1,5 @@
-import org.checkerframework.checker.interning.qual.*;
-
 import java.util.*;
+import org.checkerframework.checker.interning.qual.*;
 
 public class StringIntern {
 
@@ -18,13 +17,12 @@ public class StringIntern {
     }
 
     static class Foo {
-        private static Map<Foo, @Interned Foo> pool =
-            new HashMap<Foo, @Interned Foo>();
+        private static Map<Foo, @Interned Foo> pool = new HashMap<Foo, @Interned Foo>();
 
         @SuppressWarnings("interning")
         public @Interned Foo intern() {
             if (!pool.containsKey(this)) {
-                pool.put(this, (@Interned Foo)this);
+                pool.put(this, (@Interned Foo) this);
             }
             return pool.get(this);
         }
@@ -40,19 +38,19 @@ public class StringIntern {
         //:: error: (assignment.type.incompatible)
         internedStr = finalString2; // error
         @Interned Foo internedFoo = finalFooInitializedToInterned; // OK
-        if (arg == finalStringStatic1) { }                         // OK
+        if (arg == finalStringStatic1) {} // OK
         //:: error: (not.interned)
-        if (arg == finalStringStatic2) { }                         // error
-        if (arg == HasFields.finalStringStatic3) { }               // OK
+        if (arg == finalStringStatic2) {} // error
+        if (arg == HasFields.finalStringStatic3) {} // OK
         //:: error: (not.interned)
-        if (arg == HasFields.finalStringStatic4) { }               // error
+        if (arg == HasFields.finalStringStatic4) {} // error
     }
 
     private @Interned String base;
     static final String BASE_HASHCODE = "hashcode";
 
     public void foo() {
-        if (base == BASE_HASHCODE) { }
+        if (base == BASE_HASHCODE) {}
     }
 
     public @Interned String emptyString(boolean b) {
@@ -62,5 +60,4 @@ public class StringIntern {
             return ("");
         }
     }
-
 }

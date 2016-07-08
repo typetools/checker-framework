@@ -1,10 +1,8 @@
 package org.checkerframework.example;
 
+import org.apache.commons.lang3.text.StrBuilder;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
-
-import org.apache.commons.lang3.text.StrBuilder;
-
 
 /**
  * If you run:
@@ -23,8 +21,7 @@ public class MavenExample {
 
         StrBuilder stb = new StrBuilder();
 
-        @NonNull Object nn = nullable;  // error on this line
+        @NonNull Object nn = nullable; // error on this line
         System.out.println(nn);
     }
-
 }

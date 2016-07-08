@@ -1,11 +1,11 @@
 package tests.compound;
 
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -14,14 +14,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-
 import tests.compound.qual.CCBottom;
 import tests.compound.qual.CCTop;
 
-import com.sun.source.tree.Tree;
-
-public class CompoundCheckerAnnotatedTypeFactory extends
-        BaseAnnotatedTypeFactory {
+public class CompoundCheckerAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public CompoundCheckerAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -37,26 +33,27 @@ public class CompoundCheckerAnnotatedTypeFactory extends
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(super.createTreeAnnotator(),
+        return new ListTreeAnnotator(
+                super.createTreeAnnotator(),
                 new TreeAnnotator(this) {
                     @Override
-                    protected Void defaultAction(Tree node,
-                            AnnotatedTypeMirror p) {
+                    protected Void defaultAction(Tree node, AnnotatedTypeMirror p) {
                         // Just access the subchecker type factories to make
                         // sure they were created properly
-                        GenericAnnotatedTypeFactory<?, ?, ?, ?> accATF = getTypeFactoryOfSubchecker(AnotherCompoundChecker.class);
+                        GenericAnnotatedTypeFactory<?, ?, ?, ?> accATF =
+                                getTypeFactoryOfSubchecker(AnotherCompoundChecker.class);
                         @SuppressWarnings("unused")
                         AnnotatedTypeMirror another = accATF.getAnnotatedType(node);
-                        GenericAnnotatedTypeFactory<?, ?, ?, ?> aliasingATF = getTypeFactoryOfSubchecker(AliasingChecker.class);
+                        GenericAnnotatedTypeFactory<?, ?, ?, ?> aliasingATF =
+                                getTypeFactoryOfSubchecker(AliasingChecker.class);
                         @SuppressWarnings("unused")
                         AnnotatedTypeMirror aliasing = aliasingATF.getAnnotatedType(node);
-                        GenericAnnotatedTypeFactory<?, ?, ?, ?> valueATF = getTypeFactoryOfSubchecker(ValueChecker.class);
-                        assert valueATF == null : "Should not be able to access the ValueChecker annotations.";
+                        GenericAnnotatedTypeFactory<?, ?, ?, ?> valueATF =
+                                getTypeFactoryOfSubchecker(ValueChecker.class);
+                        assert valueATF == null
+                                : "Should not be able to access the ValueChecker annotations.";
                         return super.defaultAction(node, p);
                     }
-
                 });
-
     }
-
 }

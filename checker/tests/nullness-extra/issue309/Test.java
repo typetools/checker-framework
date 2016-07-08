@@ -1,7 +1,7 @@
 import lib.Lib;
 
 class Test {
-  void bar() {
-    Lib.foo();
-  }
+    void bar() {
+        Lib.foo();
+    }
 }

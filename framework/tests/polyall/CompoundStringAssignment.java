@@ -19,6 +19,7 @@ class CompoundStringAssignment {
     }
 
     @H1Top @H2Top String top;
+
     void test2() {
         String local2 = top;
         local2 += getSib1();
@@ -30,6 +31,7 @@ class CompoundStringAssignment {
     }
 
     @H1S1 @H2S1 String sib1;
+
     void test3() {
         String local3 = null;
         local3 += sib1;

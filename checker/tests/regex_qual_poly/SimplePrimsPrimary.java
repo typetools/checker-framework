@@ -5,8 +5,9 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 // primitives don't have non-primary qualifiers
 class SimplePrims {
 
-    void execute(@Regex(1) int s) { }
-    void tainted(int s) { }
+    void execute(@Regex(1) int s) {}
+
+    void tainted(int s) {}
 
     void intLiteral() {
         //:: error: (argument.type.incompatible)

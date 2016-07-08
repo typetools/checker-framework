@@ -1,6 +1,6 @@
+import java.util.concurrent.locks.*;
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.framework.qual.*;
-import java.util.concurrent.locks.*;
 
 public class BasicTest {
     class MyClass {
@@ -11,8 +11,7 @@ public class BasicTest {
         return param;
     }
 
-    void myUnannotatedMethod2() {
-    }
+    void myUnannotatedMethod2() {}
 
     @AnnotatedFor("lock")
     MyClass myAnnotatedMethod(MyClass param) {
@@ -20,10 +19,10 @@ public class BasicTest {
     }
 
     @AnnotatedFor("lock")
-    void myAnnotatedMethod2() {
-    }
+    void myAnnotatedMethod2() {}
 
     final @GuardedBy({}) ReentrantLock lockField = new ReentrantLock();
+
     @GuardedBy("lockField") MyClass m;
 
     @GuardedBy({}) MyClass o1 = new MyClass(), p1;

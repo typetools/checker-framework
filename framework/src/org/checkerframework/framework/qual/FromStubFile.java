@@ -11,7 +11,5 @@ import java.lang.annotation.Target;
  * to the end user.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.TYPE,
-        ElementType.PACKAGE })
-public @interface FromStubFile {
-}
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.TYPE, ElementType.PACKAGE})
+public @interface FromStubFile {}

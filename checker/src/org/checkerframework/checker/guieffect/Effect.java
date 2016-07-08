@@ -1,12 +1,11 @@
 package org.checkerframework.checker.guieffect;
 
+import java.lang.annotation.Annotation;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
 import org.checkerframework.checker.guieffect.qual.SafeEffect;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-
-import java.lang.annotation.Annotation;
 
 public final class Effect {
     // Colin hates Java's comparable interface, so he's not using it
@@ -14,7 +13,9 @@ public final class Effect {
     private final Class<? extends Annotation> annotClass;
 
     public Effect(Class<? extends Annotation> cls) {
-        assert(cls.equals(UIEffect.class) || cls.equals(PolyUIEffect.class) || cls.equals(SafeEffect.class));
+        assert (cls.equals(UIEffect.class)
+                || cls.equals(PolyUIEffect.class)
+                || cls.equals(SafeEffect.class));
         annotClass = cls;
     }
 
@@ -35,18 +36,30 @@ public final class Effect {
 
     public static final class EffectRange {
         public final Effect min, max;
+
         public EffectRange(Effect min, Effect max) {
-            assert(min != null || max != null);
+            assert (min != null || max != null);
             // If one is null, fill in with the other
             this.min = (min != null ? min : max);
             this.max = (max != null ? max : min);
         }
     }
 
-    public boolean isSafe() { return annotClass.equals(SafeEffect.class); }
-    public boolean isUI() { return annotClass.equals(UIEffect.class); }
-    public boolean isPoly() { return annotClass.equals(PolyUIEffect.class); }
-    public Class<? extends Annotation> getAnnot() { return annotClass; }
+    public boolean isSafe() {
+        return annotClass.equals(SafeEffect.class);
+    }
+
+    public boolean isUI() {
+        return annotClass.equals(UIEffect.class);
+    }
+
+    public boolean isPoly() {
+        return annotClass.equals(PolyUIEffect.class);
+    }
+
+    public Class<? extends Annotation> getAnnot() {
+        return annotClass;
+    }
 
     @SideEffectFree
     @Override
@@ -61,7 +74,7 @@ public final class Effect {
     @Override
     public boolean equals(Object o) {
         if (o instanceof Effect) {
-            return this.equals((Effect)o);
+            return this.equals((Effect) o);
         } else {
             return super.equals(o);
         }

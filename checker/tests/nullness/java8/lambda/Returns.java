@@ -5,6 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 interface ConsumerSupplier {
     Consumer get();
 }
+
 interface Consumer {
     void method(@Nullable String s);
 }
@@ -21,19 +22,22 @@ class MetaReturn {
 
     //:: error: (dereference.of.nullable)
     ConsumerSupplier t1 = () -> (s) -> s.toString();
-    ConsumerSupplier t2 = () -> { return (String s) -> {
-            //:: error: (dereference.of.nullable)
-            s.toString();
-        }; };
+    ConsumerSupplier t2 =
+            () -> {
+                return (String s) -> {
+                    //:: error: (dereference.of.nullable)
+                    s.toString();
+                };
+            };
 
-    SupplierSupplier t3 = () ->
-        {
-            //:: error: (return.type.incompatible)
-            return () -> null;
-        };
+    SupplierSupplier t3 =
+            () -> {
+                //:: error: (return.type.incompatible)
+                return () -> null;
+            };
 
-    SupplierSupplier t4 = () ->
-        {
-            return ""::toString;
-        };
+    SupplierSupplier t4 =
+            () -> {
+                return ""::toString;
+            };
 }

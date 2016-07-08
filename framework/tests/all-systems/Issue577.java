@@ -4,24 +4,24 @@
 class Banana<T extends Number> extends Apple<int[]> {
     @Override
     void fooOuter(int[] array) {}
+
     class InnerBanana extends InnerApple<long[]> {
         @Override
-        <F2> void foo(int[] array, long[] array2, F2 param3) {
-        }
+        <F2> void foo(int[] array, long[] array2, F2 param3) {}
     }
 }
 
 class Apple<T> {
     void fooOuter(T param) {}
+
     class InnerApple<E> {
-        <F> void foo(T param, E param2, F param3) {
-        }
+        <F> void foo(T param, E param2, F param3) {}
     }
 }
 
 class Pineapple<E> extends Apple<E> {
-   @Override
-   void fooOuter(E array) {}
+    @Override
+    void fooOuter(E array) {}
 }
 
 class IntersectionAsMemberOf {
@@ -49,7 +49,6 @@ class UnionAsMemberOf {
         public String getT() {
             return "t";
         }
-
     }
 
     void bar() throws MyExceptionA, MyExceptionB {}
@@ -72,10 +71,8 @@ final class Outer<K extends Object> {
     }
 
     private final class Inner {
-        private Inner(ReferenceQueue<? super K> q) {
-        }
+        private Inner(ReferenceQueue<? super K> q) {}
     }
 }
 
-class ReferenceQueue<T> {
-}
+class ReferenceQueue<T> {}

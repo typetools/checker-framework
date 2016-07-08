@@ -16,5 +16,4 @@ class SuperConstructorInit {
             a.toString();
         }
     }
-
 }

@@ -1,5 +1,5 @@
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
 /**
  * Test case for issue 62: https://github.com/typetools/checker-framework/issues/62
@@ -16,7 +16,6 @@ public class AssertIfTrueTest {
         File1 @NonNull [] files = dbdir.listFiles(killfile_filter);
     }
 
-
     ///////////////////////////////////////////////////////////////////////////
     /// Classes copied from the annotated JDK
     ///
@@ -26,15 +25,38 @@ public class AssertIfTrueTest {
     // checking.
 
     public class File1 {
-        @EnsuresNonNullIf(result=true, expression={"list()","list(String)","listFiles()","listFiles(String)","listFiles(Double)"})
-        public boolean isDirectory() { throw new RuntimeException("skeleton method"); }
+        @EnsuresNonNullIf(
+            result = true,
+            expression = {
+                "list()",
+                "list(String)",
+                "listFiles()",
+                "listFiles(String)",
+                "listFiles(Double)"
+            }
+        )
+        public boolean isDirectory() {
+            throw new RuntimeException("skeleton method");
+        }
 
-        public String @Nullable [] list() { throw new RuntimeException("skeleton method"); }
-        public String @Nullable [] list(@Nullable String FilenameFilter_a1) { throw new RuntimeException("skeleton method"); }
-        public File1 @Nullable [] listFiles() { throw new RuntimeException("skeleton method"); }
-        public File1 @Nullable [] listFiles(@Nullable String FilenameFilter_a1) { throw new RuntimeException("skeleton method"); }
+        public String @Nullable [] list() {
+            throw new RuntimeException("skeleton method");
+        }
 
-        public File1 @Nullable [] listFiles(@Nullable Double FileFilter_a1) { throw new RuntimeException("skeleton method"); }
+        public String @Nullable [] list(@Nullable String FilenameFilter_a1) {
+            throw new RuntimeException("skeleton method");
+        }
+
+        public File1 @Nullable [] listFiles() {
+            throw new RuntimeException("skeleton method");
+        }
+
+        public File1 @Nullable [] listFiles(@Nullable String FilenameFilter_a1) {
+            throw new RuntimeException("skeleton method");
+        }
+
+        public File1 @Nullable [] listFiles(@Nullable Double FileFilter_a1) {
+            throw new RuntimeException("skeleton method");
+        }
     }
-
 }

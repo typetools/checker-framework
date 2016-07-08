@@ -1,15 +1,13 @@
 package org.checkerframework.qualframework.poly;
 
+import com.sun.source.tree.*;
 import java.util.*;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
-import com.sun.source.tree.*;
-
-import org.checkerframework.qualframework.base.TreeAnnotator;
-import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedDeclaredType;
+import org.checkerframework.qualframework.base.SetQualifierVisitor;
+import org.checkerframework.qualframework.base.TreeAnnotator;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
 /** {@code TreeAnnotator} instance for qualifier parameter checkers. */
@@ -28,13 +26,15 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
     // the type "C<<Q=Regex(1), R=Regex(2)>>" when C only declares "C<<Q>>".
 
     @Override
-    public QualifiedTypeMirror<QualParams<Q>> visitCompoundAssignment(CompoundAssignmentTree node, ExtendedTypeMirror type) {
+    public QualifiedTypeMirror<QualParams<Q>> visitCompoundAssignment(
+            CompoundAssignmentTree node, ExtendedTypeMirror type) {
         QualifiedTypeMirror<QualParams<Q>> result = super.visitCompoundAssignment(node, type);
         return filterParams(result);
     }
 
     @Override
-    public QualifiedTypeMirror<QualParams<Q>> visitBinary(BinaryTree node, ExtendedTypeMirror type) {
+    public QualifiedTypeMirror<QualParams<Q>> visitBinary(
+            BinaryTree node, ExtendedTypeMirror type) {
         QualifiedTypeMirror<QualParams<Q>> result = super.visitBinary(node, type);
         return filterParams(result);
     }
@@ -46,13 +46,15 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
     }
 
     @Override
-    public QualifiedTypeMirror<QualParams<Q>> visitConditionalExpression(ConditionalExpressionTree node, ExtendedTypeMirror type) {
+    public QualifiedTypeMirror<QualParams<Q>> visitConditionalExpression(
+            ConditionalExpressionTree node, ExtendedTypeMirror type) {
         QualifiedTypeMirror<QualParams<Q>> result = super.visitConditionalExpression(node, type);
         return filterParams(result);
     }
 
     @Override
-    public QualifiedTypeMirror<QualParams<Q>> visitTypeCast(TypeCastTree node, ExtendedTypeMirror type) {
+    public QualifiedTypeMirror<QualParams<Q>> visitTypeCast(
+            TypeCastTree node, ExtendedTypeMirror type) {
         QualifiedTypeMirror<QualParams<Q>> result = super.visitTypeCast(node, type);
         return filterParams(result);
     }
@@ -60,16 +62,21 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
     /** Filter the {@link QualParams} on a {@link QualifiedTypeMirror} to
      * ensure that only the type's declared parameters are present.
      */
-    private QualifiedTypeMirror<QualParams<Q>> filterParams(QualifiedTypeMirror<QualParams<Q>> type) {
+    private QualifiedTypeMirror<QualParams<Q>> filterParams(
+            QualifiedTypeMirror<QualParams<Q>> type) {
         if (type.getKind() != TypeKind.DECLARED) {
             return type;
         }
 
-        QualifiedDeclaredType<QualParams<Q>> declType = (QualifiedDeclaredType<QualParams<Q>>)type;
+        QualifiedDeclaredType<QualParams<Q>> declType = (QualifiedDeclaredType<QualParams<Q>>) type;
 
         Element elt = declType.getUnderlyingType().asElement();
-        Set<String> validParams = factory.getAnnotationConverter().getDeclaredParameters(
-                elt, factory.getDeclAnnotations(elt), factory.getDecoratedElement(elt));
+        Set<String> validParams =
+                factory.getAnnotationConverter()
+                        .getDeclaredParameters(
+                                elt,
+                                factory.getDeclAnnotations(elt),
+                                factory.getDecoratedElement(elt));
 
         if (validParams.equals(type.getQualifier().keySet())) {
             return type;
@@ -77,6 +84,7 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
 
         Map<String, Wildcard<Q>> params = new HashMap<>(type.getQualifier());
         params.keySet().retainAll(validParams);
-        return SetQualifierVisitor.apply(type, new QualParams<>(params, type.getQualifier().getPrimary()));
+        return SetQualifierVisitor.apply(
+                type, new QualParams<>(params, type.getQualifier().getPrimary()));
     }
 }

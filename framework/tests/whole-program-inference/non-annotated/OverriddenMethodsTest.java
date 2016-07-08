@@ -1,7 +1,10 @@
 import tests.wholeprograminference.qual.*;
+
 class Parent {
     public void foo(@Sibling1 Object obj, @Sibling2 Object obj2) {}
+
     public void bar(@Sibling1 Parent this, @Sibling2 Object obj) {}
+
     public void barz(@Sibling1 Parent this, @Sibling2 Object obj) {}
 }
 

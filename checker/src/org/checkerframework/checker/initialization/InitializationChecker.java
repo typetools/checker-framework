@@ -4,16 +4,14 @@ package org.checkerframework.checker.initialization;
 import org.checkerframework.checker.interning.qual.*;
 */
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 
 /**
  * Tracks whether a value is initialized (all its fields are set),

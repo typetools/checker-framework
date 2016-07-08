@@ -9,5 +9,4 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  * @checker_framework.manual #map-key-checker Map Key Checker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
-public class KeyForSubchecker extends BaseTypeChecker {
-}
+public class KeyForSubchecker extends BaseTypeChecker {}

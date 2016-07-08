@@ -1,11 +1,10 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
-
-import javax.lang.model.type.TypeVariable;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.type.TypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 
 /**
  * AFConstraint represent the initial constraints used to infer type arguments for method invocations and
@@ -39,8 +38,10 @@ public abstract class AFConstraint {
      */
     protected final int hashcodeBase;
 
-    public AFConstraint(final AnnotatedTypeMirror argument, final AnnotatedTypeMirror formalParameter,
-                        int hashcodeBase) {
+    public AFConstraint(
+            final AnnotatedTypeMirror argument,
+            final AnnotatedTypeMirror formalParameter,
+            int hashcodeBase) {
         this.argument = argument;
         this.formalParameter = formalParameter;
         this.hashcodeBase = hashcodeBase;
@@ -55,7 +56,7 @@ public abstract class AFConstraint {
      */
     public boolean isIrreducible(final Set<TypeVariable> targets) {
         return TypeArgInferenceUtil.isATarget(argument, targets)
-            || TypeArgInferenceUtil.isATarget(formalParameter, targets);
+                || TypeArgInferenceUtil.isATarget(formalParameter, targets);
     }
 
     @Override
@@ -71,7 +72,7 @@ public abstract class AFConstraint {
         final AFConstraint that = (AFConstraint) thatObject;
 
         return this.argument.equals(that.argument)
-            && this.formalParameter.equals(that.formalParameter);
+                && this.formalParameter.equals(that.formalParameter);
     }
 
     @Override
@@ -114,13 +115,16 @@ public abstract class AFConstraint {
      * @return a new constraint that contains no use of the keys in substitutions
      */
     public AFConstraint substitute(final Map<TypeVariable, AnnotatedTypeMirror> substitutions) {
-        final AnnotatedTypeMirror newArgument = TypeArgInferenceUtil.substitute(substitutions, argument);
-        final AnnotatedTypeMirror newFormalParameter = TypeArgInferenceUtil.substitute(substitutions, formalParameter);
+        final AnnotatedTypeMirror newArgument =
+                TypeArgInferenceUtil.substitute(substitutions, argument);
+        final AnnotatedTypeMirror newFormalParameter =
+                TypeArgInferenceUtil.substitute(substitutions, formalParameter);
         return construct(newArgument, newFormalParameter);
     }
 
     /**
      * Used to create a new constraint of the same subclass of AFConstraint.
      */
-    protected abstract AFConstraint construct(AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter);
+    protected abstract AFConstraint construct(
+            AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter);
 }

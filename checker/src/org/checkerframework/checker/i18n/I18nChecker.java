@@ -2,7 +2,6 @@ package org.checkerframework.checker.i18n;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
 import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 

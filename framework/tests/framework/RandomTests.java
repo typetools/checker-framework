@@ -9,7 +9,6 @@ public class RandomTests {
         Collections.singleton(i);
     }
 
-
     void testWildcards() {
         List<?> l = null;
     }
