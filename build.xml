@@ -145,7 +145,7 @@
     </filterchain>
   </loadresource>
 
-  <target name="check-style"
+  <target name="check-style" depends="check-format"
           description="Check basic style guidelines">
     <!-- There should be a way to templatize the following. -->
 
