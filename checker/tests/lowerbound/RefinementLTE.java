@@ -1,14 +1,14 @@
 import org.checkerframework.checker.lowerbound.qual.*;
 
-public class RefinementGTE {
+public class RefinementLTE {
 
-    void test_forward() {
-        /** forwards greater than or equals */
+    void test_backwards() {
+        /** backwards less than or equals */
 
         int a = Integer.parseInt("0"); /** 0 */
         //:: error: (assignment.type.incompatible)
         @NegativeOnePlus int aa = a;
-        if (a >= -1) {
+        if (-1 <= a) {
             @NegativeOnePlus int b = a;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -16,7 +16,7 @@ public class RefinementGTE {
         }
 
         int d = Integer.parseInt("-2"); /** -2 */
-        if (d >= -1) {
+        if (-1 <= d) {
             @NegativeOnePlus int e = d;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -24,7 +24,7 @@ public class RefinementGTE {
         }
 
         int g = Integer.parseInt("5"); /** 5 */
-        if (g >= -1) {
+        if (-1 <= g) {
             @NegativeOnePlus int h = g;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -32,7 +32,7 @@ public class RefinementGTE {
         }
 
         int j = Integer.parseInt("0"); /** 0 */
-        if (j >= 0) {
+        if (0 <= j) {
             @NonNegative int k = j;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -40,7 +40,7 @@ public class RefinementGTE {
         }
 
         int m = Integer.parseInt("-2"); /** -2 */
-        if (m >= 0) {
+        if (0 <= m) {
             @NonNegative int n = m;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -48,7 +48,7 @@ public class RefinementGTE {
         }
 
         int p = Integer.parseInt("5"); /** 5 */
-        if (p >= 0) {
+        if (0 <= p) {
             @NonNegative int q = p;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -56,7 +56,7 @@ public class RefinementGTE {
         }
 
         int s = Integer.parseInt("0"); /** 0 */
-        if (s >= 1) {
+        if (1 <= s) {
             @Positive int t = s;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -64,7 +64,7 @@ public class RefinementGTE {
         }
 
         int v = Integer.parseInt("-2"); /** -2 */
-        if (v >= 1) {
+        if (1 <= v) {
             @Positive int w = v;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -72,7 +72,7 @@ public class RefinementGTE {
         }
 
         int y = Integer.parseInt("5"); /** 5 */
-        if (y >= 1) {
+        if (1 <= y) {
             @Positive int z = y;
         } else {
             //:: error: (assignment.type.incompatible)
@@ -80,13 +80,13 @@ public class RefinementGTE {
         }
 
     }
-    void test_backwards() {
-        /** backwards greater than or equal */
+    void test_forwards() {
+        /** forwards less than or equal */
 
         int a = Integer.parseInt("0"); /** 0 */
         //:: error: (assignment.type.incompatible)
         @NonNegative int aa = a;
-        if (-1 >= a) {
+        if (a <= -1) {
             //:: error: (assignment.type.incompatible)
             @NonNegative int b = a;
         } else {
@@ -94,7 +94,7 @@ public class RefinementGTE {
         }
 
         int d = Integer.parseInt("-2"); /** -2 */
-        if (-1 >= d) {
+        if (d <= -1) {
             //:: error: (assignment.type.incompatible)
             @NonNegative int e = d;
         } else {
@@ -102,7 +102,7 @@ public class RefinementGTE {
         }
 
         int g = Integer.parseInt("5"); /** 5 */
-        if (-1 >= g) {
+        if (g <= -1) {
             //:: error: (assignment.type.incompatible)
             @NonNegative int h = g;
         } else {
@@ -110,7 +110,7 @@ public class RefinementGTE {
         }
 
         int j = Integer.parseInt("0"); /** 0 */
-        if (0 >= j) {
+        if (j <= 0) {
             //:: error: (assignment.type.incompatible)
             @Positive int k = j;
         } else {
@@ -118,7 +118,7 @@ public class RefinementGTE {
         }
 
         int m = Integer.parseInt("-2"); /** -2 */
-        if (0 >= m) {
+        if (m <= 0) {
             //:: error: (assignment.type.incompatible)
             @Positive int n = m;
         } else {
@@ -126,7 +126,7 @@ public class RefinementGTE {
         }
 
         int p = Integer.parseInt("5"); /** 5 */
-        if (0 >= p) {
+        if (p <= 0) {
             //:: error: (assignment.type.incompatible)
             @Positive int q = p;
         } else {
@@ -134,7 +134,7 @@ public class RefinementGTE {
         }
 
         int s = Integer.parseInt("0"); /** 0 */
-        if (1 >= s) {
+        if (s <= 1) {
             //:: error: (assignment.type.incompatible)
             @Positive int t = s;
         } else {
@@ -142,7 +142,7 @@ public class RefinementGTE {
         }
 
         int v = Integer.parseInt("-2"); /** -2 */
-        if (1 >= v) {
+        if (v <= 1) {
             //:: error: (assignment.type.incompatible)
             @Positive int w = v;
         } else {
@@ -150,7 +150,7 @@ public class RefinementGTE {
         }
 
         int y = Integer.parseInt("5"); /** 5 */
-        if (1 >= y) {
+        if (y <= 1) {
             //:: error: (assignment.type.incompatible)
             @Positive int z = y;
         } else {
