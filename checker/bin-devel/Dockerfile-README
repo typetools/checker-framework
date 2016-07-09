@@ -1,0 +1,36 @@
+This directory contains Dockerfiles to create new Docker images for
+running Checker Framework tests reproducibly.
+To build new Docker images:
+
+  # Obtain Docker credentials.  (Is this necessary?  Are credentials cached?)
+  docker login
+
+  # Create the Docker images, in an empty directory, and upload to Docker Hub.
+  # Takes about 12 minutes.
+  mkdir -p dockerdir-jdk7
+  cd dockerdir-jdk7
+  \cp -pf ../Dockerfile-jdk7 Dockerfile
+  docker build -t mdernst/ubuntu-for-cf-jdk7 .
+  docker push mdernst/ubuntu-for-cf-jdk7
+  cd ..
+  rm -rf dockerdir-jdk7
+
+  # Create the Docker images, in an empty directory, and upload to Docker Hub.
+  # Takes about 12 minutes.
+  mkdir -p dockerdir-jdk8
+  cd dockerdir-jdk8
+  \cp -pf ../Dockerfile-jdk8 Dockerfile
+  docker build -t mdernst/ubuntu-for-cf-jdk8 .
+  docker push mdernst/ubuntu-for-cf-jdk8
+  cd ..
+  rm -rf dockerdir-jdk8
+
+  # Create the Docker images, in an empty directory, and upload to Docker Hub.
+  # Takes about 1 hour.
+  mkdir -p dockerdir-jdkany
+  cd dockerdir-jdkany
+  \cp -pf ../Dockerfile-jdkany Dockerfile
+  docker build -t mdernst/ubuntu-for-cf-jdkany .
+  docker push mdernst/ubuntu-for-cf-jdkany
+  cd ..
+  rm -rf dockerdir-jdkany

@@ -594,8 +594,6 @@
             description="Run tests for all checkers, WITHOUT building anything">
     </target>
 
-
-
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
     <target name="junit-tests-nojtreg-nobuild" depends="build-tests"
             description="Run junit tests for all checkers, WITHOUT building anything">
