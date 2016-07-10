@@ -596,7 +596,9 @@ whenever the type system is violated.
 
 A checker's visitor overrides one method in the base visitor for each special
 rule in the type qualifier system.  Most type-checkers
-override only a few methods in \refclass{common/basetype}{BaseTypeVisitor}.  For example, the
+override only a few methods in \refclass{common/basetype}{BaseTypeVisitor};
+the overridden version does its own checks and also invokes the version in
+its superclass so that standard checks are also performed.  For example, the
 visitor for the Nullness type system of Chapter~\ref{nullness-checker}
 contains a single 4-line method that warns if an expression of nullable type
 is dereferenced, as in:
