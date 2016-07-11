@@ -19,6 +19,8 @@ All of these are (to the best of our knowledge) standard development
 practices.  These practices are not specific to the Checker Framework.
 </p>
 
+<h2>Separate out unrelated changes</h2> 
+
 <p>
 Each commit should address a single issue, rather than a commit addressing
 multiple issues such as both fixing a bug, adding a feature, and changing
@@ -30,6 +32,8 @@ rollback.
 <p>
 Likewise, each pull request should address a single issue.
 </p>
+
+<h2>Pull requests</h2>
 
 <p>
 It is acceptable to commit small, noncontroversial changes directly to
@@ -46,9 +50,21 @@ is more efficient than leaving comments in a pull request.
 </p>
 
 <p>
-If there you have an idea for a code improvement (such as a refactoring),
-please document it.  If it is low priority and therefore probably won't get
-fixed for a while a TODO comment in the code is more appropriate than an
+Try to address pull requests promptly, to avoid stalling others while
+waiting for your feedback.  If you have been waiting for a while after the
+pull request was assigned with no feedback, then go ahead and push your
+changes.  It's great if reviewers can give feedback, but if they are too
+busy to do so, you should recognize that and move on.
+A week is a ballpark figure, but the amount of time will vary depending on
+circumstances.
+</p>
+
+<h2>Documenting refactoring ideas</h2>
+
+<p>
+If you have an idea for a code improvement (such as a refactoring), please
+document it.  If it can be described concisely and is low priority,
+a TODO comment in the code is more appropriate than an
 enhancement request in the issue tracker.  The code comment is more likely
 to be noticed by someone working with the code, and it is equally easy to
 search for.  Furthermore, it doesn't clutter the issue tracker, which
