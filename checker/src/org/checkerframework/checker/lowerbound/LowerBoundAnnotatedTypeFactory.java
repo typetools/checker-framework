@@ -38,7 +38,7 @@ public class LowerBoundAnnotatedTypeFactory extends
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        N1P = AnnotationUtils.fromClass(elements, NegativeOnePlus.class);
+        N1P = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
         NN = AnnotationUtils.fromClass(elements, NonNegative.class);
         POS = AnnotationUtils.fromClass(elements, Positive.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);

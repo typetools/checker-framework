@@ -88,25 +88,25 @@ public class RefinementLT {
         @NonNegative int aa = a;
         if (a < -1) {
             //:: error: (assignment.type.incompatible)
-            @NegativeOnePlus int b = a;
+            @GTENegativeOne int b = a;
         } else {
-            @NegativeOnePlus int c = a;
+            @GTENegativeOne int c = a;
         }
 
         int d = Integer.parseInt("-2"); /** -2 */
         if (d < -1) {
             //:: error: (assignment.type.incompatible)
-            @NegativeOnePlus int e = d;
+            @GTENegativeOne int e = d;
         } else {
-            @NegativeOnePlus int f = d;
+            @GTENegativeOne int f = d;
         }
 
         int g = Integer.parseInt("5"); /** 5 */
         if (g < -1) {
             //:: error: (assignment.type.incompatible)
-            @NegativeOnePlus int h = g;
+            @GTENegativeOne int h = g;
         } else {
-            @NegativeOnePlus int i = g;
+            @GTENegativeOne int i = g;
         }
 
         int j = Integer.parseInt("0"); /** 0 */

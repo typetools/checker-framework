@@ -94,25 +94,25 @@ public class RefinementGT {
         @NonNegative int aa = a;
         if (-1 > a) {
             //:: error: (assignment.type.incompatible)
-            @NegativeOnePlus int b = a;
+            @GTENegativeOne int b = a;
         } else {
-            @NegativeOnePlus int c = a;
+            @GTENegativeOne int c = a;
         }
 
         int d = Integer.parseInt("-2"); /** -2 */
         if (-1 > d) {
             //:: error: (assignment.type.incompatible)
-            @NegativeOnePlus int e = d;
+            @GTENegativeOne int e = d;
         } else {
-            @NegativeOnePlus int f = d;
+            @GTENegativeOne int f = d;
         }
 
         int g = Integer.parseInt("5"); /** 5 */
         if (-1 > g) {
             //:: error: (assignment.type.incompatible)
-            @NegativeOnePlus int h = g;
+            @GTENegativeOne int h = g;
         } else {
-            @NegativeOnePlus int i = g;
+            @GTENegativeOne int i = g;
         }
 
         int j = Integer.parseInt("0"); /** 0 */

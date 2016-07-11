@@ -6,7 +6,7 @@ public class Errors{
         int[] arr = new int[5];
 
         // unsafe
-        @NegativeOnePlus int n1p = -1;
+        @GTENegativeOne int n1p = -1;
         @LowerBoundUnknown int u = -10;
 
         // safe

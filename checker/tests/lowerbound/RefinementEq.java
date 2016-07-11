@@ -8,26 +8,26 @@ public class RefinementEq {
         //:: error: (assignment.type.incompatible)
         @NonNegative int aa = a;
         if (-1 == a) {
-            @NegativeOnePlus int b = a;
+            @GTENegativeOne int b = a;
         } else {
             //:: error: (assignment.type.incompatible)
-            @NegativeOnePlus int c = a;
+            @GTENegativeOne int c = a;
         }
 
         int d = Integer.parseInt("-2"); /** -2 */
         if (-1 == d) {
-            @NegativeOnePlus int e = d;
+            @GTENegativeOne int e = d;
         } else {
             //:: error: (assignment.type.incompatible)
-            @NegativeOnePlus int f = d;
+            @GTENegativeOne int f = d;
         }
 
         int g = Integer.parseInt("5"); /** 5 */
         if (-1 == g) {
-            @NegativeOnePlus int h = g;
+            @GTENegativeOne int h = g;
         } else {
             //:: error: (assignment.type.incompatible)
-            @NegativeOnePlus int i = g;
+            @GTENegativeOne int i = g;
         }
 
         int j = Integer.parseInt("0"); /** 0 */

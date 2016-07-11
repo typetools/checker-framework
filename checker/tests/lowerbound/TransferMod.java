@@ -24,8 +24,8 @@ class TransferMod {
         @NonNegative int n = c % a;
         @NonNegative int o = b % a;
 
-        @NegativeOnePlus int p = a % a;
-        @NegativeOnePlus int q = a % b;
-        @NegativeOnePlus int r = a % c;
+        @GTENegativeOne int p = a % a;
+        @GTENegativeOne int q = a % b;
+        @GTENegativeOne int r = a % c;
     }
 }

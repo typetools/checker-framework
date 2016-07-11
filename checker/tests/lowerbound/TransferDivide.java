@@ -16,7 +16,7 @@ public class TransferDivide {
         @NonNegative int g = 0 / d;
 
         /** * / 1 -> * */
-        @NegativeOnePlus int h = a / 1;
+        @GTENegativeOne int h = a / 1;
         @NonNegative int i = b / 1;
         @Positive int j = c / 1;
         @Positive int k = d / 1;
@@ -43,13 +43,13 @@ public class TransferDivide {
         @Positive int t = b / q;
 
         /** n1p / pos -> n1p */
-        @NegativeOnePlus int u = a / d;
-        @NegativeOnePlus int v = a / c;
+        @GTENegativeOne int u = a / d;
+        @GTENegativeOne int v = a / c;
         //:: error: (assignment.type.incompatible)
         @NonNegative int w = a / c;
 
         /** n1p / nn -> n1p */
-        @NegativeOnePlus int x = a / l;
+        @GTENegativeOne int x = a / l;
         //:: error: (assignment.type.incompatible)
         @NonNegative int y = a / l;
     }

@@ -9,19 +9,19 @@ public class TransferSub {
         @NonNegative int b = a - 1;
         //:: error: (assignment.type.incompatible)
         @Positive int c = a - 1;
-        @NegativeOnePlus int d = a - 2;
+        @GTENegativeOne int d = a - 2;
 
         //:: error: (assignment.type.incompatible)
         @NonNegative int e = a -2;
 
-        @NegativeOnePlus int f = b - 1;
+        @GTENegativeOne int f = b - 1;
         //:: error: (assignment.type.incompatible)
         @NonNegative int g = b - 1;
 
         //:: error: (assignment.type.incompatible)
-        @NegativeOnePlus int h = f - 1;
+        @GTENegativeOne int h = f - 1;
 
-        @NegativeOnePlus int i = f - 0;
+        @GTENegativeOne int i = f - 0;
         @NonNegative int j = b - 0;
         @Positive int k = a - 0;
 
@@ -35,7 +35,7 @@ public class TransferSub {
         //:: error: (assignment.type.incompatible)
         @NonNegative int o = b - j;
         //:: error: (assignment.type.incompatible)
-        @NegativeOnePlus int p = i - d;
+        @GTENegativeOne int p = i - d;
 
         // decrements
 
@@ -47,12 +47,12 @@ public class TransferSub {
         @NonNegative int s = k--;
         @NonNegative int t = --k;
 
-        @NegativeOnePlus int u = j--;
-        @NegativeOnePlus int v = --j;
+        @GTENegativeOne int u = j--;
+        @GTENegativeOne int v = --j;
 
         //:: error: (assignment.type.incompatible)
-        @NegativeOnePlus int w = --u;
+        @GTENegativeOne int w = --u;
         //:: error: (assignment.type.incompatible)
-        @NegativeOnePlus int x = u--;
+        @GTENegativeOne int x = u--;
     }
 }

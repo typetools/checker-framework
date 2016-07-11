@@ -5,7 +5,7 @@ public class IntroRules{
     void test() {
         @Positive int a = 10;
         @NonNegative int b = 9;
-        @NegativeOnePlus int c = 8;
+        @GTENegativeOne int c = 8;
         @LowerBoundUnknown int d = 7;
 
         //:: error: (assignment.type.incompatible)
@@ -16,16 +16,16 @@ public class IntroRules{
         @Positive int g = -6;
 
         @NonNegative int h = 0;
-        @NegativeOnePlus int i = 0;
+        @GTENegativeOne int i = 0;
         @LowerBoundUnknown int j = 0;
         //:: error: (assignment.type.incompatible)
         @NonNegative int k = -1;
         //:: error: (assignment.type.incompatible)
         @NonNegative int l = -4;
 
-        @NegativeOnePlus int m = -1;
+        @GTENegativeOne int m = -1;
         @LowerBoundUnknown int n = -1;
         //:: error: (assignment.type.incompatible)
-        @NegativeOnePlus int o = -9;
+        @GTENegativeOne int o = -9;
     }
 }

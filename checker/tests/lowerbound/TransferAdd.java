@@ -13,8 +13,8 @@ public class TransferAdd {
         @NonNegative int b = a + 1;
         @NonNegative int c = 1 + a;
 
-        @NegativeOnePlus int d = a + 0;
-        @NegativeOnePlus int e = 0 + a;
+        @GTENegativeOne int d = a + 0;
+        @GTENegativeOne int e = 0 + a;
 
         //:: error: (assignment.type.incompatible)
         @Positive int f = a + 1;
@@ -45,7 +45,7 @@ public class TransferAdd {
         @NonNegative int r = q + d;
 
         @NonNegative int s = k + d;
-        @NegativeOnePlus int t = s + d;
+        @GTENegativeOne int t = s + d;
 
         // increments
 

@@ -4,7 +4,7 @@ class Subtyping{
 
     void foo() {
 
-        @NegativeOnePlus int i = -1;
+        @GTENegativeOne int i = -1;
 
         @LowerBoundUnknown int j = i;
 
@@ -12,7 +12,7 @@ class Subtyping{
 
         // not this one though
         //:: error: (assignment.type.incompatible)
-        @NegativeOnePlus int l = k;
+        @GTENegativeOne int l = k;
 
         @NonNegative int n = 0;
 

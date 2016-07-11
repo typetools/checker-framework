@@ -8,7 +8,7 @@ public class TransferTimes {
         @Positive int c = 1 * a;
         @NonNegative int d = 0 * a;
         //:: error: (assignment.type.incompatible)
-        @NegativeOnePlus int e = -1 * a;
+        @NonNegative int e = -1 * a;
 
         int g = -1;
         @NonNegative int h = g * 0;
