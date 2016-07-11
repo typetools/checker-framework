@@ -57,6 +57,39 @@ public class TestUtilities {
         return getJavaFilesAsArgumentList(dirs);
     }
 
+    public static List<List<File>> findJavaFilesPerDirectory(File parent, String... dirNames) {
+        List<List<File>> filesPerDirectory = new ArrayList<>();
+
+        for (String dirName : dirNames) {
+            File dir = new File(parent, dirName);
+            if (dir.isDirectory()) {
+                filesPerDirectory.addAll(files(dir));
+            }
+        }
+
+        return filesPerDirectory;
+    }
+
+    private static List<List<File>> files(File dir) {
+        assert dir.isDirectory();
+        List<List<File>> fileGroupedByDirectory = new ArrayList<>();
+        List<File> fileInDir = new ArrayList<>();
+
+        fileGroupedByDirectory.add(fileInDir);
+        for (String fileName : dir.list()) {
+            File file = new File(dir, fileName);
+            if (file.isDirectory()) {
+                fileGroupedByDirectory.addAll(files(file));
+            } else if (isJavaTestFile(file)) {
+                fileInDir.add(file);
+            }
+        }
+        if (fileInDir.isEmpty()) {
+            fileGroupedByDirectory.remove(fileInDir);
+        }
+        return fileGroupedByDirectory;
+    }
+
     public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
         List<Object[]> files = new ArrayList<Object[]>();
         for (String fileName : fileNames) {
