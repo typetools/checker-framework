@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Checker Framework development process</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+<h1>Checker Framework development process</h1>
+
+<p>
+This document contains information about how to contribute to the Checker
+Framework.  A separate document outlines the
+<a href="README-release-process.html">release process</a>.
+</p>
+
+<p>
+All of these are (to the best of our knowledge) standard development
+practices.  These practices are not specific to the Checker Framework.
+</p>
+
+<p>
+Each commit should address a single issue, rather than a commit addressing
+multiple issues such as both fixing a bug, adding a feature, and changing
+formatting.  Focusing each commit on a single issue makes the commit easier
+to understand and review; it also eases diagnosis and (if necessary)
+rollback.
+</p>
+
+<p>
+Likewise, each pull request should address a single issue.
+</p>
+
+<p>
+It is acceptable to commit small, noncontroversial changes directly to
+master.  For any change where you want feedback, or where others might have
+useful comments or might disagree, please submit a pull request.  Be
+conservative in your judgment; others might consider something
+controversial that you do not.
+</p>
+
+<p>
+Try to work on a branch if you are going to submit a pull request.
+This enables others to make changes directly to your branch when that
+is more efficient than leaving comments in a pull request.
+</p>
+
+<p>
+If there you have an idea for a code improvement (such as a refactoring),
+please document it.  If it is low priority and therefore probably won't get
+fixed for a while a TODO comment in the code is more appropriate than an
+enhancement request in the issue tracker.  The code comment is more likely
+to be noticed by someone working with the code, and it is equally easy to
+search for.  Furthermore, it doesn't clutter the issue tracker, which
+reduces morale and makes the project appear lower-quality than it actually
+is.
+</p>
+
+
+</body>
+</html>
+
+<!--  LocalWords:  TODO
+ -->
