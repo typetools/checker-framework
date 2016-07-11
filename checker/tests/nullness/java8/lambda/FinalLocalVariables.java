@@ -11,7 +11,7 @@ class LambdaEnclosing {
 
     // Test static initializer
     static {
-        String local1 = "";
+        final String local1 = "";
         String local2 = null;
         FunctionLE<String, String> f0 =
                 s -> {
@@ -24,7 +24,7 @@ class LambdaEnclosing {
 
     // Test instance initializer
     {
-        String local1 = "";
+        final String local1 = "";
         String local2 = null;
         FunctionLE<String, String> f0 =
                 s -> {
@@ -37,7 +37,7 @@ class LambdaEnclosing {
 
     FunctionLE<String, String> functionField =
             s -> {
-                String local1 = "";
+                final String local1 = "";
                 String local2 = null;
                 FunctionLE<String, String> f0 =
                         s2 -> {
@@ -53,7 +53,7 @@ class LambdaEnclosing {
             };
 
     void context() {
-        String local1 = "";
+        final String local1 = "";
         String local2 = null;
 
         FunctionLE<String, String> f1 =
@@ -64,7 +64,7 @@ class LambdaEnclosing {
                     class Inner {
 
                         void context2() {
-                            String local3 = "";
+                            final String local3 = "";
                             String local4 = null;
 
                             FunctionLE<String, String> f2 =
@@ -85,7 +85,7 @@ class LambdaEnclosing {
 
                         @Override()
                         public String toString() {
-                            String local3 = "";
+                            final String local3 = "";
                             String local4 = null;
 
                             FunctionLE<String, String> f2 =
