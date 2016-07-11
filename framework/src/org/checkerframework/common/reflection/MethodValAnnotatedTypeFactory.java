@@ -55,9 +55,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(MethodVal.class, MethodValBottom.class, UnknownMethod.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(MethodVal.class, MethodValBottom.class, UnknownMethod.class));
     }
 
     @Override

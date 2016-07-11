@@ -337,8 +337,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.loader = new AnnotationClassLoader(checker);
-        this.supportedQuals = createSupportedTypeQualifiers();
-        checkSupportedQuals();
+        this.supportedQuals = new HashSet<>();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
@@ -358,6 +357,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             this.elementCache = null;
             this.elementToTreeCache = null;
         }
+
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
 
@@ -655,9 +655,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an immutable set of annotation classes that are supported by a checker
+     * Returns a mutable set of annotation classes that are supported by a checker
      * <p>
-     * Subclasses may override this method and to return an immutable set
+     * Subclasses may override this method and to return a mutable set
      * of their supported type qualifiers through one of the 5 approaches shown below.
      * <p>
      * Subclasses should not call this method; they should call
@@ -736,22 +736,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <li>
      * Supporting only annotations that are explicitly listed:
      * Override
-     * {@link #createSupportedTypeQualifiers()} and return an immutable
+     * {@link #createSupportedTypeQualifiers()} and return a mutable
      * set of the supported annotations. Code example:
      * <pre>
      * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-     *      return Collections.unmodifiableSet(
-     *          new HashSet<Class<? extends Annotation>>(
-     *              Arrays.asList(A.class, B.class)));
+     *      return new HashSet<Class<? extends Annotation>>(
+     *              Arrays.asList(A.class, B.class));
      *  } }
      * </pre>
      *
      * The set of qualifiers returned by
-     * {@link #createSupportedTypeQualifiers()} must be an immutable
+     * {@link #createSupportedTypeQualifiers()} must be a fresh, mutable
      * set. The methods
      * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} and
      * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} each
-     * return an immutable set.
+     * must return a fresh, mutable set
      * </li>
      * </ol>
      *
@@ -775,14 +774,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            a varargs array of explicitly listed annotation classes to be
      *            added to the returned set. For example, it is used frequently
      *            to add Bottom qualifiers.
-     * @return an immutable set of the loaded and listed annotation classes, as
+     * @return a mutable set of the loaded and listed annotation classes, as
      *         well as {@link PolyAll}.
      */
     @SafeVarargs
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithPolyAll(Class<? extends Annotation>... explicitlyListedAnnotations) {
         Set<Class<? extends Annotation>> annotations = loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
         annotations.add(PolyAll.class);
-        return Collections.unmodifiableSet(annotations);
+        return annotations;
     }
 
     /**
@@ -797,11 +796,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            a varargs array of explicitly listed annotation classes to be
      *            added to the returned set. For example, it is used frequently
      *            to add Bottom qualifiers.
-     * @return an immutable set of the loaded, and listed annotation classes
+     * @return a mutable set of the loaded, and listed annotation classes
      */
     @SafeVarargs
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithoutPolyAll(Class<? extends Annotation>... explicitlyListedAnnotations) {
-        return Collections.unmodifiableSet(loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations));
+        return loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
     }
 
     /**
@@ -869,7 +868,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *         empty set if no qualifiers are supported
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
-        return supportedQuals;
+        if (this.supportedQuals.isEmpty()) {
+            supportedQuals.addAll(createSupportedTypeQualifiers());
+            checkSupportedQuals();
+        }
+        return Collections.unmodifiableSet(supportedQuals);
     }
 
     // **********************************************************************

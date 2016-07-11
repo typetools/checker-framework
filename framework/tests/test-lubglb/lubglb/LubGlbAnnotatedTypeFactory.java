@@ -25,9 +25,8 @@ public class LubGlbAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(A.class, B.class, C.class, D.class, E.class, F.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                        Arrays.asList(A.class, B.class, C.class, D.class, E.class, F.class));
     }
 
 }
