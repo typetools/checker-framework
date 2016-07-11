@@ -28,7 +28,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, LowerBoundTransfer> {
     protected LowerBoundAnalysis analysis;
 
-    private final AnnotationMirror N1P, NN, POS, UNKNOWN;
+    private final AnnotationMirror GTEN1, NN, POS, UNKNOWN;
 
     private LowerBoundAnnotatedTypeFactory atypeFactory;
 
@@ -36,10 +36,10 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         super(analysis);
         this.analysis = analysis;
         atypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
-        N1P = atypeFactory.getN1P();
-        NN = atypeFactory.getNN();
-        POS = atypeFactory.getPOS();
-        UNKNOWN = atypeFactory.getUNKNOWN();
+        GTEN1 = atypeFactory.GTEN1;
+        NN = atypeFactory.NN;
+        POS = atypeFactory.POS;
+        UNKNOWN = atypeFactory.UNKNOWN;
     }
 
     /** encodes what to do when we run into a greater-than node */
@@ -54,12 +54,13 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         ConditionalTransferResult<CFValue, CFStore> newResult =
             new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
-        // in.getValueOfSubNode(node.getLeftOperand()).getType();
+        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
+        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
         /** do things here */
-        gtHelper(left, right, thenStore);
+        refineGT(left, leftType, right, rightType, thenStore);
 
         /** inverse */
-        gteHelper(right, left, elseStore);
+        refineGTE(right, rightType,  left, leftType, elseStore);
 
         return newResult;
     }
@@ -75,12 +76,15 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         ConditionalTransferResult<CFValue, CFStore> newResult =
             new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
+        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
+        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+
         /** this makes sense because they have the same result in the chart. If I'm wrong about
             that, then we'd need to make something else to put here */
-        gteHelper(left, right, thenStore);
+        refineGTE(left, leftType, right, rightType, thenStore);
 
         /** call the inverse */
-        gtHelper(right, left, elseStore);
+        refineGT(right, rightType, left, leftType, elseStore);
 
         return newResult;
     }
@@ -96,11 +100,14 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         ConditionalTransferResult<CFValue, CFStore> newResult =
             new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
+        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
+        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+
         /** equivalent to a flipped GTE */
-        gteHelper(right, left, thenStore);
+        refineGTE(right, rightType, left, leftType, thenStore);
 
         /** call the inverse */
-        gtHelper(left, right, elseStore);
+        refineGT(left, leftType, right, rightType, elseStore);
         return newResult;
     }
 
@@ -115,11 +122,14 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         ConditionalTransferResult<CFValue, CFStore> newResult =
             new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
+        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
+        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+
         /** x < y ~ y > x */
-        gtHelper(right, left, thenStore);
+        refineGT(right, rightType, left, leftType, thenStore);
 
         /** inverse */
-        gteHelper(left, right, elseStore);
+        refineGTE(left, leftType, right, rightType, elseStore);
         return newResult;
     }
 
@@ -134,10 +144,13 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         ConditionalTransferResult<CFValue, CFStore> newResult =
                 new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
+        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
+        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+
         /** have to call this in both directions since it only adjusts the first argument */
         /** trust me, this is the simpler way to do this */
-        gteHelper(left, right, thenStore);
-        gteHelper(right, left, thenStore);
+        refineGTE(left, leftType, right, rightType, thenStore);
+        refineGTE(right, rightType, left, leftType, thenStore);
         return newResult;
     }
 
@@ -152,17 +165,20 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         ConditionalTransferResult<CFValue, CFStore> newResult =
                 new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
+        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
+        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+
         /** have to call this in both directions since it only adjusts the first argument */
         /** trust me, this is the simpler way to do this */
-        gteHelper(left, right, elseStore);
-        gteHelper(right, left, elseStore);
+        refineGTE(left, leftType, right, rightType, elseStore);
+        refineGTE(right, rightType, left, leftType, elseStore);
         return newResult;
     }
 
-    private void gtHelper(Node left, Node right, CFStore store) {
-        AnnotatedTypeMirror rightType = atypeFactory.getAnnotatedType(right.getTree());
+    private void refineGT(Node left, AnnotatedTypeMirror leftType, Node right,
+                          AnnotatedTypeMirror rightType, CFStore store) {
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
-        if (rightType.hasAnnotation(N1P)) {
+        if (rightType.hasAnnotation(GTEN1)) {
             store.insertValue(leftRec, NN);
             return;
         }
@@ -178,9 +194,8 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
     /** this works by elevating left to the level of right, basically */
     /** to check equality, you'd want to call this twice - once in each direction */
-    private void gteHelper(Node left, Node right, CFStore store) {
-        AnnotatedTypeMirror rightType = atypeFactory.getAnnotatedType(right.getTree());
-        AnnotatedTypeMirror leftType = atypeFactory.getAnnotatedType(left.getTree());
+    private void refineGTE(Node left, AnnotatedTypeMirror leftType, Node right,
+                           AnnotatedTypeMirror rightType, CFStore store) {
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
         if (rightType.hasAnnotation(POS)) {
             store.insertValue(leftRec, POS);
@@ -196,8 +211,8 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         if (leftType.hasAnnotation(NN)) {
             return;
         }
-        if (rightType.hasAnnotation(N1P)) {
-            store.insertValue(leftRec, N1P);
+        if (rightType.hasAnnotation(GTEN1)) {
+            store.insertValue(leftRec, GTEN1);
             return;
         }
         return;

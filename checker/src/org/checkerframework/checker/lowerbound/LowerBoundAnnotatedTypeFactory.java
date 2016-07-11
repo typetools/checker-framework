@@ -34,32 +34,15 @@ import org.checkerframework.javacutil.Pair;
 public class LowerBoundAnnotatedTypeFactory extends
  GenericAnnotatedTypeFactory<CFValue, CFStore, LowerBoundTransfer, LowerBoundAnalysis> {
 
-    private final AnnotationMirror N1P, NN, POS, UNKNOWN;
+    public final AnnotationMirror GTEN1, NN, POS, UNKNOWN;
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        N1P = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
+        GTEN1 = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
         NN = AnnotationUtils.fromClass(elements, NonNegative.class);
         POS = AnnotationUtils.fromClass(elements, Positive.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
         this.postInit();
-    }
-
-    /** These getter methods exist so that LowerBoundTransfer can use these objects */
-    public AnnotationMirror getN1P() {
-        return N1P;
-    }
-
-    public AnnotationMirror getNN() {
-        return NN;
-    }
-
-    public AnnotationMirror getPOS() {
-        return POS;
-    }
-
-    public AnnotationMirror getUNKNOWN() {
-        return UNKNOWN;
     }
 
     @Override
@@ -82,10 +65,10 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /** does the actual work of annotating a literal so that we can call this from
-            elsewhere in this program (e.g. plusHelper w/ two literals) */
+            elsewhere in this program (e.g. computeTypesForPlus w/ two literals) */
         private void literalHelper(int val, AnnotatedTypeMirror type) {
             if (val == -1) {
-                type.addAnnotation(N1P);
+                type.addAnnotation(GTEN1);
             } else if (val == 0) {
                 type.addAnnotation(NN);
             } else if (val > 0) {
@@ -111,14 +94,20 @@ public class LowerBoundAnnotatedTypeFactory extends
         /** call increment and decrement helper functions */
         @Override
         public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror leftType = getAnnotatedType(tree.getExpression());
+            AnnotatedTypeMirror leftType = null;
             switch (tree.getKind()) {
             case PREFIX_INCREMENT:
             case POSTFIX_INCREMENT:
+                if (leftType == null) {
+                    leftType = getAnnotatedType(tree.getExpression());
+                }
                 incrementHelper(leftType, type);
                 break;
             case PREFIX_DECREMENT:
             case POSTFIX_DECREMENT:
+                if (leftType == null) {
+                     leftType = getAnnotatedType(tree.getExpression());
+                }
                 decrementHelper(leftType, type);
                 break;
             default:
@@ -129,7 +118,7 @@ public class LowerBoundAnnotatedTypeFactory extends
 
         /** handles x+1, x++, ++x, and all equivalent statements */
         public void incrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
-            if (leftType.hasAnnotation(N1P)) {
+            if (leftType.hasAnnotation(GTEN1)) {
                 type.addAnnotation(NN);
             } else if (leftType.hasAnnotation(NN)) {
                 type.addAnnotation(POS);
@@ -144,7 +133,7 @@ public class LowerBoundAnnotatedTypeFactory extends
         /** handles x-1, x--, --x, and all equivalent statements */
         public void decrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
             if (leftType.hasAnnotation(NN)) {
-                type.addAnnotation(N1P);
+                type.addAnnotation(GTEN1);
             } else if (leftType.hasAnnotation(POS)) {
                 type.addAnnotation(NN);
             } else {
@@ -161,7 +150,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             ExpressionTree right = tree.getRightOperand();
             switch (tree.getKind()) {
             case PLUS:
-                plusHelper(left, right, type);
+                computeTypesForPlus(left, right, type);
                 break;
             case MINUS:
                 minusHelper(left, right, type);
@@ -181,26 +170,55 @@ public class LowerBoundAnnotatedTypeFactory extends
             return super.visitBinary(tree, type);
         }
 
-        /**   plusHelper handles the following cases:
-               int lit + int lit -> do the math
-               lit 0 + * -> *
-               lit 1 + * -> call increment
-               lit -1 + * -> call decrement
-               lit >= 2 + n1p, nn, or pos -> pos
-               lit -2 + pos -> n1p
-               let all other lits fall through:
-               pos + pos -> pos
-               pos + nn -> pos
-               nn + nn -> nn
-               pos + n1p -> nn
-               nn + n1p -> n1p
-               * + * -> lbu
-         */
+        private void computeTypesForLiteralPlus(int val, AnnotatedTypeMirror leftType,
+                                                 AnnotatedTypeMirror type) {
+            if (val == -2) {
+                if (leftType.hasAnnotation(POS)) {
+                    type.addAnnotation(GTEN1);
+                    return;
+                }
+            }
+            else if (val == -1) {
+                decrementHelper(leftType, type);
+                return;
+            }
+            else if (val == 0) {
+                type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
+                return;
+            }
+            else if (val == 1) {
+                incrementHelper(leftType, type);
+                return;
+            }
+            else if (val >= 2) {
+                if (leftType.hasAnnotation(GTEN1) || leftType.hasAnnotation(NN) ||
+                    leftType.hasAnnotation(POS)) {
+                    type.addAnnotation(POS);
+                    return;
+                }
+            }
+        }
 
-        public void plusHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
+        /**   computeTypesForPlus handles the following cases:
+        *       int lit + int lit -> do the math
+        *       lit 0 + * -> *
+        *       lit 1 + * -> call increment
+        *       lit -1 + * -> call decrement
+        *       lit >= 2 + gten1, nn, or pos -> pos
+        *       lit -2 + pos -> gten1
+        *       let all other lits fall through:
+        *       pos + pos -> pos
+        *       pos + nn -> pos
+        *       nn + nn -> nn
+        *       pos + gten1 -> nn
+        *       nn + gten1 -> gten1
+        *      * + * -> lbu
+        */
+
+        public void computeTypesForPlus(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
 
-            /** if both left and right are literals, do the math...*/
+            // if both right and left are literals, do the math...
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
                rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int valLeft = (int)((LiteralTree)leftExpr).getValue();
@@ -217,50 +235,27 @@ public class LowerBoundAnnotatedTypeFactory extends
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)leftExpr).getValue();
                 if (val >= -2) {
-                    plusHelper(rightExpr, leftExpr, type);
+                    computeTypesForPlus(rightExpr, leftExpr, type);
                     return;
                 }
             }
 
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-//TODO: Make helper method
+
             /** handle the case where one of the two is an interesting literal. */
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
-                if (val == -2) {
-                    if (leftType.hasAnnotation(POS)) {
-                        type.addAnnotation(N1P);
-                        return;
-                    }
-                }
-                else if (val == -1) {
-                    decrementHelper(leftType, type);
-                    return;
-                }
-                else if (val == 0) {
-                    type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
-                    return;
-                }
-                else if (val == 1) {
-                    incrementHelper(leftType, type);
-                    return;
-                }
-                else if (val >= 2) {
-                    if (leftType.hasAnnotation(N1P) || leftType.hasAnnotation(NN) ||
-                        leftType.hasAnnotation(POS)) {
-                        type.addAnnotation(POS);
-                        return;
-                    }
-                }
+                computeTypesForLiteralPlus(val, leftType, type);
+                return;
             }
             /** This section is handling the generic cases:
              pos + pos -> pos
              pos + nn -> pos
              nn + nn -> nn
-             pos + n1p -> nn
-             nn + n1p -> n1p
+             pos + gten1 -> nn
+             nn + gten1 -> gten1
             */
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(POS);
                 return;
@@ -274,16 +269,17 @@ public class LowerBoundAnnotatedTypeFactory extends
                 type.addAnnotation(NN);
                 return;
             }
-            if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(N1P)) ||
-                (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(POS))) {
+            if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(GTEN1)) ||
+                (leftType.hasAnnotation(GTEN1) && rightType.hasAnnotation(POS))) {
                 type.addAnnotation(NN);
                 return;
             }
-            if ((leftType.hasAnnotation(N1P) && rightType.hasAnnotation(NN)) ||
-                (leftType.hasAnnotation(NN) && rightType.hasAnnotation(N1P))) {
-                type.addAnnotation(N1P);
+            if ((leftType.hasAnnotation(GTEN1) && rightType.hasAnnotation(NN)) ||
+                (leftType.hasAnnotation(NN) && rightType.hasAnnotation(GTEN1))) {
+                type.addAnnotation(GTEN1);
                 return;
             }
+
             /** * + * -> lbu */
             type.addAnnotation(UNKNOWN);
             return;
@@ -294,8 +290,8 @@ public class LowerBoundAnnotatedTypeFactory extends
                * - lit 0 -> *
                * - lit 1 -> call decrement
                * - lit -1 -> call increment
-               pos - lit 2 -> n1p
-               n1p, nn, pos - lit <= -2 -> pos
+               pos - lit 2 -> gten1
+               gten1, nn, pos - lit <= -2 -> pos
                * - * -> lbu
          */
         public void minusHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
@@ -318,7 +314,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 int val = (int)((LiteralTree)rightExpr).getValue();
                 if (val == 2) {
                     if (leftType.hasAnnotation(POS)) {
-                        type.addAnnotation(N1P);
+                        type.addAnnotation(GTEN1);
                         return;
                     }
                 }
@@ -334,7 +330,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                     incrementHelper(leftType, type);
                 }
                 else if (val <= -2) {
-                    if (leftType.hasAnnotation(N1P) || leftType.hasAnnotation(NN) ||
+                    if (leftType.hasAnnotation(GTEN1) || leftType.hasAnnotation(NN) ||
                         leftType.hasAnnotation(POS)) {
                         type.addAnnotation(POS);
                         return;
@@ -421,9 +417,9 @@ public class LowerBoundAnnotatedTypeFactory extends
                nn / pos -> nn
                pos / nn -> nn
                nn / nn -> nn
-               pos / n1p -> n1p
-               nn / n1p -> n1p
-               n1p / n1p -> nn
+               pos / gten1 -> gten1
+               nn / gten1 -> gten1
+               gten1 / gten1 -> nn
                * / * -> lbu
          */
         public void divideHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
@@ -464,8 +460,8 @@ public class LowerBoundAnnotatedTypeFactory extends
                nn / pos -> nn
                pos / nn -> nn
                nn / nn -> nn
-               n1p / pos -> n1p
-               n1p / nn -> n1p
+               gten1 / pos -> gten1
+               gten1 / nn -> gten1
             */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(NN);
@@ -480,12 +476,12 @@ public class LowerBoundAnnotatedTypeFactory extends
                 type.addAnnotation(NN);
                 return;
             }
-            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(POS)) {
-                type.addAnnotation(N1P);
+            if (leftType.hasAnnotation(GTEN1) && rightType.hasAnnotation(POS)) {
+                type.addAnnotation(GTEN1);
                 return;
             }
-            if (leftType.hasAnnotation(N1P) && rightType.hasAnnotation(NN)) {
-                type.addAnnotation(N1P);
+            if (leftType.hasAnnotation(GTEN1) && rightType.hasAnnotation(NN)) {
+                type.addAnnotation(GTEN1);
                 return;
             }
             /** we don't know anything about other stuff. */
@@ -496,7 +492,7 @@ public class LowerBoundAnnotatedTypeFactory extends
            int lit % int lit -> do the math
            * % 1/-1 -> nn
            pos/nn % * -> nn
-           n1p % * -> n1p
+           gten1 % * -> gten1
            * % * -> lbu
          */
         public void modHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
@@ -525,14 +521,14 @@ public class LowerBoundAnnotatedTypeFactory extends
 
             /** this section handles generic annotations
                 pos/nn % * -> nn
-                n1p % * -> n1p
+                gten1 % * -> gten1
              */
             if (leftType.hasAnnotation(POS) || leftType.hasAnnotation(NN)) {
                 type.addAnnotation(NN);
                 return;
             }
-            if (leftType.hasAnnotation(N1P)) {
-                type.addAnnotation(N1P);
+            if (leftType.hasAnnotation(GTEN1)) {
+                type.addAnnotation(GTEN1);
                 return;
             }
 
