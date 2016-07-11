@@ -8,7 +8,7 @@ Created by Jonathan Burke on 2013-08-01.
 Copyright (c) 2015 University of Washington. All rights reserved.
 """
 
-# See README-maintainers.html for more information
+# See README-release-process.html for more information
 
 from release_vars  import *
 from release_utils import *
@@ -405,13 +405,13 @@ def main(argv):
     if review_documentation:
         print_step("Build Step 4: Review changelogs.") # SEMIAUTO
 
-        print "Verify that all changelog messages follow the guidelines found in README-maintainers.html#changelog_guide\n"
+        print "Verify that all changelog messages follow the guidelines found in README-release-process.html#changelog_guide\n"
 
         print "Ensure that the changelogs end with a line that lists resolved issues in numerical order, like"
         print "Resolved issues:  200, 300, 332, 336, 357, 359, 373, 374.\n"
 
         print("To ensure the jsr308-langtools, AFU and Checker Framework changelogs are correct and complete, " +
-              "please follow the Content Guidelines found in README-maintainers.html#content_guidelines\n")
+              "please follow the Content Guidelines found in README-release-process.html#content_guidelines\n")
 
         prompt_until_yes()
 
