@@ -19,13 +19,13 @@ class TransferMod {
 
         @NonNegative int k = d % c;
         @NonNegative int l = b % c;
-        @NonNegative int m = c % b;
+        @NonNegative int m = c % d;
 
         @NonNegative int n = c % a;
         @NonNegative int o = b % a;
 
         @GTENegativeOne int p = a % a;
-        @GTENegativeOne int q = a % b;
+        @GTENegativeOne int q = a % d;
         @GTENegativeOne int r = a % c;
     }
 }
