@@ -145,6 +145,14 @@ public class StubParser {
             AnnotatedTypeFactory factory,
             ProcessingEnvironment env) {
         this.filename = filename;
+        this.atypeFactory = factory;
+        this.processingEnv = env;
+        this.elements = env.getElementUtils();
+        imports = new ArrayList<String>();
+
+        if (debugStubParser) {
+            stubDebug(String.format("parsing stub file %s%n", filename));
+        }
         IndexUnit parsedindex;
         try {
             parsedindex = JavaParser.parse(inputStream);
@@ -154,10 +162,6 @@ public class StubParser {
             parsedindex = null; // dead code, but needed for def. assignment checks
         }
         this.index = parsedindex;
-        this.atypeFactory = factory;
-        this.processingEnv = env;
-        this.elements = env.getElementUtils();
-        imports = new ArrayList<String>();
 
         // getSupportedAnnotations uses these for warnings
         Map<String, String> options = env.getOptions();
@@ -169,7 +173,9 @@ public class StubParser {
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
             stubWarnIfNotFound(
-                    "No supported annotations found! This likely means your stub file doesn't import them correctly.");
+                    String.format(
+                            "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
+                            filename));
         }
         faexprcache = new HashMap<FieldAccessExpr, VariableElement>();
         nexprcache = new HashMap<NameExpr, VariableElement>();
