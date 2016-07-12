@@ -1,7 +1,7 @@
 import org.checkerframework.checker.tainting.qual.*;
 
 // Test primary annotations with strings.
-class Simple {
+class SimplePrimary {
 
     void execute(@Untainted String s) {}
 

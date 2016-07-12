@@ -3,21 +3,21 @@ import org.checkerframework.checker.tainting.qual.*;
 
 // Type variables and post-as-member-of
 @ClassTaintingParam("Main")
-class List<T> {
+class PtvpList<T> {
     // (T + MAIN) head
     @Var(arg = "Main") T head;
-    // List<T><<MAIN>>
-    @Var(arg = "Main") List<T> tail;
+    // PtvpList<T><<MAIN>>
+    @Var(arg = "Main") PtvpList<T> tail;
 }
 
-abstract class Test {
-    abstract @Tainted(param = "Main") List<@Tainted Integer> makeTT();
+abstract class ParamTypeVarsPrimar {
+    abstract @Tainted(param = "Main") PtvpList<@Tainted Integer> makeTT();
 
-    abstract @Untainted(param = "Main") List<@Tainted Integer> makeUT();
+    abstract @Untainted(param = "Main") PtvpList<@Tainted Integer> makeUT();
 
-    abstract @Tainted(param = "Main") List<@Untainted Integer> makeTU();
+    abstract @Tainted(param = "Main") PtvpList<@Untainted Integer> makeTU();
 
-    abstract @Untainted(param = "Main") List<@Untainted Integer> makeUU();
+    abstract @Untainted(param = "Main") PtvpList<@Untainted Integer> makeUU();
 
     abstract void takeT(@Tainted Integer x);
 

@@ -51,9 +51,9 @@ class Test {
     */
 
     class Test4<CONTENT extends @Nullable Object> {
-        private Pair<CONTENT, CONTENT> userObject;
+        private MyPair<CONTENT, CONTENT> userObject;
 
-        Test4(Pair<CONTENT, CONTENT> p) {
+        Test4(MyPair<CONTENT, CONTENT> p) {
             userObject = p;
         }
 
@@ -62,11 +62,11 @@ class Test {
             return userObject.a;
         }
 
-        public class Pair<T1 extends @Nullable Object, T2 extends @Nullable Object> {
+        public class MyPair<T1 extends @Nullable Object, T2 extends @Nullable Object> {
             public T1 a;
             public T2 b;
 
-            public Pair(T1 a, T2 b) {
+            public MyPair(T1 a, T2 b) {
                 this.a = a;
                 this.b = b;
             }

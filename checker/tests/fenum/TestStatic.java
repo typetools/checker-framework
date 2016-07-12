@@ -11,7 +11,7 @@ public class TestStatic {
     public static final @Fenum("B") int BCONST3 = 6;
 }
 
-class FenumUser {
+class FenumUserTestStatic {
     @Fenum("A") int state1 = TestStatic.ACONST1;
 
     //:: error: (assignment.type.incompatible)

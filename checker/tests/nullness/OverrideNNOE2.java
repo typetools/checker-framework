@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 
-class OverrideNNOE {
+class OverrideNNOE2 {
     static class Super {
         @Nullable Object f;
 

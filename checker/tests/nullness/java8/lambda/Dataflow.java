@@ -5,7 +5,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 class Dataflow {
     void context() {
-        Function<@Nullable Object, Object> o =
+        FunctionDF<@Nullable Object, Object> o =
                 a -> {
                     //:: error: (dereference.of.nullable)
                     a.toString();
@@ -16,6 +16,6 @@ class Dataflow {
     }
 }
 
-interface Function<T extends @Nullable Object, R> {
+interface FunctionDF<T extends @Nullable Object, R> {
     R apply(T t);
 }

@@ -4,26 +4,28 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 // Test method qual parameters
 @ClassRegexParam("Main")
-class A {}
+class ParamSimpleMethodA {}
 
-abstract class Test {
+abstract class ParamSimpleMethod {
     @MethodRegexParam("Main")
     static void test(
-            @Var(arg = "Main", param = "Main") A i, @Var(arg = "Main", param = "Main") A j) {}
+            @Var(arg = "Main", param = "Main") ParamSimpleMethodA i,
+            @Var(arg = "Main", param = "Main") ParamSimpleMethodA j) {}
 
     @MethodRegexParam("Main")
-    @Var(arg = "main", param = "Main") A test2(@Var(arg = "Main", param = "Main") A in, A other) {
+    @Var(arg = "main", param = "Main") ParamSimpleMethodA test2(
+            @Var(arg = "Main", param = "Main") ParamSimpleMethodA in, ParamSimpleMethodA other) {
         //:: error: (return.type.incompatible)
         return makeTainted();
     }
 
-    abstract @Regex(param = "Main") A makeTainted();
+    abstract @Regex(param = "Main") ParamSimpleMethodA makeTainted();
 
-    abstract @Regex(value = 1, param = "Main") A makeUntainted();
+    abstract @Regex(value = 1, param = "Main") ParamSimpleMethodA makeUntainted();
 
-    abstract void takeTainted(@Regex(param = "Main") A o);
+    abstract void takeTainted(@Regex(param = "Main") ParamSimpleMethodA o);
 
-    abstract void takeUntainted(@Regex(value = 1, param = "Main") A o);
+    abstract void takeUntainted(@Regex(value = 1, param = "Main") ParamSimpleMethodA o);
 
     void test() {
         test(makeTainted(), makeTainted());

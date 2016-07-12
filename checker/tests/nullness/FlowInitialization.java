@@ -48,7 +48,7 @@ public class FlowInitialization {
     }
 }
 
-class Primitives {
+class FlowPrimitives {
     boolean b;
     int t;
     char c;

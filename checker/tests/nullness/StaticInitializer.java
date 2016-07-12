@@ -3,7 +3,7 @@ import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.*;
 
-class Initializer {
+class StaticInitializer {
 
     public static String a;
     public static String b;
@@ -13,20 +13,20 @@ class Initializer {
         a = "";
     }
 
-    public Initializer() {}
+    public StaticInitializer() {}
 }
 
 //:: error: (initialization.fields.uninitialized)
-class Initializer2 {
+class StaticInitializer2 {
     public static String a;
     public static String b;
 }
 
-class Initializer3 {
+class StaticInitializer3 {
     public static String a = "";
 }
 
-class Initializer4 {
+class StaticInitializer4 {
     public static String a = "";
     public static String b;
 

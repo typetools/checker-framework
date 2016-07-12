@@ -1,17 +1,20 @@
 import org.checkerframework.checker.tainting.qual.*;
 
 @ClassTaintingParam("param1")
-class A {}
+class SimpleA {}
 
 class Simple {
 
-    void takeUntainted(@Untainted(param = "param1") A a) {}
+    void takeUntainted(@Untainted(param = "param1") SimpleA a) {}
 
-    void takeTainted(@Tainted(param = "param1") A a) {}
+    void takeTainted(@Tainted(param = "param1") SimpleA a) {}
 
-    void takeDef(A a) {}
+    void takeDef(SimpleA a) {}
 
-    void test(@Untainted(param = "param1") A u, @Tainted(param = "param1") A t, A def) {
+    void test(
+            @Untainted(param = "param1") SimpleA u,
+            @Tainted(param = "param1") SimpleA t,
+            SimpleA def) {
 
         takeUntainted(u);
         //:: error: (argument.type.incompatible)

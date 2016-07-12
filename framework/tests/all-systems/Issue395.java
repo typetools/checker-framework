@@ -3,7 +3,7 @@
 
 import java.util.*;
 
-class Test {
+class Issue395 {
 
     Object[] testMethod() {
         return new Object[] {new ArrayList<>()};
