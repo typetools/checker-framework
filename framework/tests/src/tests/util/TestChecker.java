@@ -76,7 +76,12 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(Odd.class, MonotonicOdd.class, Even.class, Unqualified.class, Bottom.class));
+                Arrays.asList(
+                        Odd.class,
+                        MonotonicOdd.class,
+                        Even.class,
+                        Unqualified.class,
+                        Bottom.class));
     }
 
     @Override

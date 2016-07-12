@@ -56,7 +56,11 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(UnknownClass.class, ClassVal.class, ClassBound.class, ClassValBottom.class));
+                Arrays.asList(
+                        UnknownClass.class,
+                        ClassVal.class,
+                        ClassBound.class,
+                        ClassValBottom.class));
     }
 
     private AnnotationMirror createClassVal(List<String> values) {

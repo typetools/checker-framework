@@ -819,7 +819,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * @return a mutable set of the loaded, and listed annotation classes
      */
     @SafeVarargs
-    protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithoutPolyAll(Class<? extends Annotation>... explicitlyListedAnnotations) {
+    protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithoutPolyAll(
+            Class<? extends Annotation>... explicitlyListedAnnotations) {
         return loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
     }
 

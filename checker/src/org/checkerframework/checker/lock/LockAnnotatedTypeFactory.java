@@ -101,9 +101,13 @@ public class LockAnnotatedTypeFactory
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new LinkedHashSet<Class<? extends Annotation>>(
-                        Arrays.asList(LockHeld.class, LockPossiblyHeld.class,
-                                GuardedBy.class, GuardedByUnknown.class,
-                                GuardSatisfied.class, GuardedByBottom.class));
+                Arrays.asList(
+                        LockHeld.class,
+                        LockPossiblyHeld.class,
+                        GuardedBy.class,
+                        GuardedByUnknown.class,
+                        GuardSatisfied.class,
+                        GuardedByBottom.class));
     }
 
     @Override

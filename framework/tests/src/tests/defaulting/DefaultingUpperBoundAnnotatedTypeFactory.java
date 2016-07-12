@@ -22,6 +22,6 @@ public class DefaultingUpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeF
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(UB_TOP.class, UB_EXPLICIT.class, UB_IMPLICIT.class, UB_BOTTOM.class));
+                Arrays.asList(UB_TOP.class, UB_EXPLICIT.class, UB_IMPLICIT.class, UB_BOTTOM.class));
     }
 }
