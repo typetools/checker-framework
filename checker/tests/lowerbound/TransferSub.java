@@ -41,8 +41,10 @@ public class TransferSub {
 
         //:: error: (assignment.type.incompatible)
         @Positive int q = --k;
-        //:: error: (assignment.type.incompatible)
+
         @Positive int r = k--;
+        //:: error: (assignment.type.incompatible)
+        @Positive int r1 = k;
 
         @NonNegative int s = k--;
         @NonNegative int t = --k;
@@ -52,7 +54,9 @@ public class TransferSub {
 
         //:: error: (assignment.type.incompatible)
         @GTENegativeOne int w = --u;
-        //:: error: (assignment.type.incompatible)
+
         @GTENegativeOne int x = u--;
+        //:: error: (assignment.type.incompatible)
+        @GTENegativeOne int x1 = u;
     }
 }

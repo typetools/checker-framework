@@ -97,14 +97,12 @@ public class LowerBoundAnnotatedTypeFactory extends
             AnnotatedTypeMirror leftType = null;
             switch (tree.getKind()) {
             case PREFIX_INCREMENT:
-            case POSTFIX_INCREMENT:
                 if (leftType == null) {
                     leftType = getAnnotatedType(tree.getExpression());
                 }
                 incrementHelper(leftType, type);
                 break;
             case PREFIX_DECREMENT:
-            case POSTFIX_DECREMENT:
                 if (leftType == null) {
                      leftType = getAnnotatedType(tree.getExpression());
                 }
@@ -153,13 +151,13 @@ public class LowerBoundAnnotatedTypeFactory extends
                 computeTypesForPlus(left, right, type);
                 break;
             case MINUS:
-                minusHelper(left, right, type);
+                computeTypesForMinus(left, right, type);
                 break;
             case MULTIPLY:
-                timesHelper(left, right, type);
+                computeTypesForTimes(left, right, type);
                 break;
             case DIVIDE:
-                divideHelper(left, right, type);
+                computeTypesForDivide(left, right, type);
                 break;
             case REMAINDER:
                 modHelper(left, right, type);
@@ -199,7 +197,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             }
         }
 
-        /**   computeTypesForPlus handles the following cases:
+       /**   computeTypesForPlus handles the following cases:
         *       int lit + int lit -> do the math
         *       lit 0 + * -> *
         *       lit 1 + * -> call increment
@@ -228,7 +226,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
 
-            /** if the left side is a literal, commute it to the right
+            /* if the left side is a literal, commute it to the right
                 and rerun to avoid duplicating code.
                 We can do this because we already checked if both are literals.
             */
@@ -242,13 +240,13 @@ public class LowerBoundAnnotatedTypeFactory extends
 
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
 
-            /** handle the case where one of the two is an interesting literal. */
+            // handle the case where one of the two is an interesting literal.
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
                 computeTypesForLiteralPlus(val, leftType, type);
                 return;
             }
-            /** This section is handling the generic cases:
+            /* This section is handling the generic cases:
              pos + pos -> pos
              pos + nn -> pos
              nn + nn -> nn
@@ -280,26 +278,26 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
 
-            /** * + * -> lbu */
+            // * + * -> lbu
             type.addAnnotation(UNKNOWN);
             return;
         }
 
-        /** minusHelper handles the following cases:
-               int lit - int lit -> do the math
-               * - lit 0 -> *
-               * - lit 1 -> call decrement
-               * - lit -1 -> call increment
-               pos - lit 2 -> gten1
-               gten1, nn, pos - lit <= -2 -> pos
-               * - * -> lbu
-         */
-        public void minusHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
+        /** computeTypesForMinus handles the following cases:
+          *     int lit - int lit -> do the math
+          *     * - lit 0 -> *
+          *     * - lit 1 -> call decrement
+          *     * - lit -1 -> call increment
+          *     pos - lit 2 -> gten1
+          *     gten1, nn, pos - lit <= -2 -> pos
+          *     * - * -> lbu
+          */
+        public void computeTypesForMinus(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
 
-            /** if both left and right are literals, do the math...*/
+            // if both left and right are literals, do the math...
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
                rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int valLeft = (int)((LiteralTree)leftExpr).getValue();
@@ -309,7 +307,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
 
-            /** special handling for literals on the right */
+            // special handling for literals on the right
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
                 if (val == 2) {
@@ -338,27 +336,27 @@ public class LowerBoundAnnotatedTypeFactory extends
                 }
             }
 
-            /** we can't say anything about generic things that are being subtracted, sadly */
+            // we can't say anything about generic things that are being subtracted, sadly
             type.addAnnotation(UNKNOWN);
             return;
         }
 
         /**
-             timesHelper handles the following cases:
-               int lit * int lit -> do the math
-               * * lit 0 -> nn (=0)
-               * * lit 1 -> *
-               pos * pos -> pos
-               pos * nn -> nn
-               nn * nn -> nn
-               * * * -> lbu
+         *      computeTypesForTimes handles the following cases:
+         *        int lit * int lit -> do the math
+         *        * * lit 0 -> nn (=0)
+         *        * * lit 1 -> *
+         *        pos * pos -> pos
+         *        pos * nn -> nn
+         *        nn * nn -> nn
+         *        * * * -> lbu
          */
-        public void timesHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
+        public void computeTypesForTimes(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
 
-            /** if both left and right are literals, do the math...*/
+            // if both left and right are literals, do the math...
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
                rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int valLeft = (int)((LiteralTree)leftExpr).getValue();
@@ -368,16 +366,16 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
 
-            /** because we already handle literals on the right, commute those on the left */
+            // because we already handle literals on the right, commute those on the left
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)leftExpr).getValue();
                 if (val == 0 || val == 1) {
-                    timesHelper(rightExpr, leftExpr, type);
+                    computeTypesForTimes(rightExpr, leftExpr, type);
                     return;
                 }
             }
 
-            /** special handling for literals */
+            // special handling for literals
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
                 if (val == 0) {
@@ -389,7 +387,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 }
             }
 
-            /** this section handles generic annotations
+            /* this section handles generic annotations
                 pos * pos -> pos
                 nn * pos -> nn
                 nn * nn -> nn
@@ -410,24 +408,24 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /**
-               int lit / int lit -> do the math
-               lit 0 / * -> nn
-               * / lit 1 -> *
-               pos / pos -> nn
-               nn / pos -> nn
-               pos / nn -> nn
-               nn / nn -> nn
-               pos / gten1 -> gten1
-               nn / gten1 -> gten1
-               gten1 / gten1 -> nn
-               * / * -> lbu
+         *      int lit / int lit -> do the math
+         *      lit 0 / * -> nn
+         *      * / lit 1 -> *
+         *      pos / pos -> nn
+         *      nn / pos -> nn
+         *      pos / nn -> nn
+         *      nn / nn -> nn
+         *      pos / gten1 -> gten1
+         *      nn / gten1 -> gten1
+         *      gten1 / gten1 -> nn
+         *      * / * -> lbu
          */
-        public void divideHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
+        public void computeTypesForDivide(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
 
-            /** if both left and right are literals, do the math...*/
+            // if both left and right are literals, do the math...
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
                rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int valLeft = (int)((LiteralTree)leftExpr).getValue();
@@ -437,7 +435,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
 
-            /** handle dividing zero by anything */
+            // handle dividing zero by anything
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)leftExpr).getValue();
                 if (val == 0) {
@@ -446,7 +444,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 }
             }
 
-            /** handle dividing by one. We assume that you aren't dividing by literal zero... */
+            // handle dividing by one. We assume that you aren't dividing by literal zero...
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
                 if (val == 1) {
@@ -455,7 +453,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 }
             }
 
-            /** this section handles generic annotations
+            /* this section handles generic annotations
                pos / pos -> nn
                nn / pos -> nn
                pos / nn -> nn
@@ -484,23 +482,24 @@ public class LowerBoundAnnotatedTypeFactory extends
                 type.addAnnotation(GTEN1);
                 return;
             }
-            /** we don't know anything about other stuff. */
+            // we don't know anything about other stuff.
             type.addAnnotation(UNKNOWN);
             return;
         }
+
         /**
-           int lit % int lit -> do the math
-           * % 1/-1 -> nn
-           pos/nn % * -> nn
-           gten1 % * -> gten1
-           * % * -> lbu
+         *  int lit % int lit -> do the math
+         *  * % 1/-1 -> nn
+         *  pos/nn % * -> nn
+         *  gten1 % * -> gten1
+         *  * % * -> lbu
          */
         public void modHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
 
-            /** if both left and right are literals, do the math...*/
+            // if both left and right are literals, do the math...
             if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
                rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int valLeft = (int)((LiteralTree)leftExpr).getValue();
@@ -510,7 +509,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
 
-            /** handle modding by one/negative one. */
+            // handle modding by one/negative one.
             if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int)((LiteralTree)rightExpr).getValue();
                 if (val == 1 || val == -1) {
@@ -519,7 +518,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 }
             }
 
-            /** this section handles generic annotations
+            /* this section handles generic annotations
                 pos/nn % * -> nn
                 gten1 % * -> gten1
              */
@@ -532,7 +531,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
 
-            /** we don't know anything about other stuff. */
+            // we don't know anything about other stuff.
             type.addAnnotation(UNKNOWN);
             return;
         }
