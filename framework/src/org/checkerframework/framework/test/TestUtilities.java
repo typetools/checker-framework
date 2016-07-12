@@ -85,7 +85,8 @@ public class TestUtilities {
      */
     public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
         if (!directory.exists()) {
-            throw new IllegalArgumentException("directory does not exist: " + directory);
+            throw new IllegalArgumentException(
+                    "directory does not exist: " + directory + " " + directory.getAbsolutePath());
         }
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("found file instead of directory: " + directory);

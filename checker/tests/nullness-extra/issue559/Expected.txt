@@ -1,9 +1,8 @@
-warning: StubParser: No supported annotations found! This likely means your stub file doesn't import them correctly.
-warning: StubParser: in file myjdk.astub at line 5 ignored existing annotations on type: T extends @Initialized @Nullable Object
+warning: StubParser: in file myjdk.astub at line 6 ignored existing annotations on type: T[ extends @Initialized @Nullable Object super @Initialized @Nullable Void]
 Issue559.java:10: error: [argument.type.incompatible] incompatible types in argument.
         o.orElse(null);
                  ^
   found   : null
   required: @Initialized @NonNull String
 1 error
-2 warnings
+1 warning

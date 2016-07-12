@@ -21,16 +21,16 @@ compile-for-test:
 
 # test case for using externally defined qualifiers by explicitly naming them using the -Aquals option
 named-quals-test:
-	-$(JAVAC) -classpath $(PROJECTDIR) -AprintErrorStack -processor org.checkerframework.checker.fenum.FenumChecker -Aquals=qual.MyFenum Demo.java > Out.txt 2>&1
+	$(JAVAC) -classpath $(PROJECTDIR) -AprintErrorStack -processor org.checkerframework.checker.fenum.FenumChecker -Aquals=qual.MyFenum Demo.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt
-	-rm Out.txt
+	rm -f Out.txt
 
 # test case for using externally defined qualifiers by loading them from a directory using the -AqualDirs option
 qual-folder-test:
-	-$(JAVAC) -classpath $(PROJECTDIR) -AprintErrorStack -processor org.checkerframework.checker.fenum.FenumChecker -AqualDirs=$(PROJECTDIR) Demo.java > Out.txt 2>&1
+	$(JAVAC) -classpath $(PROJECTDIR) -AprintErrorStack -processor org.checkerframework.checker.fenum.FenumChecker -AqualDirs=$(PROJECTDIR) Demo.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt
-	-rm Out.txt
+	rm -f Out.txt
 
 # test clean up
 clean:
-	-rm qual/*.class
+	rm -f qual/*.class
