@@ -4,8 +4,9 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 // Test primary annotations with strings.
 class Simple {
 
-    void execute(@Regex(1) String s) { }
-    void tainted(String s) { }
+    void execute(@Regex(1) String s) {}
+
+    void tainted(String s) {}
 
     void stringLiteral() {
         execute("(ldskjfldj)");
@@ -14,7 +15,7 @@ class Simple {
 
     void stringRef(String ref) {
         //:: error: (argument.type.incompatible)
-        execute(ref);   // error
+        execute(ref); // error
         tainted(ref);
     }
 
@@ -28,14 +29,14 @@ class Simple {
         execute(s1 += s1);
         execute(s1 + "m");
         //:: error: (argument.type.incompatible)
-        execute(s1 + s2);   // error
+        execute(s1 + s2); // error
 
         //:: error: (argument.type.incompatible)
-        execute(s2 + s1);   // error
+        execute(s2 + s1); // error
         //:: error: (argument.type.incompatible)
-        execute(s2 + "m");  // error
+        execute(s2 + "m"); // error
         //:: error: (argument.type.incompatible)
-        execute(s2 + s2);   // error
+        execute(s2 + s2); // error
 
         tainted(s1 + s1);
         tainted(s1 + "m");
@@ -44,6 +45,5 @@ class Simple {
         tainted(s2 + s1);
         tainted(s2 + "m");
         tainted(s2 + s2);
-
     }
 }

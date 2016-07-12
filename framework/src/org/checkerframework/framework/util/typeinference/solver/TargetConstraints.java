@@ -1,12 +1,11 @@
 package org.checkerframework.framework.util.typeinference.solver;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeVariable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * TargetConstraints represents the set of all TUConstraints for which target was the type parameter,

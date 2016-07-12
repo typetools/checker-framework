@@ -7,7 +7,10 @@ abstract class Issue295 {
 
     static class Box<T> {
         T value;
-        Box(T value) { this.value = value; }
+
+        Box(T value) {
+            this.value = value;
+        }
     }
 
     abstract <MTL> MTL load(Factory<MTL> p);

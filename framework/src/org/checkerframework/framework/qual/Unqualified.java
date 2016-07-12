@@ -23,4 +23,4 @@ import java.lang.annotation.Target;
 @InvisibleQualifier
 @SubtypeOf({})
 @Target({}) // empty target prevents programmers from writing this in a program
-public @interface Unqualified { }
+public @interface Unqualified {}

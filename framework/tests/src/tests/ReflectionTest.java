@@ -5,7 +5,6 @@ import java.lang.Override;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -22,8 +21,8 @@ public class ReflectionTest extends CheckerFrameworkTest {
     }
 
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"reflection"};
+    public static String[] getTestDirs() {
+        return new String[] {"reflection"};
     }
 
     @Override

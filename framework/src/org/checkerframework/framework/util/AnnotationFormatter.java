@@ -1,9 +1,8 @@
 package org.checkerframework.framework.util;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-
-import javax.lang.model.element.AnnotationMirror;
 import java.util.Collection;
+import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.dataflow.qual.SideEffectFree;
 
 /**
  * Converts AnnotationMirrors to Strings
@@ -20,7 +19,8 @@ public interface AnnotationFormatter {
      * @return a string representation of annos
      */
     @SideEffectFree
-    public String formatAnnotationString(Collection<? extends AnnotationMirror> annos, boolean printInvisible);
+    public String formatAnnotationString(
+            Collection<? extends AnnotationMirror> annos, boolean printInvisible);
 
     /**
      * Converts an individual annotation mirror into a String

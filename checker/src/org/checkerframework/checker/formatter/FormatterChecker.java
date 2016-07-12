@@ -10,5 +10,4 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
  * @checker_framework.manual #formatter-checker Format String Checker
  * @author Konstantin Weitz
  */
-public class FormatterChecker extends BaseTypeChecker {
-}
+public class FormatterChecker extends BaseTypeChecker {}

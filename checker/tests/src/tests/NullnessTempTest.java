@@ -1,10 +1,8 @@
 package tests;
 
+import java.io.File;
 import org.checkerframework.checker.nullness.AbstractNullnessChecker;
 import org.checkerframework.framework.test.CheckerFrameworkTest;
-
-import java.io.File;
-
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -15,7 +13,8 @@ public class NullnessTempTest extends CheckerFrameworkTest {
     public NullnessTempTest(File testFile) {
         // TODO: remove forbidnonnullarraycomponents option once it's no
         // longer needed.  See issues 154, 322, and 433.
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext",
@@ -25,7 +24,6 @@ public class NullnessTempTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"nullness-temp"};
+        return new String[] {"nullness-temp"};
     }
-
 }

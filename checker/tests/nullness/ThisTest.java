@@ -1,6 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
-@org.checkerframework.framework.qual.DefaultQualifier(org.checkerframework.checker.nullness.qual.NonNull.class)
+@org.checkerframework.framework.qual.DefaultQualifier(
+        org.checkerframework.checker.nullness.qual.NonNull.class)
 class ThisTest {
 
     public String field;
@@ -9,8 +10,7 @@ class ThisTest {
         this.field = field;
     }
 
-    void doNothing() {
-    }
+    void doNothing() {}
 
     class InnerClass {
         public void accessOuterThis() {
@@ -18,5 +18,4 @@ class ThisTest {
             String s = ThisTest.this.field;
         }
     }
-
 }

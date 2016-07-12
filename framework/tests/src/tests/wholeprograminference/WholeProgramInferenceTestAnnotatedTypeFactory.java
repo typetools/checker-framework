@@ -6,9 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.reflection.qual.UnknownClass;
@@ -21,15 +19,14 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-
 import tests.wholeprograminference.qual.DefaultType;
 import tests.wholeprograminference.qual.ImplicitAnno;
 import tests.wholeprograminference.qual.Parent;
 import tests.wholeprograminference.qual.Sibling1;
 import tests.wholeprograminference.qual.Sibling2;
 import tests.wholeprograminference.qual.SiblingWithFields;
-import tests.wholeprograminference.qual.WholeProgramInferenceBottom;
 import tests.wholeprograminference.qual.Top;
+import tests.wholeprograminference.qual.WholeProgramInferenceBottom;
 
 /**
  * AnnotatedTypeFactory to test whole-program inference using .jaif
@@ -42,10 +39,10 @@ import tests.wholeprograminference.qual.Top;
  */
 public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror PARENT = new AnnotationBuilder(
-            processingEnv, Parent.class).build();
-    private final AnnotationMirror BOTTOM = new AnnotationBuilder(
-            processingEnv, WholeProgramInferenceBottom.class).build();
+    private final AnnotationMirror PARENT =
+            new AnnotationBuilder(processingEnv, Parent.class).build();
+    private final AnnotationMirror BOTTOM =
+            new AnnotationBuilder(processingEnv, WholeProgramInferenceBottom.class).build();
 
     public WholeProgramInferenceTestAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -60,17 +57,14 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
                     Sibling2.class, WholeProgramInferenceBottom.class,
                     SiblingWithFields.class, ImplicitAnno.class));
     }
+
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(
-                this);
-        implicitsTreeAnnotator.addTreeKind(
-                com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
-        implicitsTreeAnnotator.addTreeKind(
-                com.sun.source.tree.Tree.Kind.INT_LITERAL, BOTTOM);
+        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
+        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.NULL_LITERAL, BOTTOM);
+        implicitsTreeAnnotator.addTreeKind(com.sun.source.tree.Tree.Kind.INT_LITERAL, BOTTOM);
 
-        return new ListTreeAnnotator(new PropagationTreeAnnotator(this),
-                implicitsTreeAnnotator);
+        return new ListTreeAnnotator(new PropagationTreeAnnotator(this), implicitsTreeAnnotator);
     }
 
     @Override
@@ -84,8 +78,8 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
      * @author pbsf
      *
      */
-    protected class WholeProgramInferenceTestQualifierHierarchy extends
-                MultiGraphQualifierHierarchy {
+    protected class WholeProgramInferenceTestQualifierHierarchy
+            extends MultiGraphQualifierHierarchy {
 
         public WholeProgramInferenceTestQualifierHierarchy(MultiGraphFactory f) {
             super(f);
@@ -97,33 +91,33 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
         }
 
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1,
-                AnnotationMirror a2) {
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
             if ((AnnotationUtils.areSameByClass(a1, Sibling1.class)
-                 && AnnotationUtils.areSameByClass(a2, Sibling2.class))
-                || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
-                 && AnnotationUtils.areSameByClass(a2, Sibling1.class))
-                || (AnnotationUtils.areSameByClass(a1, Sibling1.class)
-                 && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))
-                || (AnnotationUtils.areSameByClass(a1, SiblingWithFields.class)
-                 && AnnotationUtils.areSameByClass(a2, Sibling2.class))
-                || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
-                 && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))) {
+                            && AnnotationUtils.areSameByClass(a2, Sibling2.class))
+                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
+                            && AnnotationUtils.areSameByClass(a2, Sibling1.class))
+                    || (AnnotationUtils.areSameByClass(a1, Sibling1.class)
+                            && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))
+                    || (AnnotationUtils.areSameByClass(a1, SiblingWithFields.class)
+                            && AnnotationUtils.areSameByClass(a2, Sibling2.class))
+                    || (AnnotationUtils.areSameByClass(a1, Sibling2.class)
+                            && AnnotationUtils.areSameByClass(a2, SiblingWithFields.class))) {
                 return PARENT;
             }
             return super.leastUpperBound(a1, a2);
         }
+
         @Override
         public boolean isSubtype(AnnotationMirror sub, AnnotationMirror sup) {
             if (AnnotationUtils.areSame(sub, sup)
-                || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
-                || AnnotationUtils.areSameByClass(sub, WholeProgramInferenceBottom.class)
-                || AnnotationUtils.areSameByClass(sup, Top.class)) {
+                    || AnnotationUtils.areSameByClass(sup, UnknownClass.class)
+                    || AnnotationUtils.areSameByClass(sub, WholeProgramInferenceBottom.class)
+                    || AnnotationUtils.areSameByClass(sup, Top.class)) {
                 return true;
             }
 
             if (AnnotationUtils.areSameByClass(sub, UnknownClass.class)
-                || AnnotationUtils.areSameByClass(sup, WholeProgramInferenceBottom.class)) {
+                    || AnnotationUtils.areSameByClass(sup, WholeProgramInferenceBottom.class)) {
                 return false;
             }
 
@@ -132,43 +126,40 @@ public class WholeProgramInferenceTestAnnotatedTypeFactory extends BaseAnnotated
             }
 
             if (AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                && (AnnotationUtils.areSameByClass(sup, Sibling1.class)
-                    || AnnotationUtils.areSameByClass(sup, Sibling2.class)
-                    || AnnotationUtils.areSameByClass(sup, SiblingWithFields.class))) {
+                    && (AnnotationUtils.areSameByClass(sup, Sibling1.class)
+                            || AnnotationUtils.areSameByClass(sup, Sibling2.class)
+                            || AnnotationUtils.areSameByClass(sup, SiblingWithFields.class))) {
                 return true;
             }
 
             if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
-                 || AnnotationUtils.areSameByClass(sub, Sibling2.class)
-                 || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                 || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
-                && AnnotationUtils.areSameByClass(sup, Parent.class)) {
+                            || AnnotationUtils.areSameByClass(sub, Sibling2.class)
+                            || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
+                            || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class))
+                    && AnnotationUtils.areSameByClass(sup, Parent.class)) {
                 return true;
             }
 
             if ((AnnotationUtils.areSameByClass(sub, Sibling1.class)
-                 || AnnotationUtils.areSameByClass(sub, Sibling2.class)
-                 || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
-                 || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
-                 || AnnotationUtils.areSameByClass(sub, Parent.class))
-                && AnnotationUtils.areSameByClass(sup, DefaultType.class)) {
+                            || AnnotationUtils.areSameByClass(sub, Sibling2.class)
+                            || AnnotationUtils.areSameByClass(sub, ImplicitAnno.class)
+                            || AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
+                            || AnnotationUtils.areSameByClass(sub, Parent.class))
+                    && AnnotationUtils.areSameByClass(sup, DefaultType.class)) {
                 return true;
             }
 
             if (AnnotationUtils.areSameByClass(sub, SiblingWithFields.class)
-                && AnnotationUtils.areSameByClass(sup, SiblingWithFields.class)) {
-                List<String> subVal1 = AnnotationUtils.getElementValueArray(sub,
-                        "value", String.class, true);
-                List<String> supVal1 = AnnotationUtils.getElementValueArray(sup,
-                        "value", String.class, true);
-                String subVal2 = AnnotationUtils.getElementValue(sub, "value2",
-                        String.class, true);
-                String supVal2 = AnnotationUtils.getElementValue(sup, "value2",
-                        String.class, true);
+                    && AnnotationUtils.areSameByClass(sup, SiblingWithFields.class)) {
+                List<String> subVal1 =
+                        AnnotationUtils.getElementValueArray(sub, "value", String.class, true);
+                List<String> supVal1 =
+                        AnnotationUtils.getElementValueArray(sup, "value", String.class, true);
+                String subVal2 = AnnotationUtils.getElementValue(sub, "value2", String.class, true);
+                String supVal2 = AnnotationUtils.getElementValue(sup, "value2", String.class, true);
                 return subVal1.equals(supVal1) && subVal2.equals(supVal2);
             }
             return false;
         }
     }
-
 }

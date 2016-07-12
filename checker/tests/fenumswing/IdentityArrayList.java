@@ -1,9 +1,9 @@
 import java.util.Arrays;
 
 /*
-* This test case violates an assertion in the compiler.
-* It does not depend on the Fenum Checker, it breaks for any checker.
-*/
+ * This test case violates an assertion in the compiler.
+ * It does not depend on the Fenum Checker, it breaks for any checker.
+ */
 public class IdentityArrayList {
     public <T> T[] toArray(T[] a) {
         // Warnings only with -Alint=cast:strict.
@@ -19,11 +19,11 @@ public class IdentityArrayList {
         return (T[]) myCopyOf(null, 0, a.getClass());
     }
 
-    public static <T,U> T[] myCopyOf(U[] original, int newLength, Class<? extends T[]> newType) {
+    public static <T, U> T[] myCopyOf(U[] original, int newLength, Class<? extends T[]> newType) {
         return null;
     }
 
-    public static <T,U> T[] wc(U[] original, int newLength, java.util.List<? extends T[]> arr) {
+    public static <T, U> T[] wc(U[] original, int newLength, java.util.List<? extends T[]> arr) {
         return null;
     }
 }

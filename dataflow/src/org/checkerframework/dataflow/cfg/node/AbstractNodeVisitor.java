@@ -1,6 +1,5 @@
 package org.checkerframework.dataflow.cfg.node;
 
-
 /**
  * A default implementation of the node visitor interface. The class introduces
  * several 'summary' methods, that can be overridden to change the behavior of
@@ -168,8 +167,7 @@ public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
     // Compound assignments
     @Override
-    public R visitStringConcatenateAssignment(
-           StringConcatenateAssignmentNode n, P p) {
+    public R visitStringConcatenateAssignment(StringConcatenateAssignmentNode n, P p) {
         return visitNode(n, p);
     }
 

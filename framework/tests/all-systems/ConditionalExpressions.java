@@ -21,7 +21,8 @@ public class ConditionalExpressions {
             Number o3 = flag ? tExtendsNumber : sExtendsInteger;
         }
 
-        <T extends Number, S extends CharSequence> void foo4(T tExtendsNumber, S sExtendsCharSequence) {
+        <T extends Number, S extends CharSequence> void foo4(
+                T tExtendsNumber, S sExtendsCharSequence) {
             Object o2 = flag ? tExtendsNumber : sExtendsCharSequence;
         }
 

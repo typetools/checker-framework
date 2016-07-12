@@ -1,4 +1,5 @@
 import org.checkerframework.common.aliasing.qual.Unique;
+
 class ThrowTest {
 
     void foo() throws Exception {

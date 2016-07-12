@@ -1,16 +1,13 @@
 package tests.supportedquals;
 
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
-
-
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import tests.supportedquals.qual.BottomQualifier;
 import tests.supportedquals.qual.Qualifier;
 
@@ -35,6 +32,7 @@ public class SupportedQualsChecker extends BaseTypeChecker {
             super(checker);
             postInit();
         }
+
         @Override
         protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
             return new HashSet<Class<? extends Annotation>>(Arrays.asList(Qualifier.class,

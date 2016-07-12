@@ -2,10 +2,9 @@ package tests.wholeprograminference.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * Toy type system for testing field inference.

@@ -1,7 +1,6 @@
 package tests;
 
 import java.io.File;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -22,7 +21,6 @@ public class NullnessStubfileTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"nullness-stubfile"};
+        return new String[] {"nullness-stubfile"};
     }
-
 }

@@ -1,7 +1,6 @@
 package tests;
 
 import java.io.File;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -18,13 +17,16 @@ import org.junit.runners.Parameterized.Parameters;
 public class ValueTest extends CheckerFrameworkTest {
 
     public ValueTest(File testFile) {
-        super(testFile, org.checkerframework.common.value.ValueChecker.class,
-                "value", "-Anomsgtext", "-Astubs=statically-executable.astub");
+        super(
+                testFile,
+                org.checkerframework.common.value.ValueChecker.class,
+                "value",
+                "-Anomsgtext",
+                "-Astubs=statically-executable.astub");
     }
 
-
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[] { "value", "all-systems" };
+    public static String[] getTestDirs() {
+        return new String[] {"value", "all-systems"};
     }
 }

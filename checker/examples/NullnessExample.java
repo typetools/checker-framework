@@ -1,5 +1,5 @@
-import org.checkerframework.checker.nullness.qual.*;
 import java.util.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 /**
  * This class illustrates use of nullness type annotations.
@@ -14,30 +14,27 @@ import java.util.*;
  */
 public class NullnessExample {
 
-  public void example() {
+    public void example() {
 
-    // In general, you do not have to annotate local variables, because the
-    // Nullness Checker infers such annotations.  It is written here in the
-    // example for emhpasis.
-    @NonNull String foo = "foo";
-    @NonNull String bar = "bar";
+        // In general, you do not have to annotate local variables, because the
+        // Nullness Checker infers such annotations.  It is written here in the
+        // example for emhpasis.
+        @NonNull String foo = "foo";
+        @NonNull String bar = "bar";
 
-    foo = bar;
-    bar = foo;
+        foo = bar;
+        bar = foo;
+    }
 
-  }
+    public @NonNull String exampleGenerics() {
 
-  public @NonNull String exampleGenerics() {
+        List</*@NonNull*/ String> foo = new LinkedList</*@NonNull*/ String>();
+        List</*@NonNull*/ String> bar = foo;
 
-    List</*@NonNull*/ String> foo = new LinkedList</*@NonNull*/ String>();
-    List</*@NonNull*/ String> bar = foo;
-
-    @NonNull String quux = "quux";
-    foo.add(quux);
-    foo.add("quux");
-    @NonNull String baz = foo.get(0);
-    return baz;
-
-  }
-
+        @NonNull String quux = "quux";
+        foo.add(quux);
+        foo.add("quux");
+        @NonNull String baz = foo.get(0);
+        return baz;
+    }
 }

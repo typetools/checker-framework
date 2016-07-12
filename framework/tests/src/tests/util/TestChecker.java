@@ -1,14 +1,13 @@
 package tests.util;
 
+import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -24,8 +23,6 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-
-import com.sun.source.tree.Tree;
 
 /**
  * A simple checker used for testing the Checker Framework. It treats the
@@ -54,8 +51,8 @@ class TestVisitor extends BaseTypeVisitor<TestAnnotatedTypeFactory> {
     }
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType type,
-            AnnotatedDeclaredType useType, Tree tree) {
+    public boolean isValidUse(
+            AnnotatedDeclaredType type, AnnotatedDeclaredType useType, Tree tree) {
         // TODO: super would result in error, b/c of
         // default on classes.
         return true;

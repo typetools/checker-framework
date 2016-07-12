@@ -1,13 +1,12 @@
 package org.checkerframework.framework.util;
 
-import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.InvisibleQualifier;
-import org.checkerframework.javacutil.ErrorReporter;
-
-import javax.lang.model.element.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.*;
+import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.InvisibleQualifier;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * A utility for converting AnnotationMirrors to Strings.
@@ -20,7 +19,9 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
      * @return true if anno's declaration was qualified by InvisibleQualifier
      */
     public static boolean isInvisibleQualified(AnnotationMirror anno) {
-        return ((TypeElement)anno.getAnnotationType().asElement()).getAnnotation(InvisibleQualifier.class) != null;
+        return ((TypeElement) anno.getAnnotationType().asElement())
+                        .getAnnotation(InvisibleQualifier.class)
+                != null;
     }
 
     /**
@@ -31,11 +32,13 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
      * @return the list of annotations converted to a String
      */
     @SideEffectFree
-    public String formatAnnotationString(Collection<? extends AnnotationMirror> annos, boolean printInvisible) {
+    public String formatAnnotationString(
+            Collection<? extends AnnotationMirror> annos, boolean printInvisible) {
         StringBuilder sb = new StringBuilder();
         for (AnnotationMirror obj : annos) {
             if (obj == null) {
-                ErrorReporter.errorAbort("AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
+                ErrorReporter.errorAbort(
+                        "AnnotatedTypeMirror.formatAnnotationString: found null AnnotationMirror!");
             }
             if (isInvisibleQualified(obj) && !printInvisible) {
                 continue;
@@ -67,7 +70,8 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
             sb.append("(");
             boolean oneValue = false;
             if (args.size() == 1) {
-                Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> first = args.entrySet().iterator().next();
+                Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> first =
+                        args.entrySet().iterator().next();
                 if (first.getKey().getSimpleName().contentEquals("value")) {
                     formatAnnotationMirrorArg(first.getValue(), sb);
                     oneValue = true;
@@ -75,7 +79,8 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
             }
             if (!oneValue) {
                 boolean notfirst = false;
-                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> arg : args.entrySet()) {
+                for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> arg :
+                        args.entrySet()) {
                     if (notfirst) {
                         sb.append(", ");
                     }

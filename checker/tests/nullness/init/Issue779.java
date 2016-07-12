@@ -24,7 +24,7 @@ class B extends A {
     }
 }
 
-public class Issue779{
+public class Issue779 {
     public static void main(String[] args) {
         new B();
     }

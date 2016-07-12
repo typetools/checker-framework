@@ -3,7 +3,6 @@ package examples;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-
 public class Test {
 
     void a() {

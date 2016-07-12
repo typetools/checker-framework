@@ -4,9 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.checker.fenum.qual.Fenum;
 import org.checkerframework.checker.fenum.qual.FenumBottom;
 import org.checkerframework.checker.fenum.qual.FenumTop;
@@ -95,8 +93,8 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM) &&
-                    AnnotationUtils.areSameIgnoringValues(rhs, FENUM)) {
+            if (AnnotationUtils.areSameIgnoringValues(lhs, FENUM)
+                    && AnnotationUtils.areSameIgnoringValues(rhs, FENUM)) {
                 return AnnotationUtils.areSame(lhs, rhs);
             }
             // Ignore annotation values to ensure that annotation is in supertype map.
@@ -109,5 +107,4 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.isSubtype(rhs, lhs);
         }
     }
-
 }

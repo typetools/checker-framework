@@ -4,6 +4,16 @@ package org.checkerframework.framework.flow;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
@@ -26,18 +36,6 @@ import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 
 /**
  * A store for the checker framework analysis tracks the annotations of memory
@@ -111,8 +109,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
     /* Initialization */
     /* --------------------------------------------------------- */
 
-    public CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis,
-            boolean sequentialSemantics) {
+    public CFAbstractStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
         this.analysis = analysis;
         localVariableValues = new HashMap<>();
         thisValue = null;
@@ -169,7 +166,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *
      * @return whether the method is side-effect-free
      */
-    protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
+    protected boolean isSideEffectFree(
+            AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         return PurityUtils.isSideEffectFree(atypeFactory, method);
     }
 
@@ -196,13 +194,13 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * Furthermore, if the method is deterministic, we store its result
      * {@code val} in the store.
      */
-    public void updateForMethodCall(MethodInvocationNode n,
-            AnnotatedTypeFactory atypeFactory, V val) {
+    public void updateForMethodCall(
+            MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
         ExecutableElement method = n.getTarget().getMethod();
 
         // case 1: remove information if necessary
         if (!(analysis.checker.hasOption("assumeSideEffectFree")
-              || isSideEffectFree(atypeFactory, method))) {
+                || isSideEffectFree(atypeFactory, method))) {
             // update field values
             Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
             for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
@@ -210,24 +208,24 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 V otherVal = e.getValue();
 
                 // case 3:
-                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations = atypeFactory
-                        .getAnnotationWithMetaAnnotation(
-                                fieldAccess.getField(),
-                                MonotonicQualifier.class);
+                List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
+                        atypeFactory.getAnnotationWithMetaAnnotation(
+                                fieldAccess.getField(), MonotonicQualifier.class);
                 V newOtherVal = null;
                 for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
                     AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                    Name annotation = AnnotationUtils.getElementValueClassName(
-                            monotonicAnnotation, "value", false);
-                    AnnotationMirror target = AnnotationUtils.fromName(
-                            atypeFactory.getElementUtils(), annotation);
-                    AnnotationMirror anno = otherVal.getType()
-                            .getAnnotationInHierarchy(target);
+                    Name annotation =
+                            AnnotationUtils.getElementValueClassName(
+                                    monotonicAnnotation, "value", false);
+                    AnnotationMirror target =
+                            AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
+                    AnnotationMirror anno = otherVal.getType().getAnnotationInHierarchy(target);
                     // Make sure the 'target' annotation is present.
                     if (anno != null && AnnotationUtils.areSame(anno, target)) {
-                        newOtherVal = analysis.createSingleAnnotationValue(
-                                target, otherVal.getType().getUnderlyingType())
-                                .mostSpecific(newOtherVal, null);
+                        newOtherVal =
+                                analysis.createSingleAnnotationValue(
+                                                target, otherVal.getType().getUnderlyingType())
+                                        .mostSpecific(newOtherVal, null);
                     }
                 }
                 if (newOtherVal != null) {
@@ -254,8 +252,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         }
 
         // store information about method call if possible
-        Receiver methodCall = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), n);
+        Receiver methodCall = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n);
         replaceValue(methodCall, val);
     }
 
@@ -394,14 +391,14 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             AnnotatedTypeFactory atypeFactory = this.analysis.atypeFactory;
             List<Pair<AnnotationMirror, AnnotationMirror>> fieldAnnotations =
                     atypeFactory.getAnnotationWithMetaAnnotation(
-                            fieldAcc.getField(),
-                            MonotonicQualifier.class);
+                            fieldAcc.getField(), MonotonicQualifier.class);
             for (Pair<AnnotationMirror, AnnotationMirror> fieldAnnotation : fieldAnnotations) {
                 AnnotationMirror monotonicAnnotation = fieldAnnotation.second;
-                Name annotation = AnnotationUtils.getElementValueClassName(
-                        monotonicAnnotation, "value", false);
-                AnnotationMirror target = AnnotationUtils.fromName(
-                        atypeFactory.getElementUtils(), annotation);
+                Name annotation =
+                        AnnotationUtils.getElementValueClassName(
+                                monotonicAnnotation, "value", false);
+                AnnotationMirror target =
+                        AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
                 AnnotationMirror valueAM = value.getType().getAnnotationInHierarchy(target);
                 // Make sure the 'target' annotation is present.
                 if (valueAM != null && AnnotationUtils.areSame(valueAM, target)) {
@@ -505,8 +502,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *         information is available.
      */
     public /*@Nullable*/ V getValue(FieldAccessNode n) {
-        FlowExpressions.FieldAccess fieldAccess = FlowExpressions
-                .internalReprOfFieldAccess(analysis.getTypeFactory(), n);
+        FlowExpressions.FieldAccess fieldAccess =
+                FlowExpressions.internalReprOfFieldAccess(analysis.getTypeFactory(), n);
         return fieldValues.get(fieldAccess);
     }
 
@@ -515,8 +512,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *         information is available.
      */
     public /*@Nullable*/ V getValue(MethodInvocationNode n) {
-        Receiver method = FlowExpressions.internalReprOf(analysis.getTypeFactory(),
-                n, true);
+        Receiver method = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n, true);
         if (method == null) {
             return null;
         }
@@ -528,8 +524,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *         information is available.
      */
     public /*@Nullable*/ V getValue(ArrayAccessNode n) {
-        FlowExpressions.ArrayAccess arrayAccess = FlowExpressions
-                .internalReprOfArrayAccess(analysis.getTypeFactory(), n);
+        FlowExpressions.ArrayAccess arrayAccess =
+                FlowExpressions.internalReprOfArrayAccess(analysis.getTypeFactory(), n);
         return arrayValues.get(arrayAccess);
     }
 
@@ -538,8 +534,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * target {@code n}.
      */
     public void updateForAssignment(Node n, /*@Nullable*/ V val) {
-        Receiver receiver = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), n);
+        Receiver receiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), n);
         if (receiver instanceof ArrayAccess) {
             updateForArrayAssignment((ArrayAccess) receiver, val);
         } else if (receiver instanceof FieldAccess) {
@@ -547,8 +542,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         } else if (receiver instanceof LocalVariable) {
             updateForLocalVariableAssignment((LocalVariable) receiver, val);
         } else {
-            assert false : "Unexpected receiver of class "
-                    + receiver.getClass();
+            assert false : "Unexpected receiver of class " + receiver.getClass();
         }
     }
 
@@ -561,8 +555,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *            The abstract value of the value assigned to {@code n} (or
      *            {@code null} if the abstract value is not known).
      */
-    protected void updateForFieldAccessAssignment(FieldAccess fieldAccess,
-            /*@Nullable*/ V val) {
+    protected void updateForFieldAccessAssignment(FieldAccess fieldAccess, /*@Nullable*/ V val) {
         removeConflicting(fieldAccess, val);
         if (!fieldAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
@@ -581,8 +574,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * See {@link #removeConflicting(FlowExpressions.ArrayAccess,CFAbstractValue)}, as it is called first
      * by this method.
      */
-    protected void updateForArrayAssignment(ArrayAccess arrayAccess,
-            /*@Nullable*/ V val) {
+    protected void updateForArrayAssignment(ArrayAccess arrayAccess, /*@Nullable*/ V val) {
         removeConflicting(arrayAccess, val);
         if (!arrayAccess.containsUnknown() && val != null) {
             // Only store information about final fields (where the receiver is
@@ -601,8 +593,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *            The abstract value of the value assigned to {@code n} (or
      *            {@code null} if the abstract value is not known).
      */
-    protected void updateForLocalVariableAssignment(LocalVariable receiver,
-            /*@Nullable*/ V val) {
+    protected void updateForLocalVariableAssignment(LocalVariable receiver, /*@Nullable*/ V val) {
         removeConflicting(receiver);
         if (val != null) {
             localVariableValues.put(receiver, val);
@@ -636,21 +627,18 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *            The abstract value of the value assigned to {@code n} (or
      *            {@code null} if the abstract value is not known).
      */
-    protected void removeConflicting(FlowExpressions.FieldAccess fieldAccess,
-            /*@Nullable*/ V val) {
+    protected void removeConflicting(FlowExpressions.FieldAccess fieldAccess, /*@Nullable*/ V val) {
         Map<FlowExpressions.FieldAccess, V> newFieldValues = new HashMap<>();
         for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             V otherVal = e.getValue();
             // case 2:
-            if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this,
-                    fieldAccess)) {
+            if (otherFieldAccess.getReceiver().containsModifiableAliasOf(this, fieldAccess)) {
                 continue; // remove information completely
             }
             // case 1:
             if (fieldAccess.getField().equals(otherFieldAccess.getField())) {
-                if (canAlias(fieldAccess.getReceiver(),
-                        otherFieldAccess.getReceiver())) {
+                if (canAlias(fieldAccess.getReceiver(), otherFieldAccess.getReceiver())) {
                     if (!otherFieldAccess.isFinal()) {
                         if (val != null) {
                             V newVal = val.leastUpperBound(otherVal);
@@ -704,8 +692,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      *            The abstract value of the value assigned to {@code n} (or
      *            {@code null} if the abstract value is not known).
      */
-    protected void removeConflicting(FlowExpressions.ArrayAccess arrayAccess,
-            /*@Nullable*/ V val) {
+    protected void removeConflicting(FlowExpressions.ArrayAccess arrayAccess, /*@Nullable*/ V val) {
         Map<FlowExpressions.ArrayAccess, V> newArrayValues = new HashMap<>();
         for (Entry<FlowExpressions.ArrayAccess, V> e : arrayValues.entrySet()) {
             FlowExpressions.ArrayAccess otherArrayAccess = e.getKey();
@@ -714,8 +701,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             if (otherArrayAccess.containsModifiableAliasOf(this, arrayAccess)) {
                 continue; // remove information completely
             }
-            if (canAlias(arrayAccess.getReceiver(),
-                    otherArrayAccess.getReceiver())) {
+            if (canAlias(arrayAccess.getReceiver(), otherArrayAccess.getReceiver())) {
                 // TODO: one could be less strict here, and only raise the
                 // abstract value
                 // for all array expressions with potentially aliasing receivers
@@ -732,7 +718,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             FlowExpressions.FieldAccess otherFieldAccess = e.getKey();
             V otherVal = e.getValue();
             Receiver receiver = otherFieldAccess.getReceiver();
-            if (receiver.containsModifiableAliasOf(this, arrayAccess) && receiver.containsOfClass(ArrayAccess.class)) {
+            if (receiver.containsModifiableAliasOf(this, arrayAccess)
+                    && receiver.containsOfClass(ArrayAccess.class)) {
                 // remove information completely
                 continue;
             }
@@ -783,8 +770,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         arrayValues = newArrayValues;
 
         Map<FlowExpressions.MethodCall, V> newMethodValues = new HashMap<>();
-        for (Entry<FlowExpressions.MethodCall, V> e : methodValues
-                .entrySet()) {
+        for (Entry<FlowExpressions.MethodCall, V> e : methodValues.entrySet()) {
             FlowExpressions.MethodCall otherMethodAccess = e.getKey();
             // case 3:
             if (otherMethodAccess.containsSyntacticEqualReceiver(var)
@@ -802,8 +788,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
      * is available to determine aliasing).
      */
     @Override
-    public boolean canAlias(FlowExpressions.Receiver a,
-            FlowExpressions.Receiver b) {
+    public boolean canAlias(FlowExpressions.Receiver a, FlowExpressions.Receiver b) {
         TypeMirror tb = b.getType();
         TypeMirror ta = a.getType();
         Types types = analysis.getTypes();
@@ -874,8 +859,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
             }
         }
 
-        for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues
-                .entrySet()) {
+        for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues.entrySet()) {
             // information about fields that are only part of one store, but not
             // the other are discarded, as one store implicitly contains 'top'
             // for that field.
@@ -889,8 +873,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
             }
         }
-        for (Entry<FlowExpressions.ArrayAccess, V> e : other.arrayValues
-                .entrySet()) {
+        for (Entry<FlowExpressions.ArrayAccess, V> e : other.arrayValues.entrySet()) {
             // information about arrays that are only part of one store, but not
             // the other are discarded, as one store implicitly contains 'top'
             // for that array access.
@@ -918,8 +901,7 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 }
             }
         }
-        for (Entry<FlowExpressions.ClassName, V> e : other.classValues
-                .entrySet()) {
+        for (Entry<FlowExpressions.ClassName, V> e : other.classValues.entrySet()) {
             FlowExpressions.ClassName el = e.getKey();
             if (classValues.containsKey(el)) {
                 V otherVal = e.getValue();
@@ -948,34 +930,27 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                 return false;
             }
         }
-        for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues
-                .entrySet()) {
+        for (Entry<FlowExpressions.FieldAccess, V> e : other.fieldValues.entrySet()) {
             FlowExpressions.FieldAccess key = e.getKey();
-            if (!fieldValues.containsKey(key)
-                    || !fieldValues.get(key).equals(e.getValue())) {
+            if (!fieldValues.containsKey(key) || !fieldValues.get(key).equals(e.getValue())) {
                 return false;
             }
         }
-        for (Entry<FlowExpressions.ArrayAccess, V> e : other.arrayValues
-                .entrySet()) {
+        for (Entry<FlowExpressions.ArrayAccess, V> e : other.arrayValues.entrySet()) {
             FlowExpressions.ArrayAccess key = e.getKey();
-            if (!arrayValues.containsKey(key)
-                    || !arrayValues.get(key).equals(e.getValue())) {
+            if (!arrayValues.containsKey(key) || !arrayValues.get(key).equals(e.getValue())) {
                 return false;
             }
         }
         for (Entry<MethodCall, V> e : other.methodValues.entrySet()) {
             FlowExpressions.MethodCall key = e.getKey();
-            if (!methodValues.containsKey(key)
-                    || !methodValues.get(key).equals(e.getValue())) {
+            if (!methodValues.containsKey(key) || !methodValues.get(key).equals(e.getValue())) {
                 return false;
             }
         }
-        for (Entry<FlowExpressions.ClassName, V> e : other.classValues
-                .entrySet()) {
+        for (Entry<FlowExpressions.ClassName, V> e : other.classValues.entrySet()) {
             FlowExpressions.ClassName key = e.getKey();
-            if (!classValues.containsKey(key)
-                    || !classValues.get(key).equals(e.getValue())) {
+            if (!classValues.containsKey(key) || !classValues.get(key).equals(e.getValue())) {
                 return false;
             }
         }
@@ -1004,9 +979,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
         /* This cast is guaranteed to be safe, as long as the CFGVisualizer is created by
          * CFGVisualizer<Value, Store, TransferFunction> createCFGVisualizer() of GenericAnnotatedTypeFactory */
         @SuppressWarnings("unchecked")
-        CFGVisualizer<V, S, ?> casted_viz = (CFGVisualizer<V, S, ?> ) viz;
-        casted_viz.visualizeStoreHeader(
-            this.getClass().getCanonicalName());
+        CFGVisualizer<V, S, ?> casted_viz = (CFGVisualizer<V, S, ?>) viz;
+        casted_viz.visualizeStoreHeader(this.getClass().getCanonicalName());
         internalVisualize(casted_viz);
         casted_viz.visualizeStoreFooter();
     }

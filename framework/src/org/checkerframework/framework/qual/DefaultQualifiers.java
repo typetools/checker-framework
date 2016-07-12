@@ -31,5 +31,5 @@ import java.lang.annotation.*;
 @Target({PACKAGE, TYPE, CONSTRUCTOR, METHOD, FIELD, LOCAL_VARIABLE, PARAMETER})
 public @interface DefaultQualifiers {
     /** The default qualifier settings */
-    DefaultQualifier[] value() default { };
+    DefaultQualifier[] value() default {};
 }

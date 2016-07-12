@@ -1,14 +1,12 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-
-import org.checkerframework.javacutil.TreeUtils;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * An assignment context for a node, which represents the place to which the

@@ -1,7 +1,6 @@
 package org.checkerframework.checker.signedness.qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
@@ -15,5 +14,5 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf( { UnknownSignedness.class } )
-public @interface Unsigned { }
+@SubtypeOf({UnknownSignedness.class})
+public @interface Unsigned {}

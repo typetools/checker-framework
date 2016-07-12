@@ -7,5 +7,4 @@ class MyTester {
         Lib lib = new Lib();
         lib.foo();
     }
-
 }

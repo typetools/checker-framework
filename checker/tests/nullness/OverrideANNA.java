@@ -2,27 +2,27 @@ import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 class OverrideANNA {
-  static class Super {
-    Object f;
+    static class Super {
+        Object f;
 
-    @EnsuresNonNull("f")
-    void setf(@Raw @UnknownInitialization Super this) {
-      f = new Object();
+        @EnsuresNonNull("f")
+        void setf(@Raw @UnknownInitialization Super this) {
+            f = new Object();
+        }
+
+        Super() {
+            setf();
+        }
     }
 
-    Super() {
-      setf();
+    static class Sub extends Super {
+        @Override
+        //:: error: (contracts.postcondition.not.satisfied)
+        void setf(@Raw @UnknownInitialization Sub this) {}
     }
-  }
 
-  static class Sub extends Super {
-    @Override
-    //:: error: (contracts.postcondition.not.satisfied)
-    void setf(@Raw @UnknownInitialization Sub this) { }
-  }
-
-  public static void main(String[] args) {
-    Super s = new Sub();
-    s.f.hashCode();
-  }
+    public static void main(String[] args) {
+        Super s = new Sub();
+        s.f.hashCode();
+    }
 }

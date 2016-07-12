@@ -5,6 +5,9 @@
 // I changed expected logic to handle multiple appearances
 // of the same qualifier in different positions.
 
+import com.sun.tools.classfile.ClassFile;
+import com.sun.tools.classfile.TypeAnnotation;
+import com.sun.tools.classfile.TypeAnnotation.TargetType;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -16,13 +19,7 @@ import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.sun.tools.classfile.ClassFile;
-import com.sun.tools.classfile.TypeAnnotation;
-import com.sun.tools.classfile.TypeAnnotation.TargetType;
-
 import org.checkerframework.javacutil.Pair;
-
 
 public class Driver {
 
@@ -49,12 +46,13 @@ public class Driver {
                 continue;
             }
             if (method.getReturnType() != String.class) {
-                throw new IllegalArgumentException("Test method needs to return a string: " + method);
+                throw new IllegalArgumentException(
+                        "Test method needs to return a string: " + method);
             }
             String testClass = PersistUtil.testClassOf(method);
 
             try {
-                String compact = (String)method.invoke(object);
+                String compact = (String) method.invoke(object);
                 String fullFile = PersistUtil.wrap(compact);
                 ClassFile cf = PersistUtil.compileAndReturn(fullFile, testClass);
                 List<TypeAnnotation> actual = ReferenceInfoUtil.extendedAnnotationsOf(cf);
@@ -87,8 +85,7 @@ public class Driver {
             return null;
         }
 
-        List<Pair<String, TypeAnnotation.Position>> result =
-                new ArrayList<>();
+        List<Pair<String, TypeAnnotation.Position>> result = new ArrayList<>();
 
         if (ta != null) {
             result.add(expectedOf(ta));
@@ -133,7 +130,9 @@ public class Driver {
             p.exception_index = d.exceptionIndex();
         }
         if (d.genericLocation().length != 0) {
-            p.location = TypeAnnotation.Position.getTypePathFromBinary(wrapIntArray(d.genericLocation()));
+            p.location =
+                    TypeAnnotation.Position.getTypePathFromBinary(
+                            wrapIntArray(d.genericLocation()));
         }
 
         return Pair.of(annoName, p);
@@ -148,7 +147,6 @@ public class Driver {
     }
 
     public static final int NOT_SET = -888;
-
 }
 
 @Retention(RetentionPolicy.RUNTIME)
@@ -157,13 +155,21 @@ public class Driver {
     String annotation();
 
     TargetType type();
+
     int offset() default Driver.NOT_SET;
-    int[] lvarOffset() default { };
-    int[] lvarLength() default { };
-    int[] lvarIndex() default { };
+
+    int[] lvarOffset() default {};
+
+    int[] lvarLength() default {};
+
+    int[] lvarIndex() default {};
+
     int boundIndex() default Driver.NOT_SET;
+
     int paramIndex() default Driver.NOT_SET;
+
     int typeIndex() default Driver.NOT_SET;
+
     int exceptionIndex() default Driver.NOT_SET;
 
     int[] genericLocation() default {};

@@ -1,18 +1,16 @@
-import org.checkerframework.checker.interning.qual.*;
-
 import java.util.*;
+import org.checkerframework.checker.interning.qual.*;
 
 public class InternMethod {
 
-    private static Map<Foo, @Interned Foo> pool =
-        new HashMap<Foo, @Interned Foo>();
+    private static Map<Foo, @Interned Foo> pool = new HashMap<Foo, @Interned Foo>();
 
     class Foo {
 
         @SuppressWarnings("interning")
         public @Interned Foo intern() {
             if (!pool.containsKey(this)) {
-                pool.put(this, (@Interned Foo)this);
+                pool.put(this, (@Interned Foo) this);
             }
             return pool.get(this);
         }
@@ -25,7 +23,5 @@ public class InternMethod {
 
     public static @Interned String intern(String a) {
         return (a == null) ? null : a.intern();
-  }
-
-
+    }
 }

@@ -1,11 +1,12 @@
 import org.checkerframework.checker.nullness.qual.*;
+
 public class Boxing {
     void withinOperation() {
         Integer i1 = 3;
-        int i1u = i1 + 2;         // valid
+        int i1u = i1 + 2; // valid
         Integer i2 = null;
         //:: error: (unboxing.of.nullable)
-        int i2u = i2 + 2;         // invalid
+        int i2u = i2 + 2; // invalid
         Integer i3 = i1;
         i3.toString();
     }
@@ -15,7 +16,7 @@ public class Boxing {
         int i1u = i1;
         Integer i2 = null;
         //:: error: (assignment.type.incompatible)
-        int i2u = i2;       // invalid
+        int i2u = i2; // invalid
     }
 
     void validWithinUnary() {
@@ -29,9 +30,9 @@ public class Boxing {
         // within blocks to stop flow
         Integer i1 = null, i2 = null, i3 = null, i4 = null;
         //:: error: (unboxing.of.nullable)
-        ++i1;       // invalid
+        ++i1; // invalid
         //:: error: (unboxing.of.nullable)
-        i2++;       // invalid
+        i2++; // invalid
     }
 
     void validCompoundAssignmentsAsVariable() {
@@ -45,10 +46,10 @@ public class Boxing {
     void invalidCompoundAssignmentsAsVariable() {
         Integer i = null;
         //:: error: (unboxing.of.nullable)
-        i += 1;         // invalid
+        i += 1; // invalid
         Boolean b = null;
         //:: error: (unboxing.of.nullable)
-        b &= true;      // invalid
+        b &= true; // invalid
     }
 
     void invalidCompoundAssignmentAsValue() {
@@ -59,7 +60,7 @@ public class Boxing {
         Boolean b1 = null;
         boolean b2 = true;
         //:: error: (unboxing.of.nullable)
-        b2 &= b1;     // invalid
+        b2 &= b1; // invalid
     }
 
     void randomValidStringOperations() {
@@ -121,16 +122,16 @@ public class Boxing {
 
         println(bN);
         //:: error: (unboxing.of.nullable)
-        println((int)bN2); // invalid
+        println((int) bN2); // invalid
 
         println(b1);
-        println((int)b1);
+        println((int) b1);
 
         println(u1);
-        println((int)u1);
+        println((int) u1);
     }
 
-    void println(@Nullable Object o) { }
+    void println(@Nullable Object o) {}
 
     void testObjectString() {
         Object o = null;

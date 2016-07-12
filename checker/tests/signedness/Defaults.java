@@ -60,9 +60,19 @@ public class Defaults {
         botChar = testChar;
     }
 
-    public void SignedTest(byte testByte, short testShort, int testInt, long testLong,
-        float testFloat, double testDouble, char testChar, boolean testBool,
-        Byte testBoxedByte, Short testBoxedShort, Integer testBoxedInteger, Long testBoxedLong) {
+    public void SignedTest(
+            byte testByte,
+            short testShort,
+            int testInt,
+            long testLong,
+            float testFloat,
+            double testDouble,
+            char testChar,
+            boolean testBool,
+            Byte testBoxedByte,
+            Short testBoxedShort,
+            Integer testBoxedInteger,
+            Long testBoxedLong) {
 
         //Test bytes
         @Signed byte sinByte;

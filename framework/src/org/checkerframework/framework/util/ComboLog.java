@@ -1,7 +1,6 @@
 package org.checkerframework.framework.util;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
+import com.sun.source.tree.CompilationUnitTree;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,8 +10,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-
-import com.sun.source.tree.CompilationUnitTree;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * Created by jburke on 6/12/14.
@@ -24,8 +22,10 @@ public class ComboLog {
 
     private static class Agreement {
         public Agreement(
-                final String checker, final String compilationUnit,
-                final String type1Atm,    final String type2Atm) {
+                final String checker,
+                final String compilationUnit,
+                final String type1Atm,
+                final String type2Atm) {
             this.compilationUnit = compilationUnit;
             this.checker = checker;
             this.type1Atm = type1Atm;
@@ -61,7 +61,7 @@ public class ComboLog {
     }
 
     private static Agreement parseAgreement(final String line) {
-        final String [] tokens = line.split(del_r);
+        final String[] tokens = line.split(del_r);
         if (tokens.length != 4) {
             throw new RuntimeException("Could not parseAgreement from: " + line);
         }
@@ -79,7 +79,8 @@ public class ComboLog {
         return atm.getClass().getSimpleName().toString();
     }
 
-    public static void writeCombo(AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs, String checker) {
+    public static void writeCombo(
+            AnnotatedTypeMirror rhs, AnnotatedTypeMirror lhs, String checker) {
         if (subtypeFile.length() > 100000) {
             return;
         }
@@ -89,7 +90,11 @@ public class ComboLog {
         }
 
         final Agreement agr =
-                new Agreement(root.getSourceFile().getName(), checker.getClass().getSimpleName(), atmToClassStr(rhs), atmToClassStr(lhs));
+                new Agreement(
+                        root.getSourceFile().getName(),
+                        checker.getClass().getSimpleName(),
+                        atmToClassStr(rhs),
+                        atmToClassStr(lhs));
         if (!foundCombos.contains(agr)) {
             foundCombos.add(agr);
             writeCombo(agr);
@@ -101,10 +106,12 @@ public class ComboLog {
             initialize();
         }
 
-        List<String> tokens = Arrays.asList(agreement.compilationUnit,
-                agreement.checker,
-                agreement.type1Atm,
-                agreement.type2Atm);
+        List<String> tokens =
+                Arrays.asList(
+                        agreement.compilationUnit,
+                        agreement.checker,
+                        agreement.type1Atm,
+                        agreement.type2Atm);
         final String line = PluginUtil.join(del, tokens);
         try {
             comboWriter.write(line);
@@ -135,7 +142,8 @@ public class ComboLog {
             }
 
         } catch (IOException e) {
-            throw new RuntimeException("Exception reading file " + subtypeFile.getAbsolutePath(), e);
+            throw new RuntimeException(
+                    "Exception reading file " + subtypeFile.getAbsolutePath(), e);
         }
 
         try {

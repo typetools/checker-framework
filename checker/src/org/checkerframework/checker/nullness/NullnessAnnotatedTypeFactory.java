@@ -1,5 +1,31 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.Elements;
 import org.checkerframework.checker.initialization.InitializationAnnotatedTypeFactory;
 import org.checkerframework.checker.initialization.qual.FBCBottom;
 import org.checkerframework.checker.initialization.qual.Initialized;
@@ -37,40 +63,12 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.Elements;
-
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.ReturnTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.TreePath;
-
 /**
  * The annotated type factory for the nullness type-system.
  */
 public class NullnessAnnotatedTypeFactory
-    extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
+        extends InitializationAnnotatedTypeFactory<
+                NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
 
     /** Annotation constants */
     protected final AnnotationMirror NONNULL, NULLABLE, POLYNULL, MONOTONIC_NONNULL;
@@ -90,7 +88,6 @@ public class NullnessAnnotatedTypeFactory
     /** Cache for the nullness annotations */
     protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
-
     @SuppressWarnings("deprecation") // aliasing to deprecated annotation
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
         super(checker, useFbc);
@@ -108,7 +105,8 @@ public class NullnessAnnotatedTypeFactory
         tempNullnessAnnos.add(PolyAll.class);
         nullnessAnnos = Collections.unmodifiableSet(tempNullnessAnnos);
 
-        addAliasedAnnotation(org.checkerframework.checker.nullness.qual.LazyNonNull.class, MONOTONIC_NONNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.qual.LazyNonNull.class, MONOTONIC_NONNULL);
 
         // If you update the following, also update ../../../manual/nullness-checker.tex .
         // Aliases for @Nonnull:
@@ -143,14 +141,24 @@ public class NullnessAnnotatedTypeFactory
         addAliasedAnnotation(android.support.annotation.Nullable.class, NULLABLE);
 
         // Add compatibility annotations:
-        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NullableDecl.class, NULLABLE);
-        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.PolyNullDecl.class, POLYNULL);
-        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NonNullDecl.class, NONNULL);
-        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl.class, MONOTONIC_NONNULL);
-        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NullableType.class, NULLABLE);
-        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.PolyNullType.class, POLYNULL);
-        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.NonNullType.class, NONNULL);
-        addAliasedAnnotation(org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class, MONOTONIC_NONNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.NullableDecl.class, NULLABLE);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.PolyNullDecl.class, POLYNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.NonNullDecl.class, NONNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullDecl.class,
+                MONOTONIC_NONNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.NullableType.class, NULLABLE);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.PolyNullType.class, POLYNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.NonNullType.class, NONNULL);
+        addAliasedAnnotation(
+                org.checkerframework.checker.nullness.compatqual.MonotonicNonNullType.class,
+                MONOTONIC_NONNULL);
 
         // TODO: These heuristics are just here temporarily. They all either
         // need to be replaced, or carefully checked for correctness.
@@ -163,8 +171,7 @@ public class NullnessAnnotatedTypeFactory
         postInit();
 
         // do this last, as it might use the factory again.
-        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(
-                processingEnv, this);
+        this.collectionToArrayHeuristics = new CollectionToArrayHeuristics(processingEnv, this);
     }
 
     @Override
@@ -194,7 +201,8 @@ public class NullnessAnnotatedTypeFactory
 
     // handle dependent types
     @Override
-    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+    protected void addComputedTypeAnnotations(
+            Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         super.addComputedTypeAnnotations(tree, type, useFlow);
         dependentTypes.handle(tree, type);
     }
@@ -219,8 +227,7 @@ public class NullnessAnnotatedTypeFactory
      * @param context tree used to get dataflow value
      */
     protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
-        if (lhsType.hasAnnotation(PolyNull.class)
-                || lhsType.hasAnnotation(PolyAll.class)) {
+        if (lhsType.hasAnnotation(PolyNull.class) || lhsType.hasAnnotation(PolyAll.class)) {
             NullnessValue inferred = getInferredValueFor(context);
             if (inferred != null && inferred.isPolyNullNull) {
                 lhsType.replaceAnnotation(NULLABLE);
@@ -232,18 +239,21 @@ public class NullnessAnnotatedTypeFactory
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
             NewClassTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse = super.constructorFromUse(tree);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUse =
+                super.constructorFromUse(tree);
         AnnotatedExecutableType constructor = fromUse.first;
-        dependentTypes.handleConstructor(tree,
-                generalFactory.getAnnotatedType(tree), constructor);
+        dependentTypes.handleConstructor(tree, generalFactory.getAnnotatedType(tree), constructor);
         return fromUse;
     }
 
     @Override
     public List<VariableTree> getUninitializedInvariantFields(
-            NullnessStore store, TreePath path, boolean isStatic,
+            NullnessStore store,
+            TreePath path,
+            boolean isStatic,
             List<? extends AnnotationMirror> receiverAnnotations) {
-        List<VariableTree> candidates = super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
+        List<VariableTree> candidates =
+                super.getUninitializedInvariantFields(store, path, isStatic, receiverAnnotations);
         List<VariableTree> result = new ArrayList<>();
         for (VariableTree c : candidates) {
             AnnotatedTypeMirror type = getAnnotatedType(c);
@@ -257,12 +267,14 @@ public class NullnessAnnotatedTypeFactory
     }
 
     @Override
-    protected NullnessAnalysis createFlowAnalysis(List<Pair<VariableElement, NullnessValue>> fieldValues) {
+    protected NullnessAnalysis createFlowAnalysis(
+            List<Pair<VariableElement, NullnessValue>> fieldValues) {
         return new NullnessAnalysis(checker, this, fieldValues);
     }
 
     @Override
-    public NullnessTransfer createFlowTransferFunction(CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> analysis) {
+    public NullnessTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<NullnessValue, NullnessStore, NullnessTransfer> analysis) {
         return new NullnessTransfer((NullnessAnalysis) analysis);
     }
 
@@ -271,14 +283,15 @@ public class NullnessAnnotatedTypeFactory
      */
     @Override
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
-        return new NullnessAnnotatedTypeFormatter(checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
+        return new NullnessAnnotatedTypeFormatter(
+                checker.hasOption("printVerboseGenerics"), checker.hasOption("printAllQualifiers"));
     }
 
     @Override
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> methodFromUse(
             MethodInvocationTree tree) {
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = super
-                .methodFromUse(tree);
+        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
+                super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
 
         systemGetPropertyHandler.handle(tree, method);
@@ -297,13 +310,13 @@ public class NullnessAnnotatedTypeFactory
     protected TypeAnnotator createTypeAnnotator() {
         ImplicitsTypeAnnotator implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
         implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedNoType.class, NONNULL);
-        implicitsTypeAnnotator.addTypeClass(AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
+        implicitsTypeAnnotator.addTypeClass(
+                AnnotatedTypeMirror.AnnotatedPrimitiveType.class, NONNULL);
         return new ListTypeAnnotator(
                 new PropagationTypeAnnotator(this),
                 implicitsTypeAnnotator,
                 new NullnessTypeAnnotator(this),
-                new CommitmentTypeAnnotator(this)
-        );
+                new CommitmentTypeAnnotator(this));
     }
 
     @Override
@@ -316,8 +329,7 @@ public class NullnessAnnotatedTypeFactory
                 new NullnessPropagationAnnotator(this),
                 implicitsTreeAnnotator,
                 new NullnessTreeAnnotator(this),
-                new CommitmentTreeAnnotator(this)
-        );
+                new CommitmentTreeAnnotator(this));
     }
 
     /**
@@ -334,9 +346,10 @@ public class NullnessAnnotatedTypeFactory
             return;
         }
 
-        if (elt.getKind().isClass() || elt.getKind().isInterface()
-        // Workaround for System.{out,in,err} issue: assume all static
-        // fields in java.lang.System are nonnull.
+        if (elt.getKind().isClass()
+                || elt.getKind().isInterface()
+                // Workaround for System.{out,in,err} issue: assume all static
+                // fields in java.lang.System are nonnull.
                 || isSystemField(elt)) {
             type.replaceAnnotation(NONNULL);
         }
@@ -356,11 +369,12 @@ public class NullnessAnnotatedTypeFactory
         // Heuristic: if we have a static final field in a system package,
         // treat it as NonNull (many like Boolean.TYPE and System.out
         // have constant value null but are set by the VM).
-        boolean inJavaPackage = ElementUtils.getQualifiedClassName(var)
-                .toString().startsWith("java.");
+        boolean inJavaPackage =
+                ElementUtils.getQualifiedClassName(var).toString().startsWith("java.");
 
         return (var.getConstantValue() != null
-                || var.getSimpleName().contentEquals("class") || inJavaPackage);
+                || var.getSimpleName().contentEquals("class")
+                || inJavaPackage);
     }
 
     /**
@@ -387,15 +401,14 @@ public class NullnessAnnotatedTypeFactory
     }
 
     protected class NullnessTreeAnnotator extends TreeAnnotator
-        /*extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator*/ {
+    /*extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTreeAnnotator*/ {
 
         public NullnessTreeAnnotator(NullnessAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);
         }
 
         @Override
-        public Void visitMemberSelect(MemberSelectTree node,
-                AnnotatedTypeMirror type) {
+        public Void visitMemberSelect(MemberSelectTree node, AnnotatedTypeMirror type) {
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
@@ -405,8 +418,7 @@ public class NullnessAnnotatedTypeFactory
         }
 
         @Override
-        public Void visitVariable(VariableTree node,
-                AnnotatedTypeMirror type) {
+        public Void visitVariable(VariableTree node, AnnotatedTypeMirror type) {
             Element elt = InternalUtils.symbol(node);
             if (elt.getKind() == ElementKind.EXCEPTION_PARAMETER) {
                 if (!type.isAnnotatedInHierarchy(NONNULL)) {
@@ -418,8 +430,7 @@ public class NullnessAnnotatedTypeFactory
         }
 
         @Override
-        public Void visitIdentifier(IdentifierTree node,
-                AnnotatedTypeMirror type) {
+        public Void visitIdentifier(IdentifierTree node, AnnotatedTypeMirror type) {
 
             Element elt = TreeUtils.elementFromUse(node);
             assert elt != null;
@@ -447,8 +458,7 @@ public class NullnessAnnotatedTypeFactory
 
         // The result of a compound operation is always non-null.
         @Override
-        public Void visitCompoundAssignment(CompoundAssignmentTree node,
-                AnnotatedTypeMirror type) {
+        public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
             type.replaceAnnotation(NONNULL);
             // Commitment will run after for initialization defaults
             return null;
@@ -470,13 +480,14 @@ public class NullnessAnnotatedTypeFactory
     }
 
     protected class NullnessTypeAnnotator
-        extends InitializationAnnotatedTypeFactory<NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>.CommitmentTypeAnnotator {
+            extends InitializationAnnotatedTypeFactory<
+                            NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis>
+                    .CommitmentTypeAnnotator {
 
         public NullnessTypeAnnotator(InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory) {
             super(atypeFactory);
         }
     }
-
 
     /**
      * @return the list of annotations of the non-null type system
@@ -487,8 +498,8 @@ public class NullnessAnnotatedTypeFactory
 
     @Override
     public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
-        Set<Class<? extends Annotation>> l = new HashSet<>(
-                super.getInvalidConstructorReturnTypeAnnotations());
+        Set<Class<? extends Annotation>> l =
+                new HashSet<>(super.getInvalidConstructorReturnTypeAnnotations());
         l.addAll(getNullnessAnnotations());
         return l;
     }
@@ -512,8 +523,7 @@ public class NullnessAnnotatedTypeFactory
 
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (isInitializationAnnotation(rhs) ||
-                    isInitializationAnnotation(lhs)) {
+            if (isInitializationAnnotation(rhs) || isInitializationAnnotation(lhs)) {
                 return this.isSubtypeInitialization(rhs, lhs);
             }
             return super.isSubtype(rhs, lhs);
@@ -521,12 +531,10 @@ public class NullnessAnnotatedTypeFactory
 
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (isInitializationAnnotation(a1) ||
-                    isInitializationAnnotation(a2)) {
+            if (isInitializationAnnotation(a1) || isInitializationAnnotation(a2)) {
                 return this.leastUpperBoundInitialization(a1, a2);
             }
             return super.leastUpperBound(a1, a2);
         }
     }
-
 }

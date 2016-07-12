@@ -8,14 +8,19 @@ import org.checkerframework.checker.initialization.qual.UnderInitialization;
     "initialization.fields.uninitialized",
     // Normally @UnknownInitialization is the only initialization annotation allowed on fields.
     // However, for the purposes of this test, fields must be annotated with @UnderInitialization.
-    "initialization.invalid.field.type"})
+    "initialization.invalid.field.type"
+})
 class Issue574 {
     @UnderInitialization(Object.class) Object o1;
+
     @UnderInitialization(String.class) Object o2;
+
     @UnderInitialization(Character.class) Object o3;
 
     @UnderInitialization(Number.class) Object o4;
+
     @UnderInitialization(Double.class) Object o5;
+
     @UnderInitialization(Integer.class) Object o6;
 
     @UnderInitialization(CharSequence.class) Object i1; // CharSequence is an interface

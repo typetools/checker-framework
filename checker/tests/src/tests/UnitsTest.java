@@ -1,14 +1,14 @@
 package tests;
 
 import java.io.File;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 public class UnitsTest extends CheckerFrameworkTest {
 
     public UnitsTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.units.UnitsChecker.class,
                 "units",
                 "-Anomsgtext");
@@ -16,6 +16,6 @@ public class UnitsTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"units", "all-systems"};
+        return new String[] {"units", "all-systems"};
     }
 }

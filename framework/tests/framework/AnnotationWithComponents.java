@@ -3,11 +3,13 @@
  */
 @interface Anno {
     class Inner {}
+
     int con = 5;
 
     int value();
 }
 
 class Use {
-    @Anno(0) Object o;
+    @Anno(0)
+    Object o;
 }

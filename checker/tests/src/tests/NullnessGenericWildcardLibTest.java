@@ -1,9 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-
 import java.io.File;
-
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -12,7 +10,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class NullnessGenericWildcardLibTest extends CheckerFrameworkTest {
 
     public NullnessGenericWildcardLibTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext");
@@ -20,7 +19,6 @@ public class NullnessGenericWildcardLibTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"nullness-genericwildcardlib"};
+        return new String[] {"nullness-genericwildcardlib"};
     }
-
 }

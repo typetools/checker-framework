@@ -1,10 +1,9 @@
 package org.checkerframework.checker.i18n;
 
-import javax.annotation.processing.SupportedOptions;
-
-import org.checkerframework.checker.propkey.PropertyKeyChecker;
-import java.util.ResourceBundle;
 import java.util.Locale;
+import java.util.ResourceBundle;
+import javax.annotation.processing.SupportedOptions;
+import org.checkerframework.checker.propkey.PropertyKeyChecker;
 
 /**
  * A type-checker that checks that only valid localizable keys are used
@@ -32,6 +31,5 @@ import java.util.Locale;
  *
  * </ol>
  */
-@SupportedOptions( {"propfiles", "bundlenames"} )
-public class LocalizableKeyChecker extends PropertyKeyChecker {
-}
+@SupportedOptions({"propfiles", "bundlenames"})
+public class LocalizableKeyChecker extends PropertyKeyChecker {}

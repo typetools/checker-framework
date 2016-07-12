@@ -1,7 +1,5 @@
-import org.checkerframework.checker.interning.qual.*;
-
 import java.util.*;
-
+import org.checkerframework.checker.interning.qual.*;
 
 // The @Interned annotation indicates that much like an enum, all variables
 // declared of this type are interned (except the constuctor return value).
@@ -34,7 +32,7 @@ public @Interned class InternedClass {
     // Equals method (used only by interning; clients should use ==)
     @org.checkerframework.dataflow.qual.Pure
     public boolean equals(Object other) {
-        if (! (other instanceof InternedClass)) {
+        if (!(other instanceof InternedClass)) {
             return false;
         }
         return value == ((InternedClass) other).value;
@@ -42,30 +40,30 @@ public @Interned class InternedClass {
 
     // Interning method
     private static Map<InternedClass, @Interned InternedClass> pool =
-        new HashMap<InternedClass, @Interned InternedClass>();
+            new HashMap<InternedClass, @Interned InternedClass>();
+
     @SuppressWarnings("interning")
     public @Interned InternedClass intern() /*Uninterned*/ {
         if (!pool.containsKey(this)) {
-            pool.put(this, (@Interned InternedClass)this);
+            pool.put(this, (@Interned InternedClass) this);
         }
         return pool.get(this);
     }
 
     public void myMethod(InternedClass ic, InternedClass[] ica) {
-        boolean b1 = (this == ic);                     // valid
+        boolean b1 = (this == ic); // valid
         boolean b2 = (this == returnInternedObject()); // valid
-        boolean b3 = (this == ica[0]);                 // valid
-        InternedClass ic2 = returnArray()[0];          // valid
-        ica[0] = new InternedClass(22);                // valid
-        InternedClass[] arr1 = returnArray();          // valid
-        InternedClass[] arr2 = new InternedClass[22];  // valid
-        InternedClass[] arr3 = new InternedClass[] {};  // valid
+        boolean b3 = (this == ica[0]); // valid
+        InternedClass ic2 = returnArray()[0]; // valid
+        ica[0] = new InternedClass(22); // valid
+        InternedClass[] arr1 = returnArray(); // valid
+        InternedClass[] arr2 = new InternedClass[22]; // valid
+        InternedClass[] arr3 = new InternedClass[] {}; // valid
 
-        Map<InternedClass,Integer> map = new LinkedHashMap<InternedClass,Integer>();
-        for (Map.Entry<InternedClass,Integer> e : map.entrySet()) {
-            InternedClass ic3 = e.getKey();            // valid
+        Map<InternedClass, Integer> map = new LinkedHashMap<InternedClass, Integer>();
+        for (Map.Entry<InternedClass, Integer> e : map.entrySet()) {
+            InternedClass ic3 = e.getKey(); // valid
         }
-
     }
 
     public InternedClass returnInternedObject() {
@@ -73,25 +71,25 @@ public @Interned class InternedClass {
     }
 
     public InternedClass[] returnArray() {
-        return new InternedClass[] { };
+        return new InternedClass[] {};
     }
 
-    public void internedVarargs (String name, InternedClass... args) {
+    public void internedVarargs(String name, InternedClass... args) {
         InternedClass arg = args[0]; // valid
     }
 
-    public void internedVarargs2 (String name, @Interned String... args) {
-        @SuppressWarnings("interning")          // a bug, but not a high-priority one
+    public void internedVarargs2(String name, @Interned String... args) {
+        @SuppressWarnings("interning") // a bug, but not a high-priority one
         @Interned String arg = args[0]; // valid
     }
 
     public static InternedClass[] arrayclone_simple(InternedClass[] a_old) {
-      int len = a_old.length;
-      InternedClass[] a_new = new InternedClass[len];
-      for (int i = 0; i < len; i++) {
-        a_new[i] = new InternedClass(a_old[i]);
-      }
-      return a_new;
+        int len = a_old.length;
+        InternedClass[] a_new = new InternedClass[len];
+        for (int i = 0; i < len; i++) {
+            a_new[i] = new InternedClass(a_old[i]);
+        }
+        return a_new;
     }
 
     public @Interned class Subclass extends InternedClass {
@@ -143,7 +141,7 @@ public @Interned class InternedClass {
     }
 
     void testCast(Object o) {
-        Object i = (InternedClass)o;
-        if (i == this);
+        Object i = (InternedClass) o;
+        if (i == this) ;
     }
 }

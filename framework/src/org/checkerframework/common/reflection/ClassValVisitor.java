@@ -2,12 +2,11 @@ package org.checkerframework.common.reflection;
 
 import static org.checkerframework.common.reflection.ClassValAnnotatedTypeFactory.getClassNamesFromAnnotation;
 
+import com.sun.source.tree.Tree;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -16,8 +15,6 @@ import org.checkerframework.common.reflection.qual.ClassVal;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
-import com.sun.source.tree.Tree;
 
 public class ClassValVisitor extends BaseTypeVisitor<ClassValAnnotatedTypeFactory> {
     public ClassValVisitor(BaseTypeChecker checker) {
@@ -28,16 +25,19 @@ public class ClassValVisitor extends BaseTypeVisitor<ClassValAnnotatedTypeFactor
     protected ClassValAnnotatedTypeFactory createTypeFactory() {
         return new ClassValAnnotatedTypeFactory(checker);
     }
+
     @Override
     protected BaseTypeValidator createTypeValidator() {
         return new ClassNameValidator(checker, this, atypeFactory);
     }
-
 }
+
 class ClassNameValidator extends BaseTypeValidator {
 
-    public ClassNameValidator(BaseTypeChecker checker,
-            BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
+    public ClassNameValidator(
+            BaseTypeChecker checker,
+            BaseTypeVisitor<?> visitor,
+            AnnotatedTypeFactory atypeFactory) {
         super(checker, visitor, atypeFactory);
     }
 
@@ -49,14 +49,12 @@ class ClassNameValidator extends BaseTypeValidator {
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
         AnnotationMirror classVal = type.getAnnotation(ClassVal.class);
-        classVal = classVal == null ? type.getAnnotation(ClassBound.class)
-                : classVal;
+        classVal = classVal == null ? type.getAnnotation(ClassBound.class) : classVal;
         if (classVal != null) {
             List<String> classNames = getClassNamesFromAnnotation(classVal);
             for (String className : classNames) {
                 if (!isLegalClassName(className)) {
-                    checker.report(
-                            Result.failure("illegal.classname", className, type), tree);
+                    checker.report(Result.failure("illegal.classname", className, type), tree);
                 }
             }
         }
@@ -72,10 +70,10 @@ class ClassNameValidator extends BaseTypeValidator {
      */
     private boolean isLegalClassName(String className) {
         int lastBracket = className.lastIndexOf("]");
-        if (lastBracket != -1 && lastBracket != className.length()-1) {
+        if (lastBracket != -1 && lastBracket != className.length() - 1) {
             return false;
         }
-        className = className.replaceAll("\\[\\]","");
+        className = className.replaceAll("\\[\\]", "");
         String[] identifiers = className.split("(\\.)");
         for (String identifier : identifiers) {
             if (!isJavaIdentifier(identifier)) {
@@ -91,8 +89,8 @@ class ClassNameValidator extends BaseTypeValidator {
      */
     private boolean isJavaIdentifier(String identifier) {
         char[] identifierChars = identifier.toCharArray();
-        if (!(identifierChars.length > 0 && (Character
-                .isJavaIdentifierStart(identifierChars[0])))) {
+        if (!(identifierChars.length > 0
+                && (Character.isJavaIdentifierStart(identifierChars[0])))) {
             return false;
         }
         for (int i = 1; i < identifierChars.length; i++) {
@@ -102,6 +100,4 @@ class ClassNameValidator extends BaseTypeValidator {
         }
         return true;
     }
-
-
 }

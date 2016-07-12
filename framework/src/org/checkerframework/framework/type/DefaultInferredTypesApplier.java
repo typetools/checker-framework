@@ -1,10 +1,9 @@
 package org.checkerframework.framework.type;
 
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
-
-import javax.lang.model.element.AnnotationMirror;
 
 /**
  * Utility class for applying the annotations inferred by dataflow to a given type.
@@ -24,17 +23,19 @@ public class DefaultInferredTypesApplier {
         this.omitSubtypingCheck = omitSubtypingCheck;
     }
 
-
     /**
      * For each top in qualifier hierarchy, traverse inferred and copy the required annotations over to
      * type.
      * @param type the type to which annotations are being applied
      * @param inferred the type inferred by data flow
      */
-    public void applyInferredType(final QualifierHierarchy qualifierHierarchy,
-                                  final AnnotatedTypeMirror type, final AnnotatedTypeMirror inferred) {
-        final InferredTypeApplyingVisitor applier = new InferredTypeApplyingVisitor(qualifierHierarchy, omitSubtypingCheck);
-        for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations())  {
+    public void applyInferredType(
+            final QualifierHierarchy qualifierHierarchy,
+            final AnnotatedTypeMirror type,
+            final AnnotatedTypeMirror inferred) {
+        final InferredTypeApplyingVisitor applier =
+                new InferredTypeApplyingVisitor(qualifierHierarchy, omitSubtypingCheck);
+        for (final AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
             applier.visit(type, inferred, top);
         }
     }
@@ -44,25 +45,35 @@ public class DefaultInferredTypesApplier {
      * Traversal is necessary to add annotations to the bounds of wildcards and type variables when the
      * type to annotate is a wildcard or type variable.
      */
-    protected static class InferredTypeApplyingVisitor extends AbstractAtmComboVisitor<Void, AnnotationMirror> {
+    protected static class InferredTypeApplyingVisitor
+            extends AbstractAtmComboVisitor<Void, AnnotationMirror> {
         private final boolean omitSubtypingCheck;
         private final QualifierHierarchy qualifierHierarchy;
 
-        public InferredTypeApplyingVisitor(QualifierHierarchy qualifierHierarchy, boolean omitSubtypingCheck) {
+        public InferredTypeApplyingVisitor(
+                QualifierHierarchy qualifierHierarchy, boolean omitSubtypingCheck) {
             this.qualifierHierarchy = qualifierHierarchy;
             this.omitSubtypingCheck = omitSubtypingCheck;
         }
 
         @Override
-        protected String defaultErrorMessage(AnnotatedTypeMirror type, AnnotatedTypeMirror inferred, AnnotationMirror top) {
+        protected String defaultErrorMessage(
+                AnnotatedTypeMirror type, AnnotatedTypeMirror inferred, AnnotationMirror top) {
             return "applyInferredToBoundedType: Unexpected AnnotatedTypeMirror combo:\n"
-                    + "type="     + type     + "\n"
-                    + "inferred=" + inferred + "\n"
-                    + "top="      + top      + "\n";
+                    + "type="
+                    + type
+                    + "\n"
+                    + "inferred="
+                    + inferred
+                    + "\n"
+                    + "top="
+                    + top
+                    + "\n";
         }
 
         @Override
-        protected Void defaultAction(AnnotatedTypeMirror type, AnnotatedTypeMirror inferred, AnnotationMirror top) {
+        protected Void defaultAction(
+                AnnotatedTypeMirror type, AnnotatedTypeMirror inferred, AnnotationMirror top) {
             final AnnotationMirror inferredAnnotation;
             if (QualifierHierarchy.canHaveEmptyAnnotationSet(type)) {
                 inferredAnnotation = inferred.getAnnotationInHierarchy(top);
@@ -76,16 +87,17 @@ public class DefaultInferredTypesApplier {
                 // We inferred an annotation.
                 AnnotationMirror present = type.getAnnotationInHierarchy(top);
                 if (present != null) {
-                    if (omitSubtypingCheck || qualifierHierarchy.isSubtype(inferredAnnotation, present)) {
+                    if (omitSubtypingCheck
+                            || qualifierHierarchy.isSubtype(inferredAnnotation, present)) {
                         type.replaceAnnotation(inferredAnnotation);
 
                     } else {
-// TODO: UNCOMMENT AND FIX UNARIES AND OTHER CASES THAT LEAD TO THIS ISSUE
-//                        ErrorReporter.errorAbort(
-//                            "Inferred type is above present type:\n"
-//                          + "inferredAnnotation=" + inferredAnnotation + "\n"
-//                          + "present=" + present
-//                        );
+                        // TODO: UNCOMMENT AND FIX UNARIES AND OTHER CASES THAT LEAD TO THIS ISSUE
+                        //                        ErrorReporter.errorAbort(
+                        //                            "Inferred type is above present type:\n"
+                        //                          + "inferredAnnotation=" + inferredAnnotation + "\n"
+                        //                          + "present=" + present
+                        //                        );
                     }
                 } else {
                     type.addAnnotation(inferredAnnotation);
@@ -117,7 +129,8 @@ public class DefaultInferredTypesApplier {
          * the annotations of both bounds to type.  This requires a traversal of type.
          */
         @Override
-        public Void visitTypevar_Typevar(AnnotatedTypeVariable type, AnnotatedTypeVariable inferred, AnnotationMirror top) {
+        public Void visitTypevar_Typevar(
+                AnnotatedTypeVariable type, AnnotatedTypeVariable inferred, AnnotationMirror top) {
             final AnnotationMirror inferredPrimary = inferred.getAnnotationInHierarchy(top);
             if (inferredPrimary != null) {
                 type.replaceAnnotation(inferredPrimary);
@@ -130,40 +143,43 @@ public class DefaultInferredTypesApplier {
         }
 
         @Override
-        public Void visitTypevar_Wildcard(AnnotatedTypeVariable type, AnnotatedWildcardType inferred, AnnotationMirror top) {
+        public Void visitTypevar_Wildcard(
+                AnnotatedTypeVariable type, AnnotatedWildcardType inferred, AnnotationMirror top) {
             final AnnotationMirror inferredPrimary = inferred.getAnnotationInHierarchy(top);
             if (inferredPrimary != null) {
                 type.replaceAnnotation(inferredPrimary);
             } else {
                 type.removeAnnotationInHierarchy(top);
                 visit(type.getUpperBound(), inferred.getExtendsBound(), top);
-                visit(type.getLowerBound(), inferred.getSuperBound(),   top);
+                visit(type.getLowerBound(), inferred.getSuperBound(), top);
             }
             return null;
         }
 
         @Override
-        public Void visitWildcard_Typevar(AnnotatedWildcardType type, AnnotatedTypeVariable inferred, AnnotationMirror top) {
+        public Void visitWildcard_Typevar(
+                AnnotatedWildcardType type, AnnotatedTypeVariable inferred, AnnotationMirror top) {
             final AnnotationMirror inferredPrimary = inferred.getAnnotationInHierarchy(top);
             if (inferredPrimary != null) {
                 applyPrimary(type, inferredPrimary);
             } else {
                 type.removeAnnotationInHierarchy(top);
                 visit(type.getExtendsBound(), inferred.getUpperBound(), top);
-                visit(type.getSuperBound(),   inferred.getLowerBound(), top);
+                visit(type.getSuperBound(), inferred.getLowerBound(), top);
             }
             return null;
         }
 
         @Override
-        public Void visitWildcard_Wildcard(AnnotatedWildcardType type, AnnotatedWildcardType inferred, AnnotationMirror top) {
+        public Void visitWildcard_Wildcard(
+                AnnotatedWildcardType type, AnnotatedWildcardType inferred, AnnotationMirror top) {
             final AnnotationMirror inferredPrimary = inferred.getAnnotationInHierarchy(top);
             if (inferredPrimary != null) {
                 applyPrimary(type, inferredPrimary);
             } else {
                 type.removeAnnotationInHierarchy(top);
                 visit(type.getExtendsBound(), inferred.getExtendsBound(), top);
-                visit(type.getSuperBound(),   inferred.getSuperBound(), top);
+                visit(type.getSuperBound(), inferred.getSuperBound(), top);
             }
             return null;
         }

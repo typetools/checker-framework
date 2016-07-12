@@ -1,7 +1,6 @@
 package org.checkerframework.checker.i18nformatter;
 
 import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
@@ -26,7 +25,8 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
  *                           Format String Checker
  * @author Siwakorn Srisakaokul
  */
-public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, I18nFormatterTransfer> {
+public class I18nFormatterTransfer
+        extends CFAbstractTransfer<CFValue, CFStore, I18nFormatterTransfer> {
 
     protected I18nFormatterAnalysis analysis;
     protected I18nFormatterChecker checker;
@@ -38,10 +38,10 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitMethodInvocation(MethodInvocationNode node,
-            TransferInput<CFValue, CFStore> in) {
-        I18nFormatterAnnotatedTypeFactory atypeFactory = (I18nFormatterAnnotatedTypeFactory) analysis
-                .getTypeFactory();
+    public TransferResult<CFValue, CFStore> visitMethodInvocation(
+            MethodInvocationNode node, TransferInput<CFValue, CFStore> in) {
+        I18nFormatterAnnotatedTypeFactory atypeFactory =
+                (I18nFormatterAnnotatedTypeFactory) analysis.getTypeFactory();
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, in);
         I18nFormatterTreeUtil tu = atypeFactory.treeUtil;
 
@@ -49,14 +49,16 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
         if (tu.isHasFormatCall(node, atypeFactory)) {
             CFStore thenStore = result.getRegularStore();
             CFStore elseStore = thenStore.copy();
-            ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
-                    result.getResultValue(), thenStore, elseStore);
+            ConditionalTransferResult<CFValue, CFStore> newResult =
+                    new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
             Result<I18nConversionCategory[]> cats = tu.getHasFormatCallCategories(node);
             if (cats.value() == null) {
                 tu.failure(cats, "i18nformat.indirect.arguments");
             } else {
-                Receiver firstParam = FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
-                AnnotationMirror anno = atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
+                Receiver firstParam =
+                        FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
+                AnnotationMirror anno =
+                        atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
                 thenStore.insertValue(firstParam, anno);
             }
             return newResult;
@@ -66,10 +68,12 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
         if (tu.isIsFormatCall(node, atypeFactory)) {
             CFStore thenStore = result.getRegularStore();
             CFStore elseStore = thenStore.copy();
-            ConditionalTransferResult<CFValue, CFStore> newResult = new ConditionalTransferResult<>(
-                    result.getResultValue(), thenStore, elseStore);
+            ConditionalTransferResult<CFValue, CFStore> newResult =
+                    new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
             Receiver firstParam = FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
-            AnnotationBuilder builder = new AnnotationBuilder(tu.processingEnv, I18nInvalidFormat.class.getCanonicalName());
+            AnnotationBuilder builder =
+                    new AnnotationBuilder(
+                            tu.processingEnv, I18nInvalidFormat.class.getCanonicalName());
             // No need to set a value of @I18nInvalidFormat
             builder.setValue("value", "");
             elseStore.insertValue(firstParam, builder.build());
@@ -84,13 +88,12 @@ public class I18nFormatterTransfer extends CFAbstractTransfer<CFValue, CFStore, 
             if (cats.value() == null) {
                 tu.failure(cats, "i18nformat.key.not.found");
             } else {
-                AnnotationMirror anno = atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
-                CFValue newResultValue = analysis
-                        .createSingleAnnotationValue(anno,
-                                result.getResultValue().getType()
-                                        .getUnderlyingType());
-                return new RegularTransferResult<>(newResultValue,
-                        result.getRegularStore());
+                AnnotationMirror anno =
+                        atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
+                CFValue newResultValue =
+                        analysis.createSingleAnnotationValue(
+                                anno, result.getResultValue().getType().getUnderlyingType());
+                return new RegularTransferResult<>(newResultValue, result.getRegularStore());
             }
         }
 

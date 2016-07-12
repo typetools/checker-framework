@@ -1,6 +1,6 @@
 
 interface VarArgsFunc {
-    void take(String ... in);
+    void take(String... in);
 }
 
 interface ArrayFunc {
@@ -9,8 +9,9 @@ interface ArrayFunc {
 
 class VarArgsTest {
 
-    static void myMethod(String ... in) { }
-    static void myMethodArray(String[] in) { }
+    static void myMethod(String... in) {}
+
+    static void myMethodArray(String[] in) {}
 
     VarArgsFunc v1 = VarArgsTest::myMethod;
     VarArgsFunc v2 = VarArgsTest::myMethodArray;

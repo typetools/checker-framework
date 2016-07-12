@@ -1,8 +1,7 @@
-import org.checkerframework.framework.qual.EnsuresQualifier;
-
 import java.util.*;
-import tests.util.*;
 import org.checkerframework.dataflow.qual.*;
+import org.checkerframework.framework.qual.EnsuresQualifier;
+import tests.util.*;
 
 class MethodCallFlowExpr {
 
@@ -25,7 +24,8 @@ class MethodCallFlowExpr {
         return "";
     }
 
-    @Pure String p2(String s, long l, String s2) {
+    @Pure
+    String p2(String s, long l, String s2) {
         return "";
     }
 
@@ -39,55 +39,55 @@ class MethodCallFlowExpr {
         return "";
     }
 
-    @EnsuresQualifier(expression="p1c(\"abc\")", qualifier=Odd.class)
+    @EnsuresQualifier(expression = "p1c(\"abc\")", qualifier = Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e0() {
         // don't bother with implementation
     }
 
-    @EnsuresQualifier(expression="p1(1)", qualifier=Odd.class)
+    @EnsuresQualifier(expression = "p1(1)", qualifier = Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e1() {
         // don't bother with implementation
     }
 
-    @EnsuresQualifier(expression="p1(\"abc\")", qualifier=Odd.class)
+    @EnsuresQualifier(expression = "p1(\"abc\")", qualifier = Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e2() {
         // don't bother with implementation
     }
 
-    @EnsuresQualifier(expression="p2(\"abc\", 2L, p1(1))", qualifier=Odd.class)
+    @EnsuresQualifier(expression = "p2(\"abc\", 2L, p1(1))", qualifier = Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e4() {
         // don't bother with implementation
     }
 
-    @EnsuresQualifier(expression="p1b(2L)", qualifier=Odd.class)
+    @EnsuresQualifier(expression = "p1b(2L)", qualifier = Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e5() {
         // don't bother with implementation
     }
 
-    @EnsuresQualifier(expression="p1b(null)", qualifier=Odd.class)
+    @EnsuresQualifier(expression = "p1b(null)", qualifier = Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e6() {
         // don't bother with implementation
     }
 
-    @EnsuresQualifier(expression="p1d(1)", qualifier=Odd.class)
+    @EnsuresQualifier(expression = "p1d(1)", qualifier = Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e7a() {
         // don't bother with implementation
     }
 
-    @EnsuresQualifier(expression="this.p1d(1)", qualifier=Odd.class)
+    @EnsuresQualifier(expression = "this.p1d(1)", qualifier = Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e7b() {
         // don't bother with implementation
     }
 
-    @EnsuresQualifier(expression="MethodCallFlowExpr.p1d(1)", qualifier=Odd.class)
+    @EnsuresQualifier(expression = "MethodCallFlowExpr.p1d(1)", qualifier = Odd.class)
     //:: error: (contracts.postcondition.not.satisfied)
     void e7c() {
         // don't bother with implementation
@@ -158,7 +158,7 @@ class MethodCallFlowExpr {
     }
 
     void t7() {
-      //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible)
         @Odd String l1 = p1d(1);
         //:: error: (assignment.type.incompatible)
         @Odd String l1b = MethodCallFlowExpr.p1d(1);

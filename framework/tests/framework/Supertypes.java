@@ -2,9 +2,11 @@ import java.util.*;
 import tests.util.*;
 
 public class Supertypes {
-    static interface Inter<E> { }
-    static class A extends ArrayList<String> implements Inter<@Odd String> { }
-    static class B extends ArrayList<@Odd String> implements Inter<String> { }
+    static interface Inter<E> {}
+
+    static class A extends ArrayList<String> implements Inter<@Odd String> {}
+
+    static class B extends ArrayList<@Odd String> implements Inter<String> {}
 
     A a1;
     @Odd A a2;
@@ -25,23 +27,23 @@ public class Supertypes {
         List<String> l1 = a1;
         List<String> l2 = a2;
         //:: error: (assignment.type.incompatible)
-        List<String> l3 = b1;   // should emit error
+        List<String> l3 = b1; // should emit error
         //:: error: (assignment.type.incompatible)
-        List<String> l4 = b2;   // should emit error
+        List<String> l4 = b2; // should emit error
 
         //:: error: (assignment.type.incompatible)
-        List<@Odd String> l5 = a1;  // should emit error
+        List<@Odd String> l5 = a1; // should emit error
         //:: error: (assignment.type.incompatible)
-        List<@Odd String> l6 = a2;  // should emit error
+        List<@Odd String> l6 = a2; // should emit error
         List<@Odd String> l7 = b1;
         List<@Odd String> l8 = b2;
     }
 
     void testInter() {
         //:: error: (assignment.type.incompatible)
-        Inter<String> l1 = a1;  // should emit error
+        Inter<String> l1 = a1; // should emit error
         //:: error: (assignment.type.incompatible)
-        Inter<String> l2 = a2;  // should emit error
+        Inter<String> l2 = a2; // should emit error
         Inter<String> l3 = b1;
         Inter<String> l4 = b2;
 
@@ -68,16 +70,16 @@ public class Supertypes {
     }
 
     void ListIterable() {
-        for (String s : a1);
-        for (String s : a2);
-        for (String s : b1);
-        for (String s : b2);
+        for (String s : a1) ;
+        for (String s : a2) ;
+        for (String s : b1) ;
+        for (String s : b2) ;
 
         //:: error: (enhancedfor.type.incompatible)
-        for (@Odd String s : a1);   // should emit error
+        for (@Odd String s : a1) ; // should emit error
         //:: error: (enhancedfor.type.incompatible)
-        for (@Odd String s : a2);   // should emit error
-        for (@Odd String s : b1);
-        for (@Odd String s : b2);
+        for (@Odd String s : a2) ; // should emit error
+        for (@Odd String s : b1) ;
+        for (@Odd String s : b2) ;
     }
 }

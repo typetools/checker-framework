@@ -1,24 +1,24 @@
+import java.util.*;
 import org.checkerframework.checker.interning.qual.*;
 
-import java.util.*;
-
-public class Creation {    @Interned Foo[] a = new @Interned Foo[22]; // valid
+public class Creation {
+    @Interned Foo[] a = new @Interned Foo[22]; // valid
 
     class Foo {}
 
     @Interned Foo[] fa_field1 = new @Interned Foo[22]; // valid
-    @Interned Foo[] fa_field2 = new @Interned Foo[22];  // valid
+    @Interned Foo[] fa_field2 = new @Interned Foo[22]; // valid
 
     public void test() {
         //:: error: (assignment.type.incompatible)
-        @Interned Foo f = new Foo();            // error
-        Foo g = new Foo();                      // valid
-        @Interned Foo h = new @Interned Foo();  // valid
+        @Interned Foo f = new Foo(); // error
+        Foo g = new Foo(); // valid
+        @Interned Foo h = new @Interned Foo(); // valid
         //:: error: (not.interned)
-        boolean b = (f == g);                   // error
+        boolean b = (f == g); // error
 
         @Interned Foo[] fa1 = new @Interned Foo[22]; // valid
-        @Interned Foo[] fa2 = new @Interned Foo[22];  // valid
+        @Interned Foo[] fa2 = new @Interned Foo[22]; // valid
     }
 
     public @Interned Object read_data_0() {
@@ -45,6 +45,4 @@ public class Creation {    @Interned Foo[] a = new @Interned Foo[22]; // valid
         //:: error: (return.type.incompatible)
         return new String("hello");
     }
-
-
 }

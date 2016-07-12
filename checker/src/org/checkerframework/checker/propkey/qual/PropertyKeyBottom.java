@@ -1,11 +1,10 @@
 package org.checkerframework.checker.propkey.qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.framework.qual.DefaultFor;
-import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * The bottom qualifier for the PropertyKeyChecker and associated checkers.

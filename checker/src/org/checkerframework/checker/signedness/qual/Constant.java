@@ -1,7 +1,6 @@
 package org.checkerframework.checker.signedness.qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.framework.qual.*;
 
 /**
@@ -13,11 +12,6 @@ import org.checkerframework.framework.qual.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf( { Unsigned.class, Signed.class } )
-@ImplicitFor(
-    literals = {
-        LiteralKind.INT,
-        LiteralKind.LONG,
-        LiteralKind.CHAR
-    } )
-public @interface Constant { }
+@SubtypeOf({Unsigned.class, Signed.class})
+@ImplicitFor(literals = {LiteralKind.INT, LiteralKind.LONG, LiteralKind.CHAR})
+public @interface Constant {}

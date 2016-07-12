@@ -4,11 +4,9 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-
 import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.EnsuresQualifier;
 import org.checkerframework.framework.qual.EnsuresQualifierIf;
@@ -40,8 +38,7 @@ public class ContractsUtils {
     /**
      * Returns an instance of the {@link ContractsUtils} class.
      */
-    public static ContractsUtils getInstance(
-            GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
+    public static ContractsUtils getInstance(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         if (instance == null || instance.factory != factory) {
             instance = new ContractsUtils(factory);
         }
@@ -110,7 +107,8 @@ public class ContractsUtils {
          */
         public final String annotationString;
 
-        public ConditionalPostcondition(String expression, boolean annoResult, String annotationString) {
+        public ConditionalPostcondition(
+                String expression, boolean annoResult, String annotationString) {
             this.expression = expression;
             this.annoResult = annoResult;
             this.annotationString = annotationString;
@@ -121,20 +119,20 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of preconditions on the
      * element {@code element}.
      */
-    public Set<PreOrPostcondition> getPreconditions(
-            Element element) {
+    public Set<PreOrPostcondition> getPreconditions(Element element) {
         Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
         // Check for a single contract.
-        AnnotationMirror requiresAnnotation = factory.getDeclAnnotation(
-                element, RequiresQualifier.class);
+        AnnotationMirror requiresAnnotation =
+                factory.getDeclAnnotation(element, RequiresQualifier.class);
         result.addAll(getPrecondition(requiresAnnotation));
 
         // Check for multiple contracts.
-        AnnotationMirror requiresAnnotations = factory.getDeclAnnotation(
-                element, RequiresQualifiers.class);
+        AnnotationMirror requiresAnnotations =
+                factory.getDeclAnnotation(element, RequiresQualifiers.class);
         if (requiresAnnotations != null) {
-            List<AnnotationMirror> annotations = AnnotationUtils
-                    .getElementValueArray(requiresAnnotations, "value", AnnotationMirror.class, false);
+            List<AnnotationMirror> annotations =
+                    AnnotationUtils.getElementValueArray(
+                            requiresAnnotations, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : annotations) {
                 result.addAll(getPrecondition(a));
             }
@@ -142,16 +140,16 @@ public class ContractsUtils {
 
         // Check type-system specific annotations.
         Class<PreconditionAnnotation> metaAnnotation = PreconditionAnnotation.class;
-        List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations = factory
-                .getDeclAnnotationWithMetaAnnotation(element,
-                        metaAnnotation);
+        List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
+                factory.getDeclAnnotationWithMetaAnnotation(element, metaAnnotation);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.getElementValueArray(anno,
-                    "value", String.class, false);
-            String annotationString = AnnotationUtils.getElementValueClassName(
-                    metaAnno, "qualifier", false).toString();
+            List<String> expressions =
+                    AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+            String annotationString =
+                    AnnotationUtils.getElementValueClassName(metaAnno, "qualifier", false)
+                            .toString();
             for (String expr : expressions) {
                 result.add(new PreOrPostcondition(expr, annotationString));
             }
@@ -163,16 +161,17 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of preconditions
      * according to the given {@link RequiresQualifier}.
      */
-    private Set<PreOrPostcondition> getPrecondition(
-            AnnotationMirror requiresAnnotation) {
+    private Set<PreOrPostcondition> getPrecondition(AnnotationMirror requiresAnnotation) {
         if (requiresAnnotation == null) {
             return Collections.emptySet();
         }
         Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
-        List<String> expressions = AnnotationUtils.getElementValueArray(
-                requiresAnnotation, "expression", String.class, false);
-        String annotation = AnnotationUtils.getElementValueClassName(
-                requiresAnnotation, "qualifier", false).toString();
+        List<String> expressions =
+                AnnotationUtils.getElementValueArray(
+                        requiresAnnotation, "expression", String.class, false);
+        String annotation =
+                AnnotationUtils.getElementValueClassName(requiresAnnotation, "qualifier", false)
+                        .toString();
         for (String expr : expressions) {
             result.add(new PreOrPostcondition(expr, annotation));
         }
@@ -183,20 +182,20 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of postconditions on
      * the method {@code methodElement}.
      */
-    public Set<PreOrPostcondition> getPostconditions(
-            ExecutableElement methodElement) {
+    public Set<PreOrPostcondition> getPostconditions(ExecutableElement methodElement) {
         Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
         // Check for a single contract.
-        AnnotationMirror ensuresAnnotation = factory.getDeclAnnotation(
-                methodElement, EnsuresQualifier.class);
+        AnnotationMirror ensuresAnnotation =
+                factory.getDeclAnnotation(methodElement, EnsuresQualifier.class);
         result.addAll(getPostcondition(ensuresAnnotation));
 
         // Check for multiple contracts.
-        AnnotationMirror ensuresAnnotations = factory.getDeclAnnotation(
-                methodElement, EnsuresQualifiers.class);
+        AnnotationMirror ensuresAnnotations =
+                factory.getDeclAnnotation(methodElement, EnsuresQualifiers.class);
         if (ensuresAnnotations != null) {
-            List<AnnotationMirror> annotations = AnnotationUtils
-                    .getElementValueArray(ensuresAnnotations, "value", AnnotationMirror.class, false);
+            List<AnnotationMirror> annotations =
+                    AnnotationUtils.getElementValueArray(
+                            ensuresAnnotations, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : annotations) {
                 result.addAll(getPostcondition(a));
             }
@@ -204,16 +203,16 @@ public class ContractsUtils {
 
         // Check type-system specific annotations.
         Class<PostconditionAnnotation> metaAnnotation = PostconditionAnnotation.class;
-        List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations = factory
-                .getDeclAnnotationWithMetaAnnotation(methodElement,
-                        metaAnnotation);
+        List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
+                factory.getDeclAnnotationWithMetaAnnotation(methodElement, metaAnnotation);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.getElementValueArray(anno,
-                    "value", String.class, false);
-            String annotationString = AnnotationUtils.getElementValueClassName(
-                    metaAnno, "qualifier", false).toString();
+            List<String> expressions =
+                    AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+            String annotationString =
+                    AnnotationUtils.getElementValueClassName(metaAnno, "qualifier", false)
+                            .toString();
             for (String expr : expressions) {
                 result.add(new PreOrPostcondition(expr, annotationString));
             }
@@ -225,16 +224,17 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of postconditions
      * according to the given {@link EnsuresQualifier}.
      */
-    private Set<PreOrPostcondition> getPostcondition(
-            AnnotationMirror ensuresAnnotation) {
+    private Set<PreOrPostcondition> getPostcondition(AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation == null) {
             return Collections.emptySet();
         }
         Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
-        List<String> expressions = AnnotationUtils.getElementValueArray(
-                ensuresAnnotation, "expression", String.class, false);
-        String annotation = AnnotationUtils.getElementValueClassName(
-                ensuresAnnotation, "qualifier", false).toString();
+        List<String> expressions =
+                AnnotationUtils.getElementValueArray(
+                        ensuresAnnotation, "expression", String.class, false);
+        String annotation =
+                AnnotationUtils.getElementValueClassName(ensuresAnnotation, "qualifier", false)
+                        .toString();
         for (String expr : expressions) {
             result.add(new PreOrPostcondition(expr, annotation));
         }
@@ -249,35 +249,37 @@ public class ContractsUtils {
             ExecutableElement methodElement) {
         Set<ConditionalPostcondition> result = new LinkedHashSet<ConditionalPostcondition>();
         // Check for a single contract.
-        AnnotationMirror ensuresAnnotationIf = factory.getDeclAnnotation(
-                methodElement, EnsuresQualifierIf.class);
+        AnnotationMirror ensuresAnnotationIf =
+                factory.getDeclAnnotation(methodElement, EnsuresQualifierIf.class);
         result.addAll(getConditionalPostcondition(ensuresAnnotationIf));
 
         // Check for multiple contracts.
-        AnnotationMirror ensuresAnnotationsIf = factory.getDeclAnnotation(
-                methodElement, EnsuresQualifiersIf.class);
+        AnnotationMirror ensuresAnnotationsIf =
+                factory.getDeclAnnotation(methodElement, EnsuresQualifiersIf.class);
         if (ensuresAnnotationsIf != null) {
-            List<AnnotationMirror> annotations = AnnotationUtils
-                    .getElementValueArray(ensuresAnnotationsIf, "value", AnnotationMirror.class, false);
+            List<AnnotationMirror> annotations =
+                    AnnotationUtils.getElementValueArray(
+                            ensuresAnnotationsIf, "value", AnnotationMirror.class, false);
             for (AnnotationMirror a : annotations) {
                 result.addAll(getConditionalPostcondition(a));
             }
         }
 
         // Check type-system specific annotations.
-        Class<ConditionalPostconditionAnnotation> metaAnnotation = ConditionalPostconditionAnnotation.class;
-        List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations = factory
-                .getDeclAnnotationWithMetaAnnotation(methodElement,
-                        metaAnnotation);
+        Class<ConditionalPostconditionAnnotation> metaAnnotation =
+                ConditionalPostconditionAnnotation.class;
+        List<Pair<AnnotationMirror, AnnotationMirror>> declAnnotations =
+                factory.getDeclAnnotationWithMetaAnnotation(methodElement, metaAnnotation);
         for (Pair<AnnotationMirror, AnnotationMirror> r : declAnnotations) {
             AnnotationMirror anno = r.first;
             AnnotationMirror metaAnno = r.second;
-            List<String> expressions = AnnotationUtils.getElementValueArray(anno,
-                    "expression", String.class, false);
-            String annotationString = AnnotationUtils.getElementValueClassName(
-                    metaAnno, "qualifier", false).toString();
-            boolean annoResult = AnnotationUtils.getElementValue(anno,
-                    "result", Boolean.class, false);
+            List<String> expressions =
+                    AnnotationUtils.getElementValueArray(anno, "expression", String.class, false);
+            String annotationString =
+                    AnnotationUtils.getElementValueClassName(metaAnno, "qualifier", false)
+                            .toString();
+            boolean annoResult =
+                    AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
                 result.add(new ConditionalPostcondition(expr, annoResult, annotationString));
             }
@@ -296,12 +298,15 @@ public class ContractsUtils {
             return Collections.emptySet();
         }
         Set<ConditionalPostcondition> result = new LinkedHashSet<ConditionalPostcondition>();
-        List<String> expressions = AnnotationUtils.getElementValueArray(
-                ensuresAnnotationIf, "expression", String.class, false);
-        String annotation = AnnotationUtils.getElementValueClassName(
-                ensuresAnnotationIf, "qualifier", false).toString();
-        boolean annoResult = AnnotationUtils.getElementValue(ensuresAnnotationIf,
-                "result", Boolean.class, false);
+        List<String> expressions =
+                AnnotationUtils.getElementValueArray(
+                        ensuresAnnotationIf, "expression", String.class, false);
+        String annotation =
+                AnnotationUtils.getElementValueClassName(ensuresAnnotationIf, "qualifier", false)
+                        .toString();
+        boolean annoResult =
+                AnnotationUtils.getElementValue(
+                        ensuresAnnotationIf, "result", Boolean.class, false);
         for (String expr : expressions) {
             result.add(new ConditionalPostcondition(expr, annoResult, annotation));
         }

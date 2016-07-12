@@ -3,9 +3,13 @@ import tests.util.*;
 
 class ExtendsDefault {
 
-    @DefaultQualifier(value=Odd.class, locations={ TypeUseLocation.UPPER_BOUND })
-    class MyOddDefault<T> { }
-    class MyNonOddDefault<T> { }
+    @DefaultQualifier(
+        value = Odd.class,
+        locations = {TypeUseLocation.UPPER_BOUND}
+    )
+    class MyOddDefault<T> {}
+
+    class MyNonOddDefault<T> {}
 
     void testNonOdd() {
         //:: error: (type.argument.type.incompatible)
@@ -17,5 +21,4 @@ class ExtendsDefault {
         MyOddDefault<@Odd String> s1;
         MyNonOddDefault<@Odd String> s2;
     }
-
 }

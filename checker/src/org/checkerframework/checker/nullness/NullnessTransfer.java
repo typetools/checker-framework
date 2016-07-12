@@ -1,5 +1,13 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -32,17 +40,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-
 /**
  * Transfer function for the non-null type system. Performs the following
  * refinements:
@@ -58,8 +55,8 @@ import com.sun.source.tree.MethodInvocationTree;
  *
  * @author Stefan Heule
  */
-public class NullnessTransfer extends
-        InitializationTransfer<NullnessValue, NullnessTransfer, NullnessStore> {
+public class NullnessTransfer
+        extends InitializationTransfer<NullnessValue, NullnessTransfer, NullnessStore> {
 
     /** Type-specific version of super.analysis. */
     protected final NullnessAnalysis analysis;
@@ -72,11 +69,15 @@ public class NullnessTransfer extends
     public NullnessTransfer(NullnessAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
-        this.keyForTypeFactory = ((BaseTypeChecker)analysis.getTypeFactory().getContext().getChecker()).getTypeFactoryOfSubchecker(KeyForSubchecker.class);
-        NONNULL = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), NonNull.class);
-        NULLABLE = AnnotationUtils.fromClass(analysis.getTypeFactory()
-                .getElementUtils(), Nullable.class);
+        this.keyForTypeFactory =
+                ((BaseTypeChecker) analysis.getTypeFactory().getContext().getChecker())
+                        .getTypeFactoryOfSubchecker(KeyForSubchecker.class);
+        NONNULL =
+                AnnotationUtils.fromClass(
+                        analysis.getTypeFactory().getElementUtils(), NonNull.class);
+        NULLABLE =
+                AnnotationUtils.fromClass(
+                        analysis.getTypeFactory().getElementUtils(), Nullable.class);
     }
 
     /**
@@ -84,8 +85,7 @@ public class NullnessTransfer extends
      * to this method implement case 2.
      */
     protected void makeNonNull(NullnessStore store, Node node) {
-        Receiver internalRepr = FlowExpressions.internalReprOf(
-                analysis.getTypeFactory(), node);
+        Receiver internalRepr = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
         store.insertValue(internalRepr, NONNULL);
     }
 
@@ -93,8 +93,7 @@ public class NullnessTransfer extends
      * Sets a given {@link Node} {@code node} to non-null in the given
      * {@link TransferResult}.
      */
-    protected void makeNonNull(
-            TransferResult<NullnessValue, NullnessStore> result, Node node) {
+    protected void makeNonNull(TransferResult<NullnessValue, NullnessStore> result, Node node) {
         if (result.containsTwoStores()) {
             makeNonNull(result.getThenStore(), node);
             makeNonNull(result.getElseStore(), node);
@@ -122,24 +121,26 @@ public class NullnessTransfer extends
      */
     @Override
     protected TransferResult<NullnessValue, NullnessStore> strengthenAnnotationOfEqualTo(
-            TransferResult<NullnessValue, NullnessStore> res, Node firstNode,
-            Node secondNode, NullnessValue firstValue, NullnessValue secondValue,
+            TransferResult<NullnessValue, NullnessStore> res,
+            Node firstNode,
+            Node secondNode,
+            NullnessValue firstValue,
+            NullnessValue secondValue,
             boolean notEqualTo) {
-        res = super.strengthenAnnotationOfEqualTo(res, firstNode, secondNode,
-                firstValue, secondValue, notEqualTo);
+        res =
+                super.strengthenAnnotationOfEqualTo(
+                        res, firstNode, secondNode, firstValue, secondValue, notEqualTo);
         if (firstNode instanceof NullLiteralNode) {
             NullnessStore thenStore = res.getThenStore();
             NullnessStore elseStore = res.getElseStore();
 
             List<Node> secondParts = splitAssignments(secondNode);
             for (Node secondPart : secondParts) {
-                Receiver secondInternal = FlowExpressions.internalReprOf(
-                        analysis.getTypeFactory(), secondPart);
+                Receiver secondInternal =
+                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), secondPart);
                 if (CFAbstractStore.canInsertReceiver(secondInternal)) {
-                    thenStore = thenStore == null ? res.getThenStore()
-                            : thenStore;
-                    elseStore = elseStore == null ? res.getElseStore()
-                            : elseStore;
+                    thenStore = thenStore == null ? res.getThenStore() : thenStore;
+                    elseStore = elseStore == null ? res.getElseStore() : elseStore;
                     if (notEqualTo) {
                         thenStore.insertValue(secondInternal, NONNULL);
                     } else {
@@ -149,16 +150,15 @@ public class NullnessTransfer extends
             }
 
             if (secondValue != null
-                    && (secondValue.getType().hasAnnotation(PolyNull.class) || secondValue
-                            .getType().hasAnnotation(PolyAll.class))) {
+                    && (secondValue.getType().hasAnnotation(PolyNull.class)
+                            || secondValue.getType().hasAnnotation(PolyAll.class))) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
                 thenStore.setPolyNullNull(true);
             }
 
             if (thenStore != null) {
-                return new ConditionalTransferResult<>(res.getResultValue(),
-                        thenStore, elseStore);
+                return new ConditionalTransferResult<>(res.getResultValue(), thenStore, elseStore);
             }
         }
         return res;
@@ -167,8 +167,7 @@ public class NullnessTransfer extends
     @Override
     public TransferResult<NullnessValue, NullnessStore> visitArrayAccess(
             ArrayAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
-        TransferResult<NullnessValue, NullnessStore> result = super
-                .visitArrayAccess(n, p);
+        TransferResult<NullnessValue, NullnessStore> result = super.visitArrayAccess(n, p);
         makeNonNull(result, n.getArray());
         return result;
     }
@@ -186,8 +185,7 @@ public class NullnessTransfer extends
     @Override
     public TransferResult<NullnessValue, NullnessStore> visitMethodAccess(
             MethodAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
-        TransferResult<NullnessValue, NullnessStore> result = super
-                .visitMethodAccess(n, p);
+        TransferResult<NullnessValue, NullnessStore> result = super.visitMethodAccess(n, p);
         makeNonNull(result, n.getReceiver());
         return result;
     }
@@ -195,17 +193,15 @@ public class NullnessTransfer extends
     @Override
     public TransferResult<NullnessValue, NullnessStore> visitFieldAccess(
             FieldAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
-        TransferResult<NullnessValue, NullnessStore> result = super
-                .visitFieldAccess(n, p);
+        TransferResult<NullnessValue, NullnessStore> result = super.visitFieldAccess(n, p);
         makeNonNull(result, n.getReceiver());
         return result;
     }
 
     @Override
-    public TransferResult<NullnessValue, NullnessStore> visitThrow(ThrowNode n,
-            TransferInput<NullnessValue, NullnessStore> p) {
-        TransferResult<NullnessValue, NullnessStore> result = super.visitThrow(n,
-                p);
+    public TransferResult<NullnessValue, NullnessStore> visitThrow(
+            ThrowNode n, TransferInput<NullnessValue, NullnessStore> p) {
+        TransferResult<NullnessValue, NullnessStore> result = super.visitThrow(n, p);
         makeNonNull(result, n.getExpression());
         return result;
     }
@@ -217,8 +213,7 @@ public class NullnessTransfer extends
     @Override
     public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(
             MethodInvocationNode n, TransferInput<NullnessValue, NullnessStore> in) {
-        TransferResult<NullnessValue, NullnessStore> result = super
-                .visitMethodInvocation(n, in);
+        TransferResult<NullnessValue, NullnessStore> result = super.visitMethodInvocation(n, in);
 
         // Make receiver non-null.
         makeNonNull(result, n.getTarget().getReceiver());
@@ -227,8 +222,7 @@ public class NullnessTransfer extends
         // argument non-null.
         MethodInvocationTree tree = n.getTree();
         ExecutableElement method = TreeUtils.elementFromUse(tree);
-        AnnotatedExecutableType methodType = analysis.getTypeFactory()
-                .getAnnotatedType(method);
+        AnnotatedExecutableType methodType = analysis.getTypeFactory().getAnnotatedType(method);
         List<AnnotatedTypeMirror> methodParams = methodType.getParameterTypes();
         List<? extends ExpressionTree> methodArgs = tree.getArguments();
         for (int i = 0; i < methodParams.size() && i < methodArgs.size(); ++i) {
@@ -249,27 +243,35 @@ public class NullnessTransfer extends
 
             javax.lang.model.util.Types types = analysis.getTypes();
 
-            TypeMirror mapInterfaceTypeMirror = types.erasure(TypesUtils.typeFromClass(types, analysis.getEnv().getElementUtils(), Map.class));
+            TypeMirror mapInterfaceTypeMirror =
+                    types.erasure(
+                            TypesUtils.typeFromClass(
+                                    types, analysis.getEnv().getElementUtils(), Map.class));
 
             TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
 
             if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
                 Node receiver = n.getTarget().getReceiver();
-                Receiver internalReceiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver);
+                Receiver internalReceiver =
+                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver);
 
                 String mapName = internalReceiver.toString();
-                AnnotationMirror keyForMapName = keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName);
+                AnnotationMirror keyForMapName =
+                        keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName);
 
                 AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
 
-                if (type != null && keyForTypeFactory.keyForValuesSubtypeCheck(keyForMapName, type, tree, n)) {
+                if (type != null
+                        && keyForTypeFactory.keyForValuesSubtypeCheck(
+                                keyForMapName, type, tree, n)) {
                     makeNonNull(result, n);
 
                     NullnessValue oldResultValue = result.getResultValue();
-                    NullnessValue refinedResultValue = analysis.createSingleAnnotationValue(
-                            NONNULL, oldResultValue.getType().getUnderlyingType());
-                    NullnessValue newResultValue = refinedResultValue.mostSpecific(
-                            oldResultValue, null);
+                    NullnessValue refinedResultValue =
+                            analysis.createSingleAnnotationValue(
+                                    NONNULL, oldResultValue.getType().getUnderlyingType());
+                    NullnessValue newResultValue =
+                            refinedResultValue.mostSpecific(oldResultValue, null);
                     result.setResultValue(newResultValue);
                 }
             }
@@ -279,8 +281,8 @@ public class NullnessTransfer extends
     }
 
     @Override
-    public TransferResult<NullnessValue, NullnessStore> visitReturn(ReturnNode n,
-            TransferInput<NullnessValue, NullnessStore> in) {
+    public TransferResult<NullnessValue, NullnessStore> visitReturn(
+            ReturnNode n, TransferInput<NullnessValue, NullnessStore> in) {
         // HACK: make sure we have a value for return statements, because we
         // need to record whether (at this return statement) isPolyNullNull is
         // set or not.
@@ -288,8 +290,8 @@ public class NullnessTransfer extends
         if (in.containsTwoStores()) {
             NullnessStore thenStore = in.getThenStore();
             NullnessStore elseStore = in.getElseStore();
-            return new ConditionalTransferResult<>(finishValue(value,
-                    thenStore, elseStore), thenStore, elseStore);
+            return new ConditionalTransferResult<>(
+                    finishValue(value, thenStore, elseStore), thenStore, elseStore);
         } else {
             NullnessStore info = in.getRegularStore();
             return new RegularTransferResult<>(finishValue(value, info), info);
@@ -300,10 +302,9 @@ public class NullnessTransfer extends
      * Creates a dummy abstract value (whose type is not supposed to be looked at).
      */
     private NullnessValue createDummyValue() {
-        TypeMirror dummy = analysis.getEnv().getTypeUtils()
-                .getPrimitiveType(TypeKind.BOOLEAN);
-        AnnotatedTypeMirror annotatedDummy = AnnotatedTypeMirror.createType(
-                dummy, analysis.getTypeFactory(), false);
+        TypeMirror dummy = analysis.getEnv().getTypeUtils().getPrimitiveType(TypeKind.BOOLEAN);
+        AnnotatedTypeMirror annotatedDummy =
+                AnnotatedTypeMirror.createType(dummy, analysis.getTypeFactory(), false);
         annotatedDummy.addAnnotation(NonNull.class);
         annotatedDummy.addAnnotation(NonRaw.class);
         annotatedDummy.addAnnotation(Initialized.class);

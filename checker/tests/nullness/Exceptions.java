@@ -3,7 +3,7 @@ import org.checkerframework.checker.nullness.qual.*;
 public class Exceptions {
     void exceptionParam(@Nullable Exception m) {
         //:: error: (dereference.of.nullable)
-        m.getClass();   // should emit error
+        m.getClass(); // should emit error
     }
 
     void nonnullExceptionParam(@NonNull Exception m) {
@@ -16,7 +16,7 @@ public class Exceptions {
         } catch (Exception e) {
             e.getClass();
             //:: error: (dereference.of.nullable)
-            m.getClass();   // should emit error
+            m.getClass(); // should emit error
         }
     }
 

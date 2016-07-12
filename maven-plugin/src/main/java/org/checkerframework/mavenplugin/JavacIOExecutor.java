@@ -1,5 +1,8 @@
 package org.checkerframework.mavenplugin;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.apache.maven.plugin.CompilationFailureException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -8,10 +11,6 @@ import org.codehaus.plexus.compiler.CompilerError;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A CommandLineExecutor that reports the output and error streams with no additional processing.
@@ -38,16 +37,22 @@ public class JavacIOExecutor implements CommandLineExceutor {
         try {
             exitCode = CommandLineUtils.executeCommandLine(cl, out, out);
         } catch (CommandLineException e) {
-            throw new MojoExecutionException("Unable to execute the Checker Framework, executable: " + pathToExecutable +
-                    ", command line: " + Arrays.toString(cl.getCommandline()), e);
+            throw new MojoExecutionException(
+                    "Unable to execute the Checker Framework, executable: "
+                            + pathToExecutable
+                            + ", command line: "
+                            + Arrays.toString(cl.getCommandline()),
+                    e);
         }
 
         final String javacOutput = out.getOutput();
 
         // Sanity check - if the exit code is non-zero, there should be some messages
         if (exitCode != 0 && javacOutput.isEmpty()) {
-            throw new MojoExecutionException("Exit code from the compiler was not zero (" + exitCode +
-                    "), but no output was reported");
+            throw new MojoExecutionException(
+                    "Exit code from the compiler was not zero ("
+                            + exitCode
+                            + "), but no output was reported");
         }
 
         if (exitCode == 0) {
@@ -62,5 +67,4 @@ public class JavacIOExecutor implements CommandLineExceutor {
             }
         }
     }
-
 }
