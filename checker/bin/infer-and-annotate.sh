@@ -46,8 +46,11 @@ TEMP_DIR=build/temp-whole-program-inference-output
 PREV_ITERATION_DIR=build/prev-whole-program-inference
 
 debug=
+interactive=
 # For debugging
 # debug=1
+# Require user confirmation before running each command
+# interactive=1
 
 # This function separates extra arguments passed to the checker from Java files
 # received as arguments.
@@ -107,8 +110,8 @@ infer_and_annotate() {
 
         # Runs CF's javac
         command="${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer -Awarns -Xmaxwarns 10000 $extra_args $java_files"
-        if [ $debug ]; then
-            echo ${command}
+        echo "About to run: ${command}"
+        if [ $interactive ]; then
             echo "Press any key to run command... "
             read _
         fi
@@ -132,7 +135,9 @@ infer_and_annotate() {
         # in its header. To avoid this problem, we add the "|| true" below.
         DIFF_JAIF="$(diff -qr $PREV_ITERATION_DIR $WHOLE_PROGRAM_INFERENCE_DIR || true)"
     done
-    clean
+    if [ ! $debug ]; then
+        clean
+    fi
 }
 
 clean() {
