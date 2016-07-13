@@ -5,6 +5,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -359,6 +360,8 @@ public class ElementAnnotationUtil {
             return getLocationTypeAWT((AnnotatedWildcardType) type, location);
         } else if (type.getKind() == TypeKind.ARRAY) {
             return getLocationTypeAAT((AnnotatedArrayType) type, location);
+        } else if (type.getKind() == TypeKind.UNION) {
+            return getLocationTypeAUT((AnnotatedUnionType) type, location);
         } else {
             ErrorReporter.errorAbort("ElementAnnotationUtil.getTypeAtLocation: only declared types, "
                                    + "arrays, and null types can have annotations with location; found type: "
@@ -484,6 +487,20 @@ public class ElementAnnotationUtil {
                     "invalid location " + location + " for type: " + type);
             return null; // dead code
         }
+    }
+
+    /*
+     * TODO: this case should never occur!
+     * A union type can only occur in special locations, e.g. for exception
+     * parameters. The EXCEPTION_PARAMETER TartetType should be used to
+     * decide which of the alternatives in the union to annotate.
+     * Only the TypePathEntry is not enough.
+     * As a hack, always annotate the first alternative.
+     */
+    private static AnnotatedTypeMirror getLocationTypeAUT(AnnotatedUnionType type,
+            List<TypeAnnotationPosition.TypePathEntry> location) {
+        AnnotatedTypeMirror comptype = type.getAlternatives().get(0);
+        return getTypeAtLocation(comptype, location);
     }
 
 
