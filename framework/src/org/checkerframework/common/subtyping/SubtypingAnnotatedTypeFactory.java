@@ -63,6 +63,6 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        return Collections.unmodifiableSet(qualSet);
+        return qualSet;
     }
 }

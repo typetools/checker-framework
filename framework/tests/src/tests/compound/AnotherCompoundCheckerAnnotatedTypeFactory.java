@@ -26,9 +26,8 @@ public class AnotherCompoundCheckerAnnotatedTypeFactory extends BaseAnnotatedTyp
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(ACCTop.class, ACCBottom.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                Arrays.asList(ACCTop.class, ACCBottom.class));
     }
 
     @Override
