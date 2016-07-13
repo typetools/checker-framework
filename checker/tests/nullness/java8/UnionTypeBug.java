@@ -19,25 +19,20 @@ abstract class UnionTypeBug {
         } catch (@NonNull InnerException3 | @NonNull InnerException4 e) {
 
         }
-
     }
 
-    abstract void badBoy() throws InnerException1, InnerException2, InnerException3, InnerException4;
+    abstract void badBoy()
+            throws InnerException1, InnerException2, InnerException3, InnerException4;
 
     @PolyUIType
-    class InnerException1 extends Exception {
-    }
+    class InnerException1 extends Exception {}
 
     @PolyUIType
-    class InnerException2 extends Exception {
-    }
+    class InnerException2 extends Exception {}
 
     @PolyUIType
-    class InnerException3 extends Exception {
-    }
+    class InnerException3 extends Exception {}
 
     @PolyUIType
-    class InnerException4 extends Exception {
-    }
-
+    class InnerException4 extends Exception {}
 }

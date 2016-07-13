@@ -1,7 +1,9 @@
 package org.checkerframework.framework.util.element;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.ErrorReporter;
+import static com.sun.tools.javac.code.TargetType.*;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
 
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.Symbol;
@@ -10,13 +12,8 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeKind;
-
-import java.util.List;
-
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
-import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
-import static com.sun.tools.javac.code.TargetType.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  *  Applies annotations to variable declaration (providing they are not the use of a TYPE_PARAMETER).
@@ -44,10 +41,14 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
         super(type, element);
         varSymbol = (Symbol.VarSymbol) element;
 
-        if (type.getKind() == TypeKind.UNION &&
-                element.getKind() != ElementKind.EXCEPTION_PARAMETER) {
-            ErrorReporter.errorAbort("Union types only allowed for exception parameters! " +
-                "Type: " + type + " for element: " + element);
+        if (type.getKind() == TypeKind.UNION
+                && element.getKind() != ElementKind.EXCEPTION_PARAMETER) {
+            ErrorReporter.errorAbort(
+                    "Union types only allowed for exception parameters! "
+                            + "Type: "
+                            + type
+                            + " for element: "
+                            + element);
         }
         // TODO: need a way to split the union types into the right alternative
         // to use for the annotation. The exception_index is probably what we

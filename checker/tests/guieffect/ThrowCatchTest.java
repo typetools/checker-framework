@@ -36,7 +36,8 @@ class ThrowCatchTest {
         throw ex2;
     }
 
-    <@AlwaysSafe E extends  PolyUIException> void throwTypeVarAlwaysSafe2(E ex1, @AlwaysSafe E ex2) throws PolyUIException {
+    <@AlwaysSafe E extends PolyUIException> void throwTypeVarAlwaysSafe2(E ex1, @AlwaysSafe E ex2)
+            throws PolyUIException {
         if (flag) {
             throw ex1;
         }
@@ -92,7 +93,9 @@ class ThrowCatchTest {
     // Test Exception parameters
     void unionTypes() {
         try {
-        } catch (@AlwaysSafe NullPointerPolyUIException | @AlwaysSafe ArrayStorePolyUIException unionParam) {
+        } catch (
+                @AlwaysSafe NullPointerPolyUIException
+                | @AlwaysSafe ArrayStorePolyUIException unionParam) {
 
         }
 
@@ -111,14 +114,11 @@ class ThrowCatchTest {
     }
 
     @PolyUIType
-    class PolyUIException extends Exception {
-    }
+    class PolyUIException extends Exception {}
 
     @PolyUIType
-    class NullPointerPolyUIException extends NullPointerException {
-    }
+    class NullPointerPolyUIException extends NullPointerException {}
 
     @PolyUIType
-    class ArrayStorePolyUIException extends ArrayStoreException {
-    }
+    class ArrayStorePolyUIException extends ArrayStoreException {}
 }

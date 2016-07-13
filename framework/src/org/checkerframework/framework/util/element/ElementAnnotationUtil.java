@@ -527,12 +527,11 @@ public class ElementAnnotationUtil {
      * Only the TypePathEntry is not enough.
      * As a hack, always annotate the first alternative.
      */
-    private static AnnotatedTypeMirror getLocationTypeAUT(AnnotatedUnionType type,
-            List<TypeAnnotationPosition.TypePathEntry> location) {
+    private static AnnotatedTypeMirror getLocationTypeAUT(
+            AnnotatedUnionType type, List<TypeAnnotationPosition.TypePathEntry> location) {
         AnnotatedTypeMirror comptype = type.getAlternatives().get(0);
         return getTypeAtLocation(comptype, location);
     }
-
 
     private static <T> List<T> tail(List<T> list) {
         return list.subList(1, list.size());
