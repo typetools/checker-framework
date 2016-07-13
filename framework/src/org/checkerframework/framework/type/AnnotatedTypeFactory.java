@@ -3146,7 +3146,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * If {@code wildcard}'s upper bound is a super type of {@code annotatedTypeMirror},
-     * this method returns an AnnotatedTypeMirror with the same qualfiers as {@code annotatedTypeMirror}, but
+     * this method returns an AnnotatedTypeMirror with the same qualifiers as {@code
+     * annotatedTypeMirror}, but
      * the underlying Java type is the the most specific base type of {@code annotatedTypeMirror} whose erasure type
      * is equivalent to the upper bound of {@code wildcard}.
      * <p>
@@ -3190,11 +3191,28 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     public AnnotatedTypeMirror widenToUpperBound(
             final AnnotatedTypeMirror annotatedTypeMirror, final AnnotatedWildcardType wildcard) {
         final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();
-        final TypeMirror wildcardUpperBoundTypeMirror =
-                wildcard.getExtendsBound().getUnderlyingType();
-        if (!types.isSubtype(wildcardUpperBoundTypeMirror, toModifyTypeMirror)
-                && types.isSubtype(toModifyTypeMirror, wildcardUpperBoundTypeMirror)) {
+        final TypeMirror wildcardUBTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
+        if (types.isSubtype(wildcardUBTypeMirror, toModifyTypeMirror)) {
+            return annotatedTypeMirror;
+        } else if (types.isSubtype(toModifyTypeMirror, wildcardUBTypeMirror)) {
             return AnnotatedTypes.asSuper(this, annotatedTypeMirror, wildcard);
+        } else if (InternalUtils.getTypeElement(wildcardUBTypeMirror).getKind().isInterface()) {
+            // If the Checker Framework implemented capture conversion, then in this case, then
+            // the upper bound of the capture converted wildcard would be an intersection type.
+            // See JLS 15.1.10
+            // (https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.10)
+
+            // For example:
+            // class MyClass<@A T extends @B Number> { }
+            // MyClass<@C ? extends @D Serializable>
+            // The upper bound of the captured wildcard:
+            // glb(@B Number, @D Serializable) = @B Number & @D Serializable
+            // The about upper bound must be a subtype of the declared upper bound:
+            // @B Number & @D Serializable <: @B Number, which is always true.
+
+            // So, replace the upper bound at the declaration with the wildcard's upper bound so
+            // that the rest of the subtyping test pass.
+            return wildcard.getExtendsBound();
         }
 
         return annotatedTypeMirror;
