@@ -64,7 +64,8 @@ public class FormatUtil {
      * Throws an exception if the format is not syntactically valid.
      */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
-        String.format(format, (Object[])null);
+        @SuppressWarnings("unused")
+        String unused = String.format(format, (Object[])null);
     }
 
     /**

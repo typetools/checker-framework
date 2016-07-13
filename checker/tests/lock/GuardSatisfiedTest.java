@@ -17,8 +17,9 @@ public class GuardSatisfiedTest {
 
    // Test defaulting of parameters - they must default to @GuardedBy({}), not @GuardSatisfied
    void testDefaulting(Object mustDefaultToGuardedByNothing, @GuardSatisfied Object p) {
+       // Must assign in this direction to test the defaulting because assigning a RHS of @GuardedBy({}) to a LHS @GuardSatisfied is legal.
        //:: error: (assignment.type.incompatible)
-       mustDefaultToGuardedByNothing = p; // Must assign in this direction to test the defaulting because assigning a RHS of @GuardedBy({}) to a LHS @GuardSatisfied is legal.
+       mustDefaultToGuardedByNothing = p;
        @GuardedBy({}) Object q = mustDefaultToGuardedByNothing;
    }
 
@@ -117,7 +118,7 @@ public class GuardSatisfiedTest {
 
        // The following error is due to the fact that you cannot access "this.lock1" without first having acquired "lock1".
        // The right fix in a user scenario would be to not guard "this" with "this.lock1". The current object could instead
-       // be guarded by "itself" or by some other lock expression that is not one of its fields. We are keeping this test
+       // be guarded by "<self>" or by some other lock expression that is not one of its fields. We are keeping this test
        // case here to make sure this scenario issues a warning.
        //:: error: (contracts.precondition.not.satisfied.field)
        synchronized(lock1) {
@@ -182,7 +183,7 @@ public class GuardSatisfiedTest {
    final Object lock1 = new Object(), lock2 = new Object();
 
    void testAssignment(@GuardSatisfied Object o) {
-       @GuardedBy({"lock1", "lock2"}) Object p = new Object();;
+       @GuardedBy({"lock1", "lock2"}) Object p = new Object();
        //:: error: (contracts.precondition.not.satisfied.field)
        o = p;
        synchronized(lock1) {
@@ -221,8 +222,9 @@ public class GuardSatisfiedTest {
        }
        void testGuardSatisfiedOnArrayOfParameterizedType(MyParameterizedClass1<T> @GuardSatisfied[] array) {
        }
-       //:: error: (guardsatisfied.location.disallowed)
-       void testGuardSatisfiedOnArrayComponentOfParameterizedType(@GuardSatisfied MyParameterizedClass1<T>[] array) {
+       void testGuardSatisfiedOnArrayComponentOfParameterizedType(
+               //:: error: (guardsatisfied.location.disallowed)
+               @GuardSatisfied MyParameterizedClass1<T>[] array) {
        }
    };
 
@@ -271,8 +273,9 @@ class Foo
   }
 
   void m3(@GuardSatisfied Foo f) {
+      // TODO: Fix: This should error with method.invocation.invalid but it gets swallowed and only method.guarantee.violated is output.
       //:: error: (method.guarantee.violated)
-      f.m1(); // TODO: Fix: This should error with method.invocation.invalid but it gets swallowed and only method.guarantee.violated is output.
+      f.m1();
   }
 
   @MayReleaseLocks

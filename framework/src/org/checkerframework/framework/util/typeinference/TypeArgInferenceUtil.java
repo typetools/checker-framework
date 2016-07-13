@@ -141,39 +141,12 @@ public class TypeArgInferenceUtil {
             MethodInvocationTree methodInvocation = (MethodInvocationTree)assignmentContext;
             // TODO move to getAssignmentContext
             if (methodInvocation.getMethodSelect() instanceof MemberSelectTree
-                    && ((MemberSelectTree)methodInvocation.getMethodSelect()).getExpression() == path.getLeaf())
+                    && ((MemberSelectTree)methodInvocation.getMethodSelect()).getExpression() == path.getLeaf()) {
                 return null;
+            }
             ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(methodInvocation);
-            AnnotatedExecutableType method = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, methodElt);
-            int treeIndex = -1;
-            for (int i = 0; i < method.getParameterTypes().size(); ++i) {
-                ExpressionTree argumentTree = methodInvocation.getArguments().get(i);
-                if (isArgument(path, argumentTree)) {
-                    treeIndex = i;
-                    break;
-                }
-            }
-            assert treeIndex != -1 :  "Could not find path in MethodInvocationTree.\n"
-                                      + "treePath=" + path.toString() + "\n"
-                                      + "methodInvocation=" + methodInvocation;
-
-            if (treeIndex == -1) {
-                return null;
-            }
-
-            final AnnotatedTypeMirror paramType = method.getParameterTypes().get(treeIndex);
-
-            // Examples like this:
-            // <T> T outMethod()
-            // <U> void inMethod(U u);
-            // inMethod(outMethod())
-            // would require solving the constraints for both type argument inferences simultaneously
-            if (paramType == null || containsUninferredTypeParameter(paramType, method)) {
-                return null;
-            }
-
-            return paramType;
+            return assignedToExecutable(atypeFactory, path, methodElt, receiver, methodInvocation.getArguments());
         } else if (assignmentContext instanceof NewArrayTree) {
             //TODO: I left the previous implementation below, it definitely caused infinite loops if you
             //TODO: called it from places like the TreeAnnotator
@@ -190,24 +163,8 @@ public class TypeArgInferenceUtil {
             NewClassTree newClassTree = (NewClassTree) assignmentContext;
             ExecutableElement constructorElt = InternalUtils.constructor(newClassTree);
             AnnotatedTypeMirror receiver = atypeFactory.fromNewClass(newClassTree);
-            AnnotatedExecutableType constructor = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, constructorElt);
-            int treeIndex = -1;
-            for (int i = 0; i < constructor.getParameterTypes().size(); ++i) {
-                ExpressionTree argumentTree = newClassTree.getArguments().get(i);
-                if (isArgument(path, argumentTree)) {
-                    treeIndex = i;
-                    break;
-                }
-            }
-
-            assert treeIndex != -1 :  "Could not find path in NewClassTree.\n"
-                    + "treePath=" + path.toString() + "\n"
-                    + "methodInvocation=" + newClassTree;
-            if (treeIndex == -1) {
-                return null;
-            }
-
-            return constructor.getParameterTypes().get(treeIndex);
+            return assignedToExecutable(atypeFactory, path, constructorElt, receiver,
+                    newClassTree.getArguments());
         } else if (assignmentContext instanceof ReturnTree) {
             HashSet<Kind> kinds = new HashSet<>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
             Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
@@ -227,6 +184,41 @@ public class TypeArgInferenceUtil {
 
         ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
         return null; // dead code
+    }
+
+    private static AnnotatedTypeMirror assignedToExecutable(AnnotatedTypeFactory atypeFactory,
+                                                            TreePath path, ExecutableElement methodElt,
+                                                            AnnotatedTypeMirror receiver,
+                                                            List<? extends ExpressionTree> arguments) {
+        AnnotatedExecutableType method =
+                AnnotatedTypes.asMemberOf(atypeFactory.getContext().getTypeUtils(), atypeFactory, receiver, methodElt);
+        int treeIndex = -1;
+        for (int i = 0; i < arguments.size(); ++i) {
+            ExpressionTree argumentTree = arguments.get(i);
+            if (isArgument(path, argumentTree)) {
+                treeIndex = i;
+                break;
+            }
+        }
+        assert treeIndex != -1 :  "Could not find path in MethodInvocationTree.\n"
+                                  + "treePath=" + path.toString();
+        final AnnotatedTypeMirror paramType;
+        if (treeIndex >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
+            paramType = method.getParameterTypes().get( method.getParameterTypes().size() -1);
+        } else {
+            paramType = method.getParameterTypes().get(treeIndex);
+        }
+
+        // Examples like this:
+        // <T> T outMethod()
+        // <U> void inMethod(U u);
+        // inMethod(outMethod())
+        // would require solving the constraints for both type argument inferences simultaneously
+        if (paramType == null || containsUninferredTypeParameter(paramType, method)) {
+            return null;
+        }
+
+        return paramType;
     }
 
     /**

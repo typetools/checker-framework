@@ -6,6 +6,7 @@ import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -119,7 +120,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
      */
     public CFValue defaultCreateAbstractValue(
             CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        if (!AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
+        if (type instanceof AnnotatedNoType
+                || !AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
             // If the type is not valid, we return null, which is the same as
             // 'no information'.
             return null;

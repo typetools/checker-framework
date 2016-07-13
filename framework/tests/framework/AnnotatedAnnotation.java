@@ -1,9 +1,12 @@
+import java.lang.annotation.*;
 import tests.util.*;
 
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @interface OddInt {
     @Odd int value();
 }
 
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @interface OddIntArr {
     @Odd int[] value();
 }

@@ -37,8 +37,8 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * of Java expressions</a> described in the manual.
  * The expressions evaluate to an intrinsic (built-in, synchronization)
  * monitor or an explicit {@link java.util.concurrent.locks.Lock}.  The
- * expression {@code "itself"} is also permitted; the type
- * {@code @GuardedBy("itself") Object o} indicates that the value
+ * expression {@code "<self>"} is also permitted; the type
+ * {@code @GuardedBy("<self>") Object o} indicates that the value
  * referenced by {@code o} is guarded by the intrinsic (monitor) lock of
  * the value referenced by {@code o}.
  * <p>

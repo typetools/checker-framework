@@ -254,16 +254,15 @@ public class NullnessTransfer extends
             TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
 
             if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
+                Node receiver = n.getTarget().getReceiver();
+                Receiver internalReceiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver);
 
-                FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.getTypeFactory().getContext());
-
-                String mapName = flowExprContext.receiver.toString();
-                AnnotationMirror am = keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
+                String mapName = internalReceiver.toString();
+                AnnotationMirror keyForMapName = keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName);
 
                 AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
 
-                if (type != null && keyForTypeFactory.keyForValuesSubtypeCheck(am, type, tree, n)) {
+                if (type != null && keyForTypeFactory.keyForValuesSubtypeCheck(keyForMapName, type, tree, n)) {
                     makeNonNull(result, n);
 
                     NullnessValue oldResultValue = result.getResultValue();

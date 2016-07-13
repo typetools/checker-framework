@@ -31,6 +31,23 @@ public class ErrorReporter {
         }
     }
 
+    /**
+     * Log an error message use {@link String#format(String, Object...)}}
+     * and abort processing.
+     * Call this method instead of raising an exception.
+     *
+     * @param format A format string
+     * @param args Arguments to the format string
+     */
+    public static void errorAbort(String format, Object... args) {
+        String formattedMsg = String.format(format, args);
+        if (handler != null) {
+            handler.errorAbort(formattedMsg);
+        } else {
+            throw new RuntimeException(formattedMsg, new Throwable());
+        }
+    }
+
     public static void errorAbort(String msg, Throwable cause) {
         if (handler != null) {
             handler.errorAbort(msg, cause);

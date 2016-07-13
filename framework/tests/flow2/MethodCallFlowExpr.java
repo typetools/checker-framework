@@ -1,5 +1,4 @@
 import org.checkerframework.framework.qual.EnsuresQualifier;
-import org.checkerframework.framework.test.*;
 
 import java.util.*;
 import tests.util.*;
@@ -121,7 +120,7 @@ class MethodCallFlowExpr {
         //:: error: (assignment.type.incompatible)
         @Odd String l2 = p2("abc", 2L, p1(2));
         //:: error: (assignment.type.incompatible)
-        @Odd String l2b = p2("abc", 1L, p1(1));;
+        @Odd String l2b = p2("abc", 1L, p1(1));
         @Odd String l3 = p2("abc", 2L, p1(1));
     }
 

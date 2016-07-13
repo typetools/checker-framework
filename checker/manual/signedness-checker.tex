@@ -1,0 +1,155 @@
+\htmlhr
+\chapter{Signedness Checker\label{signedness-checker}}
+
+The Signedness Checker guarantees that signed and unsigned values are not mixed
+together in a computation. In addition, it prohibits meaningless operations, such
+as division on an unsigned value.
+
+
+\section{Annotations\label{signedness-checker-annotations}}
+
+The Signedness Checker uses type annotations to indicate the signedness that the programmer intends an expression to have.
+
+\begin{figure}
+\includeimage{signedness}{3.5cm}
+\caption{The type qualifier hierarchy of the signedness annotations.
+Qualifiers in gray are used internally by the type system but should never be written by a programmer.}
+\label{fig-signedness-hierarchy}
+\end{figure}
+
+These are the qualifiers in the signedness type system:
+
+\begin{description}
+
+\item[\refqualclass{checker/signedness/qual}{Unsigned}]
+    indicates that the programmer intends the value to be
+    interpreted as unsigned.
+    That is, if the most significant bit in the bitwise representation is
+    set, then the bits should be interpreted as a large positive value.
+
+\item[\refqualclass{checker/signedness/qual}{Signed}]
+    indicates that the programmer intends the value to be
+    interpreted as signed.
+    That is, if the most significant bit in the bitwise representation is
+    set, then the bits should be interpreted as a negative value.
+    This is the default annotation.
+
+\item[\refqualclass{checker/signedness/qual}{Constant}]
+    indicates that a value is a compile-time constant and could be
+    interpreted as unsigned or signed.
+    This annotation is used internally, and should not
+    be written by the programmer.
+
+\item[\refqualclass{checker/signedness/qual}{UnknownSignedness}]
+    indicates that a value's type is not relevant or known to this checker.
+    This annotation is used internally, and should not be
+    written by the programmer.
+
+\item[\refqualclass{checker/signedness/qual}{SignednessBottom}]
+  indicates that the value is \<null>.
+    This annotation is used internally, and should not
+    be written by the programmer.
+
+\end{description}
+
+Signedness is primarily about how the bits of the representation are
+interpreted, not about the values that it can represent.  An unsigned value
+is always positive, but just because a variable's value is positive does
+not mean that it should be marked as \<@Unsigned>.  If variable $v$ will be
+compared to a signed value, or used in arithmetic operations with a signed
+value, then $v$ should have signed type.
+
+
+\subsection{Default qualifiers\label{signedness-checker-annotations-default-qualifiers}}
+
+The only type qualifier that the programmer should need to write is
+\refqualclass{checker/signedness/qual}{Unsigned}.
+When a programmer leaves an expression unannotated, the
+Signedness Checker treats it in one of the following ways:
+
+\begin{itemize}
+
+    \item
+    All \code{byte}, \code{short}, \code{int}, and \code{long} literals default
+    to \refqualclass{checker/signedness/qual}{Constant}.
+    \item
+    All \code{byte}, \code{short}, \code{int}, and \code{long} variables default
+    to \refqualclass{checker/signedness/qual}{Signed}.
+    \item
+    All other expressions default to \refqualclass{checker/signedness/qual}{UnknownSignedness}.
+
+\end{itemize}
+
+
+\section{Prohibited operations\label{signedness-checker-prohibited-operations}}
+
+The Signedness Checker prohibits the following uses of operators:
+
+\begin{itemize}
+
+    \item
+    Division (\code{/}) or modulus (\code{\%}) with an \code{@Unsigned}
+    operand.
+    \item
+    Signed right shift (\verb|>>|) with an \code{@Unsigned} left operand.
+    \item
+    Unsigned right shift (\verb|>>>|) with a \code{@Signed} left operand.
+    \item
+    Greater/less than (or equal) comparators
+    (\code{<}, \code{<=}, \code{>}, \code{>=}) with an \code{@Unsigned}
+    operand.
+    \item
+    Any other binary operator with one \code{@Unsigned} operand and one
+    \code{@Signed} operand, with the exception of left shift (\verb|<<|).
+
+\end{itemize}
+
+Like every type-checker built with the Checker Framework, the Signedness
+Checker ensures that assignments and pseudo-assignments have consistent types.
+For example, it is not permitted to assign a \code{@Signed} expression to an
+\code{@Unsigned} variable or vice versa.
+
+
+\section{Rationale\label{signedness-checker-rationale}}
+
+The Signedness Checker prevents misuse of unsigned values in Java code.
+Most Java operations interpret operands as signed.  If applied to unsigned
+values, those operations would produce unexpected, incorrect results.
+
+Consider the following Java code:
+
+\begin{Verbatim}
+  int s1 = -1;
+  int s2 = -2;
+
+  @Unsigned int u1 = 0xFFFFFFFF;  // unsigned: 2^32 - 1, signed: -1
+  @Unsigned int u2 = 0xFFFFFFFE;  // unsigned: 2^32 - 2, signed: -2
+
+  int result;
+
+  result = s2 / s1;   // OK: result is 2, which is correct for -2 / -1
+  result = u2 / u1;   // ERROR: result is 2, which is incorrect for (2^32 - 1) / (2^32 - 2)
+
+  int s3 = -1;
+  int s4 = 5;
+
+  @Unsigned int u3 = 0xFFFFFFFF;    // unsigned: 2^32 - 1, signed: -1
+  @Unsigned int u4 = 5;
+
+  result = s3 % s4;    // OK: result is 4, which is correct for -2 % 5
+  result = u3 % u4;    // ERROR: result is 4, which is incorrect for (2^32 - 1) % 5
+\end{Verbatim}
+
+These examples illustrate why division and modulus with an unsigned operand
+are illegal.  Other uses of operators are prohibited for similar reasons.
+
+
+\section{Utility routines for manipulating unsigned values\label{signedness-utilities}}
+
+Class \refclass{checker/signedness}{SignednessUtil} provides static
+utility methods for working with unsigned values.  Some of these
+re-implement functionality in JDK 8, making it available in earlier
+versions of Java.  Others provide new functionality.  All of them are
+properly annotated with \refqualclass{checker/signedness/qual}{Unsigned}
+where appropriate, so using them may reduce the number of annotations that
+you need to write.

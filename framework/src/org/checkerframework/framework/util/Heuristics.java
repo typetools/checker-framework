@@ -162,11 +162,13 @@ public class Heuristics {
                     IfTree ifTree = (IfTree)p.getLeaf();
                     ExpressionTree cond = TreeUtils.skipParens(ifTree.getCondition());
                     if (ifTree.getThenStatement() == prev.getLeaf()
-                        && matcher.match(new TreePath(p, cond)))
+                        && matcher.match(new TreePath(p, cond))) {
                         return true;
+                    }
                     if (cond.getKind() == Tree.Kind.LOGICAL_COMPLEMENT
-                        && matcher.match(new TreePath(p, ((UnaryTree)cond).getExpression())))
+                        && matcher.match(new TreePath(p, ((UnaryTree)cond).getExpression()))) {
                         return true;
+                    }
                 }
                 prev = p;
                 p = p.getParentPath();

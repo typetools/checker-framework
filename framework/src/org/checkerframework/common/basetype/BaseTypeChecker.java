@@ -381,7 +381,8 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
             try {
                 BaseTypeChecker instance = subcheckerClass.newInstance();
                 instance.setProcessingEnvironment(this.processingEnv);
-                instance.subcheckers = Collections.unmodifiableList(new ArrayList<BaseTypeChecker>()); // Prevent the new checker from storing non-immediate subcheckers
+                // Prevent the new checker from storing non-immediate subcheckers
+                instance.subcheckers = Collections.unmodifiableList(new ArrayList<BaseTypeChecker>());
                 immediateSubcheckers.add(instance);
                 instance.immediateSubcheckers = instance.instantiateSubcheckers(alreadyInitializedSubcheckerMap);
                 instance.setParentChecker(this);

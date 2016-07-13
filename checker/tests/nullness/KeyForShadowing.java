@@ -1,5 +1,3 @@
-// @skip-test
-
 // Test for Checker Framework issue 273:
 // https://github.com/typetools/checker-framework/issues/273
 
@@ -76,17 +74,4 @@ class KeyForShadowing {
         return m0.get(k);
     }
 
-    public static void localVariableShadowing() {
-        @KeyFor("m0") String kk;
-        {
-            Map<String, Integer> m0 = new HashMap<String,Integer>();
-            @KeyFor("m0") String k = "key";
-            kk = k;
-        }
-        {
-            Map<String, Integer> m0 = new HashMap<String,Integer>();
-            //:: error: (assignment.type.incompatible)
-            @KeyFor("m0") String k2 = kk;
-        }
-    }
 }
