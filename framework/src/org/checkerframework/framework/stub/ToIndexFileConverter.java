@@ -84,17 +84,17 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     private static Pattern importPattern =
             Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 
-  /**
-   * Package name that is active at the current point in the input file.
-   * Changes as package declarations are encountered.
-   */
+    /**
+     * Package name that is active at the current point in the input file.
+     * Changes as package declarations are encountered.
+     */
     private final String pkgName;
-  /** Imports that appear in the stub file. */
+    /** Imports that appear in the stub file. */
     private final List<String> imports;
-  /**
-   * A scene read from the input JAIF file,
-   * and will be written to the output JAIF file.
-   */
+    /**
+     * A scene read from the input JAIF file,
+     * and will be written to the output JAIF file.
+     */
     private final AScene scene;
 
     /**
@@ -576,7 +576,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                         String typeName = type.getType().accept(this, null);
                         StringBuilder sb = new StringBuilder();
                         int n = type.getArrayCount();
-                        for (int i = 0; i<n; i++) {
+                        for (int i = 0; i < n; i++) {
                             sb.append("[");
                         }
                         sb.append(typeName);
@@ -650,9 +650,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         }
         String[] importSplit = importName.split("\\.");
         String[] classSplit = className.split("\\.");
-        String importEnd = importSplit[importSplit.length-1];
+        String importEnd = importSplit[importSplit.length - 1];
         if ("*".equals(importEnd)) {
-            return importName.substring(0, importName.length()-1) + className;
+            return importName.substring(0, importName.length() - 1) + className;
         } else {
             // find overlap such as in
             //   import a.b.C.D;
@@ -660,7 +660,7 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             int i = importSplit.length;
             int n = i - classSplit.length;
             while (--i >= n) {
-                if (!classSplit[i-n].equals(importSplit[i])) {
+                if (!classSplit[i - n].equals(importSplit[i])) {
                     return null;
                 }
             }
