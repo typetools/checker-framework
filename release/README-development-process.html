@@ -1,169 +1,82 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Checker Framework Development Process</title>
-  </head>
-  <div>
-    <h2>Checker Framework Development Process</h2>
-    <p>This document describes the process and timeline for a Checker Framework development milestone.
-    The important deadlines are described as well as what happens when a deadline is missed.
-    A checklist is also provided of things a release person must do. If you are a release person,
-    please read this document in its entirety once, and in future releases you may read only the
-    checklist each time. <strong>If you make changes to this document, make sure changes a release person
-    must know about are included in the checklist.</strong> Background or reference information
-    may be added to the other sections.</p>
+<head>
+  <title>Checker Framework development process</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+<h1>Checker Framework development process</h1>
 
-    <p>If you are not a release person and just wish to understand the development process, please
-    skip to this <a href="#phases">section</a>.</p>
+<p>
+This document contains information about how to contribute to the Checker
+Framework.  A separate document outlines the
+<a href="README-release-process.html">release process</a>.
+</p>
 
-    <h3 id="checklist">Checklist of steps a release person must follow</h3>
+<p>
+All of these are (to the best of our knowledge) standard development
+practices.  These practices are not specific to the Checker Framework.
+</p>
 
-    <ol>
-       <li>First day of the development milestone:
-         <ul>
-           <li>If you have not done so before, follow the steps in the <a href="README-maintainers.html#pre_release_checklist">Pre-release Checklist</a>
-           in the Release Process document. These steps are important not just for the work performed on release day but
-           also for other work perfomed throughout the release. Some of these steps can take days to complete as they
-           involve obtaining permissions to access projects on various web sites.</li>
-           <li>Plan the feature freeze, code freeze and release dates for the following two months, and send an e-mail to the
-             checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev mailing lists with these dates.
-             Also please make sure to add these dates to the "Checker Framework Developers" Google Calendar.
-             We should aim to release on the first business day of the month. Whenever possible, avoid releasing
-             near the end of a month instead of the beginning of the next month, as that makes it easier for users
-             to keep track of the cadence of our releases (e.g. having a June 1st and a June 30th release makes
-             it harder to tell that the June 30th release is meant for distribution in the month of July).</li>
-         </ul>
-       </li>
-       <li>One week before Feature Freeze:
-         <ul>
-          <li>Remind bug owners of their bugs outstanding.</li>
-         </ul>
-       </li>
-       <li>Two business days before Feature Freeze:
-         <ul>
-          <li>E-mail checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev reminding
-          users of the upcoming Feature Freeze and the requirements for this deadline, including
-          the requirement for changelogs to be complete.</li>
-         </ul>
-       </li>
-       <li>The work morning after Feature Freeze:
-         <ul>
-           <li>Ensure that all the <a href="README-maintainers.html#continuous-integration">continuous integration jobs</a> are passing.</li>
-           <li>Ensure that
-           the changelogs and documentation for the Checker Framework, Type Annotations Compiler and AFU are complete by following
-           <a href="README-maintainers.html#step_by_step">these instructions</a> up to and including the &quot;Review the changelogs and documentation&quot; step.
-           <li>E-mail Mike asking him to vet the changelogs
-           that are checked in.</li>
-           <li>E-mail checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev reminding
-           users of the upcoming Code Freeze and the requirements for this deadline.</li>
-         </ul>
-       </li>
-       <li>The work morning after Code Freeze:
-         <ul>
-           <li>Ensure that all the <a
-           href="README-maintainers.html#continuous-integration">continuous
-           integration jobs</a> are passing.</li>
-           <li>If the above items are taken care of, <a href="README-maintainers.html">perform the release</a>.</li>
-         </ul>
-       </li>
+<h2>Separate out unrelated changes</h2>
 
-    </ol>
+<p>
+Each commit should address a single issue, rather than a commit addressing
+multiple issues such as both fixing a bug, adding a feature, and changing
+formatting.  Focusing each commit on a single issue makes the commit easier
+to understand and review; it also eases diagnosis and (if necessary)
+rollback.
+</p>
 
-    <h3>Recommendations/notes for the release person</h3>
-    <ul>
-      <li>As the release person, consider pushing your bug fixes at least two days prior to the code freeze deadline &mdash; this is because you
-      are likely to be helping other people make their Jenkins projects become green during those two days.</li>
-      <li>The reason Mike must be asked to look at the changelogs right after feature freeze (instead of
-      code freeze) is that there no longer is a "recall class" bug fix period, so there is now only one
-      working day between feature freeze and the release.
-      This ensures that there are no delays in releasing the products (due to
-      incomplete changelogs) or in sending the announcement e-mail.
-      If during the bug fixing period anyone fixes a bug that is worth mentioning as more
-      than a number, the changelog can be amended accordingly and Mike can be warned about it.</li>
-    </ul>
+<p>
+Likewise, each pull request should address a single issue.
+</p>
 
-    <h3 id="phases">Milestone Phases</h3>
-    <!-- I'm not sure how to get the exact effect achieved by this HTML 4 code: -->
-    <!--    <table border="1" width="864" cellspacing="2" cellpadding="2"> -->
-    <table style="border:1px solid black;width:864px;border-collapse:separate;border-spacing:2px;paddng:2px;">
-      <tbody>
-        <tr>
-          <td>
-            <p style="background-color: #6d9de9">Development</p>
-          </td>
-          <td>
-            <p style="background-color: #92c27d">Bug fixing</p>
-          </td>
-          <td>
-            <p style="background-color: #d0e0e3">Release</p>
-          </td>
-        </tr>
-        <tr>
-          <td>
-            <p>(Varies, typically 3 to 4 weeks)</p>
-          </td>
-          <td>
-            <p>1 business day</p>
-          </td>
-          <td>
-            <p>1 business day</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <table style="width:864px;">
-      <tbody>
-        <tr>
-          <td>
-            <p>Deadlines:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
-          </td>
-          <td>
-            <p style="color:blue">Feature freeze</p>
-          </td>
-          <td>
-            <p style="color:#6aa74f">Code freeze</p>
-          </td>
-          <td style="float:right;">
-            <p style="color:#999999">Release</p>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div>
-    <p>Example timeline:</p>
-    <img src="example-release-schedule.png" alt="Example release schedule" />
-    <h3>Description of the phases and deadlines</h3>
-    <p style="background-color: #6d9de9">Development</p>
-    <p>During the development phase, arbitrarily large or complex changes may be pushed.</p>
-    <p style="background-color:blue">Feature freeze</p>
-    <p>By the <em>feature freeze </em>deadline, all new feature code, associated tests, and documentation
-    must be pushed. If a feature is not complete by this time, then it should be delayed until the next
-    release. By this time, all users should update the relevant project&rsquo;s changelog to include
-    features and bug fixes they have made during this development cycle (not including bug fixes made
-    in the day that follows).</p>
-    <p style="background-color: #92c27d">Bug fixing</p>
-    <p>During this phase bugs are fixed, including minor bugs that may have been discovered
-    (by the new tests or otherwise) in the feature implementation or documentation. You are allowed
-    to fix any bug that you want, add new tests and documentation, etc., during this time. But no
-    new features may be implemented. Example bugs that would be fixed during this phase are bugs
-    revealed by Jenkins that were not revealed by the test suites that were run before pushing a feature.</p>
-    <p style="color:#6aa74f">Code freeze</p>
-    <p>By <em>code freeze</em>, the code is assumed to be in a shippable state. Pushes to the
-    repository are no longer allowed.</p>
-    <p style="background-color: #d0e0e3">Release</p>
-    <p>The person responsible for making the release runs the release scripts and other manual tasks
-    for the release (note that any pushes during this phase force the automated tests to restart and
-    are likely to delay the release).</p>
-    <h3>Deadline enforcement</h3>
-    <p>The following are only enforced for the 'master' branch from which the release is performed:</p>
-    <ul>
-      <li>Any large or complex change (i.e. a feature change or a design change) pushed after
-      feature freeze will be reverted.</li>
-      <li>Any fix for a bug pushed after code freeze for which an exception was not made will be reverted.</li>
-      <li>If a critical bug is discovered late and its fix is not checked in with enough time
-      for Jenkins tests to complete before Release Day, <strong>then the release is delayed</strong>.</li>
-    </ul>
-  </div>
-  </body>
+<h2>Pull requests</h2>
+
+<p>
+It is acceptable to commit small, noncontroversial changes directly to
+master.  (This policy differs from some projects, which require an issue
+tracker issue and a pull request for every change, however minor.)
+For any change where you want feedback, or where others might have
+useful comments or might disagree, please submit a pull request.  Be
+conservative in your judgment; others might consider something
+controversial that you do not.
+</p>
+
+<p>
+Try to work on a branch if you are going to submit a pull request.
+This enables others to make changes directly to your branch when that
+is more efficient than leaving comments in a pull request.
+</p>
+
+<p>
+Try to address pull requests promptly, to avoid stalling others while
+waiting for your feedback.  If you have been waiting for a while after the
+pull request was assigned with no feedback, then go ahead and push your
+changes.  It's great if reviewers can give feedback, but if they are too
+busy to do so, you should recognize that and move on.
+A week is a ballpark figure, but the amount of time will vary depending on
+circumstances.
+</p>
+
+<h2>Documenting refactoring ideas</h2>
+
+<p>
+If you have an idea for a code improvement (such as a refactoring), please
+document it.  If it can be described concisely and is low priority,
+a TODO comment in the code is more appropriate than an
+enhancement request in the issue tracker.  The code comment is more likely
+to be noticed by someone working with the code, and it is equally easy to
+search for.  Furthermore, it doesn't clutter the issue tracker, which
+reduces morale and makes the project appear lower-quality than it actually
+is.
+</p>
+
+
+</body>
 </html>
+
+<!--  LocalWords:  TODO
+ -->

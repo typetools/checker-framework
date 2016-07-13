@@ -66,6 +66,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
@@ -992,22 +993,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // No caching otherwise
         }
 
-        if (TreeUtils.isClassTree(tree)) {
-            postProcessClassTree((ClassTree) tree);
-        }
-
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
         return type;
     }
 
     /**
-     * Called by getAnnotatedType(Tree) for each ClassTree after determining the type.
+     * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} before the classTree is type
+     * checked.
+     * @param classTree ClassTree on which to perfrom preprocessing
+     */
+    public void preProcessClassTree(ClassTree classTree) {}
+
+    /**
+     * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} after the ClassTree has been
+     * type checked.
+     * <p>
      * The default implementation uses this to store the defaulted AnnotatedTypeMirrors
      * and inherited declaration annotations back into the corresponding Elements.
      * Subclasses might want to override this method if storing defaulted types is
      * not desirable.
      */
-    protected void postProcessClassTree(ClassTree tree) {
+    public void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
         if (checker.hasOption("infer") && wholeProgramInference != null) {
