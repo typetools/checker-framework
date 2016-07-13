@@ -1,8 +1,8 @@
 .PHONY: all
 
 all:
-	-rm Out.txt
-	-mkdir bin
+	rm -f Out.txt
+	mkdir -p bin
 	$(JAVAC) lib/*.java -d bin/
 	jar cvf lib.jar -C bin/ lib/Lib.class
 	$(JAVAC) -processor org.checkerframework.checker.nullness.NullnessChecker -Anomsgtext Test.java -d bin/ -cp lib.jar > Out.txt 2>&1

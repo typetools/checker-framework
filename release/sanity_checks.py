@@ -89,7 +89,7 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
 
     path_to_artifacts = os.path.join(os.path.expanduser("~"), ".m2", "repository", "org", "checkerframework")
     print("This script will now delete your Maven Checker Framework artifacts.\n" +
-          "See README-maintainers.html#Maven-Plugin dependencies.  These artifacts " +
+          "See README-release-process.html#Maven-Plugin dependencies.  These artifacts " +
           "will need to be re-downloaded the next time you need them.  This will be " +
           "done automatically by Maven next time you use the plugin.")
 

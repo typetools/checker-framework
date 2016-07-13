@@ -1,19 +1,12 @@
 <!DOCTYPE HTML>
 <html>
-
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
   <title>Checker Framework release process</title>
-
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
   <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"/>
   <script type="text/javascript" src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-
   <style type="text/css">
-    #content {
-    border-right: 1px solid #CCCCCC;
-    }
-
     .page-header {
     padding-left: 10px;
     margin-left: 10px;
@@ -22,22 +15,6 @@
     .container {
     padding-left: 10px;
     margin-left: 10px;
-    }
-
-    #right-nav {
-    }
-
-    #right-nav li a {
-    padding-bottom: 5px;
-    padding-top: 5px;
-    }
-
-    #right-nav li ul.nav a {
-    padding-left: 40px;
-    }
-
-    .toc_header {
-    border-bottom: 1px solid #CCCCCC;
     }
 
     .file_layout_table th {
@@ -51,26 +28,24 @@
     ul#backing_out_steps li {
     padding-bottom: 10px;
     }
-
   </style>
 </head>
 
 <body>
 <div class="page-header">
-  <h1>Release Process: <small>JSR 308 compiler, Annotation File Utilities, Checker Framework</small></h1>
+  <h1>Release Process: <small>JSR 308 compiler, Annotation File Utilities, Checker Framework</small></h1> <!-- omit from toc -->
 </div>
 
 <div class="container">
 <div class="row" style="width: 100%">
-<div class="col-md-9 col-md-offset" id="content">
+<div id="content">
 <p>
   This document explains how to make a release of the Checker Framework, the Type Annotations Compiler,
   and the Annotation File Utilities.
 The process takes around 3 hours (including manual steps) when all goes according to plan.
   However, the lengthiest steps are automatic so you will be able to work on other tasks.
 </p>
-<p><strong>See also</strong> the <a href="README-development-process.html">Checker Framework Development Process</a> document which explains
-the steps a release person should follow over the course of an entire development milestone.</p>
+
 <div class="alert alert-success">
   <strong>Note:</strong> If you have never read this document before, please read
   the section <a href="#pre_release_checklist">Pre-release Checklist</a> first.
@@ -79,8 +54,191 @@ the steps a release person should follow over the course of an entire developmen
   with the process.
 </div>
 
-<section id="step_by_step">
-<h2>Step by Step</h2>
+<p>Contents:</p>
+<!-- start toc.  do not edit; run html-update-toc instead -->
+    <ul>
+      <li><a href="#release_process">Release process</a>
+        <ul>
+          <li><a href="#checklist">Checklist of steps a release person must follow</a></li>
+          <li><a href="#notes-for-release-person">Recommendations/notes for the release person</a></li>
+          <li><a href="#phases">Milestone Phases</a></li>
+          <li><a href="#phases-description">Description of the phases and deadlines</a></li>
+          <li><a href="#deadline-enforcement">Deadline enforcement</a></li>
+        </ul></li>
+      <li><a href="#step_by_step">Step by Step</a></li>
+      <li><a href="#continuous-integration">Continuous integration (nightly) tests</a></li>
+      <li><a href="#pre_release_checklist">Pre-release Checklist</a></li>
+      <li><a href="#release_process_overview">Release Process Overview</a>
+        <ul>
+          <li><a href="#file_layout">File Layout</a></li>
+          <li><a href="#release_scripts">Release Scripts</a></li>
+        </ul></li>
+      <li><a href="#changelog_guide">Changelog Guidelines</a>
+        <ul>
+          <li><a href="#content_guidelines">Content Guidelines</a></li>
+          <li><a href="#style_guidelines">Style Guidelines</a></li>
+        </ul></li>
+      <li><a href="#backing_out">Backing Out an Uncommitted Release</a>
+        <ul>
+          <li><a href="#backing_out_steps">Manual Steps to Back Out a Release</a></li>
+        </ul></li>
+      <li><a href="#future_improvements">Future Improvements</a></li>
+    </ul>
+<!-- end toc -->
+
+
+<h2 id="release_process">Release process</h2>
+
+    <h3 id="checklist">Checklist of steps a release person must follow</h3>
+
+    <ol>
+       <li>First day of the development milestone:
+         <ul>
+           <li>If you have not done so before, follow the steps in the <a href="#pre_release_checklist">Pre-release Checklist</a>
+           in the Release Process document. These steps are important not just for the work performed on release day but
+           also for other work perfomed throughout the release. Some of these steps can take days to complete as they
+           involve obtaining permissions to access projects on various web sites.</li>
+           <li>Plan the feature freeze, code freeze and release dates for the following two months, and send an e-mail to the
+             checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev mailing lists with these dates.
+             Also please make sure to add these dates to the "Checker Framework Developers" Google Calendar.
+             We should aim to release on the first business day of the month. Whenever possible, avoid releasing
+             near the end of a month instead of the beginning of the next month, as that makes it easier for users
+             to keep track of the cadence of our releases (e.g. having a June 1st and a June 30th release makes
+             it harder to tell that the June 30th release is meant for distribution in the month of July).</li>
+         </ul>
+       </li>
+       <li>One week before Feature Freeze:
+         <ul>
+          <li>Remind bug owners of their bugs outstanding.</li>
+         </ul>
+       </li>
+       <li>Two business days before Feature Freeze:
+         <ul>
+          <li>E-mail checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev reminding
+          users of the upcoming Feature Freeze and the requirements for this deadline, including
+          the requirement for changelogs to be complete.</li>
+         </ul>
+       </li>
+       <li>The work morning after Feature Freeze:
+         <ul>
+           <li>Ensure that all the <a href="#continuous-integration">continuous integration jobs</a> are passing.</li>
+           <li>Ensure that
+           the changelogs and documentation for the Checker Framework, Type Annotations Compiler and AFU are complete by following
+           <a href="#step_by_step">these instructions</a> up to and including the &quot;Review the changelogs and documentation&quot; step.
+           <li>E-mail Mike asking him to vet the changelogs
+           that are checked in.</li>
+           <li>E-mail checker-framework-dev, annotation-tools-dev and jsr308-langtools-dev reminding
+           users of the upcoming Code Freeze and the requirements for this deadline.</li>
+         </ul>
+       </li>
+       <li>The work morning after Code Freeze:
+         <ul>
+           <li>Ensure that all the <a
+           href="#continuous-integration">continuous
+           integration jobs</a> are passing.</li>
+           <li>If the above items are taken care of, perform the release.</li>
+         </ul>
+       </li>
+
+    </ol>
+
+    <h3 id="notes-for-release-person">Recommendations/notes for the release person</h3>
+    <ul>
+      <li>As the release person, consider pushing your bug fixes at least two days prior to the code freeze deadline &mdash; this is because you
+      are likely to be helping other people make their Jenkins projects become green during those two days.</li>
+      <li>The reason Mike must be asked to look at the changelogs right after feature freeze (instead of
+      code freeze) is that there no longer is a "recall class" bug fix period, so there is now only one
+      working day between feature freeze and the release.
+      This ensures that there are no delays in releasing the products (due to
+      incomplete changelogs) or in sending the announcement e-mail.
+      If during the bug fixing period anyone fixes a bug that is worth mentioning as more
+      than a number, the changelog can be amended accordingly and Mike can be warned about it.</li>
+    </ul>
+
+    <h3 id="phases">Milestone Phases</h3>
+    <!-- I'm not sure how to get the exact effect achieved by this HTML 4 code: -->
+    <!--    <table border="1" width="864" cellspacing="2" cellpadding="2"> -->
+    <table style="border:1px solid black;width:864px;border-collapse:separate;border-spacing:2px;paddng:2px;">
+      <tbody>
+        <tr>
+          <td>
+            <p style="background-color: #6d9de9">Development</p>
+          </td>
+          <td>
+            <p style="background-color: #92c27d">Bug fixing</p>
+          </td>
+          <td>
+            <p style="background-color: #d0e0e3">Release</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p>(Varies, typically 3 to 4 weeks)</p>
+          </td>
+          <td>
+            <p>1 business day</p>
+          </td>
+          <td>
+            <p>1 business day</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <table style="width:864px;">
+      <tbody>
+        <tr>
+          <td>
+            <p>Deadlines:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>
+          </td>
+          <td>
+            <p style="color:blue">Feature freeze</p>
+          </td>
+          <td>
+            <p style="color:#6aa74f">Code freeze</p>
+          </td>
+          <td style="float:right;">
+            <p style="color:#999999">Release</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <p>Example timeline:</p>
+    <img src="example-release-schedule.png" alt="Example release schedule" />
+    <h3 id="phases-description">Description of the phases and deadlines</h3>
+    <p style="background-color: #6d9de9">Development</p>
+    <p>During the development phase, arbitrarily large or complex changes may be pushed.</p>
+    <p style="background-color:blue">Feature freeze</p>
+    <p>By the <em>feature freeze </em>deadline, all new feature code, associated tests, and documentation
+    must be pushed. If a feature is not complete by this time, then it should be delayed until the next
+    release. By this time, all users should update the relevant project&rsquo;s changelog to include
+    features and bug fixes they have made during this development cycle (not including bug fixes made
+    in the day that follows).</p>
+    <p style="background-color: #92c27d">Bug fixing</p>
+    <p>During this phase bugs are fixed, including minor bugs that may have been discovered
+    (by the new tests or otherwise) in the feature implementation or documentation. You are allowed
+    to fix any bug that you want, add new tests and documentation, etc., during this time. But no
+    new features may be implemented. Example bugs that would be fixed during this phase are bugs
+    revealed by Jenkins that were not revealed by the test suites that were run before pushing a feature.</p>
+    <p style="color:#6aa74f">Code freeze</p>
+    <p>By <em>code freeze</em>, the code is assumed to be in a shippable state. Pushes to the
+    repository are no longer allowed.</p>
+    <p style="background-color: #d0e0e3">Release</p>
+    <p>The person responsible for making the release runs the release scripts and other manual tasks
+    for the release (note that any pushes during this phase force the automated tests to restart and
+    are likely to delay the release).</p>
+    <h3 id="deadline-enforcement">Deadline enforcement</h3>
+    <p>The following are only enforced for the 'master' branch from which the release is performed:</p>
+    <ul>
+      <li>Any large or complex change (i.e. a feature change or a design change) pushed after
+      feature freeze will be reverted.</li>
+      <li>Any fix for a bug pushed after code freeze for which an exception was not made will be reverted.</li>
+      <li>If a critical bug is discovered late and its fix is not checked in with enough time
+      for Jenkins tests to complete before Release Day, <strong>then the release is delayed</strong>.</li>
+    </ul>
+
+<h2 id="step_by_step">Step by Step</h2>
 
 <p>
   More information about the steps is
@@ -152,10 +310,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   </li>
 </ol>
 
-</section>
-
-<section id="continuous-integration">
-  <h2>Continuous integration (nightly) tests</h2>
+  <h2 id="continuous-integration">Continuous integration (nightly) tests</h2>
 
   <p>
     The following continuous integration tests should all pass before you make changes that you need to test.  If not, notify the
@@ -191,10 +346,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   </ul>
   </li>
 </ol>
-</section>
 
-<section id="pre_release_checklist">
-  <h2>Pre-release Checklist</h2>
+  <h2 id="pre_release_checklist">Pre-release Checklist</h2>
   <p>If you have not performed a release before you must follow these steps.</p>
   <table class="table">
     <tr>
@@ -275,8 +428,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <td>9.</td>
       <td><strong>Read the Checker Framework Development Process document</strong><br/>
         A release person has responsibilities each month in addition to performing the release.
-        The <a href="README-development-process.html">Checker Framework Development Process document</a>
-        explains these responsibilities in detail.  Please re-read the <a href="README-development-process.html#checklist">checklist</a> in this document at the beginning
+        The <a href="README-release-process.html">Checker Framework Release Process document</a>
+        explains these responsibilities in detail.  Please re-read the <a href="README-release-process.html#checklist">checklist</a> in this document at the beginning
         of each month that you are the designated the release person, and help keep this document up
         to date with the latest best practices.
       </td>
@@ -301,14 +454,11 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       </td>
     </tr>
   </table>
-</section>
 
-<section id="release_process_overview">
-  <h2>Release Process Overview</h2>
+  <h2 id="release_process_overview">Release Process Overview</h2>
   <p>This section first explains the structure of the projects on disk on Buffalo, then lists scripts used during the release process.</p>
 
-  <section id="file_layout">
-    <h3>File Layout</h3>
+    <h3 id="file_layout">File Layout</h3>
     <table class="table table-bordered file_layout_table">
       <tr><th colspan="2">Release Directory <span class="glyphicon glyphicon-folder-open" style="float:right;"></span></th></tr>
       <tr>
@@ -415,10 +565,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         </td>
       </tr>
     </table>
-  </section>
 
-  <section id="release_scripts">
-    <h3>Release Scripts</h3>
+    <h3 id="release_scripts">Release Scripts</h3>
     <p>As mentioned above, in order to release the Checker Framework you must run two scripts,
       release_build.py and release_push.py but there are supportings scripts and files in the
       release directory.  Some of these files are described below.
@@ -472,12 +620,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         </td>
       </tr>
     </table>
-  </section>
 
-</section>
-
-<section id="changelog_guide">
-  <h2>Changelog Guidelines</h2>
+  <h2 id="changelog_guide">Changelog Guidelines</h2>
   <p> Each developer is responsible for updating project changelogs to reflect changes they
     have made each month.  The changelogs should be updated by "feature freeze" though at the
     latest this should be done before "code freeze".  Before releasing, the person performing
@@ -486,8 +630,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     Also check that the changelog obeys the guidelines below.
   </p>
 
-  <section id="content_guidelines">
-    <h3>Content Guidelines</h3>
+    <h3 id="content_guidelines">Content Guidelines</h3>
     <ul>
       <li>Only (and all) changes that affect users go into the changelog.
         If a change is breaking, no matter how small, mention it.</li>
@@ -517,9 +660,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
             announce the feature until it has been documented in the manual.
       </li>
     </ul>
-  </section>
-  <section id="style_guidelines">
-    <h3>Style Guidelines</h3>
+    <h3 id="style_guidelines">Style Guidelines</h3>
     <ul>
       <li>Changes are written from the user's perspective.  Don't include implementation details that users
         don't care about.
@@ -534,11 +675,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         options to the Eclipse plugin to include stub files, ignore warnings, and show verbose output."
       </li>
     </ul>
-  </section>
 
-</section>
-<section id="backing_out">
-  <h2>Backing Out an Uncommitted Release</h2>
+  <h2 id="backing_out">Backing Out an Uncommitted Release</h2>
   <p>At the time of this writing, there are 2 steps that cannot be reverted.</p>
   <ol>
     <li>The push from the interm repositories to the GitHub/Bitbucket (release) repositories</li>
@@ -552,8 +690,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     follow the steps below to point the live release to a previous release.  You can then redo the original
     release.  Make sure to say &quot;yes&quot; when the release script asks you to delete the old directories.
   </p>
-  <h3>Manual Steps to Back Out a Release</h3>
-  <ul id="backing_out_steps">
+  <h3 id="backing_out_steps">Manual Steps to Back Out a Release</h3>
+  <ul>
     <li><strong>Point symlinks to old release</strong><br/>
       For each project (JSR 308 compiler, Annotation File Utilities, Checker Framework), find the
       version for the previous release. <br/>
@@ -595,17 +733,14 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     reason or other.  It is important to remember that the symlinks may be absolute.  You should check any
     symlinks that may be affected by the move and ensure they point to the new location and not the old one.
   </p>
-</section>
 
-<section id="future_improvements">
-  <h2>Future Improvements</h2>
+  <h2 id="future_improvements">Future Improvements</h2>
   <p>Below is a roughly priority-ordered list of future improvements.  In a perfect world we would do
     all of these.  At the moment, I believe only the first 2 (Open JDK Javadoc Fixes,
     and More Sanity Checks) should have any appreciable priority.
   </p>
 
-  <section id="fi_jdk-api_fixup">
-    <h3>Open JDK/JSR308 Javadoc</h3>
+    <h3 id="fi_jdk-api_fixup">Open JDK/JSR308 Javadoc</h3> <!-- omit from toc -->
     Generating the Javadocs for the entire JDK is not simple.  We have previously generated these but have
     not updated them in a while.  They can be found here:<br/>
     <a href="http://types.cs.washington.edu/checker-framework/jdk-api/">http://types.cs.washington.edu/checker-framework/jdk-api/</a><br/>
@@ -614,7 +749,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     package summaries of the jdk-api docs.  It is highly unlikely that users will ever run into these links, since
     they occur in pages like Swing's package summary, but nonetheless it would be good to build these docs
     in the proper manner with no broken links.
-    <h4>Tasks:</h4>
+    <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Figure out the best way to build the Open JDK Javadoc.</li>
       <li>Add a release script step to build the Open JDK Javadoc.</li>
@@ -622,31 +757,27 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <li>We may also want to put jdk-api into the release directory instead of overwriting it during each release.</li>
       <li>Update this document to reflect the new steps.</li>
     </ul>
-  </section>
-  <section id="fi_more_sanity_checks">
-    <h3>More Sanity Checks</h3>
+    <h3 id="fi_more_sanity_checks">More Sanity Checks</h3> <!-- omit from toc -->
     There are likely more sanity checks we might want to run during the release process.  One such example
     would be running the tutorial from the command line.  Another would be running the maven plugin using
     the released artifacts rather than the staged artifacts.
-    <h4>Tasks:</h4>
+    <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Implement one of the sanity checks mentioned in this section.</li>
       <li>Add your sanity check to the appropriate location in the release_push script.</li>
       <li>Update this document to reflect the new steps.</li>
     </ul>
-    <h4>Sanity Checks:</h4>
+    <h4 id="sanity-checks">Sanity Checks:</h4> <!-- omit from toc -->
     <ul>
       <li>Maven plugin using the released Central repository.</li>
       <li>Run tutorial sanity check automatically via command line.</li>
       <li>Eclipse auto-sanity check see <a href="#fi_automate_eclipse_build">Automate the Eclipse Build.</a></li>
     </ul>
-  </section>
-  <section id="fi_buffalo_integeration">
-    <h3>Buffalo Integration</h3>
+    <h3 id="fi_buffalo_integeration">Buffalo Integration</h3> <!-- omit from toc -->
     If we could have Buffalo run the release_build script nightly, we could head off broken links and other
     release related errors.  There is an &quot;--auto&quot; option for this specific reason but a number of
     errors start happening when we run the script from Buffalo.
-    <h4>Tasks:</h4>
+    <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Create a Buffalo task to run the release_buld script using the &quot;--auto&quot; option.</li>
       <li>Observe the output of this task and identify possible errors.</li>
@@ -656,50 +787,42 @@ miss a step if you only read the paragraph asking you to say 'yes'.
         link-checking results rather than waiting for the link checker to execute in the push script.
       </li>
     </ul>
-  </section>
-  <section id="fi_auto-copy_release_scripts">
-    <h3>Auto-copy Release Scripts</h3>
+    <h3 id="fi_auto-copy_release_scripts">Auto-copy Release Scripts</h3> <!-- omit from toc -->
     The first step in running the release process, after the pre-release checklist, is to copy the
     release scripts into the jsr308-release directory.  We could automate this.
-    <h4>Tasks:</h4>
+    <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Create a read-only script in jsr308-release/scripts.</li>
       <li>Edit the script so that it downloads all release scripts into the jsr308-release directory.</li>
       <li>Update this document to reflect this new process.</li>
     </ul>
-  </section>
-  <section id="fi_option_parsing">
-    <h3>Option Parsing</h3>
+    <h3 id="fi_option_parsing">Option Parsing</h3> <!-- omit from toc -->
     There is currently some primitive option parsing written into the release scripts.  We should use
     Python's built-in option parsing library.  There are multiple built-in libraries.  Please use the latest one.
-    <h4>Tasks:</h4>
+    <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Look up the latest Python parsing library.</li>
       <li>Replace the option parsing in the release_build.py and release_push.py scripts with library calls.</li>
     </ul>
-  </section>
-  <section id="fi_option_projects">
-    <h3>Optional Projects</h3>
+    <h3 id="fi_option_projects">Optional Projects</h3> <!-- omit from toc -->
     A user might want to test the release_build script only on a specific project.  Some work has gone into
     the ability to select a project to build.  However, this currently doesn't take into consideration of dependencies.
     It might be more hassle than it's worth to implement this feature.  We should either complete the implementation
     or remove the partial implementation that already exists.  See <a href="#fi_repl_mode">REPL Mode</a>.
-    <h4>Tasks:</h4>
+    <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Improve option parsing to allow the user to select only certain projects to build.</li>
       <li>Improve scripts to resolve dependencies between projects and only build the selected projects and
         their dependencies.
       </li>
     </ul>
-  </section>
-  <section id="fi_repl_mode">
-    <h3>REPL Mode</h3>
+    <h3 id="fi_repl_mode">REPL Mode</h3> <!-- omit from toc -->
     The current script is built in an imperative style with little use of object orientation.  This improvement
     would create methods or objects that further encapsulate the current set of steps.  We could then provide
     an easy way to execute these steps from the Python REPL.  This would allow the user to execute individual steps
     in whatever order they saw fit from the Python REPL.  This could also be used to
     automatically back out the current release or the ability to edit/debug the release steps more easily.
-    <h4>Tasks:</h4>
+    <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Further separate the steps of the release process.</li>
       <li>Provide a default parameterization for these steps to make them easily runnable from the
@@ -707,13 +830,12 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <li>Provide a script to launch Python with these commands on its path.</li>
       <li>Update this README to document the new functionality.</li>
     </ul>
-  </section>
-  <section id="fi_automate_eclipse_build">
-    <h3>Automate the Eclipse Build</h3>
+  <section id="fi_automate_eclipse_build"> <!-- omit from toc -->
+    <h3>Automate the Eclipse Build</h3> <!-- omit from toc -->
     The Checker Framework Eclipse plugin is the cause of the most burdensome manual steps in the release
     process.  There exist ways to automate the plugin build and tests.  However, the process is complicated and
     would take a while to perfect.  It may or may not be worth it.
-    <h4>Tasks:</h4>
+    <h4>Tasks:</h4> <!-- omit from toc -->
     <ul>
       <li>Use Ant or other methods to automate the Eclipse build.</li>
       <li>Add to the release script targets for updating version numbers and other relevant fields
@@ -723,44 +845,6 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <li>Update this README to include the new steps.</li>
     </ul>
   </section>
-</section>
-</div>
-<div class="col-md-3">
-  <div class="bs-docs-sidebar hidden-print affix">
-    <ul class="nav bs-docs-sidenav" id="right-nav">
-      <li class="toc_header"><a href="#"><strong>Table Of Contents</strong></a></li>
-      <li><a href="#step_by_step">Step by Step</a></li>
-      <li><a href="#continuous-integration">Continuous integration tests</a></li>
-      <li><a href="#pre_release_checklist">Pre-release checklist</a></li>
-      <li><a href="#release_process_overview">Release Process Overview</a>
-        <ul class="nav">
-          <li><a href="#file_layout">File Layout</a></li>
-          <li><a href="#release_scripts">Release Scripts</a></li>
-        </ul>
-      </li>
-      <li><a href="#changelog_guide">Changelog Guidelines</a>
-        <ul class="nav">
-          <li><a href="#content_guidelines">Content Guide</a></li>
-          <li><a href="#style_guidelines">Style Guide</a></li>
-        </ul>
-      </li>
-
-      <li><a href="#backing_out">Backing Out an Uncommitted Release</a></li>
-      <li><a href="#future_improvements">Future Improvements</a>
-        <ul class="nav">
-          <li><a href="#fi_jdk-api_fixup">Open JDK/JSR308 Javadoc</a></li>
-          <li><a href="#fi_more_sanity_checks">More Sanity Checks</a></li>
-          <li><a href="#fi_buffalo_integeration">Buffalo Integration</a></li>
-          <li><a href="#fi_auto-copy_release_scripts">Auto-copy Release Scripts</a></li>
-          <li><a href="#fi_option_parsing">Option Parsing</a></li>
-          <li><a href="#fi_option_projects">Optional Projects</a></li>
-          <li><a href="#fi_repl_mode">REPL Mode</a></li>
-          <li><a href="#fi_automate_eclipse_build">Automate Eclipse Build</a></li>
-        </ul>
-
-      </li>
-    </ul>
-  </div>
 </div>
 </div>
 </div>
