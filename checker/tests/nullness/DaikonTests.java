@@ -1,6 +1,6 @@
+import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
-import org.checkerframework.checker.nullness.qual.*;
 
 /*
  * Miscellaneous tests based on problems found when checking Daikon.
@@ -12,21 +12,21 @@ public class DaikonTests {
         @Nullable Object field;
 
         public void cond1() {
-            if ( this.hashCode() > 6 && Bug1Other.field != null ) {
+            if (this.hashCode() > 6 && Bug1Other.field != null) {
                 // spurious dereference error
                 Bug1Other.field.toString();
             }
         }
 
         public void cond1(Bug1 p) {
-            if ( this.hashCode() > 6 && p.field != null ) {
+            if (this.hashCode() > 6 && p.field != null) {
                 // works
                 p.field.toString();
             }
         }
 
         public void cond2() {
-            if ( Bug1Other.field != null && this.hashCode() > 6 ) {
+            if (Bug1Other.field != null && this.hashCode() > 6) {
                 // works
                 Bug1Other.field.toString();
             }
@@ -53,7 +53,7 @@ public class DaikonTests {
 
     // Based on problem found in FloatEqual.
     class Bug3 {
-        @EnsuresNonNullIf(expression="derived", result=true)
+        @EnsuresNonNullIf(expression = "derived", result = true)
         public boolean isDerived() {
             return (derived != null);
         }
@@ -68,11 +68,11 @@ public class DaikonTests {
         }
 
         // TODO: this is currently not supported
-//        void good2(Bug3 v1) {
-//            if (!(v1.isDerived() && (5 > 9)))
-//                return;
-//            v1.derived.hashCode();
-//        }
+        //        void good2(Bug3 v1) {
+        //            if (!(v1.isDerived() && (5 > 9)))
+        //                return;
+        //            v1.derived.hashCode();
+        //        }
 
         void good3(Bug3 v1) {
             if (!v1.isDerived() || !(v1 instanceof Bug3)) {

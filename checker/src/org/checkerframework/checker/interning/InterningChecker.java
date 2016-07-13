@@ -1,11 +1,10 @@
 package org.checkerframework.checker.interning;
 
+import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.checker.interning.qual.Interned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 import org.checkerframework.framework.source.SupportedLintOptions;
-
-import javax.annotation.processing.SupportedOptions;
 
 /**
  * A type-checker plug-in for the {@link Interned} qualifier that
@@ -22,9 +21,7 @@ import javax.annotation.processing.SupportedOptions;
  *
  * @checker_framework.manual #interning-checker Interning Checker
  */
-
 @StubFiles({"apache-bcel.astub", "com-sun.astub", "org-jcp.astub", "org-xml.astub", "sun.astub"})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
-public final class InterningChecker extends BaseTypeChecker {
-}
+public final class InterningChecker extends BaseTypeChecker {}

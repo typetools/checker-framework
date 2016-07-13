@@ -15,7 +15,7 @@ public class DefaultFlow {
 
     void tesVariableInitialization() {
         @Nullable Object elts = null;
-        assert elts != null: "@AssumeAssertion(nullness)";
+        assert elts != null : "@AssumeAssertion(nullness)";
         @NonNull Object elem = elts;
     }
 }

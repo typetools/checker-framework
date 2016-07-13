@@ -8,9 +8,11 @@ import org.checkerframework.checker.nullness.qual.*;
 interface Unbound1 {
     void apply(@NonNull MyClass my);
 }
+
 interface Unbound2 {
     void apply(@Nullable MyClass my);
 }
+
 interface Supplier<R extends @Nullable Object> {
     R supply();
 }
@@ -20,11 +22,9 @@ interface Bound {
 }
 
 class MyClass {
-    void take(@NonNull MyClass this) { }
+    void take(@NonNull MyClass this) {}
 
-    void context1(@Nullable MyClass this,
-            @NonNull MyClass my1,
-            @Nullable MyClass my2) {
+    void context1(@Nullable MyClass this, @NonNull MyClass my1, @Nullable MyClass my2) {
 
         Unbound1 u1 = MyClass::take;
         //:: error: (methodref.receiver.invalid)
@@ -37,6 +37,7 @@ class MyClass {
         //:: error: (methodref.receiver.bound.invalid)
         Bound b11 = this::take;
     }
+
     void context2(@NonNull MyClass this) {
         Bound b21 = this::take;
     }
@@ -47,6 +48,7 @@ class MyClass {
             //:: error: (methodref.receiver.bound.invalid)
             Bound b = super::take;
         }
+
         void context2(@NonNull MySubClass this) {
             Bound b = super::take;
         }
@@ -56,20 +58,21 @@ class MyClass {
                 //:: error: (methodref.receiver.bound.invalid)
                 Bound b = MySubClass.super::take;
             }
+
             void context2(@NonNull Nested this) {
                 Bound b = MySubClass.super::take;
             }
-
         }
     }
 }
 
 class Outer {
     class Inner1 {
-        Inner1(@Nullable Outer Outer.this) { }
+        Inner1(@Nullable Outer Outer.this) {}
     }
+
     class Inner2 {
-        Inner2(@NonNull Outer Outer.this) { }
+        Inner2(@NonNull Outer Outer.this) {}
     }
 
     void context(@Nullable Outer this) {

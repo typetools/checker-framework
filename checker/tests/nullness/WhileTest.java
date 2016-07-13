@@ -1,5 +1,5 @@
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class WhileTest {
     @Nullable Integer z;
@@ -49,7 +49,7 @@ public class WhileTest {
 
     public void testfor1() {
         z = null;
-        for (;z==null;) {
+        for (; z == null; ) {
             break;
         }
         //:: error: (assignment.type.incompatible)
@@ -58,10 +58,9 @@ public class WhileTest {
 
     public void testfor2() {
         z = null;
-        for (;z==null;) {
+        for (; z == null; ) {
             ;
         }
         nnz = z;
     }
-
 }

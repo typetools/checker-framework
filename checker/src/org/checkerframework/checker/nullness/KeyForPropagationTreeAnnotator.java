@@ -1,5 +1,12 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirection;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -8,15 +15,6 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
-
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
-
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 
 /**
  * For the following initializations we wish to propagate the annotations from the left-hand side
@@ -53,11 +51,12 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     private final KeyForPropagator keyForPropagator;
     private final ExecutableElement keySetMethod;
 
-    public KeyForPropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory,
-                                          KeyForPropagator propagationTreeAnnotator) {
+    public KeyForPropagationTreeAnnotator(
+            AnnotatedTypeFactory atypeFactory, KeyForPropagator propagationTreeAnnotator) {
         super(atypeFactory);
         this.keyForPropagator = propagationTreeAnnotator;
-        keySetMethod = TreeUtils.getMethod("java.util.Map", "keySet", 0, atypeFactory.getProcessingEnv());
+        keySetMethod =
+                TreeUtils.getMethod("java.util.Map", "keySet", 0, atypeFactory.getProcessingEnv());
     }
 
     /**
@@ -65,11 +64,11 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
      */
     public boolean isCallToKeyset(ExpressionTree expression) {
         if (expression instanceof MethodInvocationTree) {
-            return TreeUtils.isMethodInvocation(expression, keySetMethod, atypeFactory.getProcessingEnv());
+            return TreeUtils.isMethodInvocation(
+                    expression, keySetMethod, atypeFactory.getProcessingEnv());
         }
         return false;
     }
-
 
     /** Transfers annotations to the variableTree if the right side is a call to java.util.Map.KeySet. */
     @Override
@@ -82,13 +81,17 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
 
             if (isCallToKeyset(initializer)) {
                 final AnnotatedDeclaredType variableType = (AnnotatedDeclaredType) type;
-                final AnnotatedTypeMirror initializerType = atypeFactory.getAnnotatedType(initializer);
+                final AnnotatedTypeMirror initializerType =
+                        atypeFactory.getAnnotatedType(initializer);
 
                 // array types and boxed primitives etc don't require propagation
                 if (variableType.getKind() == TypeKind.DECLARED) {
-                    keyForPropagator.propagate((AnnotatedDeclaredType) initializerType, variableType, PropagationDirection.TO_SUPERTYPE, atypeFactory);
+                    keyForPropagator.propagate(
+                            (AnnotatedDeclaredType) initializerType,
+                            variableType,
+                            PropagationDirection.TO_SUPERTYPE,
+                            atypeFactory);
                 }
-
             }
         }
 
@@ -98,19 +101,24 @@ public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     /** Transfers annotations to type if the left hand side is a variable declaration. */
     @Override
     public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror type) {
-        Pair<Tree, AnnotatedTypeMirror> context = atypeFactory.getVisitorState().getAssignmentContext();
+        Pair<Tree, AnnotatedTypeMirror> context =
+                atypeFactory.getVisitorState().getAssignmentContext();
 
         if (type.getKind() == TypeKind.DECLARED && context != null && context.first != null) {
-            AnnotatedTypeMirror assignedTo = TypeArgInferenceUtil.assignedTo(atypeFactory, atypeFactory.getPath(node));
+            AnnotatedTypeMirror assignedTo =
+                    TypeArgInferenceUtil.assignedTo(atypeFactory, atypeFactory.getPath(node));
 
             if (assignedTo != null) {
 
                 // array types and boxed primitives etc don't require propagation
                 if (assignedTo.getKind() == TypeKind.DECLARED) {
                     final AnnotatedDeclaredType newClassType = (AnnotatedDeclaredType) type;
-                    keyForPropagator.propagate(newClassType, (AnnotatedDeclaredType) assignedTo, PropagationDirection.TO_SUBTYPE, atypeFactory);
+                    keyForPropagator.propagate(
+                            newClassType,
+                            (AnnotatedDeclaredType) assignedTo,
+                            PropagationDirection.TO_SUBTYPE,
+                            atypeFactory);
                 }
-
             }
         }
 

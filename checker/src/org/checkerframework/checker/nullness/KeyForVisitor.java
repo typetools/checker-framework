@@ -4,7 +4,14 @@ package org.checkerframework.checker.nullness;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
 
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Modifier;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -16,24 +23,17 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Modifier;
-
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
-
 public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
     public KeyForVisitor(BaseTypeChecker checker) {
         super(checker);
     }
 
     @Override
-    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            /*@CompilerMessageKey*/ String errorKey) {
 
         atypeFactory.keyForCanonicalizeValues(varType, valueType, getCurrentPath());
 
@@ -50,8 +50,10 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
 
     private final static class KeyForTypeValidator extends BaseTypeValidator {
 
-        public KeyForTypeValidator(BaseTypeChecker checker,
-                BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
+        public KeyForTypeValidator(
+                BaseTypeChecker checker,
+                BaseTypeVisitor<?> visitor,
+                AnnotatedTypeFactory atypeFactory) {
             super(checker, visitor, atypeFactory);
         }
 
@@ -61,7 +63,8 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
 
             AnnotationMirror kf = type.getAnnotation(KeyFor.class);
             if (kf != null) {
-                List<String> maps = AnnotationUtils.getElementValueArray(kf, "value", String.class, false);
+                List<String> maps =
+                        AnnotationUtils.getElementValueArray(kf, "value", String.class, false);
 
                 boolean inStatic = false;
                 if (p.getKind() == Kind.VARIABLE) {
@@ -76,9 +79,11 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
                         // this is not valid in static context
                         if (inStatic) {
                             checker.report(
-                                    Result.failure("keyfor.type.invalid",
+                                    Result.failure(
+                                            "keyfor.type.invalid",
                                             type.getAnnotations(),
-                                            type.toString()), p);
+                                            type.toString()),
+                                    p);
                         }
                     } else if (map.matches("#(\\d+)")) {
                         // Accept parameter references
@@ -92,7 +97,7 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
             }
 
             // TODO: Should BaseTypeValidator be parametric in the ATF?
-            if (type.isAnnotatedInHierarchy(((KeyForAnnotatedTypeFactory)atypeFactory).KEYFOR)) {
+            if (type.isAnnotatedInHierarchy(((KeyForAnnotatedTypeFactory) atypeFactory).KEYFOR)) {
                 return super.visitDeclared(type, p);
             } else {
                 // TODO: Something went wrong...
@@ -114,14 +119,15 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
         */
     }
 
-
     /**
      * The constructor type will have its flow expressions parsed and its KeyFor values
      * canonicalized before this point (in constructorFromUse).  However, the expectedReturnType
      * will not.  Canonicalize it now.
      */
-    protected boolean checkConstructorInvocation(AnnotatedDeclaredType expectedReturnType,
-                                                 AnnotatedExecutableType constructor, NewClassTree src) {
+    protected boolean checkConstructorInvocation(
+            AnnotatedDeclaredType expectedReturnType,
+            AnnotatedExecutableType constructor,
+            NewClassTree src) {
         atypeFactory.canonicalizeForViewpointAdaptation(src, expectedReturnType);
         return super.checkConstructorInvocation(expectedReturnType, constructor, src);
     }

@@ -4,24 +4,26 @@ import org.checkerframework.checker.tainting.qual.*;
 // Test qual param on a class
 @ClassTaintingParam("Main")
 class A {
-    public @Tainted(param="Main2") B x;
-    public @Untainted(param="Main2") B y;
-    public @Var(arg="Main", param="Main2") B z;
+    public @Tainted(param = "Main2") B x;
+    public @Untainted(param = "Main2") B y;
+    public @Var(arg = "Main", param = "Main2") B z;
 }
 
 @ClassTaintingParam("Main2")
-class B { }
+class B {}
 
 abstract class Test {
-    abstract @Tainted(param="Main") A makeTainted();
-    abstract @Untainted(param="Main") A makeUntainted();
+    abstract @Tainted(param = "Main") A makeTainted();
 
-    abstract void takeTainted(@Tainted(param="Main2") B o);
-    abstract void takeUntainted(@Untainted(param="Main2") B o);
+    abstract @Untainted(param = "Main") A makeUntainted();
+
+    abstract void takeTainted(@Tainted(param = "Main2") B o);
+
+    abstract void takeUntainted(@Untainted(param = "Main2") B o);
 
     void test() {
-        @Tainted(param="Main") A ta = makeTainted();
-        @Untainted(param="Main") A ua = makeUntainted();
+        @Tainted(param = "Main") A ta = makeTainted();
+        @Untainted(param = "Main") A ua = makeUntainted();
 
         takeTainted(ta.x);
         //:: error: (argument.type.incompatible)
@@ -33,7 +35,6 @@ abstract class Test {
         takeTainted(ua.y);
         //:: error: (argument.type.incompatible)
         takeTainted(ua.z);
-
 
         //:: error: (argument.type.incompatible)
         takeUntainted(ta.x);

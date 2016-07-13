@@ -17,5 +17,4 @@ class HierarchicalInit {
             b = "";
         }
     }
-
 }

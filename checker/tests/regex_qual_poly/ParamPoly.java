@@ -4,17 +4,20 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 // Polymorphic method parameters
 @ClassRegexParam("Main")
-class A { }
+class A {}
 
 abstract class Test {
-    abstract void test(@PolyRegex(param="Main") A i, @PolyRegex(param="Main") A j);
-    abstract @PolyRegex(param="Main") A id(@PolyRegex(param="Main") A i);
+    abstract void test(@PolyRegex(param = "Main") A i, @PolyRegex(param = "Main") A j);
 
-    abstract @Regex(param="Main") A makeTainted();
-    abstract @Regex(value=1, param="Main") A makeUntainted();
+    abstract @PolyRegex(param = "Main") A id(@PolyRegex(param = "Main") A i);
 
-    abstract void takeTainted(@Regex(param="Main") A o);
-    abstract void takeUntainted(@Regex(value=1, param="Main") A o);
+    abstract @Regex(param = "Main") A makeTainted();
+
+    abstract @Regex(value = 1, param = "Main") A makeUntainted();
+
+    abstract void takeTainted(@Regex(param = "Main") A o);
+
+    abstract void takeUntainted(@Regex(value = 1, param = "Main") A o);
 
     void test() {
         test(makeTainted(), makeTainted());

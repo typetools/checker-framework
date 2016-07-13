@@ -1,5 +1,15 @@
 package org.checkerframework.qualframework.poly;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -13,19 +23,6 @@ import org.checkerframework.qualframework.base.QualifierMapVisitor;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.util.QualifierContext;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree.Kind;
-
 /** Type factory with qualifier polymorphism support.  This type factory
  * extends an underlying qualifier system with qualifier variables, combined
  * qualifiers (using {@link CombiningOperation}), wildcards, typechecking
@@ -33,7 +30,8 @@ import com.sun.source.tree.Tree.Kind;
  * refer to qualifier parameters, and qualifier inference for method qualifier
  * parameters.
  */
-public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedTypeFactory<QualParams<Q>> {
+public abstract class QualifierParameterTypeFactory<Q>
+        extends DefaultQualifiedTypeFactory<QualParams<Q>> {
     QualifierHierarchy<Q> groundHierarchy;
 
     public QualifierParameterTypeFactory(QualifierContext<QualParams<Q>> context) {
@@ -45,7 +43,7 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
 
     @Override
     public QualifierParameterAnnotationConverter<Q> getAnnotationConverter() {
-        return (QualifierParameterAnnotationConverter<Q>)super.getAnnotationConverter();
+        return (QualifierParameterAnnotationConverter<Q>) super.getAnnotationConverter();
     }
 
     /** Create a {@link QualifierHierarchy} for ground qualifiers (represented
@@ -68,7 +66,9 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
 
     @Override
     protected QualifierParameterTypeAnnotator<Q> createTypeAnnotator() {
-        return new QualifierParameterTypeAnnotator<Q>(getContext(), getAnnotationConverter(),
+        return new QualifierParameterTypeAnnotator<Q>(
+                getContext(),
+                getAnnotationConverter(),
                 new ContainmentHierarchy<>(new PolyQualHierarchy<>(getGroundQualifierHierarchy())));
     }
 
@@ -110,13 +110,15 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
     /** Visitor to apply {@code qualifierAsMemberOf} at every location within a
      * {@link QualifiedTypeMirror}.
      */
-    private final QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>> AS_MEMBER_OF_VISITOR =
-        new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>>() {
-            @Override
-            public QualParams<Q> process(QualParams<Q> memberQual, QualParams<Q> objectQual) {
-                return qualifierAsMemberOf(memberQual, objectQual);
-            }
-        };
+    private final QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>>
+            AS_MEMBER_OF_VISITOR =
+                    new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>>() {
+                        @Override
+                        public QualParams<Q> process(
+                                QualParams<Q> memberQual, QualParams<Q> objectQual) {
+                            return qualifierAsMemberOf(memberQual, objectQual);
+                        }
+                    };
 
     @Override
     public QualifiedTypeMirror<QualParams<Q>> postAsMemberOf(
@@ -132,15 +134,23 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         final QualParams<Q> effectiveReceiverQualifier;
         switch (receiverType.getKind()) {
             case WILDCARD:
-                effectiveReceiverQualifier = ((QualifiedWildcardType<QualParams<Q>>) receiverType).getExtendsBound().getQualifier();
+                effectiveReceiverQualifier =
+                        ((QualifiedWildcardType<QualParams<Q>>) receiverType)
+                                .getExtendsBound()
+                                .getQualifier();
                 break;
             case TYPEVAR:
-                if (((QualifiedTypeVariable<QualParams<Q>>) receiverType).isPrimaryQualifierValid()) {
+                if (((QualifiedTypeVariable<QualParams<Q>>) receiverType)
+                        .isPrimaryQualifierValid()) {
                     effectiveReceiverQualifier = receiverType.getQualifier();
                 } else {
-                    effectiveReceiverQualifier = this.getQualifiedTypeParameterBounds(
-                            ((QualifiedTypeVariable<QualParams<Q>>) receiverType).getDeclaration().getUnderlyingType()).
-                            getUpperBound().getQualifier();
+                    effectiveReceiverQualifier =
+                            this.getQualifiedTypeParameterBounds(
+                                            ((QualifiedTypeVariable<QualParams<Q>>) receiverType)
+                                                    .getDeclaration()
+                                                    .getUnderlyingType())
+                                    .getUpperBound()
+                                    .getQualifier();
                 }
                 break;
             default:
@@ -154,28 +164,35 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
      * QualifiedTypeMirror}.  This is used in {@code methodFromUse} to
      * substitute in the newly-inferred values for method qualifier parameters.
      */
-    private final QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>> SUBSTITUTE_VISITOR =
-        new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>() {
-            @Override
-            public QualParams<Q> process(QualParams<Q> params, Map<String, Wildcard<Q>> substs) {
-                if (params.equals(getQualifierHierarchy().getBottom())) {
-                    return getQualifierHierarchy().getBottom();
-                }
-                return params.substituteAll(substs);
-            }
-        };
-
+    private final QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>
+            SUBSTITUTE_VISITOR =
+                    new QualifierMapVisitor<
+                            QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>() {
+                        @Override
+                        public QualParams<Q> process(
+                                QualParams<Q> params, Map<String, Wildcard<Q>> substs) {
+                            if (params.equals(getQualifierHierarchy().getBottom())) {
+                                return getQualifierHierarchy().getBottom();
+                            }
+                            return params.substituteAll(substs);
+                        }
+                    };
 
     @Override
-    public Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> methodFromUse(ExpressionTree tree,
-            ExecutableElement methodElt, QualifiedTypeMirror<QualParams<Q>> receiverType) {
+    public Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>>
+            methodFromUse(
+                    ExpressionTree tree,
+                    ExecutableElement methodElt,
+                    QualifiedTypeMirror<QualParams<Q>> receiverType) {
 
-        Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>> result = super.methodFromUse(tree,
-                methodElt, receiverType);
+        Pair<QualifiedExecutableType<QualParams<Q>>, List<QualifiedTypeMirror<QualParams<Q>>>>
+                result = super.methodFromUse(tree, methodElt, receiverType);
 
         Element elt = result.first.getUnderlyingType().asElement();
-        Set<String> qualParams = getAnnotationConverter().getDeclaredParameters(
-                elt, getDeclAnnotations(elt), getDecoratedElement(elt));
+        Set<String> qualParams =
+                getAnnotationConverter()
+                        .getDeclaredParameters(
+                                elt, getDeclAnnotations(elt), getDecoratedElement(elt));
 
         if (qualParams.isEmpty()) {
             // This check is not just a performance optimization - it saves us
@@ -193,23 +210,32 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
         List<QualifiedTypeMirror<QualParams<Q>>> formals = new ArrayList<>();
         List<QualifiedTypeMirror<QualParams<Q>>> actuals = new ArrayList<>();
         if (tree.getKind() == Kind.METHOD_INVOCATION) {
-            formals.addAll(getQualifiedTypes().expandVarArgs(result.first, ((MethodInvocationTree)tree).getArguments()));
-            for (ExpressionTree actualExpr : ((MethodInvocationTree)tree).getArguments()) {
+            formals.addAll(
+                    getQualifiedTypes()
+                            .expandVarArgs(
+                                    result.first, ((MethodInvocationTree) tree).getArguments()));
+            for (ExpressionTree actualExpr : ((MethodInvocationTree) tree).getArguments()) {
                 actuals.add(getQualifiedType(actualExpr));
             }
         }
 
-        if (! ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
+        if (!ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
             // Need to include receivers in the inference.
             formals.add(result.first.getReceiverType());
             actuals.add(receiverType);
         }
 
-        QualifierParameterHierarchy<Q> hierarchy = (QualifierParameterHierarchy<Q>)getQualifierHierarchy();
-        MethodParameterInference<Q> inference = new MethodParameterInference<>(
-                new ArrayList<>(qualParams), formals, actuals,
-                groundHierarchy, new PolyQualHierarchy<>(groundHierarchy),
-                hierarchy, getTypeHierarchy());
+        QualifierParameterHierarchy<Q> hierarchy =
+                (QualifierParameterHierarchy<Q>) getQualifierHierarchy();
+        MethodParameterInference<Q> inference =
+                new MethodParameterInference<>(
+                        new ArrayList<>(qualParams),
+                        formals,
+                        actuals,
+                        groundHierarchy,
+                        new PolyQualHierarchy<>(groundHierarchy),
+                        hierarchy,
+                        getTypeHierarchy());
 
         Map<String, PolyQual<Q>> subst = inference.infer();
 
@@ -220,7 +246,8 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             }
 
             QualifiedExecutableType<QualParams<Q>> newMethodType =
-                    (QualifiedExecutableType<QualParams<Q>>)SUBSTITUTE_VISITOR.visit(result.first, wildSubst);
+                    (QualifiedExecutableType<QualParams<Q>>)
+                            SUBSTITUTE_VISITOR.visit(result.first, wildSubst);
             List<QualifiedTypeMirror<QualParams<Q>>> newTypeArgs = new ArrayList<>();
             for (QualifiedTypeMirror<QualParams<Q>> qtm : result.second) {
                 newTypeArgs.add(SUBSTITUTE_VISITOR.visit(qtm, wildSubst));
@@ -262,7 +289,6 @@ public abstract class QualifierParameterTypeFactory<Q> extends DefaultQualifiedT
             }
 
             result.add(SetQualifierVisitor.apply(supertype, superQuals));
-
         }
 
         return result;

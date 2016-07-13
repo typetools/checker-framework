@@ -1,7 +1,10 @@
 package org.checkerframework.checker.linear;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import javax.lang.model.element.Element;
-
 import org.checkerframework.checker.linear.qual.Linear;
 import org.checkerframework.checker.linear.qual.Unusable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -9,11 +12,6 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
-
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
 
 /**
  * A type-checking visitor for the Linear type system.  The visitor reports
@@ -44,11 +42,11 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
         Element elem = TreeUtils.elementFromUse(node);
         if (elem == null) return false;
         switch (elem.getKind()) {
-        case PARAMETER:
-        case LOCAL_VARIABLE:
-            return true;
-        default:
-            return false;
+            case PARAMETER:
+            case LOCAL_VARIABLE:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -58,8 +56,8 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
     private void checkLegality(ExpressionTree node) {
         if (isLocalVarOrParam(node)) {
             if (atypeFactory.getAnnotatedType(node).hasAnnotation(Unusable.class)) {
-                checker.report(Result.failure("use.unsafe",
-                        TreeUtils.elementFromUse(node), node), node);
+                checker.report(
+                        Result.failure("use.unsafe", TreeUtils.elementFromUse(node), node), node);
             }
         }
     }
@@ -81,7 +79,6 @@ public class LinearVisitor extends BaseTypeVisitor<LinearAnnotatedTypeFactory> {
      */
     // Premature optimization:  Don't check method invocability
     @Override
-    protected void checkMethodInvocability(AnnotatedExecutableType method,
-            MethodInvocationTree node) {
-    }
+    protected void checkMethodInvocability(
+            AnnotatedExecutableType method, MethodInvocationTree node) {}
 }

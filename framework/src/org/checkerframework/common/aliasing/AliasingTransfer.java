@@ -1,10 +1,10 @@
 package org.checkerframework.common.aliasing;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.util.List;
-
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
-
 import org.checkerframework.common.aliasing.qual.LeakedToResult;
 import org.checkerframework.common.aliasing.qual.NonLeaked;
 import org.checkerframework.common.aliasing.qual.Unique;
@@ -27,9 +27,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.TreeUtils;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-
 /**
  * Type refinement is treated in the usual way, except that at
  * (pseudo-)assignments the RHS may lose its type refinement, before the LHS is
@@ -48,13 +45,11 @@ import com.sun.source.tree.Tree.Kind;
  * argument in a method call or constructor invocation, and the method's return
  * value is discarded.
  */
-
 public class AliasingTransfer extends CFTransfer {
 
     private AnnotatedTypeFactory factory;
 
-    public AliasingTransfer(
-            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+    public AliasingTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         super(analysis);
         factory = analysis.getTypeFactory();
     }
@@ -64,8 +59,8 @@ public class AliasingTransfer extends CFTransfer {
      * {@literal @}Unique and is a method invocation or a new class instance.
      */
     @Override
-    public TransferResult<CFValue, CFStore> visitAssignment(AssignmentNode n,
-            TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, CFStore> visitAssignment(
+            AssignmentNode n, TransferInput<CFValue, CFStore> in) {
         Node rhs = n.getExpression();
         Tree treeRhs = rhs.getTree();
         AnnotatedTypeMirror rhsType = factory.getAnnotatedType(treeRhs);
@@ -91,8 +86,8 @@ public class AliasingTransfer extends CFTransfer {
      * {@literal @}LeakedToResult, {@code visitMethodInvocation()} handles it.
      */
     @Override
-    protected void processPostconditions(MethodInvocationNode n, CFStore store,
-            ExecutableElement methodElement, Tree tree) {
+    protected void processPostconditions(
+            MethodInvocationNode n, CFStore store, ExecutableElement methodElement, Tree tree) {
         super.processPostconditions(n, store, methodElement, tree);
         if (TreeUtils.isEnumSuper(n.getTree())) {
             // Skipping the init() method for enums.
@@ -100,10 +95,13 @@ public class AliasingTransfer extends CFTransfer {
         }
         List<Node> args = n.getArguments();
         List<? extends VariableElement> params = methodElement.getParameters();
-        assert (args.size() == params.size()) : "Number of arguments in " +
-                "the method call " + n.toString() + " is different from the" +
-                " number of parameters for the method declaration: "
-                + methodElement.getSimpleName().toString();
+        assert (args.size() == params.size())
+                : "Number of arguments in "
+                        + "the method call "
+                        + n.toString()
+                        + " is different from the"
+                        + " number of parameters for the method declaration: "
+                        + methodElement.getSimpleName().toString();
 
         AnnotatedExecutableType annotatedType = factory.getAnnotatedType(methodElement);
         List<AnnotatedTypeMirror> paramTypes = annotatedType.getParameterTypes();
@@ -119,7 +117,8 @@ public class AliasingTransfer extends CFTransfer {
         // Now, doing the same as above for the receiver parameter
         Node receiver = n.getTarget().getReceiver();
         AnnotatedDeclaredType receiverType = annotatedType.getReceiverType();
-        if (receiverType != null && !receiverType.hasAnnotation(LeakedToResult.class)
+        if (receiverType != null
+                && !receiverType.hasAnnotation(LeakedToResult.class)
                 && !receiverType.hasAnnotation(NonLeaked.class)) {
             store.clearValue(FlowExpressions.internalReprOf(factory, receiver));
         }
@@ -141,12 +140,14 @@ public class AliasingTransfer extends CFTransfer {
 
             ExecutableElement methodElement = TreeUtils.elementFromUse(n.getTree());
             List<Node> args = n.getArguments();
-            List<? extends VariableElement> params = methodElement
-                    .getParameters();
-            assert (args.size() == params.size()) : "Number of arguments in " +
-                    "the method call " + n.toString() + " is different from the" +
-                    " number of parameters for the method declaration: "
-                    + methodElement.getSimpleName().toString();
+            List<? extends VariableElement> params = methodElement.getParameters();
+            assert (args.size() == params.size())
+                    : "Number of arguments in "
+                            + "the method call "
+                            + n.toString()
+                            + " is different from the"
+                            + " number of parameters for the method declaration: "
+                            + methodElement.getSimpleName().toString();
             CFStore store = in.getRegularStore();
 
             for (int i = 0; i < args.size(); i++) {
@@ -155,8 +156,7 @@ public class AliasingTransfer extends CFTransfer {
                 if (factory.getAnnotatedType(param).hasAnnotation(LeakedToResult.class)) {
                     // If argument can leak to result, and parent is not a
                     // single statement, remove that node from store.
-                    store.clearValue(FlowExpressions.internalReprOf(factory,
-                            arg));
+                    store.clearValue(FlowExpressions.internalReprOf(factory, arg));
                 }
             }
 
@@ -167,7 +167,6 @@ public class AliasingTransfer extends CFTransfer {
             if (receiverType != null && receiverType.hasAnnotation(LeakedToResult.class)) {
                 store.clearValue(FlowExpressions.internalReprOf(factory, receiver));
             }
-
         }
         // If parent is a statement, processPostconditions will handle the
         // pseudo-assignments.

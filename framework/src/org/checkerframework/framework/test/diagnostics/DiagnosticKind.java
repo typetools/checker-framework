@@ -21,6 +21,7 @@ public enum DiagnosticKind {
     }
 
     private static final Map<String, DiagnosticKind> stringToCategory = new LinkedHashMap<>();
+
     static {
         for (DiagnosticKind cat : values()) {
             stringToCategory.put(cat.parseString, cat);

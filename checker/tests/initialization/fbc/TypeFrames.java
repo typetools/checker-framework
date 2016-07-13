@@ -1,5 +1,5 @@
-import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 public class TypeFrames {
 
@@ -16,6 +16,7 @@ public class TypeFrames {
     }
 
     interface I {}
+
     class B extends A implements I {
         @NonNull String b;
 
@@ -30,7 +31,7 @@ public class TypeFrames {
     }
 
     // subtyping
-    void t1 (@UnderInitialization(A.class) B b1, @UnderInitialization(B.class) B b2) {
+    void t1(@UnderInitialization(A.class) B b1, @UnderInitialization(B.class) B b2) {
         @UnderInitialization(A.class) B l1 = b1;
         @UnderInitialization(A.class) B l2 = b2;
         //:: error: (assignment.type.incompatible)

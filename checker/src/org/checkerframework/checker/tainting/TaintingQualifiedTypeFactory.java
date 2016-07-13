@@ -38,30 +38,38 @@ public class TaintingQualifiedTypeFactory extends QualifierParameterTypeFactory<
     protected QualifierParameterTreeAnnotator<Tainting> createTreeAnnotator() {
         return new QualifierParameterTreeAnnotator<Tainting>(this) {
             @Override
-            public QualifiedTypeMirror<QualParams<Tainting>> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
+            public QualifiedTypeMirror<QualParams<Tainting>> visitLiteral(
+                    LiteralTree tree, ExtendedTypeMirror type) {
                 QualifiedTypeMirror<QualParams<Tainting>> result = super.visitLiteral(tree, type);
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
-                    result = SetQualifierVisitor.apply(result, new QualParams<>(new GroundQual<>(Tainting.UNTAINTED)));
+                    result =
+                            SetQualifierVisitor.apply(
+                                    result, new QualParams<>(new GroundQual<>(Tainting.UNTAINTED)));
                 } else if (tree.getKind() == Kind.NULL_LITERAL) {
-                    return SetQualifierVisitor.apply(result, TaintingQualifiedTypeFactory.this.getQualifierHierarchy().getBottom());
+                    return SetQualifierVisitor.apply(
+                            result,
+                            TaintingQualifiedTypeFactory.this.getQualifierHierarchy().getBottom());
                 }
                 return result;
             }
         };
     }
 
-    private CombiningOperation<Tainting> lubOp = new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
+    private CombiningOperation<Tainting> lubOp =
+            new CombiningOperation.Lub<>(new TaintingQualifierHierarchy());
 
     @Override
     public TypeVariableSubstitutor<QualParams<Tainting>> createTypeVariableSubstitutor() {
         return new QualifiedParameterTypeVariableSubstitutor<Tainting>() {
             @Override
-            protected Wildcard<Tainting> combineForSubstitution(Wildcard<Tainting> a, Wildcard<Tainting> b) {
+            protected Wildcard<Tainting> combineForSubstitution(
+                    Wildcard<Tainting> a, Wildcard<Tainting> b) {
                 return a.combineWith(b, lubOp, lubOp);
             }
 
             @Override
-            protected PolyQual<Tainting> combineForSubstitution(PolyQual<Tainting> a, PolyQual<Tainting> b) {
+            protected PolyQual<Tainting> combineForSubstitution(
+                    PolyQual<Tainting> a, PolyQual<Tainting> b) {
                 return a.combineWith(b, lubOp);
             }
         };

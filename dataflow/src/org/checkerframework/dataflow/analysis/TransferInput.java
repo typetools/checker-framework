@@ -79,8 +79,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      * The node-value mapping {@code nodeValues} is provided by the analysis and
      * is only read from within this {@link TransferInput}.
      */
-    public TransferInput(Node n, Analysis<A, S, ?> analysis,
-            TransferResult<A, S> to) {
+    public TransferInput(Node n, Analysis<A, S, ?> analysis, TransferResult<A, S> to) {
         node = n;
         this.analysis = analysis;
         if (to.containsTwoStores()) {
@@ -234,16 +233,15 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
         if (store == null) {
             S newThenStore = thenStore.leastUpperBound(other.getThenStore());
             S newElseStore = elseStore.leastUpperBound(other.getElseStore());
-            return new TransferInput<>(node, analysis, newThenStore,
-                    newElseStore);
+            return new TransferInput<>(node, analysis, newThenStore, newElseStore);
         } else {
             if (other.store == null) {
                 // make sure we do not lose precision and keep two stores if at
                 // least one of the two TransferInput's has two stores.
                 return other.leastUpperBound(this);
             }
-            return new TransferInput<>(node, analysis,
-                    store.leastUpperBound(other.getRegularStore()));
+            return new TransferInput<>(
+                    node, analysis, store.leastUpperBound(other.getRegularStore()));
         }
     }
 
@@ -254,8 +252,8 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
             TransferInput<A, S> other = (TransferInput<A, S>) o;
             if (containsTwoStores()) {
                 if (other.containsTwoStores()) {
-                    return getThenStore().equals(other.getThenStore()) &&
-                        getElseStore().equals(other.getElseStore());
+                    return getThenStore().equals(other.getThenStore())
+                            && getElseStore().equals(other.getElseStore());
                 }
             } else {
                 if (!other.containsTwoStores()) {
@@ -268,7 +266,8 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(this.analysis, this.node, this.store, this.thenStore, this.elseStore);
+        return HashCodeUtils.hash(
+                this.analysis, this.node, this.store, this.thenStore, this.elseStore);
     }
 
     @Override
@@ -279,5 +278,4 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
             return "[" + store + "]";
         }
     }
-
 }

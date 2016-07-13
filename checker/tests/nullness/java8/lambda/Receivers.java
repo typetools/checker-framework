@@ -21,6 +21,7 @@ class ReceiverTest {
     void context1(@NonNull ReceiverTest this) {
         Supplier s = () -> this;
     }
+
     void context2(@Nullable ReceiverTest this) {
         // TODO: This is bug that is not specific to lambdas
         // https://github.com/typetools/checker-framework/issues/352

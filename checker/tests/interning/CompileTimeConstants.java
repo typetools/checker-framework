@@ -1,6 +1,5 @@
 import org.checkerframework.checker.interning.qual.*;
 
-
 public class CompileTimeConstants {
     class A {
         final static String a1 = "hello";
@@ -18,5 +17,4 @@ public class CompileTimeConstants {
             if (b1 == A.a1) {}
         }
     }
-
 }

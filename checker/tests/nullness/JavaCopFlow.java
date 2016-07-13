@@ -1,4 +1,5 @@
 import org.checkerframework.checker.nullness.qual.*;
+
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
 class Flow {
 
@@ -7,7 +8,7 @@ class Flow {
         // String str = "foo";
         @NonNull String a;
         if (str != null) {
-           a = str;
+            a = str;
         }
 
         str = null;
@@ -75,7 +76,7 @@ class Flow {
 
     public void testReturnElse(String str) {
 
-//        String str = "foo";
+        //        String str = "foo";
         if (str != null) {
             testAssert("");
         } else {
@@ -149,7 +150,7 @@ class Flow {
         // String str = "foo";
         @NonNull String a;
         if (str instanceof String) {
-           a = str;
+            a = str;
         }
 
         str = null;
@@ -177,7 +178,6 @@ class Flow {
         @NonNull String a = str;
     }
 
-
     void methodThatThrowsRuntime() {
         throw new RuntimeException();
     }
@@ -191,7 +191,7 @@ class Flow {
 
         int i = 0;
         while (true) {
-          //:: error: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             @NonNull String a = str;
             str = null;
             i++;
@@ -201,12 +201,12 @@ class Flow {
         str = null;
         @NonNull String b = "hi";
         try {
-          //:: error: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             b = str;
             methodThatThrowsRuntime();
             str = "bar";
         } finally {
-          //:: error: (assignment.type.incompatible)
+            //:: error: (assignment.type.incompatible)
             b = str;
         }
 
@@ -215,6 +215,6 @@ class Flow {
         b = str;
 
         str = "hi";
-        b = (String)str;
+        b = (String) str;
     }
 }

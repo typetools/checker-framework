@@ -1,13 +1,11 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
-
+import com.sun.source.tree.NewClassTree;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.sun.source.tree.NewClassTree;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for new object creation
@@ -26,9 +24,7 @@ public class ObjectCreationNode extends Node {
     protected Node constructor;
     protected List<Node> arguments;
 
-    public ObjectCreationNode(NewClassTree tree,
-            Node constructor,
-            List<Node> arguments) {
+    public ObjectCreationNode(NewClassTree tree, Node constructor, List<Node> arguments) {
         super(InternalUtils.typeOf(tree));
         this.tree = tree;
         this.constructor = constructor;

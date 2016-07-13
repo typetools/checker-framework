@@ -4,17 +4,13 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class RequiresPrivateField {
 
-  @RequiresNonNull("PptCombined.assemblies")
-  public void testFindIntermediateBlocks1() {
-    // no body
-  }
-
+    @RequiresNonNull("PptCombined.assemblies")
+    public void testFindIntermediateBlocks1() {
+        // no body
+    }
 }
-
 
 class PptCombined {
 
-  @SpecPublic
-  private static @MonotonicNonNull String assemblies = null;
-
+    @SpecPublic private static @MonotonicNonNull String assemblies = null;
 }

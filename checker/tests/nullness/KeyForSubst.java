@@ -1,6 +1,5 @@
-import org.checkerframework.checker.nullness.qual.*;
-
 import java.util.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 public class KeyForSubst {
     /*
@@ -22,10 +21,9 @@ public class KeyForSubst {
     }
 
     // OK, I think the annotation on the index is overdoing it, but it works.
-    @KeyFor("#1") String @KeyFor("#2")[] getArray(Object l, Object m) {
+    @KeyFor("#1") String @KeyFor("#2") [] getArray(Object l, Object m) {
         throw new RuntimeException();
     }
-
 
     public void testAssignMain(Object lastMap) {
         @KeyFor("lastMap") String key = getMain(lastMap);
@@ -40,7 +38,6 @@ public class KeyForSubst {
     }
 
     public void testAssignArray(Object lastMap, Object newMap) {
-        @KeyFor("lastMap") String @KeyFor("newMap")[] key = getArray(lastMap, newMap);
+        @KeyFor("lastMap") String @KeyFor("newMap") [] key = getArray(lastMap, newMap);
     }
-
 }

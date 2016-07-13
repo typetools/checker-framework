@@ -7,7 +7,7 @@
  * It is used by defaultPersists/Driver and inheritDeclAnnoPersist/Driver.
  *
  */
-
+import com.sun.tools.classfile.ClassFile;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -18,10 +18,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
-
-import com.sun.tools.classfile.ClassFile;
-
-
 
 public class PersistUtil {
 
@@ -49,7 +45,16 @@ public class PersistUtil {
     }
 
     public static File compileTestFile(File f, String testClass) {
-        int rc = com.sun.tools.javac.Main.compile(new String[] { "-source", "1.8", "-g", "-processor", "org.checkerframework.checker.nullness.NullnessChecker", f.getPath() });
+        int rc =
+                com.sun.tools.javac.Main.compile(
+                        new String[] {
+                            "-source",
+                            "1.8",
+                            "-g",
+                            "-processor",
+                            "org.checkerframework.checker.nullness.NullnessChecker",
+                            f.getPath()
+                        });
         if (rc != 0) {
             throw new Error("compilation failed. rc=" + rc);
         }
@@ -76,10 +81,10 @@ public class PersistUtil {
         sb.append("import org.checkerframework.dataflow.qual.*;\n");
 
         sb.append("\n");
-        boolean isSnippet = !(compact.startsWith("class")
-                              || compact.contains(" class"))
-                            && !compact.contains("interface")
-                            && !compact.contains("enum");
+        boolean isSnippet =
+                !(compact.startsWith("class") || compact.contains(" class"))
+                        && !compact.contains("interface")
+                        && !compact.contains("enum");
 
         if (isSnippet) {
             sb.append("class Test {\n");
@@ -94,7 +99,6 @@ public class PersistUtil {
 
         return sb.toString();
     }
-
 }
 
 /**

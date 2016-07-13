@@ -1,5 +1,4 @@
 import java.util.List;
-
 import org.checkerframework.checker.guieffect.qual.*;
 
 class ThrowCatchTest {
@@ -29,7 +28,8 @@ class ThrowCatchTest {
         throw ex1;
     }
 
-    <E extends @AlwaysSafe PolyUIException> void throwTypeVarAlwaysSafe1(E ex1, @AlwaysSafe E ex2) throws PolyUIException {
+    <E extends @AlwaysSafe PolyUIException> void throwTypeVarAlwaysSafe1(E ex1, @AlwaysSafe E ex2)
+            throws PolyUIException {
         if (flag) {
             throw ex1;
         }
@@ -43,7 +43,8 @@ class ThrowCatchTest {
         throw ex2;
     }
 
-    <@AlwaysSafe E extends @UI PolyUIException> void throwTypeVarMixed(E ex1, @AlwaysSafe E ex2) throws PolyUIException {
+    <@AlwaysSafe E extends @UI PolyUIException> void throwTypeVarMixed(E ex1, @AlwaysSafe E ex2)
+            throws PolyUIException {
         if (flag) {
             //:: error: (throw.type.invalid)
             throw ex1;
@@ -53,9 +54,11 @@ class ThrowCatchTest {
 
     // Wildcards
     void throwWildcard(
-           //:: error: (type.argument.type.incompatible)
-           List<? extends @UI PolyUIException> ui, // Default type of List's type parameter is below @UI so this is type.argument.incompatible
-           List<? extends @AlwaysSafe PolyUIException> alwaysSafe) throws PolyUIException {
+            //:: error: (type.argument.type.incompatible)
+            List<? extends @UI PolyUIException>
+                    ui, // Default type of List's type parameter is below @UI so this is type.argument.incompatible
+            List<? extends @AlwaysSafe PolyUIException> alwaysSafe)
+            throws PolyUIException {
         if (flag) {
             //:: error: (throw.type.invalid)
             throw ui.get(0);

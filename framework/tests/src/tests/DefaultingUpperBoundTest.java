@@ -1,9 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-
 import java.io.File;
-
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -12,15 +10,15 @@ import org.junit.runners.Parameterized.Parameters;
 public class DefaultingUpperBoundTest extends CheckerFrameworkTest {
 
     public DefaultingUpperBoundTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 tests.defaulting.DefaultingUpperBoundChecker.class,
                 "defaulting",
-                "-Anomsgtext"
-        );
+                "-Anomsgtext");
     }
 
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"defaulting/upperbound"};
+    public static String[] getTestDirs() {
+        return new String[] {"defaulting/upperbound"};
     }
 }

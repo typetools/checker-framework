@@ -7,7 +7,6 @@
 // then the assertion failure goes away.  Evidently this is because
 // the annotated TreeSet.java file uses the type variable E.
 
-
 import java.util.*;
 
 public class SortingCollection<T> {
@@ -18,10 +17,7 @@ public class SortingCollection<T> {
         public boolean hasNext() {
             return !queue.isEmpty();
         }
-
     }
 
-    static class PollableTreeSet<T> extends TreeSet<T> {
-    }
-
+    static class PollableTreeSet<T> extends TreeSet<T> {}
 }

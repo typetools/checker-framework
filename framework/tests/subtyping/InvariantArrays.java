@@ -2,10 +2,10 @@ import java.util.*;
 import tests.util.*;
 
 class InvariantArrays {
-    Object [] oa;
+    Object[] oa;
     @Encrypted Object[] eoa;
 
-    String [] sa;
+    String[] sa;
     @Encrypted String[] esa;
 
     void tests() {

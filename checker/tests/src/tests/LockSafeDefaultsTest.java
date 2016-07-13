@@ -1,9 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-
 import java.io.File;
-
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -12,17 +10,16 @@ import org.junit.runners.Parameterized.Parameters;
 public class LockSafeDefaultsTest extends CheckerFrameworkTest {
 
     public LockSafeDefaultsTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.lock.LockChecker.class,
                 "lock",
                 "-AuseDefaultsForUncheckedCode=source",
-                "-Anomsgtext"
-                );
+                "-Anomsgtext");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"lock-safedefaults"};
+        return new String[] {"lock-safedefaults"};
     }
-
 }

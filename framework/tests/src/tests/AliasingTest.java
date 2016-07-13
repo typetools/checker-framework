@@ -1,14 +1,14 @@
 package tests;
 
 import java.io.File;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 public class AliasingTest extends CheckerFrameworkTest {
 
     public AliasingTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.common.aliasing.AliasingChecker.class,
                 "aliasing",
                 "-Anomsgtext",
@@ -18,7 +18,6 @@ public class AliasingTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"aliasing"};
+        return new String[] {"aliasing"};
     }
-
 }

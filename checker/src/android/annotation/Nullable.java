@@ -4,5 +4,4 @@ import java.lang.annotation.*;
 
 @Documented
 @Retention(RetentionPolicy.SOURCE)
-public @interface Nullable {
-}
+public @interface Nullable {}

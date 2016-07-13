@@ -31,7 +31,7 @@ class B {
     // public void indexOf2(?[] a, @Nullable Object elt) {}
 
     void call() {
-        Integer[] arg = new Integer[] { 1, 2, 3, 4 };
+        Integer[] arg = new Integer[] {1, 2, 3, 4};
         indexOf1(arg, new Integer(5));
         // indexOf2(arg, new Integer(5));
     }

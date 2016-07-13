@@ -1,9 +1,7 @@
 package org.checkerframework.checker.signedness.qual;
 
 import java.lang.annotation.*;
-
 import javax.lang.model.type.TypeKind;
-
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -17,6 +15,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@SubtypeOf( { } )
+@SubtypeOf({})
 @DefaultQualifierInHierarchy
-public @interface UnknownSignedness { }
+public @interface UnknownSignedness {}

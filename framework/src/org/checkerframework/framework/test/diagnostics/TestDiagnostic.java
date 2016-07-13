@@ -21,8 +21,12 @@ public class TestDiagnostic {
     /**
      * Basic constructor that sets the immutable fields of this diagnostic.
      */
-    public TestDiagnostic(long lineNumber, DiagnosticKind kind, String message, boolean isFixable,
-                          boolean omitParentheses) {
+    public TestDiagnostic(
+            long lineNumber,
+            DiagnosticKind kind,
+            String message,
+            boolean isFixable,
+            boolean omitParentheses) {
         this.lineNumber = lineNumber;
         this.kind = kind;
         this.message = message;
@@ -58,7 +62,7 @@ public class TestDiagnostic {
      */
     public String asSourceString() {
         if (omitParentheses) {
-            return kind.parseString + " "+ message;
+            return kind.parseString + " " + message;
         }
         return kind.parseString + " (" + message + ")";
     }
@@ -74,12 +78,12 @@ public class TestDiagnostic {
 
         final TestDiagnostic other = (TestDiagnostic) otherObj;
         return other.lineNumber == lineNumber
-            && other.kind == this.kind
-            && other.message.equals(this.message);
+                && other.kind == this.kind
+                && other.message.equals(this.message);
     }
 
     public int hashCode() {
-        return 331 * ((int)lineNumber) * kind.hashCode() * message.hashCode();
+        return 331 * ((int) lineNumber) * kind.hashCode() * message.hashCode();
     }
 
     /**
