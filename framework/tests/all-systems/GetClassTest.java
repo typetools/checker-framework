@@ -1,6 +1,6 @@
 class GetClassTest {
 
-    // See AnntoatedTypeFactory.adaptGetClassReturnTypeToReceiver
+    // See AnnotatedTypeFactory.adaptGetClassReturnTypeToReceiver
 
     void context() {
         Integer i = 4;

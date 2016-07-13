@@ -30,6 +30,9 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     public Void visitBinary(BinaryTree node, Void p) {
         if (!TreeUtils.isStringConcatenation(node)) {
             // TODO: ignore string concatenations
+
+            // The Fenum Checker is only concerned with primitive types, so just check that
+            // the primary annotations are equivalent.
             AnnotatedTypeMirror lhsAtm = atypeFactory.getAnnotatedType(node.getLeftOperand());
             AnnotatedTypeMirror rhsAtm = atypeFactory.getAnnotatedType(node.getRightOperand());
 

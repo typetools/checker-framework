@@ -232,7 +232,7 @@ public class FlowExpressions {
         }
 
         /**
-         * Returns true if and only if {@code other} appear anywhere in this
+         * Returns true if and only if {@code other} appears anywhere in this
          * receiver or an expression appears in this receiver such that
          * {@code other} might alias this expression, and that expression is
          * modifiable.
@@ -379,8 +379,6 @@ public class FlowExpressions {
      * field access or method invocation.
      */
     public static class ClassName extends Receiver {
-        protected Element element;
-
         public ClassName(TypeMirror type) {
             super(type);
         }
@@ -599,20 +597,15 @@ public class FlowExpressions {
     }
 
     /**
-     * A method call, typically a deterministic one. However, this is not
-     * enforced and non-pure methods are also possible. It is the client's
-     * responsibility to ensure that using non-deterministic methods is done in
-     * a sound way.  The CF allows non-deterministic methods to be used in
-     * postconditions such as EnsuresNonNull.
+     * A method call.
      */
-    // TODO: Which clients? What is their responsibility? What is "a sound way"?
     public static class MethodCall extends Receiver {
 
         protected final Receiver receiver;
         protected final List<Receiver> parameters;
-        protected final Element method;
+        protected final ExecutableElement method;
 
-        public MethodCall(TypeMirror type, Element method,
+        public MethodCall(TypeMirror type, ExecutableElement method,
                 Receiver receiver, List<Receiver> parameters) {
             super(type);
             this.receiver = receiver;
@@ -651,9 +644,9 @@ public class FlowExpressions {
         }
 
         /**
-         * @return the Element for the method call
+         * @return the ExecutableElement for the method call
          */
-        public Element getElement() {
+        public ExecutableElement getElement() {
             return method;
         }
 

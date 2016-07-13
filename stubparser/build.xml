@@ -56,9 +56,14 @@
         <!-- If adding a Javadoc dependency to another project,
              there is likely also a build dependency to that project.
              Please add it as well and keep both in sync. -->
+        <!-- With Ant 1.9.4 or later, add
+            failonwarning="true"
+            but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
         <javadoc destdir="${api.doc}"
                  private="${javadoc.private}"
-                 failonerror="true">
+                 encoding="UTF-8"
+                 failonerror="true"
+            >
             <!-- To add later:    additionalParam="-Xdoclint:all,-missing" -->
             <fileset dir="src">
                 <include name="**/*.java"/>

@@ -1,5 +1,19 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.0, 1 July 2016
+
+The new Signedness Checker prevents mixing of unsigned and signed
+values and prevents meaningless operations on unsigned values.
+
+The Lock Checker expresses the annotated variable as `<self>`;
+previously it used `itself`, which may conflict with an identifier.
+
+Closed issues:
+166, 273, 358, 408, 471, 484, 594, 625, 692, 700, 701, 711, 717, 752, 756,
+759, 763, 767, 779, 783, 794, 807, 808.
+
+---------------------------------------------------------------------------
+
 Version 2.0.1, 1 June 2016
 
 We renamed method annotateImplicit to addComputedTypeAnnotations.  If you

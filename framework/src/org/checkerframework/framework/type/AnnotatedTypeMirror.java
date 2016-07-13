@@ -378,11 +378,24 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Returns the set of explicitly written annotations supported by this checker.
+     * Returns the set of explicitly written annotations on this type that are
+     * supported by this checker.
      * This is useful to check the validity of annotations explicitly present on a type,
      * as flow inference might add annotations that were not previously present.
+     * Note that since AnnotatedTypeMirror instances are created for type uses,
+     * this method will return explicit annotations in type use locations but will
+     * not return explicit annotations that had an impact on defaulting, such as
+     * an explicit annotation on a class declaration. For example, given:
+     * <p>
+     * {@code @MyExplicitAnno class MyClass { }; MyClass myClassInstance; }
+     * <p>
+     * the result of calling
+     * {@code atypeFactory.getAnnotatedType(variableTreeForMyClassInstance).getExplicitAnnotations()}
      *
-     * @return the set of explicitly written annotations supported by this checker
+     * will not contain {@code @MyExplicitAnno}.
+     *
+     * @return the set of explicitly written annotations on this type that are
+     * supported by this checker
      */
     public Set<AnnotationMirror> getExplicitAnnotations() {
         // TODO JSR 308: The explicit type annotations should be always present
@@ -490,12 +503,17 @@ public abstract class AnnotatedTypeMirror {
      *
      * In contrast to {@link #hasExplicitAnnotationRelaxed(AnnotationMirror)}
      * this method also compares annotation values.
+     * <p>
+     *
+     * See the documentation for {@link #getExplicitAnnotations()} for details
+     * on which explicit annotations are not included.
      *
      * @param a the annotation to check for
      * @return true iff the annotation {@code a} is explicitly written
      * on the type
      *
      * @see #hasExplicitAnnotationRelaxed(AnnotationMirror)
+     * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotation(AnnotationMirror a) {
         return AnnotationUtils.containsSame(getExplicitAnnotations(), a);
@@ -531,21 +549,32 @@ public abstract class AnnotatedTypeMirror {
     /**
      * A version of hasAnnotationRelaxed that only considers annotations that
      * are explicitly written on the type.
+     * <p>
+     *
+     * See the documentation for {@link #getExplicitAnnotations()} for details
+     * on which explicit annotations are not included.
      *
      * @see #hasAnnotationRelaxed(AnnotationMirror)
+     * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotationRelaxed(AnnotationMirror a) {
         return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), a);
     }
 
     /**
-     * Determines whether this type contains an explictly written annotation
+     * Determines whether this type contains an explicitly written annotation
      * with the same annotation type as a particular annotation. This method
      * does not consider an annotation's values.
+     * <p>
+     *
+     * See the documentation for {@link #getExplicitAnnotations()} for details
+     * on which explicit annotations are not included.
      *
      * @param a the class of annotation to check for
      * @return true iff the type contains an explicitly written annotation
      * with the same type as the annotation given by {@code a}
+     *
+     * @see #getExplicitAnnotations()
      */
     public boolean hasExplicitAnnotation(Class<? extends Annotation> a) {
         return AnnotationUtils.containsSameIgnoringValues(getExplicitAnnotations(), getAnnotation(a));
@@ -707,7 +736,7 @@ public abstract class AnnotatedTypeMirror {
     }
 
     /**
-     * Removes all annotations on this type.
+     * Removes all primary annotations on this type.
      * Make sure to add an annotation again, e.g. Unqualified.
      *
      * This method should only be used in very specific situations.
@@ -789,6 +818,7 @@ public abstract class AnnotatedTypeMirror {
         atypeFactory.fromElement(
                 atypeFactory.elements.getTypeElement(
                         Object.class.getCanonicalName()));
+        objectType.declaration = false;
         return objectType;
     }
 
@@ -2168,7 +2198,40 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
-    /** @see Types#directSupertypes(TypeMirror) */
+    /**
+     * This method returns a list of AnnotatedTypeMirrors where the Java type of each ATM is an
+     * immediate supertype (class or interface) of the Java type of this.  If the directSuperType
+     * has type arguments, then the annotations on those type arguments are taken with proper
+     * translation from the declaration of the Java type of this.
+     * <p>
+     * For example,
+     * <pre>
+     * {@code class B<T> { ... } }
+     * {@code class A extends B<@NonNull String> { ... } }
+     * {@code @Nullable A a;}
+     * </pre>
+     * The direct supertype of the ATM {@code @Nullable A} is {@code @Nullable B<@NonNull String>}.
+     * <p>
+     * An example with more complex type arguments:
+     * <pre>
+     * {@code class D<Q,R> { ... } }
+     * {@code class A<T,S> extends D<S,T> { ... } }
+     * {@code @Nullable A<@NonNull String, @NonNull Object> a;}
+     * </pre>
+     * The direct supertype of the ATM {@code @Nullable A<@NonNull String, @NonNull
+     * Object>} is {@code @Nullable B<@NonNull Object, @NonNull String>}.
+     * <p>
+     * An example with more than one direct supertype:
+     * <pre>
+     * {@code class B<T> implements List<Integer> { ... } }
+     * {@code class A extends B<@NonNull String> implements List<Integer> { ... } }
+     * {@code @Nullable A a;}
+     * </pre>
+     * The direct supertypes of the ATM {@code @Nullable A} are {@code @Nullable B <@NonNull
+     * String>} and {@code @Nullable List<@NonNull Integer>}.
+     *
+     * @see Types#directSupertypes(TypeMirror)
+     */
     public List<? extends AnnotatedTypeMirror> directSuperTypes() {
         return SupertypeFinder.directSuperTypes(this);
     }

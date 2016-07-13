@@ -3,8 +3,8 @@ package org.checkerframework.framework.qual;
 import java.lang.annotation.*;
 
 /**
- * A meta-annotation to specify all the qualifiers that the given qualifier
- * is a subtype of.  This provides a declarative way to specify the type
+ * A meta-annotation to specify all the qualifiers that the given qualifier is
+ * an immediate subtype of.  This provides a declarative way to specify the type
  * qualifier hierarchy.  (Alternatively, the hierarchy can be defined
  * procedurally by subclassing {@link org.checkerframework.framework.type.QualifierHierarchy} or
  * {@link org.checkerframework.framework.type.TypeHierarchy}.)
@@ -46,6 +46,8 @@ import java.lang.annotation.*;
  * <p>
  * Together, all the @SubtypeOf meta-annotations fully describe the type
  * qualifier hierarchy.
+ * <p>
+ *
  * No @SubtypeOf meta-annotation is needed on (or can be written on) the
  * Unqualified pseudo-qualifier, whose position in the hierarchy is
  * inferred from the meta-annotations on the explicit qualifiers.

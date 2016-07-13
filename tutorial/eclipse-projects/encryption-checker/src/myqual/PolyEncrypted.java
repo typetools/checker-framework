@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TypeQualifier;
 
 /**
  * Denotes that the representation of an object is encrypted.

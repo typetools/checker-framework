@@ -1,0 +1,4 @@
+Class1.java:24:24: compiler.err.proc.messager: (contracts.postcondition.not.satisfied)
+Class2.java:10:29: compiler.err.proc.messager: (assignment.type.incompatible)
+Class2.java:14:24: compiler.err.proc.messager: (contracts.precondition.not.satisfied)
+3 errors

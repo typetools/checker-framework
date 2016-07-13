@@ -537,17 +537,18 @@ will not type-check unless \<null> has the bottom type:
 }
 \end{Verbatim}
 
-\begin{sloppypar}
-You don't necessarily have to define a new bottom qualifier.  You can
-use \<org.checkerframework.framework.qual.Bottom> if your type system does not already have an
-appropriate bottom qualifier.
-\end{sloppypar}
+% \begin{sloppypar}
+% You don't necessarily have to define a new bottom qualifier.  You can
+% use \<org.checkerframework.framework.qual.Bottom> if your type system does not already have an
+% appropriate bottom qualifier.
+% \end{sloppypar}
 
 If your type system has a special bottom type that is used \emph{only} for
 the \code{null} value, then users should only write the bottom qualifier
 on explicit bounds.  To ensure this, write
 \<@TargetLocations(\{ TypeUseLocation.EXPLICIT\_LOWER\_BOUND, TypeUseLocation.EXPLICIT\_UPPER\_BOUND \})>
 on the definition of the bottom qualifier.
+Furthermore, by convention the name of such a qualifier ends with ``\<Bottom>''.
 
 The hierarchy shown in Figure~\ref{fig-initialization-hierarchy} lacks
 a bottom qualifier, but the actual implementation does contain a (non-user-visible) bottom qualifier.
@@ -1720,8 +1721,15 @@ That is part of the documentation and is the first thing that many users
 may see.  Also ensure that the Javadoc links back to the manual, using the
 \<@checker\_framework.manual> custom Javadoc tag.
 
-You should also integrate your new checker with the Eclipse plugin.
-% TODO: document how to do that.
+There are several other miscellaneous tasks:
+\begin{itemize}
+\item
+  Add its \<messages.properties> file to the \<check-compilermsgs> target in
+  file \<checker/build.xml>.
+\item
+  Integrate your new checker with the Eclipse plugin.
+  See \$CHECKERFRAMEWORK/eclipse/README-developers.html\#add-checker for instructions.
+\end{itemize}
 
 
 \section{javac implementation survival guide\label{javac-tips}}

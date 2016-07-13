@@ -41,8 +41,9 @@ class NNOEStaticFields {
     }
 
 
+    @RequiresNonNull("NoClueWhatThisShouldBe")
     //:: error: (flowexpr.parse.error)
-    @RequiresNonNull("NoClueWhatThisShouldBe") void testF5() {
+    void testF5() {
         //:: error: (dereference.of.nullable)
         NNOEStaticFields.nullable.toString();
     }

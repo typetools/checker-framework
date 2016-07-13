@@ -52,8 +52,9 @@ class ThrowCatchTest {
     }
 
     // Wildcards
-    //:: error: (type.argument.type.incompatible)
-    void throwWildcard(List<? extends @UI PolyUIException> ui, // Default type of List's type parameter is below @UI so this is type.argument.incompatible
+    void throwWildcard(
+           //:: error: (type.argument.type.incompatible)
+           List<? extends @UI PolyUIException> ui, // Default type of List's type parameter is below @UI so this is type.argument.incompatible
            List<? extends @AlwaysSafe PolyUIException> alwaysSafe) throws PolyUIException {
         if (flag) {
             //:: error: (throw.type.invalid)

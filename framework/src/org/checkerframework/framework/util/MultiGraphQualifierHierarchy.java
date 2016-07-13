@@ -261,9 +261,12 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             } else {
                 // otherwise, display each supertype in its own row
                 for (Iterator<AnnotationMirror> iterator = supertypes.iterator(); iterator.hasNext(); ) {
-                    sb.append("\n\t\t");                            // new line and tabbing
-                    sb.append(iterator.next());                     // display the supertype
-                    sb.append(iterator.hasNext() ? ", " : "");      // add a comma delimiter if it isn't the last value
+                    // new line and tabbing
+                    sb.append("\n\t\t");
+                    // display the supertype
+                    sb.append(iterator.next());
+                    // add a comma delimiter if it isn't the last value
+                    sb.append(iterator.hasNext() ? ", " : "");
                 }
                 sb.append("\n\t\t");    // new line and tab indentation for the trailing bracket
             }
@@ -867,11 +870,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             }
             AnnotationPair other = (AnnotationPair)o;
             if (AnnotationUtils.areSameIgnoringValues(a1, other.a1)
-                    && AnnotationUtils.areSameIgnoringValues(a2, other.a2))
+                    && AnnotationUtils.areSameIgnoringValues(a2, other.a2)) {
                 return true;
+            }
             if (AnnotationUtils.areSameIgnoringValues(a2, other.a1)
-                    && AnnotationUtils.areSameIgnoringValues(a1, other.a2))
+                    && AnnotationUtils.areSameIgnoringValues(a1, other.a2)) {
                 return true;
+            }
             return false;
         }
 

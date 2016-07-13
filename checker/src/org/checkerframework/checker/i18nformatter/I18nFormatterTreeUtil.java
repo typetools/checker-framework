@@ -79,15 +79,33 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes an exception that describes an invalid formatter string and,
+     * Takes an exception that describes an invalid formatter string and
      * returns a syntax trees element that represents a
      * {@link I18nInvalidFormat} annotation with the exception's error message
      * as value.
      */
     public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalArgumentException ex) {
+        return stringToInvalidFormatAnnotation(ex.getMessage());
+    }
+
+    /**
+     * Takes an invalid formatter string and returns a syntax trees element
+     * that represents a {@link I18nInvalidFormat} annotation with the invalid
+     * formatter string as value.
+     */
+    // package-private
+    AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
-        builder.setValue("value", ex.getMessage());
+        builder.setValue("value", invalidFormatString);
         return builder.build();
+    }
+
+    /**
+     * Takes a syntax tree element that represents a {@link I18nInvalidFormat} annotation,
+     * and returns its value.
+     */
+    public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
+        return "\""+AnnotationUtils.getElementValue(anno, "value", String.class, true)+"\"";
     }
 
     /**
@@ -264,14 +282,15 @@ public class I18nFormatterTreeUtil {
                         // Invalid FormatFor invocation
                         return ;
                     }
-                    FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                                .buildFlowExprContextForUse(node, checker.getContext());
+                    FlowExpressionContext flowExprContext = FlowExpressionContext
+                                .buildContextForMethodUse(node, checker.getContext());
                     String formatforArg = AnnotationUtils.getElementValue(paramType.getAnnotation(I18nFormatFor.class)
                             , "value", String.class, false);
                     if (flowExprContext != null) {
                         try {
                             paramArg = FlowExpressionParseUtil
-                                .parse(formatforArg, flowExprContext, atypeFactory.getPath(tree));
+                                .parse(formatforArg, flowExprContext, atypeFactory.getPath(tree),
+                                        true);
                             paramIndex = flowExprContext.arguments.indexOf(paramArg);
                         } catch (FlowExpressionParseException e) {
                             // errors are reported at declaration site

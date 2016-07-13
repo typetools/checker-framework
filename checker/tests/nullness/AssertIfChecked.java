@@ -7,21 +7,25 @@ public class AssertIfChecked {
 
   @Nullable Object value;
 
+  @EnsuresNonNullIf(result=true, expression="value")
   //:: error: (contracts.conditional.postcondition.invalid.returntype)
-  @EnsuresNonNullIf(result=true, expression="value") public void badform1() {
+  public void badform1() {
   }
 
+  @EnsuresNonNullIf(result=true, expression="value")
   //:: error: (contracts.conditional.postcondition.invalid.returntype)
-  @EnsuresNonNullIf(result=true, expression="value") public Object badform2() {
+  public Object badform2() {
     return new Object();
   }
 
+  @EnsuresNonNullIf(result=false, expression="value")
   //:: error: (contracts.conditional.postcondition.invalid.returntype)
-  @EnsuresNonNullIf(result=false, expression="value") public void badform3() {
+  public void badform3() {
   }
 
+  @EnsuresNonNullIf(result=false, expression="value")
   //:: error: (contracts.conditional.postcondition.invalid.returntype)
-  @EnsuresNonNullIf(result=false, expression="value") public Object badform4() {
+  public Object badform4() {
     return new Object();
   }
 
