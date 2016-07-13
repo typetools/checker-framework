@@ -144,16 +144,17 @@ Its command-line arguments are:
 \end{sloppypar}
 
 \begin{enumerate}
-\item Optional: Command-line options to insert-annotations-to-source.
+\item Optional: Command-line arguments to
+  \href{https://types.cs.washington.edu/annotation-file-utilities/#insert-annotations-to-source}{\<insert-annotations-to-source>}.
 \item Processor's name.
 \item Target program's classpath.  This argument is required; pass "" if it
   is empty.
 \item Extra processor arguments which will be passed to the checker, if any.
   You may supply any number of such arguments, or none.  Each such argument
   must start with a hyphen.
-\item Optional: List of paths to \<.jaif> files used as input in the inference
+\item Optional: Paths to \<.jaif> files used as input in the inference
     process.
-\item List of paths to \<.java> files in the program.
+\item Paths to \<.java> files in the program.
 \end{enumerate}
 
 For example, to add annotations to the \<plume-lib> project:
