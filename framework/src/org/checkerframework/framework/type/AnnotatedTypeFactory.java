@@ -3189,9 +3189,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror widenToUpperBound(
             final AnnotatedTypeMirror annotatedTypeMirror, final AnnotatedWildcardType wildcard) {
-        /**
-         *
-         */
         final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();
         final TypeMirror wildcardUpperBoundTypeMirror =
                 wildcard.getExtendsBound().getUnderlyingType();
