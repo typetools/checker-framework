@@ -10,11 +10,12 @@
 # be available from the $PATH.
 
 # This script receives as arguments:
+# 0. Any number of cmd-line arguments to insert-annotations-to-source (optional).
 # 1. Processor's name (in any form recognized by CF's javac -processor argument).
 # 2. Classpath (target project's classpath).
 # 3. Any number of extra processor arguments to be passed to the checker.
-# 4. List of paths to .jaif files -- used as input (optional).
-# 5. List of paths to .java files in a program.
+# 4. Any number of paths to .jaif files -- used as input (optional).
+# 5. Any number of paths to .java files in a program.
 
 # Example of usage:
 # ./infer-and-annotate.sh "LockChecker,NullnessChecker" \
@@ -58,6 +59,23 @@ interactive=
 # that every argument starts with a hyphen. It means one cannot pass arguments
 # such as -processorpath and -source, which are followed by a value.
 read_input() {
+
+    # Collect command-line arguments that come before the preprocessor.
+    # Assumes that every command line argument starts with a hyphen.
+    insert_to_source_args=""
+    for i in "$@"
+    do
+        case "$1" in
+            -*)
+                insert_to_source_args="$insert_to_source_args $1"
+                shift
+            ;;
+            *)
+                break
+            ;;
+        esac
+    done
+
     # First two arguments are processor and cp.
     processor=$1
     cp=$2
@@ -127,7 +145,7 @@ infer_and_annotate() {
         if [ ! `find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty` ]
         then
             # Only insert annotations if there is at least one .jaif file.
-            insert-annotations-to-source -i `find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif"` $java_files
+            insert-annotations-to-source $insert_to_source_args -i `find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif"` $java_files
         fi
         # Updates DIFF_JAIF variable.
         # diff returns exit-value 1 when there are differences between files.
