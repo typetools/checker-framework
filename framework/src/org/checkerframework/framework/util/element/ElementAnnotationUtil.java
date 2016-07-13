@@ -149,7 +149,7 @@ public class ElementAnnotationUtil {
      * <? super @B CharSequence> - @B is placed on the super bound (CharSequence)
      * }</pre>
      *
-     * c) If an Annotation is on an unbounded wildard there are two subcases.
+     * c) If an Annotation is on an unbounded wildcard there are two subcases.
      *    c.1 The user wrote the annotation explicitly - these annotations apply to both bounds
      *    e.g. the user wrote
      * <pre>{@code
