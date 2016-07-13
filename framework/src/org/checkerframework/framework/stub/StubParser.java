@@ -150,6 +150,12 @@ public class StubParser {
         this.elements = env.getElementUtils();
         imports = new ArrayList<String>();
 
+        // getSupportedAnnotations uses these for warnings
+        Map<String, String> options = env.getOptions();
+        this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
+        this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
+        this.debugStubParser = options.containsKey("stubDebug");
+
         if (debugStubParser) {
             stubDebug(String.format("parsing stub file %s%n", filename));
         }
@@ -162,12 +168,6 @@ public class StubParser {
             parsedindex = null; // dead code, but needed for def. assignment checks
         }
         this.index = parsedindex;
-
-        // getSupportedAnnotations uses these for warnings
-        Map<String, String> options = env.getOptions();
-        this.warnIfNotFound = options.containsKey("stubWarnIfNotFound");
-        this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
-        this.debugStubParser = options.containsKey("stubDebug");
 
         // getSupportedAnnotations also sets imports. This should be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
