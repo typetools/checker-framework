@@ -2,35 +2,27 @@ This directory contains Dockerfiles to create new Docker images for
 running Checker Framework tests reproducibly.
 To build new Docker images:
 
-  # Obtain Docker credentials.  (Is this necessary?  Are credentials cached?)
+  # Obtain Docker credentials.
+  # (This is only necessary once per machine; credentials are cached.)
   docker login
 
-  # Create the Docker images, in an empty directory, and upload to Docker Hub.
-  # Takes about 12 minutes.
-  mkdir -p dockerdir-jdk7
-  cd dockerdir-jdk7
-  \cp -pf ../Dockerfile-jdk7 Dockerfile
-  docker build -t mdernst/ubuntu-for-cf-jdk7 .
-  docker push mdernst/ubuntu-for-cf-jdk7
-  cd ..
-  rm -rf dockerdir-jdk7
+After running any of the below, consider deleting the docker containers,
+which can take up a lot of disk space.
+To stop and remove/delete all docker containers:
+  docker stop $(docker ps -a -q)
+  docker rm $(docker ps -a -q)
+or you can just remove some of them.
 
-  # Create the Docker images, in an empty directory, and upload to Docker Hub.
-  # Takes about 12 minutes.
-  mkdir -p dockerdir-jdk8
-  cd dockerdir-jdk8
-  \cp -pf ../Dockerfile-jdk8 Dockerfile
-  docker build -t mdernst/ubuntu-for-cf-jdk8 .
-  docker push mdernst/ubuntu-for-cf-jdk8
-  cd ..
-  rm -rf dockerdir-jdk8
+# Create the Docker image, in an empty directory, and upload to Docker Hub.
+# Takes about 12 minutes for jdk7 or jdk8, about 1 hour for jdkany.
+alias create_upload_docker_image=' \
+  mkdir -p dockerdir; \
+  (cd dockerdir && \
+  \cp -pf ../Dockerfile-$OS-$JDK Dockerfile && \
+  docker build -t mdernst/ubuntu-for-$PROJECT-jdk7 . && \
+  docker push mdernst/ubuntu-for-daikon-jdk7) && \
+  rm -rf dockerdir'
 
-  # Create the Docker images, in an empty directory, and upload to Docker Hub.
-  # Takes about 1 hour.
-  mkdir -p dockerdir-jdkany
-  cd dockerdir-jdkany
-  \cp -pf ../Dockerfile-jdkany Dockerfile
-  docker build -t mdernst/ubuntu-for-cf-jdkany .
-  docker push mdernst/ubuntu-for-cf-jdkany
-  cd ..
-  rm -rf dockerdir-jdkany
+OS=ubuntu   JDK=jdk7   PROJECT=cf create_upload_docker_image
+OS=ubuntu   JDK=jdk8   PROJECT=cf create_upload_docker_image
+OS=ubuntu   JDK=jdkany PROJECT=cf create_upload_docker_image
