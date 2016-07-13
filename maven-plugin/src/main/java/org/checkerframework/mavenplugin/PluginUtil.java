@@ -515,10 +515,7 @@ public class PluginUtil {
     public static String getJdkJarPrefix() {
         final double jreVersion = getJreVersion();
         final String prefix;
-        if (jreVersion == 1.4 || jreVersion == 1.5 || jreVersion == 1.6) {
-            // TODO: raise an error, these versions are no longer supported.
-            prefix = "jdk6";
-        } else if (jreVersion == 1.7) {
+        if (jreVersion == 1.7) {
             prefix = "jdk7";
         } else if (jreVersion == 1.8) {
             prefix = "jdk8";

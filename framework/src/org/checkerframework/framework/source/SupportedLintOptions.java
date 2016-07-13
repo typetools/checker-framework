@@ -2,12 +2,20 @@ package org.checkerframework.framework.source;
 
 import java.lang.annotation.*;
 
+// TODO: Are superclasses considered? Should we?
 /**
- * An annotation used to indicate what lint options a checker supports. The
- * {@link SourceChecker#getSupportedLintOptions} method can construct its
- * result from the value of this annotation.
+ * An annotation used to indicate what lint options a checker supports.
+ * For example, if a checker class (one that extends BaseTypeChecker) is
+ * annotated with {@code @SupportedLintOptions({"dotequals"})}, then the
+ * checker accepts the command-line option {@code -Alint=-dotequals}.
+ * <p>
  *
- * TODO: Are superclasses considered? Should we?
+ * This annotation is optional and many checkers do not contain an
+ * {@code @SupportedLintOptions} annotation.
+ * <p>
+ *
+ * The {@link SourceChecker#getSupportedLintOptions} method can construct
+ * its result from the value of this annotation.
  *
  * @see org.checkerframework.framework.source.SupportedOptions
  */
