@@ -414,16 +414,24 @@ public class ElementAnnotationUtil {
                         toret = toret.getEnclosingType();
                         loc = tail(loc);
                     } else {
-                        ErrorReporter.errorAbort("ElementAnnotationUtil.getLocationTypeADT: " +
-                                "invalid location " + location + " for type: " + type);
+                        ErrorReporter.errorAbort(
+                                "ElementAnnotationUtil.getLocationTypeADT: "
+                                        + "invalid location "
+                                        + location
+                                        + " for type: "
+                                        + type);
                         return null; // dead code
-		    }
+                    }
                 }
                 return getTypeAtLocation(toret, loc);
             }
         } else {
-            ErrorReporter.errorAbort("ElementAnnotationUtil.getLocationTypeADT: " +
-                    "invalid location " + location + " for type: " + type);
+            ErrorReporter.errorAbort(
+                    "ElementAnnotationUtil.getLocationTypeADT: "
+                            + "invalid location "
+                            + location
+                            + " for type: "
+                            + type);
             return null; // dead code
         }
     }

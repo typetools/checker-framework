@@ -18,7 +18,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 
-
 /**
  * A helper class that puts the annotations from an AnnotatedTypeMirrors
  * back into the corresponding Elements, so that they get stored in the bytecode by the compiler.
@@ -373,7 +372,9 @@ public class TypesIntoElements {
             }
 
             AnnotatedTypeMirror encl = type.getEnclosingType();
-            if (encl != null && encl.getKind() != TypeKind.NONE && encl.getKind() != TypeKind.ERROR) {
+            if (encl != null
+                    && encl.getKind() != TypeKind.NONE
+                    && encl.getKind() != TypeKind.ERROR) {
                 // use original tapos
                 res = scanAndReduce(encl, oldpos, res);
             }
@@ -390,9 +391,9 @@ public class TypesIntoElements {
             ListBuffer<TypePathEntry> depth = new ListBuffer<>();
 
             Type encl = (Type) type.getUnderlyingType().getEnclosingType();
-            while (encl != null &&
-                    encl.getKind() != TypeKind.NONE &&
-                    encl.getKind() != TypeKind.ERROR) {
+            while (encl != null
+                    && encl.getKind() != TypeKind.NONE
+                    && encl.getKind() != TypeKind.ERROR) {
                 depth = depth.append(TypePathEntry.INNER_TYPE);
                 encl = encl.getEnclosingType();
             }
