@@ -1,4 +1,5 @@
 package org.checkerframework.common.value.util;
+
 public class DoubleMath extends NumberMath<Double> {
     double number;
 
@@ -153,13 +154,14 @@ public class DoubleMath extends NumberMath<Double> {
 
     @Override
     public Number unaryPlus() {
-       return +number;
+        return +number;
     }
 
     @Override
     public Number unaryMinus() {
         return -number;
     }
+
     @Override
     public Number bitwiseComplement() {
         throw new UnsupportedOperationException();

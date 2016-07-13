@@ -1,5 +1,16 @@
 package org.checkerframework.qualframework.base;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
 import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
@@ -7,20 +18,6 @@ import org.checkerframework.qualframework.base.dataflow.QualAnalysis;
 import org.checkerframework.qualframework.base.dataflow.QualValue;
 import org.checkerframework.qualframework.util.ExtendedParameterDeclaration;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
-
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 
 /**
  * Used to compute the qualified type of a {@link Tree} or {@link Element}.
@@ -37,7 +34,8 @@ public interface QualifiedTypeFactory<Q> {
 
     /** Gets the qualified types of the bounds of a type parameter, identified
      * by its {@link Element}. */
-    QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(ExtendedParameterDeclaration etm);
+    QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(
+            ExtendedParameterDeclaration etm);
 
     /** Gets the {@link QualifierHierarchy} used with this type system. */
     QualifierHierarchy<Q> getQualifierHierarchy();
@@ -59,7 +57,8 @@ public interface QualifiedTypeFactory<Q> {
      *      a copy of {@code supertypes} after applying checker-specific
      *      adjustments
      */
-    List<QualifiedTypeMirror<Q>> postDirectSuperTypes(QualifiedTypeMirror<Q> subtype, List<? extends QualifiedTypeMirror<Q>> supertypes);
+    List<QualifiedTypeMirror<Q>> postDirectSuperTypes(
+            QualifiedTypeMirror<Q> subtype, List<? extends QualifiedTypeMirror<Q>> supertypes);
 
     /** Hook for customizing the behavior of {@code asMemberOf}.
      *
@@ -74,7 +73,10 @@ public interface QualifiedTypeFactory<Q> {
      *      a copy of {@code memberType} after applying checker-specific
      *      adjustments
      */
-    QualifiedTypeMirror<Q> postAsMemberOf(QualifiedTypeMirror<Q> memberType, QualifiedTypeMirror<Q> receiverType, Element memberElement);
+    QualifiedTypeMirror<Q> postAsMemberOf(
+            QualifiedTypeMirror<Q> memberType,
+            QualifiedTypeMirror<Q> receiverType,
+            Element memberElement);
 
     /** Hook for customizing type parameter inference for methods.
      *
@@ -84,13 +86,14 @@ public interface QualifiedTypeFactory<Q> {
      *      the type of the called method with all parameters instantiated, and
      *      a list of the type used to instantiate each parameter
      */
-    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(MethodInvocationTree tree);
+    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(
+            MethodInvocationTree tree);
 
     /**
      * @see QualifiedTypeFactory#methodFromUse(MethodInvocationTree)
      */
-    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(ExpressionTree tree,
-            ExecutableElement methodElt, QualifiedTypeMirror<Q> receiverType);
+    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> methodFromUse(
+            ExpressionTree tree, ExecutableElement methodElt, QualifiedTypeMirror<Q> receiverType);
 
     /**
      * Hook for customizing type parameter inference for constructors.
@@ -102,7 +105,8 @@ public interface QualifiedTypeFactory<Q> {
      *      instantiated, and a list of the type used to instantiate each
      *      parameter
      */
-    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> constructorFromUse(NewClassTree tree);
+    Pair<QualifiedExecutableType<Q>, List<QualifiedTypeMirror<Q>>> constructorFromUse(
+            NewClassTree tree);
 
     /**
      * Create the {@link Analysis} to configure dataflow.

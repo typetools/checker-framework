@@ -13,7 +13,6 @@ public class TIsU extends TUConstraint {
         super(typeVariable, relatedType, 173);
     }
 
-
     @Override
     public String toString() {
         return "TIsU( " + typeVariable + ", " + relatedType + " )";

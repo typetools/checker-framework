@@ -45,7 +45,10 @@ public abstract class TUConstraint {
     public final AnnotatedTypeMirror relatedType;
     public final int hashcodeBase;
 
-    public TUConstraint(final AnnotatedTypeVariable typeVariable, final AnnotatedTypeMirror relatedType, int hashcodeBase) {
+    public TUConstraint(
+            final AnnotatedTypeVariable typeVariable,
+            final AnnotatedTypeMirror relatedType,
+            int hashcodeBase) {
         this.typeVariable = typeVariable;
         this.relatedType = relatedType;
         this.hashcodeBase = hashcodeBase;
@@ -64,7 +67,7 @@ public abstract class TUConstraint {
         final TUConstraint that = (TUConstraint) thatObject;
 
         return this.typeVariable.equals(that.typeVariable)
-            && this.relatedType.equals(that.relatedType);
+                && this.relatedType.equals(that.relatedType);
     }
 
     @Override

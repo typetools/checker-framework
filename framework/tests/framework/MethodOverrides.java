@@ -1,15 +1,18 @@
-import tests.util.*;
 import java.util.*;
+import tests.util.*;
 
 public abstract class MethodOverrides {
 
     public abstract @Odd String method();
+
     public abstract String methodSub();
 
     public abstract void param(@Odd String s);
+
     public abstract void paramSup(@Odd String s);
 
     public abstract void receiver(@Odd MethodOverrides this);
+
     public abstract void receiverSub(@Odd MethodOverrides this);
 
     public static class SubclassA extends MethodOverrides {
@@ -27,9 +30,11 @@ public abstract class MethodOverrides {
         }
 
         public void param(@Odd String s) {}
+
         public void paramSup(String s) {}
 
         public void receiver(@Odd SubclassA this) {}
+
         public void receiverSub() {}
     }
 
@@ -50,7 +55,7 @@ public abstract class MethodOverrides {
         @Override
         // return type is an incorrect override, as it's a supertype
         //:: error: (override.return.invalid)
-        <A> A [] method(A [] s) {
+        <A> A[] method(A[] s) {
             return null;
         }
     }
@@ -58,7 +63,7 @@ public abstract class MethodOverrides {
     static class Z2 extends X {
         @Override
         //:: error: (override.return.invalid) :: error: (override.param.invalid)
-        <A> @Odd A [] method(@Odd A [] s) {
+        <A> @Odd A[] method(@Odd A[] s) {
             return null;
         }
     }
@@ -79,7 +84,7 @@ public abstract class MethodOverrides {
     static class ClZ<S> extends ClX<S> {
         @Override
         //:: error: (override.return.invalid) :: error: (override.param.invalid)
-        @Odd S [] method(@Odd S [] s) {
+        @Odd S[] method(@Odd S[] s) {
             return null;
         }
     }

@@ -13,7 +13,6 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedType
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 
-
 /** Visitor that replaces the qualifier of a {@link QualifiedTypeMirror}.
  */
 public class SetQualifierVisitor<Q> implements QualifiedTypeVisitor<Q, QualifiedTypeMirror<Q>, Q> {
@@ -30,7 +29,7 @@ public class SetQualifierVisitor<Q> implements QualifiedTypeVisitor<Q, Qualified
      */
     @SuppressWarnings("unchecked")
     public static <Q> SetQualifierVisitor<Q> getInstance() {
-        return (SetQualifierVisitor<Q>)INSTANCE;
+        return (SetQualifierVisitor<Q>) INSTANCE;
     }
 
     /**
@@ -45,7 +44,6 @@ public class SetQualifierVisitor<Q> implements QualifiedTypeVisitor<Q, Qualified
         return SetQualifierVisitor.<Q>getInstance().visit(type, newQual);
     }
 
-
     @Override
     public QualifiedTypeMirror<Q> visit(QualifiedTypeMirror<Q> type) {
         return visit(type, null);
@@ -59,97 +57,76 @@ public class SetQualifierVisitor<Q> implements QualifiedTypeVisitor<Q, Qualified
         return type.accept(this, newQual);
     }
 
-
     @Override
     public QualifiedTypeMirror<Q> visitArray(QualifiedArrayType<Q> type, Q newQual) {
-        return new QualifiedArrayType<Q>(type.getUnderlyingType(),
-                newQual,
-                type.getComponentType()
-                );
+        return new QualifiedArrayType<Q>(
+                type.getUnderlyingType(), newQual, type.getComponentType());
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitDeclared(QualifiedDeclaredType<Q> type, Q newQual) {
-        return new QualifiedDeclaredType<Q>(type.getUnderlyingType(),
-                newQual,
-                type.getTypeArguments()
-                );
+        return new QualifiedDeclaredType<Q>(
+                type.getUnderlyingType(), newQual, type.getTypeArguments());
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitExecutable(QualifiedExecutableType<Q> type, Q newQual) {
-        return new QualifiedExecutableType<Q>(type.getUnderlyingType(),
+        return new QualifiedExecutableType<Q>(
+                type.getUnderlyingType(),
                 type.getParameterTypes(),
                 type.getReceiverType(),
                 type.getReturnType(),
                 type.getThrownTypes(),
-                type.getTypeParameters()
-                );
+                type.getTypeParameters());
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitIntersection(QualifiedIntersectionType<Q> type, Q newQual) {
-        return new QualifiedIntersectionType<Q>(type.getUnderlyingType(),
-                newQual,
-                type.getBounds()
-                );
+        return new QualifiedIntersectionType<Q>(
+                type.getUnderlyingType(), newQual, type.getBounds());
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitNoType(QualifiedNoType<Q> type, Q newQual) {
-        return new QualifiedNoType<Q>(type.getUnderlyingType(),
-                newQual
-                );
+        return new QualifiedNoType<Q>(type.getUnderlyingType(), newQual);
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitNull(QualifiedNullType<Q> type, Q newQual) {
-        return new QualifiedNullType<Q>(type.getUnderlyingType(),
-                newQual
-                );
+        return new QualifiedNullType<Q>(type.getUnderlyingType(), newQual);
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitPrimitive(QualifiedPrimitiveType<Q> type, Q newQual) {
-        return new QualifiedPrimitiveType<Q>(type.getUnderlyingType(),
-                newQual
-                );
+        return new QualifiedPrimitiveType<Q>(type.getUnderlyingType(), newQual);
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitTypeVariable(QualifiedTypeVariable<Q> type, Q newQual) {
-        return new QualifiedTypeVariable<Q>(type.getUnderlyingType(),
-                newQual
-                );
+        return new QualifiedTypeVariable<Q>(type.getUnderlyingType(), newQual);
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitUnion(QualifiedUnionType<Q> type, Q newQual) {
-        return new QualifiedUnionType<Q>(type.getUnderlyingType(),
-                newQual,
-                type.getAlternatives()
-                );
+        return new QualifiedUnionType<Q>(type.getUnderlyingType(), newQual, type.getAlternatives());
     }
 
     @Override
     public QualifiedTypeMirror<Q> visitWildcard(QualifiedWildcardType<Q> type, Q newQual) {
-        return new QualifiedWildcardType<Q>(type.getUnderlyingType(),
-                type.getExtendsBound(),
-                type.getSuperBound()
-                );
-    }
-
-
-    @Override
-    public QualifiedTypeMirror<Q> visitTypeDeclaration(QualifiedTypeDeclaration<Q> type, Q newQual) {
-        return new QualifiedTypeDeclaration<Q>(type.getUnderlyingType(),
-                newQual,
-                type.getTypeParameters()
-                );
+        return new QualifiedWildcardType<Q>(
+                type.getUnderlyingType(), type.getExtendsBound(), type.getSuperBound());
     }
 
     @Override
-    public QualifiedTypeMirror<Q> visitParameterDeclaration(QualifiedParameterDeclaration<Q> type, Q newQual) {
+    public QualifiedTypeMirror<Q> visitTypeDeclaration(
+            QualifiedTypeDeclaration<Q> type, Q newQual) {
+        return new QualifiedTypeDeclaration<Q>(
+                type.getUnderlyingType(), newQual, type.getTypeParameters());
+    }
+
+    @Override
+    public QualifiedTypeMirror<Q> visitParameterDeclaration(
+            QualifiedParameterDeclaration<Q> type, Q newQual) {
         return new QualifiedParameterDeclaration<Q>(type.getUnderlyingType());
     }
 }

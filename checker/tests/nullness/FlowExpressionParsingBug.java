@@ -1,8 +1,6 @@
 import javax.swing.JMenuBar;
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.RequiresNonNull;
-
 
 public abstract class FlowExpressionParsingBug {
 
@@ -11,28 +9,23 @@ public abstract class FlowExpressionParsingBug {
     protected @Nullable JMenuBar menuBar = null;
 
     @RequiresNonNull("menuBar")
-    public void addFavorite() {
-    }
+    public void addFavorite() {}
 
     @RequiresNonNull("this.menuBar")
-    public void addFavorite1() {
-    }
+    public void addFavorite1() {}
 
     //// Check flow expressions for static fields with different ways to access the field
 
     static @Nullable String i = null;
 
     @RequiresNonNull("FlowExpressionParsingBug.i")
-    public void a() {
-    }
+    public void a() {}
 
     @RequiresNonNull("i")
-    public void b() {
-    }
+    public void b() {}
 
     @RequiresNonNull("this.i")
-    public void c() {
-    }
+    public void c() {}
 
     void test1() {
         //:: error: (contracts.precondition.not.satisfied)

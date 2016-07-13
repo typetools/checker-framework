@@ -1,17 +1,14 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
-import org.checkerframework.dataflow.util.HashCodeUtils;
-
-import org.checkerframework.javacutil.InternalUtils;
-
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import org.checkerframework.dataflow.cfg.node.AssignmentContext.MethodParameterContext;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for method invocation
@@ -34,8 +31,11 @@ public class MethodInvocationNode extends Node {
     protected List<Node> arguments;
     protected TreePath treePath;
 
-    public MethodInvocationNode(MethodInvocationTree tree,
-            MethodAccessNode target, List<Node> arguments, TreePath treePath) {
+    public MethodInvocationNode(
+            MethodInvocationTree tree,
+            MethodAccessNode target,
+            List<Node> arguments,
+            TreePath treePath) {
         super(tree != null ? InternalUtils.typeOf(tree) : target.getMethod().getReturnType());
         this.tree = tree;
         this.target = target;
@@ -50,8 +50,7 @@ public class MethodInvocationNode extends Node {
         }
     }
 
-    public MethodInvocationNode(MethodAccessNode target, List<Node> arguments,
-            TreePath treePath) {
+    public MethodInvocationNode(MethodAccessNode target, List<Node> arguments, TreePath treePath) {
         this(null, target, arguments, treePath);
     }
 
@@ -105,8 +104,7 @@ public class MethodInvocationNode extends Node {
         }
         MethodInvocationNode other = (MethodInvocationNode) obj;
 
-        return getTarget().equals(other.getTarget())
-                && getArguments().equals(other.getArguments());
+        return getTarget().equals(other.getTarget()) && getArguments().equals(other.getArguments());
     }
 
     @Override

@@ -1,13 +1,10 @@
 package org.checkerframework.dataflow.cfg.node;
 
+import com.sun.source.tree.VariableTree;
 import java.util.Collection;
 import java.util.Collections;
-
 import org.checkerframework.dataflow.util.HashCodeUtils;
-
 import org.checkerframework.javacutil.InternalUtils;
-
-import com.sun.source.tree.VariableTree;
 
 /**
  * A node for a local variable declaration:
@@ -72,5 +69,4 @@ public class VariableDeclarationNode extends Node {
     public Collection<Node> getOperands() {
         return Collections.emptyList();
     }
-
 }

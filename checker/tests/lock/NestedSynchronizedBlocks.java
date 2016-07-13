@@ -6,19 +6,24 @@ public class NestedSynchronizedBlocks {
     }
 
     @GuardedBy("lock1") MyClass m1;
+
     @GuardedBy("lock2") MyClass m2;
+
     @GuardedBy("lock3") MyClass m3;
+
     @GuardedBy("lock4") MyClass m4;
 
-    final Object lock1 = new Object(), lock2 = new Object(),
-                 lock3 = new Object(), lock4 = new Object();
+    final Object
+            lock1 = new Object(),
+            lock2 = new Object(),
+            lock3 = new Object(),
+            lock4 = new Object();
 
     void foo() {
-        synchronized(lock1) {
-            synchronized(lock2) {
-                synchronized(lock3) {
-                    synchronized(lock4) {
-                    }
+        synchronized (lock1) {
+            synchronized (lock2) {
+                synchronized (lock3) {
+                    synchronized (lock4) {}
                 }
             }
         }

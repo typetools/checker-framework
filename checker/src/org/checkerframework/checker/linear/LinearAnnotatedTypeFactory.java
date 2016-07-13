@@ -2,7 +2,6 @@ package org.checkerframework.checker.linear;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-
 import org.checkerframework.checker.linear.qual.Linear;
 import org.checkerframework.checker.linear.qual.Unusable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;

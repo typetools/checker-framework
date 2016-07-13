@@ -1,8 +1,8 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
 /**
  * Duplicates annotated types and replaces components according to a replacement map.
@@ -33,9 +33,11 @@ public class AnnotatedTypeReplacer {
      */
     protected static class Visitor extends AnnotatedTypeCopier {
 
-        private final IdentityHashMap<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> originalMappings;
+        private final IdentityHashMap<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror>
+                originalMappings;
 
-        public Visitor(final Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> mappings) {
+        public Visitor(
+                final Map<? extends AnnotatedTypeMirror, ? extends AnnotatedTypeMirror> mappings) {
             originalMappings = new IdentityHashMap<>(mappings);
         }
 
@@ -44,7 +46,9 @@ public class AnnotatedTypeReplacer {
             return type.accept(this, new IdentityHashMap<>(originalMappings));
         }
 
-        public AnnotatedTypeMirror visitTypeVariable(AnnotatedTypeVariable original, IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
+        public AnnotatedTypeMirror visitTypeVariable(
+                AnnotatedTypeVariable original,
+                IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {
             // AnnotatedTypeCopier will visit the type parameters of a method and copy them
             // Without this flag, any mappings in originalToCopy would replace the type parameters.
             // However, we do not replace the type parameters in an AnnotatedExecutableType.  Also,
@@ -53,8 +57,12 @@ public class AnnotatedTypeReplacer {
             // a runtime exception would occur.
             if (visitingExecutableTypeParam) {
                 visitingExecutableTypeParam = false;
-                final AnnotatedTypeVariable copy = (AnnotatedTypeVariable) AnnotatedTypeMirror.createType(
-                        original.getUnderlyingType(), original.atypeFactory, original.isDeclaration());
+                final AnnotatedTypeVariable copy =
+                        (AnnotatedTypeVariable)
+                                AnnotatedTypeMirror.createType(
+                                        original.getUnderlyingType(),
+                                        original.atypeFactory,
+                                        original.isDeclaration());
                 maybeCopyPrimaryAnnotations(original, copy);
                 originalToCopy.put(original, copy);
 
@@ -66,7 +74,6 @@ public class AnnotatedTypeReplacer {
                     copy.setLowerBoundField(visit(original.getLowerBoundField(), originalToCopy));
                 }
                 return copy;
-
             }
 
             return super.visitTypeVariable(original, originalToCopy);

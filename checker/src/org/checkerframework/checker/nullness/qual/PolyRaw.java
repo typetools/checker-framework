@@ -1,9 +1,7 @@
 package org.checkerframework.checker.nullness.qual;
 
-import org.checkerframework.checker.nullness.qual.Raw;
-
 import java.lang.annotation.*;
-
+import org.checkerframework.checker.nullness.qual.Raw;
 import org.checkerframework.framework.qual.*;
 
 /**

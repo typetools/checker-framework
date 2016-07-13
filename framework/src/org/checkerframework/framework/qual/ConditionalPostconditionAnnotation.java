@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * @see EnsuresQualifier
  *
  */
-@Target({ ElementType.ANNOTATION_TYPE })
+@Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ConditionalPostconditionAnnotation {
     /** The hard-coded qualifier for the postcondition. */

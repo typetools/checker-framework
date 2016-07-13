@@ -1,9 +1,8 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.framework.util.AnnotatedTypes;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.framework.util.AnnotatedTypes;
 
 /**
  * Compares AnnotatedTypeMirrors for subtype relationships.
@@ -66,5 +65,6 @@ public interface TypeHierarchy {
      * @return Returns true if {@code subtype} is a subtype of {@code supertype} in the qualifier hierarchy
      * whose top is {@code top}
      */
-    boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top);
+    boolean isSubtype(
+            AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top);
 }

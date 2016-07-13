@@ -80,7 +80,7 @@ public abstract class PolyQual<Q> {
                 return false;
             }
             @SuppressWarnings("rawtypes")
-            GroundQual other = (GroundQual)o;
+            GroundQual other = (GroundQual) o;
             return this.qual.equals(other.qual);
         }
 
@@ -159,17 +159,17 @@ public abstract class PolyQual<Q> {
                 return false;
             }
             @SuppressWarnings("rawtypes")
-            QualVar other = (QualVar)o;
+            QualVar other = (QualVar) o;
             return this.name.equals(other.name)
-                && this.lower.equals(other.lower)
-                && this.upper.equals(other.upper);
+                    && this.lower.equals(other.lower)
+                    && this.upper.equals(other.upper);
         }
 
         @Override
         public int hashCode() {
             return this.name.hashCode() * 13
-                + this.lower.hashCode() * 37
-                + this.upper.hashCode() * 59;
+                    + this.lower.hashCode() * 37
+                    + this.upper.hashCode() * 59;
         }
 
         @Override
@@ -217,7 +217,8 @@ public abstract class PolyQual<Q> {
         /** Like the main {@code Combined<Q>} constructor, but returns a simpler
          * PolyQual (GroundQual or QualVar) when possible.
          */
-        public static <Q> PolyQual<Q> from(CombiningOperation<Q> op, Collection<QualVar<Q>> vars, Q ground) {
+        public static <Q> PolyQual<Q> from(
+                CombiningOperation<Q> op, Collection<QualVar<Q>> vars, Q ground) {
             if (vars.isEmpty()) {
                 return new GroundQual<Q>(ground);
             }
@@ -308,17 +309,17 @@ public abstract class PolyQual<Q> {
                 return false;
             }
             @SuppressWarnings("rawtypes")
-            Combined other = (Combined)o;
+            Combined other = (Combined) o;
             return this.op.equals(other.op)
-                && this.vars.equals(other.vars)
-                && this.ground.equals(other.ground);
+                    && this.vars.equals(other.vars)
+                    && this.ground.equals(other.ground);
         }
 
         @Override
         public int hashCode() {
             return this.op.hashCode() * 13
-                + this.vars.hashCode() * 37
-                + this.ground.hashCode() * 59;
+                    + this.vars.hashCode() * 37
+                    + this.ground.hashCode() * 59;
         }
 
         @Override

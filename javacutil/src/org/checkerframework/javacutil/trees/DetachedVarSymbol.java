@@ -15,7 +15,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  * code constructs and they carry important type information, but some
  * methods such as TreeInfo.declarationFor do not work on them.
  */
-
 public class DetachedVarSymbol extends Symbol.VarSymbol {
 
     protected /*@Nullable*/ VariableTree decl;

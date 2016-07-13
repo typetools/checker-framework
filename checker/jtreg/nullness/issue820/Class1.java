@@ -17,20 +17,20 @@ public class Class1 {
     public static void method3(Class2 class2) {
         class2.instanceField = new Object();
     }
+
     @EnsuresNonNull("#1.instanceField")
     public static void method4(Class2 class2) {
         class2.instanceField = new Object();
     }
+
     @EnsuresNonNull("#1.instanceField")
-    public static void method5(Class2 class2) {
-    }
+    public static void method5(Class2 class2) {}
+
     @EnsuresNonNull("#1")
-    public static void method6(Class2 class2) {
-    }
+    public static void method6(Class2 class2) {}
 
     @RequiresNonNull("#1.instanceField")
     public static void method3R(Class2 class2) {
         class2.instanceField.toString();
     }
-
 }

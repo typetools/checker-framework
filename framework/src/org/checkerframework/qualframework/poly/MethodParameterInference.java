@@ -1,14 +1,11 @@
 package org.checkerframework.qualframework.poly;
 
 import java.util.*;
-
 import org.checkerframework.javacutil.Pair;
-
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
-import org.checkerframework.qualframework.base.TypeHierarchy;
 import org.checkerframework.qualframework.base.QualifierMapVisitor;
-
+import org.checkerframework.qualframework.base.TypeHierarchy;
 import org.checkerframework.qualframework.poly.PolyQual.*;
 
 /** Helper class for performing method qualifier parameter inference.
@@ -41,7 +38,6 @@ class MethodParameterInference<Q> {
     /** Set to true if the infer() method has already been run. */
     private boolean alreadyRan;
 
-
     public MethodParameterInference(
             List<String> qualParams,
             List<? extends QualifiedTypeMirror<QualParams<Q>>> formals,
@@ -69,32 +65,31 @@ class MethodParameterInference<Q> {
         this.alreadyRan = false;
     }
 
-
     // Methods for creating and manipulating inference variables.
 
     private static final String INFER_TAG = "_INFER";
 
     private QualVar<Q> makeInferVar(String name, int i) {
-        return new QualVar<Q>(INFER_TAG + i + ":" + name,
-                groundHierarchy.getBottom(), groundHierarchy.getTop());
+        return new QualVar<Q>(
+                INFER_TAG + i + ":" + name, groundHierarchy.getBottom(), groundHierarchy.getTop());
     }
 
     private boolean isInferVar(PolyQual<Q> q) {
-        return q instanceof QualVar && ((QualVar<Q>)q).getName().startsWith(INFER_TAG);
+        return q instanceof QualVar && ((QualVar<Q>) q).getName().startsWith(INFER_TAG);
     }
 
     private int inferVarIndex(PolyQual<Q> q) {
-        QualVar<Q> v = (QualVar<Q>)q;
+        QualVar<Q> v = (QualVar<Q>) q;
         String name = v.getName();
         return Integer.parseInt(name.substring(INFER_TAG.length(), name.indexOf(':')));
     }
-
 
     /** Run qualifier parameter inference using the arguments provided to the
      * constructor. */
     public Map<String, PolyQual<Q>> infer() {
         if (this.alreadyRan) {
-            throw new IllegalStateException("already ran infer() on this MethodParameterInference object");
+            throw new IllegalStateException(
+                    "already ran infer() on this MethodParameterInference object");
         }
         this.alreadyRan = true;
 
@@ -213,18 +208,20 @@ class MethodParameterInference<Q> {
         return map;
     }
 
-
     /** Helper visitor to perform substitution at every location in a {@link
      * QualifiedTypeMirror}. */
-    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>> SUBSTITUTE_VISITOR =
-        new QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>() {
-            @Override
-            public QualParams<Q> process(QualParams<Q> params, Map<String, Wildcard<Q>> substs) {
-                if (params.equals(qualParamHierarchy.getBottom())) {
-                    return qualParamHierarchy.getBottom();
-                }
+    private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>
+            SUBSTITUTE_VISITOR =
+                    new QualifierMapVisitor<
+                            QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>() {
+                        @Override
+                        public QualParams<Q> process(
+                                QualParams<Q> params, Map<String, Wildcard<Q>> substs) {
+                            if (params.equals(qualParamHierarchy.getBottom())) {
+                                return qualParamHierarchy.getBottom();
+                            }
 
-                return params.substituteAll(substs);
-            }
-        };
+                            return params.substituteAll(substs);
+                        }
+                    };
 }

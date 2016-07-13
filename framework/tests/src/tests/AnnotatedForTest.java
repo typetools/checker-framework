@@ -1,9 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-
 import java.io.File;
-
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -12,18 +10,17 @@ import org.junit.runners.Parameterized.Parameters;
 public class AnnotatedForTest extends CheckerFrameworkTest {
 
     public AnnotatedForTest(File testFile) {
-        super(testFile,
-              org.checkerframework.common.subtyping.SubtypingChecker.class,
-              "subtyping",
-              "-Anomsgtext",
-              "-Aquals=tests.util.SubQual,tests.util.SuperQual",
-              "-AuseDefaultsForUncheckedCode=source,bytecode");
+        super(
+                testFile,
+                org.checkerframework.common.subtyping.SubtypingChecker.class,
+                "subtyping",
+                "-Anomsgtext",
+                "-Aquals=tests.util.SubQual,tests.util.SuperQual",
+                "-AuseDefaultsForUncheckedCode=source,bytecode");
     }
 
-
-
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"conservative-defaults/annotatedfor"};
+    public static String[] getTestDirs() {
+        return new String[] {"conservative-defaults/annotatedfor"};
     }
 }

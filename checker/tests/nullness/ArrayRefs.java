@@ -1,6 +1,6 @@
-import org.checkerframework.checker.nullness.qual.*;
 import java.util.Arrays;
 import java.util.List;
+import org.checkerframework.checker.nullness.qual.*;
 
 public class ArrayRefs {
 
@@ -12,7 +12,6 @@ public class ArrayRefs {
         if (s.length > 0) {
             System.out.println("s.length > 0");
         }
-
     }
 
     public static void test2() {
@@ -30,12 +29,11 @@ public class ArrayRefs {
         test(a);
     }
 
-    List<Object> @Nullable [] antecedents_for_suppressors () {
+    List<Object> @Nullable [] antecedents_for_suppressors() {
         return null;
     }
 
-    public void find_suppressed_invs () {
-        List<Object>[] antecedents = antecedents_for_suppressors ();
+    public void find_suppressed_invs() {
+        List<Object>[] antecedents = antecedents_for_suppressors();
     }
-
 }

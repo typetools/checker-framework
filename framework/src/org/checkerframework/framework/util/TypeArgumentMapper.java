@@ -1,7 +1,5 @@
 package org.checkerframework.framework.util;
 
-import org.checkerframework.javacutil.Pair;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
@@ -18,7 +15,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-
+import org.checkerframework.javacutil.Pair;
 
 /**
  * Records any mapping between the type parameters of a subtype to the corresponding
@@ -59,9 +56,8 @@ public class TypeArgumentMapper {
      * type parameters in supertype.
      *
      */
-    public static Set<Pair<Integer, Integer>> mapTypeArgumentIndices(final TypeElement subtype,
-                                                                     final TypeElement supertype,
-                                                                     final Types types) {
+    public static Set<Pair<Integer, Integer>> mapTypeArgumentIndices(
+            final TypeElement subtype, final TypeElement supertype, final Types types) {
         Set<Pair<Integer, Integer>> result = new HashSet<>();
         if (subtype.equals(supertype)) {
             for (int i = 0; i < subtype.getTypeParameters().size(); i++) {
@@ -69,17 +65,19 @@ public class TypeArgumentMapper {
             }
 
         } else {
-            Map<TypeParameterElement, Set<TypeParameterElement>> subToSuperElements = mapTypeArguments(subtype, supertype, types);
+            Map<TypeParameterElement, Set<TypeParameterElement>> subToSuperElements =
+                    mapTypeArguments(subtype, supertype, types);
             Map<TypeParameterElement, Integer> supertypeIndexes = getElementToIndex(supertype);
-
 
             final List<? extends TypeParameterElement> subtypeParams = subtype.getTypeParameters();
             for (int subtypeIndex = 0; subtypeIndex < subtypeParams.size(); subtypeIndex++) {
                 final TypeParameterElement subtypeParam = subtypeParams.get(subtypeIndex);
 
-                final Set<TypeParameterElement> correspondingSuperArgs = subToSuperElements.get(subtypeParam);
+                final Set<TypeParameterElement> correspondingSuperArgs =
+                        subToSuperElements.get(subtypeParam);
                 if (correspondingSuperArgs != null) {
-                    for (TypeParameterElement supertypeParam : subToSuperElements.get(subtypeParam)) {
+                    for (TypeParameterElement supertypeParam :
+                            subToSuperElements.get(subtypeParam)) {
                         result.add(Pair.of(subtypeIndex, supertypeIndexes.get(supertypeParam)));
                     }
                 }
@@ -103,7 +101,6 @@ public class TypeArgumentMapper {
         return result;
     }
 
-
     /**
      * Returns a mapping from the type parameters of subtype to a list of the type parameters in
      * supertype that must be the same type as subtype.
@@ -119,18 +116,17 @@ public class TypeArgumentMapper {
      * @return a mapping from the type parameters of subtype to the supertype type parameter's
      * that to which they are a type argument
      */
-    public static Map<TypeParameterElement, Set<TypeParameterElement>> mapTypeArguments(final TypeElement subtype,
-                                                                                        final TypeElement supertype,
-                                                                                        final Types types) {
+    public static Map<TypeParameterElement, Set<TypeParameterElement>> mapTypeArguments(
+            final TypeElement subtype, final TypeElement supertype, final Types types) {
 
         final Map<TypeParameterElement, Set<TypeParameterElement>> result = new LinkedHashMap<>();
-        final List<TypeRecord> pathToSupertype = depthFirstSearchForSupertype(subtype, supertype, types);
-
+        final List<TypeRecord> pathToSupertype =
+                depthFirstSearchForSupertype(subtype, supertype, types);
 
         if (pathToSupertype != null && !pathToSupertype.isEmpty()) {
-            final Map<TypeParameterElement, Set<TypeParameterElement>> intermediate = new LinkedHashMap<>();
+            final Map<TypeParameterElement, Set<TypeParameterElement>> intermediate =
+                    new LinkedHashMap<>();
             final Set<TypeParameterElement> currentTypeParams = new HashSet<>();
-
 
             // takes a type records of the form:
             //  TypeRecord(element = MyMap<Y1,Y2>, type = null)
@@ -144,7 +140,8 @@ public class TypeArgumentMapper {
 
                 TypeRecord next = path.next();
 
-                final List<? extends TypeParameterElement> nextTypeParameter = next.element.getTypeParameters();
+                final List<? extends TypeParameterElement> nextTypeParameter =
+                        next.element.getTypeParameters();
                 final List<? extends TypeMirror> nextTypeArgs = next.type.getTypeArguments();
                 currentTypeParams.clear();
                 currentTypeParams.addAll(current.element.getTypeParameters());
@@ -155,7 +152,10 @@ public class TypeArgumentMapper {
                     final Element typeArgEle = types.asElement(typeArg);
 
                     if (currentTypeParams.contains(typeArgEle)) {
-                        addToSetMap(intermediate, (TypeParameterElement) typeArgEle, correspondingParameter);
+                        addToSetMap(
+                                intermediate,
+                                (TypeParameterElement) typeArgEle,
+                                correspondingParameter);
                     }
                 }
             }
@@ -165,19 +165,19 @@ public class TypeArgumentMapper {
             // You can think of the map above as a set of links from SubtypeParameter -> Supertype Parameter
             // e.g. in Map(Y1 -
             for (TypeParameterElement subtypeParam : subtype.getTypeParameters()) {
-                Set<TypeParameterElement> subtypePath = flattenPath(intermediate.get(subtypeParam), intermediate);
+                Set<TypeParameterElement> subtypePath =
+                        flattenPath(intermediate.get(subtypeParam), intermediate);
                 subtypePath.retainAll(supertypeParams);
                 result.put(subtypeParam, subtypePath);
             }
-
         }
 
         return result;
     }
 
-    private static Set<TypeParameterElement> flattenPath(Set<TypeParameterElement> elements,
-                                                         Map<TypeParameterElement, Set<TypeParameterElement>> map) {
-
+    private static Set<TypeParameterElement> flattenPath(
+            Set<TypeParameterElement> elements,
+            Map<TypeParameterElement, Set<TypeParameterElement>> map) {
 
         Set<TypeParameterElement> result = new HashSet<>();
 
@@ -196,8 +196,10 @@ public class TypeArgumentMapper {
         return result;
     }
 
-    private static void addToSetMap(final Map<TypeParameterElement, Set<TypeParameterElement>> setMap,
-                                    final TypeParameterElement element, final TypeParameterElement typeParam) {
+    private static void addToSetMap(
+            final Map<TypeParameterElement, Set<TypeParameterElement>> setMap,
+            final TypeParameterElement element,
+            final TypeParameterElement typeParam) {
         Set<TypeParameterElement> set = setMap.get(element);
         if (set == null) {
             set = new HashSet<>();
@@ -239,9 +241,8 @@ public class TypeArgumentMapper {
      * @return a set of type records that represents the sequence of directSupertypes between
      * subtype and target
      */
-    private static List<TypeRecord> depthFirstSearchForSupertype(final TypeElement subtype,
-                                                                 final TypeElement target,
-                                                                 final Types types) {
+    private static List<TypeRecord> depthFirstSearchForSupertype(
+            final TypeElement subtype, final TypeElement target, final Types types) {
         Stack<TypeRecord> pathFromRoot = new Stack<>();
         final TypeRecord pathStart = new TypeRecord(subtype, null);
         pathFromRoot.push(pathStart);
@@ -252,9 +253,8 @@ public class TypeArgumentMapper {
     /**
      * Computes one level for depthFirstSearchForSupertype then recurses.
      */
-    private static List<TypeRecord> recursiveDepthFirstSearch(final Stack<TypeRecord> pathFromRoot,
-                                                              final TypeElement target,
-                                                              final Types types) {
+    private static List<TypeRecord> recursiveDepthFirstSearch(
+            final Stack<TypeRecord> pathFromRoot, final TypeElement target, final Types types) {
         List<TypeRecord> path = null;
 
         if (!pathFromRoot.isEmpty()) {
@@ -266,23 +266,30 @@ public class TypeArgumentMapper {
 
             } else {
 
-                final Iterator<? extends TypeMirror> interfaces = currentElement.getInterfaces().iterator();
+                final Iterator<? extends TypeMirror> interfaces =
+                        currentElement.getInterfaces().iterator();
                 final TypeMirror superclassType = currentElement.getSuperclass();
 
                 while (path == null && interfaces.hasNext()) {
                     final TypeMirror intface = interfaces.next();
                     if (intface.getKind() != TypeKind.NONE) {
-                        DeclaredType interfaceDeclared =  (DeclaredType) intface;
-                        pathFromRoot.push(new TypeRecord((TypeElement) types.asElement(interfaceDeclared), interfaceDeclared));
+                        DeclaredType interfaceDeclared = (DeclaredType) intface;
+                        pathFromRoot.push(
+                                new TypeRecord(
+                                        (TypeElement) types.asElement(interfaceDeclared),
+                                        interfaceDeclared));
                         path = recursiveDepthFirstSearch(pathFromRoot, target, types);
                         pathFromRoot.pop();
                     }
                 }
 
-                if (path == null && superclassType != null && superclassType.getKind() != TypeKind.NONE) {
+                if (path == null
+                        && superclassType != null
+                        && superclassType.getKind() != TypeKind.NONE) {
                     final DeclaredType superclass = (DeclaredType) superclassType;
 
-                    pathFromRoot.push(new TypeRecord((TypeElement) types.asElement(superclass), superclass));
+                    pathFromRoot.push(
+                            new TypeRecord((TypeElement) types.asElement(superclass), superclass));
                     path = recursiveDepthFirstSearch(pathFromRoot, target, types);
                     pathFromRoot.pop();
                 }

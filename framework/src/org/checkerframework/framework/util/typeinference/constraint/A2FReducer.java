@@ -1,9 +1,8 @@
 package org.checkerframework.framework.util.typeinference.constraint;
 
+import java.util.Set;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
-import java.util.Set;
 
 /**
  * A2FReducer takes an A2F constraint that is not irreducible (@see AFConstraint.isIrreducible)
@@ -51,16 +50,20 @@ public class A2FReducer implements AFReducer {
         }
 
         @Override
-        public AFConstraint makeConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+        public AFConstraint makeConstraint(
+                AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
             return new A2F(subtype, supertype);
         }
 
         @Override
-        public AFConstraint makeInverseConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+        public AFConstraint makeInverseConstraint(
+                AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
             return new F2A(subtype, supertype);
         }
+
         @Override
-        public AFConstraint makeEqualityConstraint(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
+        public AFConstraint makeEqualityConstraint(
+                AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
             return new FIsA(supertype, subtype);
         }
     }

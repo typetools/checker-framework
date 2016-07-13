@@ -1,24 +1,29 @@
 import net.jcip.annotations.GuardedBy;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.Holding;
 import org.checkerframework.checker.lock.qual.LockingFree;
-import org.checkerframework.checker.lock.qual.GuardSatisfied;
 
 // Smoke test for supporting JCIP and Javax annotations.
 // Note that JCIP and Javax @GuardedBy can only be written on fields and methods.
 public class JCIPAnnotations {
     class MyClass {
         Object field;
+
         @LockingFree
-        void methodWithUnguardedReceiver() { }
+        void methodWithUnguardedReceiver() {}
+
         @LockingFree
-        void methodWithGuardedReceiver(@org.checkerframework.checker.lock.qual.GuardedBy("lock") MyClass this) { }
+        void methodWithGuardedReceiver(
+                @org.checkerframework.checker.lock.qual.GuardedBy("lock") MyClass this) {}
+
         @LockingFree
-        void methodWithGuardSatisfiedReceiver(@GuardSatisfied MyClass this) { }
+        void methodWithGuardSatisfiedReceiver(@GuardSatisfied MyClass this) {}
     }
 
     final Object lock = new Object();
 
     @GuardedBy("lock") MyClass jcipGuardedField;
+
     @javax.annotation.concurrent.GuardedBy("lock") MyClass javaxGuardedField;
 
     // Tests that Javax and JCIP @GuardedBy(...) typecheck against the Lock Checker @GuardedBy on a receiver.
@@ -40,7 +45,7 @@ public class JCIPAnnotations {
         this.jcipGuardedField.field.toString();
         //:: error: (contracts.precondition.not.satisfied.field)
         this.javaxGuardedField.field.toString();
-        synchronized(lock) {
+        synchronized (lock) {
             this.jcipGuardedField.field.toString();
             this.javaxGuardedField.field.toString();
         }
@@ -54,15 +59,15 @@ public class JCIPAnnotations {
         javaxGuardedField.field.toString();
     }
 
-    @GuardedBy("lock")
-    Object testGuardedByAsHolding2(@org.checkerframework.checker.lock.qual.GuardedBy({}) Object param) {
+    @GuardedBy("lock") Object testGuardedByAsHolding2(
+            @org.checkerframework.checker.lock.qual.GuardedBy({}) Object param) {
         testGuardedByAsHolding();
         // Test that the JCIP GuardedBy applies to the method but not the return type.
         return param;
     }
 
     void testGuardedByAsHolding3() {
-        synchronized(lock) {
+        synchronized (lock) {
             testGuardedByAsHolding();
         }
         //:: error: (contracts.precondition.not.satisfied)
@@ -72,46 +77,35 @@ public class JCIPAnnotations {
     @Holding("lock")
     @GuardedBy("lock")
     //:: error: (multiple.lock.precondition.annotations)
-    void testMultipleMethodAnnotations1() {
-    }
+    void testMultipleMethodAnnotations1() {}
 
     @Holding("lock")
     @javax.annotation.concurrent.GuardedBy("lock")
     //:: error: (multiple.lock.precondition.annotations)
-    void testMultipleMethodAnnotations2() {
-    }
+    void testMultipleMethodAnnotations2() {}
 
-    @GuardedBy("lock")
-    @javax.annotation.concurrent.GuardedBy("lock")
+    @GuardedBy("lock") @javax.annotation.concurrent.GuardedBy("lock")
     //:: error: (multiple.lock.precondition.annotations)
-    void testMultipleMethodAnnotations3() {
-    }
+    void testMultipleMethodAnnotations3() {}
 
     @Holding("lock")
-    @GuardedBy("lock")
-    @javax.annotation.concurrent.GuardedBy("lock")
+    @GuardedBy("lock") @javax.annotation.concurrent.GuardedBy("lock")
     //:: error: (multiple.lock.precondition.annotations)
-    void testMultipleMethodAnnotations4() {
-    }
+    void testMultipleMethodAnnotations4() {}
 
-    @org.checkerframework.checker.lock.qual.GuardedBy("lock")
-    @GuardedBy("lock")
+    @org.checkerframework.checker.lock.qual.GuardedBy("lock") @GuardedBy("lock")
     //:: error: (multiple.guardedby.annotations)
     Object fieldWithMultipleGuardedByAnnotations1;
 
-    @org.checkerframework.checker.lock.qual.GuardedBy("lock")
-    @javax.annotation.concurrent.GuardedBy("lock")
+    @org.checkerframework.checker.lock.qual.GuardedBy("lock") @javax.annotation.concurrent.GuardedBy("lock")
     //:: error: (multiple.guardedby.annotations)
     Object fieldWithMultipleGuardedByAnnotations2;
 
-    @GuardedBy("lock")
-    @javax.annotation.concurrent.GuardedBy("lock")
+    @GuardedBy("lock") @javax.annotation.concurrent.GuardedBy("lock")
     //:: error: (multiple.guardedby.annotations)
     Object fieldWithMultipleGuardedByAnnotations3;
 
-    @org.checkerframework.checker.lock.qual.GuardedBy("lock")
-    @GuardedBy("lock")
-    @javax.annotation.concurrent.GuardedBy("lock")
+    @org.checkerframework.checker.lock.qual.GuardedBy("lock") @GuardedBy("lock") @javax.annotation.concurrent.GuardedBy("lock")
     //:: error: (multiple.guardedby.annotations)
     Object fieldWithMultipleGuardedByAnnotations4;
 }

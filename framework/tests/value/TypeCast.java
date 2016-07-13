@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.List;
-
 import org.checkerframework.common.value.qual.*;
 
 class TypeCast {
@@ -14,7 +13,7 @@ class TypeCast {
         short f = 98;
         byte g = 98;
 
-        @IntVal({ 'b' }) char h = (char) a;
+        @IntVal({'b'}) char h = (char) a;
         h = (char) b;
         //:: warning: (cast.unsafe)
         h = (char) c;
@@ -23,7 +22,7 @@ class TypeCast {
         h = (char) f;
         h = (char) g;
 
-        @IntVal({ 98 }) int i = (int) b;
+        @IntVal({98}) int i = (int) b;
         //:: warning: (cast.unsafe)
         i = (int) c;
         //:: warning: (cast.unsafe)
@@ -32,18 +31,17 @@ class TypeCast {
         i = (int) f;
         i = (int) g;
 
-        @DoubleVal({ 98.0 }) double j = (double) a;
+        @DoubleVal({98.0}) double j = (double) a;
         j = (double) b;
         j = (double) d;
         j = (double) e;
         j = (double) f;
         j = (double) g;
-
     }
 
     void otherCast() {
 
-        byte [] b = (byte[]) null;
+        byte[] b = (byte[]) null;
         @BoolVal(true) boolean bool = (boolean) true;
     }
 }

@@ -1,9 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-
 import java.io.File;
-
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -12,15 +10,16 @@ import org.junit.runners.Parameterized.Parameters;
 public class CompilerMessagesTest extends CheckerFrameworkTest {
 
     public CompilerMessagesTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.compilermsgs.CompilerMessagesChecker.class,
-                "compilermsg", "-Anomsgtext",
+                "compilermsg",
+                "-Anomsgtext",
                 "-Apropfiles=tests/compilermsg/compiler.properties");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"compilermsg", "all-systems"};
+        return new String[] {"compilermsg", "all-systems"};
     }
-
 }

@@ -1,12 +1,11 @@
 package org.checkerframework.checker.nullness.qual;
 
-import org.checkerframework.checker.nullness.NullnessChecker;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.checker.nullness.NullnessChecker;
 
 /**
  * Indicates that if the method returns a non-null value, then the value

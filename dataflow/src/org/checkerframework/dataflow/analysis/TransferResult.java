@@ -5,7 +5,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import java.util.Map;
-
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -78,8 +77,7 @@ abstract public class TransferResult<A extends AbstractValue<A>, S extends Store
      *         with {@code exception} (or {@code null} if no special handling is
      *         required for exceptional edges).
      */
-    public /*@Nullable*/ S getExceptionalStore(
-            TypeMirror exception) {
+    public /*@Nullable*/ S getExceptionalStore(TypeMirror exception) {
         if (exceptionalStores == null) {
             return null;
         }

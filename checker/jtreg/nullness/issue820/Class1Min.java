@@ -10,6 +10,5 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Class1Min {
     @EnsuresNonNull("#1")
-    public void methodInstance(Class2Min class2) {
-    }
+    public void methodInstance(Class2Min class2) {}
 }

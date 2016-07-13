@@ -1,16 +1,15 @@
 package org.checkerframework.framework.test;
 
-import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
-import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
-import org.checkerframework.framework.util.PluginUtil;
-
-import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
+import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
+import org.checkerframework.framework.test.diagnostics.TestDiagnosticUtils;
+import org.checkerframework.framework.util.PluginUtil;
 
 /**
  * Represents the test results from typechecking one or more java files using
@@ -26,9 +25,13 @@ public class TypecheckResult {
     private final List<TestDiagnostic> missingDiagnostics;
     private final List<TestDiagnostic> unexpectedDiagnostics;
 
-    protected TypecheckResult(TestConfiguration configuration, CompilationResult compilationResult,
-                              List<TestDiagnostic> expectedDiagnostics, boolean testFailed,
-                              List<TestDiagnostic> missingDiagnostics, List<TestDiagnostic> unexpectedDiagnostics) {
+    protected TypecheckResult(
+            TestConfiguration configuration,
+            CompilationResult compilationResult,
+            List<TestDiagnostic> expectedDiagnostics,
+            boolean testFailed,
+            List<TestDiagnostic> missingDiagnostics,
+            List<TestDiagnostic> unexpectedDiagnostics) {
         this.configuration = configuration;
         this.compilationResult = compilationResult;
         this.expectedDiagnostics = expectedDiagnostics;
@@ -71,10 +74,12 @@ public class TypecheckResult {
         // none of these should be true if the test didn't fail
         if (testFailed) {
             if (compilationResult.compiledWithoutError() && !expectedDiagnostics.isEmpty()) {
-                errorHeaders.add("The test run was expected to issue errors/warnings, but it did not.");
+                errorHeaders.add(
+                        "The test run was expected to issue errors/warnings, but it did not.");
 
             } else if (!compilationResult.compiledWithoutError() && expectedDiagnostics.isEmpty()) {
-                errorHeaders.add("The test run was not expected to issue errors/warnings, but it did.");
+                errorHeaders.add(
+                        "The test run was not expected to issue errors/warnings, but it did.");
             }
 
             List<Diagnostic<? extends JavaFileObject>> actualDiagnostics = getActualDiagnostics();
@@ -82,12 +87,13 @@ public class TypecheckResult {
                 int numExpected = expectedDiagnostics.size();
                 int numFound = numExpected - missingDiagnostics.size();
                 errorHeaders.add(
-                    numFound + " out of " + numExpected + " expected diagnostics "
-                  + (numFound == 1 ? "was" : "were") + " found."
-                );
+                        numFound
+                                + " out of "
+                                + numExpected
+                                + " expected diagnostics "
+                                + (numFound == 1 ? "was" : "were")
+                                + " found.");
             }
-
-
         }
 
         return errorHeaders;
@@ -101,10 +107,10 @@ public class TypecheckResult {
 
             if (!missingDiagnostics.isEmpty()) {
                 summaryBuilder.append(
-                     missingDiagnostics.size() == 1
-                           ? "1 expected diagnostic was not found:\n"
-                           : missingDiagnostics.size() + " expected diagnostics were not found:\n"
-                );
+                        missingDiagnostics.size() == 1
+                                ? "1 expected diagnostic was not found:\n"
+                                : missingDiagnostics.size()
+                                        + " expected diagnostics were not found:\n");
 
                 for (TestDiagnostic missing : missingDiagnostics) {
                     summaryBuilder.append(missing);
@@ -114,10 +120,10 @@ public class TypecheckResult {
 
             if (!unexpectedDiagnostics.isEmpty()) {
                 summaryBuilder.append(
-                    unexpectedDiagnostics.size() == 1
-                            ? "1 unexpected diagnostic was found:\n"
-                            : unexpectedDiagnostics.size() + " unexpected diagnostics were found:\n"
-                );
+                        unexpectedDiagnostics.size() == 1
+                                ? "1 unexpected diagnostic was found:\n"
+                                : unexpectedDiagnostics.size()
+                                        + " unexpected diagnostics were found:\n");
 
                 for (TestDiagnostic unexpected : unexpectedDiagnostics) {
                     summaryBuilder.append(unexpected);
@@ -125,20 +131,25 @@ public class TypecheckResult {
                 }
             }
 
-            summaryBuilder.append("While type-checking " + TestUtilities.summarizeSourceFiles(configuration.getTestSourceFiles()));
+            summaryBuilder.append(
+                    "While type-checking "
+                            + TestUtilities.summarizeSourceFiles(
+                                    configuration.getTestSourceFiles()));
             return summaryBuilder.toString();
         }
 
         return "";
     }
 
-    public static TypecheckResult fromCompilationResults(TestConfiguration configuration, CompilationResult result,
-                                                         List<TestDiagnostic> expectedDiagnostics) {
+    public static TypecheckResult fromCompilationResults(
+            TestConfiguration configuration,
+            CompilationResult result,
+            List<TestDiagnostic> expectedDiagnostics) {
 
         boolean usingAnomsgtxt = configuration.getOptions().containsKey("-Anomsgtext");
         final Set<TestDiagnostic> actualDiagnostics =
-                TestDiagnosticUtils.fromJavaxDiagnosticList(result.getDiagnostics(), usingAnomsgtxt);
-
+                TestDiagnosticUtils.fromJavaxDiagnosticList(
+                        result.getDiagnostics(), usingAnomsgtxt);
 
         final Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>();
         unexpectedDiagnostics.addAll(actualDiagnostics);
@@ -149,18 +160,24 @@ public class TypecheckResult {
 
         boolean testFailed = !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
 
-        return new TypecheckResult(configuration, result, expectedDiagnostics, testFailed,
-                missingDiagnostics, new ArrayList<>(unexpectedDiagnostics));
+        return new TypecheckResult(
+                configuration,
+                result,
+                expectedDiagnostics,
+                testFailed,
+                missingDiagnostics,
+                new ArrayList<>(unexpectedDiagnostics));
     }
 
-
     public static TypecheckResult fromCompilationResultsExpectedDiagnostics(
-            TestConfiguration configuration, CompilationResult result, List<TestDiagnostic> expectedDiagnostics) {
+            TestConfiguration configuration,
+            CompilationResult result,
+            List<TestDiagnostic> expectedDiagnostics) {
 
         boolean usingAnomsgtxt = configuration.getOptions().containsKey("-Anomsgtext");
         final Set<TestDiagnostic> actualDiagnostics =
-                TestDiagnosticUtils.fromJavaxDiagnosticList(result.getDiagnostics(), usingAnomsgtxt);
-
+                TestDiagnosticUtils.fromJavaxDiagnosticList(
+                        result.getDiagnostics(), usingAnomsgtxt);
 
         final Set<TestDiagnostic> unexpectedDiagnostics = new LinkedHashSet<>();
         unexpectedDiagnostics.addAll(actualDiagnostics);
@@ -171,7 +188,12 @@ public class TypecheckResult {
 
         boolean testFailed = !unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty();
 
-        return new TypecheckResult(configuration, result, expectedDiagnostics, testFailed,
-                missingDiagnostics, new ArrayList<>(unexpectedDiagnostics));
+        return new TypecheckResult(
+                configuration,
+                result,
+                expectedDiagnostics,
+                testFailed,
+                missingDiagnostics,
+                new ArrayList<>(unexpectedDiagnostics));
     }
 }

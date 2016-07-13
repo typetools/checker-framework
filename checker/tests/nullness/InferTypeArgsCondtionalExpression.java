@@ -3,19 +3,16 @@
 // Issue 579 test case is in checker/tests/nullness/java8/Issue579.java
 // A similar test case appears in checker-framework/framework/tests/all-systems/InferTypeArgsCondtionalExpression.java
 
-
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 class InferTypeArgsCondtionalExpression {
 
-    public <T>  void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
+    public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
         //:: error: (type.argument.type.incompatible)
         bar(flag ? real : other);
     }
 
-    <@NonNull Q extends @NonNull Object> void bar(Generic<? extends Q> parm) {
-    }
+    <@NonNull Q extends @NonNull Object> void bar(Generic<? extends Q> parm) {}
 
-    interface Generic<F> {
-    }
+    interface Generic<F> {}
 }

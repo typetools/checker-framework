@@ -3,19 +3,17 @@ package org.checkerframework.framework.util;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
-* Represents the type qualifier hierarchy of a type system.
-*
-* This class is immutable and can be only created through
-* {@link MultiGraphQualifierHierarchy.MultiGraphFactory}.
-*/
+ * Represents the type qualifier hierarchy of a type system.
+ *
+ * This class is immutable and can be only created through
+ * {@link MultiGraphQualifierHierarchy.MultiGraphFactory}.
+ */
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     public GraphQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {
@@ -26,10 +24,12 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     // private final AnnotationMirror bottom;
 
     @Override
-    protected void finish(QualifierHierarchy qualHierarchy,
+    protected void finish(
+            QualifierHierarchy qualHierarchy,
             Map<AnnotationMirror, Set<AnnotationMirror>> fullMap,
             Map<AnnotationMirror, AnnotationMirror> polyQualifiers,
-            Set<AnnotationMirror> tops, Set<AnnotationMirror> bottoms,
+            Set<AnnotationMirror> tops,
+            Set<AnnotationMirror> bottoms,
             Object... args) {
         // Careful, when this method is called, a field this.bottom would not be set yet.
         if (args != null && args[0] != null) {
@@ -58,10 +58,11 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     @Override
     public Set<? extends AnnotationMirror> getTopAnnotations() {
         if (tops.size() != 1) {
-            ErrorReporter.errorAbort("Expected 1 possible top qualifier, found "
-                               + tops.size()
-                               + " (does the checker know about all type qualifiers?): "
-                               + tops);
+            ErrorReporter.errorAbort(
+                    "Expected 1 possible top qualifier, found "
+                            + tops.size()
+                            + " (does the checker know about all type qualifiers?): "
+                            + tops);
         }
         return this.tops;
     }
@@ -73,15 +74,23 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     }
 
     @Override
-    public boolean isSubtype(Collection<? extends AnnotationMirror> rhs, Collection<? extends AnnotationMirror> lhs) {
+    public boolean isSubtype(
+            Collection<? extends AnnotationMirror> rhs,
+            Collection<? extends AnnotationMirror> lhs) {
         if (lhs.isEmpty() || rhs.isEmpty()) {
-            ErrorReporter.errorAbort("GraphQualifierHierarchy: Empty annotations in lhs: " + lhs + " or rhs: " + rhs);
+            ErrorReporter.errorAbort(
+                    "GraphQualifierHierarchy: Empty annotations in lhs: "
+                            + lhs
+                            + " or rhs: "
+                            + rhs);
         }
         if (lhs.size() > 1) {
-            ErrorReporter.errorAbort("GraphQualifierHierarchy: Type with more than one annotation found: " + lhs);
+            ErrorReporter.errorAbort(
+                    "GraphQualifierHierarchy: Type with more than one annotation found: " + lhs);
         }
         if (rhs.size() > 1) {
-            ErrorReporter.errorAbort("GraphQualifierHierarchy: Type with more than one annotation found: " + rhs);
+            ErrorReporter.errorAbort(
+                    "GraphQualifierHierarchy: Type with more than one annotation found: " + rhs);
         }
         for (AnnotationMirror lhsAnno : lhs) {
             for (AnnotationMirror rhsAnno : rhs) {

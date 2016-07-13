@@ -1,7 +1,6 @@
-import org.checkerframework.framework.test.*;
-
 import java.util.*;
 import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.test.*;
 import tests.util.*;
 
 class Equal {
@@ -31,5 +30,4 @@ class Equal {
             @Odd String l3 = f1;
         }
     }
-
 }

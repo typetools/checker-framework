@@ -8,6 +8,6 @@ class CompoundAssign {
                 arg = "";
             }
         }
-        if (arg.equals ("")) {}
+        if (arg.equals("")) {}
     }
 }

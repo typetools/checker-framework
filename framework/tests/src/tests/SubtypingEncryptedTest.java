@@ -1,7 +1,6 @@
 package tests;
 
 import java.io.File;
-
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -12,7 +11,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class SubtypingEncryptedTest extends CheckerFrameworkTest {
 
     public SubtypingEncryptedTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.common.subtyping.SubtypingChecker.class,
                 "subtyping",
                 "-Anomsgtext",
@@ -20,8 +20,7 @@ public class SubtypingEncryptedTest extends CheckerFrameworkTest {
     }
 
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"subtyping", "all-systems"};
+    public static String[] getTestDirs() {
+        return new String[] {"subtyping", "all-systems"};
     }
-
 }

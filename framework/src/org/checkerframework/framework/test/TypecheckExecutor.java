@@ -1,28 +1,24 @@
 package org.checkerframework.framework.test;
 
-
-import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
-import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
-import org.checkerframework.framework.util.PluginUtil;
-
+import java.io.File;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
-import java.io.File;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
+import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
+import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
+import org.checkerframework.framework.util.PluginUtil;
 
 /**
  * Used by the Checker Framework test suite to run the framework and generate a test result.
  */
 public class TypecheckExecutor {
 
-
-    public TypecheckExecutor() {
-    }
+    public TypecheckExecutor() {}
 
     /**
      * Runs a typechecking test using the given configuration and returns the
@@ -41,15 +37,13 @@ public class TypecheckExecutor {
         TestUtilities.ensureDirectoryExists(new File(configuration.getOptions().get("-d")));
 
         final StringWriter javacOutput = new StringWriter();
-        DiagnosticCollector<JavaFileObject> diagnostics = new
-                DiagnosticCollector<JavaFileObject>();
+        DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
 
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
         Iterable<? extends JavaFileObject> javaFiles =
-                fileManager.getJavaFileObjects(configuration.getTestSourceFiles().toArray(new File[]{}));
-
-
+                fileManager.getJavaFileObjects(
+                        configuration.getTestSourceFiles().toArray(new File[] {}));
 
         // Even though the method compilergetTask takes a list of processors, it fails if processors are passed this way
         // with the message:
@@ -61,7 +55,7 @@ public class TypecheckExecutor {
         options.add(PluginUtil.join(",", configuration.getProcessors()));
         List<String> nonJvmOptions = new ArrayList<String>();
         for (String option : configuration.getFlatOptions()) {
-            if (! option.startsWith("-J-")) {
+            if (!option.startsWith("-J-")) {
                 nonJvmOptions.add(option);
             }
         }
@@ -69,12 +63,21 @@ public class TypecheckExecutor {
 
         if (configuration.shouldEmitDebugInfo()) {
             System.out.println("Running test using the following invocation:");
-            System.out.println("javac " + PluginUtil.join(" ", options) + " "
-                    + PluginUtil.join(" ", configuration.getTestSourceFiles()));
+            System.out.println(
+                    "javac "
+                            + PluginUtil.join(" ", options)
+                            + " "
+                            + PluginUtil.join(" ", configuration.getTestSourceFiles()));
         }
 
         JavaCompiler.CompilationTask task =
-                compiler.getTask(javacOutput, fileManager, diagnostics, options, new ArrayList<String>(), javaFiles);
+                compiler.getTask(
+                        javacOutput,
+                        fileManager,
+                        diagnostics,
+                        options,
+                        new ArrayList<String>(),
+                        javaFiles);
 
         /*
          * In Eclipse, std out and std err for multiple tests appear as one
@@ -84,33 +87,40 @@ public class TypecheckExecutor {
          */
         final Boolean compiledWithoutError = task.call();
         javacOutput.flush();
-        return new CompilationResult(compiledWithoutError, javacOutput.toString(), javaFiles,
-                                     diagnostics.getDiagnostics());
+        return new CompilationResult(
+                compiledWithoutError,
+                javacOutput.toString(),
+                javaFiles,
+                diagnostics.getDiagnostics());
     }
 
     /**
      * Reads the expected diagnostics for the given configuration and creates a TypecheckResult
      * which contains all of the missing and expected diagnostics
      */
-    public TypecheckResult interpretResults(TestConfiguration config, CompilationResult compilationResult) {
+    public TypecheckResult interpretResults(
+            TestConfiguration config, CompilationResult compilationResult) {
         List<TestDiagnostic> expectedDiagnostics = readDiagnostics(config, compilationResult);
-        return TypecheckResult.fromCompilationResults(config, compilationResult, expectedDiagnostics);
+        return TypecheckResult.fromCompilationResults(
+                config, compilationResult, expectedDiagnostics);
     }
 
     /**
      * Added in case a subclass wishes to filter out errors or add new expected errors.  This method is called immediately
      * before results are checked.
      */
-    protected List<TestDiagnostic> readDiagnostics(TestConfiguration config, CompilationResult compilationResult) {
+    protected List<TestDiagnostic> readDiagnostics(
+            TestConfiguration config, CompilationResult compilationResult) {
         List<TestDiagnostic> expectedDiagnostics;
         if (config.getDiagnosticFiles() == null || config.getDiagnosticFiles().isEmpty()) {
-            expectedDiagnostics = JavaDiagnosticReader.readExpectedDiagnosticsJfo(compilationResult.getJavaFileObjects(), true);
+            expectedDiagnostics =
+                    JavaDiagnosticReader.readExpectedDiagnosticsJfo(
+                            compilationResult.getJavaFileObjects(), true);
         } else {
-            expectedDiagnostics = JavaDiagnosticReader.readDiagnosticFiles(config.getDiagnosticFiles(), true);
+            expectedDiagnostics =
+                    JavaDiagnosticReader.readDiagnosticFiles(config.getDiagnosticFiles(), true);
         }
 
         return expectedDiagnostics;
     }
-
-
 }

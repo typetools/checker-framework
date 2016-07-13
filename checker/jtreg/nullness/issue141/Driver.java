@@ -9,5 +9,4 @@
  * @compile -XDrawDiagnostics -processor org.checkerframework.checker.regex.RegexChecker -AprintErrorStack Files.java
  *
  */
-class Driver {
-}
+class Driver {}

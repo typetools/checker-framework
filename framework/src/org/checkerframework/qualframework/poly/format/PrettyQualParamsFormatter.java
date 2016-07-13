@@ -1,5 +1,9 @@
 package org.checkerframework.qualframework.poly.format;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.PolyQual;
 import org.checkerframework.qualframework.poly.PolyQual.Combined;
@@ -7,11 +11,6 @@ import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.PolyQual.QualVar;
 import org.checkerframework.qualframework.poly.QualParams;
 import org.checkerframework.qualframework.poly.Wildcard;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Formats a {@link QualParams} into the double chevron 《Q》 output format.
@@ -134,9 +133,9 @@ public class PrettyQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
             if (lower == null && upper == null) {
                 return qualVar.getName();
             } else {
-                lower = lower == null? "" : lower;
-                upper = upper == null? "" : upper;
-                return qualVar.getName()+ " ∈ [" + lower + ".." + upper + "])";
+                lower = lower == null ? "" : lower;
+                upper = upper == null ? "" : upper;
+                return qualVar.getName() + " ∈ [" + lower + ".." + upper + "])";
             }
 
         } else {
@@ -158,8 +157,8 @@ public class PrettyQualParamsFormatter<Q> implements QualParamsFormatter<Q> {
             if (upper == null && lower == null) {
                 return "?";
             } else {
-                lower = lower == null? "" : lower;
-                upper = upper == null? "" : upper;
+                lower = lower == null ? "" : lower;
+                upper = upper == null ? "" : upper;
                 return "? ∈ [" + lower + ".." + upper + "]";
             }
         }

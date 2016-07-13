@@ -2,12 +2,10 @@ import java.lang.CharSequence;
 
 class Issue450 {
 
-
-    Issue450(int i, Runnable ...runnables) {
-    }
+    Issue450(int i, Runnable... runnables) {}
 
     Issue450(Consumer<String> consumer) {
-        consumer.consume("hello");       // Use lambda as a constructor argument
+        consumer.consume("hello"); // Use lambda as a constructor argument
     }
 
     interface Top {
@@ -15,16 +13,17 @@ class Issue450 {
     }
 
     interface Sub extends Top {
-        default public void otherMethod() {
-        }
+        default public void otherMethod() {}
     }
 
     interface Consumer<T> {
         void consume(T t);
     }
 
-    void varargs(Runnable ...runnables)  {}
+    void varargs(Runnable... runnables) {}
+
     public static void consumeStr(String str) {}
+
     public static void consumeStr2(String str) {}
 
     <E extends Consumer<String>> void context(E e, Sub s) {
@@ -34,7 +33,7 @@ class Issue450 {
         Consumer<String> cs2 = (false) ? e : Issue450::consumeStr;
         Top t = (false) ? s : Issue450::consumeStr;
 
-        new Issue450(42, new Thread()::start);                   // Use lambda as a constructor argument
-        varargs(new Thread()::start, new Thread()::start);       // Use lambda in a var arg list of method
+        new Issue450(42, new Thread()::start); // Use lambda as a constructor argument
+        varargs(new Thread()::start, new Thread()::start); // Use lambda in a var arg list of method
     }
 }

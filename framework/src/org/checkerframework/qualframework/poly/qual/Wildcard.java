@@ -8,5 +8,7 @@ import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotatio
  * to MyClass《? extends {@literal @}Tainted》.
  */
 public enum Wildcard {
-    NONE, EXTENDS, SUPER
+    NONE,
+    EXTENDS,
+    SUPER
 }

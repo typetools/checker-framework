@@ -1,11 +1,10 @@
 package tests.compound;
 
+import java.util.LinkedHashSet;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.value.ValueChecker;
-
-import java.util.LinkedHashSet;
 
 public class AnotherCompoundChecker extends BaseTypeChecker {
     @Override
@@ -23,8 +22,7 @@ public class AnotherCompoundChecker extends BaseTypeChecker {
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
-        return new BaseTypeVisitor<AnotherCompoundCheckerAnnotatedTypeFactory>(
-                this) {
+        return new BaseTypeVisitor<AnotherCompoundCheckerAnnotatedTypeFactory>(this) {
             @Override
             protected AnotherCompoundCheckerAnnotatedTypeFactory createTypeFactory() {
                 return new AnotherCompoundCheckerAnnotatedTypeFactory(checker);

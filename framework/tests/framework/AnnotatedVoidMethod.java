@@ -1,5 +1,5 @@
-import tests.util.*;
 import java.util.*;
+import tests.util.*;
 
 public class AnnotatedVoidMethod {
     //:: error: annotation type not applicable to this kind of declaration
