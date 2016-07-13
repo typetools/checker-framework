@@ -1,7 +1,7 @@
 @SuppressWarnings("nullness") // Don't want to depend on @Nullable
 class AssignmentContext {
 
-    void foo(String [] a) {}
+    void foo(String[] a) {}
 
     void t1(boolean b) {
         String[] s = b ? new String[] {""} : null;
@@ -11,7 +11,7 @@ class AssignmentContext {
         foo(b ? new String[] {""} : null);
     }
 
-    String [] t3(boolean b) {
+    String[] t3(boolean b) {
         return b ? new String[] {""} : null;
     }
 
@@ -22,7 +22,6 @@ class AssignmentContext {
 
     void assignToCast(String[][] currentSample) {
         // This statement used to cause a null pointer exception.
-        ((String [])currentSample[3])[4] = currentSample[3][4];
+        ((String[]) currentSample[3])[4] = currentSample[3][4];
     }
-
 }

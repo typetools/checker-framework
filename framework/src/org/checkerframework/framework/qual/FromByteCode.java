@@ -12,8 +12,6 @@ import java.lang.annotation.Target;
  * annotated with @FromStubFile, this annotation is not added.)
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.TYPE,
-        ElementType.PACKAGE })
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.TYPE, ElementType.PACKAGE})
 @SubtypeOf({})
-public @interface FromByteCode {
-}
+public @interface FromByteCode {}

@@ -11,5 +11,4 @@ import org.checkerframework.framework.qual.StubFiles;
  * @checker_framework.manual #regex-checker Regex Checker
  */
 @StubFiles("apache-xerces.astub")
-public class RegexClassicChecker extends BaseTypeChecker {
-}
+public class RegexClassicChecker extends BaseTypeChecker {}

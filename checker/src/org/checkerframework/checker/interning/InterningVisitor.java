@@ -1,30 +1,5 @@
 package org.checkerframework.checker.interning;
 
-import org.checkerframework.checker.interning.qual.Interned;
-import org.checkerframework.checker.interning.qual.UsesObjectEquals;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.Heuristics;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-
-import java.util.Comparator;
-import java.util.List;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic.Kind;
-
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -41,6 +16,28 @@ import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.Comparator;
+import java.util.List;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.interning.qual.UsesObjectEquals;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.source.Result;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.Heuristics;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Typechecks source code for interning violations.  A type is considered interned
@@ -73,7 +70,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * @return  true if interning should be verified for the input expression.  By default, all classes are checked
      * for interning unless -Acheckclass is specified.
      * @see <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#interning-checks">What the Interning Checker checks</a>
-    */
+     */
     private boolean shouldCheckExpression(ExpressionTree tree) {
         if (typeToCheck == null) return true;
 
@@ -88,8 +85,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     public Void visitBinary(BinaryTree node, Void p) {
 
         // No checking unless the operator is "==" or "!=".
-        if (!(node.getKind() == Tree.Kind.EQUAL_TO ||
-              node.getKind() == Tree.Kind.NOT_EQUAL_TO)) {
+        if (!(node.getKind() == Tree.Kind.EQUAL_TO || node.getKind() == Tree.Kind.NOT_EQUAL_TO)) {
             return super.visitBinary(node, p);
         }
 
@@ -97,8 +93,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         ExpressionTree rightOp = node.getRightOperand();
 
         // Check passes if either arg is null.
-        if (leftOp.getKind() == Tree.Kind.NULL_LITERAL ||
-            rightOp.getKind() == Tree.Kind.NULL_LITERAL) {
+        if (leftOp.getKind() == Tree.Kind.NULL_LITERAL
+                || rightOp.getKind() == Tree.Kind.NULL_LITERAL) {
             return super.visitBinary(node, p);
         }
 
@@ -157,20 +153,22 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         Element leftElt = null;
         Element rightElt = null;
         if (left instanceof AnnotatedTypeMirror.AnnotatedDeclaredType) {
-            leftElt = ((DeclaredType)left.getUnderlyingType()).asElement();
+            leftElt = ((DeclaredType) left.getUnderlyingType()).asElement();
         }
         if (right instanceof AnnotatedTypeMirror.AnnotatedDeclaredType) {
-            rightElt = ((DeclaredType)right.getUnderlyingType()).asElement();
+            rightElt = ((DeclaredType) right.getUnderlyingType()).asElement();
         }
 
         //TODO: CODE REVIEW
         //TODO: WOULD IT BE CLEARER TO USE A METHOD usesReferenceEquality(AnnotatedTypeMirror type)
         //TODO: RATHER THAN leftElt.getAnnotation(UsesObjectEquals.class) != null)
         // if neither @Interned or @UsesObjectEquals, report error
-        if (!(left.hasEffectiveAnnotation(INTERNED) || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null))) {
+        if (!(left.hasEffectiveAnnotation(INTERNED)
+                || (leftElt != null && leftElt.getAnnotation(UsesObjectEquals.class) != null))) {
             checker.report(Result.failure("not.interned", left), leftOp);
         }
-        if (!(right.hasEffectiveAnnotation(INTERNED) || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null))) {
+        if (!(right.hasEffectiveAnnotation(INTERNED)
+                || (rightElt != null && rightElt.getAnnotation(UsesObjectEquals.class) != null))) {
             checker.report(Result.failure("not.interned", right), rightOp);
         }
         return super.visitBinary(node, p);
@@ -187,14 +185,13 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             AnnotatedTypeMirror comp = atypeFactory.getAnnotatedType(node.getArguments().get(0));
 
             if (this.checker.getLintOption("dotequals", true)
-                && recv.hasEffectiveAnnotation(INTERNED)
-                && comp.hasEffectiveAnnotation(INTERNED))
+                    && recv.hasEffectiveAnnotation(INTERNED)
+                    && comp.hasEffectiveAnnotation(INTERNED))
                 checker.report(Result.warning("unnecessary.equals"), node);
         }
 
         return super.visitMethodInvocation(node, p);
     }
-
 
     /**
      * Method to implement the @UsesObjectEquals functionality.
@@ -223,8 +220,10 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
         Tree superClass = node.getExtendsClause();
         Element elmt = null;
-        if (superClass != null && (superClass instanceof IdentifierTree || superClass instanceof MemberSelectTree)) {
-            elmt = TreeUtils.elementFromUse((ExpressionTree)superClass);
+        if (superClass != null
+                && (superClass instanceof IdentifierTree
+                        || superClass instanceof MemberSelectTree)) {
+            elmt = TreeUtils.elementFromUse((ExpressionTree) superClass);
         }
 
         // If @UsesObjectEquals is present, check to make sure the class does not override equals
@@ -235,15 +234,16 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
                 checker.report(Result.failure("overrides.equals"), node);
             }
 
-
-            if (!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))) {
+            if (!(superClass == null
+                    || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))) {
                 checker.report(Result.failure("superclass.notannotated"), node);
             }
         } else {
             // The class is not annotated with @UsesObjectEquals -> make sure its superclass isn't either.
             // TODO: is this impossible after the design change making @UsesObjectEquals inherited?
             // This check is left behind in case of a future design change back to non-inherited.
-            if (superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)) {
+            if (superClass != null
+                    && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)) {
                 checker.report(Result.failure("superclass.annotated"), node);
             }
         }
@@ -347,8 +347,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         Tree right = node.getRightOperand();
 
         // Only valid if we're comparing identifiers.
-        if (!(left.getKind() == Tree.Kind.IDENTIFIER
-              && right.getKind() == Tree.Kind.IDENTIFIER))
+        if (!(left.getKind() == Tree.Kind.IDENTIFIER && right.getKind() == Tree.Kind.IDENTIFIER))
             return false;
 
         // If we're not directly in an if statement in a method (ignoring
@@ -375,53 +374,59 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             parentPath = parentPath.getParentPath();
         }
 
-        assert ifStatementTree != null; // The call to Heuristics.matchParents already ensured there is an enclosing if statement
-        assert methodTree != null; // The call to Heuristics.matchParents already ensured there is an enclosing method
+        assert ifStatementTree
+                != null; // The call to Heuristics.matchParents already ensured there is an enclosing if statement
+        assert methodTree
+                != null; // The call to Heuristics.matchParents already ensured there is an enclosing method
 
         StatementTree stmnt = methodTree.getBody().getStatements().get(0);
-        assert stmnt != null; // The call to Heuristics.matchParents already ensured the enclosing method has at least one statement (an if statement) in the body
+        assert stmnt
+                != null; // The call to Heuristics.matchParents already ensured the enclosing method has at least one statement (an if statement) in the body
 
         if (stmnt != ifStatementTree) {
             return false; // The if statement is not the first statement in the method.
         }
 
-        ExecutableElement enclosing = TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
+        ExecutableElement enclosing =
+                TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
         assert enclosing != null;
 
-        final Element lhs = TreeUtils.elementFromUse((IdentifierTree)left);
-        final Element rhs = TreeUtils.elementFromUse((IdentifierTree)right);
+        final Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
+        final Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
 
         // Matcher to check for if statement that returns zero
-        Heuristics.Matcher matcherIfReturnsZero = new Heuristics.Matcher() {
+        Heuristics.Matcher matcherIfReturnsZero =
+                new Heuristics.Matcher() {
 
-                @Override
-                public Boolean visitIf (IfTree tree, Void p) {
-                    return visit(tree.getThenStatement(), p);
-                }
-
-                @Override
-                public Boolean visitBlock(BlockTree tree, Void p) {
-                    if (tree.getStatements().size() > 0) {
-                        return visit(tree.getStatements().get(0), p);
+                    @Override
+                    public Boolean visitIf(IfTree tree, Void p) {
+                        return visit(tree.getThenStatement(), p);
                     }
-                    return false;
-                }
 
-                @Override
-                public Boolean visitReturn(ReturnTree tree, Void p) {
-                    ExpressionTree expr = tree.getExpression();
-                    return (expr != null &&
-                            expr.getKind() == Tree.Kind.INT_LITERAL &&
-                            ((LiteralTree)expr).getValue().equals(0));
-                }
-            };
+                    @Override
+                    public Boolean visitBlock(BlockTree tree, Void p) {
+                        if (tree.getStatements().size() > 0) {
+                            return visit(tree.getStatements().get(0), p);
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitReturn(ReturnTree tree, Void p) {
+                        ExpressionTree expr = tree.getExpression();
+                        return (expr != null
+                                && expr.getKind() == Tree.Kind.INT_LITERAL
+                                && ((LiteralTree) expr).getValue().equals(0));
+                    }
+                };
 
         // Determine whether or not the "then" statement of the if has a single
         // "return 0" statement (for the Comparator.compare heuristic).
         if (overrides(enclosing, Comparator.class, "compare")) {
             final boolean returnsZero =
-                Heuristics.Matchers.withIn(
-                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero)).match(getCurrentPath());
+                    Heuristics.Matchers.withIn(
+                                    Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero))
+                            .match(getCurrentPath());
 
             if (!returnsZero) {
                 return false;
@@ -430,8 +435,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             assert enclosing.getParameters().size() == 2;
             Element p1 = enclosing.getParameters().get(0);
             Element p2 = enclosing.getParameters().get(1);
-            return (p1.equals(lhs) && p2.equals(rhs))
-                || (p2.equals(lhs) && p1.equals(rhs));
+            return (p1.equals(lhs) && p2.equals(rhs)) || (p2.equals(lhs) && p1.equals(rhs));
 
         } else if (overrides(enclosing, Object.class, "equals")) {
             assert enclosing.getParameters().size() == 1;
@@ -439,13 +443,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
-                || (param.equals(lhs) && thisElt.equals(rhs));
+                    || (param.equals(lhs) && thisElt.equals(rhs));
 
         } else if (overrides(enclosing, Comparable.class, "compareTo")) {
 
             final boolean returnsZero =
-                Heuristics.Matchers.withIn(
-                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero)).match(getCurrentPath());
+                    Heuristics.Matchers.withIn(
+                                    Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero))
+                            .match(getCurrentPath());
 
             if (!returnsZero) {
                 return false;
@@ -456,8 +461,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
             Element thisElt = getThis(trees.getScope(getCurrentPath()));
             assert thisElt != null;
             return (thisElt.equals(lhs) && param.equals(rhs))
-                || (param.equals(lhs) && thisElt.equals(rhs));
-
+                    || (param.equals(lhs) && thisElt.equals(rhs));
         }
         return false;
     }
@@ -481,7 +485,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * @return true if the expressions expr1 and expr2 are identical
      */
     private static boolean sameTree(ExpressionTree expr1, ExpressionTree expr2) {
-        return TreeUtils.skipParens(expr1).toString().equals(TreeUtils.skipParens(expr2).toString());
+        return TreeUtils.skipParens(expr1)
+                .toString()
+                .equals(TreeUtils.skipParens(expr2).toString());
     }
 
     /**
@@ -506,105 +512,111 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         final ExpressionTree right = TreeUtils.skipParens(node.getRightOperand());
 
         // looking for ((a == b || a.equals(b))
-        Heuristics.Matcher matcherEqOrEquals = new Heuristics.Matcher() {
+        Heuristics.Matcher matcherEqOrEquals =
+                new Heuristics.Matcher() {
 
-                /** Returns true if e is either "e1 != null" or "e2 != null". */
-                private boolean isNeqNull(ExpressionTree e, ExpressionTree e1, ExpressionTree e2) {
-                    e = TreeUtils.skipParens(e);
-                    if (e.getKind() != Tree.Kind.NOT_EQUAL_TO) {
-                        return false;
-                    }
-                    ExpressionTree neqLeft = ((BinaryTree) e).getLeftOperand();
-                    ExpressionTree neqRight = ((BinaryTree) e).getRightOperand();
-                    return (((sameTree(neqLeft, e1) || sameTree(neqLeft, e2))
-                             && neqRight.getKind() == Tree.Kind.NULL_LITERAL)
-                            // also check for "null != e1" and "null != e2"
-                            || ((sameTree(neqRight, e1) || sameTree(neqRight, e2))
-                                && neqLeft.getKind() == Tree.Kind.NULL_LITERAL));
-                }
-
-                @Override
-                public Boolean visitBinary(BinaryTree tree, Void p) {
-                    ExpressionTree leftTree = tree.getLeftOperand();
-                    ExpressionTree rightTree = tree.getRightOperand();
-
-                    if (tree.getKind() == Tree.Kind.CONDITIONAL_OR) {
-                        if (sameTree(leftTree, node)) {
-                            // left is "a==b"
-                            // check right, which should be a.equals(b) or b.equals(a) or similar
-                            return visit(rightTree, p);
-                        } else {
+                    /** Returns true if e is either "e1 != null" or "e2 != null". */
+                    private boolean isNeqNull(
+                            ExpressionTree e, ExpressionTree e1, ExpressionTree e2) {
+                        e = TreeUtils.skipParens(e);
+                        if (e.getKind() != Tree.Kind.NOT_EQUAL_TO) {
                             return false;
                         }
+                        ExpressionTree neqLeft = ((BinaryTree) e).getLeftOperand();
+                        ExpressionTree neqRight = ((BinaryTree) e).getRightOperand();
+                        return (((sameTree(neqLeft, e1) || sameTree(neqLeft, e2))
+                                        && neqRight.getKind() == Tree.Kind.NULL_LITERAL)
+                                // also check for "null != e1" and "null != e2"
+                                || ((sameTree(neqRight, e1) || sameTree(neqRight, e2))
+                                        && neqLeft.getKind() == Tree.Kind.NULL_LITERAL));
                     }
 
-                    if (tree.getKind() == Tree.Kind.CONDITIONAL_AND) {
-                        // looking for: (a != null && a.equals(b)))
-                        if (isNeqNull(leftTree, left, right)) {
-                            return visit(rightTree, p);
+                    @Override
+                    public Boolean visitBinary(BinaryTree tree, Void p) {
+                        ExpressionTree leftTree = tree.getLeftOperand();
+                        ExpressionTree rightTree = tree.getRightOperand();
+
+                        if (tree.getKind() == Tree.Kind.CONDITIONAL_OR) {
+                            if (sameTree(leftTree, node)) {
+                                // left is "a==b"
+                                // check right, which should be a.equals(b) or b.equals(a) or similar
+                                return visit(rightTree, p);
+                            } else {
+                                return false;
+                            }
+                        }
+
+                        if (tree.getKind() == Tree.Kind.CONDITIONAL_AND) {
+                            // looking for: (a != null && a.equals(b)))
+                            if (isNeqNull(leftTree, left, right)) {
+                                return visit(rightTree, p);
+                            }
+                            return false;
+                        }
+
+                        return false;
+                    }
+
+                    @Override
+                    public Boolean visitConditionalExpression(
+                            ConditionalExpressionTree tree, Void p) {
+                        // looking for: (a != null ? a.equals(b) : false)
+                        ExpressionTree cond = tree.getCondition();
+                        ExpressionTree trueExp = tree.getTrueExpression();
+                        ExpressionTree falseExp = tree.getFalseExpression();
+                        if (isNeqNull(cond, left, right)
+                                && (falseExp.getKind() == Tree.Kind.BOOLEAN_LITERAL)
+                                && ((LiteralTree) falseExp).getValue().equals(false)) {
+                            return visit(trueExp, p);
                         }
                         return false;
                     }
 
-                    return false;
-                }
+                    @Override
+                    public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
+                        if (!isInvocationOfEquals(tree)) {
+                            return false;
+                        }
 
-                @Override
-                public Boolean visitConditionalExpression(ConditionalExpressionTree tree, Void p) {
-                    // looking for: (a != null ? a.equals(b) : false)
-                    ExpressionTree cond = tree.getCondition();
-                    ExpressionTree trueExp = tree.getTrueExpression();
-                    ExpressionTree falseExp = tree.getFalseExpression();
-                    if (isNeqNull(cond, left, right)
-                        && (falseExp.getKind() == Tree.Kind.BOOLEAN_LITERAL)
-                        && ((LiteralTree) falseExp).getValue().equals(false)) {
-                        return visit(trueExp, p);
-                    }
-                    return false;
-                }
+                        List<? extends ExpressionTree> args = tree.getArguments();
+                        if (args.size() != 1) {
+                            return false;
+                        }
+                        ExpressionTree arg = args.get(0);
+                        // if (arg.getKind() != Tree.Kind.IDENTIFIER) {
+                        //     return false;
+                        // }
+                        // Element argElt = TreeUtils.elementFromUse((IdentifierTree) arg);
 
-                @Override
-                public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
-                    if (!isInvocationOfEquals(tree)) {
+                        ExpressionTree exp = tree.getMethodSelect();
+                        if (exp.getKind() != Tree.Kind.MEMBER_SELECT) {
+                            return false;
+                        }
+                        MemberSelectTree member = (MemberSelectTree) exp;
+                        ExpressionTree receiver = member.getExpression();
+                        // Element refElt = TreeUtils.elementFromUse(receiver);
+
+                        // if (!((refElt.equals(lhs) && argElt.equals(rhs)) ||
+                        //       ((refElt.equals(rhs) && argElt.equals(lhs))))) {
+                        //     return false;
+                        // }
+
+                        if (sameTree(receiver, left) && sameTree(arg, right)) {
+                            return true;
+                        }
+                        if (sameTree(receiver, right) && sameTree(arg, left)) {
+                            return true;
+                        }
+
                         return false;
                     }
+                };
 
-                    List<? extends ExpressionTree> args = tree.getArguments();
-                    if (args.size() != 1) {
-                        return false;
-                    }
-                    ExpressionTree arg = args.get(0);
-                    // if (arg.getKind() != Tree.Kind.IDENTIFIER) {
-                    //     return false;
-                    // }
-                    // Element argElt = TreeUtils.elementFromUse((IdentifierTree) arg);
-
-                    ExpressionTree exp = tree.getMethodSelect();
-                    if (exp.getKind() != Tree.Kind.MEMBER_SELECT) {
-                        return false;
-                    }
-                    MemberSelectTree member = (MemberSelectTree) exp;
-                    ExpressionTree receiver = member.getExpression();
-                    // Element refElt = TreeUtils.elementFromUse(receiver);
-
-                    // if (!((refElt.equals(lhs) && argElt.equals(rhs)) ||
-                    //       ((refElt.equals(rhs) && argElt.equals(lhs))))) {
-                    //     return false;
-                    // }
-
-                    if (sameTree(receiver, left) && sameTree(arg, right)) {
-                        return true;
-                    }
-                    if (sameTree(receiver, right) && sameTree(arg, left)) {
-                        return true;
-                    }
-
-                    return false;
-                }
-            };
-
-        boolean okay = Heuristics.Matchers.withIn(
-                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcherEqOrEquals)).match(getCurrentPath());
+        boolean okay =
+                Heuristics.Matchers.withIn(
+                                Heuristics.Matchers.ofKind(
+                                        Tree.Kind.CONDITIONAL_OR, matcherEqOrEquals))
+                        .match(getCurrentPath());
         return okay;
     }
 
@@ -625,83 +637,90 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         Tree right = TreeUtils.skipParens(node.getRightOperand());
 
         // Only valid if we're comparing identifiers.
-        if (!(left.getKind() == Tree.Kind.IDENTIFIER
-              && right.getKind() == Tree.Kind.IDENTIFIER)) {
+        if (!(left.getKind() == Tree.Kind.IDENTIFIER && right.getKind() == Tree.Kind.IDENTIFIER)) {
             return false;
         }
 
-        final Element lhs = TreeUtils.elementFromUse((IdentifierTree)left);
-        final Element rhs = TreeUtils.elementFromUse((IdentifierTree)right);
+        final Element lhs = TreeUtils.elementFromUse((IdentifierTree) left);
+        final Element rhs = TreeUtils.elementFromUse((IdentifierTree) right);
 
         // looking for ((a == b || a.compareTo(b) == 0)
-        Heuristics.Matcher matcherEqOrCompareTo = new Heuristics.Matcher() {
+        Heuristics.Matcher matcherEqOrCompareTo =
+                new Heuristics.Matcher() {
 
-                @Override
-                public Boolean visitBinary(BinaryTree tree, Void p) {
-                    if (tree.getKind() == Tree.Kind.EQUAL_TO) {                          // a.compareTo(b) == 0
-                        ExpressionTree leftTree = tree.getLeftOperand();        // looking for a.compareTo(b) or b.compareTo(a)
-                        ExpressionTree rightTree = tree.getRightOperand();      // looking for 0
+                    @Override
+                    public Boolean visitBinary(BinaryTree tree, Void p) {
+                        if (tree.getKind() == Tree.Kind.EQUAL_TO) { // a.compareTo(b) == 0
+                            ExpressionTree leftTree =
+                                    tree
+                                            .getLeftOperand(); // looking for a.compareTo(b) or b.compareTo(a)
+                            ExpressionTree rightTree = tree.getRightOperand(); // looking for 0
 
-                        if (rightTree.getKind() != Tree.Kind.INT_LITERAL) {
+                            if (rightTree.getKind() != Tree.Kind.INT_LITERAL) {
+                                return false;
+                            }
+                            LiteralTree rightLiteral = (LiteralTree) rightTree;
+                            if (!rightLiteral.getValue().equals(0)) {
+                                return false;
+                            }
+
+                            return visit(leftTree, p);
+                        } else {
+                            // a == b || a.compareTo(b) == 0
+                            ExpressionTree leftTree = tree.getLeftOperand(); // looking for a==b
+                            ExpressionTree rightTree =
+                                    tree
+                                            .getRightOperand(); // looking for a.compareTo(b) == 0 or b.compareTo(a) == 0
+                            if (leftTree != node) {
+                                return false;
+                            }
+                            if (rightTree.getKind() != Tree.Kind.EQUAL_TO) {
+                                return false;
+                            }
+                            return visit(rightTree, p);
+                        }
+                    }
+
+                    @Override
+                    public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
+                        if (!isInvocationOfCompareTo(tree)) {
                             return false;
                         }
-                        LiteralTree rightLiteral = (LiteralTree) rightTree;
-                        if (!rightLiteral.getValue().equals(0)) {
+
+                        List<? extends ExpressionTree> args = tree.getArguments();
+                        if (args.size() != 1) {
+                            return false;
+                        }
+                        ExpressionTree arg = args.get(0);
+                        if (arg.getKind() != Tree.Kind.IDENTIFIER) {
+                            return false;
+                        }
+                        Element argElt = TreeUtils.elementFromUse(arg);
+
+                        ExpressionTree exp = tree.getMethodSelect();
+                        if (exp.getKind() != Tree.Kind.MEMBER_SELECT) {
+                            return false;
+                        }
+                        MemberSelectTree member = (MemberSelectTree) exp;
+                        if (member.getExpression().getKind() != Tree.Kind.IDENTIFIER) {
                             return false;
                         }
 
-                        return visit(leftTree, p);
-                    } else {
-                        // a == b || a.compareTo(b) == 0
-                        ExpressionTree leftTree = tree.getLeftOperand();        // looking for a==b
-                        ExpressionTree rightTree = tree.getRightOperand();      // looking for a.compareTo(b) == 0 or b.compareTo(a) == 0
-                        if (leftTree != node) {
+                        Element refElt = TreeUtils.elementFromUse(member.getExpression());
+
+                        if (!((refElt.equals(lhs) && argElt.equals(rhs))
+                                || ((refElt.equals(rhs) && argElt.equals(lhs))))) {
                             return false;
                         }
-                        if (rightTree.getKind() != Tree.Kind.EQUAL_TO) {
-                            return false;
-                        }
-                        return visit(rightTree, p);
+                        return true;
                     }
-                }
+                };
 
-                @Override
-                public Boolean visitMethodInvocation(MethodInvocationTree tree, Void p) {
-                    if (!isInvocationOfCompareTo(tree)) {
-                        return false;
-                    }
-
-                    List<? extends ExpressionTree> args = tree.getArguments();
-                    if (args.size() != 1) {
-                        return false;
-                    }
-                    ExpressionTree arg = args.get(0);
-                    if (arg.getKind() != Tree.Kind.IDENTIFIER) {
-                        return false;
-                    }
-                    Element argElt = TreeUtils.elementFromUse(arg);
-
-                    ExpressionTree exp = tree.getMethodSelect();
-                    if (exp.getKind() != Tree.Kind.MEMBER_SELECT) {
-                        return false;
-                    }
-                    MemberSelectTree member = (MemberSelectTree) exp;
-                    if (member.getExpression().getKind() != Tree.Kind.IDENTIFIER) {
-                        return false;
-                    }
-
-                    Element refElt = TreeUtils.elementFromUse(member.getExpression());
-
-                    if (!((refElt.equals(lhs) && argElt.equals(rhs)) ||
-                          ((refElt.equals(rhs) && argElt.equals(lhs))))) {
-                        return false;
-                    }
-                    return true;
-                }
-            };
-
-        boolean okay = Heuristics.Matchers.withIn(
-                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcherEqOrCompareTo)).match(getCurrentPath());
+        boolean okay =
+                Heuristics.Matchers.withIn(
+                                Heuristics.Matchers.ofKind(
+                                        Tree.Kind.CONDITIONAL_OR, matcherEqOrCompareTo))
+                        .match(getCurrentPath());
         return okay;
     }
 
@@ -712,7 +731,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * because {@code a == b} will be true only if a's run-time type is B (or
      * lower), in which case a is actually interned.
      */
-    private boolean suppressEqualsIfClassIsAnnotated(AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
+    private boolean suppressEqualsIfClassIsAnnotated(
+            AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
         // It would be better to just test their greatest lower bound.
         // That could permit some comparisons that this forbids.
         return classIsAnnotated(left) || classIsAnnotated(right);
@@ -734,13 +754,19 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         }
 
         if (tm.getKind() != TypeKind.DECLARED) {
-            checker.message(Kind.WARNING,
-                    "InterningVisitor.classIsAnnotated: tm = %s (%s)%n", tm, tm.getClass());
+            checker.message(
+                    Kind.WARNING,
+                    "InterningVisitor.classIsAnnotated: tm = %s (%s)%n",
+                    tm,
+                    tm.getClass());
         }
         Element classElt = ((DeclaredType) tm).asElement();
         if (classElt == null) {
-            checker.message(Kind.WARNING,
-                    "InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)%n", tm, tm.getClass());
+            checker.message(
+                    Kind.WARNING,
+                    "InterningVisitor.classIsAnnotated: classElt = null for tm = %s (%s)%n",
+                    tm,
+                    tm.getClass());
         }
         if (classElt != null) {
             AnnotatedTypeMirror classType = atypeFactory.fromElement(classElt);
@@ -753,7 +779,6 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         }
         return false;
     }
-
 
     /**
      * Determines the element corresponding to "this" inside a scope.  Returns
@@ -790,15 +815,13 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
         // Check all of the methods in the class for name matches and overriding.
         for (ExecutableElement elt : ElementFilter.methodsIn(clazzElt.getEnclosedElements())) {
-            if (elt.getSimpleName().contentEquals(method)
-                && elements.overrides(e, elt, clazzElt)) {
+            if (elt.getSimpleName().contentEquals(method) && elements.overrides(e, elt, clazzElt)) {
                 return true;
             }
         }
 
         return false;
     }
-
 
     /**
      * Returns the declared type of which the equality tests should be tested,

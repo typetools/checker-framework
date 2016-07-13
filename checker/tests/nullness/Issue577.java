@@ -7,30 +7,30 @@ import org.checkerframework.checker.nullness.qual.*;
 class Banana<T extends Number> extends Apple<int[]> {
     @Override
     void fooOuter(int[] array) {}
+
     class InnerBanana extends InnerApple<long[]> {
         @Override
         //:: error: (override.param.invalid)
-        <F2 extends Object> void foo(int[] array, long[] array2, F2 param3) {
-        }
+        <F2 extends Object> void foo(int[] array, long[] array2, F2 param3) {}
     }
 }
 
 class Apple<T> {
     void fooOuter(T param) {}
+
     class InnerApple<E> {
-        <F> void foo(T param, E param2, F param3) {
-        }
+        <F> void foo(T param, E param2, F param3) {}
     }
 }
 
 class Pineapple<E extends Object> extends Apple<E> {
-   @Override
-   void fooOuter(E array) {}
-   class InnerPineapple extends InnerApple<@Nullable String> {
+    @Override
+    void fooOuter(E array) {}
+
+    class InnerPineapple extends InnerApple<@Nullable String> {
         @Override
         //:: error: (override.param.invalid)
-        <F3> void foo(E array, String array2, F3 param3) {
-        }
+        <F3> void foo(E array, String array2, F3 param3) {}
     }
 }
 
@@ -40,7 +40,7 @@ class IntersectionAsMemberOf {
     }
 
     <T extends Object & MyGenericInterface<@NonNull String>> void foo(T param) {
-       @NonNull String s = param.getF();
+        @NonNull String s = param.getF();
     }
 }
 
@@ -59,7 +59,6 @@ class UnionAsMemberOf {
         public String getT() {
             return "t";
         }
-
     }
 
     void bar() throws MyExceptionA, MyExceptionB {}

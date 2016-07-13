@@ -29,7 +29,7 @@ class LambdaNullness {
     // is stored on here because it is the last defined constructor.
     //
     // See TypeFromElement::annotateParam
-    LambdaNullness(Function<String, String> f, Object e) {  }
+    LambdaNullness(Function<String, String> f, Object e) {}
 
     // No parameters; result is void
     Noop f1 = () -> {};
@@ -43,56 +43,68 @@ class LambdaNullness {
     // No parameters, expression body
     Supplier<@Nullable Void> f3 = () -> null;
     // No parameters, block body with return
-    Supplier<Integer> f4a = () -> { return 42; };
+    Supplier<Integer> f4a =
+            () -> {
+                return 42;
+            };
     // No parameters, block body with return
-    Supplier<@Nullable Integer> f4b = () -> {
-        //:: error: (assignment.type.incompatible)
-        @NonNull String s = null;
+    Supplier<@Nullable Integer> f4b =
+            () -> {
+                //:: error: (assignment.type.incompatible)
+                @NonNull String s = null;
 
-        return null;
-    };
+                return null;
+            };
     // No parameters, void block body
-    Noop f5 = () -> { System.gc(); };
+    Noop f5 =
+            () -> {
+                System.gc();
+            };
 
     // Complex block body with returns
-    Supplier<Integer> f6 = () -> {
-       if (true) return 12;
-       else {
-         int result = 15;
-         for (int i = 1; i < 10; i++) {
-           result *= i;
-         }
-         //:: error: (return.type.incompatible)
-         return null;
-       }
-    };
+    Supplier<Integer> f6 =
+            () -> {
+                if (true) return 12;
+                else {
+                    int result = 15;
+                    for (int i = 1; i < 10; i++) {
+                        result *= i;
+                    }
+                    //:: error: (return.type.incompatible)
+                    return null;
+                }
+            };
 
     // Single declared-type parameter
     Function<@Nullable Integer, Integer> f7 = (@Nullable Integer x) -> 1;
 
     // Single declared-type parameter
     Function<@Nullable String, String> f9 =
-        //:: error: (lambda.param.type.incompatible)
-        (@NonNull String x) -> { return x + ""; };
+            //:: error: (lambda.param.type.incompatible)
+            (@NonNull String x) -> {
+                return x + "";
+            };
     // Single inferred-type parameter
-    Function<@NonNull Integer, Integer> f10 = (x) -> x+1;
+    Function<@NonNull Integer, Integer> f10 = (x) -> x + 1;
     // Parentheses optional for single
     Function<@Nullable Integer, Integer> f11 = x -> 1;
 
     // Multiple declared-type parameters
-    BiFunction<Integer, Integer, Integer> f16 = (@Nullable Integer x, final Integer y) -> {
-        x = null;
-        //:: error: (unboxing.of.nullable)
-        return x+y;
-    };
+    BiFunction<Integer, Integer, Integer> f16 =
+            (@Nullable Integer x, final Integer y) -> {
+                x = null;
+                //:: error: (unboxing.of.nullable)
+                return x + y;
+            };
 
     // Multiple inferred-type parameters
-    BiFunction<String, String, String> f18 = (x, y) -> x+y;
+    BiFunction<String, String, String> f18 = (x, y) -> x + y;
 
     // Infer based on context.
-    Function<@Nullable String, String> fn = (s) -> {
-        //:: error: (dereference.of.nullable)
-        s.toString();
-        return "";
-    };
+    Function<@Nullable String, String> fn =
+            (s) -> {
+                //:: error: (dereference.of.nullable)
+                s.toString();
+                return "";
+            };
 }

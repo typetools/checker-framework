@@ -1,6 +1,5 @@
-import org.checkerframework.checker.nullness.qual.*;
-
 import java.util.*;
+import org.checkerframework.checker.nullness.qual.*;
 
 public class KeyFors {
 
@@ -42,21 +41,19 @@ public class KeyFors {
     }
 
     /** Returns a sorted version of m.keySet(). */
-    public static
-    <K extends Comparable<? super K>,V> Collection<@KeyFor("#1") K>
-    sortedKeySet(Map<K,V> m) {
+    public static <K extends Comparable<? super K>, V> Collection<@KeyFor("#1") K> sortedKeySet(
+            Map<K, V> m) {
         throw new RuntimeException();
     }
 
-    static HashMap<Integer,Object> call_hashmap = new HashMap<Integer,Object>();
+    static HashMap<Integer, Object> call_hashmap = new HashMap<Integer, Object>();
 
     public void testForLoop(HashMap<String, String> lastMap) {
         Collection<@KeyFor("lastMap") String> sorted = sortedKeySet(lastMap);
         for (@KeyFor("lastMap") String key : sorted) {
             @NonNull String al = lastMap.get(key);
         }
-        for (@KeyFor("call_hashmap") Integer i : sortedKeySet(call_hashmap)) {
-        }
+        for (@KeyFor("call_hashmap") Integer i : sortedKeySet(call_hashmap)) {}
     }
 
     static class Otherclass {
@@ -74,51 +71,52 @@ public class KeyFors {
         o.map.get(s2).toString();
     }
 
-  public class Graph<T> {
+    public class Graph<T> {
 
-    HashMap<T, List<@KeyFor("childMap") T>> childMap;
+        HashMap<T, List<@KeyFor("childMap") T>> childMap;
 
-    public Graph(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
-        this.childMap = childMap;
+        public Graph(HashMap<T, List<@KeyFor("childMap") T>> childMap) {
+            this.childMap = childMap;
+        }
+
+        public void addNode(T n) {
+            // body omitted, not relevant to test case
+        }
+
+        public void addEdge2(T parent, T child) {
+            addNode(parent);
+            @SuppressWarnings("cast.unsafe")
+            @KeyFor("childMap") T parent2 = (@KeyFor("childMap") T) parent;
+            @NonNull List<@KeyFor("childMap") T> l = childMap.get(parent2);
+        }
+
+        // TODO: This is a feature request to have KeyFor inferred
+        //    public void addEdge3( T parent, T child ) {
+        //      addNode(parent);
+        //      parent = (@KeyFor("childMap") T) parent;
+        //      @NonNull List<T> l = childMap.get(parent);
+        //    }
+
     }
 
-    public void addNode( T n ) {
-      // body omitted, not relevant to test case
-    }
-
-    public void addEdge2( T parent, T child ) {
-      addNode(parent);
-      @SuppressWarnings("cast.unsafe")
-      @KeyFor("childMap") T parent2 = (@KeyFor("childMap") T) parent;
-      @NonNull List<@KeyFor("childMap") T> l = childMap.get(parent2);
-    }
-
-    // TODO: This is a feature request to have KeyFor inferred
-//    public void addEdge3( T parent, T child ) {
-//      addNode(parent);
-//      parent = (@KeyFor("childMap") T) parent;
-//      @NonNull List<T> l = childMap.get(parent);
-//    }
-
-  }
-
-  /* TODO: add logic that after a call to "put" the first argument is
-      annotated with @KeyFor. A "@KeyForAfter" annotation to
-      support this in a general way might be overkill.
-      Similarly, for calls to "remove" we need to invalidate all (?)
-      KeyFor annotations.*/
+    /* TODO: add logic that after a call to "put" the first argument is
+    annotated with @KeyFor. A "@KeyForAfter" annotation to
+    support this in a general way might be overkill.
+    Similarly, for calls to "remove" we need to invalidate all (?)
+    KeyFor annotations.*/
 
     void keyForFlow() {
         Map<String, String> leaders = new LinkedHashMap<String, String>();
-        Set<@KeyFor("leaders") String> varsUsedPreviously = new LinkedHashSet<@KeyFor("leaders") String>();
+        Set<@KeyFor("leaders") String> varsUsedPreviously =
+                new LinkedHashSet<@KeyFor("leaders") String>();
         String varName = "hello";
         leaders.put(varName, "goodbye");
         @KeyFor("leaders") String kf = varName;
     }
 
     public static void mapPut(String start) {
-    Map<String, Integer> n2e = new HashMap<>();
-    n2e.put(start, new Integer(0));
-    @KeyFor("n2e") String start2 = start;
+        Map<String, Integer> n2e = new HashMap<>();
+        n2e.put(start, new Integer(0));
+        @KeyFor("n2e") String start2 = start;
     }
 }

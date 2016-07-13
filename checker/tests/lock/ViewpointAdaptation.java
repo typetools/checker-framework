@@ -5,11 +5,9 @@ import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class ViewpointAdaptation {
     //:: error: (flowexpr.parse.error)
-    @GuardedBy("a")
-    private final ViewpointAdaptation f = new ViewpointAdaptation();
+    @GuardedBy("a") private final ViewpointAdaptation f = new ViewpointAdaptation();
 
-    @GuardedBy("this.lock")
-    private ViewpointAdaptation g = new ViewpointAdaptation();
+    @GuardedBy("this.lock") private ViewpointAdaptation g = new ViewpointAdaptation();
 
     private final Object lock = new Object();
 

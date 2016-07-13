@@ -1,8 +1,7 @@
 package org.checkerframework.qualframework.base;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /** Adapter class for {@link TypeHierarchy}, extending
  * {@link org.checkerframework.framework.type.TypeHierarchy org.checkerframework.framework.type.TypeHierarchy}.
@@ -13,7 +12,8 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
 
     private final TypeMirrorConverter<Q> converter;
 
-    public TypeHierarchyAdapter(TypeHierarchy<Q> underlying,
+    public TypeHierarchyAdapter(
+            TypeHierarchy<Q> underlying,
             TypeMirrorConverter<Q> converter,
             CheckerAdapter<Q> checker,
             QualifierHierarchyAdapter<Q>.Implementation qualifierHierarchy,
@@ -24,16 +24,15 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
         this.converter = converter;
     }
 
-
     @Override
     public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
         return underlying.isSubtype(
-                converter.getQualifiedType(subtype),
-                converter.getQualifiedType(supertype));
+                converter.getQualifiedType(subtype), converter.getQualifiedType(supertype));
     }
 
     @Override
-    public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
+    public boolean isSubtype(
+            AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype, AnnotationMirror top) {
         // NOTE: This may be insufficient for multi-rooted qualifier hierarchies.  David McArthur and
         // Jonathan Burke have had a discussion on this.  This method will work for single-root hierarchies
         // which are the only ones that have a Qual implementation at the moment.  We will take this up again
@@ -68,8 +67,7 @@ class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.Defaul
         // This system would work, but would require still greater changes to the Type Variable implementation
         // of the Checker Framework.
         return underlying.isSubtype(
-                converter.getQualifiedType(subtype),
-                converter.getQualifiedType(supertype));
+                converter.getQualifiedType(subtype), converter.getQualifiedType(supertype));
     }
 
     boolean superIsSubtype(QualifiedTypeMirror<Q> subtype, QualifiedTypeMirror<Q> supertype) {

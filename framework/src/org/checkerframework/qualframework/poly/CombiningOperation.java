@@ -40,7 +40,7 @@ public interface CombiningOperation<Q> {
                 return false;
             }
             @SuppressWarnings("rawtypes")
-            Lub other = (Lub)o;
+            Lub other = (Lub) o;
             return this.hierarchy.equals(other.hierarchy);
         }
 
@@ -57,7 +57,7 @@ public interface CombiningOperation<Q> {
 
     /** The greatest-lower-bound operation over a qualifier hierarchy.
      */
-    public static class Glb<Q> implements CombiningOperation <Q> {
+    public static class Glb<Q> implements CombiningOperation<Q> {
         QualifierHierarchy<Q> hierarchy;
 
         public Glb(QualifierHierarchy<Q> hierarchy) {
@@ -80,7 +80,7 @@ public interface CombiningOperation<Q> {
                 return false;
             }
             @SuppressWarnings("rawtypes")
-            Glb other = (Glb)o;
+            Glb other = (Glb) o;
             return this.hierarchy.equals(other.hierarchy);
         }
 

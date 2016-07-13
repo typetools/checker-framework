@@ -1,9 +1,8 @@
 package org.checkerframework.checker.tainting.qual;
 
+import java.lang.annotation.*;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
-
-import java.lang.annotation.*;
 
 /**
  * Tainted is the annotation to specify the tainted qualifier.

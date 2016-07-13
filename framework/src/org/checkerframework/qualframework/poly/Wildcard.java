@@ -30,7 +30,6 @@ public class Wildcard<Q> {
         this(new PolyQual.GroundQual<Q>(groundQual));
     }
 
-
     /**
      * Force the user to write `Wildcard.empty()` instead of `new Wildcard()`,
      * to make it clear that they're getting something special, rather than
@@ -45,7 +44,6 @@ public class Wildcard<Q> {
     public static <Q> Wildcard<Q> empty() {
         return new Wildcard<Q>();
     }
-
 
     /** Get the lower bound of the wildcard, or {@code null} if this is the
      * empty wildcard. */
@@ -82,8 +80,8 @@ public class Wildcard<Q> {
     /** Combine with another wildcard, using the provided {@link
      * CombiningOperation}s for the upper and lower bounds.
      */
-    public Wildcard<Q> combineWith(Wildcard<Q> other,
-            CombiningOperation<Q> lowerOp, CombiningOperation<Q> upperOp) {
+    public Wildcard<Q> combineWith(
+            Wildcard<Q> other, CombiningOperation<Q> lowerOp, CombiningOperation<Q> upperOp) {
         return new Wildcard<Q>(
                 this.getLowerBound().combineWith(other.getLowerBound(), lowerOp),
                 this.getUpperBound().combineWith(other.getUpperBound(), upperOp));
@@ -95,15 +93,13 @@ public class Wildcard<Q> {
             return false;
         }
         @SuppressWarnings("rawtypes")
-        Wildcard other = (Wildcard)o;
-        return this.lower.equals(other.lower)
-            && this.upper.equals(other.upper);
+        Wildcard other = (Wildcard) o;
+        return this.lower.equals(other.lower) && this.upper.equals(other.upper);
     }
 
     @Override
     public int hashCode() {
-        return this.lower.hashCode() * 37
-            + this.upper.hashCode() * 59;
+        return this.lower.hashCode() * 37 + this.upper.hashCode() * 59;
     }
 
     @Override

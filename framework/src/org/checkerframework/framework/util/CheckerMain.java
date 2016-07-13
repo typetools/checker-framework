@@ -54,9 +54,9 @@ public class CheckerMain {
      * Invoke the JSR 308 Type Annotations Compiler.
      * Any exception thrown by the Checker Framework escapes to the command line.
      */
-    public static void main(String[] args)  {
-        final File pathToThisJar    = new File(findPathTo(CheckerMain.class, false));
-        final CheckerMain program   = new CheckerMain(pathToThisJar, args);
+    public static void main(String[] args) {
+        final File pathToThisJar = new File(findPathTo(CheckerMain.class, false));
+        final CheckerMain program = new CheckerMain(pathToThisJar, args);
         final int exitStatus = program.invokeCompiler();
         System.exit(exitStatus);
     }
@@ -80,7 +80,6 @@ public class CheckerMain {
      */
     protected final File checkerQualJar;
 
-
     private final List<String> compilationBootclasspath;
 
     private final List<String> runtimeBootClasspath;
@@ -99,11 +98,11 @@ public class CheckerMain {
      * Construct all the relevant file locations and Java version given the path to this jar and
      * a set of directories in which to search for jars.
      */
-    public CheckerMain(final File checkerJar, final String [] args) {
+    public CheckerMain(final File checkerJar, final String[] args) {
 
-        this.checkerJar   = checkerJar;
+        this.checkerJar = checkerJar;
         final File searchPath = checkerJar.getParentFile();
-        this.checkerQualJar   = new File(searchPath, "checker-qual.jar");
+        this.checkerQualJar = new File(searchPath, "checker-qual.jar");
 
         final List<String> argsList = new ArrayList<String>(args.length);
         for (String arg : args) {
@@ -113,18 +112,21 @@ public class CheckerMain {
         replaceShorthandProcessor(argsList);
         argListFiles = collectArgFiles(argsList);
 
-        this.javacJar = extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), argsList);
+        this.javacJar =
+                extractFileArg(
+                        PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), argsList);
 
         final String jdkJarName = PluginUtil.getJdkJarName();
-        this.jdkJar   = extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), argsList);
+        this.jdkJar =
+                extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), argsList);
 
         this.compilationBootclasspath = createCompilationBootclasspath(argsList);
-        this.runtimeBootClasspath     = createRuntimeBootclasspath(argsList);
-        this.jvmOpts       = extractJvmOpts(argsList);
+        this.runtimeBootClasspath = createRuntimeBootclasspath(argsList);
+        this.jvmOpts = extractJvmOpts(argsList);
 
-        this.cpOpts        = createCpOpts(argsList);
-        this.ppOpts        = createPpOpts(argsList);
-        this.toolOpts      = argsList;
+        this.cpOpts = createCpOpts(argsList);
+        this.ppOpts = createPpOpts(argsList);
+        this.toolOpts = argsList;
 
         assertValidState();
     }
@@ -185,7 +187,7 @@ public class CheckerMain {
         final List<File> argListFiles = new ArrayList<File>();
         for (final String arg : args) {
             if (arg.startsWith("@")) {
-                argListFiles.add( new File(arg.substring(1)) );
+                argListFiles.add(new File(arg.substring(1)));
             }
         }
 
@@ -201,12 +203,14 @@ public class CheckerMain {
      * @return the string that follows argumentName if argumentName is in args, or alternative if
      * argumentName is not present in args
      */
-    protected static String extractArg(final String argumentName, final String alternative, final List<String> args) {
+    protected static String extractArg(
+            final String argumentName, final String alternative, final List<String> args) {
         int i = args.indexOf(argumentName);
         if (i == -1) {
             return alternative;
         } else if (i == args.size() - 1) {
-            throw new RuntimeException("Argument " + argumentName + " specified but given no value!");
+            throw new RuntimeException(
+                    "Argument " + argumentName + " specified but given no value!");
         } else {
             args.remove(i);
             return args.remove(i);
@@ -222,7 +226,8 @@ public class CheckerMain {
      * @return the string that follows argumentName wrapped as a File if argumentName is in args or alternative if
      * argumentName is not present in args
      */
-    protected static File extractFileArg(final String argumentName, final File alternative, final List<String> args) {
+    protected static File extractFileArg(
+            final String argumentName, final File alternative, final List<String> args) {
         final String filePath = extractArg(argumentName, null, args);
         if (filePath == null) {
             return alternative;
@@ -240,7 +245,8 @@ public class CheckerMain {
      * @return a list of arguments from the first group that matched the pattern for each input args or the empty list
      *         if there were none
      */
-    protected static List<String> extractOptWithPattern(final Pattern pattern, boolean allowEmpties, final List<String> args) {
+    protected static List<String> extractOptWithPattern(
+            final Pattern pattern, boolean allowEmpties, final List<String> args) {
         final List<String> matchedArgs = new ArrayList<String>();
 
         int i = 0;
@@ -265,7 +271,8 @@ public class CheckerMain {
     /**
      * A pattern to match bootclasspath prepend entries, used to construct one -Xbootclasspath/p: argument
      */
-    protected static final Pattern BOOT_CLASS_PATH_REGEX = Pattern.compile("^(?:-J)?-Xbootclasspath/p:(.*)$");
+    protected static final Pattern BOOT_CLASS_PATH_REGEX =
+            Pattern.compile("^(?:-J)?-Xbootclasspath/p:(.*)$");
 
     // TODO: Why does this treat -J and -J-X the same?  They have different semantics, don't they?
     /**
@@ -305,11 +312,11 @@ public class CheckerMain {
 
         String path = null;
 
-        for (int i=0; i<args.size(); i++) {
+        for (int i = 0; i < args.size(); i++) {
             if ((args.get(i).equals("-cp") || args.get(i).equals("-classpath"))
-                && (i + 1 < args.size())) {
-                    args.remove(i);
-                    path = args.remove(i);
+                    && (i + 1 < args.size())) {
+                args.remove(i);
+                path = args.remove(i);
                 // re-process whatever is currently at element i
                 i--;
             }
@@ -344,9 +351,8 @@ public class CheckerMain {
 
         String path = null;
 
-        for (int i=0; i<args.size(); i++) {
-            if (args.get(i).equals("-processorpath")
-                && (i + 1 < args.size())) {
+        for (int i = 0; i < args.size(); i++) {
+            if (args.get(i).equals("-processorpath") && (i + 1 < args.size())) {
                 args.remove(i);
                 path = args.remove(i);
                 // re-process whatever is currently at element i
@@ -369,7 +375,8 @@ public class CheckerMain {
      * Invoke the JSR308 Type Annotations Compiler with all relevant jars on its classpath or boot classpath
      */
     public List<String> getExecArguments() {
-        List<String> args = new ArrayList<String>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
+        List<String> args =
+                new ArrayList<String>(jvmOpts.size() + cpOpts.size() + toolOpts.size() + 7);
 
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), System.out);
         args.add(java);
@@ -393,7 +400,9 @@ public class CheckerMain {
         // jdk[78].jar classes don't have bodies, so they won't be used at
         // run time, but other, real definitions of those classes will be
         // on the classpath at run time.
-        args.add("-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
+        args.add(
+                "-Xbootclasspath/p:"
+                        + PluginUtil.join(File.pathSeparator, compilationBootclasspath));
 
         if (!argsListHasClassPath(argListFiles)) {
             args.add("-classpath");
@@ -434,9 +443,10 @@ public class CheckerMain {
             String errorMessage = null;
 
             try {
-                PrintWriter writer = (outputFilename.equals("-")
-                                      ? new PrintWriter(System.out)
-                                      : new PrintWriter(outputFilename, "UTF-8"));
+                PrintWriter writer =
+                        (outputFilename.equals("-")
+                                ? new PrintWriter(System.out)
+                                : new PrintWriter(outputFilename, "UTF-8"));
                 for (int i = 0; i < args.size(); i++) {
                     String arg = args.get(i);
 
@@ -463,13 +473,16 @@ public class CheckerMain {
                     }
                 }
                 writer.close();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 errorMessage = e.toString();
             }
 
             if (errorMessage != null) {
-                System.err.println("Failed to output command-line arguments to file " + outputFilename + " due to exception: " + errorMessage);
+                System.err.println(
+                        "Failed to output command-line arguments to file "
+                                + outputFilename
+                                + " due to exception: "
+                                + errorMessage);
             }
         }
     }
@@ -507,7 +520,7 @@ public class CheckerMain {
      * @param files a list of files
      * @return a list of all the lines in all the files
      */
-    protected static List<String> expandArgFiles(final List<File> files)  {
+    protected static List<String> expandArgFiles(final List<File> files) {
         final List<String> content = new ArrayList<String>();
         for (final File file : files) {
             try {
@@ -524,7 +537,8 @@ public class CheckerMain {
      * @param cls the class whose .class file we wish to locate; if null, CheckerMain.class.
      * @param errIfFromDirectory If false, throw an exception if the file was loaded from a directory
      */
-    public static String findPathTo(Class<?> cls, boolean errIfFromDirectory) throws IllegalStateException {
+    public static String findPathTo(Class<?> cls, boolean errIfFromDirectory)
+            throws IllegalStateException {
         if (cls == null) {
             cls = CheckerMain.class;
         }
@@ -533,7 +547,7 @@ public class CheckerMain {
         /* name is something like package.name.ContainingClass$ClassName. We need to turn this into ContainingClass$ClassName.class. */
         {
             int idx = name.lastIndexOf('.');
-            classFileName = (idx == -1 ? name : name.substring(idx+1)) + ".class";
+            classFileName = (idx == -1 ? name : name.substring(idx + 1)) + ".class";
         }
 
         String uri = cls.getResource(classFileName).toString();
@@ -541,22 +555,30 @@ public class CheckerMain {
             if (errIfFromDirectory) {
                 return uri;
             } else {
-                throw new IllegalStateException("This class has been loaded from a directory and not from a jar file.");
+                throw new IllegalStateException(
+                        "This class has been loaded from a directory and not from a jar file.");
             }
         }
         if (!uri.startsWith("jar:file:")) {
             int idx = uri.indexOf(':');
             String protocol = idx == -1 ? "(unknown)" : uri.substring(0, idx);
-            throw new IllegalStateException("This class has been loaded remotely via the " + protocol +
-                    " protocol. Only loading from a jar on the local file system is supported.");
+            throw new IllegalStateException(
+                    "This class has been loaded remotely via the "
+                            + protocol
+                            + " protocol. Only loading from a jar on the local file system is supported.");
         }
 
         int idx = uri.indexOf('!');
         // Sanity check
-        if (idx == -1) throw new IllegalStateException("You appear to have loaded this class from a local jar file, but I can't make sense of the URL!");
+        if (idx == -1)
+            throw new IllegalStateException(
+                    "You appear to have loaded this class from a local jar file, but I can't make sense of the URL!");
 
         try {
-            String fileName = URLDecoder.decode(uri.substring("jar:file:".length(), idx), Charset.defaultCharset().name());
+            String fileName =
+                    URLDecoder.decode(
+                            uri.substring("jar:file:".length(), idx),
+                            Charset.defaultCharset().name());
             return new File(fileName).getAbsolutePath();
         } catch (UnsupportedEncodingException e) {
             throw new InternalError("Default charset doesn't exist. Your VM is borked.");
@@ -585,8 +607,9 @@ public class CheckerMain {
             for (File missingFile : missingFiles) {
                 missingAbsoluteFilenames.add(missingFile.getAbsolutePath());
             }
-            throw new RuntimeException("The following files could not be located: "
-                                       + PluginUtil.join(", ", missingAbsoluteFilenames));
+            throw new RuntimeException(
+                    "The following files could not be located: "
+                            + PluginUtil.join(", ", missingAbsoluteFilenames));
         }
     }
 
@@ -627,12 +650,14 @@ public class CheckerMain {
      * @param processorString the name of a single processor, not a comma-separated list of processors
      * @param fullyQualifiedCheckerNames a list of fully-qualified checker names
      */
-    public static boolean matchesCheckerOrSubcheckerFromList(final String processorString, List<String> fullyQualifiedCheckerNames) {
+    public static boolean matchesCheckerOrSubcheckerFromList(
+            final String processorString, List<String> fullyQualifiedCheckerNames) {
         if (processorString.contains(",")) {
             return false; // Do not process strings containing multiple processors.
         }
 
-        return fullyQualifiedCheckerNames.contains(unshorthandProcessorNames(processorString, fullyQualifiedCheckerNames, true));
+        return fullyQualifiedCheckerNames.contains(
+                unshorthandProcessorNames(processorString, fullyQualifiedCheckerNames, true));
     }
 
     /**
@@ -644,8 +669,9 @@ public class CheckerMain {
             final int nextIndex = i + 1;
             if (args.size() > nextIndex) {
                 if (args.get(i).equals("-processor")) {
-                    final String replacement = unshorthandProcessorNames(args.get(nextIndex),
-                                                   getAllCheckerClassNames(), false);
+                    final String replacement =
+                            unshorthandProcessorNames(
+                                    args.get(nextIndex), getAllCheckerClassNames(), false);
                     args.remove(nextIndex);
                     args.add(nextIndex, replacement);
                 }
@@ -669,7 +695,11 @@ public class CheckerMain {
                 // Checkers ending in "Subchecker" are not included in this list used by CheckerMain.
                 if (name.startsWith(CHECKER_BASE_DIR_NAME) && name.endsWith("Checker.class")) {
                     // Forward slash is used instead of File.separator because checker.jar uses / as the separator.
-                    checkerClassNames.add(PluginUtil.join(".", name.substring(0, name.length() - ".class".length()).split("/")));
+                    checkerClassNames.add(
+                            PluginUtil.join(
+                                    ".",
+                                    name.substring(0, name.length() - ".class".length())
+                                            .split("/")));
                 }
             }
             checkerJarIs.close();
@@ -700,18 +730,22 @@ public class CheckerMain {
      * @return processorsString where all shorthand references to Checker Framework built-in checkers
      * are replaced with fully-qualified references
      */
-    protected static String unshorthandProcessorNames(final String processorsString, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
+    protected static String unshorthandProcessorNames(
+            final String processorsString,
+            List<String> fullyQualifiedCheckerNames,
+            boolean allowSubcheckers) {
         final String[] processors = processorsString.split(",");
         for (int i = 0; i < processors.length; i++) {
             if (processors[i].equals(SUBTYPING_CHECKER_NAME)) { // Allow "subtyping" as well.
                 processors[i] = FULLY_QUALIFIED_SUBTYPING_CHECKER;
             } else {
                 if (!processors[i].contains(".")) { // Not already fully qualified
-                    processors[i] = unshorthandProcessorName(processors[i], fullyQualifiedCheckerNames, allowSubcheckers);
+                    processors[i] =
+                            unshorthandProcessorName(
+                                    processors[i], fullyQualifiedCheckerNames, allowSubcheckers);
                 }
             }
         }
-
 
         return PluginUtil.join(",", processors);
     }
@@ -720,10 +754,14 @@ public class CheckerMain {
      * Given a processor name, tries to expand it to a checker in the fullyQualifiedCheckerNames list.
      * Returns that expansion, or the argument itself if the expansion fails.
      */
-    private static String unshorthandProcessorName(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
+    private static String unshorthandProcessorName(
+            final String processor,
+            List<String> fullyQualifiedCheckerNames,
+            boolean allowSubcheckers) {
         for (final String name : fullyQualifiedCheckerNames) {
             boolean tryMatch = false;
-            String[] checkerPath = name.substring(0, name.length() - "Checker".length()).split("\\.");
+            String[] checkerPath =
+                    name.substring(0, name.length() - "Checker".length()).split("\\.");
             String checkerNameShort = checkerPath[checkerPath.length - 1];
             String checkerName = checkerNameShort + "Checker";
 
@@ -740,8 +778,8 @@ public class CheckerMain {
             }
 
             if (tryMatch) {
-                if (processor.equalsIgnoreCase(checkerName) ||
-                    processor.equalsIgnoreCase(checkerNameShort)) {
+                if (processor.equalsIgnoreCase(checkerName)
+                        || processor.equalsIgnoreCase(checkerNameShort)) {
                     return name;
                 }
             }
@@ -758,7 +796,11 @@ public class CheckerMain {
      * @param fullyQualifiedCheckerNames a list of fully-qualified checker names to match processor against
      * @param allowSubcheckers whether to match against fully qualified checker names ending with "Subchecker"
      */
-    public static boolean matchesFullyQualifiedProcessor(final String processor, List<String> fullyQualifiedCheckerNames, boolean allowSubcheckers) {
-        return !processor.equals(unshorthandProcessorName(processor, fullyQualifiedCheckerNames, allowSubcheckers));
+    public static boolean matchesFullyQualifiedProcessor(
+            final String processor,
+            List<String> fullyQualifiedCheckerNames,
+            boolean allowSubcheckers) {
+        return !processor.equals(
+                unshorthandProcessorName(processor, fullyQualifiedCheckerNames, allowSubcheckers));
     }
 }

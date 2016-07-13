@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
  * @see RequiresQualifier
  *
  */
-@Target({ ElementType.ANNOTATION_TYPE })
+@Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PreconditionAnnotation {
     /** The hard-coded qualifier for the precondition. */

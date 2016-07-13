@@ -3,8 +3,9 @@ import org.checkerframework.checker.tainting.qual.*;
 // Test primary annotations with primitives
 class SimplePrims {
 
-    void execute(@Untainted int s) { }
-    void tainted(int s) { }
+    void execute(@Untainted int s) {}
+
+    void tainted(int s) {}
 
     void intLiteral() {
         //:: error: (argument.type.incompatible)

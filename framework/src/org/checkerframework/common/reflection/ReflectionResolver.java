@@ -1,15 +1,13 @@
 package org.checkerframework.common.reflection;
 
+import com.sun.source.tree.MethodInvocationTree;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
-
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.Pair;
-
-import com.sun.source.tree.MethodInvocationTree;
 
 /**
  * Interface for reflection resolvers that handle reflective method calls such
@@ -50,6 +48,7 @@ public interface ReflectionResolver {
      *            the original result for the unresolved, reflective method call
      */
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolveReflectiveCall(
-            AnnotatedTypeFactory factory, MethodInvocationTree tree,
+            AnnotatedTypeFactory factory,
+            MethodInvocationTree tree,
             Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> origResult);
 }

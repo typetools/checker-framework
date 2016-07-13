@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
 import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.NullnessChecker;
@@ -79,7 +78,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @SubtypeOf(UnknownInitialization.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface UnderInitialization {
     /**
      * The type-frame down to which the expression (of this type) has been

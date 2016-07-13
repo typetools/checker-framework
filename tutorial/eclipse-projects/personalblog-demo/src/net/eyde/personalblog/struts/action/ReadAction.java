@@ -1,17 +1,15 @@
 package net.eyde.personalblog.struts.action;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import net.eyde.personalblog.service.PersonalBlogService;
 import net.eyde.personalblog.service.ServiceException;
-
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.apache.struts.action.ActionMessages;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /*>>>import org.checkerframework.checker.tainting.qual.Untainted;*/
 
@@ -37,9 +35,12 @@ public final class ReadAction extends BlogGeneralAction {
      * @exception  ServletException  if a servlet exception occurs
      */
     @Override
-    public ActionForward executeSub(ActionMapping mapping, ActionForm form,
-            HttpServletRequest request, HttpServletResponse response)
-                    throws Exception {
+    public ActionForward executeSub(
+            ActionMapping mapping,
+            ActionForm form,
+            HttpServletRequest request,
+            HttpServletResponse response)
+            throws Exception {
         ActionErrors errors = new ActionErrors();
         String forward = "readposts";
 
@@ -53,16 +54,14 @@ public final class ReadAction extends BlogGeneralAction {
         // Depending on the parameters, call the appropriate method
         try {
             if (!reqCategory.equals("")) {
-                request.setAttribute("posts",
-                        pblog.getPostsByCategory(reqCategory));
+                request.setAttribute("posts", pblog.getPostsByCategory(reqCategory));
             } else {
                 request.setAttribute("posts", pblog.getPosts());
             }
 
         } catch (ServiceException e) {
             ActionMessages messages = new ActionMessages();
-            ActionMessage message = new ActionMessage(
-                    "exception.postdoesnotexist");
+            ActionMessage message = new ActionMessage("exception.postdoesnotexist");
             messages.add(ActionMessages.GLOBAL_MESSAGE, message);
 
             errors.add(messages);
@@ -90,9 +89,7 @@ public final class ReadAction extends BlogGeneralAction {
     /*@Untainted*/ String validate(String userInput) {
         for (int i = 0; i < userInput.length(); ++i) {
             char ch = userInput.charAt(i);
-            if (!Character.isLetter(ch)
-                    && !Character.isDigit(ch)
-                    && !Character.isWhitespace(ch))
+            if (!Character.isLetter(ch) && !Character.isDigit(ch) && !Character.isWhitespace(ch))
                 throw new IllegalArgumentException("Illegal user input");
         }
         @SuppressWarnings("tainting")

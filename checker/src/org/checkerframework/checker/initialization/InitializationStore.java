@@ -6,11 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
@@ -32,16 +30,13 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * @author Stefan Heule
  * @see InitializationTransfer
  */
-public class InitializationStore<V extends CFAbstractValue<V>,
-            S extends InitializationStore<V, S>>
+public class InitializationStore<V extends CFAbstractValue<V>, S extends InitializationStore<V, S>>
         extends CFAbstractStore<V, S> {
 
     /** The list of fields that are initialized. */
     protected final Set<VariableElement> initializedFields;
 
-    public InitializationStore(
-            CFAbstractAnalysis<V, S, ?> analysis,
-            boolean sequentialSemantics) {
+    public InitializationStore(CFAbstractAnalysis<V, S, ?> analysis, boolean sequentialSemantics) {
         super(analysis, sequentialSemantics);
         initializedFields = new HashSet<>();
     }
@@ -61,7 +56,8 @@ public class InitializationStore<V extends CFAbstractValue<V>,
             return;
         }
         super.insertValue(r, value);
-        InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory = (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
+        InitializationAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory =
+                (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
         for (AnnotationMirror a : value.getType().getAnnotations()) {
@@ -85,16 +81,19 @@ public class InitializationStore<V extends CFAbstractValue<V>,
      * fields that have the 'invariant' annotation.
      */
     @Override
-    public void updateForMethodCall(MethodInvocationNode n,
-            AnnotatedTypeFactory atypeFactory, V val) {
-        AnnotationMirror fieldInvariantAnnotation = ((InitializationAnnotatedTypeFactory<?, ?, ?, ?>)atypeFactory).getFieldInvariantAnnotation();
+    public void updateForMethodCall(
+            MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, V val) {
+        AnnotationMirror fieldInvariantAnnotation =
+                ((InitializationAnnotatedTypeFactory<?, ?, ?, ?>) atypeFactory)
+                        .getFieldInvariantAnnotation();
 
         // Are there fields that have the 'invariant' annotations and are in the
         // store?
         List<FlowExpressions.FieldAccess> invariantFields = new ArrayList<>();
         for (Entry<FlowExpressions.FieldAccess, V> e : fieldValues.entrySet()) {
             FlowExpressions.FieldAccess fieldAccess = e.getKey();
-            Set<AnnotationMirror> declaredAnnos = atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
+            Set<AnnotationMirror> declaredAnnos =
+                    atypeFactory.getAnnotatedType(fieldAccess.getField()).getAnnotations();
             if (AnnotationUtils.containsSame(declaredAnnos, fieldInvariantAnnotation)) {
                 invariantFields.add(fieldAccess);
             }

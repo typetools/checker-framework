@@ -14,6 +14,5 @@ import java.lang.annotation.Target;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
-public @interface GetClass {
-}
+@Target({ElementType.METHOD})
+public @interface GetClass {}

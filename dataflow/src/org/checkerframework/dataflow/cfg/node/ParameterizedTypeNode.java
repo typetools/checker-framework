@@ -1,14 +1,11 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.checkerframework.dataflow.util.HashCodeUtils;
-
-import org.checkerframework.javacutil.InternalUtils;
-
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
+import java.util.Collection;
+import java.util.Collections;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for a parameterized type occurring in an expression:
@@ -26,7 +23,6 @@ import com.sun.source.tree.Tree;
  * @author Charlie Garrett
  *
  */
-
 public class ParameterizedTypeNode extends Node {
 
     protected Tree tree;

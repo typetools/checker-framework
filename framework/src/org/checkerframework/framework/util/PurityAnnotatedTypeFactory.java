@@ -1,12 +1,12 @@
 package org.checkerframework.framework.util;
 
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 
 public class PurityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -18,7 +18,6 @@ public class PurityAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(PurityUnqualified.class)));
+                new HashSet<Class<? extends Annotation>>(Arrays.asList(PurityUnqualified.class)));
     }
 }

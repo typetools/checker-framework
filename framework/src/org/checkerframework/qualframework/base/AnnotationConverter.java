@@ -1,7 +1,6 @@
 package org.checkerframework.qualframework.base;
 
 import java.util.Collection;
-
 import javax.lang.model.element.AnnotationMirror;
 
 /**

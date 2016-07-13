@@ -1,5 +1,13 @@
 package org.checkerframework.framework.type;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
@@ -14,16 +22,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 
 /**
  * Implements asSuper {@link AnnotatedTypes#asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror,
@@ -74,8 +72,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     }
 
     @Override
-    public AnnotatedTypeMirror visit(AnnotatedTypeMirror type, AnnotatedTypeMirror superType,
-                                     Void p) {
+    public AnnotatedTypeMirror visit(
+            AnnotatedTypeMirror type, AnnotatedTypeMirror superType, Void p) {
         ensurePrimaryIsCorrectForUnionsAndIntersections(type);
         return super.visit(type, superType, p);
     }
@@ -116,7 +114,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
                     Set<AnnotationMirror> newLubs = AnnotationUtils.createAnnotationSet();
                     for (AnnotationMirror lub : lubs) {
                         AnnotationMirror anno = altern.getAnnotationInHierarchy(lub);
-                        newLubs.add(annotatedTypeFactory.getQualifierHierarchy().leastUpperBound(anno, lub));
+                        newLubs.add(
+                                annotatedTypeFactory
+                                        .getQualifierHierarchy()
+                                        .leastUpperBound(anno, lub));
                     }
                     lubs = newLubs;
                 }
@@ -198,14 +199,14 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return asSuperLowerBound(type, visited, lowerBound);
     }
 
-    private AnnotatedTypeMirror asSuperLowerBound(AnnotatedTypeMirror type, Void visited, AnnotatedTypeMirror lowerBound) {
+    private AnnotatedTypeMirror asSuperLowerBound(
+            AnnotatedTypeMirror type, Void visited, AnnotatedTypeMirror lowerBound) {
         if (lowerBound.getKind() == TypeKind.NULL) {
             return copyPrimaryAnnos(type, lowerBound);
         }
         lowerBound = visit(type, lowerBound, visited);
         return lowerBound;
     }
-
 
     private boolean isErasedJavaSubtype(
             AnnotatedDeclaredType subtype, AnnotatedDeclaredType supertype) {

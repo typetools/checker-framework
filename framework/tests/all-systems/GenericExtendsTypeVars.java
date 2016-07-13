@@ -3,11 +3,10 @@
  */
 
 interface List<LL> {}
+
 interface Map<KEY, VALUE> {}
 
-class Tester<EE extends TT, TT extends List<EE>> {
-
-}
+class Tester<EE extends TT, TT extends List<EE>> {}
 
 class WithWildcard<ZZ extends QQ, QQ extends YY, YY extends Map<QQ, ZZ>> {
     void context() {
@@ -28,6 +27,4 @@ class RecursiveTypevarClass<T extends RecursiveTypevarClass<T>> {
     T t;
 }
 
-class RecursiveImplements implements List<RecursiveImplements> {
-
-}
+class RecursiveImplements implements List<RecursiveImplements> {}

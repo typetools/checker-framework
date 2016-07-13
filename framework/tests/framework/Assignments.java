@@ -1,5 +1,5 @@
-import tests.util.*;
 import java.util.*;
+import tests.util.*;
 
 public class Assignments {
 
@@ -15,9 +15,9 @@ public class Assignments {
 
     public void testCompound() {
         //:: warning: (cast.unsafe)
-        @Odd String s = (@Odd String)"foo";
+        @Odd String s = (@Odd String) "foo";
         //:: warning: (cast.unsafe)
-        @Odd String t = (@Odd String)"bar";
+        @Odd String t = (@Odd String) "bar";
         s += t;
 
         String z = "";
@@ -54,7 +54,7 @@ public class Assignments {
     public void testVariable() {
         @Odd String s = null;
         //:: warning: (cast.unsafe)
-        @Odd String t = (@Odd String)"foo";
+        @Odd String t = (@Odd String) "foo";
         @Odd String u = s;
         String v = s;
     }
@@ -62,6 +62,6 @@ public class Assignments {
     /* ------------------------------------------------------------ */
 
     public void methodA(@Odd String s) {}
-    public void methodB(String s) {}
 
+    public void methodB(String s) {}
 }

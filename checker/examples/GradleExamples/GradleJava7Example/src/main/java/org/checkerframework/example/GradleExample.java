@@ -4,10 +4,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import org.apache.commons.lang3.text.StrBuilder;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.lang3.text.StrBuilder;
 
 /**
  * If you run:
@@ -28,7 +27,7 @@ public class GradleExample {
 
         StrBuilder stb = new StrBuilder();
 
-        /*@NonNull*/ Object nn = nullable;  // error on this line
+        /*@NonNull*/ Object nn = nullable; // error on this line
         System.out.println(nn);
         List</*@NonNull*/ String> list = new ArrayList<>();
         list.add(null); // error on this line

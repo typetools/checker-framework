@@ -19,7 +19,7 @@ class CollectionsAnnotationsMin {
     static Collection1<? extends @Nullable Object> f1 = new PriorityQueue1<@NonNull Object>();
 
     //:: error: (assignment.type.incompatible)
-    static Collection1<@Nullable Object> f2 =  new PriorityQueue1<@NonNull Object>();
+    static Collection1<@Nullable Object> f2 = new PriorityQueue1<@NonNull Object>();
 
     static void addNull1(Collection1<@Nullable Object> l) {
         l.add(null);

@@ -17,19 +17,19 @@ class Catch {
         }
     }
 
-    void explictlyTopUnionType()throws Throwable {
+    void explictlyTopUnionType() throws Throwable {
         try {
             throw new Throwable();
-        } catch (@H1Top @H2Top IndexOutOfBoundsException | @H1Top @H2Top  NullPointerException ex) {
+        } catch (@H1Top @H2Top IndexOutOfBoundsException | @H1Top @H2Top NullPointerException ex) {
 
         }
     }
 
-    void explictlyNotTopUnionType()throws Throwable {
+    void explictlyNotTopUnionType() throws Throwable {
         try {
             throw new Throwable();
-        //:: error: (exception.parameter.invalid)
-        } catch (@H1S1 @H2Top  IndexOutOfBoundsException | @H1S1 @H2Top  NullPointerException ex) {
+            //:: error: (exception.parameter.invalid)
+        } catch (@H1S1 @H2Top IndexOutOfBoundsException | @H1S1 @H2Top NullPointerException ex) {
 
         }
     }
@@ -45,10 +45,9 @@ class Catch {
     void explictlyNotTopDeclaredType() throws Throwable {
         try {
             throw new Throwable();
-        //:: error: (exception.parameter.invalid)
+            //:: error: (exception.parameter.invalid)
         } catch (@H1S1 @H2Top RuntimeException ex) {
 
         }
     }
-
 }

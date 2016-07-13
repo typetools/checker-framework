@@ -1,7 +1,6 @@
 package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -16,8 +15,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * @checker_framework.manual #lock-checker Lock Checker
  */
 @SubtypeOf({GuardedBy.class, GuardSatisfied.class})
-@ImplicitFor(literals = { LiteralKind.NULL })
+@ImplicitFor(literals = {LiteralKind.NULL})
 @Documented
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface GuardedByBottom {}

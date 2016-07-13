@@ -1,5 +1,10 @@
 package org.checkerframework.framework.util.typeinference.solver;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -7,13 +12,6 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference.constraint.TIsU;
 import org.checkerframework.framework.util.typeinference.constraint.TSuperU;
 import org.checkerframework.framework.util.typeinference.constraint.TUConstraint;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVariable;
 
 /**
  * Converts a set of TUConstraints into a ConstraintMap.
@@ -49,9 +47,10 @@ public class ConstraintMapBuilder {
      *   b) between two targets
      *   E.g., (@NonNull Ti = Tj)
      */
-    public ConstraintMap build(Set<TypeVariable> targets,
-                               Set<TUConstraint> constraints,
-                               AnnotatedTypeFactory typeFactory) {
+    public ConstraintMap build(
+            Set<TypeVariable> targets,
+            Set<TUConstraint> constraints,
+            AnnotatedTypeFactory typeFactory) {
 
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
         final Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
@@ -69,7 +68,8 @@ public class ConstraintMapBuilder {
             final AnnotatedTypeVariable typeT = constraint.typeVariable;
             final AnnotatedTypeMirror typeU = constraint.relatedType;
 
-            if (typeU.getKind() == TypeKind.TYPEVAR && targets.contains(typeU.getUnderlyingType())) {
+            if (typeU.getKind() == TypeKind.TYPEVAR
+                    && targets.contains(typeU.getUnderlyingType())) {
                 if (typeT.getAnnotations().isEmpty() && typeU.getAnnotations().isEmpty()) {
                     hierarchiesInRelation.addAll(tops);
 
@@ -79,13 +79,12 @@ public class ConstraintMapBuilder {
                         final AnnotationMirror tAnno = typeT.getAnnotationInHierarchy(top);
                         final AnnotationMirror uAnno = typeU.getAnnotationInHierarchy(top);
 
-                        if (tAnno == null ) {
+                        if (tAnno == null) {
                             if (uAnno == null) {
                                 hierarchiesInRelation.add(top);
 
                             } else {
                                 tAnnos.add(uAnno);
-
                             }
                         } else {
                             if (uAnno == null) {
@@ -103,20 +102,32 @@ public class ConstraintMapBuilder {
                     // this step saves @NonNull annotation.
                     // This case also covers the case where i = j
                     if (!tAnnos.isEmpty()) {
-                        addToPrimaryRelationship(typeT.getUnderlyingType(),
-                                                 constraint, result, tAnnos, qualifierHierarchy);
+                        addToPrimaryRelationship(
+                                typeT.getUnderlyingType(),
+                                constraint,
+                                result,
+                                tAnnos,
+                                qualifierHierarchy);
                     }
 
                     if (!uAnnos.isEmpty()) {
-                        addToPrimaryRelationship((TypeVariable) typeU.getUnderlyingType(),
-                                                 constraint, result, uAnnos, qualifierHierarchy);
+                        addToPrimaryRelationship(
+                                (TypeVariable) typeU.getUnderlyingType(),
+                                constraint,
+                                result,
+                                uAnnos,
+                                qualifierHierarchy);
                     }
                 }
 
                 // This is the case where we have a relationship between two different targets (Ti <?> Tj and i != j)
                 if (!typeT.getUnderlyingType().equals(typeU.getUnderlyingType())) {
-                    addToTargetRelationship(typeT.getUnderlyingType(), (TypeVariable) typeU.getUnderlyingType(),
-                                            result, constraint, hierarchiesInRelation);
+                    addToTargetRelationship(
+                            typeT.getUnderlyingType(),
+                            (TypeVariable) typeU.getUnderlyingType(),
+                            result,
+                            constraint,
+                            hierarchiesInRelation);
                 }
             } else {
                 for (AnnotationMirror top : tops) {
@@ -127,16 +138,24 @@ public class ConstraintMapBuilder {
                     }
                 }
 
-                addToTypeRelationship(typeT.getUnderlyingType(), typeU, result, constraint, hierarchiesInRelation);
+                addToTypeRelationship(
+                        typeT.getUnderlyingType(),
+                        typeU,
+                        result,
+                        constraint,
+                        hierarchiesInRelation);
             }
-
         }
 
         return result;
     }
 
-    private void addToTargetRelationship(TypeVariable typeT, TypeVariable typeU, ConstraintMap result,
-                                         TUConstraint constraint, Set<AnnotationMirror> hierarchiesInRelation) {
+    private void addToTargetRelationship(
+            TypeVariable typeT,
+            TypeVariable typeU,
+            ConstraintMap result,
+            TUConstraint constraint,
+            Set<AnnotationMirror> hierarchiesInRelation) {
         if (constraint instanceof TIsU) {
             result.addTargetEquality(typeT, typeU, hierarchiesInRelation);
         } else if (constraint instanceof TSuperU) {
@@ -146,8 +165,12 @@ public class ConstraintMapBuilder {
         }
     }
 
-    public void addToPrimaryRelationship(TypeVariable typeVariable, TUConstraint constraint, ConstraintMap result,
-                                         Set<AnnotationMirror> annotationMirrors, QualifierHierarchy qualifierHierarchy) {
+    public void addToPrimaryRelationship(
+            TypeVariable typeVariable,
+            TUConstraint constraint,
+            ConstraintMap result,
+            Set<AnnotationMirror> annotationMirrors,
+            QualifierHierarchy qualifierHierarchy) {
         if (constraint instanceof TIsU) {
             result.addPrimaryEqualities(typeVariable, qualifierHierarchy, annotationMirrors);
         } else if (constraint instanceof TSuperU) {
@@ -157,8 +180,12 @@ public class ConstraintMapBuilder {
         }
     }
 
-    public void addToTypeRelationship(TypeVariable target, AnnotatedTypeMirror type, ConstraintMap result,
-                                      TUConstraint constraint, Set<AnnotationMirror> hierarchies) {
+    public void addToTypeRelationship(
+            TypeVariable target,
+            AnnotatedTypeMirror type,
+            ConstraintMap result,
+            TUConstraint constraint,
+            Set<AnnotationMirror> hierarchies) {
         if (constraint instanceof TIsU) {
             result.addTypeEqualities(target, type, hierarchies);
         } else if (constraint instanceof TSuperU) {

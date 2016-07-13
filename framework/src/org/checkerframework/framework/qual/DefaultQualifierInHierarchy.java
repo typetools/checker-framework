@@ -1,10 +1,9 @@
 package org.checkerframework.framework.qual;
 
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
-
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 
 import java.lang.annotation.*;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 
 /**
  * Indicates that the annotated qualifier is the default qualifier in the

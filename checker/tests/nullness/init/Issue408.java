@@ -5,26 +5,26 @@
 import org.checkerframework.checker.initialization.qual.UnderInitialization;
 
 public class Issue408 {
-  static class Bar {
-    Bar() {
-      doFoo();
+    static class Bar {
+        Bar() {
+            doFoo();
+        }
+
+        String doFoo(@UnderInitialization Bar this) {
+            return "";
+        }
     }
 
-    String doFoo(@UnderInitialization Bar this) {
-      return "";
+    static class Baz extends Bar {
+        String myString = "hello";
+
+        @Override
+        String doFoo(@UnderInitialization Baz this) {
+            return myString.toLowerCase();
+        }
     }
-  }
 
-  static class Baz extends Bar {
-    String myString = "hello";
-
-    @Override
-    String doFoo(@UnderInitialization Baz this) {
-      return myString.toLowerCase();
+    public static void main(String[] args) {
+        new Baz();
     }
-  }
-
-  public static void main(String[] args) {
-    new Baz();
-  }
 }

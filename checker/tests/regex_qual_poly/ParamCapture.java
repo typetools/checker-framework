@@ -5,7 +5,9 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 abstract class Test {
     abstract void takeOne(@PolyRegex Integer i);
+
     abstract void takeSame(@PolyRegex Integer i, @PolyRegex Integer j);
+
     abstract @Wild Integer makeInt();
 
     void test() {

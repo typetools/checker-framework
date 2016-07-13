@@ -1,8 +1,7 @@
-import org.checkerframework.framework.test.*;
-
 import java.util.*;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.test.*;
 import tests.util.*;
 
 // various tests for the precondition mechanism
@@ -14,7 +13,7 @@ class FieldShadowing {
         String f;
 
         @Pure
-        @RequiresQualifier(expression="f", qualifier=Odd.class)
+        @RequiresQualifier(expression = "f", qualifier = Odd.class)
         int reqSub() {
             @Odd String l2 = f;
             //:: error: (assignment.type.incompatible)
@@ -25,7 +24,7 @@ class FieldShadowing {
         }
 
         @Pure
-        @RequiresQualifier(expression="super.f", qualifier=Odd.class)
+        @RequiresQualifier(expression = "super.f", qualifier = Odd.class)
         int reqSuper() {
             //:: error: (assignment.type.incompatible)
             @Odd String l2 = f;

@@ -14,10 +14,10 @@ public class Operators {
     public static boolean LOGICAL_COMPLEMENT(Boolean a) {
         return !a;
     }
+
     public static boolean LOGICAL_COMPLEMENT(boolean a) {
         return !a;
     }
-
 
     public static long BITWISE_COMPLEMENT(Long a) {
         return ~a;
@@ -195,7 +195,6 @@ public class Operators {
         return a || b;
     }
 
-
     public static double PLUS(Double a, Double b) {
         return a + b;
     }
@@ -227,7 +226,6 @@ public class Operators {
     public static float PLUS(float a, float b) {
         return a + b;
     }
-
 
     public static String PLUS(String a, String b) {
         return a + b;
@@ -313,7 +311,7 @@ public class Operators {
         return a / b;
     }
 
-public static double DIVIDE(double a, double b) {
+    public static double DIVIDE(double a, double b) {
         return a / b;
     }
 
@@ -453,7 +451,6 @@ public static double DIVIDE(double a, double b) {
         return a | b;
     }
 
-
     public static boolean XOR(Boolean a, Boolean b) {
         return a ^ b;
     }
@@ -553,10 +550,10 @@ public static double DIVIDE(double a, double b) {
     public static boolean EQUAL_TO(Boolean a, Boolean b) {
         return a == b;
     }
+
     public static boolean EQUAL_TO(boolean a, boolean b) {
         return a == b;
     }
-
 
     public static boolean NOT_EQUAL_TO(Boolean a, Boolean b) {
         return a != b;
@@ -566,7 +563,6 @@ public static double DIVIDE(double a, double b) {
         return a != b;
     }
 
-
     public static boolean EQUAL_TO(String a, String b) {
         return a == b;
     }
@@ -574,5 +570,4 @@ public static double DIVIDE(double a, double b) {
     public static boolean NOT_EQUAL_TO(String a, String b) {
         return a != b;
     }
-
 }

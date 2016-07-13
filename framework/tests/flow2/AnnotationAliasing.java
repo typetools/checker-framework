@@ -1,8 +1,7 @@
-import org.checkerframework.framework.test.*;
-
 import java.util.*;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.test.*;
 import tests.util.*;
 
 // Disable the test.  The Checker Framework behaves correctly, but the
@@ -13,23 +12,31 @@ class AnnotationAliasing {
 
     String f1, f2, f3;
 
-    @Pure int pure1() { return 1; };
-    @org.jmlspecs.annotation.Pure int pure2() { return 1; };
+    @Pure
+    int pure1() {
+        return 1;
+    };
+
+    @org.jmlspecs.annotation.Pure
+    int pure2() {
+        return 1;
+    };
 
     // a method that is not pure (no annotation)
-    void nonpure() {
+    void nonpure() {}
+
+    @Pure
+    String t1() {
+        //:: error: (purity.not.deterministic.not.sideeffectfree.call)
+        nonpure();
+        return "";
     }
 
-    @Pure String t1() {
-      //:: error: (purity.not.deterministic.not.sideeffectfree.call)
-      nonpure();
-      return "";
-    }
-
-    @org.jmlspecs.annotation.Pure String t2() {
-      //:: error: (purity.not.deterministic.not.sideeffectfree.call)
-      nonpure();
-      return "";
+    @org.jmlspecs.annotation.Pure
+    String t2() {
+        //:: error: (purity.not.deterministic.not.sideeffectfree.call)
+        nonpure();
+        return "";
     }
 
     // check aliasing of Pure

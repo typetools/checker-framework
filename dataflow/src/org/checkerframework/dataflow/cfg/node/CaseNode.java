@@ -1,15 +1,12 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.LinkedList;
-
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.util.Types;
-
-import org.checkerframework.dataflow.util.HashCodeUtils;
-
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.Collection;
+import java.util.LinkedList;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Types;
+import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
  * A node for a case in a switch statement.  Although

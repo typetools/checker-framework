@@ -75,5 +75,4 @@ public enum LiteralKind {
     public static List<LiteralKind> primitiveLiteralKinds() {
         return new ArrayList<>(Arrays.asList(INT, LONG, FLOAT, DOUBLE, BOOLEAN, CHAR));
     }
-
 }

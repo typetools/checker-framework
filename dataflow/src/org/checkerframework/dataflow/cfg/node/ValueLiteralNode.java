@@ -1,13 +1,10 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import org.checkerframework.dataflow.util.HashCodeUtils;
-
-import org.checkerframework.javacutil.InternalUtils;
-
+import com.sun.source.tree.LiteralTree;
 import java.util.Collection;
 import java.util.Collections;
-
-import com.sun.source.tree.LiteralTree;
+import org.checkerframework.dataflow.util.HashCodeUtils;
+import org.checkerframework.javacutil.InternalUtils;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -76,5 +73,4 @@ public abstract class ValueLiteralNode extends Node {
     public Collection<Node> getOperands() {
         return Collections.emptyList();
     }
-
 }

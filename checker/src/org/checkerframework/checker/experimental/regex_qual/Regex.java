@@ -14,20 +14,22 @@ package org.checkerframework.checker.experimental.regex_qual;
 public abstract class Regex {
 
     /* Top qualifier. */
-    public static final Regex TOP = new Regex() {
-        @Override
-        public String toString() {
-            return "RegexTop";
-        }
-    };
+    public static final Regex TOP =
+            new Regex() {
+                @Override
+                public String toString() {
+                    return "RegexTop";
+                }
+            };
 
     /* Bottom qualifier. */
-    public static final Regex BOTTOM = new Regex() {
-        @Override
-        public String toString() {
-            return "RegexBot";
-        }
-    };
+    public static final Regex BOTTOM =
+            new Regex() {
+                @Override
+                public String toString() {
+                    return "RegexBot";
+                }
+            };
 
     public static class PartialRegex extends Regex {
 
@@ -112,7 +114,6 @@ public abstract class Regex {
             } else {
                 return "Regex";
             }
-
         }
     }
 
