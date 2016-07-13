@@ -11,13 +11,15 @@ public class UnboxConditions {
         b = b1 ? b : b;
         //:: error: (condition.nullable)
         while (b2) { ; }
-        //:: error: (condition.nullable)
-        do { ; } while (b3);
+        do {
+            ;
+            //:: error: (condition.nullable)
+        } while (b3);
         //:: error: (condition.nullable)
         for (;b4;) { ; }
         // legal!
         for (;;) { break; }
-        // Why is eluding the condition in a "for" legal, but not in a "while"?
+        // Eliding the condition in a "while" is illegal Java syntax.
         // while () {}
     }
 }

@@ -5,7 +5,7 @@ import org.checkerframework.checker.lock.qual.*;
 
 class Issue523 {
     static class MyClass { Object field; }
-    static final @GuardedBy("itself") MyClass m = new MyClass();
+    static final @GuardedBy("<self>") MyClass m = new MyClass();
 
     static void foo() {
         Thread t = new Thread() {

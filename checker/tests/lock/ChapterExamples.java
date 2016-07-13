@@ -114,8 +114,8 @@ class ChapterExamples {
   void testMultipleSideEffectAnnotations() {
   }
 
-  void guardedByItselfOnReceiver(@GuardedBy("itself") ChapterExamples this) {
-    synchronized(this) { // Tests translation of 'itself' to 'this' by the LockVisitor for this scenario.
+  void guardedByItselfOnReceiver(@GuardedBy("<self>") ChapterExamples this) {
+    synchronized(this) { // Tests translation of '<self>' to 'this' by the LockVisitor for this scenario.
       // myField = new MyClass();
       myField.toString();
       this.myField = new MyClass();
@@ -163,7 +163,7 @@ class ChapterExamples {
     m.field.toString();
     // The following error is due to the fact that you cannot access "this.lock" without first having acquired "lock".
     // The right fix in a user scenario would be to not guard "this" with "this.lock". The current object could instead
-    // be guarded by "itself" or by some other lock expression that is not one of its fields. We are keeping this test
+    // be guarded by "<self>" or by some other lock expression that is not one of its fields. We are keeping this test
     // case here to make sure this scenario issues a warning.
     //:: error: (contracts.precondition.not.satisfied.field)
     synchronized(lock) {
@@ -189,9 +189,12 @@ class ChapterExamples {
     //:: error: (contracts.precondition.not.satisfied)
     boolean b4 = compare(p1, myMethod());
 
-
+    // An error is issued indicating that p2 might be dereferenced without
+    // "lock" being held. The method call need not be modified, since
+    // @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown,
+    // but the lock must be acquired prior to the method call.
     //:: error: (contracts.precondition.not.satisfied.field)
-    boolean b2 = compare(p1, p2); // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
+    boolean b2 = compare(p1, p2);
     //:: error: (contracts.precondition.not.satisfied.field)
     boolean b3 = compare(p1, this.p2);
     //:: error: (contracts.precondition.not.satisfied)
@@ -297,7 +300,9 @@ class ChapterExamples {
 
   @SuppressWarnings("lock:cast.unsafe")
   void someMethod2() {
-    o1 = (@GuardedBy({}) MyClass) o2; // A cast can be used if the user knows it is safe to do so. However the @SuppressWarnings must be added.
+    // A cast can be used if the user knows it is safe to do so.
+    // However, the @SuppressWarnings must be added.
+    o1 = (@GuardedBy({}) MyClass) o2;
   }
 
   final static Object myLock = new Object();
@@ -332,13 +337,15 @@ class ChapterExamples {
   @GuardedBy("lock") MyClass p2;
 
   void myMethod6() {
-    synchronized(lock) { // It is the responsibility of callers to 'compare' to acquire the lock.
+    // It is the responsibility of callers to 'compare' to acquire the lock.
+    synchronized(lock) {
       boolean b1 = compare(p1, p2); // OK. No error issued.
     }
     //:: error: (contracts.precondition.not.satisfied.field)
     p2.field = new Object();
+    // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
     //:: error: (contracts.precondition.not.satisfied.field)
-    boolean b2 = compare(p1, p2); // An error is issued indicating that p2 might be dereferenced without "lock" being held. The method call need not be modified, since @GuardedBy({}) <: @GuardedByUnknown and @GuardedBy("lock") <: @GuardedByUnknown, but the lock must be acquired prior to the method call.
+    boolean b2 = compare(p1, p2);
   }
 
   void helper1(@GuardedBy("ChapterExamples.myLock") MyClass a) {
@@ -424,10 +431,9 @@ class ChapterExamples {
     if (myLock2.tryLock()) {
       x3.field = new Object(); // OK: the lock is held
       myMethod5();
-      x3.field = new Object(); // OK: the lock is still known to be held since myMethod is locking-free
+      x3.field = new Object(); // OK: the lock is still held since myMethod is locking-free
       mySideEffectFreeMethod();
-      x3.field = new Object(); // OK: the lock is still known to be held since mySideEffectFreeMethod
-      // is side-effect-free
+      x3.field = new Object(); // OK: the lock is still held since mySideEffectFreeMethod is side-effect-free
       myUnlockingMethod();
       //:: error: (contracts.precondition.not.satisfied.field)
       x3.field = new Object(); // ILLEGAL: myLockingMethod is not locking-free
@@ -635,8 +641,9 @@ void boxingUnboxing() {
       s2 += param;
 
       String s3 = "a";
+      // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
       //:: error: (contracts.precondition.not.satisfied.field)
-      String s4 = s3 += param; // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
+      String s4 = s3 += param;
     }
     synchronized(lock) {
       String s1a = "a" + "a";
@@ -648,7 +655,8 @@ void boxingUnboxing() {
       s2 += param;
 
       String s3 = "a";
-      String s4 = s3 += param; // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
+      // In addition to testing whether "lock" is held, tests that the result of a string concatenation has type @GuardedBy({}).
+      String s4 = s3 += param;
     }
   }
 
@@ -663,12 +671,12 @@ void boxingUnboxing() {
      *
      * Suppose the following lines from method1 are executed on thread A.
      *
-     * @GuardedBy(“lock1”) MyClass local;
+     * @GuardedBy("lock1") MyClass local;
      * m = local;
      *
      * Then a context switch occurs to method2 on thread B and the following lines are executed:
      *
-     * @GuardedBy(“lock2”) MyClass local;
+     * @GuardedBy("lock2") MyClass local;
      * m = local;
      *
      * Then a context switch back to method1 on thread A occurs and the following lines are executed:
@@ -704,11 +712,12 @@ void boxingUnboxing() {
     void method() {
       o = null;
       // Assume the following happens:
-      // Context switch to a different thread
-      // bar() is called on the other thread
-      // Context switch back to this thread
+      //  * Context switch to a different thread.
+      //  * bar() is called on the other thread.
+      //  * Context switch back to this thread.
+      // o is no longer null and an assignment.type.incompatible error should be issued.
       //:: error: (assignment.type.incompatible)
-      @GuardedBy("b") Object o2 = o; // o is no longer null and an assignment.type.incompatible error should be issued
+      @GuardedBy("b") Object o2 = o;
     }
 
     void bar() {
@@ -828,11 +837,14 @@ void boxingUnboxing() {
 
     // The following negative test cases are the same as the one above but with one modification in each.
 
-    //:: error: (lock.expression.not.final)
-    synchronized(c1.field.field2.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field) {
+    synchronized(
+                //:: error: (lock.expression.not.final)
+                c1.field.field2.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field) {
     }
-    //:: error: (lock.expression.not.final)
-    synchronized(c1.field.field.field.getFieldPure(c1.field, c1.getField().getFieldPure(c1, c1.field)).field) {
+    synchronized(
+                c1.field.field.field.getFieldPure(
+                                //:: error: (lock.expression.not.final)
+                                c1.field, c1.getField().getFieldPure(c1, c1.field)).field) {
     }
   }
 
@@ -879,15 +891,23 @@ void boxingUnboxing() {
 
     // The following negative test cases are the same as the one above but with one modification in each.
 
-    //:: error: (lock.expression.not.final)
-    c2.field.field2.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
-    //:: error: (lock.expression.not.final)
-    c2.field.field2.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
+    c2.field
+      //:: error: (lock.expression.not.final)
+      .field2
+      .field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
+    c2.field
+      //:: error: (lock.expression.not.final)
+      .field2
+      .field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
 
-    //:: error: (lock.expression.not.final)
-    c2.field.field.field.getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field)).field.lock();
-    //:: error: (lock.expression.not.final)
-    c2.field.field.field.getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field)).field.unlock();
+    c2.field.field.field
+      //:: error: (lock.expression.not.final)
+      .getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field))
+      .field.lock();
+    c2.field.field.field
+      //:: error: (lock.expression.not.final)
+      .getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field))
+      .field.unlock();
   }
 
   // Analogous to testSynchronizedExpressionIsFinal and testExplicitLockExpressionIsFinal, but for expressions in @GuardedBy annotations.
@@ -901,15 +921,13 @@ void boxingUnboxing() {
     @GuardedBy("o2") Object guarded3 = new Object();
 
     // Test expressions that are not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
-    // TODO: Fix the flow expression parser so that it supports package names
-    //:: error: (flowexpr.parse.error)
     @GuardedBy("java.lang.String.class") Object guarded4;
     //:: error: (flowexpr.parse.error)
     @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)") Object guarded5;
 
     // TODO: Fix the flow expression parser so it can handle
     // @GuardedBy("c1.field.field.field.getFieldPure(c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field") Object guarded6;
-    // Currently it fails because the dotPattern incorrectly splits the "getFieldPure(...).field" field access into:
+    // Currently it fails because the memberselect incorrectly splits the "getFieldPure(...).field" field access into:
     // "getFieldPure(c1"
     // and
     // "field, c1.getFieldDeterministic().getFieldPure(c1, c1.field)).field"
@@ -1009,7 +1027,7 @@ void boxingUnboxing() {
   }
 
   void testItselfFinalLock() {
-    final @GuardedBy("itself.finalLock") MyClassContainingALock m = new MyClassContainingALock();
+    final @GuardedBy("<self>.finalLock") MyClassContainingALock m = new MyClassContainingALock();
     //:: error: (contracts.precondition.not.satisfied.field)
     m.field = new Object();
     // Ignore this error: it is expected that an error will be issued for dereferencing 'm' in order to take the 'm.finalLock' lock.
@@ -1022,7 +1040,7 @@ void boxingUnboxing() {
   }
 
   void testItselfNonFinalLock() {
-    final @GuardedBy("itself.nonFinalLock") MyClassContainingALock m = new MyClassContainingALock();
+    final @GuardedBy("<self>.nonFinalLock") MyClassContainingALock m = new MyClassContainingALock();
     //:: error: (lock.expression.not.final)
     m.field = new Object();
     //:: error: (lock.expression.not.final)
@@ -1038,10 +1056,10 @@ void boxingUnboxing() {
   }
 
   class SessionManager {
-    private @GuardedBy("itself") Session session = new Session();
+    private @GuardedBy("<self>") Session session = new Session();
 
     private void session_done() {
-      final @GuardedBy("itself") Session tmp = session;
+      final @GuardedBy("<self>") Session tmp = session;
       session = null;
       synchronized (tmp) {
         tmp.kill();

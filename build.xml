@@ -32,7 +32,7 @@
       </ant>
   </target>
 
-  <target name="build" depends="check-style"
+  <target name="build"
           description="Compile all subprojects">
     <ant dir="checker">
       <target name="build"/>
@@ -132,9 +132,9 @@
   </target>
 
   <property name="style.grep.args" value="-r -n -e"/>
-  <property name="style.grep.files" value="--exclude-dir=.git --exclude-dir=api --exclude-dir=bootstrap --exclude-dir=build --exclude-dir=jdk --exclude-dir=stubparser --exclude='*.aux' --exclude='*.class' --exclude='*.dvi' --exclude='*.expected' --exclude='*.gif' --exclude='*.jar' --exclude='*.jtr' --exclude='*.log' --exclude='*.out' --exclude='*.patch' --exclude='*.pdf' --exclude='*.png' --exclude='*.sty' --exclude='*~' --exclude='CFLogo.ai' --exclude='logfile.log.rec.index' --exclude='manual.html' --exclude='junit*.properties' ."/>
+  <property name="style.grep.files" value="--exclude-dir=.git --exclude-dir=api --exclude-dir=bootstrap --exclude-dir=build --exclude-dir=jdk --exclude-dir=maven-plugin --exclude-dir=stubparser --exclude='*.aux' --exclude='*.bib' --exclude='*.class' --exclude='*.dvi' --exclude='*.expected' --exclude='*.gif' --exclude='*.jar' --exclude='*.jtr' --exclude='*.log' --exclude='*.out' --exclude='*.patch' --exclude='*.pdf' --exclude='*.png' --exclude='*.sty' --exclude='*~' --exclude='CFLogo.ai' --exclude='logfile.log.rec.index' --exclude='manual.html' --exclude='manual.html-e' --exclude='junit*.properties' ."/>
 
-  <property name="style.find.files" value=". -not ( -name .git -prune ) -not ( -name api -prune ) -not ( -name bootstrap -prune ) -not ( -name build -prune ) -not ( -name jdk -prune ) -not ( -path stubparser -prune ) -not ( -name '*.aux' ) -not ( -name '*.class' ) -not ( -name '*.dvi' ) -not ( -name '*.expected' ) -not ( -name '*.gif' ) -not ( -name '*.jar' ) -not ( -name '*.log' ) -not ( -name '*.out' ) -not ( -name '*.patch' ) -not ( -name '*.pdf' ) -not ( -name '*.png' ) -not ( -name 'junit*.properties' ) -not ( -name '*~' ) -not ( -name 'manual.html' ) -not ( -empty ) -type f"/>
+  <property name="style.find.files" value=". -not ( -name .git -prune ) -not ( -name api -prune ) -not ( -name bootstrap -prune ) -not ( -name build -prune ) -not ( -name jdk -prune ) -not ( -path maven-plugin -prune ) -not ( -path stubparser -prune ) -not ( -name '*.aux' ) -not ( -name '*.bib' ) -not ( -name '*.class' ) -not ( -name '*.dvi' ) -not ( -name '*.expected' ) -not ( -name '*.gif' ) -not ( -name '*.jar' ) -not ( -name '*.log' ) -not ( -name '*.out' ) -not ( -name '*.patch' ) -not ( -name '*.pdf' ) -not ( -name '*.png' ) -not ( -name 'junit*.properties' ) -not ( -name '*~' ) -not ( -name 'manual.html' ) -not ( -name 'manual.html-e' ) -not ( -empty ) -type f"/>
   <loadresource property="style.find.files.quoted">
     <propertyresource name="style.find.files"/>
     <filterchain>
@@ -221,7 +221,8 @@
 
   <target name="reformat"
           description="Reformat Java code">
-    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true"/>
+    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true" ignoreerrors="true"/>
+    <chmod file="checker/bin-devel/run-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" failonerror="true">
       <arg value="./checker/bin-devel/run-google-java-format.py"/>
       <arg value="--aosp"/>    <!-- 4-space indentation -->
@@ -231,7 +232,8 @@
 
   <target name="check-format"
           description="Check Java code formatting">
-    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true"/>
+    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true" ignoreerrors="true"/>
+    <chmod file="checker/bin-devel/check-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" failonerror="true">
       <arg value="./checker/bin-devel/check-google-java-format.py"/>
       <fileset refid="formatted.java.files"/>

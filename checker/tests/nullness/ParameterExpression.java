@@ -46,12 +46,13 @@ public class ParameterExpression {
   public void m5() { field = new Object(); }
 
   @EnsuresNonNull("param")
-  //:: warning: (contracts.postcondition.expression.parameter.name)
+  //:: error: (flowexpr.parse.error) :: warning: (contracts.postcondition.expression.parameter.name)
   public void m6(Object param) { param = new Object(); }
 
-  @EnsuresNonNull("field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  @EnsuresNonNull("field")
   // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
-  //:: warning: (contracts.postcondition.expression.parameter.name)
+  //:: error: (contracts.postcondition.not.satisfied) :: warning: (contracts.postcondition.expression.parameter.name)
   public void m7(Object field) { field = new Object(); }
 
   // Preconditions
@@ -59,10 +60,11 @@ public class ParameterExpression {
   public void m8() { }
 
   @RequiresNonNull("param")
-  //:: warning: (contracts.precondition.expression.parameter.name)
+  //:: error: (flowexpr.parse.error) :: warning: (contracts.precondition.expression.parameter.name)
   public void m9(Object param) { }
 
-  @RequiresNonNull("field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  @RequiresNonNull("field")
   // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
   //:: warning: (contracts.precondition.expression.parameter.name)
   public void m10(Object field) { }
@@ -72,12 +74,13 @@ public class ParameterExpression {
   public boolean m11() { field = new Object(); return true; }
 
   @EnsuresNonNullIf(result=true, expression="param")
-  //:: warning: (contracts.conditional.postcondition.expression.parameter.name)
+  //:: error: (flowexpr.parse.error) :: warning: (contracts.conditional.postcondition.expression.parameter.name)
   public boolean m12(Object param) { param = new Object(); return true; }
 
-  @EnsuresNonNullIf(result=true, expression="field") // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
+  @EnsuresNonNullIf(result=true, expression="field")
   // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
-  //:: warning: (contracts.conditional.postcondition.expression.parameter.name)
+  //:: error: (contracts.conditional.postcondition.not.satisfied) :: warning: (contracts.conditional.postcondition.expression.parameter.name)
   public boolean m13(Object field) { field = new Object(); return true; }
 
   // Annotations on formal parameters referring to a formal parameter of the same method.

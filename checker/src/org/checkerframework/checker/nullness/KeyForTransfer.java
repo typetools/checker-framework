@@ -1,7 +1,9 @@
 package org.checkerframework.checker.nullness;
 
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,10 +13,12 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -76,11 +80,12 @@ public class KeyForTransfer extends
 
             if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
 
-                FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(node, checker);
-
-                String mapName = flowExprContext.receiver.toString();
-                Receiver keyReceiver = flowExprContext.arguments.get(0);
+                Node receiver = node.getTarget().getReceiver();
+                Receiver internalReceiver = FlowExpressions.internalReprOf(checker.getAnnotationProvider(),
+                        receiver);
+                String mapName = internalReceiver.toString();
+                Receiver keyReceiver = FlowExpressions.internalReprOf(checker
+                        .getAnnotationProvider(), node.getArgument(0));
 
                 KeyForAnnotatedTypeFactory atypeFactory = (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
 

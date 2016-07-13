@@ -15,10 +15,27 @@ public class MethodNameTest {
     //:: error: (illegal.methodname)
     @MethodVal(className="", methodName=".emethos", params=0) Object o6;
 
+    @MethodVal(
+        className = "c",
+        methodName = "m",
+        params = {0, 0}
+    )
     //:: error: (invalid.methodval)
-    @MethodVal(className="c", methodName="m", params={0,0}) Object o7;
+    Object o7;
+
+    @MethodVal(
+        className = "c",
+        methodName = {"m", "m"},
+        params = {0, 0}
+    )
     //:: error: (invalid.methodval)
-    @MethodVal(className="c", methodName={"m","m"}, params={0,0}) Object o8;
+    Object o8;
+
+    @MethodVal(
+        className = "c",
+        methodName = {"m", "m"},
+        params = {0}
+    )
     //:: error: (invalid.methodval)
-    @MethodVal(className="c", methodName={"m","m"}, params={0}) Object o9;
+    Object o9;
 }

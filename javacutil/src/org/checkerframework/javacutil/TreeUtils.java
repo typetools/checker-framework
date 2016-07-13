@@ -301,7 +301,7 @@ public final class TreeUtils {
 
     public static /*@Nullable*/ BlockTree enclosingTopLevelBlock(TreePath path) {
         TreePath parpath = path.getParentPath();
-        while (parpath!=null && parpath.getLeaf().getKind() != Tree.Kind.CLASS) {
+        while (parpath!=null && !classTreeKinds.contains(parpath.getLeaf().getKind())) {
             path = parpath;
             parpath = parpath.getParentPath();
         }
@@ -483,8 +483,9 @@ public final class TreeUtils {
 
         StatementTree st = node.getBody().getStatements().get(0);
         if (!(st instanceof ExpressionStatementTree)
-                || !(((ExpressionStatementTree)st).getExpression() instanceof MethodInvocationTree))
+                || !(((ExpressionStatementTree)st).getExpression() instanceof MethodInvocationTree)) {
             return false;
+        }
 
         MethodInvocationTree invocation = (MethodInvocationTree)
             ((ExpressionStatementTree)st).getExpression();

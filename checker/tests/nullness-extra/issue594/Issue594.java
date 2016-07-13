@@ -6,7 +6,6 @@
 //   found   : T extends @Initialized @Nullable Object
 //   required: T extends @Initialized @Nullable Object
 
-
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Issue594<T> {
