@@ -16,13 +16,14 @@ or you can just remove some of them.
 # Create the Docker image, in an empty directory, and upload to Docker Hub.
 # Takes about 12 minutes for jdk7 or jdk8, about 1 hour for jdkany.
 alias create_upload_docker_image=' \
-  mkdir -p dockerdir; \
-  (cd dockerdir && \
-  \cp -pf ../Dockerfile-$OS-$JDK Dockerfile && \
-  docker build -t mdernst/ubuntu-for-$PROJECT-jdk7 . && \
-  docker push mdernst/ubuntu-for-daikon-jdk7) && \
+  mkdir -p dockerdir && \
+  cd dockerdir && \
+  \cp -pf ../Dockerfile-$OS-$JDKVER Dockerfile && \
+  docker build -t mdernst/$OS-for-$PROJECT-$JDKVER . && \
+  docker push mdernst/$OS-for-$PROJECT-$JDKVER && \
+  cd .. && \
   rm -rf dockerdir'
 
-OS=ubuntu   JDK=jdk7   PROJECT=cf create_upload_docker_image
-OS=ubuntu   JDK=jdk8   PROJECT=cf create_upload_docker_image
-OS=ubuntu   JDK=jdkany PROJECT=cf create_upload_docker_image
+OS=ubuntu   && JDKVER=jdk7   && PROJECT=cf && create_upload_docker_image
+OS=ubuntu   && JDKVER=jdk8   && PROJECT=cf && create_upload_docker_image
+OS=ubuntu   && JDKVER=jdkany && PROJECT=cf && create_upload_docker_image
