@@ -57,9 +57,9 @@ To create a new test case, just place a Java file in the test directory,
 whose name usually corresponds to the checker name, such as
 checker-framework/checker/tests/nullness/ . Unless the README file in
 the test directory specifies otherwise, then the Java file must
-1. Not issue any javac errors
+1. Not issue any javac errors.
 2. Not declare a class with the same (fully qualfied) name as any other class in
-   the test directory
+   the test directory.
 3. Not declare a class with the same (simple) name as any commonly used Java
    library class such as List.
 
