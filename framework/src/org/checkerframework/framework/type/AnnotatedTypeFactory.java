@@ -3196,7 +3196,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             return annotatedTypeMirror;
         } else if (types.isSubtype(toModifyTypeMirror, wildcardUBTypeMirror)) {
             return AnnotatedTypes.asSuper(this, annotatedTypeMirror, wildcard);
-        } else if (InternalUtils.getTypeElement(wildcardUBTypeMirror).getKind().isInterface()) {
+        } else if (wildcardUBTypeMirror.getKind() == TypeKind.DECLARED
+                && InternalUtils.getTypeElement(wildcardUBTypeMirror).getKind().isInterface()) {
             // If the Checker Framework implemented capture conversion, then in this case, then
             // the upper bound of the capture converted wildcard would be an intersection type.
             // See JLS 15.1.10
