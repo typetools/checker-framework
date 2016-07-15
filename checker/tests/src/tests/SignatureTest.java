@@ -1,14 +1,15 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class SignatureTest extends CheckerFrameworkTest {
+public class SignatureTest extends CheckerFrameworkPerDirectoryTest {
 
-    public SignatureTest(File testFile) {
+    public SignatureTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.signature.SignatureChecker.class,
                 "signature",
                 "-Anomsgtext");

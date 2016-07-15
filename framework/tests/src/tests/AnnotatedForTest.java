@@ -1,17 +1,18 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Created by jthaine on 6/25/15.
  */
-public class AnnotatedForTest extends CheckerFrameworkTest {
+public class AnnotatedForTest extends CheckerFrameworkPerDirectoryTest {
 
-    public AnnotatedForTest(File testFile) {
+    public AnnotatedForTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.common.subtyping.SubtypingChecker.class,
                 "subtyping",
                 "-Anomsgtext",
