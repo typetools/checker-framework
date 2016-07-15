@@ -21,7 +21,8 @@ import org.junit.runner.RunWith;
  * The new class must do the following:
  *
  * <ol>
- * <li> Declare a constructor 1 parameter of type {@code java.util.List<java.io.File>}.
+ * <li> Declare a constructor taking 1 parameter of type {@code java.util.List<java.io.File>}.
+ * This is a list of the files that will be compiled.
  * <li> Declare the following method:
  *  {@code @Parameters public static String [] getTestDirs()}
  * <p>

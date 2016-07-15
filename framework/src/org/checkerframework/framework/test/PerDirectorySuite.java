@@ -61,8 +61,8 @@ public class PerDirectorySuite extends Suite {
         FrameworkMethod method = getParametersMethod(klass);
 
         List<List<File>> javaFiles;
-        // We will have either a method getTestDirs which returns String []
-        // or getParametersMethod would fail
+        // We must have a method getTestDirs which returns String[],
+        // or getParametersMethod would fail.
         if (!method.getReturnType().isArray()) {
             return new ArrayList<>();
         }
