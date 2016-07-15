@@ -19,7 +19,6 @@ before_script:
 script:
 - docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
 
-## TODO: reinstate this.
 after_script:
   - |
       declare exitCode;
