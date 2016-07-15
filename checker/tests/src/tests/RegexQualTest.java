@@ -3,11 +3,11 @@ package tests;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
 import org.checkerframework.framework.test.TestUtilities;
 import org.junit.runners.Parameterized.Parameters;
 
-public class RegexQualTest extends CheckerFrameworkTest {
+public class RegexQualTest extends CheckerFrameworkPerFileTest {
 
     public RegexQualTest(File testFile) {
         super(

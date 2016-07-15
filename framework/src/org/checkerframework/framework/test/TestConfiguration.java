@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public interface TestConfiguration {
     /**
-     * @return a list of source files a CheckerFrameworkTest should be run over.  These source files
+     * @return a list of source files a CheckerFrameworkPerDirectoryTest should be run over.  These source files
      *         will be passed to Javac when the test is run.  These are NOT JUnit tests.
      */
     List<File> getTestSourceFiles();

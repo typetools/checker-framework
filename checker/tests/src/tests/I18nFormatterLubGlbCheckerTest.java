@@ -5,15 +5,16 @@ package tests;
 // This exists to just run the I18nFormatterLubGlbChecker
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import tests.lubglb.I18nFormatterLubGlbChecker;
 
-public class I18nFormatterLubGlbCheckerTest extends CheckerFrameworkTest {
+public class I18nFormatterLubGlbCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
-    public I18nFormatterLubGlbCheckerTest(File testFile) {
+    public I18nFormatterLubGlbCheckerTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 I18nFormatterLubGlbChecker.class,
                 "",
                 "-Anomsgtext",

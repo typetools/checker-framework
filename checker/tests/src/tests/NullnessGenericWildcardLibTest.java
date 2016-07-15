@@ -1,17 +1,18 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Library for the Nullness checker for issue #511.
  */
-public class NullnessGenericWildcardLibTest extends CheckerFrameworkTest {
+public class NullnessGenericWildcardLibTest extends CheckerFrameworkPerDirectoryTest {
 
-    public NullnessGenericWildcardLibTest(File testFile) {
+    public NullnessGenericWildcardLibTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext");
