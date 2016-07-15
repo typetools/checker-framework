@@ -1,14 +1,15 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class I18nFormatterTest extends CheckerFrameworkTest {
+public class I18nFormatterTest extends CheckerFrameworkPerDirectoryTest {
 
-    public I18nFormatterTest(File testFile) {
+    public I18nFormatterTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.i18nformatter.I18nFormatterChecker.class,
                 "i18n-formatter",
                 "-Anomsgtext");

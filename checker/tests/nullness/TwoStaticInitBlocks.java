@@ -25,7 +25,7 @@ class TwoStaticInitBlocks {
     }
 }
 
-class B {
+class TwoStaticInitBlocks2 {
     static String f2;
     static String f1 = (f2 = "");
 

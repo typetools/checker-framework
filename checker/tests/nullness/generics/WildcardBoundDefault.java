@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.*;
 
-class MyClass<T extends @Nullable Object> {}
+class MyGenClass<T extends @Nullable Object> {}
 
 @DefaultQualifier(value = Nullable.class, locations = TypeUseLocation.UPPER_BOUND)
 class Varargs {
@@ -9,9 +9,9 @@ class Varargs {
         ignore(newInstance());
     }
 
-    static void ignore(MyClass<?>... consumer) {}
+    static void ignore(MyGenClass<?>... consumer) {}
 
-    static <T> MyClass<T> newInstance() {
-        return new MyClass<T>();
+    static <T> MyGenClass<T> newInstance() {
+        return new MyGenClass<T>();
     }
 }

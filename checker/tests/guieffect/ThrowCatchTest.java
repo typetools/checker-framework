@@ -1,7 +1,17 @@
 import java.util.List;
 import org.checkerframework.checker.guieffect.qual.*;
 
-class ThrowsTest {
+class ThrowCatchTest {
+    // Default type of List's type parameter is below @UI so these
+    // fields are type.argument.incompatible
+    //:: error: (type.argument.type.incompatible)
+    List<? extends @UI Object> ooo;
+
+    //:: error: (type.argument.type.incompatible)
+    List<? extends @UI Inner> iii;
+
+    class Inner {}
+
     boolean flag = true;
     // Type var test
     <E extends @UI PolyUIException> void throwTypeVarUI1(E ex1, @UI E ex2) throws PolyUIException {
@@ -60,6 +70,7 @@ class ThrowsTest {
     void throwNull() {
         throw null;
     }
+
     // Declared
     @UI PolyUIException ui = new PolyUIException();
     @AlwaysSafe PolyUIException alwaysSafe = new PolyUIException();
@@ -71,6 +82,7 @@ class ThrowsTest {
         } catch (@UI PolyUIException UIParam) {
 
         }
+
         try {
             throw alwaysSafe;
         } catch (@AlwaysSafe PolyUIException alwaysSafeParam) {
@@ -80,16 +92,17 @@ class ThrowsTest {
 
     // Test Exception parameters
     void unionTypes() {
-        // GuiEffectChecker throws an exception on this code.  When issue 384 is fixed, uncomment these lines.
-        //https://github.com/typetools/checker-framework/issues/384
-        //        try {
-        //        } catch (@AlwaysSafe NullPointerPolyUIException | @AlwaysSafe ArrayStorePolyUIException unionParam) {
-        //
-        //        }
-        //        try {
-        //        } catch (@UI NullPointerPolyUIException | @UI ArrayStorePolyUIException unionParam) {
-        //
-        //        }
+        try {
+        } catch (
+                @AlwaysSafe NullPointerPolyUIException
+                | @AlwaysSafe ArrayStorePolyUIException unionParam) {
+
+        }
+
+        try {
+        } catch (@UI NullPointerPolyUIException | @UI ArrayStorePolyUIException unionParam) {
+
+        }
     }
 
     void defaults() {

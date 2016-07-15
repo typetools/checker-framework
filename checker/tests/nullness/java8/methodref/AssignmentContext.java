@@ -1,42 +1,42 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-interface Function {
+interface FunctionAC {
     String apply(String s);
 }
 
-interface Function2 {
+interface FunctionAC2 {
     String apply(@Nullable String s);
 }
 
 class AssignmentContext {
     // Test assign
-    Function f1 = String::toString;
+    FunctionAC f1 = String::toString;
     //:: error: (methodref.receiver.invalid)
-    Function2 f2 = String::toString;
+    FunctionAC2 f2 = String::toString;
 
     // Test casts
-    Object o1 = (Object) (Function) String::toString;
+    Object o1 = (Object) (FunctionAC) String::toString;
     //:: error: (methodref.receiver.invalid)
-    Object o2 = (Object) (Function2) String::toString;
+    Object o2 = (Object) (FunctionAC2) String::toString;
 
-    void take(Function f) {
+    void take(FunctionAC f) {
         // Test argument assingment
         take(String::toString);
     }
 
-    void take2(Function2 f) {
+    void take2(FunctionAC2 f) {
         // Test argument assingment
         //:: error: (methodref.receiver.invalid)
         take2(String::toString);
     }
 
-    Function supply() {
+    FunctionAC supply() {
         // Test return assingment
         return String::toString;
     }
 
-    Function2 supply2() {
+    FunctionAC2 supply2() {
         // Test return assingment
         //:: error: (methodref.receiver.invalid)
         return String::toString;

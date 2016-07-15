@@ -43,7 +43,7 @@ class Precondition {
     }
 
     @RequiresQualifier(expression = "#1", qualifier = Odd.class)
-    void requiresParam(String p) {
+    void requiresParam(final String p) {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = p;
         @Odd String l2 = p;
@@ -53,7 +53,7 @@ class Precondition {
         expression = {"#1", "#2"},
         qualifier = Odd.class
     )
-    void requiresParams(String p1, String p2) {
+    void requiresParams(final String p1, final String p2) {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = p1;
         //:: error: (assignment.type.incompatible)

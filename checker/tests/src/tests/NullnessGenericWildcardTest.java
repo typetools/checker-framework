@@ -1,13 +1,13 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Nullness checker for issue #511.
  */
-public class NullnessGenericWildcardTest extends CheckerFrameworkTest {
+public class NullnessGenericWildcardTest extends CheckerFrameworkPerFileTest {
 
     public NullnessGenericWildcardTest(File testFile) {
         super(

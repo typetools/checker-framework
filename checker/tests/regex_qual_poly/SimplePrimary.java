@@ -2,7 +2,7 @@ import org.checkerframework.checker.regex.qual.*;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 // Test primary annotations with strings.
-class Simple {
+class PrimarySimple {
 
     void execute(@Regex(1) String s) {}
 

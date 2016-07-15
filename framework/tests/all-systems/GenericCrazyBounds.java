@@ -3,13 +3,13 @@
  * bounds initializer creates bounds with the right structure
  */
 
-interface List<ZZ> {
+interface MyList<ZZ> {
     ZZ getZZ();
 
     void setZZ(ZZ ZZ);
 }
 
-interface Map<K, V> {
+interface MyMap<K, V> {
     K getK();
 
     V getV();
@@ -19,25 +19,25 @@ interface Map<K, V> {
     void setV(V v);
 }
 
-class MyRec<E extends List<E>> {}
+class MyRec<E extends MyList<E>> {}
 
-class RecList extends MyRec<RecList> implements List<RecList> {
+class RecMyList extends MyRec<RecMyList> implements MyList<RecMyList> {
     @SuppressWarnings("return.type.incompatible")
-    public RecList getZZ() {
+    public RecMyList getZZ() {
         return null;
     }
 
-    public void setZZ(RecList rl) {
+    public void setZZ(RecMyList rl) {
         return;
     }
 }
 
 class Context2 {
 
-    <T extends MyRec<? extends T> & List<T>> void main() {}
+    <T extends MyRec<? extends T> & MyList<T>> void main() {}
 
     void context() {
-        this.<RecList>main();
+        this.<RecMyList>main();
     }
 }
 
@@ -49,7 +49,7 @@ class RecImpl implements Rec<RecImpl> {}
 
 class SubRec extends RecImpl {}
 
-class CrazyGen2<TT extends List<EE>, EE extends Map<TT, TT>> {
+class CrazyGen2<TT extends MyList<EE>, EE extends MyMap<TT, TT>> {
     TT t2;
     EE e2;
 
@@ -64,7 +64,7 @@ class CrazyGen2<TT extends List<EE>, EE extends Map<TT, TT>> {
     }
 }
 
-class CrazyGen3<TTT extends List<TTT>, EEE extends Map<TTT, TTT>> {
+class CrazyGen3<TTT extends MyList<TTT>, EEE extends MyMap<TTT, TTT>> {
     TTT t3;
     EEE e3;
 
@@ -81,7 +81,7 @@ class CrazyGen3<TTT extends List<TTT>, EEE extends Map<TTT, TTT>> {
 
 class MyClass {
 
-    public <TV1 extends List<TV1>> String methodToPrint(TV1 tv1, int intParam) {
+    public <TV1 extends MyList<TV1>> String methodToPrint(TV1 tv1, int intParam) {
         return "";
     }
 }

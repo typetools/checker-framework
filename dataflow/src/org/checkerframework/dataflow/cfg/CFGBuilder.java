@@ -2340,6 +2340,11 @@ public class CFGBuilder {
             // Fifth, if the method is synchronized, lock the receiving
             // object or class (15.12.4.5)
             ExecutableElement method = TreeUtils.elementFromUse(tree);
+            if (method == null) {
+                // The method wasn't found, e.g. because of a compilation error.
+                return null;
+            }
+
             // TODO? Variable wasn't used.
             // boolean isBooleanMethod = TypesUtils.isBooleanType(method.getReturnType());
 

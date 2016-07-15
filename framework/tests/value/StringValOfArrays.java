@@ -1,6 +1,6 @@
 import org.checkerframework.common.value.qual.StringVal;
 
-class Test {
+class StringValOfArrays {
 
     void bytes() {
         String s = "hello";

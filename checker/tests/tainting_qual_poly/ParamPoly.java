@@ -3,20 +3,20 @@ import org.checkerframework.checker.tainting.qual.*;
 
 // Polymorphic method parameters
 @ClassTaintingParam("Main")
-class A {}
+class PpA {}
 
-abstract class Test {
-    abstract void test(@PolyTainted(param = "Main") A i, @PolyTainted(param = "Main") A j);
+abstract class ParamPoly {
+    abstract void test(@PolyTainted(param = "Main") PpA i, @PolyTainted(param = "Main") PpA j);
 
-    abstract @PolyTainted(param = "Main") A id(@PolyTainted(param = "Main") A i);
+    abstract @PolyTainted(param = "Main") PpA id(@PolyTainted(param = "Main") PpA i);
 
-    abstract @Tainted(param = "Main") A makeTainted();
+    abstract @Tainted(param = "Main") PpA makeTainted();
 
-    abstract @Untainted(param = "Main") A makeUntainted();
+    abstract @Untainted(param = "Main") PpA makeUntainted();
 
-    abstract void takeTainted(@Tainted(param = "Main") A o);
+    abstract void takeTainted(@Tainted(param = "Main") PpA o);
 
-    abstract void takeUntainted(@Untainted(param = "Main") A o);
+    abstract void takeUntainted(@Untainted(param = "Main") PpA o);
 
     void test() {
         test(makeTainted(), makeTainted());

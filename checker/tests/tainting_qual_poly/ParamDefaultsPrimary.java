@@ -1,7 +1,7 @@
 // Test parameter defaulting rules.
 import org.checkerframework.checker.tainting.qual.*;
 
-abstract class Test {
+abstract class ParamDefaultsPrimary {
 
     abstract Integer makeDefault();
 

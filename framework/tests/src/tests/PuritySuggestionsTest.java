@@ -1,7 +1,8 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 import tests.util.FlowTestChecker;
 
@@ -10,11 +11,11 @@ import tests.util.FlowTestChecker;
  *
  * @author Stefan Heule
  */
-public class PuritySuggestionsTest extends CheckerFrameworkTest {
+public class PuritySuggestionsTest extends CheckerFrameworkPerDirectoryTest {
 
-    public PuritySuggestionsTest(File testFile) {
+    public PuritySuggestionsTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 FlowTestChecker.class,
                 "flow",
                 "-Anomsgtext",

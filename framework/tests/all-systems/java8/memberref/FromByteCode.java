@@ -1,8 +1,8 @@
 
-interface Function<T, R> {
+interface FunctionFromByteCode<T, R> {
     R apply(T t);
 }
 
 class FromByteCode {
-    Function<String, String> f1 = String::toString;
+    FunctionFromByteCode<String, String> f1 = String::toString;
 }

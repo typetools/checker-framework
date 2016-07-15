@@ -2,7 +2,7 @@ import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 import org.checkerframework.checker.nullness.qual.Raw;
 
-class OverrideANNA {
+class OverrideANNA3 {
     static class Super {
         Object f;
         Object g;

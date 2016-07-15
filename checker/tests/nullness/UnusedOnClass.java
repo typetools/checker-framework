@@ -2,13 +2,13 @@ import java.lang.annotation.*;
 import org.checkerframework.framework.qual.*;
 
 public final class UnusedOnClass {
-    public static void read_serialized_pptmap2(@MyNonPrototype MyInvariant inv) {
+    public static void read_serialized_pptmap2(@MyNonPrototype MyInvariant2 inv) {
         inv.ppt.toString();
     }
 }
 
 @MyPrototype
-abstract class MyInvariant {
+abstract class MyInvariant2 {
     @Unused(when = MyPrototype.class)
     public String ppt = "hello";
 }

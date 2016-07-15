@@ -3,7 +3,7 @@
 import org.checkerframework.checker.regex.qual.*;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
 
-abstract class Test {
+abstract class ParamCapture {
     abstract void takeOne(@PolyRegex Integer i);
 
     abstract void takeSame(@PolyRegex Integer i, @PolyRegex Integer j);
