@@ -57,20 +57,34 @@ public class TestUtilities {
         return getJavaFilesAsArgumentList(dirs);
     }
 
+    /**
+     * Returns a list where each item is a list of Java files, excluding any skip tests, for each
+     * directory given by dirName and also a list for any subdirectory.
+     *
+     * @param parent Parent directory of the dirNames directories
+     * @param dirNames Names of directories to search
+     * @return List where each item is a list of Java test files grouped by directory
+     */
     public static List<List<File>> findJavaFilesPerDirectory(File parent, String... dirNames) {
         List<List<File>> filesPerDirectory = new ArrayList<>();
 
         for (String dirName : dirNames) {
             File dir = new File(parent, dirName);
             if (dir.isDirectory()) {
-                filesPerDirectory.addAll(files(dir));
+                filesPerDirectory.addAll(findJavaTestFilesInDirectory(dir));
             }
         }
 
         return filesPerDirectory;
     }
 
-    private static List<List<File>> files(File dir) {
+    /**
+     * Returns a list where each item is a list of Java files, excluding any skip tests, for each
+     * subdirectory of {@code dir} and also a list of Java files in dir.
+     * @param dir Directory in which to search for Java files
+     * @return a list of list of Java test files
+     */
+    private static List<List<File>> findJavaTestFilesInDirectory(File dir) {
         assert dir.isDirectory();
         List<List<File>> fileGroupedByDirectory = new ArrayList<>();
         List<File> fileInDir = new ArrayList<>();
@@ -79,7 +93,7 @@ public class TestUtilities {
         for (String fileName : dir.list()) {
             File file = new File(dir, fileName);
             if (file.isDirectory()) {
-                fileGroupedByDirectory.addAll(files(file));
+                fileGroupedByDirectory.addAll(findJavaTestFilesInDirectory(file));
             } else if (isJavaTestFile(file)) {
                 fileInDir.add(file);
             }
