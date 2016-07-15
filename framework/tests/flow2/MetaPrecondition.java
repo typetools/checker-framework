@@ -36,14 +36,14 @@ class MetaPrecondition {
     }
 
     @RequiresOdd("#1")
-    void requiresParam(String p) {
+    void requiresParam(final String p) {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = p;
         @Odd String l2 = p;
     }
 
     @RequiresOdd({"#1", "#2"})
-    void requiresParams(String p1, String p2) {
+    void requiresParams(final String p1, final String p2) {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = p1;
         //:: error: (assignment.type.incompatible)

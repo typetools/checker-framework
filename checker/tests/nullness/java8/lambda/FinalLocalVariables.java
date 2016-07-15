@@ -3,7 +3,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-interface Function<T extends @Nullable Object, R> {
+interface FunctionLE<T extends @Nullable Object, R> {
     R apply(T t);
 }
 
@@ -11,9 +11,9 @@ class LambdaEnclosing {
 
     // Test static initializer
     static {
-        String local1 = "";
+        final String local1 = "";
         String local2 = null;
-        Function<String, String> f0 =
+        FunctionLE<String, String> f0 =
                 s -> {
                     local1.toString();
                     //:: error: (dereference.of.nullable)
@@ -24,9 +24,9 @@ class LambdaEnclosing {
 
     // Test instance initializer
     {
-        String local1 = "";
+        final String local1 = "";
         String local2 = null;
-        Function<String, String> f0 =
+        FunctionLE<String, String> f0 =
                 s -> {
                     local1.toString();
                     //:: error: (dereference.of.nullable)
@@ -35,11 +35,11 @@ class LambdaEnclosing {
                 };
     }
 
-    Function<String, String> functionField =
+    FunctionLE<String, String> functionField =
             s -> {
-                String local1 = "";
+                final String local1 = "";
                 String local2 = null;
-                Function<String, String> f0 =
+                FunctionLE<String, String> f0 =
                         s2 -> {
                             // TODO: There should be no error for this. It's currently hard to differentiate local
                             // TODO: variables from variable initializers and those in constructors.
@@ -53,10 +53,10 @@ class LambdaEnclosing {
             };
 
     void context() {
-        String local1 = "";
+        final String local1 = "";
         String local2 = null;
 
-        Function<String, String> f1 =
+        FunctionLE<String, String> f1 =
                 s -> {
                     local1.toString();
                     //:: error: (dereference.of.nullable)
@@ -64,10 +64,10 @@ class LambdaEnclosing {
                     class Inner {
 
                         void context2() {
-                            String local3 = "";
+                            final String local3 = "";
                             String local4 = null;
 
-                            Function<String, String> f2 =
+                            FunctionLE<String, String> f2 =
                                     s2 -> {
                                         local1.toString();
                                         //:: error: (dereference.of.nullable)
@@ -85,10 +85,10 @@ class LambdaEnclosing {
 
                         @Override()
                         public String toString() {
-                            String local3 = "";
+                            final String local3 = "";
                             String local4 = null;
 
-                            Function<String, String> f2 =
+                            FunctionLE<String, String> f2 =
                                     s2 -> {
                                         local1.toString();
                                         //:: error: (dereference.of.nullable)

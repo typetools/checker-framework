@@ -147,7 +147,7 @@
     </filterchain>
   </loadresource>
 
-  <target name="check-style"
+  <target name="check-style" depends="check-format"
           description="Check basic style guidelines">
     <!-- There should be a way to templatize the following. -->
 
@@ -224,10 +224,12 @@
   <fileset id="formatted.java.files" dir="." includes="**/*.java" excludes="**/checker/jdk/,**/stubparser/,**/eclipse/"/>
 
   <!-- Allow 30 seconds for either formatting task to complete. -->
+  <!-- I can add back  quiet="true"  to the get invocations, when all
+       installations have a modern enough Ant that recognizes that attribute. -->
 
   <target name="reformat"
           description="Reformat Java code">
-    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true" ignoreerrors="true"/>
+    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" ignoreerrors="true"/>
     <chmod file="checker/bin-devel/run-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" failonerror="true">
       <arg value="./checker/bin-devel/run-google-java-format.py"/>
@@ -238,7 +240,7 @@
 
   <target name="check-format"
           description="Check Java code formatting">
-    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" quiet="true" ignoreerrors="true"/>
+    <get src="https://raw.githubusercontent.com/mernst/plume-lib/master/bin/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" ignoreerrors="true"/>
     <chmod file="checker/bin-devel/check-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" failonerror="true">
       <arg value="./checker/bin-devel/check-google-java-format.py"/>

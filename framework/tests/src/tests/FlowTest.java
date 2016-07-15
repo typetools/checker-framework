@@ -1,15 +1,16 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  */
-public class FlowTest extends CheckerFrameworkTest {
+public class FlowTest extends CheckerFrameworkPerDirectoryTest {
 
-    public FlowTest(File testFile) {
-        super(testFile, tests.util.FlowTestChecker.class, "flow", "-Anomsgtext");
+    public FlowTest(List<File> testFiles) {
+        super(testFiles, tests.util.FlowTestChecker.class, "flow", "-Anomsgtext");
     }
 
     @Parameters

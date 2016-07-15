@@ -11,6 +11,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
+ * Compiles all test files individually. Use {@link CheckerFrameworkPerDirectoryTest}
+ * to compile all files in a test directory together.
+ *
  * To use this class you must do two things:
  * <ol>
  * <li> Create exactly 1 constructor in the subclass with exactly 1 argument
@@ -42,7 +45,7 @@ import org.junit.runner.RunWith;
  *
  * The method returns a List of Java files. There are methods like
  * {@link TestUtilities#findNestedJavaTestFiles} to help you construct this
- * List. The TestSuite will then instantiate the subclass once for each
+ * List. The PerDirectorySuite will then instantiate the subclass once for each
  * file returned by getTestFiles and execute the run method.
  * An example of this method is:
  *
@@ -54,8 +57,8 @@ import org.junit.runner.RunWith;
  * </ul>
  * </ol>
  */
-@RunWith(TestSuite.class)
-public abstract class CheckerFrameworkTest {
+@RunWith(PerFileSuite.class)
+public abstract class CheckerFrameworkPerFileTest {
 
     protected final File testFile;
 
@@ -75,7 +78,7 @@ public abstract class CheckerFrameworkTest {
      * @param testDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests
      */
-    public CheckerFrameworkTest(
+    public CheckerFrameworkPerFileTest(
             File testFile,
             Class<? extends AbstractProcessor> checker,
             String testDir,
@@ -105,7 +108,7 @@ public abstract class CheckerFrameworkTest {
      * <p>
      *
      * If you want to specify the same command-line option for all tests of
-     * a particular checker, then pass it to the {@link #CheckerFrameworkTest}
+     * a particular checker, then pass it to the {@link CheckerFrameworkPerFileTest}
      * constructor.
      *
      * @param previousOptions the options specified in the constructor of the test

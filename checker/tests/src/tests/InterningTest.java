@@ -1,17 +1,18 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Interning Checker, which tests the Interned annotation.
  */
-public class InterningTest extends CheckerFrameworkTest {
+public class InterningTest extends CheckerFrameworkPerDirectoryTest {
 
-    public InterningTest(File testFile) {
+    public InterningTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.interning.InterningChecker.class,
                 "interning",
                 "-Anomsgtext");

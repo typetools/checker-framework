@@ -21,15 +21,15 @@ import org.junit.runners.model.TestClass;
 
 /**
  *
- * <p>TestSuite runs a test class once for each set of parameters returned by its method marked with {@code @Parameters}</p>
+ * <p>PerDirectorySuite runs a test class once for each set of parameters returned by its method marked with {@code @Parameters}</p>
  * <p>To use:<br>
- *  Annotated your test class with {@code @RunWith(TestSuite.class)}<br>
+ *  Annotated your test class with {@code @RunWith(PerDirectorySuite.class)}<br>
  *  Create a parameters method by annotating a public static method with {@code @Parameters}.  This method
  *  must return either a {@code List<File>} where each element of the list is a Java file to test against
  *  OR a {@code String []} where each String in the array is a directory in the tests directory.
  * </p>
  */
-public class TestSuite extends Suite {
+public class PerFileSuite extends Suite {
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
@@ -45,7 +45,7 @@ public class TestSuite extends Suite {
     /**
      * Only called reflectively. Do not use programmatically.
      */
-    public TestSuite(Class<?> klass) throws Throwable {
+    public PerFileSuite(Class<?> klass) throws Throwable {
         super(klass, Collections.<Runner>emptyList());
         final TestClass testClass = getTestClass();
         final Class<?> javaTestClass = testClass.getJavaClass();

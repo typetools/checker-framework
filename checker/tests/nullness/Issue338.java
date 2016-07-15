@@ -1,9 +1,9 @@
-interface Foo<T> {
+interface Foo338<T> {
     Class<T> get();
 }
 
 class Issue338 {
-    static void m2(Foo<?> foo) {
+    static void m2(Foo338<?> foo) {
         Class<?> clazz = foo.get();
     }
 }

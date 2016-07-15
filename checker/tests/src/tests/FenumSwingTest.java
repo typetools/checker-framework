@@ -1,14 +1,15 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class FenumSwingTest extends CheckerFrameworkTest {
+public class FenumSwingTest extends CheckerFrameworkPerDirectoryTest {
 
-    public FenumSwingTest(File testFile) {
+    public FenumSwingTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.fenum.FenumChecker.class,
                 "fenum",
                 "-Anomsgtext",

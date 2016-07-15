@@ -2,7 +2,7 @@
 // TODO: Enable this test when whole-program inference is working correctly for cases
 // involving inheritance.
 import tests.wholeprograminference.qual.*;
-class Parent {
+class IParent {
     int field;
 
     void expectsBotNoSignature(int t) {
@@ -18,7 +18,7 @@ class Parent {
 
 }
 
-class Child extends Parent {
+class IChild extends IParent {
     void test1() {
         @WholeProgramInferenceBottom int bot = (@WholeProgramInferenceBottom int) 0;
         expectsBotNoSignature(bot);

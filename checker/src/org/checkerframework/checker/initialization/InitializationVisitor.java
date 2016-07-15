@@ -273,7 +273,7 @@ public class InitializationVisitor<
     public Void visitClass(ClassTree node, Void p) {
         // call the ATF with any node from this class to trigger the org.checkerframework.dataflow
         // analysis.
-        atypeFactory.getAnnotatedType(node);
+        atypeFactory.preProcessClassTree(node);
 
         // go through all members and look for initializers.
         // save all fields that are initialized and do not report errors about

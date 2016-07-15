@@ -5,7 +5,7 @@ import java.util.List;
 
 interface Issue428<T extends Number> {}
 
-class Test {
+class Test428 {
     void m(List<Issue428<? extends Object>> is) {
         Issue428<?> i = is.get(0);
     }
