@@ -20,18 +20,23 @@ script:
 - docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --depth 3 https://github.com/mernst/checker-framework-docker-default-jdk.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
 
 ## TODO: reinstate this.
-# after_success:
-#   - |
-#       if [[ ($TRAVIS_BRANCH == master) &&
-#             ($TRAVIS_PULL_REQUEST == false) &&
-#             ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
-#         curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-#         sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
-#         sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN
-#         sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
-#         sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
-#         sh trigger-travis.sh typetools sparta $TRAVISTOKEN
-#       fi
+after_script:
+  - |
+      declare exitCode;
+      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | node
+      exitCode=$?
+
+      if [ "$exitCode" -eq 0 ]; then
+        if [[ ($TRAVIS_BRANCH == master) &&
+              ($TRAVIS_PULL_REQUEST == false) ]] ; then
+          curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+          sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
+          sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN
+          sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
+          sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
+          sh trigger-travis.sh typetools sparta $TRAVISTOKEN
+        fi
+      fi
 
 git:
   depth: 3
