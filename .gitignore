@@ -40,7 +40,7 @@ checker/build-temp
 checker/examples/**/*.class
 checker/bin-devel/check-google-java-format.py
 checker/bin-devel/fixup-google-java-format.py
-checker/bin-devel/google-java-format-1.0-all-deps.jar
+checker/bin-devel/google-java-format-*-all-deps.jar
 checker/bin-devel/run-google-java-format.py
 
 # manual files
