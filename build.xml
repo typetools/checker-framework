@@ -221,7 +221,7 @@
     </fail>
   </target>
 
-  <fileset id="formatted.java.files" dir="." includes="**/*.java" excludes="**/checker/jdk/,**/stubparser/,**/eclipse/"/>
+  <fileset id="formatted.java.files" dir="." includes="**/*.java" excludes="**/checker/jdk/,**/stubparser/,**/eclipse/,**/nullness-javac-errors/"/>
 
   <!-- Allow 30 seconds for either formatting task to complete. -->
   <!-- I can add back  quiet="true"  to the get invocations, when all
