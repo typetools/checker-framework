@@ -4,24 +4,24 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 // Test qual param on a class, targeting the primary
 @ClassRegexParam("Main")
-class A {
+class Pscp {
     public @Regex Integer x;
     public @Regex(1) Integer y;
     public @Var(arg = "Main") Integer z;
 }
 
-abstract class Test {
-    abstract @Regex(param = "Main") A makeTainted();
+abstract class ParamSimpleClassPrimary {
+    abstract @Regex(param = "Main") Pscp makeTainted();
 
-    abstract @Regex(value = 1, param = "Main") A makeUntainted();
+    abstract @Regex(value = 1, param = "Main") Pscp makeUntainted();
 
     abstract void takeTainted(@Regex Integer o);
 
     abstract void takeUntainted(@Regex(1) Integer o);
 
     void test() {
-        @Regex(param = "Main") A ta = makeTainted();
-        @Regex(value = 1, param = "Main") A ua = makeUntainted();
+        @Regex(param = "Main") Pscp ta = makeTainted();
+        @Regex(value = 1, param = "Main") Pscp ua = makeUntainted();
 
         //:: error: (argument.type.incompatible)
         takeUntainted(ta.x);

@@ -1,4 +1,4 @@
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.DefaultQualifier;
 import org.checkerframework.checker.nullness.qual.*;
 
 /**

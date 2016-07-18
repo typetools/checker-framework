@@ -2,7 +2,7 @@
 import org.checkerframework.checker.tainting.qual.*;
 
 // Polymorphic qualifiers, for primary annotations
-abstract class Test {
+abstract class ParamPolyPrimary {
     abstract void test(@PolyTainted Integer i, @PolyTainted Integer j);
 
     abstract @PolyTainted Integer id(@PolyTainted Integer i);

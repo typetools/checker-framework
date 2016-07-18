@@ -3,7 +3,6 @@ import java.util.Map;
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.regex.qual.*;
-import org.checkerframework.framework.qual.*;
 
 //:: error: (initialization.fields.uninitialized)
 public abstract class WeakHasherMap<K, V> extends AbstractMap<K, V> implements Map<K, V> {

@@ -11,7 +11,7 @@ public class TestPrimitive {
     public final @Fenum("B") int BCONST3 = 6;
 }
 
-class FenumUser {
+class FenumUserTestPrimitive {
     @Fenum("A") int state1 = new TestPrimitive().ACONST1;
 
     @Fenum("A") int state3 = this.state1;

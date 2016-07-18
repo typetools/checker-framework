@@ -1,7 +1,7 @@
 import java.util.Arrays;
 import java.util.HashSet;
 
-class Test {
+class InferTypeArgs3 {
     void test() {
         java.util.Arrays.asList(new Integer(1), "");
     }

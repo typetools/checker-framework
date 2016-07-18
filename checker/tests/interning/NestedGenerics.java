@@ -1,4 +1,4 @@
-import java.util.*;
+import java.util.List;
 import org.checkerframework.checker.interning.qual.Interned;
 
 public class NestedGenerics {

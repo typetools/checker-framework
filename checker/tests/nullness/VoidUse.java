@@ -1,6 +1,5 @@
 import com.sun.source.tree.Tree;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
 
 public class VoidUse {
 

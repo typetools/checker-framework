@@ -4,21 +4,21 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 // Type variables and post-as-member-of
 @ClassRegexParam("Main")
-class List<T> {
+class PTVPList<T> {
     // (T + MAIN) head
     @Var(arg = "Main") T head;
-    // List<T><<MAIN>>
-    @Var(arg = "Main") List<T> tail;
+    // PTVPList<T><<MAIN>>
+    @Var(arg = "Main") PTVPList<T> tail;
 }
 
-abstract class Test {
-    abstract @Regex(param = "Main") List<@Regex Integer> makeTT();
+abstract class ParamTypeVarsPrimary {
+    abstract @Regex(param = "Main") PTVPList<@Regex Integer> makeTT();
 
-    abstract @Regex(value = 1, param = "Main") List<@Regex Integer> makeUT();
+    abstract @Regex(value = 1, param = "Main") PTVPList<@Regex Integer> makeUT();
 
-    abstract @Regex(param = "Main") List<@Regex(1) Integer> makeTU();
+    abstract @Regex(param = "Main") PTVPList<@Regex(1) Integer> makeTU();
 
-    abstract @Regex(value = 1, param = "Main") List<@Regex(1) Integer> makeUU();
+    abstract @Regex(value = 1, param = "Main") PTVPList<@Regex(1) Integer> makeUU();
 
     abstract void takeT(@Regex Integer x);
 

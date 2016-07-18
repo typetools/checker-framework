@@ -3,18 +3,18 @@ import org.checkerframework.checker.nullness.qual.*;
 // The return of a lambda is a lambda
 
 interface ConsumerSupplier {
-    Consumer get();
+    ConsumerR get();
 }
 
-interface Consumer {
+interface ConsumerR {
     void method(@Nullable String s);
 }
 
 interface SupplierSupplier {
-    Supplier get();
+    SupplierRe get();
 }
 
-interface Supplier {
+interface SupplierRe {
     @NonNull String method();
 }
 

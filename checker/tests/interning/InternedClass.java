@@ -1,4 +1,7 @@
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Vector;
 import org.checkerframework.checker.interning.qual.*;
 
 // The @Interned annotation indicates that much like an enum, all variables

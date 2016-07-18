@@ -1,5 +1,5 @@
 import org.checkerframework.checker.interning.qual.*;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.PolyAll;
 
 class TestPolyAll {
     @PolyAll String eqRef(@PolyAll String p) {

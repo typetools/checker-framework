@@ -2,7 +2,7 @@
 import org.checkerframework.checker.regex.qual.*;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
 
-abstract class Test {
+abstract class ParamDefaultsPrimary {
 
     abstract Integer makeDefault();
 

@@ -1,4 +1,5 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import tests.util.*;
 
 public class Supertypes {

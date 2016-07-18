@@ -2,6 +2,7 @@ package org.checkerframework.framework.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * A special annotation intended solely for representing the bottom type in

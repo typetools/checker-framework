@@ -1,7 +1,7 @@
 package org.checkerframework.qualframework.base;
 
 import com.sun.source.tree.ExpressionTree;
-import java.util.*;
+import java.util.List;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 
 /** Helper functions for various manipulations of {@link QualifiedTypeMirror}s.

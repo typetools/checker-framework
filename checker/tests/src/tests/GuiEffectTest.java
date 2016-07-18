@@ -1,14 +1,15 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class GuiEffectTest extends CheckerFrameworkTest {
+public class GuiEffectTest extends CheckerFrameworkPerDirectoryTest {
 
-    public GuiEffectTest(File testFile) {
+    public GuiEffectTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.guieffect.GuiEffectChecker.class,
                 "guieffect",
                 "-Anomsgtext");

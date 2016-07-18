@@ -11,7 +11,7 @@ public class TestInstance {
     public final @Fenum("B") Object BCONST3 = new Object();
 }
 
-class FenumUser {
+class FenumUserTestInstance {
     @Fenum("A") Object state1 = new TestInstance().ACONST1;
 
     //:: error: (assignment.type.incompatible)

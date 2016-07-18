@@ -1,4 +1,4 @@
-import java.util.*;
+import java.util.List;
 import tests.util.*;
 
 class WildcardSuper {

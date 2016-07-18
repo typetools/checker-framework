@@ -3,10 +3,10 @@
 import org.checkerframework.checker.tainting.qual.*;
 
 @ClassTaintingParam("Main")
-class A {}
+class ExA {}
 
 @ClassTaintingParam("Main")
-class ExtendsAndAnnotation extends @Wild(param = "Main") A {
+class ExtendsAndAnnotation extends @Wild(param = "Main") ExA {
     void test(@Untainted(param = "Main") ExtendsAndAnnotation c) {
         Object o = new @Untainted(param = "Main") ExtendsAndAnnotation();
         o = new @Tainted(param = "Main") ExtendsAndAnnotation();

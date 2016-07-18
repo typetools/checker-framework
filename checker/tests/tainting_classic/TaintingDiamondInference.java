@@ -3,7 +3,8 @@
 // The test is skipped until the issue is fixed:
 // @skip-test
 
-import java.util.*;
+import java.util.Set;
+import java.util.TreeSet;
 import org.checkerframework.checker.tainting.qual.*;
 
 public class TaintingDiamondInference {

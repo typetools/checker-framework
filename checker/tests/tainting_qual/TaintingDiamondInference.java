@@ -1,6 +1,7 @@
 // Test case for issue #660: https://github.com/typetools/checker-framework/issues/660
 
-import java.util.*;
+import java.util.Set;
+import java.util.TreeSet;
 import org.checkerframework.checker.tainting.qual.*;
 
 public class TaintingDiamondInference {

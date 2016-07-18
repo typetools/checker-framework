@@ -3,7 +3,7 @@ import org.checkerframework.checker.regex.qual.*;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 // Polymorphic qualifiers, for primary annotations
-abstract class Test {
+abstract class ParamPolyPrimary {
     abstract void test(@PolyRegex Integer i, @PolyRegex Integer j);
 
     abstract @PolyRegex Integer id(@PolyRegex Integer i);

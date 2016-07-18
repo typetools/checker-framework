@@ -1,22 +1,22 @@
 import java.lang.SuppressWarnings;
 
-interface Function {
+interface FunctionAC {
     String apply(String s);
 }
 
 class AssignmentContext {
     // Test assign
-    Function f1 = String::toString;
+    FunctionAC f1 = String::toString;
 
     // Test casts
-    Object o1 = (Object) (Function) String::toString;
+    Object o1 = (Object) (FunctionAC) String::toString;
 
-    void take(Function f) {
+    void take(FunctionAC f) {
         // Test argument assingment
         take(String::toString);
     }
 
-    Function supply() {
+    FunctionAC supply() {
         // Test return assingment
         return String::toString;
     }

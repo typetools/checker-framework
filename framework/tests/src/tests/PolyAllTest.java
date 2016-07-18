@@ -1,16 +1,17 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  */
-public class PolyAllTest extends CheckerFrameworkTest {
+public class PolyAllTest extends CheckerFrameworkPerDirectoryTest {
 
-    public PolyAllTest(File testFile) {
+    public PolyAllTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 polyall.PolyAllChecker.class,
                 "polyall",
                 "-Anomsgtext",

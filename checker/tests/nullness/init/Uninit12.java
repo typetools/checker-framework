@@ -1,8 +1,7 @@
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
-
-// This is a test case for (now fixed) issue #105:
+// This is a test case for issue #105:
 // https://github.com/typetools/checker-framework/issues/105
+
+import org.checkerframework.checker.nullness.qual.*;
 
 public class Uninit12 {
 

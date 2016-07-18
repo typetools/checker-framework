@@ -1,7 +1,7 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
-class Flow {
+class JavaCopFlow {
 
     public void testIf(String str) {
 

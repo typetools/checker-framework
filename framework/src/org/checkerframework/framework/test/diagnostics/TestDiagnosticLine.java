@@ -7,15 +7,24 @@ import org.checkerframework.framework.util.PluginUtil;
  * Represents an entire line of TestDiagnostics which is essentially a list of diagnostics
  */
 public class TestDiagnosticLine {
+    private final String filename;
     private final long lineNumber;
     private final String originalLine;
     private final List<TestDiagnostic> diagnostics;
 
     public TestDiagnosticLine(
-            long lineNumber, String originalLine, List<TestDiagnostic> diagnostics) {
+            String filename,
+            long lineNumber,
+            String originalLine,
+            List<TestDiagnostic> diagnostics) {
+        this.filename = filename;
         this.lineNumber = lineNumber;
         this.originalLine = originalLine;
         this.diagnostics = diagnostics;
+    }
+
+    public String getFilename() {
+        return filename;
     }
 
     public boolean hasDiagnostics() {

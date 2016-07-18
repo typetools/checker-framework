@@ -3,7 +3,7 @@
 
 import javax.annotation.Nullable;
 
-abstract class Test<R> {
+abstract class Issue337<R> {
     abstract R getThing(String key);
 
     @Nullable R m1(@Nullable String key) {
