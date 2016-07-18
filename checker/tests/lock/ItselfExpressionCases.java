@@ -1,4 +1,3 @@
-import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;

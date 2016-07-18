@@ -1,6 +1,8 @@
 package nullness.generics;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.PolyAll;
 

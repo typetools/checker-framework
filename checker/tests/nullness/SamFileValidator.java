@@ -1,6 +1,7 @@
 // @skip-test Crashes the Checker Framework, but skipped to avoid breaking the build
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Map;
 
 public class SamFileValidator {
 

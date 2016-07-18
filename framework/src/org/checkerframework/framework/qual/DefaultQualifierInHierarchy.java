@@ -2,7 +2,10 @@ package org.checkerframework.framework.qual;
 
 import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 
 /**

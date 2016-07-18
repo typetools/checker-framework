@@ -1,6 +1,6 @@
 package org.checkerframework.qualframework.poly;
 
-import java.util.*;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import org.checkerframework.qualframework.base.AnnotationConverter;

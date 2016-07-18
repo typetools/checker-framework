@@ -1,7 +1,11 @@
 // This test contains the sample code from the Lock Checker manual chapter
 // modified to fit testing instead of illustrative purposes,
 // and contains other miscellaneous Lock Checker testing.
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;

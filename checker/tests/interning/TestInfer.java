@@ -1,6 +1,7 @@
 // Test case for issue #238: https://github.com/typetools/checker-framework/issues/238
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 class TestInfer1 {
     <T> T getValue(List<T> l) {

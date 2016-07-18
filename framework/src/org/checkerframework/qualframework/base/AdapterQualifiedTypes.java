@@ -1,7 +1,7 @@
 package org.checkerframework.qualframework.base;
 
 import com.sun.source.tree.ExpressionTree;
-import java.util.*;
+import java.util.List;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;

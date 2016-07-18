@@ -1,7 +1,9 @@
 package org.checkerframework.qualframework.poly;
 
 import com.sun.source.tree.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;

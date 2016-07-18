@@ -1,6 +1,5 @@
 // Note that this file is a near duplicate in /nullness and /nullness-uninit
 
-import java.util.*;
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;

@@ -1,7 +1,8 @@
 package org.checkerframework.framework.type.typeannotator;
 
 import com.sun.tools.javac.code.Type.WildcardType;
-import java.util.*;
+import java.util.Set;
+import java.util.Stack;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;

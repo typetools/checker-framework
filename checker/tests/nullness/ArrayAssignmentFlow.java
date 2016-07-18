@@ -1,5 +1,4 @@
 
-import java.util.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class ArrayAssignmentFlow {

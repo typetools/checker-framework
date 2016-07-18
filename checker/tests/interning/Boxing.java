@@ -1,6 +1,5 @@
 // @skip-test
 
-import java.util.*;
 import org.checkerframework.checker.interning.qual.*;
 
 // Per JLS 5.1.7:

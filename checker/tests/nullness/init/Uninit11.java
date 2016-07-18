@@ -1,6 +1,8 @@
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.Unused;
 
 @SubtypeOf({})
 @Target(ElementType.TYPE_USE)
