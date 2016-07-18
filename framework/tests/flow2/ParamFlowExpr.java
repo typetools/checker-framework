@@ -6,7 +6,7 @@ import tests.util.*;
 class ParamFlowExpr {
 
     @RequiresQualifier(expression = "#1", qualifier = Odd.class)
-    void t1(final String p1) {
+    void t1(String p1) {
         String l1 = p1;
     }
 
@@ -17,7 +17,7 @@ class ParamFlowExpr {
     }
 
     @RequiresQualifier(expression = "#1", qualifier = Odd.class)
-    public static boolean eltsNonNull(final Object[] seq1) {
+    public static boolean eltsNonNull(Object[] seq1) {
         if (seq1 == null) {
             return false;
         }

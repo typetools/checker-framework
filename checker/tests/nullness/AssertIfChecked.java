@@ -117,12 +117,12 @@ public class AssertIfChecked {
     }
 
     @EnsuresNonNullIf(result = true, expression = "#1")
-    public static final boolean isComment(final @Nullable String s) {
+    public static final boolean isComment(@Nullable String s) {
         return s != null && (s.startsWith("//") || s.startsWith("#"));
     }
 
     @EnsuresNonNullIf(result = true, expression = "#1")
-    public boolean myEquals(final @Nullable Object o) {
+    public boolean myEquals(@Nullable Object o) {
         return (o instanceof String) && equals((String) o);
     }
 
@@ -136,7 +136,7 @@ public class AssertIfChecked {
         expression = {"#1", "#2"}
     )
     /* pure */ public static boolean sameLength(
-            final boolean @Nullable [] seq1, final boolean @Nullable [] seq2) {
+            boolean @Nullable [] seq1, boolean @Nullable [] seq2) {
         return ((seq1 != null) && (seq2 != null) && seq1.length == seq2.length);
     }
 

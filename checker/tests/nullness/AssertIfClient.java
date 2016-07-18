@@ -4,7 +4,7 @@ import org.checkerframework.dataflow.qual.*;
 public class AssertIfClient {
 
     @RequiresNonNull("#1.rpcResponse()")
-    void rpcResponseNonNull(final Proxy proxy) {
+    void rpcResponseNonNull(Proxy proxy) {
         @NonNull Object response = proxy.rpcResponse();
     }
 
