@@ -1,5 +1,4 @@
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
 
 class Super<S extends @Nullable Object> {
     public void m(S p) {}

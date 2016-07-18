@@ -1,6 +1,3 @@
-import java.lang.annotation.*;
-import java.lang.annotation.Annotation;
-import java.util.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 class WildcardSubtyping2 {

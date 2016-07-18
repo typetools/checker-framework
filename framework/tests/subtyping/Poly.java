@@ -1,4 +1,6 @@
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import tests.util.*;
 
 class Poly {

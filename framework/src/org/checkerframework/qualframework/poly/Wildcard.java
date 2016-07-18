@@ -1,6 +1,7 @@
 package org.checkerframework.qualframework.poly;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /** A qualifier wildcard, bounded above and below by {@link PolyQual}s.
  */

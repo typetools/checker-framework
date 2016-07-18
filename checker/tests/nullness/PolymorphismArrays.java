@@ -1,5 +1,5 @@
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.PolyAll;
 
 public class PolymorphismArrays {
 

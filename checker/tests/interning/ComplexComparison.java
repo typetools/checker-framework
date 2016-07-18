@@ -1,4 +1,4 @@
-import java.util.*;
+import java.util.Comparator;
 import org.checkerframework.checker.interning.qual.*;
 
 public class ComplexComparison {

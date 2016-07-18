@@ -1,6 +1,7 @@
 import org.checkerframework.checker.interning.qual.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.util.*;
 
 public class Arrays {
 

@@ -1,8 +1,11 @@
 package org.checkerframework.checker.signedness.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The bottom qualifier in the Unsigned Type

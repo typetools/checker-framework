@@ -1,7 +1,7 @@
-Demo.java:11: warning: [cast.unsafe] "@PossiblyUnencrypted String" may not be casted to the type "@Encrypted String"
+Demo.java:12: warning: [cast.unsafe] "@PossiblyUnencrypted String" may not be casted to the type "@Encrypted String"
         return (@Encrypted String) new String(b);
                ^
-Demo.java:34: error: [argument.type.incompatible] incompatible types in argument.
+Demo.java:35: error: [argument.type.incompatible] incompatible types in argument.
         sendOverTheInternet(password); // invalid
                             ^
   found   : @PossiblyUnencrypted String

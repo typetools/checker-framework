@@ -1,6 +1,10 @@
 package org.checkerframework.framework.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * A meta-annotation indicating that an annotation type prevents whole-program

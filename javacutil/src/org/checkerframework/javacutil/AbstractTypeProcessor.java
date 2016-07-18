@@ -118,6 +118,8 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
         JavaCompiler compiler = JavaCompiler.instance(ctx);
         compiler.shouldStopPolicyIfNoError =
                 CompileState.max(compiler.shouldStopPolicyIfNoError, CompileState.FLOW);
+        compiler.shouldStopPolicyIfError =
+                CompileState.max(compiler.shouldStopPolicyIfError, CompileState.FLOW);
     }
 
     /**

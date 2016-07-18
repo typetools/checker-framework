@@ -1,6 +1,9 @@
 package org.checkerframework.qualframework.poly;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /** A map of qualifier parameters.  A {@code QualParams} object maps

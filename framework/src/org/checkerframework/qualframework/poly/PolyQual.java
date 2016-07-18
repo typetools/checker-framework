@@ -1,6 +1,9 @@
 package org.checkerframework.qualframework.poly;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /** A qualifier in the qualifier polymorphism system, with ground qualifier
  * representation {@code Q}.  A {@code PolyQual<Q>} represents either a

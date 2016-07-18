@@ -1,7 +1,7 @@
 // Test case for Issue 395:
 // https://github.com/typetools/checker-framework/issues/395
 
-import java.util.*;
+import java.util.ArrayList;
 
 class Issue395 {
 

@@ -1,7 +1,8 @@
 // Test case for Issue 67
 // https://github.com/typetools/checker-framework/issues/67
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 class Issue67 {
     private static final String KEY = "key";
