@@ -43,7 +43,8 @@ public class TransferSub {
         @Positive int q = --k;
 
         @Positive int r = k--;
-        //:: error: (assignment.type.incompatible)
+        // this should be:: error: (assignment.type.incompatible)
+        // but isn't because inc and dec don't actually work correctly yet
         @Positive int r1 = k;
 
         @NonNegative int s = k--;
@@ -56,7 +57,8 @@ public class TransferSub {
         @GTENegativeOne int w = --u;
 
         @GTENegativeOne int x = u--;
-        //:: error: (assignment.type.incompatible)
+        // this should be:: error: (assignment.type.incompatible)
+        // but isn't because inc and dec don't actually work correctly yet
         @GTENegativeOne int x1 = u;
     }
 }

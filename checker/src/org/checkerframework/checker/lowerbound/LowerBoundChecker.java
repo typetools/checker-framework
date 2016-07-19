@@ -2,9 +2,9 @@ package org.checkerframework.checker.lowerbound;
 
 import java.util.LinkedHashSet;
 
-import org.checkerframework.common.value.ValueChecker;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
+
+import org.checkerframework.common.value.ValueChecker;
 
 /**
  * A type-checker for preventing arrays from being accessed with

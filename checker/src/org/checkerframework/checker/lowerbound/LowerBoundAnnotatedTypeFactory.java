@@ -15,6 +15,9 @@ import org.checkerframework.checker.lowerbound.qual.*;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
+import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
@@ -35,6 +38,7 @@ public class LowerBoundAnnotatedTypeFactory extends
  GenericAnnotatedTypeFactory<CFValue, CFStore, LowerBoundTransfer, LowerBoundAnalysis> {
 
     public final AnnotationMirror GTEN1, NN, POS, UNKNOWN;
+    private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -42,6 +46,7 @@ public class LowerBoundAnnotatedTypeFactory extends
         NN = AnnotationUtils.fromClass(elements, NonNegative.class);
         POS = AnnotationUtils.fromClass(elements, Positive.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
+        valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         this.postInit();
     }
 
