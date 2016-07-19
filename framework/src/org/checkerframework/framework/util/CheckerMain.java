@@ -56,7 +56,9 @@ public class CheckerMain {
      */
     public static void main(String[] args) {
         final File pathToThisJar = new File(findPathTo(CheckerMain.class, false));
-        final CheckerMain program = new CheckerMain(pathToThisJar, args);
+        ArrayList<String> alargs = new ArrayList<>(args.length);
+        alargs.addAll(Arrays.asList(args));
+        final CheckerMain program = new CheckerMain(pathToThisJar, alargs);
         final int exitStatus = program.invokeCompiler();
         System.exit(exitStatus);
     }
@@ -98,35 +100,29 @@ public class CheckerMain {
      * Construct all the relevant file locations and Java version given the path to this jar and
      * a set of directories in which to search for jars.
      */
-    public CheckerMain(final File checkerJar, final String[] args) {
+    public CheckerMain(final File checkerJar, final List<String> args) {
 
         this.checkerJar = checkerJar;
         final File searchPath = checkerJar.getParentFile();
         this.checkerQualJar = new File(searchPath, "checker-qual.jar");
 
-        final List<String> argsList = new ArrayList<String>(args.length);
-        for (String arg : args) {
-            argsList.add(arg.trim());
-        }
-
-        replaceShorthandProcessor(argsList);
-        argListFiles = collectArgFiles(argsList);
+        replaceShorthandProcessor(args);
+        argListFiles = collectArgFiles(args);
 
         this.javacJar =
-                extractFileArg(
-                        PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), argsList);
+                extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
 
         final String jdkJarName = PluginUtil.getJdkJarName();
         this.jdkJar =
-                extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), argsList);
+                extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), args);
 
-        this.compilationBootclasspath = createCompilationBootclasspath(argsList);
-        this.runtimeBootClasspath = createRuntimeBootclasspath(argsList);
-        this.jvmOpts = extractJvmOpts(argsList);
+        this.compilationBootclasspath = createCompilationBootclasspath(args);
+        this.runtimeBootClasspath = createRuntimeBootclasspath(args);
+        this.jvmOpts = extractJvmOpts(args);
 
-        this.cpOpts = createCpOpts(argsList);
-        this.ppOpts = createPpOpts(argsList);
-        this.toolOpts = argsList;
+        this.cpOpts = createCpOpts(args);
+        this.ppOpts = createPpOpts(args);
+        this.toolOpts = args;
 
         assertValidState();
     }
