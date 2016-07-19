@@ -1,7 +1,6 @@
 package org.checkerframework.checker.fenum;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;

@@ -4,8 +4,6 @@ import static org.checkerframework.common.reflection.ClassValAnnotatedTypeFactor
 
 import com.sun.source.tree.Tree;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;

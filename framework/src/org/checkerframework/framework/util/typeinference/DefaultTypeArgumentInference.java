@@ -19,7 +19,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
@@ -315,7 +314,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             InferenceResult fromArgSupertypes,
             List<AnnotatedTypeVariable> targetDeclarations,
             AnnotatedTypeFactory typeFactory) {
-        final Types types = typeFactory.getProcessingEnv().getTypeUtils();
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
         final Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
 
