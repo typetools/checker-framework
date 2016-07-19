@@ -60,7 +60,6 @@ public class PerDirectorySuite extends Suite {
     private List<List<File>> getParametersList(TestClass klass) throws Throwable {
         FrameworkMethod method = getParametersMethod(klass);
 
-        List<List<File>> javaFiles;
         // We must have a method getTestDirs which returns String[],
         // or getParametersMethod would fail.
         if (!method.getReturnType().isArray()) {

@@ -4,7 +4,6 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
