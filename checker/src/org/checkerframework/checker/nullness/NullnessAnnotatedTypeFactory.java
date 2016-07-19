@@ -83,10 +83,8 @@ public class NullnessAnnotatedTypeFactory
      * Factory for arbitrary qualifiers, used for declarations and "unused"
      * qualifier.
      */
-    protected final GeneralAnnotatedTypeFactory generalFactory;
 
     /** Cache for the nullness annotations */
-    protected final Set<Class<? extends Annotation>> nullnessAnnos;
 
     @SuppressWarnings("deprecation") // aliasing to deprecated annotation
     public NullnessAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFbc) {
