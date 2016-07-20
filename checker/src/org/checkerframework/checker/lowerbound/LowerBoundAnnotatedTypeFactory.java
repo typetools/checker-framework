@@ -459,6 +459,37 @@ public class LowerBoundAnnotatedTypeFactory extends
             }
         }
 
+        /** when the value on the left is known at compile time */
+        private void computeTypesForLiteralDivideLeft(int val, AnnotatedTypeMirror rightType,
+                                                  AnnotatedTypeMirror type) {
+            if (val == 0) {
+                type.addAnnotation(NN);
+                return;
+            } else if (val == 1) {
+                if (rightType.hasAnnotation(GTEN1)) {
+                    type.addAnnotation(GTEN1);
+                } else if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
+                    type.addAnnotation(NN);
+                }
+                return;
+            }
+        }
+
+        /** @throws ArithmeticException
+         *   when the value on the right is known at compile time
+         *   if the value is zero, then we've discovered division by zero and we throw an exception
+         */
+        private void computeTypesForLiteralDivideRight(int val, AnnotatedTypeMirror leftType,
+                                                  AnnotatedTypeMirror type) {
+            if (val == 0) {
+                // if we get here then this is a divide by zero error...
+                throw new ArithmeticException();
+            } else if (val == 1) {
+                type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
+                return;
+            }
+        }
+
         /**
          *      int lit / int lit -> do the math
          *      lit 0 / * -> nn
@@ -474,36 +505,23 @@ public class LowerBoundAnnotatedTypeFactory extends
          */
         public void computeTypesForDivide(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-
-            // if both left and right are literals, do the math...
-            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
-               rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int valLeft = (int)((LiteralTree)leftExpr).getValue();
-                int valRight = (int)((LiteralTree)rightExpr).getValue();
-                int valResult = valLeft / valRight;
-                literalHelper(valResult, type);
+            // check if the left side's value is known at compile time
+            try {
+                AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
+                int val = intFromValueType(valueType);
+                computeTypesForLiteralDivideLeft(val, rightType, type);
                 return;
-            }
+            } catch (IllegalArgumentException iae) {}
 
-            // handle dividing zero by anything
-            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int val = (int)((LiteralTree)leftExpr).getValue();
-                if (val == 0) {
-                    type.addAnnotation(NN);
-                    return;
-                }
-            }
-
-            // handle dividing by one. We assume that you aren't dividing by literal zero...
-            if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int val = (int)((LiteralTree)rightExpr).getValue();
-                if (val == 1) {
-                    type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
-                    return;
-                }
-            }
+            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+            // check if the right side's value is known at compile time
+            try {
+                AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+                int val = intFromValueType(valueType);
+                computeTypesForLiteralDivideRight(val, leftType, type);
+                return;
+            } catch (IllegalArgumentException iae) {}
 
             /* this section handles generic annotations
                pos / pos -> nn
