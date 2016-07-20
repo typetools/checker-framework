@@ -1,8 +1,6 @@
 package org.checkerframework.checker.nullness;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -19,8 +17,6 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 

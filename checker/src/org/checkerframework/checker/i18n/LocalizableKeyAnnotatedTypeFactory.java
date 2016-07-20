@@ -3,7 +3,6 @@ package org.checkerframework.checker.i18n;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
