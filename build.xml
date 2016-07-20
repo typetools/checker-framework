@@ -13,6 +13,11 @@
 -->
 <project name="checkerframework" default="dist"
         basedir=".">
+  <!-- local.properties must appear before build-common.properties so that
+    properties in local.properties can override properties in
+    build-common.properties -->
+  <property file="${basedir}/local.properties"/>
+  <property file="${basedir}/build-common.properties"/>
 
   <target name="dist"
           description="Compile and jar all subprojects">
@@ -235,7 +240,7 @@
           description="Reformat Java code">
     <get src="${run-gjf-website-dir}/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" ignoreerrors="true"/>
     <chmod file="checker/bin-devel/run-google-java-format.py" perm="+x"/>
-    <apply executable="python" parallel="true" failonerror="true">
+    <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="./checker/bin-devel/run-google-java-format.py"/>
       <arg value="--aosp"/>    <!-- 4-space indentation -->
       <fileset refid="formatted.java.files"/>
@@ -246,7 +251,7 @@
           description="Check Java code formatting">
     <get src="${run-gjf-website-dir}/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" ignoreerrors="true"/>
     <chmod file="checker/bin-devel/check-google-java-format.py" perm="+x"/>
-    <apply executable="python" parallel="true" failonerror="true">
+    <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="./checker/bin-devel/check-google-java-format.py"/>
       <arg value="--aosp"/>    <!-- 4-space indentation -->
       <fileset refid="formatted.java.files"/>
