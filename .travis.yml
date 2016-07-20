@@ -17,7 +17,7 @@ before_script:
 - docker pull mdernst/ubuntu-for-cf-$JDKVER
 
 script:
-- docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone -b $TRAVIS_BRANCH --depth 3 https://github.com/$TRAVIS_REPO_SLUG.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
+- docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --quiet -b $TRAVIS_BRANCH --depth 3 https://github.com/$TRAVIS_REPO_SLUG.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
 
 after_script:
   - |
