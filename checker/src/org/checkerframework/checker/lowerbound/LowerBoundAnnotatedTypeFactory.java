@@ -344,6 +344,36 @@ public class LowerBoundAnnotatedTypeFactory extends
             return;
         }
 
+        public boolean computeTypesForLiteralMinus(int val, AnnotatedTypeMirror leftType,
+                                                   AnnotatedTypeMirror type) {
+            if (val == 2) {
+                if (leftType.hasAnnotation(POS)) {
+                    type.addAnnotation(GTEN1);
+                    return true;
+                }
+            }
+            else if (val == 1) {
+                decrementHelper(leftType, type);
+                return true;
+            }
+            else if (val == 0) {
+                type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
+                return true;
+            }
+            else if (val == -1) {
+                incrementHelper(leftType, type);
+                return true;
+            }
+            else if (val <= -2) {
+                if (leftType.hasAnnotation(GTEN1) || leftType.hasAnnotation(NN) ||
+                    leftType.hasAnnotation(POS)) {
+                        type.addAnnotation(POS);
+                        return true;
+                }
+            }
+            return false;
+        }
+
         /** computeTypesForMinus handles the following cases:
           *     int lit - int lit -> do the math
           *     * - lit 0 -> *
@@ -356,46 +386,13 @@ public class LowerBoundAnnotatedTypeFactory extends
         public void computeTypesForMinus(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-
-            // if both left and right are literals, do the math...
-            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
-               rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int valLeft = (int)((LiteralTree)leftExpr).getValue();
-                int valRight = (int)((LiteralTree)rightExpr).getValue();
-                int valResult = valLeft - valRight;
-                literalHelper(valResult, type);
+            // check if the right side's value is known at compile time
+            try {
+                AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+                int val = intFromValueType(valueType);
+                computeTypesForLiteralMinus(val, leftType, type);
                 return;
-            }
-
-            // special handling for literals on the right
-            if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int val = (int)((LiteralTree)rightExpr).getValue();
-                if (val == 2) {
-                    if (leftType.hasAnnotation(POS)) {
-                        type.addAnnotation(GTEN1);
-                        return;
-                    }
-                }
-                else if (val == 1) {
-                    decrementHelper(leftType, type);
-                    return;
-                }
-                else if (val == 0) {
-                    type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
-                    return;
-                }
-                else if (val == -1) {
-                    incrementHelper(leftType, type);
-                }
-                else if (val <= -2) {
-                    if (leftType.hasAnnotation(GTEN1) || leftType.hasAnnotation(NN) ||
-                        leftType.hasAnnotation(POS)) {
-                        type.addAnnotation(POS);
-                        return;
-                    }
-                }
-            }
+            } catch (IllegalArgumentException iae) {}
 
             // we can't say anything about generic things that are being subtracted, sadly
             type.addAnnotation(UNKNOWN);
