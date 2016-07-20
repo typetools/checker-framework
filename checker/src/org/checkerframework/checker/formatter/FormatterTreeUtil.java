@@ -49,17 +49,21 @@ import org.checkerframework.javacutil.TreeUtils;
 public class FormatterTreeUtil {
     public final BaseTypeChecker checker;
     public final ProcessingEnvironment processingEnv;
-    private final ExecutableElement formatArgTypesElement;
+
+    // TODO: commented out unused field
+    // private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
+        /*
         this.formatArgTypesElement =
                 TreeUtils.getMethod(
                         org.checkerframework.checker.formatter.qual.Format.class.getCanonicalName(),
                         "value",
                         0,
                         processingEnv);
+         */
     }
 
     /**

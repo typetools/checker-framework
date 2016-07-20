@@ -1,7 +1,6 @@
 package org.checkerframework.checker.fenum;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -70,7 +69,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // TODO: warn if no qualifiers given?
         // Just Fenum("..") is still valid, though...
-        return Collections.unmodifiableSet(qualSet);
+        return qualSet;
     }
 
     @Override

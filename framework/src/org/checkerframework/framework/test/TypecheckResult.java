@@ -82,7 +82,6 @@ public class TypecheckResult {
                         "The test run was not expected to issue errors/warnings, but it did.");
             }
 
-            List<Diagnostic<? extends JavaFileObject>> actualDiagnostics = getActualDiagnostics();
             if (!unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty()) {
                 int numExpected = expectedDiagnostics.size();
                 int numFound = numExpected - missingDiagnostics.size();
