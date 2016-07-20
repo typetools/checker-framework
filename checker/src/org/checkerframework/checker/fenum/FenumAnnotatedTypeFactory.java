@@ -69,7 +69,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // TODO: warn if no qualifiers given?
         // Just Fenum("..") is still valid, though...
-        return Collections.unmodifiableSet(qualSet);
+        return qualSet;
     }
 
     @Override

@@ -34,9 +34,8 @@ public class SupportedQualsChecker extends BaseTypeChecker {
 
         @Override
         protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-            return Collections.unmodifiableSet(
-                    new HashSet<Class<? extends Annotation>>(
-                            Arrays.asList(Qualifier.class, BottomQualifier.class)));
+            return new HashSet<Class<? extends Annotation>>(
+                    Arrays.asList(Qualifier.class, BottomQualifier.class));
         }
     }
 }

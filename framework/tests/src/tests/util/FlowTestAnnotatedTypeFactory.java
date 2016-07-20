@@ -35,14 +35,13 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(
-                                Value.class,
-                                Odd.class,
-                                MonotonicOdd.class,
-                                Unqualified.class,
-                                Bottom.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                Arrays.asList(
+                        Value.class,
+                        Odd.class,
+                        MonotonicOdd.class,
+                        Unqualified.class,
+                        Bottom.class));
     }
 
     @Override

@@ -180,32 +180,30 @@ public class NullnessAnnotatedTypeFactory
         AbstractNullnessChecker ckr = (AbstractNullnessChecker) checker;
         // if useFbc is true, then it is the NullnessChecker
         if (ckr.useFbc) {
-            return Collections.unmodifiableSet(
-                    new LinkedHashSet<Class<? extends Annotation>>(
-                            Arrays.asList(
-                                    Nullable.class,
-                                    MonotonicNonNull.class,
-                                    NonNull.class,
-                                    UnderInitialization.class,
-                                    Initialized.class,
-                                    UnknownInitialization.class,
-                                    FBCBottom.class,
-                                    PolyNull.class,
-                                    PolyAll.class)));
+            return new LinkedHashSet<Class<? extends Annotation>>(
+                    Arrays.asList(
+                            Nullable.class,
+                            MonotonicNonNull.class,
+                            NonNull.class,
+                            UnderInitialization.class,
+                            Initialized.class,
+                            UnknownInitialization.class,
+                            FBCBottom.class,
+                            PolyNull.class,
+                            PolyAll.class));
         }
         // otherwise, it is the NullnessRawnessChecker
         else {
-            return Collections.unmodifiableSet(
-                    new LinkedHashSet<Class<? extends Annotation>>(
-                            Arrays.asList(
-                                    Nullable.class,
-                                    MonotonicNonNull.class,
-                                    NonNull.class,
-                                    NonRaw.class,
-                                    Raw.class,
-                                    // PolyRaw.class, //TODO: support PolyRaw in the future
-                                    PolyNull.class,
-                                    PolyAll.class)));
+            return new LinkedHashSet<Class<? extends Annotation>>(
+                    Arrays.asList(
+                            Nullable.class,
+                            MonotonicNonNull.class,
+                            NonNull.class,
+                            NonRaw.class,
+                            Raw.class,
+                            // PolyRaw.class, //TODO: support PolyRaw in the future
+                            PolyNull.class,
+                            PolyAll.class));
         }
     }
 

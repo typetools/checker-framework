@@ -20,12 +20,7 @@ public class DefaultingLowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeF
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(
-                                LB_TOP.class,
-                                LB_EXPLICIT.class,
-                                LB_IMPLICIT.class,
-                                LB_BOTTOM.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                Arrays.asList(LB_TOP.class, LB_EXPLICIT.class, LB_IMPLICIT.class, LB_BOTTOM.class));
     }
 }

@@ -27,9 +27,8 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new LinkedHashSet<Class<? extends Annotation>>(
-                        Arrays.asList(Localized.class, UnknownLocalized.class)));
+        return new LinkedHashSet<Class<? extends Annotation>>(
+                Arrays.asList(Localized.class, UnknownLocalized.class));
     }
 
     @Override
