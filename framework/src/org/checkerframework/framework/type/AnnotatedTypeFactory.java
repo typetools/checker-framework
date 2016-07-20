@@ -205,8 +205,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     protected TypeArgumentInference typeArgumentInference;
 
     /** To cache the supported type qualifiers.
-     * this field should use {@code getSupportedQuals()} to access,
-     * because it using lazy initialization in {@code getSupportedQuals()}
+     * call {@link #getSupportedTypeQualifiers()} instead of using this field
+     * directly, as it may not have been initialized.
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
