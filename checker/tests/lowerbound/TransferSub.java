@@ -32,9 +32,10 @@ public class TransferSub {
 
         //:: error: (assignment.type.incompatible)
         @Positive int n = a - k;
-        //:: error: (assignment.type.incompatible)
+        // this would be an error if the values of b and j (both zero) weren't known at compile time
         @NonNegative int o = b - j;
-        //:: error: (assignment.type.incompatible)
+        /* i and d both have compile time value -1, so this is legal.
+           The general case of GTEN1 - GTEN1 is not, though. */
         @GTENegativeOne int p = i - d;
 
         // decrements

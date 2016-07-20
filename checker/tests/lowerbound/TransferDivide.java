@@ -50,7 +50,5 @@ public class TransferDivide {
 
         /** n1p / nn -> n1p */
         @GTENegativeOne int x = a / l;
-        //:: error: (assignment.type.incompatible)
-        @NonNegative int y = a / l;
     }
 }

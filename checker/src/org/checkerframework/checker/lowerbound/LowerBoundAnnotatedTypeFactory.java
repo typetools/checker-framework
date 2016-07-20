@@ -17,6 +17,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.qual.IntVal;
 
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -83,9 +84,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             }
         }
 
-        /**
-         * annotate literal integers appropriately
-         */
+        /** we could call the constant value checker here but if we already know its a literal... */
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             /** only annotate integers */
@@ -145,10 +144,81 @@ public class LowerBoundAnnotatedTypeFactory extends
             return;
         }
 
+        /** get the list of possible values from a value checker type */
+        private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
+            List<Long> possibleValues = null;
+            try {
+                possibleValues =
+                    ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+            } catch (NullPointerException npe) {}
+            return possibleValues;
+        }
+
+        /** @throws IllegalArgumentException
+            returns a single value equal to what the value checker believes the value
+            of the argument is. If the value checker cannot determine the exact value
+            of the input, throw an Illegal argument exception */
+        public int intFromValueType(AnnotatedTypeMirror valueType) {
+            List<Long> possibleValues = possibleValuesFromValueType(valueType);
+            if (possibleValues != null && possibleValues.size() == 1) {
+                return possibleValues.get(0).intValue();
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        /** figure out which type in our hierarchy a value checker type corresponds to */
+        public AnnotationMirror lowerBoundTypeFromValueType(AnnotatedTypeMirror valueType) {
+            List<Long> possibleValues = possibleValuesFromValueType(valueType);
+            if (possibleValues == null || possibleValues.size() == 0) {
+                return UNKNOWN;
+            }
+            boolean fPos = true;
+            boolean fNN = true;
+            for (Long l : possibleValues) {
+                if (l < -1) {
+                    return UNKNOWN;
+                } else if (l < 0) {
+                    fPos = false;
+                    fNN = false;
+                } else if (l < 1) {
+                    fPos = false;
+                }
+            }
+            // if we've made it this far, the list contains no negative values
+            if (possibleValues.size() > 0) {
+                if (fPos) {
+                    return POS;
+                } else if (fNN) {
+                    return NN;
+                } else {
+                    return GTEN1;
+                }
+            }
+            return UNKNOWN;
+        }
+
+        /** if the valueType pins the variable into a single qualifier, return true and assign
+         * the ATM into that qualifier. otherwise, return false
+         */
+        public boolean valueCheckerCanAssignType(AnnotatedTypeMirror valueType,
+                                                 AnnotatedTypeMirror type) {
+            AnnotationMirror anm = lowerBoundTypeFromValueType(valueType);
+            if (anm != UNKNOWN) {
+                type.addAnnotation(anm);
+                return true;
+            }
+            return false;
+        }
+
         /** dispatch to binary operator helper methods. the lower bound checker currently
          *  handles addition, subtraction, multiplication, division, and modular division */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+            if (valueCheckerCanAssignType(valueType, type)) {
+                return super.visitBinary(tree, type);
+            }
             ExpressionTree left = tree.getLeftOperand();
             ExpressionTree right = tree.getRightOperand();
             switch (tree.getKind()) {
@@ -220,37 +290,24 @@ public class LowerBoundAnnotatedTypeFactory extends
 
         public void computeTypesForPlus(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
-
-            // if both right and left are literals, do the math...
-            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
-               rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int valLeft = (int)((LiteralTree)leftExpr).getValue();
-                int valRight = (int)((LiteralTree)rightExpr).getValue();
-                int valResult = valLeft + valRight;
-                literalHelper(valResult, type);
-                return;
-            }
-
-            /* if the left side is a literal, commute it to the right
-                and rerun to avoid duplicating code.
-                We can do this because we already checked if both are literals.
-            */
-            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int val = (int)((LiteralTree)leftExpr).getValue();
-                if (val >= -2) {
-                    computeTypesForPlus(rightExpr, leftExpr, type);
-                    return;
-                }
-            }
-
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-
-            // handle the case where one of the two is an interesting literal.
-            if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int val = (int)((LiteralTree)rightExpr).getValue();
+            // check if the right side's value is known at compile time
+            try {
+                AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+                int val = intFromValueType(valueType);
                 computeTypesForLiteralPlus(val, leftType, type);
                 return;
-            }
+            } catch (IllegalArgumentException iae) {}
+
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+            // check if the left side's value is known at compile time
+            try {
+                AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
+                int val = intFromValueType(valueType);
+                computeTypesForLiteralPlus(val, rightType, type);
+                return;
+            } catch (IllegalArgumentException iae) {}
+
             /* This section is handling the generic cases:
              pos + pos -> pos
              pos + nn -> pos
@@ -258,7 +315,6 @@ public class LowerBoundAnnotatedTypeFactory extends
              pos + gten1 -> nn
              nn + gten1 -> gten1
             */
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(POS);
                 return;
