@@ -235,7 +235,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 computeTypesForDivide(left, right, type);
                 break;
             case REMAINDER:
-                modHelper(left, right, type);
+                computeTypesForMod(left, right, type);
                 break;
             default:
                 break;
@@ -557,6 +557,13 @@ public class LowerBoundAnnotatedTypeFactory extends
             return;
         }
 
+        private void computeTypesForLiteralMod(int val, AnnotatedTypeMirror type) {
+            if (val == 1 || val == -1) {
+                type.addAnnotation(NN);
+                return;
+            }
+        }
+
         /**
          *  int lit % int lit -> do the math
          *  * % 1/-1 -> nn
@@ -564,29 +571,18 @@ public class LowerBoundAnnotatedTypeFactory extends
          *  gten1 % * -> gten1
          *  * % * -> lbu
          */
-        public void modHelper(ExpressionTree leftExpr, ExpressionTree rightExpr,
+        public void computeTypesForMod(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
 
-            // if both left and right are literals, do the math...
-            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
-               rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int valLeft = (int)((LiteralTree)leftExpr).getValue();
-                int valRight = (int)((LiteralTree)rightExpr).getValue();
-                int valResult = valLeft % valRight;
-                literalHelper(valResult, type);
+            // check if the right side's value is known at compile time
+            try {
+                AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+                int val = intFromValueType(valueType);
+                computeTypesForLiteralMod(val, type);
                 return;
-            }
-
-            // handle modding by one/negative one.
-            if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int val = (int)((LiteralTree)rightExpr).getValue();
-                if (val == 1 || val == -1) {
-                    type.addAnnotation(NN);
-                    return;
-                }
-            }
+            } catch (IllegalArgumentException iae) {}
 
             /* this section handles generic annotations
                 pos/nn % * -> nn
