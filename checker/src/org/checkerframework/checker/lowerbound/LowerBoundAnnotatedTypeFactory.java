@@ -344,34 +344,33 @@ public class LowerBoundAnnotatedTypeFactory extends
             return;
         }
 
-        public boolean computeTypesForLiteralMinus(int val, AnnotatedTypeMirror leftType,
+        private void computeTypesForLiteralMinus(int val, AnnotatedTypeMirror leftType,
                                                    AnnotatedTypeMirror type) {
             if (val == 2) {
                 if (leftType.hasAnnotation(POS)) {
                     type.addAnnotation(GTEN1);
-                    return true;
+                    return;
                 }
             }
             else if (val == 1) {
                 decrementHelper(leftType, type);
-                return true;
+                return;
             }
             else if (val == 0) {
                 type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
-                return true;
+                return;
             }
             else if (val == -1) {
                 incrementHelper(leftType, type);
-                return true;
+                return;
             }
             else if (val <= -2) {
                 if (leftType.hasAnnotation(GTEN1) || leftType.hasAnnotation(NN) ||
                     leftType.hasAnnotation(POS)) {
                         type.addAnnotation(POS);
-                        return true;
+                        return;
                 }
             }
-            return false;
         }
 
         /** computeTypesForMinus handles the following cases:
@@ -399,6 +398,17 @@ public class LowerBoundAnnotatedTypeFactory extends
             return;
         }
 
+        private void computeTypesForLiteralTimes(int val, AnnotatedTypeMirror leftType,
+                                                 AnnotatedTypeMirror type) {
+            if (val == 0) {
+                type.addAnnotation(NN);
+                return;
+            } else if (val == 1) {
+                type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
+                return;
+            }
+        }
+
         /**
          *      computeTypesForTimes handles the following cases:
          *        int lit * int lit -> do the math
@@ -412,38 +422,22 @@ public class LowerBoundAnnotatedTypeFactory extends
         public void computeTypesForTimes(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-
-            // if both left and right are literals, do the math...
-            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL &&
-               rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int valLeft = (int)((LiteralTree)leftExpr).getValue();
-                int valRight = (int)((LiteralTree)rightExpr).getValue();
-                int valResult = valLeft * valRight;
-                literalHelper(valResult, type);
+            // check if the right side's value is known at compile time
+            try {
+                AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+                int val = intFromValueType(valueType);
+                computeTypesForLiteralTimes(val, leftType, type);
                 return;
-            }
+            } catch (IllegalArgumentException iae) {}
 
-            // because we already handle literals on the right, commute those on the left
-            if (leftExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int val = (int)((LiteralTree)leftExpr).getValue();
-                if (val == 0 || val == 1) {
-                    computeTypesForTimes(rightExpr, leftExpr, type);
-                    return;
-                }
-            }
-
-            // special handling for literals
-            if (rightExpr.getKind() == Tree.Kind.INT_LITERAL) {
-                int val = (int)((LiteralTree)rightExpr).getValue();
-                if (val == 0) {
-                    type.addAnnotation(NN);
-                    return;
-                } else if (val == 1) {
-                    type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
-                    return;
-                }
-            }
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+            // check if the left side's value is known at compile time
+            try {
+                AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
+                int val = intFromValueType(valueType);
+                computeTypesForLiteralTimes(val, rightType, type);
+                return;
+            } catch (IllegalArgumentException iae) {}
 
             /* this section handles generic annotations
                 pos * pos -> pos
