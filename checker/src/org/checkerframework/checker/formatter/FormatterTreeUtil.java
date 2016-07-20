@@ -50,7 +50,6 @@ public class FormatterTreeUtil {
     public final BaseTypeChecker checker;
     public final ProcessingEnvironment processingEnv;
 
-    // TODO: commented out unused field
     // private final ExecutableElement formatArgTypesElement;
 
     public FormatterTreeUtil(BaseTypeChecker checker) {
