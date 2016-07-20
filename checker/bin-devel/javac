@@ -48,10 +48,15 @@ for i in "$@" ; do
    IFS="$saveIFS"
 done
 
+# TODO: pass only the qualifiers in .cp
+
 eval "java" \
-     "-DCheckerDevelMain.cp=${buildDirs} " \
+     "-DCheckerDevelMain.cp= " \
+     "-DCheckerDevelMain.pp=${buildDirs} " \
      "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
      "-DCheckerDevelMain.runtime.bcp=${ltBinDir} " \
      "-DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDirs} " \
-     "org.checkerframework.framework.util.CheckerDevelMain" "-AprintErrorStack" ${args}
+     "org.checkerframework.framework.util.CheckerDevelMain" \
+     "-AprintErrorStack" \
+     ${args}

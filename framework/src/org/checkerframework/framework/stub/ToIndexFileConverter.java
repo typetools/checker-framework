@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -79,8 +78,8 @@ import org.checkerframework.stubparser.ast.visitor.GenericVisitorAdapter;
  */
 public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> {
     // The possessive modifiers "*+" are for efficiency only.
-    private static Pattern packagePattern =
-            Pattern.compile("\\bpackage *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
+    // private static Pattern packagePattern =
+    //         Pattern.compile("\\bpackage *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
     private static Pattern importPattern =
             Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 

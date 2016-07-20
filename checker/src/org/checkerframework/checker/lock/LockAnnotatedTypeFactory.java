@@ -12,7 +12,6 @@ import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -100,15 +99,14 @@ public class LockAnnotatedTypeFactory
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new LinkedHashSet<Class<? extends Annotation>>(
-                        Arrays.asList(
-                                LockHeld.class,
-                                LockPossiblyHeld.class,
-                                GuardedBy.class,
-                                GuardedByUnknown.class,
-                                GuardSatisfied.class,
-                                GuardedByBottom.class)));
+        return new LinkedHashSet<Class<? extends Annotation>>(
+                Arrays.asList(
+                        LockHeld.class,
+                        LockPossiblyHeld.class,
+                        GuardedBy.class,
+                        GuardedByUnknown.class,
+                        GuardSatisfied.class,
+                        GuardedByBottom.class));
     }
 
     @Override

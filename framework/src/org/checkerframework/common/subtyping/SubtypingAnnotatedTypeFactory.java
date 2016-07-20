@@ -1,7 +1,6 @@
 package org.checkerframework.common.subtyping;
 
 import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -63,6 +62,6 @@ public class SubtypingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        return Collections.unmodifiableSet(qualSet);
+        return qualSet;
     }
 }
