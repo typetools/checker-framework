@@ -437,6 +437,7 @@ public class AnnotationClassLoader {
     /**
      * Debug Use Displays all classpaths
      */
+    @SuppressWarnings("unused") // for debugging
     private final void printPaths() {
         // all paths in Xbootclasspath
         String[] bootclassPaths = System.getProperty("sun.boot.class.path").split(":");
