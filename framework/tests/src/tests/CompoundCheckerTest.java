@@ -1,7 +1,8 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -10,10 +11,10 @@ import org.junit.runners.Parameterized.Parameters;
  * @author smillst
  *
  */
-public class CompoundCheckerTest extends CheckerFrameworkTest {
+public class CompoundCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
-    public CompoundCheckerTest(File testFile) {
-        super(testFile, tests.compound.CompoundChecker.class, "compound-checker", "-Anomsgtext");
+    public CompoundCheckerTest(List<File> testFiles) {
+        super(testFiles, tests.compound.CompoundChecker.class, "compound-checker", "-Anomsgtext");
     }
 
     @Parameters

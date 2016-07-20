@@ -1,17 +1,18 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Library for the Nullness checker when using safe defaults for unannotated source code.
  */
-public class NullnessSafeDefaultsSourceCodeLibTest extends CheckerFrameworkTest {
+public class NullnessSafeDefaultsSourceCodeLibTest extends CheckerFrameworkPerDirectoryTest {
 
-    public NullnessSafeDefaultsSourceCodeLibTest(File testFile) {
+    public NullnessSafeDefaultsSourceCodeLibTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-AuseDefaultsForUncheckedCode=source,bytecode",

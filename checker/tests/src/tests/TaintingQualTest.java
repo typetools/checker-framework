@@ -1,14 +1,15 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class TaintingQualTest extends CheckerFrameworkTest {
+public class TaintingQualTest extends CheckerFrameworkPerDirectoryTest {
 
-    public TaintingQualTest(File testFile) {
+    public TaintingQualTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.experimental.tainting_qual.TaintingCheckerAdapter
                         .class,
                 "tainting_qual",

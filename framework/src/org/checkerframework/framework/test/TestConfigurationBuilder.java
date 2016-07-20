@@ -81,40 +81,8 @@ public class TestConfigurationBuilder {
     }
 
     /**
-     * This returns a builder for the default configuration used by Checker Framework JUnit tests.
-     * @param testSourcePath the path to the Checker test file sources, usually this is the directory of Checker's tests
-     * @param testFile a single test java file to compile
-     * @param checkerName a single Checker to include in the processors field
-     * @param options the options to the compiler/processors
-     * @param shouldEmitDebugInfo whether or not debug information should be emitted
-     * @return the builder that will create an immutable test configuration
-     */
-    public static TestConfigurationBuilder getDefaultConfigurationBuilder(
-            String testSourcePath,
-            File testFile,
-            String checkerName,
-            List<String> options,
-            boolean shouldEmitDebugInfo) {
-
-        String classpath = getDefaultClassPath();
-        File outputDir = getOutputDirFromProperty();
-        List<File> javaFiles = Arrays.asList(testFile);
-        List<String> processors = Arrays.asList(checkerName);
-        return getDefaultConfigurationBuilder(
-                testSourcePath,
-                outputDir,
-                classpath,
-                javaFiles,
-                processors,
-                options,
-                shouldEmitDebugInfo);
-    }
-
-    /**
      * This is the default configuration used by Checker Framework JUnit tests.
      * @param testSourcePath the path to the Checker test file sources, usually this is the directory of Checker's tests
-     * @param outputClassDirectory the directory to place classes compiled for testing
-     * @param classPath the classpath to use for compilation
      * @param testSourceFiles the Java files that compose the test
      * @param processors the checkers or other annotation processors to run over the testSourceFiles
      * @param options the options to the compiler/processors
@@ -124,16 +92,18 @@ public class TestConfigurationBuilder {
      */
     public static TestConfiguration buildDefaultConfiguration(
             String testSourcePath,
-            File outputClassDirectory,
-            String classPath,
             Iterable<File> testSourceFiles,
             Iterable<String> processors,
             List<String> options,
             boolean shouldEmitDebugInfo) {
+
+        String classPath = getDefaultClassPath();
+        File outputDir = getOutputDirFromProperty();
+
         TestConfigurationBuilder builder =
                 getDefaultConfigurationBuilder(
                         testSourcePath,
-                        outputClassDirectory,
+                        outputDir,
                         classPath,
                         testSourceFiles,
                         processors,
@@ -162,11 +132,11 @@ public class TestConfigurationBuilder {
             String checkerName,
             List<String> options,
             boolean shouldEmitDebugInfo) {
+        List<File> javaFiles = Arrays.asList(testFile);
+        List<String> processors = Arrays.asList(checkerName);
 
-        TestConfigurationBuilder builder =
-                getDefaultConfigurationBuilder(
-                        testSourcePath, testFile, checkerName, options, shouldEmitDebugInfo);
-        return builder.validateThenBuild(true);
+        return buildDefaultConfiguration(
+                testSourcePath, javaFiles, processors, options, shouldEmitDebugInfo);
     }
 
     /** The list of files that contain Java diagnostics to compare against */

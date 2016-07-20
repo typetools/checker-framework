@@ -26,14 +26,14 @@ compile-for-test:
 named-quals-test:
 	$(JAVAC) -classpath $(PROJECTDIR) -AprintErrorStack -processor org.checkerframework.checker.units.UnitsChecker -Aunits=qual.Hz,qual.kHz,qual.Frequency Demo.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt
-	-rm Out.txt
+	rm -f Out.txt
 
 # test case for using externally defined units by loading them from a directory using the -AunitsDirs option
 qual-folder-test:
 	$(JAVAC) -classpath $(PROJECTDIR) -AprintErrorStack -processor org.checkerframework.checker.units.UnitsChecker -AunitsDirs=$(PROJECTDIR) Demo.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt
-	-rm Out.txt
+	rm -f Out.txt
 
 # test clean up
 clean:
-	-rm qual/*.class
+	rm -f qual/*.class

@@ -4,25 +4,25 @@ import org.checkerframework.qualframework.poly.qual.*;
 // Test wildcards with method qualifier parameters.
 // No corresponding primary test.
 @ClassTaintingParam("Main")
-class A {}
+class PmwA {}
 
-abstract class Test {
+abstract class ParamMethodWildcard {
     static void test1(
-            @Tainted(param = "Main") A i,
-            @Tainted(param = "Main", wildcard = Wildcard.EXTENDS) A j) {}
+            @Tainted(param = "Main") PmwA i,
+            @Tainted(param = "Main", wildcard = Wildcard.EXTENDS) PmwA j) {}
 
     @MethodTaintingParam("Main")
     static void test2(
-            @Var(arg = "Main", param = "Main") A i,
-            @Var(arg = "Main", param = "Main", wildcard = Wildcard.EXTENDS) A j) {}
+            @Var(arg = "Main", param = "Main") PmwA i,
+            @Var(arg = "Main", param = "Main", wildcard = Wildcard.EXTENDS) PmwA j) {}
 
-    abstract @Tainted(param = "Main") A makeTainted();
+    abstract @Tainted(param = "Main") PmwA makeTainted();
 
-    abstract @Untainted(param = "Main") A makeUntainted();
+    abstract @Untainted(param = "Main") PmwA makeUntainted();
 
-    abstract void takeTainted(@Tainted(param = "Main") A o);
+    abstract void takeTainted(@Tainted(param = "Main") PmwA o);
 
-    abstract void takeUntainted(@Untainted(param = "Main") A o);
+    abstract void takeUntainted(@Untainted(param = "Main") PmwA o);
 
     void test() {
         test1(makeTainted(), makeTainted());

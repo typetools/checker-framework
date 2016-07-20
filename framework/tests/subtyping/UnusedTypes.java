@@ -1,6 +1,7 @@
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.Unused;
 import tests.util.SubQual;
 import tests.util.SuperQual;
 

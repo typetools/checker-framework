@@ -1,6 +1,5 @@
-import java.util.*;
+import java.util.HashMap;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
 
 public class KeyForSubtyping {
     HashMap<String, String> mapA = new HashMap<String, String>();

@@ -13,7 +13,7 @@ interface Unbound2 {
     void apply(@Nullable MyClass my);
 }
 
-interface Supplier<R extends @Nullable Object> {
+interface Supplier1<R extends @Nullable Object> {
     R supply();
 }
 
@@ -77,11 +77,11 @@ class Outer {
 
     void context(@Nullable Outer this) {
         // This one is unbound and needs an Outer as a param
-        Supplier<Inner1> f1 = Inner1::new;
+        Supplier1<Inner1> f1 = Inner1::new;
         //:: error: (methodref.receiver.bound.invalid)
-        Supplier<Inner2> f2 = Inner2::new;
+        Supplier1<Inner2> f2 = Inner2::new;
 
-        // Supplier</*3*/Inner> f = /*4*/Inner::new;
+        // Supplier1</*3*/Inner> f = /*4*/Inner::new;
         // 4 <: 3? Constructor annotations?
     }
 }

@@ -5,7 +5,7 @@ import org.checkerframework.dataflow.qual.Pure;
 
 class ReadyReadLine {
 
-    void m(BufferedReader buf) throws Exception {
+    void m(MyBufferedReader buf) throws Exception {
         if (buf.ready()) {
             String line = buf.readLine();
             line.toString();
@@ -19,7 +19,7 @@ class ReadyReadLine {
 }
 
 // this is a replication of the JDK BufferedReader (with only the relevant methods)
-class BufferedReader {
+class MyBufferedReader {
     public @Nullable String readLine() throws Exception {
         return null;
     }

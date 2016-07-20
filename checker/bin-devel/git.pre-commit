@@ -1,11 +1,22 @@
 #!/bin/sh
 
-# This file will be used as .git/hooks/pre-commit.
+# This file will be used as ../../.git/hooks/pre-commit.
 # However, it should be edited as checker/bin-devel/git.pre-commit.
+# You can install it by running: (cd .. && ant prep)
 
 # Fail if any command fails
 set -e
 
-ant -e check-style
+# "ant -e check-style" would check every file; on commit we only need to
+# check files that changed.
+CHANGED_JAVA_FILES=`git diff --staged --name-only --diff-filter=ACM | grep '\.java$'` || true
+# echo CHANGED_JAVA_FILES "'"${CHANGED_JAVA_FILES}"'"
+if [ ! -z "$CHANGED_JAVA_FILES" ]; then
+    (cd checker/bin-devel && wget -q -N https://raw.githubusercontent.com/mernst/plume-lib/master/bin/check-google-java-format.py && chmod +x check-google-java-format.py)
+    ## For debugging:
+    # echo "CHANGED_JAVA_FILES: ${CHANGED_JAVA_FILES}"
+    python checker/bin-devel/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES}
+fi
 
+# TODO: should do this only if some file named PluginUtil.java has changed.
 release/checkPluginUtil.sh

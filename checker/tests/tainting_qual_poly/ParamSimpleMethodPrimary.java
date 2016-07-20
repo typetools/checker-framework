@@ -2,7 +2,7 @@
 import org.checkerframework.checker.tainting.qual.*;
 
 // Test method qual params with primary variable
-abstract class Test {
+abstract class ParamSimpleMethodPrimary {
     @MethodTaintingParam
     abstract @Var Integer test(@Var Integer i, @Var Integer j);
 

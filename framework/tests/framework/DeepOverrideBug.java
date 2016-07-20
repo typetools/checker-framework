@@ -1,4 +1,3 @@
-import java.util.*;
 import tests.util.*;
 
 // TODO: the output have a "missing return statement"?

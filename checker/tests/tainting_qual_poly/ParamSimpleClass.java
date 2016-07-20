@@ -3,27 +3,27 @@ import org.checkerframework.checker.tainting.qual.*;
 
 // Test qual param on a class
 @ClassTaintingParam("Main")
-class A {
-    public @Tainted(param = "Main2") B x;
-    public @Untainted(param = "Main2") B y;
-    public @Var(arg = "Main", param = "Main2") B z;
+class PscA {
+    public @Tainted(param = "Main2") PscB x;
+    public @Untainted(param = "Main2") PscB y;
+    public @Var(arg = "Main", param = "Main2") PscB z;
 }
 
 @ClassTaintingParam("Main2")
-class B {}
+class PscB {}
 
-abstract class Test {
-    abstract @Tainted(param = "Main") A makeTainted();
+abstract class ParamSimpleClass {
+    abstract @Tainted(param = "Main") PscA makeTainted();
 
-    abstract @Untainted(param = "Main") A makeUntainted();
+    abstract @Untainted(param = "Main") PscA makeUntainted();
 
-    abstract void takeTainted(@Tainted(param = "Main2") B o);
+    abstract void takeTainted(@Tainted(param = "Main2") PscB o);
 
-    abstract void takeUntainted(@Untainted(param = "Main2") B o);
+    abstract void takeUntainted(@Untainted(param = "Main2") PscB o);
 
     void test() {
-        @Tainted(param = "Main") A ta = makeTainted();
-        @Untainted(param = "Main") A ua = makeUntainted();
+        @Tainted(param = "Main") PscA ta = makeTainted();
+        @Untainted(param = "Main") PscA ua = makeUntainted();
 
         takeTainted(ta.x);
         //:: error: (argument.type.incompatible)

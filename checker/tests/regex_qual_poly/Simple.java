@@ -2,17 +2,20 @@ import org.checkerframework.checker.regex.qual.*;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 @ClassRegexParam("param1")
-class A {}
+class SuperSimple {}
 
 class Simple {
 
-    void takeUntainted(@Regex(value = 1, param = "param1") A a) {}
+    void takeUntainted(@Regex(value = 1, param = "param1") SuperSimple a) {}
 
-    void takeTainted(@Regex(param = "param1") A a) {}
+    void takeTainted(@Regex(param = "param1") SuperSimple a) {}
 
-    void takeDef(A a) {}
+    void takeDef(SuperSimple a) {}
 
-    void test(@Regex(value = 1, param = "param1") A u, @Regex(param = "param1") A t, A def) {
+    void test(
+            @Regex(value = 1, param = "param1") SuperSimple u,
+            @Regex(param = "param1") SuperSimple t,
+            SuperSimple def) {
 
         takeUntainted(u);
         //:: error: (argument.type.incompatible)

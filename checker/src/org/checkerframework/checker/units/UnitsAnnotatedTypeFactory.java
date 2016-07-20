@@ -5,7 +5,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -164,7 +163,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // copy all loaded external Units to qual set
         qualSet.addAll(externalQualsMap.values());
 
-        return Collections.unmodifiableSet(qualSet);
+        return qualSet;
     }
 
     private void loadAllExternalUnits() {

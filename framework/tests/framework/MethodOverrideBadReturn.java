@@ -1,4 +1,3 @@
-import java.util.*;
 import tests.util.*;
 
 public abstract class MethodOverrideBadReturn {

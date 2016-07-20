@@ -1,7 +1,8 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -10,11 +11,11 @@ import org.junit.runners.Parameterized.Parameters;
  * @author smillst
  *
  */
-public class ClassValTest extends CheckerFrameworkTest {
+public class ClassValTest extends CheckerFrameworkPerDirectoryTest {
 
-    public ClassValTest(File testFile) {
+    public ClassValTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.common.reflection.ClassValChecker.class,
                 "classval",
                 "-Anomsgtext");

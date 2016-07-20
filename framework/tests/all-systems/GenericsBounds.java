@@ -1,4 +1,5 @@
-import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 interface A<ID> {}
 
@@ -14,7 +15,7 @@ class Upper<ID, X extends A<ID>, Y extends X> {}
 
 class Lower extends Upper<Long, B2, C> {}
 
-class Test {
+class GenericsBounds {
     Upper<Long, B2, C> f = new Upper<Long, B2, C>();
 }
 

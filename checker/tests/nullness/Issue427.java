@@ -6,7 +6,7 @@
 
 // @skip-test
 
-import java.util.*;
+import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class Issue427 {

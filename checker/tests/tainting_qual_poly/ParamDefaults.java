@@ -2,31 +2,31 @@
 import org.checkerframework.checker.tainting.qual.*;
 
 @ClassTaintingParam("Main")
-class A {
-    public @Var(arg = "Main", param = "Main2") B z;
+class PdA {
+    public @Var(arg = "Main", param = "Main2") PdB z;
 }
 
 @ClassTaintingParam("Main2")
-class B {}
+class PdB {}
 
-abstract class Test {
-    // Defaults to A<<?>> (? is the top of the containment hierarchy, so A<<?>>
-    // is the top of the hierarchy of instantiations of A).
-    abstract A make();
+abstract class ParamDefaults {
+    // Defaults to PdA<<?>> (? is the top of the containment hierarchy, so PdA<<?>>
+    // is the top of the hierarchy of instantiations of PdA).
+    abstract PdA make();
 
-    abstract @Tainted(param = "Main") A makeTainted();
+    abstract @Tainted(param = "Main") PdA makeTainted();
 
-    abstract void takeTainted(@Tainted(param = "Main2") B o);
+    abstract void takeTainted(@Tainted(param = "Main2") PdB o);
 
-    abstract void takeUntainted(@Untainted(param = "Main2") B o);
+    abstract void takeUntainted(@Untainted(param = "Main2") PdB o);
 
-    abstract void take(B o);
+    abstract void take(PdB o);
 
-    abstract void takeA(A a);
+    abstract void takePdA(PdA a);
 
     void test() {
-        A a = make();
-        @Tainted(param = "Main") A ta = makeTainted();
+        PdA a = make();
+        @Tainted(param = "Main") PdA ta = makeTainted();
 
         //:: error: (argument.type.incompatible)
         takeUntainted(a.z);
@@ -34,7 +34,7 @@ abstract class Test {
         takeTainted(a.z);
         take(a.z);
 
-        takeA(a);
-        takeA(ta);
+        takePdA(a);
+        takePdA(ta);
     }
 }

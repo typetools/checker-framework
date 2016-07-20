@@ -1,6 +1,9 @@
 package org.checkerframework.qualframework.poly;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 import org.checkerframework.qualframework.base.TypeAnnotator;

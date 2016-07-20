@@ -3,7 +3,6 @@ package tests.util;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -75,14 +74,13 @@ class TestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(
-                                Odd.class,
-                                MonotonicOdd.class,
-                                Even.class,
-                                Unqualified.class,
-                                Bottom.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                Arrays.asList(
+                        Odd.class,
+                        MonotonicOdd.class,
+                        Even.class,
+                        Unqualified.class,
+                        Bottom.class));
     }
 
     @Override

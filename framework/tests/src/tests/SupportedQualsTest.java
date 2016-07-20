@@ -1,14 +1,15 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class SupportedQualsTest extends CheckerFrameworkTest {
+public class SupportedQualsTest extends CheckerFrameworkPerDirectoryTest {
 
-    public SupportedQualsTest(File testFile) {
+    public SupportedQualsTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 tests.supportedquals.SupportedQualsChecker.class,
                 "simple",
                 "-Anomsgtext",

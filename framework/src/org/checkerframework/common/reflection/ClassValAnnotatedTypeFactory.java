@@ -10,7 +10,6 @@ import com.sun.tools.javac.code.Type.UnionClassType;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -55,13 +54,12 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(
-                                UnknownClass.class,
-                                ClassVal.class,
-                                ClassBound.class,
-                                ClassValBottom.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                Arrays.asList(
+                        UnknownClass.class,
+                        ClassVal.class,
+                        ClassBound.class,
+                        ClassValBottom.class));
     }
 
     private AnnotationMirror createClassVal(List<String> values) {

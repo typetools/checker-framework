@@ -1,14 +1,15 @@
 package tests;
 
 import java.io.File;
+import java.util.List;
 import org.checkerframework.checker.tainting.TaintingChecker;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class TaintingQualPolyTest extends CheckerFrameworkTest {
+public class TaintingQualPolyTest extends CheckerFrameworkPerDirectoryTest {
 
-    public TaintingQualPolyTest(File testFile) {
-        super(testFile, TaintingChecker.class, "tainting_qual_poly", "-Anomsgtext");
+    public TaintingQualPolyTest(List<File> testFiles) {
+        super(testFiles, TaintingChecker.class, "tainting_qual_poly", "-Anomsgtext");
     }
 
     @Parameters

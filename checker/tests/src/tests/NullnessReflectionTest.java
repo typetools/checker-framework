@@ -1,17 +1,18 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Nullness checker when reflection resolution is enabled
  */
-public class NullnessReflectionTest extends CheckerFrameworkTest {
+public class NullnessReflectionTest extends CheckerFrameworkPerDirectoryTest {
 
-    public NullnessReflectionTest(File testFile) {
+    public NullnessReflectionTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-AresolveReflection",

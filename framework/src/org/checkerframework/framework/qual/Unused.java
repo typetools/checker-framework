@@ -2,7 +2,11 @@ package org.checkerframework.framework.qual;
 
 import static java.lang.annotation.ElementType.*;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * Declares that the field may not be accessed if the receiver is of the
