@@ -1,22 +1,27 @@
 #!/bin/bash
 
+# Optional argument $1 is one of:  junit, nonjunit, misc
+# If it is omitted, this script does everything.
+
+
 # Fail the whole script if any command fails
 set -e
+
+
+## Diagnostic output
 # Output lines of this script as they are read.
 set -o verbose
 # Output expanded lines of this script as they are executed.
 set -o xtrace
+# Don't use "-d" to debug ant, because that results in a log so long
+# that Travis truncates the log and terminates the job.
 
 export SHELLOPTS
 
+
 ./.travis-build-without-test.sh
-
-# Optional argument $1 is one of:  junit, nonjunit, misc
-# If it is omitted, this script does everything.
-
-# The JDK was built already; there is no need to rebuild it again.
-# Don't use "-d" to debug ant, because that results in a log so long
-# that Travis truncates the log and terminates the job.
+# The above command builds the JDK, so there is no need for a subsequent
+# command to rebuild it again.
 
 if [[ "$1" != "junit" && "$1" != "nonjunit" ]]; then
   ## jdkany tests: miscellaneous tests that shouldn't depend on JDK version.
