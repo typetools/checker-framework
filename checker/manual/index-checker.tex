@@ -1,0 +1,67 @@
+%\htmlhr
+\chapter{Index Checker for array bounds\label{index-checker}}
+
+This checker warns about the potential presence of unsafe array
+accesses.  To do so, it keeps track of the ranges of values potential
+indexes may take on.  The Index Checker is actually a combination of
+two different checkers, each of which is run independently: the Lower
+Bound Checker and the Upper Bound Checker.  The Lower Bound Checker
+will issue warning when the variable being used as an index may
+potentially be too low; the Upper Bound Checker warns about accesses
+that may be too high. Both checkers use automatic introduction and
+transfer rules which should make it unnecessary for the programmer to
+write annotations, so long as \textit{defensive programming} is being
+practiced---that is, so long as the programmer is careful to check
+that indices are within bounds before using them, the Index Checker
+requires no annotations from the programmer.
+
+\section{Running the Index Checker\label{index-running}}
+
+To run the Index Checker, run the command
+
+\begin{Verbatim}
+javac -processor IndexChecker <JavaFileName>.java
+\end{Verbatim}
+
+The Lower Bound and Upper Bound checkers can also be run
+independently; simply substitute ``LowerBoundChecker'' or
+``UpperBoundChecker'' for ``IndexChecker'' in the above command as
+desired.
+
+\section{The Lower Bound Checker\label{index-lowerbound}}
+
+The Lower Bound checker looks for accesses into arrays that might be
+too low.  It warns its users about any such possible accesses. The
+Lower Bound checker's type system is linear and fairly
+straightforward. It primarily keeps track of each integer's relation
+to zero, using the following qualifiers (all of which are inferred
+automatically):
+
+\begin{description}
+\item[\refqualclass{checker/lowerbound/qual}{LowerBoundUnknown}]
+  There is no information about the value of this variable.
+  This type is the top type. Variables of this type are
+  unsafe for use as array indices.
+\item[\refqualclass{checker/lowerbound/qual}{GreaterThanOrEqualToNegativeOne}]
+  This variable has value -1 or greater. This type is a subtype of LowerBoundUnknown.
+  Variables of this type are unsafe for use as array indices.
+\item[\refqualclass{checker/lowerbound/qual}{NonNegative}]
+  This variable has value 0 or greater. This type is a subtype of GreaterThanOrEqualToNegativeOne.
+  Variables of this type are safe for use as array indices.
+\item[\refqualclass{checker/lowerbound/qual}{Positive}]
+  This variable has value 1 or greater. This type is a subtype of NonNegative.
+  Variables of this type are safe for use as array indices.
+\end{description}
+
+\begin{figure}
+\includeimage{lowerbound}{7cm}
+\caption{The type hierarchy used by the Lower Bound Checker.}
+\label{fig-lowerbound-types}
+\end{figure}
+
+The transfer rules for this type hierarchy are intuitive. For brevity,
+the full list of rules is not reproduced here; it can be found in the file
+``lowerbound\_rules.txt'' in the source code's ``lowerbound'' directory.
+The essence of the rules is that of basic arithmetic: adding one to a
+NonNegative turns it into a Positive, checking if an Unknown is greater
+than zero makes it Positive in the then branch, etc.
