@@ -902,6 +902,24 @@ Run the
 though note that the \<.travis.yml> files already exist, so only the first
 two steps may be necessary.
 
+\subsection{Code style\label{code-style}}
+
+Code in this project follows the
+\ahref{https://google.github.io/styleguide/javaguide.html}{Google Java Style
+Guide} except 4 spaces are used for indentation.  If you commit changes to the
+Git repository, then a pre-commit hook verifies that the changes follow the
+style by running \<ant check-format> in the top-level directory.
+
+If
+the pre-commit hook fails
+because of improper formatting, run \<ant reformat>, stage the
+changes, and try the commit operation again.
+
+If the pre-commit hook or \<ant reformat> fails with an
+"Argument list too long" error, then create a \code{local.properties} file
+in the top-level directory that sets the property \code{maxparallel} to 4000.  If the error is still issued, reduce the number and
+try again.
+
 
 \section{Publications\label{publications}\label{learning-more}}
 
