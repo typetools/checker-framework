@@ -907,15 +907,18 @@ two steps may be necessary.
 Code in this project follows the
 \ahref{https://google.github.io/styleguide/javaguide.html}{Google Java Style
 Guide} except 4 spaces are used for indentation.  If you commit changes to the
-Git repository , then a pre-commit hook verifies that the changes follow the
-style by running <ant check-format/> in the top level directory.  If this fails
-because of improper formatting, run <ant reformat/>.  If this fail with
-"Argument list too long" error, then create a local.properties file in the top
-level directory and set a propertie named "maxparallel" to 4000.  Rerun
-check-format or reformat.  If the error is still issued, reduce the number and
-try again.  Setting maxparallel will slow down the formatting Ant targets.
-Another way to fix this error is reduce the characters in the full path to the
-Checker Framework project.
+Git repository, then a pre-commit hook verifies that the changes follow the
+style by running \<ant check-format> in the top-level directory.
+
+If
+the pre-commit hook fails
+because of improper formatting, run \<ant reformat>, stage the
+changes, and try the commit operation again.
+
+If the pre-commit hook or \<ant reformat> fails with an
+"Argument list too long" error, then create a \code{local.properties} file
+in the top-level directory that sets the property \code{maxparallel} to 4000.  If the error is still issued, reduce the number and
+try again.
 
 
 \section{Publications\label{publications}\label{learning-more}}
