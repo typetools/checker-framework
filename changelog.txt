@@ -1,5 +1,12 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.1, 1 August 2016
+
+The codebase conforms to a consistent coding style, which is enforced by
+a git pre-commit hook.
+
+---------------------------------------------------------------------------
+
 Version 2.1.0, 1 July 2016
 
 The new Signedness Checker prevents mixing of unsigned and signed
