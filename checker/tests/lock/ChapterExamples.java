@@ -872,87 +872,9 @@ class ChapterExamples {
         synchronized (
                 c1.field.field.field.getFieldPure(
                                 //:: error: (lock.expression.not.final)
-                                c1.field, c1.getField().getFieldPure(c1, c1.field)).field) {
+                                c1.field, c1.getField().getFieldPure(c1, c1.field))
+                        .field) {}
     }
-  }
-
-  class C2 extends ReentrantLock {
-    final C2 field = new C2(); // Infinite loop. This code is not meant to be executed, only type checked.
-    C2 field2;
-    @Deterministic C2 getFieldDeterministic() { return field; }
-    @Pure C2 getFieldPure(Object param1, Object param2) { return field; }
-    C2 getField() { return field; }
-  }
-
-  final C2 c2 = new C2();
-
-  // Analogous to testSynchronizedExpressionIsFinal and testGuardedByExpressionIsFinal, but for explicit locks.
-  @MayReleaseLocks
-  // TODO: Remove this @SuppressWarnings once issue 753 is fixed.
-  @SuppressWarnings("flowexpr.parse.error")
-  void testExplicitLockExpressionIsFinal(boolean b) {
-    c2.lock();
-
-    ReentrantLock rl1 = new ReentrantLock(); // rl1 is effectively final - it is never reassigned
-    ReentrantLock rl2 = new ReentrantLock(); // rl2 is reassigned later - it is not effectively final
-    rl1.lock();
-    rl1.unlock();
-    // TODO: The two method.invocation.invalid errors below are due to the fact
-    // that unlock() called above is a non-side-effect-free method
-    // and is due to this line in LockStore.updateForMethodCall:
-    // localVariableValues.clear();
-    // Fix LockStore.updateForMethodCall so it is less conservative and remove
-    // the expected error.
-    //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
-    rl2.lock();
-    //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
-    rl2.unlock();
-
-    rl2 = new ReentrantLock(); // Reassignment that makes rl2 not have been effectively final earlier.
-
-    // Test a tree that is not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
-    // CFAbstractTransfer cannot store the fact that the expression "c2.getFieldPure(b ? c2 : rl1, c2)" is locked.
-    // It informs the user about this by issuing a flowexpr.parse.error.
-    // TODO: once issue 753 is fixed and the @SuppressWarnings is removed from this method,
-    // add the expected flowexpr.parse.error to the line below.
-    //:: error: (lock.expression.possibly.not.final)
-    c2.getFieldPure(b ? c2 : rl1, c2).lock();
-    //:: error: (lock.expression.possibly.not.final)
-    c2.getFieldPure(b ? c2 : rl1, c2).unlock();
-
-    c2.field.field.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
-    c2.field.field.field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
-
-    // The following negative test cases are the same as the one above but with one modification in each.
-
-    c2.field
-      //:: error: (lock.expression.not.final)
-      .field2
-      .field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.lock();
-    c2.field
-      //:: error: (lock.expression.not.final)
-      .field2
-      .field.getFieldPure(c2.field, c2.getFieldDeterministic().getFieldPure(c2, c2.field)).field.unlock();
-
-    c2.field.field.field
-      //:: error: (lock.expression.not.final)
-      .getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field))
-      .field.lock();
-    c2.field.field.field
-      //:: error: (lock.expression.not.final)
-      .getFieldPure(c2.field, c2.getField().getFieldPure(c2, c2.field))
-      .field.unlock();
-  }
-
-  // Analogous to testSynchronizedExpressionIsFinal and testExplicitLockExpressionIsFinal, but for expressions in @GuardedBy annotations.
-  void testGuardedByExpressionIsFinal() {
-    @GuardedBy("c1") Object guarded1;
-
-    final Object o1 = new Object();
-    Object o2 = new Object();
-    @GuardedBy("o1") Object guarded2 = new Object();
-    //:: error: (lock.expression.not.final)
-    @GuardedBy("o2") Object guarded3 = new Object();
 
     class C2 extends ReentrantLock {
         final C2 field =
