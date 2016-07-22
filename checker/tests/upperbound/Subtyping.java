@@ -1,0 +1,26 @@
+import org.checkerframework.checker.upperbound.qual.*;
+
+public class Subtyping {
+    void test() {
+        //:: error: (assignment.type.incompatible)
+        @LessThanOrEqualToLength({ "arr" }) int a;
+
+        @LessThanLength({ "arr" }) int b = a;
+        @EqualToLength({ "arr" }) int c = a;
+        @UpperBoundUnknown int d = a;
+
+        //:: error: (assignment.type.incompatible)
+        @EqualToLength({ "arr" }) int e = b;
+        //:: error: (assignment.type.incompatible)
+        @LessThanLength({ "arr" }) int f = c;
+
+        //:: error: (assignment.type.incompatible)
+        @LessThanLength({ "arr2" }) int g = a;
+
+        //:: error: (assignment.type.incompatible)
+        @LessThanOrEqualToLength({ "arr","arr2","c" }) int h;
+
+        @LessThanLength({ "arr" }) int i = h;
+        @EqualToLength({ "arr","arr3" }) int j = h;
+    }
+}

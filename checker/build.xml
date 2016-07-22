@@ -704,6 +704,13 @@
         </antcall>
     </target>
 
+    <target name="upperbound-tests" depends="jar,build-tests"
+            description="Run tests for the Upper Bound Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.UpperBoundTest"/>
+        </antcall>
+    </target>
+
     <target name="interning-tests" depends="jar,build-tests"
             description="Run tests for the Interning Checker">
         <antcall target="-run-tests">

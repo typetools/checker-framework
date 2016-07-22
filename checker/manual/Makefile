@@ -37,7 +37,8 @@ annotating-libraries.tex \
 creating-a-checker.tex \
 external-tools.tex \
 faq.tex \
-troubleshooting.tex
+troubleshooting.tex \
+index-checker.tex
 
 all: manual.pdf manual.html
 

@@ -65,3 +65,29 @@ the full list of rules is not reproduced here; it can be found in the file
 The essence of the rules is that of basic arithmetic: adding one to a
 NonNegative turns it into a Positive, checking if an Unknown is greater
 than zero makes it Positive in the then branch, etc.
+
+\section{The Upper Bound Checker\label{index-upperbound}}
+
+The Upper Bound Checker looks for accesses into arrays that might be
+too high, and warns its users about any such potential accesses. It is
+designed to be used in concert with the Lower Bound Checker, and
+together they completely protect against Java's
+ArrayIndexOutOfBoundsException. The Upper Bound Checker uses the following
+qualifiers:
+
+\begin{description}
+\item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
+  There is no information about the value of this variable.
+  This type is the top type. Variables of this type are
+  unsafe for use as array indices.
+\item[\refqualclass{checker/upperbound/qual}{LessThanLength}(String[] names)]
+  The parameter, names, stores a list of array names. A variable with this type
+  has value less than the length of each array listed in names.
+\item[\refqualclass{checker/upperbound/qual}{EqualToLength}(String[] names)]
+  The parameter, names, stores a list of array names. A variable with this type
+  has value equal to the length of each array listed in names.
+\item[\refqualclass{checker/upperbound/qual}{LessThanOrEqualToLength}(String[] names)]
+  The parameter, names, stores a list of array names. A variable with this type
+  has value less than or equal to the length of each array listed in names.
+  This is the bottom type.
+\end{description}
