@@ -1,6 +1,7 @@
 sudo: false
 
-language: generic
+# So the "node" program is installed
+language: javascript
 
 services:
   - docker
