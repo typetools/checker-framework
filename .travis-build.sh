@@ -19,6 +19,8 @@ set -o xtrace
 export SHELLOPTS
 
 
+ROOT=$TRAVIS_BUILD_DIR/..
+
 ./.travis-build-without-test.sh
 # The above command builds the JDK, so there is no need for a subsequent
 # command to rebuild it again.
