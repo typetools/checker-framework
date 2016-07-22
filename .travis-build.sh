@@ -20,6 +20,10 @@ export SHELLOPTS
 
 
 ROOT=$TRAVIS_BUILD_DIR/..
+export JSR308=$ROOT
+export AFU=$ROOT/annotation-tools/annotation-file-utilities
+export CHECKERFRAMEWORK=$ROOT/checker-framework
+
 
 ./.travis-build-without-test.sh
 # The above command builds the JDK, so there is no need for a subsequent
