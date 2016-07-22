@@ -504,6 +504,25 @@ example.
 \end{sloppypar}
 
 
+\subsection{Do not re-use type qualifiers\label{do-not-re-use-type-qualifiers}}
+
+Every annotation should belong to only one type system.  No annotation
+should be used by multiple type systems.  This is true even of annotations
+that are internal to the type system and are not intended to be written by
+the programmer.
+
+Suppose that you have two type systems that both use the same type
+qualifier \<@A>.  In a client program, a use of type \<T> may require type
+qualifier \<@A> for one type system but a different qualifier for the other
+type system.  There is no annotation that a programmer can write to make
+the program type-check under both type systems.
+
+This also applies to type qualifiers that a programmer does not write,
+because the compiler outputs \<.class> files that contain an explicit type
+qualifier on every type --- a defaulted or inferred type qualifier if the
+programmer didn't write a type qualifier explicitly.
+
+
 \subsection{Completeness of the type hierarchy\label{bottom-and-top-qualifier}}
 
 When you define a type system, its type hierarchy must be a
