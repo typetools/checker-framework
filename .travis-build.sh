@@ -54,11 +54,19 @@ if [[ "$1" != "junit" && "$1" != "nonjunit" && "$1" != "misc" ]]; then
   ## These are here so they can be run by pull requests.  (Pull requests
   ## currently don't trigger downstream jobs.)
 
-  # TODO
   # checker-framework-demos: 15 minutes
+  (cd $ROOT && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
+  (cd $ROOT/checker-framework.demos && ant -Djsr308.home=$ROOT)
+
   # checker-framework-inference: 18 minutes
-  # daikon-typecheck: a long time, already split into multiple jobs
+  (cd $ROOT && git clone --depth 1 https://github.com/typetools/checker-framework-inference.git)
+  (cd $ROOT/checker-framework-inference && gradle dist && gradle copytest && ant -f tests.xml run-tests)
+
+  # daikon-typecheck: almost 2 hours, already split into multiple jobs
+  # Don't do it here
+
   # plume-lib-typecheck: 30 minutes
+
   # sparta: 1 minute, but the command is "true"!
 
 fi
