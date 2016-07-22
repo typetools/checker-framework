@@ -1,5 +1,5 @@
 # Create a Docker image that is ready to run the main Checker Framework tests,
-# using JDK 8.
+# using JDK 7.
 
 FROM ubuntu
 MAINTAINER Michael Ernst <mernst@cs.washington.edu>
@@ -9,11 +9,16 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 #  * Put "apt-get update" and "apt-get install" in the same RUN command.
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 RUN apt-get -qqy update && apt-get -qqy install \
+  software-properties-common \
+&& add-apt-repository ppa:openjdk-r/ppa \
+&& apt-get -qqy update && apt-get -qqy install \
   ant \
   git \
+  gradle \
   make \
   mercurial \
   unzip \
-  default-jdk \
+  openjdk-7-jdk \
+&& apt-get -qqy remove openjdk-8-jre-headless:amd64 \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*
