@@ -19,12 +19,6 @@ set -o xtrace
 export SHELLOPTS
 
 
-ROOT=$TRAVIS_BUILD_DIR/..
-export JSR308=$ROOT
-export AFU=$ROOT/annotation-tools/annotation-file-utilities
-export CHECKERFRAMEWORK=$ROOT/checker-framework
-
-
 ./.travis-build-without-test.sh
 # The above command builds the JDK, so there is no need for a subsequent
 # command to rebuild it again.
@@ -61,12 +55,12 @@ if [[ "$1" != "junit" && "$1" != "nonjunit" && "$1" != "misc" ]]; then
   ## currently don't trigger downstream jobs.)
 
   # checker-framework-demos: 15 minutes
-  (cd $ROOT && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
-  (cd $ROOT/checker-framework.demos && ant -Djsr308.home=$ROOT)
+  (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
+  (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
 
   # checker-framework-inference: 18 minutes
-  (cd $ROOT && git clone --depth 1 https://github.com/typetools/checker-framework-inference.git)
-  (cd $ROOT/checker-framework-inference && gradle dist && gradle copytest && ant -f tests.xml run-tests)
+  (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework-inference.git)
+  (cd ../checker-framework-inference && gradle dist && gradle copytest && ant -f tests.xml run-tests)
 
   # daikon-typecheck: almost 2 hours, already split into multiple jobs
   # Don't do it here
