@@ -63,7 +63,7 @@ if [[ "$1" != "junit" && "$1" != "nonjunit" && "$1" != "misc" ]]; then
   (cd ../checker-framework-inference && gradle dist && gradle copytest && ant -f tests.xml run-tests)
 
   # daikon-typecheck: almost 2 hours, already split into multiple jobs
-  # Don't do it here
+  # Don't do it here.
 
   # plume-lib-typecheck: 30 minutes
 
