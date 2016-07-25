@@ -1,7 +1,18 @@
 #!/bin/bash
 
-# Optional argument $1 is one of:  junit, nonjunit, misc, downstream
+# Optional argument $1 is one of:
+#   all, junit, nonjunit, downstream, plume-lib-typecheck, misc
 # If it is omitted, this script does everything.
+
+export GROUP=$1
+if [[ "${GROUP}" == "" ]]; then
+  export GROUP=all
+fi
+
+if [[ "${GROUP}" != "all" && "${GROUP}" != "misc" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "downstream" && "${GROUP}" != "plume-lib-typecheck" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, misc, junit, nonjunit, downstream, plume-lib-typecheck."
+  exit 1
+fi
 
 
 # Fail the whole script if any command fails
@@ -23,7 +34,47 @@ export SHELLOPTS
 # The above command builds the JDK, so there is no need for a subsequent
 # command to rebuild it again.
 
-if [[ "$1" != "junit" && "$1" != "nonjunit" && "$1" != "downstream" ]]; then
+if [[ "${GROUP}" == "junit" || "${GROUP}" == "all" ]]; then
+  (cd checker && ant junit-tests-nojtreg-nobuild)
+fi
+
+if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
+  (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
+
+  # It's cheaper to run the demos test here than to trigger the
+  # checker-framework-demos job, which has to build the whole Checker Framework.
+  (cd checker && ant check-demos)
+fi
+
+if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
+  ## downstream tests:  projects that depend on the the Checker Framework.
+  ## These are here so they can be run by pull requests.  (Pull requests
+  ## currently don't trigger downstream jobs.)
+  ## Not done in the main "downstream" job:
+  ##  * plume-lib-typecheck (takes 30 minutes)
+  ## Not done in the Travis build, but triggered as a separate Travis project:
+  ##  * daikon-typecheck: (takes 2 hours)
+
+  # checker-framework-demos: 15 minutes
+  (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
+  (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
+
+  # checker-framework-inference: 18 minutes
+  (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework-inference.git)
+  (cd ../checker-framework-inference && gradle dist && gradle copytest && ant -f tests.xml run-tests)
+
+  # sparta: 1 minute, but the command is "true"!
+  (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
+  (cd ../sparta && ant jar all-tests)
+fi
+
+if [[ "${GROUP}" == "plume-lib-typecheck" || "${GROUP}" == "all" ]]; then
+  (cd .. && git clone https://github.com/mernst/plume-lib.git)
+  export CHECKERFRAMEWORK=`pwd`
+  (cd ../plume-lib/java && make check-types)
+fi
+
+if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ## jdkany tests: miscellaneous tests that shouldn't depend on JDK version.
   ## (Maybe they don't even need the full ./.travis-build-without-test.sh ;
   ## for example they currently don't need the annotated JDK.)
@@ -35,30 +86,4 @@ if [[ "$1" != "junit" && "$1" != "nonjunit" && "$1" != "downstream" ]]; then
   # Documentation
   ant javadoc-private
   make -C checker/manual all
-fi
-
-if [[ "$1" != "nonjunit" && "$1" != "misc" && "$1" != "downstream" ]]; then
-  (cd checker && ant junit-tests-nojtreg-nobuild)
-fi
-
-if [[ "$1" != "junit" && "$1" != "misc" && "$1" != "downstream" ]]; then
-  (cd checker && ant nonjunit-tests-nojtreg-nobuild jtreg-tests)
-
-  # It's cheaper to run the demos test here than to trigger the
-  # checker-framework-demos job, which has to build the whole Checker Framework.
-  (cd checker && ant check-demos)
-fi
-
-if [[ "$1" != "junit" && "$1" != "nonjunit" && "$1" != "misc" ]]; then
-  ## downstream tests:  projects that depend on the the Checker Framework.
-  ## These are here so they can be run by pull requests.  (Pull requests
-  ## currently don't trigger downstream jobs.)
-
-  # TODO
-  # checker-framework-demos: 15 minutes
-  # checker-framework-inference: 18 minutes
-  # daikon-typecheck: a long time, already split into multiple jobs
-  # plume-lib-typecheck: 30 minutes
-  # sparta: 1 minute, but the command is "true"!
-
 fi
