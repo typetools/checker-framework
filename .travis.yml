@@ -1,7 +1,6 @@
 sudo: false
 
-# So the "node" program is installed
-language: javascript
+language: generic
 
 services:
   - docker
@@ -10,19 +9,15 @@ services:
 env:
   - JDKVER=jdk7 GROUP=junit
   - JDKVER=jdk7 GROUP=nonjunit
-  - JDKVER=jdk7 GROUP=downstream
-  - JDKVER=jdk7 GROUP=plume-lib-typecheck
   - JDKVER=jdk8 GROUP=junit
   - JDKVER=jdk8 GROUP=nonjunit
-  - JDKVER=jdk8 GROUP=downstream
-  - JDKVER=jdk8 GROUP=plume-lib-typecheck
   - JDKVER=jdkany GROUP=misc
 
 before_script:
 - docker pull mdernst/ubuntu-for-cf-$JDKVER
 
 script:
-- travis_wait 60 docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --quiet -b $TRAVIS_BRANCH --depth 3 https://github.com/$TRAVIS_REPO_SLUG.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
+- docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --quiet -b $TRAVIS_BRANCH --depth 3 https://github.com/$TRAVIS_REPO_SLUG.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
 
 after_script:
   - |
