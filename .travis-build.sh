@@ -60,5 +60,6 @@ if [[ "$1" != "junit" && "$1" != "nonjunit" && "$1" != "misc" ]]; then
   # daikon-typecheck: a long time, already split into multiple jobs
   # plume-lib-typecheck: 30 minutes
   # sparta: 1 minute, but the command is "true"!
+  echo "Not running downstream jobs yet"
 
 fi
