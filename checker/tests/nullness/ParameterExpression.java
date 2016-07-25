@@ -90,9 +90,10 @@ public class ParameterExpression {
     // Warning issued. 'field' is a field, but in this case what matters is that it is the name of a formal parameter.
     @EnsuresNonNullIf(result = true, expression = "field")
     // The user can write "#1" if they meant the formal parameter, and "this.field" if they meant the field.
-    //:: error: (contracts.conditional.postcondition.not.satisfied) :: warning: (contracts.conditional.postcondition.expression.parameter.name)
+    //:: warning: (contracts.conditional.postcondition.expression.parameter.name)
     public boolean m13(Object field) {
         field = new Object();
+        //:: error: (contracts.conditional.postcondition.not.satisfied)
         return true;
     }
 
