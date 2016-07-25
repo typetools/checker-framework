@@ -22,6 +22,7 @@ tags
 dot_files
 
 Makefile.user
+local.properties
 
 # ant tab completion cache file
 .ant-targets-build.xml
