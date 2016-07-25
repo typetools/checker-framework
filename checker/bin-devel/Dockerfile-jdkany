@@ -16,7 +16,6 @@ RUN apt-get -qqy update && apt-get -qqy install \
 && apt-get -qqy update && apt-get -qqy install \
   ant \
   git \
-  gradle \
   make \
   mercurial \
   unzip \
