@@ -179,17 +179,13 @@ public class TypesIntoElements {
         AnnotatedTypeMirror type;
         int pos;
         if (ext == null) {
-            // The implicit superclass is always java.lang.Object.
-            // TODO: is this a good way to get the type?
             Type superClass = csym.getSuperclass();
             if (superClass.getKind() == TypeKind.NONE) {
                 // if superclass is NONE, then this class symbol is either an interface or it is java.lang.Object class itself.
                 // do nothing in both cases
                 return;
             } else {
-                type = atypeFactory.fromElement(
-                        csym.getSuperclass()
-                        .asElement());
+                type = atypeFactory.fromElement(csym.getSuperclass().asElement());
             }
             pos = -1;
         } else {
