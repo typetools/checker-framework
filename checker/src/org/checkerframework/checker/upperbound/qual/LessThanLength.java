@@ -12,9 +12,8 @@ import org.checkerframework.framework.qual.*;
  *
  *  */
 @SubtypeOf(UpperBoundUnknown.class)
-@Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface LessThanLength {
-    public String[] names();
+    public String[] value();
 }

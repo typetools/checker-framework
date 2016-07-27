@@ -69,7 +69,7 @@ public class UpperBoundAnnotatedTypeFactory extends
             AnnotationBuilder builder = new AnnotationBuilder(env,
                     name);
             List<Object> valuesList = new ArrayList<Object>(values);
-            builder.setValue("names", valuesList);
+            builder.setValue("value", valuesList);
             return builder.build();
         } else {
             return UNKNOWN;
@@ -110,9 +110,9 @@ public class UpperBoundAnnotatedTypeFactory extends
                    is the bottom type
                 */
                 List<Object> a1Names = AnnotationUtils.getElementValueArray(
-                        a1, "names", Object.class, true);
+                        a1, "value", Object.class, true);
                 List<Object> a2Names = AnnotationUtils.getElementValueArray(
-                        a2, "names", Object.class, true);
+                        a2, "value", Object.class, true);
                 HashSet<Object> newValues = new HashSet<Object>(a1Names.size()
                         + a2Names.size());
 
@@ -127,7 +127,7 @@ public class UpperBoundAnnotatedTypeFactory extends
         /**
          * Determines the least upper bound of a1 and a2. If a1 and a2 are both
          * the same type of Value annotation, then the LUB is the result of
-         * taking all values from both a1 and a2 and removing duplicates. 
+         * taking all values from both a1 and a2 and removing duplicates.
          *
          * @return the least upper bound of a1 and a2
          */
@@ -180,14 +180,42 @@ public class UpperBoundAnnotatedTypeFactory extends
             } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
                 // Same type, so might be subtype
                 List<Object> lhsValues = AnnotationUtils.getElementValueArray(
-                        lhs, "names", Object.class, true);
+                        lhs, "value", Object.class, true);
                 List<Object> rhsValues = AnnotationUtils.getElementValueArray(
-                        rhs, "names", Object.class, true);
-                return lhsValues.containsAll(rhsValues);
+                        rhs, "value", Object.class, true);
+                return rhsValues.containsAll(lhsValues);
+            } else if (isSubtypeRelaxed(rhs, lhs)) {
+                /* different types that are subtypes of each other ->
+                 * rhs is a subtype of lhs iff lhs.value contains rhs.value
+                 */
+                List<Object> lhsValues = AnnotationUtils.getElementValueArray(
+                        lhs, "value", Object.class, true);
+                List<Object> rhsValues = AnnotationUtils.getElementValueArray(
+                        rhs, "value", Object.class, true);
+                return rhsValues.containsAll(lhsValues);
             }
             return false;
         }
 
+        // gives subtyping information but ignores all values
+        private boolean isSubtypeRelaxed(AnnotationMirror rhs, AnnotationMirror lhs) {
+            return super.isSubtype(removeValue(rhs), removeValue(lhs));
+        }
+        // #DoBeEvil #NewGoogleMotto #kludge
+        private AnnotationMirror removeValue(AnnotationMirror type) {
+            if (AnnotationUtils.areSameIgnoringValues(type, LTL)) {
+                return LTL;
+            }
+	    if (AnnotationUtils.areSameIgnoringValues(type, EL)) {
+		return EL;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(type, LTEL)) {
+                return LTEL;
+            }
+            else {
+                return UNKNOWN;
+            }
+        }
     }
 
     protected class UpperBoundTreeAnnotator extends TreeAnnotator {
