@@ -65,7 +65,7 @@ public class TypesIntoElements {
          * I think somewhere we take the annotations on extends/implements as
          * the receiver annotation on a constructor, breaking logic there.
          * I assume that the problem is the default that we use for these locations.
-         * Once we've decided the defaulting, enable this.
+         * Once we've decided the defaulting, enable this.*/
         storeClassExtends(processingEnv, types, atypeFactory, tree.getExtendsClause(), csym, -1);
         {
             int implidx = 0;
@@ -74,7 +74,6 @@ public class TypesIntoElements {
                 ++implidx;
             }
         }
-        */
 
         for (Tree mem : tree.getMembers()) {
             if (mem.getKind() == Tree.Kind.METHOD) {
@@ -169,7 +168,6 @@ public class TypesIntoElements {
         addUniqueTypeCompounds(types, sym, tcs);
     }
 
-    @SuppressWarnings("unused") // TODO: see usage in comments above
     private static void storeClassExtends(
             ProcessingEnvironment processingEnv,
             Types types,
@@ -183,7 +181,16 @@ public class TypesIntoElements {
         if (ext == null) {
             // The implicit superclass is always java.lang.Object.
             // TODO: is this a good way to get the type?
-            type = atypeFactory.fromElement(csym.getSuperclass().asElement());
+            Type superClass = csym.getSuperclass();
+            if (superClass.getKind() == TypeKind.NONE) {
+                // if superclass is NONE, then this class symbol is either an interface or it is java.lang.Object class itself.
+                // do nothing in both cases
+                return;
+            } else {
+                type = atypeFactory.fromElement(
+                        csym.getSuperclass()
+                        .asElement());
+            }
             pos = -1;
         } else {
             type = atypeFactory.getAnnotatedTypeFromTypeTree(ext);

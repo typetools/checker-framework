@@ -23,10 +23,9 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     public static void annotateSupers(
             List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes,
             TypeElement subtypeElement) {
-
-        final boolean isInterface = subtypeElement.getSuperclass().getKind() == TypeKind.NONE;
-
-        final int typeOffset = isInterface ? 0 : -1;
+        // typeOffset should always be -1. For a subtypeElement which represents an interface
+        // java.lang.Object would be it's supertype with type_idx = -1
+        final int typeOffset = -1;
 
         for (int i = 0; i < supertypes.size(); i++) {
             final AnnotatedTypeMirror supertype = supertypes.get(i);
