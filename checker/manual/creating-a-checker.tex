@@ -1381,7 +1381,7 @@ options).
 To specify a simple boolean flag, add:
 
 \begin{alltt}
-\refqualclass{framework/source}{SupportedLintOptions}({"myflag"})
+\refqualclass{framework/source}{SupportedLintOptions}(\{"myflag"\})
 \end{alltt}
 
 to your checker subclass.
@@ -1406,7 +1406,7 @@ For more complicated options, one can use the standard annotation
 processing \code{@SupportedOptions} annotation on the checker, as in:
 
 \begin{alltt}
-\refqualclass{framework/source}{SupportedOptions}({"myoption"})
+\refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
 \end{alltt}
 
 The value of the option can be queried using
