@@ -1,0 +1,12 @@
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+ class Class1<Q extends @Nullable Object> {
+    public <T extends @Nullable Object> T methodTypeParam(T t);
+    public void classTypeParam(Q e);
+
+    public <F extends @Nullable Object> void wildcardExtends(Gen<? extends F> class1);
+    public <F extends @Nullable Object> void wildcardSuper(Gen<@Nullable ? super F> class1);
+}
+
+class Class1$Gen<F extends @Nullable Object> {}
