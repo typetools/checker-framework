@@ -3,6 +3,7 @@
  * @summary Test case for Issue 824 https://github.com/typetools/checker-framework/issues/824
  * @compile -XDrawDiagnostics -Xlint:unchecked Class1.java
  * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Class2.java -Astubs=Class1.astub
+ * @compile/fail/ref=Class2NoStub.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Class2.java
  */
 
 public class Class1<Q> {

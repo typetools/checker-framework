@@ -131,6 +131,11 @@ public class StubParser {
      * Annotation to added to every method and constructor in the stub file.
      */
     private final AnnotationMirror fromStubFile;
+
+    /**
+     * List of AnnotatedTypeMirrors for class or method type parameters that are in scope of the
+     * elements currently parsed.
+     */
     private List<AnnotatedTypeMirror> typeParameters = new ArrayList<>();
 
     /**
@@ -440,6 +445,9 @@ public class StubParser {
         typeParameters = new ArrayList<>();
     }
 
+    /**
+     * @return List of AnnotatedTypeMirrors of the type's type parameters
+     */
     private List<AnnotatedTypeMirror> parseType(
             ClassOrInterfaceDeclaration decl,
             TypeElement elt,
