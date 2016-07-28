@@ -60,12 +60,6 @@ public class TypesIntoElements {
 
         storeTypeParameters(processingEnv, types, atypeFactory, tree.getTypeParameters(), csym);
 
-        /* TODO: storing extends/implements types results in
-         * a strange error e.g. from the Nullness Checker.
-         * I think somewhere we take the annotations on extends/implements as
-         * the receiver annotation on a constructor, breaking logic there.
-         * I assume that the problem is the default that we use for these locations.
-         * Once we've decided the defaulting, enable this.*/
         storeClassExtends(processingEnv, types, atypeFactory, tree.getExtendsClause(), csym, -1);
         {
             int implidx = 0;
@@ -168,6 +162,17 @@ public class TypesIntoElements {
         addUniqueTypeCompounds(types, sym, tcs);
     }
 
+    /**
+     * given a class symbol {@code cysm}, and the extendsClause/implementsClause tree {@code ext}
+     * of the corresponding class tree, store the type compounds on {@code ext}
+     * @param processingEnv
+     * @param types
+     * @param atypeFactory
+     * @param ext
+     * @param csym the given class symbol
+     * @param implidx the type index of extends/implements, see jsr308 specification:
+     *      http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#class-file%3Aext%3Ari%3Aextends
+     */
     private static void storeClassExtends(
             ProcessingEnvironment processingEnv,
             Types types,

@@ -5,7 +5,6 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TargetType;
 import java.util.List;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
@@ -23,13 +22,15 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     public static void annotateSupers(
             List<AnnotatedTypeMirror.AnnotatedDeclaredType> supertypes,
             TypeElement subtypeElement) {
-        // typeOffset should always be -1. For a subtypeElement which represents an interface
-        // java.lang.Object would be it's supertype with type_idx = -1
-        final int typeOffset = -1;
 
         for (int i = 0; i < supertypes.size(); i++) {
             final AnnotatedTypeMirror supertype = supertypes.get(i);
-            final int typeIndex = i + typeOffset;
+            // offset i by -1 since typeIndex should start from -1.
+            // -1 represents the supertype on (implicit) extends clause
+            // 0 or greater represents the supertype on (implicit) impelments clause
+            // details see jsr308 specification:
+            // http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#class-file%3Aext%3Ari%3Aextends
+            final int typeIndex = i - 1;
 
             (new SuperTypeApplier(supertype, subtypeElement, typeIndex)).extractAndApply();
         }
