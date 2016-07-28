@@ -523,7 +523,11 @@ public class StubParser {
         List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
         for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
             if (typeV.getKind() != TypeKind.TYPEVAR) {
-                stubAlwaysWarn("Expected an AnnotatedTypeVariable but found " + typeV.getKind());
+                stubAlwaysWarn(
+                        "Expected an AnnotatedTypeVariable but found type kind"
+                                + typeV.getKind()
+                                + ": "
+                                + typeV);
             } else {
                 typeVariables.add((AnnotatedTypeVariable) typeV);
             }
