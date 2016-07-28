@@ -1,6 +1,6 @@
 package org.checkerframework.qualframework.base;
 
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedTypeVariable;
 
@@ -21,8 +21,7 @@ public class TypeVariableSubstitutorAdapter<Q>
 
     protected AnnotatedTypeMirror substituteTypeVariable(
             final AnnotatedTypeMirror argument, final AnnotatedTypeVariable use) {
-
-        QualifiedTypeMirror<Q> qArgument = converter.getQualifiedType(argument);
+        QualifiedTypeMirror<Q> qArgument = converter.getQualifiedType(argument.asUse());
         QualifiedTypeVariable<Q> qUse =
                 (QualifiedTypeVariable<Q>) converter.getQualifiedType(use.asUse());
         return converter.getAnnotatedType(underlying.substituteTypeVariable(qArgument, qUse));
