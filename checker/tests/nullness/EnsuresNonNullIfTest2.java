@@ -7,6 +7,7 @@ import org.checkerframework.dataflow.qual.*;
 // Test case for a mysterious error.
 abstract class EnsuresNonNullIfTest2a {
     @EnsuresNonNullIf(result = true, expression = "xxx")
+    //:: error: (flowexpr.parse.error)
     abstract boolean isFoo();
 
     boolean foobar() {
@@ -16,6 +17,7 @@ abstract class EnsuresNonNullIfTest2a {
         // see version ...2b below.
         aloop:
         for (; ; ) {
+            //:: error: (flowexpr.parse.error)
             isFoo();
 
             // One error for dereferencing possibly-null list
@@ -26,6 +28,7 @@ abstract class EnsuresNonNullIfTest2a {
 
 abstract class EnsuresNonNullIfTest2b {
     @EnsuresNonNullIf(result = true, expression = "xxx")
+    //:: error: (flowexpr.parse.error)
     abstract boolean isFoo();
 
     boolean foobar() {
@@ -34,6 +37,7 @@ abstract class EnsuresNonNullIfTest2b {
         // Remove the label and the error goes away
         // aloop:
         for (; ; ) {
+            //:: error: (flowexpr.parse.error)
             isFoo();
 
             // assert list != null : "@AssumeAssertion(nullness)";

@@ -81,11 +81,13 @@ class Postcondition {
         oddF1();
         @Odd String l2 = f1;
 
+        //:: error: (flowexpr.parse.error)
         error();
     }
 
     // test parameter syntax
     void t2(@Odd String p1, String p2) {
+        //:: error: (flowexpr.parse.index.too.big)
         param3();
     }
 
@@ -147,6 +149,7 @@ class Postcondition {
         @Odd String l3 = f1;
         @Value String l4 = f2;
 
+        //:: error: (flowexpr.parse.error)
         error2();
     }
 
