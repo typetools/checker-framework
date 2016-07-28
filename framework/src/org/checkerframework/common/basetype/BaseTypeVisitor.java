@@ -3185,7 +3185,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 result.add(Pair.of(expr, annotation));
             } catch (FlowExpressionParseException e) {
                 // report errors here
-                checker.report(e.getResult(), method);
+                checker.report(e.getResult(), methodTree);
             }
         }
         return result;
