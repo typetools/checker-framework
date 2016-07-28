@@ -9,7 +9,7 @@ AnnotatedTypeFactory#createSupportedTypeQualifiers() must now return a mutable
 list.  Checkers that override this method will have to be changed.
 
 Closed issues:
-856, 850, 838, 829, 826, 820, 810, 809, 790, 681, 384
+856, 850, 838, 829, 826, 820, 810, 809, 790, 681, 384.
 
 ---------------------------------------------------------------------------
 
