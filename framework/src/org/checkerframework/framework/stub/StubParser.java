@@ -136,7 +136,7 @@ public class StubParser {
      * List of AnnotatedTypeMirrors for class or method type parameters that are in scope of the
      * elements currently parsed.
      */
-    private List<AnnotatedTypeMirror> typeParameters = new ArrayList<>();
+    private List<AnnotatedTypeVariable> typeParameters = new ArrayList<>();
 
     /**
      *
@@ -448,7 +448,7 @@ public class StubParser {
     /**
      * @return List of AnnotatedTypeMirrors of the type's type parameters
      */
-    private List<AnnotatedTypeMirror> parseType(
+    private List<AnnotatedTypeVariable> parseType(
             ClassOrInterfaceDeclaration decl,
             TypeElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
@@ -520,7 +520,15 @@ public class StubParser {
         annotateTypeParameters(typeArguments, typeParameters);
         annotateSupertypes(decl, type);
         putNew(atypes, elt, type);
-        return type.getTypeArguments();
+        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
+        for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
+            if (typeV.getKind() != TypeKind.TYPEVAR) {
+                stubAlwaysWarn("Expected an AnnotatedTypeVariable but found " + typeV.getKind());
+            } else {
+                typeVariables.add((AnnotatedTypeVariable) typeV);
+            }
+        }
+        return typeVariables;
     }
 
     private void annotateSupertypes(
@@ -764,12 +772,8 @@ public class StubParser {
         } else if (atype.getKind() == TypeKind.TYPEVAR) {
             //Add annotations from the declaration of the TypeVariable
             AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
-            for (AnnotatedTypeMirror annotatedTypeMirror : typeParameters) {
-                if (annotatedTypeMirror.getKind() != TypeKind.TYPEVAR) {
-                    continue;
-                }
-                if (annotatedTypeMirror.getUnderlyingType() == atype.getUnderlyingType()) {
-                    AnnotatedTypeVariable typePar = (AnnotatedTypeVariable) annotatedTypeMirror;
+            for (AnnotatedTypeVariable typePar : typeParameters) {
+                if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
                     AnnotatedTypeMerger.merge(typePar.getUpperBound(), typeVarUse.getUpperBound());
                     AnnotatedTypeMerger.merge(typePar.getLowerBound(), typeVarUse.getLowerBound());
                 }
@@ -876,7 +880,7 @@ public class StubParser {
             TypeParameter param = typeParameters.get(i);
             AnnotatedTypeVariable paramType = (AnnotatedTypeVariable) typeArguments.get(i);
 
-            if (param.getTypeBound() == null || param.getTypeBound().size() != 1) {
+            if (param.getTypeBound() == null || param.getTypeBound().isEmpty()) {
                 // No bound so annotations are both lower and upper bounds
                 annotate(paramType, param.getAnnotations());
             } else if (param.getTypeBound() != null && param.getTypeBound().size() == 1) {
