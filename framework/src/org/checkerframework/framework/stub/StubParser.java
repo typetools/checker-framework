@@ -136,7 +136,7 @@ public class StubParser {
      * List of AnnotatedTypeMirrors for class or method type parameters that are in scope of the
      * elements currently parsed.
      */
-    private List<AnnotatedTypeVariable> typeParameters = new ArrayList<>();
+    private final List<AnnotatedTypeVariable> typeParameters = new ArrayList<>();
 
     /**
      *
@@ -442,11 +442,11 @@ public class StubParser {
                 stubWarnIfNotFound("StubParser ignoring: " + elt);
             }
         }
-        typeParameters = new ArrayList<>();
+        typeParameters.clear();
     }
 
     /**
-     * @return List of AnnotatedTypeMirrors of the type's type parameters
+     * @return List of AnnotatedTypeVariable of the type's type parameter declarations
      */
     private List<AnnotatedTypeVariable> parseType(
             ClassOrInterfaceDeclaration decl,
