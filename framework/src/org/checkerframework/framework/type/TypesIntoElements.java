@@ -163,8 +163,8 @@ public class TypesIntoElements {
     }
 
     /**
-     * given a class symbol {@code cysm}, and the extendsClause/implementsClause tree {@code ext}
-     * of the corresponding class tree, store the type compounds on {@code ext}
+     * given a class symbol {@code cysm}, and the extendsClause/implementsClause tree
+     * {@code ext}  of the corresponding class tree, store the type compounds on {@code ext}
      * @param processingEnv
      * @param types
      * @param atypeFactory
@@ -186,7 +186,8 @@ public class TypesIntoElements {
         if (ext == null) {
             Type superClass = csym.getSuperclass();
             if (superClass.getKind() == TypeKind.NONE) {
-                // if superclass is NONE, then this class symbol is either an interface or it is java.lang.Object class itself.
+                // if superclass is NONE, then this class symbol is either
+                // an interface or it is java.lang.Object class itself.
                 // do nothing in both cases
                 return;
             } else {
