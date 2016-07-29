@@ -890,7 +890,7 @@ public class StubParser {
             } else if (param.getTypeBound() != null && param.getTypeBound().size() > 0) {
                 annotate(paramType.getLowerBound(), param.getAnnotations());
                 annotate(paramType.getUpperBound(), param.getTypeBound().get(0));
-                if (param.getTypeBound().size() > 0) {
+                if (param.getTypeBound().size() > 1) {
                     // TODO: add support for intersection types
                     stubWarnIfNotFound("Annotations on intersection types are not yet supported");
                 }
