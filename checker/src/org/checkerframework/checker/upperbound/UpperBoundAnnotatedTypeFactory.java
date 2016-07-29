@@ -44,10 +44,15 @@ public class UpperBoundAnnotatedTypeFactory extends
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+        /* So Suzanne told me these were evil, but then I ended up using them
+           to correctly implement the subtyping relation that I wanted. I'll get
+           rid of them if I can figure out a better way to do that, but for now
+           they stay */
         LTL = AnnotationUtils.fromClass(elements, LessThanLength.class);
         LTEL = AnnotationUtils.fromClass(elements, LessThanOrEqualToLength.class);
         EL = AnnotationUtils.fromClass(elements, EqualToLength.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
+
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         env = checker.getProcessingEnvironment();
         this.postInit();
@@ -61,6 +66,8 @@ public class UpperBoundAnnotatedTypeFactory extends
 
     /**
      * Creates an annotation of the name given with the set of values given.
+     * Exists in place of a series of createXAnnotation methods because that
+     * would be silly.
      *
      * @return annotation given by name with names=values, or UNKNOWN
      */
@@ -106,7 +113,7 @@ public class UpperBoundAnnotatedTypeFactory extends
             } else {
                 /* If the two are unrelated, then the type hierarchy implies
                    that one is LTL and the other is EL, meaning that the GLB
-                   is LTEL of all every array that is in either - since LTEL
+                   is LTEL of every array that is in either - since LTEL
                    is the bottom type
                 */
                 List<Object> a1Names = AnnotationUtils.getElementValueArray(

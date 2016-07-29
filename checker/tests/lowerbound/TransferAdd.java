@@ -49,13 +49,30 @@ public class TransferAdd {
 
         // increments
 
+        //:: error: (assignment.type.incompatible)
         @Positive int u = b++;
+
+        @Positive int u1 = b;
+
         @Positive int v = ++c;
+
+        @Positive int v1 = c;
 
         int n1p1 = -1, n1p2 = -1;
 
         @NonNegative int w = ++n1p1;
+
+        @NonNegative int w1 = n1p1;
+
+        //:: error: (assignment.type.incompatible)
+        @Positive int w2 = n1p1;
+        //:: error: (assignment.type.incompatible)
+        @Positive int w3 = n1p1++;
+
+        //:: error: (assignment.type.incompatible)
         @NonNegative int x = n1p2++;
+
+        @NonNegative int x1 = n1p2;
 
         //:: error: (assignment.type.incompatible)
         @Positive int y = ++d;

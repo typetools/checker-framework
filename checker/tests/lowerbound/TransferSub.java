@@ -41,25 +41,32 @@ public class TransferSub {
         // decrements
 
         //:: error: (assignment.type.incompatible)
-        @Positive int q = --k;
+        @Positive int q = --k; // k = 0
 
-        @Positive int r = k--;
-        // this should be:: error: (assignment.type.incompatible)
-        // but isn't because inc and dec don't actually work correctly yet
-        @Positive int r1 = k;
+        @NonNegative int r = k--; // after this k = -1
 
-        @NonNegative int s = k--;
-        @NonNegative int t = --k;
-
-        @GTENegativeOne int u = j--;
-        @GTENegativeOne int v = --j;
+        int k1 = 0;
+        @NonNegative int s = k1--;
 
         //:: error: (assignment.type.incompatible)
-        @GTENegativeOne int w = --u;
+        @NonNegative int s1 = k1;
 
-        @GTENegativeOne int x = u--;
-        // this should be:: error: (assignment.type.incompatible)
-        // but isn't because inc and dec don't actually work correctly yet
-        @GTENegativeOne int x1 = u;
+        // transferred to SimpleTransferSub.java
+        // this section is failing due to CF bug
+        // int k2 = 0;
+        // //:: error: (assignment.type.incompatible)
+        // @Positive int s2 = k2--;
+
+        k1 = 1;
+        @NonNegative int t = --k1;
+
+        k1 = 1;
+        //:: error: (assignment.type.incompatible)
+        @Positive int t1 = --k1;
+
+        int u1 = -1;
+        @GTENegativeOne int x = u1--;
+        //:: error: (assignment.type.incompatible)
+        @GTENegativeOne int x1 = u1;
     }
 }

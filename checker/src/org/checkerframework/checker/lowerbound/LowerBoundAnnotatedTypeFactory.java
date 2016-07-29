@@ -57,6 +57,88 @@ public class LowerBoundAnnotatedTypeFactory extends
         return new LowerBoundAnalysis(checker, this, fieldValues);
     }
 
+    /** Suzanne's hack to make postfix increments and decrements work correctly
+     *  We think this is just getting around an actual bug in the framework
+     */
+    @Override
+    public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
+        if (tree.getKind() == Tree.Kind.POSTFIX_DECREMENT
+                || tree.getKind() == Tree.Kind.POSTFIX_INCREMENT) {
+
+            String stTree = tree.toString();
+            return getPostFixAnno(super.getAnnotatedType(tree),
+                                  tree.getKind() == Tree.Kind.POSTFIX_INCREMENT, stTree);
+
+        } else {
+            return super.getAnnotatedType(tree);
+        }
+    }
+
+    /** The rest of Suzanne's hack */
+    private AnnotatedTypeMirror getPostFixAnno(AnnotatedTypeMirror anno, boolean increment, String stTree) {
+        if (increment) {
+            decrementHelper(anno, anno);
+        } else {
+            incrementHelper(anno, anno);
+        }
+        return anno;
+    }
+
+
+    /* I moved these out of the tree annotator because reasons */
+
+    /** handles x+1, ++x, and all equivalent statements */
+    public void incrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
+        if (leftType.hasAnnotation(GTEN1)) {
+            type.replaceAnnotation(NN);
+        } else if (leftType.hasAnnotation(NN)) {
+            type.replaceAnnotation(POS);
+        } else if (leftType.hasAnnotation(POS)) {
+            type.replaceAnnotation(POS);
+        } else {
+            type.replaceAnnotation(UNKNOWN);
+        }
+        return;
+    }
+
+    /** handles x-1, --x, and all equivalent statements */
+    public void decrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
+        if (leftType.hasAnnotation(NN)) {
+            type.replaceAnnotation(GTEN1);
+        } else if (leftType.hasAnnotation(POS)) {
+            type.replaceAnnotation(NN);
+        } else {
+            type.replaceAnnotation(UNKNOWN);
+        }
+        return;
+    }
+
+    private AnnotatedTypeMirror getPostFixAnnoIncrement(AnnotatedTypeMirror anno) {
+        if (anno.hasAnnotation(GTEN1)) {
+            anno.replaceAnnotation(NN);
+        } else if (anno.hasAnnotation(NN)) {
+            anno.replaceAnnotation(POS);
+        } else if (anno.hasAnnotation(POS)) {
+            anno.replaceAnnotation(POS);
+        } else {
+            anno.replaceAnnotation(UNKNOWN);
+        }
+        return anno;
+    }
+
+    private AnnotatedTypeMirror getPostFixAnnoDecrement(AnnotatedTypeMirror anno) {
+        if (anno.hasAnnotation(GTEN1)) {
+            anno.replaceAnnotation(UNKNOWN);
+        } else if (anno.hasAnnotation(NN)) {
+            anno.replaceAnnotation(GTEN1);
+        } else if (anno.hasAnnotation(POS)) {
+            anno.replaceAnnotation(NN);
+        } else {
+            anno.replaceAnnotation(UNKNOWN);
+        }
+        return anno;
+    }
+
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -98,7 +180,7 @@ public class LowerBoundAnnotatedTypeFactory extends
         /** call increment and decrement helper functions */
         @Override
         public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror leftType = null;
+            AnnotatedTypeMirror leftType = getAnnotatedType(tree.getExpression());
             switch (tree.getKind()) {
             case PREFIX_INCREMENT:
                 if (leftType == null) {
@@ -112,36 +194,15 @@ public class LowerBoundAnnotatedTypeFactory extends
                 }
                 decrementHelper(leftType, type);
                 break;
+            case POSTFIX_INCREMENT:
+                break;
+            case POSTFIX_DECREMENT:
+                break;
             default:
                 break;
             }
-            return super.visitUnary(tree, type);
-        }
-
-        /** handles x+1, x++, ++x, and all equivalent statements */
-        public void incrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
-            if (leftType.hasAnnotation(GTEN1)) {
-                type.addAnnotation(NN);
-            } else if (leftType.hasAnnotation(NN)) {
-                type.addAnnotation(POS);
-            } else if (leftType.hasAnnotation(POS)) {
-                type.addAnnotation(POS);
-            } else {
-                type.addAnnotation(UNKNOWN);
-            }
-            return;
-        }
-
-        /** handles x-1, x--, --x, and all equivalent statements */
-        public void decrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
-            if (leftType.hasAnnotation(NN)) {
-                type.addAnnotation(GTEN1);
-            } else if (leftType.hasAnnotation(POS)) {
-                type.addAnnotation(NN);
-            } else {
-                type.addAnnotation(UNKNOWN);
-            }
-            return;
+            Void v = super.visitUnary(tree, type);
+            return v;
         }
 
         /** get the list of possible values from a value checker type */
@@ -219,6 +280,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             if (valueCheckerCanAssignType(valueType, type)) {
                 return super.visitBinary(tree, type);
             }
+
             ExpressionTree left = tree.getLeftOperand();
             ExpressionTree right = tree.getRightOperand();
             switch (tree.getKind()) {
