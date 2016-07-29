@@ -65,23 +65,10 @@ public class LowerBoundAnnotatedTypeFactory extends
         if (tree.getKind() == Tree.Kind.POSTFIX_DECREMENT
                 || tree.getKind() == Tree.Kind.POSTFIX_INCREMENT) {
 
-            String stTree = tree.toString();
-            return getPostFixAnno(super.getAnnotatedType(tree),
-                                  tree.getKind() == Tree.Kind.POSTFIX_INCREMENT, stTree);
-
+            return getAnnotatedType(((UnaryTree) tree).getExpression());
         } else {
             return super.getAnnotatedType(tree);
         }
-    }
-
-    /** The rest of Suzanne's hack */
-    private AnnotatedTypeMirror getPostFixAnno(AnnotatedTypeMirror anno, boolean increment, String stTree) {
-        if (increment) {
-            decrementHelper(anno, anno);
-        } else {
-            incrementHelper(anno, anno);
-        }
-        return anno;
     }
 
 
