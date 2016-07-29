@@ -887,9 +887,13 @@ public class StubParser {
             if (param.getTypeBound() == null || param.getTypeBound().isEmpty()) {
                 // No bound so annotations are both lower and upper bounds
                 annotate(paramType, param.getAnnotations());
-            } else if (param.getTypeBound() != null && param.getTypeBound().size() == 1) {
+            } else if (param.getTypeBound() != null && param.getTypeBound().size() > 0) {
                 annotate(paramType.getLowerBound(), param.getAnnotations());
                 annotate(paramType.getUpperBound(), param.getTypeBound().get(0));
+                if (param.getTypeBound().size() > 0) {
+                    // TODO: add support for intersection types
+                    stubWarnIfNotFound("Annotations on intersection types are not yet supported");
+                }
             }
         }
     }
