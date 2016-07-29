@@ -32,6 +32,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -64,8 +65,13 @@ public class LowerBoundAnnotatedTypeFactory extends
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
         if (tree.getKind() == Tree.Kind.POSTFIX_DECREMENT
                 || tree.getKind() == Tree.Kind.POSTFIX_INCREMENT) {
-
-            return getAnnotatedType(((UnaryTree) tree).getExpression());
+            // TODO: This is a workaround for Issue 867
+            // https://github.com/typetools/checker-framework/issues/867
+            AnnotatedTypeMirror refinedType = super.getAnnotatedType(tree);
+            AnnotatedTypeMirror typeOfExpression = getAnnotatedType(((UnaryTree) tree).getExpression());
+            // Call asSuper in case the type of decrement tree is different than the type of it's
+            // expression
+            return AnnotatedTypes.asSuper(types, this, typeOfExpression, typeOfExpression);
         } else {
             return super.getAnnotatedType(tree);
         }
