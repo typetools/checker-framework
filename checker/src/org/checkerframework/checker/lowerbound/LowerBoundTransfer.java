@@ -26,10 +26,13 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, LowerBoundTransfer> {
+
     protected LowerBoundAnalysis analysis;
 
+    // we'll pull these from our ATF
     private final AnnotationMirror GTEN1, NN, POS, UNKNOWN;
 
+    // this is the ATF
     private LowerBoundAnnotatedTypeFactory atypeFactory;
 
     public LowerBoundTransfer(LowerBoundAnalysis analysis) {

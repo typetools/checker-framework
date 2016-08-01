@@ -36,18 +36,29 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
+/** Contains all of the introduction rules for the Lower Bound Checker.
+ *  The rules this class implements are found in lowerbound_rules.txt,
+ *  in the same directory in the source tree.
+ */
 public class LowerBoundAnnotatedTypeFactory extends
  GenericAnnotatedTypeFactory<CFValue, CFStore, LowerBoundTransfer, LowerBoundAnalysis> {
 
+    /* Since these don't take arguments, we only need one version of each */
     public final AnnotationMirror GTEN1, NN, POS, UNKNOWN;
+
+    /* a single link to the value checker, which computes the values
+       of expressions known at compile time (constant prop + folding) */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+        // initialize the individual annotations
         GTEN1 = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
         NN = AnnotationUtils.fromClass(elements, NonNegative.class);
         POS = AnnotationUtils.fromClass(elements, Positive.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
+        /* the value checker needs to run before this checker, because
+           this line is querying it */
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         this.postInit();
     }
@@ -77,61 +88,6 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
     }
 
-
-    /* I moved these out of the tree annotator because reasons */
-
-    /** handles x+1, ++x, and all equivalent statements */
-    public void incrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
-        if (leftType.hasAnnotation(GTEN1)) {
-            type.replaceAnnotation(NN);
-        } else if (leftType.hasAnnotation(NN)) {
-            type.replaceAnnotation(POS);
-        } else if (leftType.hasAnnotation(POS)) {
-            type.replaceAnnotation(POS);
-        } else {
-            type.replaceAnnotation(UNKNOWN);
-        }
-        return;
-    }
-
-    /** handles x-1, --x, and all equivalent statements */
-    public void decrementHelper(AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
-        if (leftType.hasAnnotation(NN)) {
-            type.replaceAnnotation(GTEN1);
-        } else if (leftType.hasAnnotation(POS)) {
-            type.replaceAnnotation(NN);
-        } else {
-            type.replaceAnnotation(UNKNOWN);
-        }
-        return;
-    }
-
-    private AnnotatedTypeMirror getPostFixAnnoIncrement(AnnotatedTypeMirror anno) {
-        if (anno.hasAnnotation(GTEN1)) {
-            anno.replaceAnnotation(NN);
-        } else if (anno.hasAnnotation(NN)) {
-            anno.replaceAnnotation(POS);
-        } else if (anno.hasAnnotation(POS)) {
-            anno.replaceAnnotation(POS);
-        } else {
-            anno.replaceAnnotation(UNKNOWN);
-        }
-        return anno;
-    }
-
-    private AnnotatedTypeMirror getPostFixAnnoDecrement(AnnotatedTypeMirror anno) {
-        if (anno.hasAnnotation(GTEN1)) {
-            anno.replaceAnnotation(UNKNOWN);
-        } else if (anno.hasAnnotation(NN)) {
-            anno.replaceAnnotation(GTEN1);
-        } else if (anno.hasAnnotation(POS)) {
-            anno.replaceAnnotation(NN);
-        } else {
-            anno.replaceAnnotation(UNKNOWN);
-        }
-        return anno;
-    }
-
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -147,7 +103,7 @@ public class LowerBoundAnnotatedTypeFactory extends
 
         /** does the actual work of annotating a literal so that we can call this from
             elsewhere in this program (e.g. computeTypesForPlus w/ two literals) */
-        private void literalHelper(int val, AnnotatedTypeMirror type) {
+        private void computeTypesForLiterals(int val, AnnotatedTypeMirror type) {
             if (val == -1) {
                 type.addAnnotation(GTEN1);
             } else if (val == 0) {
@@ -159,46 +115,72 @@ public class LowerBoundAnnotatedTypeFactory extends
             }
         }
 
+        /** sets typeDst to one higher in the hierarchy than typeSrc */
+        public void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+            if (typeSrc.hasAnnotation(GTEN1)) {
+                typeDst.replaceAnnotation(NN);
+            } else if (typeSrc.hasAnnotation(NN)) {
+                typeDst.replaceAnnotation(POS);
+            } else if (typeSrc.hasAnnotation(POS)) {
+                typeDst.replaceAnnotation(POS);
+            } else {
+                typeDst.replaceAnnotation(UNKNOWN);
+            }
+            return;
+        }
+
+        /** sets typeDst to one lower in the hierarchy than typeSrc */
+        public void demoteTypeDst(AnnotatedTypeDstMirror typeSrc, AnnotatedTypeDstMirror typeDst) {
+            if (typeSrc.hasAnnotation(NN)) {
+                typeDst.replaceAnnotation(GTEN1);
+            } else if (typeSrc.hasAnnotation(POS)) {
+                typeDst.replaceAnnotation(NN);
+            } else {
+                typeDst.replaceAnnotation(UNKNOWN);
+            }
+            return;
+        }
+
         /** we could call the constant value checker here but if we already know its a literal... */
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             /** only annotate integers */
             if (tree.getKind() == Tree.Kind.INT_LITERAL) {
                 int val = (int) tree.getValue();
-                literalHelper(val, type);
+                computeTypesForLiterals(val, type);
             }
             return super.visitLiteral(tree, type);
         }
 
         /** call increment and decrement helper functions */
         @Override
-        public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror leftType = getAnnotatedType(tree.getExpression());
+        public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeSrc) {
+            AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
             switch (tree.getKind()) {
             case PREFIX_INCREMENT:
-                if (leftType == null) {
-                    leftType = getAnnotatedType(tree.getExpression());
+                if (typeSrc == null) {
+                    typeSrc = getAnnotatedType(tree.getExpression());
                 }
-                incrementHelper(leftType, type);
+                promoteType(typeSrc, typeDst);
                 break;
             case PREFIX_DECREMENT:
-                if (leftType == null) {
-                     leftType = getAnnotatedType(tree.getExpression());
+                if (typeSrc == null) {
+                     typeSrc = getAnnotatedType(tree.getExpression());
                 }
-                decrementHelper(leftType, type);
+                demoteType(typeSrc, typeDst);
                 break;
-            case POSTFIX_INCREMENT:
+            case POSTFIX_INCREMENT: // do nothing. The hack above takes care of these.
                 break;
             case POSTFIX_DECREMENT:
                 break;
             default:
                 break;
             }
-            Void v = super.visitUnary(tree, type);
-            return v;
+            return super.visitUnary(tree, typeDst);
         }
 
-        /** get the list of possible values from a value checker type */
+        /** get the list of possible values from a value checker type.
+            May return null. */
         private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = null;
             try {
@@ -212,7 +194,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             returns a single value equal to what the value checker believes the value
             of the argument is. If the value checker cannot determine the exact value
             of the input, throw an Illegal argument exception */
-        public int intFromValueType(AnnotatedTypeMirror valueType) {
+        public int valFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
             if (possibleValues != null && possibleValues.size() == 1) {
                 return possibleValues.get(0).intValue();
@@ -221,61 +203,55 @@ public class LowerBoundAnnotatedTypeFactory extends
             }
         }
 
-        /** figure out which type in our hierarchy a value checker type corresponds to */
-        public AnnotationMirror lowerBoundTypeFromValueType(AnnotatedTypeMirror valueType) {
+        /** figure out which type in the lower bound hierarchy a value checker type corresponds to.
+         *  returns an annotation mirror. In the code, AnnotationMirror is abbr. as anm
+         */
+        public AnnotationMirror lowerBoundAnmFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
             if (possibleValues == null || possibleValues.size() == 0) {
                 return UNKNOWN;
             }
             boolean fPos = true;
             boolean fNN = true;
-            for (Long l : possibleValues) {
-                if (l < -1) {
+            for (Long possibleValue : possibleValues) {
+                if (possibleValue < -1) {
+                    /* if the value checker finds any value < -1, we won't be able to say
+                    anything interesting about this variable: it might be < -1 */
                     return UNKNOWN;
-                } else if (l < 0) {
-                    fPos = false;
+                }
+                if (possibleValue < 0) {
                     fNN = false;
-                } else if (l < 1) {
+                }
+                if (possibleValue < 1) {
                     fPos = false;
                 }
             }
             // if we've made it this far, the list contains no negative values
-            if (possibleValues.size() > 0) {
-                if (fPos) {
-                    return POS;
-                } else if (fNN) {
-                    return NN;
-                } else {
-                    return GTEN1;
-                }
+            if (fPos) {
+                return POS;
+            } else if (fNN) {
+                return NN;
+            } else {
+                return GTEN1;
             }
-            return UNKNOWN;
-        }
-
-        /** if the valueType pins the variable into a single qualifier, return true and assign
-         * the ATM into that qualifier. otherwise, return false
-         */
-        public boolean valueCheckerCanAssignType(AnnotatedTypeMirror valueType,
-                                                 AnnotatedTypeMirror type) {
-            AnnotationMirror anm = lowerBoundTypeFromValueType(valueType);
-            if (anm != UNKNOWN) {
-                type.addAnnotation(anm);
-                return true;
-            }
-            return false;
         }
 
         /** dispatch to binary operator helper methods. the lower bound checker currently
          *  handles addition, subtraction, multiplication, division, and modular division */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+            // see if the value checker's information puts it into a single type
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
-            if (valueCheckerCanAssignType(valueType, type)) {
+            AnnotationMirror lowerBoundAnm = lowerBoundAnmFromValueType(valueType);
+            if (lowerBoundAnm != Unknown.class) {
+                type.addAnnotation(lowerBoundAnm);
                 return super.visitBinary(tree, type);
             }
 
+            // dispatch according to the operation
             ExpressionTree left = tree.getLeftOperand();
             ExpressionTree right = tree.getRightOperand();
+            // every "computeTypesForX" method is stateful and modifies type
             switch (tree.getKind()) {
             case PLUS:
                 computeTypesForPlus(left, right, type);
@@ -284,13 +260,13 @@ public class LowerBoundAnnotatedTypeFactory extends
                 computeTypesForMinus(left, right, type);
                 break;
             case MULTIPLY:
-                computeTypesForTimes(left, right, type);
+                computeTypesForMultiply(left, right, type);
                 break;
             case DIVIDE:
                 computeTypesForDivide(left, right, type);
                 break;
             case REMAINDER:
-                computeTypesForMod(left, right, type);
+                computeTypesForRemainder(left, right, type);
                 break;
             default:
                 break;
@@ -298,6 +274,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             return super.visitBinary(tree, type);
         }
 
+        /** helper method for computeTypesForPlus. Handles addition of constants */
         private void computeTypesForLiteralPlus(int val, AnnotatedTypeMirror leftType,
                                                  AnnotatedTypeMirror type) {
             if (val == -2) {
@@ -307,7 +284,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 }
             }
             else if (val == -1) {
-                decrementHelper(leftType, type);
+                demoteType(leftType, type);
                 return;
             }
             else if (val == 0) {
@@ -315,7 +292,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
             else if (val == 1) {
-                incrementHelper(leftType, type);
+                promoteType(leftType, type);
                 return;
             }
             else if (val >= 2) {
@@ -328,7 +305,6 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
        /**   computeTypesForPlus handles the following cases:
-        *       int lit + int lit -> do the math
         *       lit 0 + * -> *
         *       lit 1 + * -> call increment
         *       lit -1 + * -> call decrement
@@ -342,14 +318,13 @@ public class LowerBoundAnnotatedTypeFactory extends
         *       nn + gten1 -> gten1
         *      * + * -> lbu
         */
-
         public void computeTypesForPlus(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // check if the right side's value is known at compile time
             try {
                 AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = intFromValueType(valueType);
+                int val = valFromValueType(valueType);
                 computeTypesForLiteralPlus(val, leftType, type);
                 return;
             } catch (IllegalArgumentException iae) {}
@@ -358,7 +333,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             // check if the left side's value is known at compile time
             try {
                 AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
-                int val = intFromValueType(valueType);
+                int val = valFromValueType(valueType);
                 computeTypesForLiteralPlus(val, rightType, type);
                 return;
             } catch (IllegalArgumentException iae) {}
@@ -399,6 +374,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             return;
         }
 
+        /** helper function for computeTypesForMinus. Handles compile-time known constants */
         private void computeTypesForLiteralMinus(int val, AnnotatedTypeMirror leftType,
                                                    AnnotatedTypeMirror type) {
             if (val == 2) {
@@ -408,7 +384,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 }
             }
             else if (val == 1) {
-                decrementHelper(leftType, type);
+                demoteType(leftType, type);
                 return;
             }
             else if (val == 0) {
@@ -416,7 +392,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
             else if (val == -1) {
-                incrementHelper(leftType, type);
+                promoteType(leftType, type);
                 return;
             }
             else if (val <= -2) {
@@ -429,7 +405,6 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /** computeTypesForMinus handles the following cases:
-          *     int lit - int lit -> do the math
           *     * - lit 0 -> *
           *     * - lit 1 -> call decrement
           *     * - lit -1 -> call increment
@@ -443,7 +418,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             // check if the right side's value is known at compile time
             try {
                 AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = intFromValueType(valueType);
+                int val = valFromValueType(valueType);
                 computeTypesForLiteralMinus(val, leftType, type);
                 return;
             } catch (IllegalArgumentException iae) {}
@@ -453,7 +428,8 @@ public class LowerBoundAnnotatedTypeFactory extends
             return;
         }
 
-        private void computeTypesForLiteralTimes(int val, AnnotatedTypeMirror leftType,
+        /** helper function for computeTypesForMultiply. Handles compile-time known constants */
+        private void computeTypesForLiteralMultiply(int val, AnnotatedTypeMirror leftType,
                                                  AnnotatedTypeMirror type) {
             if (val == 0) {
                 type.addAnnotation(NN);
@@ -465,8 +441,7 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /**
-         *      computeTypesForTimes handles the following cases:
-         *        int lit * int lit -> do the math
+         *      computeTypesForMultiply handles the following cases:
          *        * * lit 0 -> nn (=0)
          *        * * lit 1 -> *
          *        pos * pos -> pos
@@ -474,14 +449,14 @@ public class LowerBoundAnnotatedTypeFactory extends
          *        nn * nn -> nn
          *        * * * -> lbu
          */
-        public void computeTypesForTimes(ExpressionTree leftExpr, ExpressionTree rightExpr,
+        public void computeTypesForMultiply(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // check if the right side's value is known at compile time
             try {
                 AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = intFromValueType(valueType);
-                computeTypesForLiteralTimes(val, leftType, type);
+                int val = valFromValueType(valueType);
+                computeTypesForLiteralMultiply(val, leftType, type);
                 return;
             } catch (IllegalArgumentException iae) {}
 
@@ -489,8 +464,8 @@ public class LowerBoundAnnotatedTypeFactory extends
             // check if the left side's value is known at compile time
             try {
                 AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
-                int val = intFromValueType(valueType);
-                computeTypesForLiteralTimes(val, rightType, type);
+                int val = valFromValueType(valueType);
+                computeTypesForLiteralMultiply(val, rightType, type);
                 return;
             } catch (IllegalArgumentException iae) {}
 
@@ -538,6 +513,8 @@ public class LowerBoundAnnotatedTypeFactory extends
                                                   AnnotatedTypeMirror type) {
             if (val == 0) {
                 // if we get here then this is a divide by zero error...
+                // TODO: I'm not convinced this is the right behavior, but
+                // I'm unsure of what's correct here.
                 throw new ArithmeticException();
             } else if (val == 1) {
                 type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
@@ -545,8 +522,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             }
         }
 
-        /**
-         *      int lit / int lit -> do the math
+        /**     computeTypesForDivide handles these cases:
          *      lit 0 / * -> nn
          *      * / lit 1 -> *
          *      pos / pos -> nn
@@ -564,7 +540,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             // check if the left side's value is known at compile time
             try {
                 AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
-                int val = intFromValueType(valueType);
+                int val = valFromValueType(valueType);
                 computeTypesForLiteralDivideLeft(val, rightType, type);
                 return;
             } catch (IllegalArgumentException iae) {}
@@ -573,7 +549,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             // check if the right side's value is known at compile time
             try {
                 AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = intFromValueType(valueType);
+                int val = valFromValueType(valueType);
                 computeTypesForLiteralDivideRight(val, leftType, type);
                 return;
             } catch (IllegalArgumentException iae) {}
@@ -612,7 +588,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             return;
         }
 
-        private void computeTypesForLiteralMod(int val, AnnotatedTypeMirror type) {
+        private void computeTypesForLiteralRemainder(int val, AnnotatedTypeMirror type) {
             if (val == 1 || val == -1) {
                 type.addAnnotation(NN);
                 return;
@@ -626,7 +602,7 @@ public class LowerBoundAnnotatedTypeFactory extends
          *  gten1 % * -> gten1
          *  * % * -> lbu
          */
-        public void computeTypesForMod(ExpressionTree leftExpr, ExpressionTree rightExpr,
+        public void computeTypesForRemainder(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
@@ -634,8 +610,8 @@ public class LowerBoundAnnotatedTypeFactory extends
             // check if the right side's value is known at compile time
             try {
                 AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = intFromValueType(valueType);
-                computeTypesForLiteralMod(val, type);
+                int val = valFromValueType(valueType);
+                computeTypesForLiteralRemainder(val, type);
                 return;
             } catch (IllegalArgumentException iae) {}
 
