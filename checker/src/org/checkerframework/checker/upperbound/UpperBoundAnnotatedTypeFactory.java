@@ -1,6 +1,12 @@
 package org.checkerframework.checker.upperbound;
 
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.Tree;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +22,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.qual.IntVal;
 
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -26,6 +33,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -56,6 +65,16 @@ public class UpperBoundAnnotatedTypeFactory extends
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         env = checker.getProcessingEnvironment();
         this.postInit();
+    }
+
+    /** get the list of possible values from a value checker type */
+    private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
+        List<Long> possibleValues = null;
+        try {
+            possibleValues =
+                ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+        } catch (NullPointerException npe) {}
+        return possibleValues;
     }
 
     @Override
@@ -90,7 +109,8 @@ public class UpperBoundAnnotatedTypeFactory extends
 
     /**
      * The qualifier hierarchy for the upperbound type system
-     * What does the qh do? When I figure that out I'll write it here
+     * The qh is responsible for determining the relationships
+     * between various qualifiers - especially subtyping relations.
      */
     private final class UpperBoundQualifierHierarchy extends
             MultiGraphQualifierHierarchy {
@@ -223,6 +243,14 @@ public class UpperBoundAnnotatedTypeFactory extends
                 return UNKNOWN;
             }
         }
+    }
+
+    @Override
+    public TreeAnnotator createTreeAnnotator() {
+        return new ListTreeAnnotator(
+                new UpperBoundTreeAnnotator(this),
+                new PropagationTreeAnnotator(this)
+        );
     }
 
     protected class UpperBoundTreeAnnotator extends TreeAnnotator {

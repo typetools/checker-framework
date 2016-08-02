@@ -711,6 +711,13 @@
         </antcall>
     </target>
 
+    <target name="minlen-tests" depends="jar,build-tests"
+            description="Run tests for the MinLen Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.MinLenTest"/>
+        </antcall>
+    </target>
+
     <target name="interning-tests" depends="jar,build-tests"
             description="Run tests for the Interning Checker">
         <antcall target="-run-tests">
