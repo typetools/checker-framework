@@ -7,7 +7,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 
 /**
  * In the Lower Bound Checker's type system, this type
- * represents any variable not known to be an integer >= -1
+ * represents any variable not known to be an integer greater than or equal to -1
  *
  * @checker_framework.manual #lowerbound-checker Lower Bound Checker
  */

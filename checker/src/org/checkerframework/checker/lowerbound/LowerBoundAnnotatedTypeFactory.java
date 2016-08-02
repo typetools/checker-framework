@@ -305,18 +305,18 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
        /**   computeTypesForPlus handles the following cases:
-        *       lit 0 + * -> *
-        *       lit 1 + * -> call increment
-        *       lit -1 + * -> call decrement
-        *       lit >= 2 + gten1, nn, or pos -> pos
-        *       lit -2 + pos -> gten1
+        *       lit 0 + * becomes *
+        *       lit 1 + * becomes call increment
+        *       lit -1 + * becomes call decrement
+        *       lit >= 2 + gten1, nn, or pos becomes pos
+        *       lit -2 + pos becomes gten1
         *       let all other lits fall through:
-        *       pos + pos -> pos
-        *       pos + nn -> pos
-        *       nn + nn -> nn
-        *       pos + gten1 -> nn
-        *       nn + gten1 -> gten1
-        *      * + * -> lbu
+        *       pos + pos becomes pos
+        *       pos + nn becomes pos
+        *       nn + nn becomes nn
+        *       pos + gten1 becomes nn
+        *       nn + gten1 becomes gten1
+        *      * + * becomes lbu
         */
         public void computeTypesForPlus(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
@@ -339,11 +339,11 @@ public class LowerBoundAnnotatedTypeFactory extends
             } catch (IllegalArgumentException iae) {}
 
             /* This section is handling the generic cases:
-             pos + pos -> pos
-             pos + nn -> pos
-             nn + nn -> nn
-             pos + gten1 -> nn
-             nn + gten1 -> gten1
+             pos + pos becomes pos
+             pos + nn becomes pos
+             nn + nn becomes nn
+             pos + gten1 becomes nn
+             nn + gten1 becomes gten1
             */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(POS);
@@ -369,7 +369,7 @@ public class LowerBoundAnnotatedTypeFactory extends
                 return;
             }
 
-            // * + * -> lbu
+            // * + * becomes lbu
             type.addAnnotation(UNKNOWN);
             return;
         }
@@ -405,12 +405,12 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /** computeTypesForMinus handles the following cases:
-          *     * - lit 0 -> *
-          *     * - lit 1 -> call decrement
-          *     * - lit -1 -> call increment
-          *     pos - lit 2 -> gten1
-          *     gten1, nn, pos - lit <= -2 -> pos
-          *     * - * -> lbu
+          *     * - lit 0 becomes *
+          *     * - lit 1 becomes call decrement
+          *     * - lit -1 becomes call increment
+          *     pos - lit 2 becomes gten1
+          *     gten1, nn, pos - lit <= -2 becomes pos
+          *     * - * becomes lbu
           */
         public void computeTypesForMinus(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
@@ -442,12 +442,12 @@ public class LowerBoundAnnotatedTypeFactory extends
 
         /**
          *      computeTypesForMultiply handles the following cases:
-         *        * * lit 0 -> nn (=0)
-         *        * * lit 1 -> *
-         *        pos * pos -> pos
-         *        pos * nn -> nn
-         *        nn * nn -> nn
-         *        * * * -> lbu
+         *        * * lit 0 becomes nn (=0)
+         *        * * lit 1 becomes *
+         *        pos * pos becomes pos
+         *        pos * nn becomes nn
+         *        nn * nn becomes nn
+         *        * * * becomes lbu
          */
         public void computeTypesForMultiply(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
@@ -470,9 +470,9 @@ public class LowerBoundAnnotatedTypeFactory extends
             } catch (IllegalArgumentException iae) {}
 
             /* this section handles generic annotations
-                pos * pos -> pos
-                nn * pos -> nn
-                nn * nn -> nn
+                pos * pos becomes pos
+                nn * pos becomes nn
+                nn * nn becomes nn
             */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(POS);
@@ -523,16 +523,16 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /**     computeTypesForDivide handles these cases:
-         *      lit 0 / * -> nn
-         *      * / lit 1 -> *
-         *      pos / pos -> nn
-         *      nn / pos -> nn
-         *      pos / nn -> nn
-         *      nn / nn -> nn
-         *      pos / gten1 -> gten1
-         *      nn / gten1 -> gten1
-         *      gten1 / gten1 -> nn
-         *      * / * -> lbu
+         *      lit 0 / * becomes nn
+         *      * / lit 1 becomes *
+         *      pos / pos becomes nn
+         *      nn / pos becomes nn
+         *      pos / nn becomes nn
+         *      nn / nn becomes nn
+         *      pos / gten1 becomes gten1
+         *      nn / gten1 becomes gten1
+         *      gten1 / gten1 becomes nn
+         *      * / * becomes lbu
          */
         public void computeTypesForDivide(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
@@ -555,12 +555,12 @@ public class LowerBoundAnnotatedTypeFactory extends
             } catch (IllegalArgumentException iae) {}
 
             /* this section handles generic annotations
-               pos / pos -> nn
-               nn / pos -> nn
-               pos / nn -> nn
-               nn / nn -> nn
-               gten1 / pos -> gten1
-               gten1 / nn -> gten1
+               pos / pos becomes nn
+               nn / pos becomes nn
+               pos / nn becomes nn
+               nn / nn becomes nn
+               gten1 / pos becomes gten1
+               gten1 / nn becomes gten1
             */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(NN);
@@ -596,11 +596,11 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /**
-         *  int lit % int lit -> do the math
-         *  * % 1/-1 -> nn
-         *  pos/nn % * -> nn
-         *  gten1 % * -> gten1
-         *  * % * -> lbu
+         *  int lit % int lit becomes do the math
+         *  * % 1/-1 becomes nn
+         *  pos/nn % * becomes nn
+         *  gten1 % * becomes gten1
+         *  * % * becomes lbu
          */
         public void computeTypesForRemainder(ExpressionTree leftExpr, ExpressionTree rightExpr,
                                AnnotatedTypeMirror type) {
@@ -616,8 +616,8 @@ public class LowerBoundAnnotatedTypeFactory extends
             } catch (IllegalArgumentException iae) {}
 
             /* this section handles generic annotations
-                pos/nn % * -> nn
-                gten1 % * -> gten1
+                pos/nn % * becomes nn
+                gten1 % * becomes gten1
              */
             if (leftType.hasAnnotation(POS) || leftType.hasAnnotation(NN)) {
                 type.addAnnotation(NN);

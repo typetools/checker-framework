@@ -7,7 +7,7 @@ import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
 
 /**
  * In the Lower Bound Checker's type system, this type
- * represents any integer >= 0
+ * represents any integer greater than or equal to 0
  *
  * @checker_framework.manual #lowerbound-checker Lower Bound Checker
  */

@@ -7,7 +7,7 @@ import org.checkerframework.checker.lowerbound.qual.*;
 
 /**
  * In the Lower Bound Checker's type system, this type
- * represents any integer >= -1
+ * represents any integer greater than or equal to -1
  *
  * @checker_framework.manual #lowerbound-checker Lower Bound Checker
  */
