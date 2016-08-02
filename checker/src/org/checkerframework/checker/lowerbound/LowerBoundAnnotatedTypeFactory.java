@@ -308,7 +308,7 @@ public class LowerBoundAnnotatedTypeFactory extends
         *       lit 0 + * becomes *
         *       lit 1 + * becomes call increment
         *       lit -1 + * becomes call decrement
-        *       lit >= 2 + gten1, nn, or pos becomes pos
+        *       lit greater than or equal to 2 + gten1, nn, or pos becomes pos
         *       lit -2 + pos becomes gten1
         *       let all other lits fall through:
         *       pos + pos becomes pos
@@ -409,7 +409,7 @@ public class LowerBoundAnnotatedTypeFactory extends
           *     * - lit 1 becomes call decrement
           *     * - lit -1 becomes call increment
           *     pos - lit 2 becomes gten1
-          *     gten1, nn, pos - lit <= -2 becomes pos
+          *     gten1, nn, pos - lit less than or equal to -2 becomes pos
           *     * - * becomes lbu
           */
         public void computeTypesForMinus(ExpressionTree leftExpr, ExpressionTree rightExpr,
