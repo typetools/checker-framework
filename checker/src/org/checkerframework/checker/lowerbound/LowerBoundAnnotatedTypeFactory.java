@@ -130,7 +130,7 @@ public class LowerBoundAnnotatedTypeFactory extends
         }
 
         /** sets typeDst to one lower in the hierarchy than typeSrc */
-        public void demoteTypeDst(AnnotatedTypeDstMirror typeSrc, AnnotatedTypeDstMirror typeDst) {
+        public void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
             if (typeSrc.hasAnnotation(NN)) {
                 typeDst.replaceAnnotation(GTEN1);
             } else if (typeSrc.hasAnnotation(POS)) {
@@ -154,7 +154,7 @@ public class LowerBoundAnnotatedTypeFactory extends
 
         /** call increment and decrement helper functions */
         @Override
-        public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeSrc) {
+        public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
             AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
             switch (tree.getKind()) {
             case PREFIX_INCREMENT:
@@ -243,7 +243,7 @@ public class LowerBoundAnnotatedTypeFactory extends
             // see if the value checker's information puts it into a single type
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
             AnnotationMirror lowerBoundAnm = lowerBoundAnmFromValueType(valueType);
-            if (lowerBoundAnm != Unknown.class) {
+            if (lowerBoundAnm != UNKNOWN) {
                 type.addAnnotation(lowerBoundAnm);
                 return super.visitBinary(tree, type);
             }
