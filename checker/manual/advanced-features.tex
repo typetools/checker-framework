@@ -427,7 +427,9 @@ implementation can enable it if desired.
 
 If a wildcard is unbounded and has no annotation (e.g. \code{List<?>}),
 the annotations on the wildcard's bounds are copied from the type parameter
-to which the wildcard is an argument.  For example, the two wildcards in
+to which the wildcard is an argument.
+
+For example, the two wildcards in
 the declarations below are equivalent.
 
 \begin{Verbatim}
@@ -437,11 +439,15 @@ MyList<?> listOfNullables;
 MyList<@Nullable ? extends @Nullable Object> listOfNullables;
 \end{Verbatim}
 
-We copy these annotations because wildcards must be within the bounds of their
-corresponding type parameter.  Therefore, there would be many false positive
-\code{type.argument.type.incompatible} warnings if the bounds of a wildcard
-were defaulted differently from the bounds of its corresponding type parameter.
-Here is another example:
+The Checker Framework copies
+these annotations because wildcards must be within the bounds of their
+corresponding type parameter.
+By contrast, if the bounds of a wildcard
+were defaulted differently from the bounds of its corresponding type
+parameter, then there would be many false positive
+\code{type.argument.type.incompatible} warnings 
+
+Here is another example of two equivalent wildcard declarations:
 
 \begin{Verbatim}
 class MyList<@Regex(5) T extends @Regex(1) Object> {}
@@ -450,7 +456,8 @@ MyList<?> listOfRegexes;
 MyList<@Regex(5) ? extends @Regex(1) Object> listOfRegexes;
 \end{Verbatim}
 
-Note, this applies only to unbounded wildcards.  The two wildcards in the
+Note, this copying of annotations for a wildcard's bounds applies only to
+unbounded wildcards.  The two wildcards in the
 following example are equivalent.
 
 \begin{Verbatim}
