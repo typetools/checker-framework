@@ -1,8 +1,13 @@
 package org.checkerframework.checker.tainting.classic.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.checkerframework.checker.tainting.classic.TaintingClassicChecker;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The top qualifier of the tainting type system.

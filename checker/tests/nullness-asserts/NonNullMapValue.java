@@ -1,5 +1,10 @@
 import java.io.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
@@ -210,6 +215,9 @@ public class NonNullMapValue {
     interface MyMap3<K, V> {
         @org.checkerframework.dataflow.qual.Pure
         @EnsuresNonNullIf(result = true, expression = "get(#1)")
+        // The following error is issued because, unlike in interface MyMap2,
+        // this interface has no get() method.
+        //:: error: (flowexpr.parse.error)
         boolean containsKey(@Nullable Object a1);
     }
 }

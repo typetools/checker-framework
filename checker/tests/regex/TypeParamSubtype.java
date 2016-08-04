@@ -1,4 +1,4 @@
-import java.util.*;
+import java.util.Collection;
 import org.checkerframework.checker.regex.qual.Regex;
 
 class TypeParamSubtype {

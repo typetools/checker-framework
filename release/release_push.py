@@ -8,7 +8,7 @@ Created by Jonathan Burke on 2013-12-30.
 Copyright (c) 2013-2016 University of Washington. All rights reserved.
 """
 
-# See README-maintainers.html for more information
+# See README-release-process.html for more information
 
 import os
 from release_vars  import *
@@ -279,7 +279,7 @@ def main(argv):
     if not auto:
         print_step("Push Step 0: Verify Requirements\n") # MANUAL
         print("If this is your first time running the release_push script, please verify that you have met " +
-              "all the requirements specified in README-maintainers.html \"Pre-release Checklist\"\n")
+              "all the requirements specified in README-release-process.html \"Pre-release Checklist\"\n")
 
         continue_or_exit("")
 

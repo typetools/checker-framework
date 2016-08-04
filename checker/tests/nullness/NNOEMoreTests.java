@@ -25,6 +25,7 @@ class NNOEMoreTests {
             p.test1();
 
             Object xxx = new Object();
+            //:: error: (flowexpr.parse.error)
             p.test2();
         }
 

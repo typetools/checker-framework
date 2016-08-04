@@ -66,6 +66,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
@@ -203,7 +204,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected TypeArgumentInference typeArgumentInference;
 
-    /** To cache the supported type qualifiers. */
+    /** To cache the supported type qualifiers.
+     * call {@link #getSupportedTypeQualifiers()} instead of using this field
+     * directly, as it may not have been initialized.
+     */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
     /** Types read from stub files (but not those from the annotated JDK jar file). */
@@ -335,8 +339,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.loader = new AnnotationClassLoader(checker);
-        this.supportedQuals = createSupportedTypeQualifiers();
-        checkSupportedQuals();
+        this.supportedQuals = new HashSet<>();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
@@ -356,6 +359,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             this.elementCache = null;
             this.elementToTreeCache = null;
         }
+
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
 
@@ -673,9 +677,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an immutable set of annotation classes that are supported by a checker
+     * Returns a mutable set of annotation classes that are supported by a checker
      * <p>
-     * Subclasses may override this method and to return an immutable set
+     * Subclasses may override this method and to return a mutable set
      * of their supported type qualifiers through one of the 5 approaches shown below.
      * <p>
      * Subclasses should not call this method; they should call
@@ -754,22 +758,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <li>
      * Supporting only annotations that are explicitly listed:
      * Override
-     * {@link #createSupportedTypeQualifiers()} and return an immutable
+     * {@link #createSupportedTypeQualifiers()} and return a mutable
      * set of the supported annotations. Code example:
      * <pre>
      * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-     *      return Collections.unmodifiableSet(
-     *          new HashSet<Class<? extends Annotation>>(
-     *              Arrays.asList(A.class, B.class)));
+     *      return new HashSet<Class<? extends Annotation>>(
+     *              Arrays.asList(A.class, B.class));
      *  } }
      * </pre>
      *
      * The set of qualifiers returned by
-     * {@link #createSupportedTypeQualifiers()} must be an immutable
+     * {@link #createSupportedTypeQualifiers()} must be a fresh, mutable
      * set. The methods
      * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} and
      * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} each
-     * return an immutable set.
+     * must return a fresh, mutable set
      * </li>
      * </ol>
      *
@@ -793,7 +796,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            a varargs array of explicitly listed annotation classes to be
      *            added to the returned set. For example, it is used frequently
      *            to add Bottom qualifiers.
-     * @return an immutable set of the loaded and listed annotation classes, as
+     * @return a mutable set of the loaded and listed annotation classes, as
      *         well as {@link PolyAll}.
      */
     @SafeVarargs
@@ -802,7 +805,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         Set<Class<? extends Annotation>> annotations =
                 loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
         annotations.add(PolyAll.class);
-        return Collections.unmodifiableSet(annotations);
+        return annotations;
     }
 
     /**
@@ -817,13 +820,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            a varargs array of explicitly listed annotation classes to be
      *            added to the returned set. For example, it is used frequently
      *            to add Bottom qualifiers.
-     * @return an immutable set of the loaded, and listed annotation classes
+     * @return a mutable set of the loaded, and listed annotation classes
      */
     @SafeVarargs
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithoutPolyAll(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
-        return Collections.unmodifiableSet(
-                loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations));
+        return loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
     }
 
     /**
@@ -893,7 +895,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *         empty set if no qualifiers are supported
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
-        return supportedQuals;
+        if (this.supportedQuals.isEmpty()) {
+            supportedQuals.addAll(createSupportedTypeQualifiers());
+            checkSupportedQuals();
+        }
+        return Collections.unmodifiableSet(supportedQuals);
     }
 
     // **********************************************************************
@@ -992,22 +998,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             // No caching otherwise
         }
 
-        if (TreeUtils.isClassTree(tree)) {
-            postProcessClassTree((ClassTree) tree);
-        }
-
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
         return type;
     }
 
     /**
-     * Called by getAnnotatedType(Tree) for each ClassTree after determining the type.
+     * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} before the classTree is type
+     * checked.
+     * @param classTree ClassTree on which to perfrom preprocessing
+     */
+    public void preProcessClassTree(ClassTree classTree) {}
+
+    /**
+     * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} after the ClassTree has been
+     * type checked.
+     * <p>
      * The default implementation uses this to store the defaulted AnnotatedTypeMirrors
      * and inherited declaration annotations back into the corresponding Elements.
      * Subclasses might want to override this method if storing defaulted types is
      * not desirable.
      */
-    protected void postProcessClassTree(ClassTree tree) {
+    public void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
         if (checker.hasOption("infer") && wholeProgramInference != null) {
@@ -3140,7 +3151,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * If {@code wildcard}'s upper bound is a super type of {@code annotatedTypeMirror},
-     * this method returns an AnnotatedTypeMirror with the same qualfiers as {@code annotatedTypeMirror}, but
+     * this method returns an AnnotatedTypeMirror with the same qualifiers as {@code
+     * annotatedTypeMirror}, but
      * the underlying Java type is the the most specific base type of {@code annotatedTypeMirror} whose erasure type
      * is equivalent to the upper bound of {@code wildcard}.
      * <p>
@@ -3183,15 +3195,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror widenToUpperBound(
             final AnnotatedTypeMirror annotatedTypeMirror, final AnnotatedWildcardType wildcard) {
-        /**
-         *
-         */
         final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();
-        final TypeMirror wildcardUpperBoundTypeMirror =
-                wildcard.getExtendsBound().getUnderlyingType();
-        if (!types.isSubtype(wildcardUpperBoundTypeMirror, toModifyTypeMirror)
-                && types.isSubtype(toModifyTypeMirror, wildcardUpperBoundTypeMirror)) {
+        final TypeMirror wildcardUBTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
+        if (types.isSubtype(wildcardUBTypeMirror, toModifyTypeMirror)) {
+            return annotatedTypeMirror;
+        } else if (types.isSubtype(toModifyTypeMirror, wildcardUBTypeMirror)) {
             return AnnotatedTypes.asSuper(this, annotatedTypeMirror, wildcard);
+        } else if (wildcardUBTypeMirror.getKind() == TypeKind.DECLARED
+                && InternalUtils.getTypeElement(wildcardUBTypeMirror).getKind().isInterface()) {
+            // If the Checker Framework implemented capture conversion, then in this case, then
+            // the upper bound of the capture converted wildcard would be an intersection type.
+            // See JLS 15.1.10
+            // (https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.10)
+
+            // For example:
+            // class MyClass<@A T extends @B Number> { }
+            // MyClass<@C ? extends @D Serializable>
+            // The upper bound of the captured wildcard:
+            // glb(@B Number, @D Serializable) = @B Number & @D Serializable
+            // The about upper bound must be a subtype of the declared upper bound:
+            // @B Number & @D Serializable <: @B Number, which is always true.
+
+            // So, replace the upper bound at the declaration with the wildcard's upper bound so
+            // that the rest of the subtyping test pass.
+            return wildcard.getExtendsBound();
         }
 
         return annotatedTypeMirror;

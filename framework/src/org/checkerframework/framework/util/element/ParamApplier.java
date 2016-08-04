@@ -18,6 +18,7 @@ import static com.sun.tools.javac.code.TargetType.METHOD_TYPE_PARAMETER_BOUND;
 import static com.sun.tools.javac.code.TargetType.NEW;
 import static com.sun.tools.javac.code.TargetType.RESOURCE_VARIABLE;
 import static com.sun.tools.javac.code.TargetType.THROWS;
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.partitionByTargetType;
 
@@ -250,5 +251,11 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
                             + " ) ");
         }
         return (Symbol.MethodSymbol) methodChildElem.getEnclosingElement();
+    }
+
+    @Override
+    public void extractAndApply() {
+        addAnnotationsFromElement(type, element.getAnnotationMirrors());
+        super.extractAndApply();
     }
 }

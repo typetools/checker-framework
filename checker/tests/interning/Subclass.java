@@ -1,4 +1,3 @@
-import java.util.*;
 import org.checkerframework.checker.interning.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 

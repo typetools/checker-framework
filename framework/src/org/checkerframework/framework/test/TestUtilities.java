@@ -57,6 +57,53 @@ public class TestUtilities {
         return getJavaFilesAsArgumentList(dirs);
     }
 
+    /**
+     * Returns a list where each item is a list of Java files, excluding any skip tests, for each
+     * directory given by dirName and also a list for any subdirectory.
+     *
+     * @param parent Parent directory of the dirNames directories
+     * @param dirNames Names of directories to search
+     * @return List where each item is a list of Java test files grouped by directory
+     */
+    public static List<List<File>> findJavaFilesPerDirectory(File parent, String... dirNames) {
+        List<List<File>> filesPerDirectory = new ArrayList<>();
+
+        for (String dirName : dirNames) {
+            File dir = new File(parent, dirName);
+            if (dir.isDirectory()) {
+                filesPerDirectory.addAll(findJavaTestFilesInDirectory(dir));
+            }
+        }
+
+        return filesPerDirectory;
+    }
+
+    /**
+     * Returns a list where each item is a list of Java files, excluding any skip tests, for each
+     * subdirectory of {@code dir} and also a list of Java files in dir.
+     * @param dir Directory in which to search for Java files
+     * @return a list of list of Java test files
+     */
+    private static List<List<File>> findJavaTestFilesInDirectory(File dir) {
+        assert dir.isDirectory();
+        List<List<File>> fileGroupedByDirectory = new ArrayList<>();
+        List<File> fileInDir = new ArrayList<>();
+
+        fileGroupedByDirectory.add(fileInDir);
+        for (String fileName : dir.list()) {
+            File file = new File(dir, fileName);
+            if (file.isDirectory()) {
+                fileGroupedByDirectory.addAll(findJavaTestFilesInDirectory(file));
+            } else if (isJavaTestFile(file)) {
+                fileInDir.add(file);
+            }
+        }
+        if (fileInDir.isEmpty()) {
+            fileGroupedByDirectory.remove(fileInDir);
+        }
+        return fileGroupedByDirectory;
+    }
+
     public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
         List<Object[]> files = new ArrayList<Object[]>();
         for (String fileName : fileNames) {
@@ -85,7 +132,8 @@ public class TestUtilities {
      */
     public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
         if (!directory.exists()) {
-            throw new IllegalArgumentException("directory does not exist: " + directory);
+            throw new IllegalArgumentException(
+                    "directory does not exist: " + directory + " " + directory.getAbsolutePath());
         }
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException("found file instead of directory: " + directory);

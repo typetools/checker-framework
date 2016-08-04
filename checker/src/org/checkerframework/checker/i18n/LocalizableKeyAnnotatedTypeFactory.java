@@ -3,7 +3,6 @@ package org.checkerframework.checker.i18n;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
@@ -30,13 +29,12 @@ public class LocalizableKeyAnnotatedTypeFactory extends PropertyKeyAnnotatedType
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new LinkedHashSet<Class<? extends Annotation>>(
-                        Arrays.asList(
-                                LocalizableKey.class,
-                                PropertyKey.class,
-                                PropertyKeyBottom.class,
-                                UnknownPropertyKey.class)));
+        return new LinkedHashSet<Class<? extends Annotation>>(
+                Arrays.asList(
+                        LocalizableKey.class,
+                        PropertyKey.class,
+                        PropertyKeyBottom.class,
+                        UnknownPropertyKey.class));
     }
 
     @Override

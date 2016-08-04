@@ -19,17 +19,18 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
+// TODO: large parts of this file are the same as PerFileSuite.java.
+// Reduce duplication by moving common parts to an abstract class.
 /**
- *
- * <p>TestSuite runs a test class once for each set of parameters returned by its method marked with {@code @Parameters}</p>
+ * <p>PerDirectorySuite runs a test class once for each set of javaFiles returned by its method marked with {@code @Parameters}</p>
  * <p>To use:<br>
- *  Annotated your test class with {@code @RunWith(TestSuite.class)}<br>
- *  Create a parameters method by annotating a public static method with {@code @Parameters}.  This method
+ *  Annotated your test class with {@code @RunWith(PerDirectorySuite.class)}<br>
+ *  Create a javaFiles method by annotating a public static method with {@code @Parameters}.  This method
  *  must return either a {@code List<File>} where each element of the list is a Java file to test against
  *  OR a {@code String []} where each String in the array is a directory in the tests directory.
  * </p>
  */
-public class TestSuite extends Suite {
+public class PerDirectorySuite extends Suite {
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
@@ -45,39 +46,28 @@ public class TestSuite extends Suite {
     /**
      * Only called reflectively. Do not use programmatically.
      */
-    public TestSuite(Class<?> klass) throws Throwable {
+    public PerDirectorySuite(Class<?> klass) throws Throwable {
         super(klass, Collections.<Runner>emptyList());
         final TestClass testClass = getTestClass();
         final Class<?> javaTestClass = testClass.getJavaClass();
-        final List<Object[]> parametersList = getParametersList(testClass);
+        final List<List<File>> parametersList = getParametersList(testClass);
 
-        for (Object[] parameters : parametersList) {
+        for (List<File> parameters : parametersList) {
             runners.add(new PerParameterSetTestRunner(javaTestClass, parameters));
         }
     }
 
     /** Returns a list of one-element arrays, each containing a Java File. */
-    @SuppressWarnings("unchecked")
-    private List<Object[]> getParametersList(TestClass klass) throws Throwable {
+    private List<List<File>> getParametersList(TestClass klass) throws Throwable {
         FrameworkMethod method = getParametersMethod(klass);
 
-        List<File> javaFiles;
-        // We will have either a method getTestDirs which returns String [] or getTestFiles
-        // which returns List<Object []> or getParametersMethod would fail
-        if (method.getReturnType().isArray()) {
-            String[] dirs = (String[]) method.invokeExplosively(null);
-            javaFiles = TestUtilities.findNestedJavaTestFiles(dirs);
-
-        } else {
-            javaFiles = (List<File>) method.invokeExplosively(null);
+        // We must have a method getTestDirs which returns String[],
+        // or getParametersMethod would fail.
+        if (!method.getReturnType().isArray()) {
+            return new ArrayList<>();
         }
-
-        List<Object[]> argumentLists = new ArrayList<>();
-        for (File javaFile : javaFiles) {
-            argumentLists.add(new Object[] {javaFile});
-        }
-
-        return argumentLists;
+        String[] dirs = (String[]) method.invokeExplosively(null);
+        return TestUtilities.findJavaFilesPerDirectory(new File("tests"), dirs);
     }
 
     /** Returns method annotated @Parameters, typically the getTestDirs or getTestFiles method. */
@@ -127,20 +117,9 @@ public class TestSuite extends Suite {
                 }
                 break;
 
-            case "getTestFiles":
-                // we'll force people to return a List for now but enforcing exactl List<File> or a
-                // subtype thereof is not easy
-                if (!returnType.getCanonicalName().equals(List.class.getCanonicalName())) {
-                    throw new RuntimeException(
-                            "getTestFiles must return a List<File>, found "
-                                    + returnType.toString());
-                }
-                break;
-
             default:
                 throw new RuntimeException(
-                        "Exactly one of the following methods should be declared:\n"
-                                + requiredFormsMessage
+                        requiredFormsMessage
                                 + "\n"
                                 + "testClass="
                                 + testClass.getName()
@@ -159,33 +138,28 @@ public class TestSuite extends Suite {
     }
 
     private static final String requiredFormsMessage =
-            "Parameter method must have one of the following two forms:\n"
-                    + "@Parameters String [] getTestDirs()\n"
-                    + "@Parameters List<File> getTestFiles()";
+            "Parameter method must the following form:\n" + "@Parameters String [] getTestDirs()";
 
     /**
-     * Runs the test class for the set of parameters passed in the constructor.
+     * Runs the test class for the set of javaFiles passed in the constructor.
      */
     private class PerParameterSetTestRunner extends BlockJUnit4ClassRunner {
-        private final Object[] parameters;
+        private final List<File> javaFiles;
 
-        PerParameterSetTestRunner(Class<?> type, Object[] parameters) throws InitializationError {
+        PerParameterSetTestRunner(Class<?> type, List<File> javaFiles) throws InitializationError {
             super(type);
-            this.parameters = parameters;
+            this.javaFiles = javaFiles;
         }
 
         @Override
         public Object createTest() throws Exception {
-            return getTestClass().getOnlyConstructor().newInstance(parameters);
+            Object[] arguments = Collections.singleton(javaFiles).toArray();
+            return getTestClass().getOnlyConstructor().newInstance(arguments);
         }
 
         String testCaseName() {
-            File file = (File) parameters[0];
-            String name =
-                    file.getPath()
-                            .replace(".java", "")
-                            .replace("tests" + System.getProperty("file.separator"), "");
-            return name;
+            File file = javaFiles.get(0).getParentFile();
+            return file.getPath().replace("tests" + System.getProperty("file.separator"), "");
         }
 
         @Override

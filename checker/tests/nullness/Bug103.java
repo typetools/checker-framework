@@ -1,5 +1,7 @@
 // Test case for Issue 103
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class CC {}
 

@@ -1,4 +1,3 @@
-import java.util.*;
 import org.checkerframework.checker.nullness.qual.*;
 
 class MyClass<@Nullable T> {

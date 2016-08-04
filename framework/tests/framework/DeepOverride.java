@@ -1,4 +1,3 @@
-import java.util.*;
 import tests.util.*;
 
 public class DeepOverride {

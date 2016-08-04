@@ -59,6 +59,10 @@ public class TypecheckExecutor {
                 nonJvmOptions.add(option);
             }
         }
+        nonJvmOptions.add("-Xmaxerrs");
+        nonJvmOptions.add("100000");
+        nonJvmOptions.add("-Xmaxwarns");
+        nonJvmOptions.add("100000");
         options.addAll(nonJvmOptions);
 
         if (configuration.shouldEmitDebugInfo()) {

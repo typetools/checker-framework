@@ -1,6 +1,7 @@
 package org.checkerframework.qualframework.base;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.*;
 import org.checkerframework.qualframework.base.QualifiedTypeVisitor;

@@ -4,7 +4,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-interface Function<T extends @Nullable Object, R> {
+interface FunctionInit<T extends @Nullable Object, R> {
     R apply(T t);
 }
 
@@ -20,7 +20,7 @@ class LambdaInit {
     @Nullable String f3 = "";
 
     String f1b;
-    Function<String, String> ff0 =
+    FunctionInit<String, String> ff0 =
             s -> {
                 //:: error: (dereference.of.nullable)
                 f1.toString();
@@ -39,7 +39,7 @@ class LambdaInit {
     {
         f3 = "";
         f4 = "";
-        Function<String, String> ff0 =
+        FunctionInit<String, String> ff0 =
                 s -> {
                     //:: error: (dereference.of.nullable)
                     f1.toString();
@@ -55,7 +55,7 @@ class LambdaInit {
 
     LambdaInit() {
         f5 = "";
-        Function<String, String> ff0 =
+        FunctionInit<String, String> ff0 =
                 s -> {
                     //:: error: (dereference.of.nullable)
                     f1.toString();
@@ -83,7 +83,7 @@ class LambdaInit {
 
     //  Works!
     void method() {
-        Function<String, String> ff0 =
+        FunctionInit<String, String> ff0 =
                 s -> {
                     f1.toString();
                     f2.toString();
@@ -95,7 +95,7 @@ class LambdaInit {
 
     // Test for nested
     class Nested {
-        Function<String, String> ff0 =
+        FunctionInit<String, String> ff0 =
                 s -> {
                     f1.toString();
                     f2.toString();
@@ -109,7 +109,7 @@ class LambdaInit {
         {
             f3 = "";
             f4 = "";
-            Function<String, String> ff0 =
+            FunctionInit<String, String> ff0 =
                     s -> {
                         f1.toString();
                         f2.toString();
@@ -124,7 +124,7 @@ class LambdaInit {
 
         Nested() {
             f5 = "";
-            Function<String, String> ff0 =
+            FunctionInit<String, String> ff0 =
                     s -> {
                         f1.toString();
                         f2.toString();
@@ -136,7 +136,7 @@ class LambdaInit {
         }
 
         void method() {
-            Function<String, String> ff0 =
+            FunctionInit<String, String> ff0 =
                     s -> {
                         f1.toString();
                         f2.toString();
@@ -165,7 +165,7 @@ class LambdaInit {
     static String sf2 = "";
     static @Nullable String sf3 = "";
     static String sf1b;
-    static Function<String, String> sff0 =
+    static FunctionInit<String, String> sff0 =
             s -> {
 
                 // This is an issue with static initializers in general
@@ -187,7 +187,7 @@ class LambdaInit {
     static {
         sf3 = "";
         sf4 = "";
-        Function<String, String> sff0 =
+        FunctionInit<String, String> sff0 =
                 s -> {
 
                     // This is an issue with static initializers in general

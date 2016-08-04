@@ -369,7 +369,7 @@
 
         <!-- This relative path is wrong; running "ant -find" from a
         subdirectory fails. -->
-        <!-- With Ant 1.9.4 or later, add
+        <!-- With Ant 1.9.4 or later, add to each javadoc task:
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
         <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
@@ -589,8 +589,14 @@
     </target>
 
     <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
-    <target name="all-tests-nojtreg-nobuild" depends="build-tests"
+    <target name="all-tests-nojtreg-nobuild"
+            depends="junit-tests-nojtreg-nobuild,nonjunit-tests-nojtreg-nobuild"
             description="Run tests for all checkers, WITHOUT building anything">
+    </target>
+
+    <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
+    <target name="junit-tests-nojtreg-nobuild" depends="build-tests"
+            description="Run junit tests for all checkers, WITHOUT building anything">
 
         <condition property="should.emit.debug.str" value="true" else="false">
             <isset property="emit.test.debug"/>
@@ -599,13 +605,6 @@
         <condition property="debugger.str" value="-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" else="">
             <isset property="debugger.on"/>
         </condition>
-
-        <ant dir="${framework.loc}">
-            <target name="all-tests-nojtreg-nobuild"/>
-        </ant>
-
-        <!-- Note that the order of the ant vs junit calls matters
-             for the Jenkins setup. The junit call must come last. -->
 
         <!-- Delete directory because we will rerun all tests -->
         <delete dir="${build.reports}"/>
@@ -645,6 +644,29 @@
                 </fileset>
             </batchtest>
         </junit>
+
+    </target>
+
+    <!-- Used to guarantee that targets executed from other ant scripts do not cause unnecessary rebuilds -->
+    <target name="nonjunit-tests-nojtreg-nobuild" depends="build-tests"
+            description="Run tests, other than junit tests for all checkers, WITHOUT building anything">
+
+        <condition property="should.emit.debug.str" value="true" else="false">
+            <isset property="emit.test.debug"/>
+        </condition>
+
+        <condition property="debugger.str" value="-Xnoagent -Djava.compiler=NONE -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005" else="">
+            <isset property="debugger.on"/>
+        </condition>
+
+        <ant dir="${framework.loc}">
+            <target name="all-tests-nojtreg-nobuild"/>
+        </ant>
+
+        <!-- Delete directory because we will rerun all tests -->
+        <delete dir="${build.reports}"/>
+        <!-- Copied from -run-tests target -->
+        <mkdir dir="${build.reports}"/>
 
         <antcall target="nullness-extra-tests-nobuildjdk"/>
 
@@ -1413,7 +1435,7 @@ So, use our own archived version.
 
     </target>
 
-    <target name="dist-release" depends="clean, dist-all,  javadoc.jar, sources.jar"
+    <target name="dist-release" depends="clean, dist-all, all-tests-nojtreg-nobuild, javadoc.jar, sources.jar"
             description="Everything necessary to prepare this project for distribution: binary distribution, testing, and documentation.">
     </target>
 

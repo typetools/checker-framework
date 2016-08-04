@@ -1,5 +1,6 @@
 // Test case for Issue 142
 // https://github.com/typetools/checker-framework/issues/142
+
 class GenericTest13 {
     interface Entry<K extends Object, V extends Object> {
         V getValue();

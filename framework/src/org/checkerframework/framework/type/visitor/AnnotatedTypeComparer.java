@@ -1,6 +1,6 @@
 package org.checkerframework.framework.type.visitor;
 
-import java.util.*;
+import java.util.Iterator;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.javacutil.ErrorReporter;

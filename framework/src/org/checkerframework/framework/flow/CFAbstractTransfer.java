@@ -1020,7 +1020,8 @@ public abstract class CFAbstractTransfer<
                                 false);
                 store.insertValue(r, anno);
             } catch (FlowExpressionParseException e) {
-                // these errors are reported at the declaration, ignore here
+                // report errors here
+                analysis.checker.report(e.getResult(), tree);
             }
         }
     }
@@ -1074,7 +1075,8 @@ public abstract class CFAbstractTransfer<
                     elseStore.insertValue(r, anno);
                 }
             } catch (FlowExpressionParseException e) {
-                // these errors are reported at the declaration, ignore here
+                // report errors here
+                analysis.checker.report(e.getResult(), tree);
             }
         }
     }

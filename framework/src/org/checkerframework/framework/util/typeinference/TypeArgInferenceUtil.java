@@ -28,7 +28,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -125,7 +124,6 @@ public class TypeArgInferenceUtil {
      * @return type that it path leaf is assigned to
      */
     public static AnnotatedTypeMirror assignedTo(AnnotatedTypeFactory atypeFactory, TreePath path) {
-        final Types types = atypeFactory.getProcessingEnv().getTypeUtils();
         Tree assignmentContext = TreeUtils.getAssignmentContext(path);
         if (assignmentContext == null) {
             return null;

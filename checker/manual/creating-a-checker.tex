@@ -504,6 +504,25 @@ example.
 \end{sloppypar}
 
 
+\subsection{Do not re-use type qualifiers\label{do-not-re-use-type-qualifiers}}
+
+Every annotation should belong to only one type system.  No annotation
+should be used by multiple type systems.  This is true even of annotations
+that are internal to the type system and are not intended to be written by
+the programmer.
+
+Suppose that you have two type systems that both use the same type
+qualifier \<@A>.  In a client program, a use of type \<T> may require type
+qualifier \<@A> for one type system but a different qualifier for the other
+type system.  There is no annotation that a programmer can write to make
+the program type-check under both type systems.
+
+This also applies to type qualifiers that a programmer does not write,
+because the compiler outputs \<.class> files that contain an explicit type
+qualifier on every type --- a defaulted or inferred type qualifier if the
+programmer didn't write a type qualifier explicitly.
+
+
 \subsection{Completeness of the type hierarchy\label{bottom-and-top-qualifier}}
 
 When you define a type system, its type hierarchy must be a
@@ -596,7 +615,9 @@ whenever the type system is violated.
 
 A checker's visitor overrides one method in the base visitor for each special
 rule in the type qualifier system.  Most type-checkers
-override only a few methods in \refclass{common/basetype}{BaseTypeVisitor}.  For example, the
+override only a few methods in \refclass{common/basetype}{BaseTypeVisitor};
+the overridden version does its own checks and also invokes the version in
+its superclass so that standard checks are also performed.  For example, the
 visitor for the Nullness type system of Chapter~\ref{nullness-checker}
 contains a single 4-line method that warns if an expression of nullable type
 is dereferenced, as in:
@@ -1217,6 +1238,9 @@ checker classes for the Interning Checker and the Nullness Checker:
   public class NullnessChecker extends BaseTypeChecker { }
 \end{Verbatim}
 
+(The \refqualclass{framework/source}{SupportedLintOptions} annotation is
+optional, and many checker classes do not have one.)
+
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
 compiled, and provides a simple API,
@@ -1356,15 +1380,15 @@ options).
 
 To specify a simple boolean flag, add:
 
-\begin{Verbatim}
-@SupportedLintOptions({"flag"})
-\end{Verbatim}
+\begin{alltt}
+\refqualclass{framework/source}{SupportedLintOptions}(\{"myflag"\})
+\end{alltt}
 
 to your checker subclass.
 The value of the flag can be queried using
 
 \begin{Verbatim}
-checker.getLintOption("flag", false)
+checker.getLintOption("myflag", false)
 \end{Verbatim}
 
 The second argument sets the default value that should be returned.
@@ -1372,7 +1396,7 @@ The second argument sets the default value that should be returned.
 To pass a flag on the command line, call javac as follows:
 
 \begin{Verbatim}
-javac -processor Mine -Alint=flag
+javac -processor MyChecker -Alint=myflag
 \end{Verbatim}
 
 
@@ -1381,20 +1405,20 @@ javac -processor Mine -Alint=flag
 For more complicated options, one can use the standard annotation
 processing \code{@SupportedOptions} annotation on the checker, as in:
 
-\begin{Verbatim}
-@SupportedOptions({"info"})
-\end{Verbatim}
+\begin{alltt}
+\refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
+\end{alltt}
 
 The value of the option can be queried using
 
 \begin{Verbatim}
-checker.getOption("info")
+checker.getOption("myoption")
 \end{Verbatim}
 
 To pass an option on the command line, call javac as follows:
 
 \begin{Verbatim}
-javac -processor Mine -Ainfo=p1,p2
+javac -processor MyChecker -Amyoption=p1,p2
 \end{Verbatim}
 
 The value is returned as a single string and you have to perform the
@@ -1412,9 +1436,6 @@ The Checker Framework provides a convenient way to write tests for your
 checker.
 % Don't repeat the information here, to prevent them from getting out of sync.
 It is extensively documented in file \<checker-framework/checker/tests/README>.
-Also see the API documentation for
-\refclass{framework/test}{CheckerFrameworkTest},
-which all test classes should extend.
 \end{sloppypar}
 
 
@@ -1886,7 +1907,7 @@ other useful resources include the Java Infrastructure
 Developer's guide at
 \url{http://wiki.netbeans.org/Java_DevelopersGuide} and the compiler
 mailing list archives at
-\url{http://news.gmane.org/gmane.comp.java.openjdk.compiler.devel}
+\url{http://mail.openjdk.java.net/pipermail/compiler-dev/}
 (subscribe at
 \url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
 

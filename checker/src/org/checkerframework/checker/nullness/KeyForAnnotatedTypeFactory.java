@@ -18,7 +18,6 @@ import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -117,14 +116,13 @@ public class KeyForAnnotatedTypeFactory
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new LinkedHashSet<Class<? extends Annotation>>(
-                        Arrays.asList(
-                                KeyFor.class,
-                                UnknownKeyFor.class,
-                                KeyForBottom.class,
-                                PolyKeyFor.class,
-                                PolyAll.class)));
+        return new LinkedHashSet<Class<? extends Annotation>>(
+                Arrays.asList(
+                        KeyFor.class,
+                        UnknownKeyFor.class,
+                        KeyForBottom.class,
+                        PolyKeyFor.class,
+                        PolyAll.class));
     }
 
     @Override

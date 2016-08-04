@@ -105,7 +105,10 @@ public class AnnotationClassLoader {
 
         // package name must use dots, this is later prepended to annotation
         // class names as we load the classes using the class loader
-        packageName = checker.getClass().getPackage().getName() + QUAL_PACKAGE_SUFFIX;
+        packageName =
+                checker.getClass().getPackage() != null
+                        ? checker.getClass().getPackage().getName() + QUAL_PACKAGE_SUFFIX
+                        : QUAL_PACKAGE_SUFFIX.substring(1);
 
         // the package name with dots replaced by slashes will be used to scan
         // file directories
@@ -437,6 +440,7 @@ public class AnnotationClassLoader {
     /**
      * Debug Use Displays all classpaths
      */
+    @SuppressWarnings("unused") // for debugging
     private final void printPaths() {
         // all paths in Xbootclasspath
         String[] bootclassPaths = System.getProperty("sun.boot.class.path").split(":");

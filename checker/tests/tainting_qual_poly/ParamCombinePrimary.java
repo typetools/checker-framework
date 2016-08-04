@@ -2,7 +2,7 @@
 import org.checkerframework.checker.tainting.qual.*;
 
 @ClassTaintingParam("Main")
-class A {
+class PcpA {
     // Integer<<Main + TAINTED>> x;
     public @Var(arg = "Main") @Tainted Integer x;
     // Integer<<Main + UNTAINTED>> y;
@@ -11,18 +11,18 @@ class A {
     public @Var(arg = "Main") Integer z;
 }
 
-abstract class Test {
-    abstract @Tainted(param = "Main") A makeTainted();
+abstract class ParamCombinePrimary {
+    abstract @Tainted(param = "Main") PcpA makeTainted();
 
-    abstract @Untainted(param = "Main") A makeUntainted();
+    abstract @Untainted(param = "Main") PcpA makeUntainted();
 
     abstract void takeTainted(@Tainted Integer o);
 
     abstract void takeUntainted(@Untainted Integer o);
 
     void test() {
-        @Tainted(param = "Main") A ta = makeTainted();
-        @Untainted(param = "Main") A ua = makeUntainted();
+        @Tainted(param = "Main") PcpA ta = makeTainted();
+        @Untainted(param = "Main") PcpA ua = makeUntainted();
 
         takeTainted(ta.x);
         takeTainted(ta.y);
