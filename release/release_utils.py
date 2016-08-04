@@ -407,7 +407,7 @@ def push_changes_prompt_if_fail(repo_root):
                 if not prompt_yn("Try again (responding 'n' will skip this push command but will not exit the script) ?"):
                     break
         if is_git(repo_root):
-            cmd = 'git -C %s push' % repo_root
+            cmd = 'git -C %s push origin master' % repo_root
         else:
             cmd = 'hg -R %s push' % repo_root
         result = os.system(cmd)
@@ -423,7 +423,7 @@ def push_changes(repo_root):
     the given filesystem path."""
     if is_git(repo_root):
         execute('git -C %s push --tags' % repo_root)
-        execute('git -C %s push' % repo_root)
+        execute('git -C %s push origin master' % repo_root)
     else:
         execute('hg -R %s push' % repo_root)
 
@@ -489,7 +489,7 @@ def clone(src_repo, dst_repo, bareflag):
     if isGitRepo:
         flags = ""
         if bareflag:
-            flags = "--mirror"
+            flags = "--bare"
         execute('git clone --quiet %s %s %s' % (flags, src_repo, dst_repo))
     else:
         execute('hg clone --quiet %s %s' % (src_repo, dst_repo))

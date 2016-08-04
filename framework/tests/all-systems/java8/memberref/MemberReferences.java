@@ -150,10 +150,10 @@ class TopLevelWithArg<T> {
 
 class ArrayType {
     void context() {
-        //TODO: Unsignedness Checker does not default boxed primitives correctly
+        //TODO: Signedness Checker does not default boxed primitives correctly
         // See Issue #797
         // https://github.com/typetools/checker-framework/issues/797
-        @SuppressWarnings({"unsignedness"})
+        @SuppressWarnings({"signedness"})
         Function<Integer, String[]> string = String[]::new;
         Function<String[], String[]> clone = String[]::clone;
         Function<String[], String> toString = String[]::toString;
