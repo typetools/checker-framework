@@ -163,8 +163,8 @@ public class TypesIntoElements {
     }
 
     /**
-     * given a class symbol {@code cysm}, and the extendsClause/implementsClause tree
-     * {@code ext}  of the corresponding class tree, store the type compounds on {@code ext}
+     * Given a class symbol {@code cysm}, and the extendsClause/implementsClause tree {@code ext}
+     * of the corresponding class tree, store the type compounds on {@code ext} into {@code csym}.
      * @param processingEnv
      * @param types
      * @param atypeFactory
@@ -191,7 +191,7 @@ public class TypesIntoElements {
                 // do nothing in both cases
                 return;
             } else {
-                type = atypeFactory.fromElement(csym.getSuperclass().asElement());
+                type = atypeFactory.fromElement(superClass.asElement());
             }
             pos = -1;
         } else {
