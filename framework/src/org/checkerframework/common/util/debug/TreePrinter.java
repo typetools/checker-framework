@@ -3,14 +3,11 @@ package org.checkerframework.common.util.debug;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.Pretty;
-
 import java.io.IOException;
 import java.io.StringWriter;
-
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
-
 import org.checkerframework.javacutil.AbstractTypeProcessor;
 
 /**

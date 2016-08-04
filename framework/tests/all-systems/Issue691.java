@@ -1,8 +1,7 @@
 // Test case for Issue 691:
 // https://github.com/typetools/checker-framework/issues/691
 
-interface MyInterface<T> {
-}
+interface MyInterface<T> {}
 
 // This code causes greatestLowerBound in the qualifier hierarchy to be executed, which results
 // in a crash if the default implementation isn't correct for a given checker. A checker could

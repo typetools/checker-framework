@@ -1,12 +1,11 @@
 package org.checkerframework.framework.type.visitor;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.ErrorReporter;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
 
 /**
  * Replaces or adds all the annotations in the parameter with the annotations
@@ -29,7 +28,10 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
         new AnnotatedTypeMerger().visit(from, to);
     }
 
-    public static void merge(final AnnotatedTypeMirror from, final AnnotatedTypeMirror to, final AnnotationMirror top) {
+    public static void merge(
+            final AnnotatedTypeMirror from,
+            final AnnotatedTypeMirror to,
+            final AnnotationMirror top) {
         if (from == to) {
             ErrorReporter.errorAbort("From == to");
         }
@@ -63,11 +65,12 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
         return r1;
     }
 
-    protected void replaceAnnotations(final AnnotatedTypeMirror one, final AnnotatedTypeMirror two) {
+    protected void replaceAnnotations(
+            final AnnotatedTypeMirror one, final AnnotatedTypeMirror two) {
         if (top == null) {
             two.replaceAnnotations(one.getAnnotations());
         } else {
-            final AnnotationMirror replacement =  one.getAnnotationInHierarchy(top);
+            final AnnotationMirror replacement = one.getAnnotationInHierarchy(top);
             if (replacement != null) {
                 two.replaceAnnotation(one.getAnnotationInHierarchy(top));
             }
@@ -108,9 +111,11 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
         } else {
             ErrorReporter.errorAbort(
                     "ResolvePrimaries' from argument should be a type variable OR wildcard\n"
-                  + "from=" + from.toString(true) + "\n"
-                  + "to="   + to.toString(true)
-            );
+                            + "from="
+                            + from.toString(true)
+                            + "\n"
+                            + "to="
+                            + to.toString(true));
         }
     }
 }

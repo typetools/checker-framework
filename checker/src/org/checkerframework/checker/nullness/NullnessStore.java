@@ -13,8 +13,7 @@ import org.checkerframework.framework.flow.CFAbstractStore;
  *
  * @author Stefan Heule
  */
-public class NullnessStore extends
-        InitializationStore<NullnessValue, NullnessStore> {
+public class NullnessStore extends InitializationStore<NullnessValue, NullnessStore> {
 
     protected boolean isPolyNullNull;
 

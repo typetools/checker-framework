@@ -1,28 +1,23 @@
 package org.checkerframework.checker.lowerbound;
 
 import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.checker.lowerbound.qual.*;
-
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-
+import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
-
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, LowerBoundTransfer> {
@@ -47,15 +42,15 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
     /** encodes what to do when we run into a greater-than node */
     @Override
-    public TransferResult<CFValue, CFStore> visitGreaterThan(GreaterThanNode node,
-                                                             TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, CFStore> visitGreaterThan(
+            GreaterThanNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThan(node, in);
         Node left = node.getLeftOperand();
         Node right = node.getRightOperand();
         CFStore thenStore = result.getRegularStore();
         CFStore elseStore = thenStore.copy();
         ConditionalTransferResult<CFValue, CFStore> newResult =
-            new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
@@ -63,27 +58,27 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         refineGT(left, leftType, right, rightType, thenStore);
 
         /** inverse */
-        refineGTE(right, rightType,  left, leftType, elseStore);
+        refineGTE(right, rightType, left, leftType, elseStore);
 
         return newResult;
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(GreaterThanOrEqualNode node,
-                                                             TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
+            GreaterThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(node, in);
         Node left = node.getLeftOperand();
         Node right = node.getRightOperand();
         CFStore thenStore = result.getRegularStore();
         CFStore elseStore = thenStore.copy();
         ConditionalTransferResult<CFValue, CFStore> newResult =
-            new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
 
         /** this makes sense because they have the same result in the chart. If I'm wrong about
-            that, then we'd need to make something else to put here */
+         * that, then we'd need to make something else to put here */
         refineGTE(left, leftType, right, rightType, thenStore);
 
         /** call the inverse */
@@ -93,15 +88,15 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitLessThanOrEqual(LessThanOrEqualNode node,
-                                                             TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
+            LessThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(node, in);
         Node left = node.getLeftOperand();
         Node right = node.getRightOperand();
         CFStore thenStore = result.getRegularStore();
         CFStore elseStore = thenStore.copy();
         ConditionalTransferResult<CFValue, CFStore> newResult =
-            new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
@@ -115,15 +110,15 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitLessThan(LessThanNode node,
-                                                             TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, CFStore> visitLessThan(
+            LessThanNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitLessThan(node, in);
         Node left = node.getLeftOperand();
         Node right = node.getRightOperand();
         CFStore thenStore = result.getRegularStore();
         CFStore elseStore = thenStore.copy();
         ConditionalTransferResult<CFValue, CFStore> newResult =
-            new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
@@ -137,8 +132,8 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
     }
 
     @Override
-    public TransferResult<CFValue, CFStore>
-        visitEqualTo(EqualToNode node, TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, CFStore> visitEqualTo(
+            EqualToNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitEqualTo(node, in);
         Node left = node.getLeftOperand();
         Node right = node.getRightOperand();
@@ -158,8 +153,8 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
     }
 
     @Override
-    public TransferResult<CFValue, CFStore>
-        visitNotEqual(NotEqualNode node, TransferInput<CFValue, CFStore> in) {
+    public TransferResult<CFValue, CFStore> visitNotEqual(
+            NotEqualNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitNotEqual(node, in);
         Node left = node.getLeftOperand();
         Node right = node.getRightOperand();
@@ -178,8 +173,12 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         return newResult;
     }
 
-    private void refineGT(Node left, AnnotatedTypeMirror leftType, Node right,
-                          AnnotatedTypeMirror rightType, CFStore store) {
+    private void refineGT(
+            Node left,
+            AnnotatedTypeMirror leftType,
+            Node right,
+            AnnotatedTypeMirror rightType,
+            CFStore store) {
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
         if (rightType.hasAnnotation(GTEN1)) {
             store.insertValue(leftRec, NN);
@@ -197,8 +196,12 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
     /** this works by elevating left to the level of right, basically */
     /** to check equality, you'd want to call this twice - once in each direction */
-    private void refineGTE(Node left, AnnotatedTypeMirror leftType, Node right,
-                           AnnotatedTypeMirror rightType, CFStore store) {
+    private void refineGTE(
+            Node left,
+            AnnotatedTypeMirror leftType,
+            Node right,
+            AnnotatedTypeMirror rightType,
+            CFStore store) {
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
         if (rightType.hasAnnotation(POS)) {
             store.insertValue(leftRec, POS);

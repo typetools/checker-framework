@@ -1,50 +1,41 @@
 package org.checkerframework.checker.upperbound;
 
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.annotation.processing.ProcessingEnvironment;
-
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
-
 import org.checkerframework.checker.upperbound.qual.*;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
-
-import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
-
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
-
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
-public class UpperBoundAnnotatedTypeFactory extends
-    GenericAnnotatedTypeFactory<CFValue, CFStore, UpperBoundTransfer, UpperBoundAnalysis> {
+public class UpperBoundAnnotatedTypeFactory
+        extends GenericAnnotatedTypeFactory<
+                CFValue, CFStore, UpperBoundTransfer, UpperBoundAnalysis> {
 
     public static AnnotationMirror LTL, LTEL, EL, UNKNOWN;
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
@@ -54,9 +45,9 @@ public class UpperBoundAnnotatedTypeFactory extends
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         /* So Suzanne told me these were evil, but then I ended up using them
-           to correctly implement the subtyping relation that I wanted. I'll get
-           rid of them if I can figure out a better way to do that, but for now
-           they stay */
+        to correctly implement the subtyping relation that I wanted. I'll get
+        rid of them if I can figure out a better way to do that, but for now
+        they stay */
         LTL = AnnotationUtils.fromClass(elements, LessThanLength.class);
         LTEL = AnnotationUtils.fromClass(elements, LessThanOrEqualToLength.class);
         EL = AnnotationUtils.fromClass(elements, EqualToLength.class);
@@ -72,8 +63,9 @@ public class UpperBoundAnnotatedTypeFactory extends
         List<Long> possibleValues = null;
         try {
             possibleValues =
-                ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
-        } catch (NullPointerException npe) {}
+                    ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+        } catch (NullPointerException npe) {
+        }
         return possibleValues;
     }
 
@@ -92,8 +84,7 @@ public class UpperBoundAnnotatedTypeFactory extends
      */
     private AnnotationMirror createAnnotation(String name, Set<?> values) {
         if (values.size() > 0) {
-            AnnotationBuilder builder = new AnnotationBuilder(env,
-                    name);
+            AnnotationBuilder builder = new AnnotationBuilder(env, name);
             List<Object> valuesList = new ArrayList<Object>(values);
             builder.setValue("value", valuesList);
             return builder.build();
@@ -112,8 +103,7 @@ public class UpperBoundAnnotatedTypeFactory extends
      * The qh is responsible for determining the relationships
      * between various qualifiers - especially subtyping relations.
      */
-    private final class UpperBoundQualifierHierarchy extends
-            MultiGraphQualifierHierarchy {
+    private final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
         /**
          * @param factory
          *            MultiGraphFactory to use to construct this
@@ -124,8 +114,7 @@ public class UpperBoundAnnotatedTypeFactory extends
         }
 
         @Override
-        public AnnotationMirror greatestLowerBound(AnnotationMirror a1,
-                AnnotationMirror a2) {
+        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (isSubtype(a1, a2)) {
                 return a1;
             } else if (isSubtype(a2, a1)) {
@@ -136,18 +125,16 @@ public class UpperBoundAnnotatedTypeFactory extends
                    is LTEL of every array that is in either - since LTEL
                    is the bottom type
                 */
-                List<Object> a1Names = AnnotationUtils.getElementValueArray(
-                        a1, "value", Object.class, true);
-                List<Object> a2Names = AnnotationUtils.getElementValueArray(
-                        a2, "value", Object.class, true);
-                HashSet<Object> newValues = new HashSet<Object>(a1Names.size()
-                        + a2Names.size());
+                List<Object> a1Names =
+                        AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
+                List<Object> a2Names =
+                        AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
+                HashSet<Object> newValues = new HashSet<Object>(a1Names.size() + a2Names.size());
 
                 newValues.addAll(a1Names);
                 newValues.addAll(a2Names);
 
-                return createAnnotation("LTEL",
-                        newValues);
+                return createAnnotation("LTEL", newValues);
             }
         }
 
@@ -159,10 +146,9 @@ public class UpperBoundAnnotatedTypeFactory extends
          * @return the least upper bound of a1 and a2
          */
         @Override
-        public AnnotationMirror leastUpperBound(AnnotationMirror a1,
-                AnnotationMirror a2) {
-            if (!AnnotationUtils.areSameIgnoringValues(getTopAnnotation(a1),
-                    getTopAnnotation(a2))) {
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameIgnoringValues(
+                    getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtype(a1, a2)) {
                 return a2;
@@ -171,18 +157,16 @@ public class UpperBoundAnnotatedTypeFactory extends
             }
             // If both are the same type, determine the type and merge:
             else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-                List<Object> a1Values = AnnotationUtils.getElementValueArray(
-                        a1, "value", Object.class, true);
-                List<Object> a2Values = AnnotationUtils.getElementValueArray(
-                        a2, "value", Object.class, true);
-                HashSet<Object> newValues = new HashSet<Object>(a1Values.size()
-                        + a2Values.size());
+                List<Object> a1Values =
+                        AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
+                List<Object> a2Values =
+                        AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
+                HashSet<Object> newValues = new HashSet<Object>(a1Values.size() + a2Values.size());
 
                 newValues.addAll(a1Values);
                 newValues.addAll(a2Values);
 
-                return createAnnotation(a1.getAnnotationType().toString(),
-                        newValues);
+                return createAnnotation(a1.getAnnotationType().toString(), newValues);
             }
             // Annotations are in this hierarchy, but they are not the same
             else {
@@ -206,19 +190,19 @@ public class UpperBoundAnnotatedTypeFactory extends
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
                 // Same type, so might be subtype
-                List<Object> lhsValues = AnnotationUtils.getElementValueArray(
-                        lhs, "value", Object.class, true);
-                List<Object> rhsValues = AnnotationUtils.getElementValueArray(
-                        rhs, "value", Object.class, true);
+                List<Object> lhsValues =
+                        AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
+                List<Object> rhsValues =
+                        AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
                 return rhsValues.containsAll(lhsValues);
             } else if (isSubtypeRelaxed(rhs, lhs)) {
                 /* different types that are subtypes of each other ->
                  * rhs is a subtype of lhs iff lhs.value contains rhs.value
                  */
-                List<Object> lhsValues = AnnotationUtils.getElementValueArray(
-                        lhs, "value", Object.class, true);
-                List<Object> rhsValues = AnnotationUtils.getElementValueArray(
-                        rhs, "value", Object.class, true);
+                List<Object> lhsValues =
+                        AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
+                List<Object> rhsValues =
+                        AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
                 return rhsValues.containsAll(lhsValues);
             }
             return false;
@@ -233,13 +217,12 @@ public class UpperBoundAnnotatedTypeFactory extends
             if (AnnotationUtils.areSameIgnoringValues(type, LTL)) {
                 return LTL;
             }
-	    if (AnnotationUtils.areSameIgnoringValues(type, EL)) {
-		return EL;
+            if (AnnotationUtils.areSameIgnoringValues(type, EL)) {
+                return EL;
             }
             if (AnnotationUtils.areSameIgnoringValues(type, LTEL)) {
                 return LTEL;
-            }
-            else {
+            } else {
                 return UNKNOWN;
             }
         }
@@ -248,9 +231,7 @@ public class UpperBoundAnnotatedTypeFactory extends
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new UpperBoundTreeAnnotator(this),
-                new PropagationTreeAnnotator(this)
-        );
+                new UpperBoundTreeAnnotator(this), new PropagationTreeAnnotator(this));
     }
 
     protected class UpperBoundTreeAnnotator extends TreeAnnotator {

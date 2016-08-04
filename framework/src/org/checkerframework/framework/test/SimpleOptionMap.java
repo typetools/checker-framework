@@ -1,12 +1,11 @@
 package org.checkerframework.framework.test;
 
-import org.checkerframework.framework.util.PluginUtil;
-
 import java.io.File;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.checkerframework.framework.util.PluginUtil;
 
 /**
  * SimpleOptionMap is a very basic Option container.  The keys of the Option container are the
@@ -79,7 +78,6 @@ public class SimpleOptionMap {
         this.options.put(option, value);
     }
 
-
     /**
      * Adds the option only if value is a non-null, non-empty String
      */
@@ -102,14 +100,16 @@ public class SimpleOptionMap {
             String opt = optIter.next();
             if (this.options.get(opt) != null) {
                 if (!optIter.hasNext()) {
-                    throw new RuntimeException("Expected a value for option: " + opt
-                            + " in option list: " + PluginUtil.join(", ", newOptions));
+                    throw new RuntimeException(
+                            "Expected a value for option: "
+                                    + opt
+                                    + " in option list: "
+                                    + PluginUtil.join(", ", newOptions));
                 }
                 this.options.put(opt, optIter.next());
 
             } else {
                 this.options.put(opt, null);
-
             }
         }
     }

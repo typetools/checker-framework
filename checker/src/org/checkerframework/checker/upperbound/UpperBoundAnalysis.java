@@ -1,22 +1,19 @@
 package org.checkerframework.checker.upperbound;
 
+import java.util.List;
+import javax.lang.model.element.VariableElement;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
-
-import java.util.List;
-
-import javax.lang.model.element.VariableElement;
-
-import org.checkerframework.common.basetype.BaseTypeChecker;
-
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
 public class UpperBoundAnalysis extends CFAbstractAnalysis<CFValue, CFStore, UpperBoundTransfer> {
-    public UpperBoundAnalysis(BaseTypeChecker checker, UpperBoundAnnotatedTypeFactory factory,
-                              List<Pair<VariableElement, CFValue>> fieldValues) {
+    public UpperBoundAnalysis(
+            BaseTypeChecker checker,
+            UpperBoundAnnotatedTypeFactory factory,
+            List<Pair<VariableElement, CFValue>> fieldValues) {
         super(checker, factory, fieldValues);
     }
 

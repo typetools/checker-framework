@@ -1,13 +1,12 @@
 package org.checkerframework.checker.regex.qual;
 
-import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
-import org.checkerframework.qualframework.poly.qual.Wildcard;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
+import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 /**
  * Var is a qualifier parameter use.
@@ -21,7 +20,7 @@ public @interface Var {
     /**
      * Which parameter this @Var is a use of.
      */
-    String arg()  default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
+    String arg() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
 
     /**
      * The name of the parameter to set.

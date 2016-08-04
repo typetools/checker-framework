@@ -20,7 +20,8 @@ public class FIsA extends AFConstraint {
     }
 
     @Override
-    protected FIsA construct(AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
+    protected FIsA construct(
+            AnnotatedTypeMirror newArgument, AnnotatedTypeMirror newFormalParameter) {
         return new FIsA(newArgument, newFormalParameter);
     }
 

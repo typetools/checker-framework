@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.*;
 interface Function {
     String apply(String s);
 }
+
 interface Function2 {
     String apply(@Nullable String s);
 }
@@ -23,6 +24,7 @@ class AssignmentContext {
         // Test argument assingment
         take(String::toString);
     }
+
     void take2(Function2 f) {
         // Test argument assingment
         //:: error: (methodref.receiver.invalid)
@@ -33,10 +35,10 @@ class AssignmentContext {
         // Test return assingment
         return String::toString;
     }
+
     Function2 supply2() {
         // Test return assingment
         //:: error: (methodref.receiver.invalid)
         return String::toString;
     }
-
 }

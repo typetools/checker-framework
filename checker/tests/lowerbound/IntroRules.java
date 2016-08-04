@@ -1,6 +1,6 @@
 import org.checkerframework.checker.lowerbound.qual.*;
 
-public class IntroRules{
+public class IntroRules {
 
     void test() {
         @Positive int a = 10;

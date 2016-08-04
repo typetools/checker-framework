@@ -1,9 +1,8 @@
 package org.checkerframework.checker.tainting.qual;
 
+import java.lang.annotation.*;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
-
-import java.lang.annotation.*;
 
 /**
  * Var is a qualifier parameter use.
@@ -44,7 +43,7 @@ public @interface Var {
     /**
      * Which parameter this @Var is a use of.
      */
-    String arg()  default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
+    String arg() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
 
     /**
      * The name of the parameter to set.

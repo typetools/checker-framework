@@ -1,15 +1,26 @@
 package org.checkerframework.common.util.report;
 
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeCastTree;
 import java.util.List;
 import java.util.Map;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
@@ -27,20 +38,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
-
-import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.InstanceOfTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeCastTree;
 
 public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
@@ -98,13 +95,19 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         while (loop != null) {
             boolean report = this.atypeFactory.getDeclAnnotation(loop, ReportUse.class) != null;
             if (report) {
-                checker.report(Result.failure("usage", node,
-                        ElementUtils.getVerboseName(loop), loop.getKind(),
-                        ElementUtils.getVerboseName(member), member.getKind()), node);
+                checker.report(
+                        Result.failure(
+                                "usage",
+                                node,
+                                ElementUtils.getVerboseName(loop),
+                                loop.getKind(),
+                                ElementUtils.getVerboseName(member),
+                                member.getKind()),
+                        node);
                 break;
             } else {
                 if (loop.getKind() == ElementKind.PACKAGE) {
-                    loop = ElementUtils.parentPackage(elements, (PackageElement)loop);
+                    loop = ElementUtils.parentPackage(elements, (PackageElement) loop);
                     continue;
                 }
             }
@@ -133,7 +136,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         for (TypeElement sup : suptypes) {
             report = this.atypeFactory.getDeclAnnotation(sup, ReportInherit.class) != null;
             if (report) {
-                checker.report(Result.failure("inherit", node, ElementUtils.getVerboseName(sup)), node);
+                checker.report(
+                        Result.failure("inherit", node, ElementUtils.getVerboseName(sup)), node);
             }
         }
         return super.visitClass(node, p);
@@ -146,8 +150,9 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
         // Check all overridden methods.
         Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
-            AnnotatedTypes.overriddenMethods(elements, atypeFactory, method);
-        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overriddenMethods.entrySet()) {
+                AnnotatedTypes.overriddenMethods(elements, atypeFactory, method);
+        for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
+                overriddenMethods.entrySet()) {
             // AnnotatedDeclaredType overriddenType = pair.getKey();
             ExecutableElement exe = pair.getValue();
             report = this.atypeFactory.getDeclAnnotation(exe, ReportOverride.class) != null;
@@ -159,8 +164,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
 
         if (report) {
-            checker.report(Result.failure("override", node,
-                    ElementUtils.getVerboseName(method)), node);
+            checker.report(
+                    Result.failure("override", node, ElementUtils.getVerboseName(method)), node);
         }
         return super.visitMethod(node, p);
     }
@@ -175,7 +180,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
             // Find all methods that are overridden by the called method
             Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
                     AnnotatedTypes.overriddenMethods(elements, atypeFactory, method);
-            for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair: overriddenMethods.entrySet()) {
+            for (Map.Entry<AnnotatedDeclaredType, ExecutableElement> pair :
+                    overriddenMethods.entrySet()) {
                 // AnnotatedDeclaredType overriddenType = pair.getKey();
                 ExecutableElement exe = pair.getValue();
                 report = this.atypeFactory.getDeclAnnotation(exe, ReportCall.class) != null;
@@ -189,8 +195,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
 
         if (report) {
-            checker.report(Result.failure("methodcall", node,
-                    ElementUtils.getVerboseName(method)), node);
+            checker.report(
+                    Result.failure("methodcall", node, ElementUtils.getVerboseName(method)), node);
         }
         return super.visitMethodInvocation(node, p);
     }
@@ -202,8 +208,9 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportReadWrite.class) != null;
 
         if (report) {
-            checker.report(Result.failure("fieldreadwrite", node,
-                    ElementUtils.getVerboseName(member)), node);
+            checker.report(
+                    Result.failure("fieldreadwrite", node, ElementUtils.getVerboseName(member)),
+                    node);
         }
         return super.visitMemberSelect(node, p);
     }
@@ -214,8 +221,9 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportReadWrite.class) != null;
 
         if (report) {
-            checker.report(Result.failure("fieldreadwrite", node,
-                    ElementUtils.getVerboseName(member)), node);
+            checker.report(
+                    Result.failure("fieldreadwrite", node, ElementUtils.getVerboseName(member)),
+                    node);
         }
         return super.visitIdentifier(node, p);
     }
@@ -226,8 +234,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         boolean report = this.atypeFactory.getDeclAnnotation(member, ReportWrite.class) != null;
 
         if (report) {
-            checker.report(Result.failure("fieldwrite", node,
-                    ElementUtils.getVerboseName(member)), node);
+            checker.report(
+                    Result.failure("fieldwrite", node, ElementUtils.getVerboseName(member)), node);
         }
         return super.visitAssignment(node, p);
     }
@@ -249,7 +257,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
         if (!report) {
             // Check whether any superclass/interface had the ReportCreation annotation.
-            List<TypeElement> suptypes = ElementUtils.getSuperTypes(elements, (TypeElement)member);
+            List<TypeElement> suptypes = ElementUtils.getSuperTypes(elements, (TypeElement) member);
             for (TypeElement sup : suptypes) {
                 report = this.atypeFactory.getDeclAnnotation(sup, ReportCreation.class) != null;
                 if (report) {
@@ -261,7 +269,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
 
         if (report) {
-            checker.report(Result.failure("creation", node, ElementUtils.getVerboseName(member)), node);
+            checker.report(
+                    Result.failure("creation", node, ElementUtils.getVerboseName(member)), node);
         }
         return super.visitNewClass(node, p);
     }
@@ -305,8 +314,10 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     }
 
     protected class ReportTypeValidator extends BaseTypeValidator {
-        public ReportTypeValidator(BaseTypeChecker checker,
-                BaseTypeVisitor<?> visitor, AnnotatedTypeFactory atypeFactory) {
+        public ReportTypeValidator(
+                BaseTypeChecker checker,
+                BaseTypeVisitor<?> visitor,
+                AnnotatedTypeFactory atypeFactory) {
             super(checker, visitor, atypeFactory);
         }
 

@@ -39,7 +39,8 @@ public class AnnotationConverterConfiguration<Q> {
      * @param bottom the bottom qualifier in the system
      * @param defaultQual the qualifier to use if no annotations result in a qualifier
      */
-    public AnnotationConverterConfiguration(CombiningOperation<Q> lowerOp,
+    public AnnotationConverterConfiguration(
+            CombiningOperation<Q> lowerOp,
             CombiningOperation<Q> upperOp,
             String multiAnnoNamePrefix,
             Set<String> supportedAnnotationNames,
@@ -67,7 +68,6 @@ public class AnnotationConverterConfiguration<Q> {
         this.bottom = bottom;
         this.defaultQual = defaultQual;
     }
-
 
     public CombiningOperation<Q> getLowerOp() {
         return lowerOp;

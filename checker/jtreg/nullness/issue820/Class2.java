@@ -9,8 +9,9 @@ public class Class2 {
         Class1.method3(this);
         @NonNull Object o = instanceField;
     }
+
     void test2() {
-//        instanceField = new Object(); Can't reproduce with assignment
+        //        instanceField = new Object(); Can't reproduce with assignment
         Class1.method3R(this);
     }
 }

@@ -1,7 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
 import java.io.File;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -9,14 +9,15 @@ import org.junit.runners.Parameterized.Parameters;
  */
 public class MinLenTest extends CheckerFrameworkTest {
     public MinLenTest(File testFile) {
-        super(testFile,
-              org.checkerframework.checker.minlen.MinLenChecker.class,
-              "minlen",
-              "-Anomsgtext");
+        super(
+                testFile,
+                org.checkerframework.checker.minlen.MinLenChecker.class,
+                "minlen",
+                "-Anomsgtext");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"minlen"};
+        return new String[] {"minlen"};
     }
 }

@@ -1,9 +1,7 @@
 package org.checkerframework.checker.upperbound.qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.checker.upperbound.qual.*;
-
 import org.checkerframework.framework.qual.*;
 
 /**

@@ -6,18 +6,22 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 @ClassRegexParam("Main")
 class List<T> {
     // (T + MAIN) head
-    @Var(arg="Main") T head;
+    @Var(arg = "Main") T head;
     // List<T><<MAIN>>
-    @Var(arg="Main") List<T> tail;
+    @Var(arg = "Main") List<T> tail;
 }
 
 abstract class Test {
-    abstract @Regex(param="Main")   List<@Regex Integer> makeTT();
-    abstract @Regex(value=1, param="Main") List<@Regex Integer> makeUT();
-    abstract @Regex(param="Main")   List<@Regex(1) Integer> makeTU();
-    abstract @Regex(value=1, param="Main") List<@Regex(1) Integer> makeUU();
+    abstract @Regex(param = "Main") List<@Regex Integer> makeTT();
+
+    abstract @Regex(value = 1, param = "Main") List<@Regex Integer> makeUT();
+
+    abstract @Regex(param = "Main") List<@Regex(1) Integer> makeTU();
+
+    abstract @Regex(value = 1, param = "Main") List<@Regex(1) Integer> makeUU();
 
     abstract void takeT(@Regex Integer x);
+
     abstract void takeU(@Regex(1) Integer x);
 
     void test() {

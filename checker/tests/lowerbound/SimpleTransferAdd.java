@@ -1,7 +1,7 @@
 import org.checkerframework.checker.lowerbound.qual.*;
 
 class SimpleTransferAdd {
-    void test () {
+    void test() {
         int bs = -1;
         //:: error: (assignment.type.incompatible)
         @NonNegative int es = bs;

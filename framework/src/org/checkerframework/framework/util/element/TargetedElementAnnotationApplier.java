@@ -1,19 +1,16 @@
 package org.checkerframework.framework.util.element;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.PluginUtil;
-import org.checkerframework.javacutil.ErrorReporter;
-
+import com.sun.tools.javac.code.Attribute;
+import com.sun.tools.javac.code.Attribute.TypeCompound;
+import com.sun.tools.javac.code.TargetType;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.lang.model.element.Element;
-
-import com.sun.tools.javac.code.Attribute;
-import com.sun.tools.javac.code.Attribute.TypeCompound;
-import com.sun.tools.javac.code.TargetType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * TargetedElementAnnotationApplier filters annotations for an element into 3 groups.
@@ -32,7 +29,9 @@ abstract class TargetedElementAnnotationApplier {
      * Three annotation types that may be encountered when calling getRawTypeAttributes. see sift().
      */
     static enum TargetClass {
-        TARGETED, VALID, INVALID
+        TARGETED,
+        VALID,
+        INVALID
     }
 
     /**
@@ -55,7 +54,7 @@ abstract class TargetedElementAnnotationApplier {
      * @return the TargetTypes that identify annotations that are valid but we wish to ignore.  Any annotations
      * that have these target types will be passed to handleValid, providing they aren't also in annotatedTargets.
      */
-    protected abstract TargetType [] validTargets();
+    protected abstract TargetType[] validTargets();
 
     /**
      * Annotations on elements are represented as Attribute.TypeCompounds ( a subtype of AnnotationMirror) that
@@ -100,7 +99,7 @@ abstract class TargetedElementAnnotationApplier {
      * @param valid the list of annotations that were returned by getRawTypeAttributes and had a TargetType
      *              contained by valid and NOT annotatedTargets
      */
-    protected void handleValid(List<Attribute.TypeCompound> valid) { }
+    protected void handleValid(List<Attribute.TypeCompound> valid) {}
 
     /**
      * @param invalid the list of annotations that were returned by getRawTypeAttributes and were not
@@ -108,12 +107,23 @@ abstract class TargetedElementAnnotationApplier {
      */
     protected void handleInvalid(List<Attribute.TypeCompound> invalid) {
         if (!invalid.isEmpty()) {
-            ErrorReporter.errorAbort(this.getClass().getName() + ".handleInvalid: " +
-                    "Invalid variable and element passed to extractAndApply; type: " + type + "," +
-                            " element: " + element + " (kind: " + element.getKind() +
-                    "), invalid annotations: " + PluginUtil.join(", ", invalid) + "\n" +
-                    "Targeted annotations: " + PluginUtil.join(", ", annotatedTargets()) +
-                    "; Valid annotations: " + PluginUtil.join(", ", validTargets()));
+            ErrorReporter.errorAbort(
+                    this.getClass().getName()
+                            + ".handleInvalid: "
+                            + "Invalid variable and element passed to extractAndApply; type: "
+                            + type
+                            + ","
+                            + " element: "
+                            + element
+                            + " (kind: "
+                            + element.getKind()
+                            + "), invalid annotations: "
+                            + PluginUtil.join(", ", invalid)
+                            + "\n"
+                            + "Targeted annotations: "
+                            + PluginUtil.join(", ", annotatedTargets())
+                            + "; Valid annotations: "
+                            + PluginUtil.join(", ", validTargets()));
         }
     }
 
@@ -123,9 +133,11 @@ abstract class TargetedElementAnnotationApplier {
      * @param typeCompounds annotations to sift through, should be those returned by getRawTypeAttributes
      * @return a {@literal Map<TargetClass -> Annotations>.}
      */
-    protected Map<TargetClass, List<Attribute.TypeCompound>> sift(final Iterable<Attribute.TypeCompound> typeCompounds) {
+    protected Map<TargetClass, List<Attribute.TypeCompound>> sift(
+            final Iterable<Attribute.TypeCompound> typeCompounds) {
 
-        final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound = new EnumMap<>(TargetClass.class);
+        final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToCompound =
+                new EnumMap<>(TargetClass.class);
         for (TargetClass targetClass : TargetClass.values()) {
             targetClassToCompound.put(targetClass, new ArrayList<TypeCompound>());
         }
@@ -157,14 +169,20 @@ abstract class TargetedElementAnnotationApplier {
      *
      * This method will throw a runtime exception if isAccepted returns false.
      */
-    public void extractAndApply( ) {
+    public void extractAndApply() {
         if (!isAccepted()) {
-            ErrorReporter.errorAbort("LocalVariableExtractor.extractAndApply: " +
-                    "Invalid variable and element passed to " + this.getClass().getName() + "::extractAndApply (" +
-                    type + ", " + element );
+            ErrorReporter.errorAbort(
+                    "LocalVariableExtractor.extractAndApply: "
+                            + "Invalid variable and element passed to "
+                            + this.getClass().getName()
+                            + "::extractAndApply ("
+                            + type
+                            + ", "
+                            + element);
         }
 
-        final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnno = sift(getRawTypeAttributes());
+        final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnno =
+                sift(getRawTypeAttributes());
 
         handleInvalid(targetClassToAnno.get(TargetClass.INVALID));
         handleValid(targetClassToAnno.get(TargetClass.VALID));

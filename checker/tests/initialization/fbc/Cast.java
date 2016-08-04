@@ -8,5 +8,4 @@ class Cast {
         //:: error: (initialization.invalid.cast)
         @Initialized Cast t2 = (@Initialized Cast) this;
     }
-
 }

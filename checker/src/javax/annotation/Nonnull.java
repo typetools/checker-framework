@@ -1,7 +1,6 @@
 package javax.annotation;
 
 import java.lang.annotation.*;
-
 import javax.annotation.meta.When;
 
 @Documented

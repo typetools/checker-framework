@@ -3,15 +3,13 @@
 // Issue 579 test case is in checker/tests/nullness/java8/Issue579.java
 // A similar test case appears in checker/tests/nullness/InferTypeArgsCondtionalExpression.java
 
-class InferTypeArgsCondtionalExpression{
+class InferTypeArgsCondtionalExpression {
 
-    public <T>  void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
+    public <T> void foo(Generic<T> real, Generic<? super T> other, boolean flag) {
         bar(flag ? real : other);
     }
 
-    <Q> void bar(Generic<? extends Q> param) {
-    }
+    <Q> void bar(Generic<? extends Q> param) {}
 
-    interface Generic<F> {
-    }
+    interface Generic<F> {}
 }

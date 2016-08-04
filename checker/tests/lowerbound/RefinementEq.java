@@ -4,7 +4,8 @@ public class RefinementEq {
 
     void test_equal() {
 
-        int a = Integer.parseInt("0"); /** 0 */
+        int a = Integer.parseInt("0");
+        /** 0 */
         //:: error: (assignment.type.incompatible)
         @NonNegative int aa = a;
         if (-1 == a) {
@@ -14,7 +15,8 @@ public class RefinementEq {
             @GTENegativeOne int c = a;
         }
 
-        int d = Integer.parseInt("-2"); /** -2 */
+        int d = Integer.parseInt("-2");
+        /** -2 */
         if (-1 == d) {
             @GTENegativeOne int e = d;
         } else {
@@ -22,7 +24,8 @@ public class RefinementEq {
             @GTENegativeOne int f = d;
         }
 
-        int g = Integer.parseInt("5"); /** 5 */
+        int g = Integer.parseInt("5");
+        /** 5 */
         if (-1 == g) {
             @GTENegativeOne int h = g;
         } else {
@@ -30,7 +33,8 @@ public class RefinementEq {
             @GTENegativeOne int i = g;
         }
 
-        int j = Integer.parseInt("0"); /** 0 */
+        int j = Integer.parseInt("0");
+        /** 0 */
         if (0 == j) {
             @NonNegative int k = j;
         } else {
@@ -38,7 +42,8 @@ public class RefinementEq {
             @NonNegative int l = j;
         }
 
-        int m = Integer.parseInt("-2"); /** -2 */
+        int m = Integer.parseInt("-2");
+        /** -2 */
         if (0 == m) {
             @NonNegative int n = m;
         } else {
@@ -46,7 +51,8 @@ public class RefinementEq {
             @NonNegative int o = m;
         }
 
-        int p = Integer.parseInt("5"); /** 5 */
+        int p = Integer.parseInt("5");
+        /** 5 */
         if (0 == p) {
             @NonNegative int q = p;
         } else {
@@ -54,7 +60,8 @@ public class RefinementEq {
             @NonNegative int r = p;
         }
 
-        int s = Integer.parseInt("0"); /** 0 */
+        int s = Integer.parseInt("0");
+        /** 0 */
         if (1 == s) {
             @Positive int t = s;
         } else {
@@ -62,7 +69,8 @@ public class RefinementEq {
             @Positive int u = s;
         }
 
-        int v = Integer.parseInt("-2"); /** -2 */
+        int v = Integer.parseInt("-2");
+        /** -2 */
         if (1 == v) {
             @Positive int w = v;
         } else {
@@ -70,13 +78,13 @@ public class RefinementEq {
             @Positive int x = v;
         }
 
-        int y = Integer.parseInt("5"); /** 5 */
+        int y = Integer.parseInt("5");
+        /** 5 */
         if (1 == y) {
             @Positive int z = y;
         } else {
             //:: error: (assignment.type.incompatible)
             @Positive int ab = y;
         }
-
     }
 }

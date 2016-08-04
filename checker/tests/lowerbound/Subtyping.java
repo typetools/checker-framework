@@ -1,6 +1,6 @@
 import org.checkerframework.checker.lowerbound.qual.*;
 
-class Subtyping{
+class Subtyping {
 
     void foo() {
 

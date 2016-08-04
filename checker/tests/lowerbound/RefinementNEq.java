@@ -4,7 +4,8 @@ public class RefinementNEq {
 
     void test_not_equal() {
 
-        int a = Integer.parseInt("0"); /** 0 */
+        int a = Integer.parseInt("0");
+        /** 0 */
         //:: error: (assignment.type.incompatible)
         @NonNegative int aa = a;
         if (-1 != a) {
@@ -14,7 +15,8 @@ public class RefinementNEq {
             @GTENegativeOne int c = a;
         }
 
-        int d = Integer.parseInt("-2"); /** -2 */
+        int d = Integer.parseInt("-2");
+        /** -2 */
         if (-1 != d) {
             //:: error: (assignment.type.incompatible)
             @GTENegativeOne int e = d;
@@ -22,7 +24,8 @@ public class RefinementNEq {
             @GTENegativeOne int f = d;
         }
 
-        int g = Integer.parseInt("5"); /** 5 */
+        int g = Integer.parseInt("5");
+        /** 5 */
         if (-1 != g) {
             //:: error: (assignment.type.incompatible)
             @GTENegativeOne int h = g;
@@ -30,7 +33,8 @@ public class RefinementNEq {
             @GTENegativeOne int i = g;
         }
 
-        int j = Integer.parseInt("0"); /** 0 */
+        int j = Integer.parseInt("0");
+        /** 0 */
         if (0 != j) {
             //:: error: (assignment.type.incompatible)
             @NonNegative int k = j;
@@ -38,7 +42,8 @@ public class RefinementNEq {
             @NonNegative int l = j;
         }
 
-        int m = Integer.parseInt("-2"); /** -2 */
+        int m = Integer.parseInt("-2");
+        /** -2 */
         if (0 != m) {
             //:: error: (assignment.type.incompatible)
             @NonNegative int n = m;
@@ -46,7 +51,8 @@ public class RefinementNEq {
             @NonNegative int o = m;
         }
 
-        int p = Integer.parseInt("5"); /** 5 */
+        int p = Integer.parseInt("5");
+        /** 5 */
         if (0 != p) {
             //:: error: (assignment.type.incompatible)
             @NonNegative int q = p;
@@ -54,7 +60,8 @@ public class RefinementNEq {
             @NonNegative int r = p;
         }
 
-        int s = Integer.parseInt("0"); /** 0 */
+        int s = Integer.parseInt("0");
+        /** 0 */
         if (1 != s) {
             //:: error: (assignment.type.incompatible)
             @Positive int t = s;
@@ -62,7 +69,8 @@ public class RefinementNEq {
             @Positive int u = s;
         }
 
-        int v = Integer.parseInt("-2"); /** -2 */
+        int v = Integer.parseInt("-2");
+        /** -2 */
         if (1 != v) {
             //:: error: (assignment.type.incompatible)
             @Positive int w = v;
@@ -70,7 +78,8 @@ public class RefinementNEq {
             @Positive int x = v;
         }
 
-        int y = Integer.parseInt("5"); /** 5 */
+        int y = Integer.parseInt("5");
+        /** 5 */
         if (1 != y) {
             //:: error: (assignment.type.incompatible)
             @Positive int z = y;

@@ -5,26 +5,28 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
 @ClassRegexParam("Main")
 class A {
     // B<<Main + TAINTED>> x;
-    public @Var(arg="Main", param="Main2") @Regex(param="Main2") B x;
+    public @Var(arg = "Main", param = "Main2") @Regex(param = "Main2") B x;
     // B<<Main + UNTAINTED>> y;
-    public @Var(arg="Main", param="Main2") @Regex(value=1, param="Main2") B y;
+    public @Var(arg = "Main", param = "Main2") @Regex(value = 1, param = "Main2") B y;
     // B<<Main>> z;
-    public @Var(arg="Main", param="Main2") B z;
+    public @Var(arg = "Main", param = "Main2") B z;
 }
 
 @ClassRegexParam("Main2")
-class B { }
+class B {}
 
 abstract class Test {
-    abstract @Regex(param="Main") A makeTainted();
-    abstract @Regex(value=1, param="Main") A makeUntainted();
+    abstract @Regex(param = "Main") A makeTainted();
 
-    abstract void takeTainted(@Regex(param="Main2") B o);
-    abstract void takeUntainted(@Regex(value=1, param="Main2") B o);
+    abstract @Regex(value = 1, param = "Main") A makeUntainted();
+
+    abstract void takeTainted(@Regex(param = "Main2") B o);
+
+    abstract void takeUntainted(@Regex(value = 1, param = "Main2") B o);
 
     void test() {
-        @Regex(param="Main") A ta = makeTainted();
-        @Regex(value=1, param="Main") A ua = makeUntainted();
+        @Regex(param = "Main") A ta = makeTainted();
+        @Regex(value = 1, param = "Main") A ua = makeUntainted();
 
         takeTainted(ta.x);
         takeTainted(ta.y);

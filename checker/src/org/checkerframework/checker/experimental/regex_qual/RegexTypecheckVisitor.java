@@ -1,20 +1,18 @@
 package org.checkerframework.checker.experimental.regex_qual;
 
-import org.checkerframework.framework.source.Result;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.qualframework.base.CheckerAdapter;
-import org.checkerframework.qualframework.base.QualifiedTypeMirror;
-import org.checkerframework.qualframework.base.TypecheckVisitorAdapter;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.VariableElement;
-
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.VariableElement;
+import org.checkerframework.framework.source.Result;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.qualframework.base.CheckerAdapter;
+import org.checkerframework.qualframework.base.QualifiedTypeMirror;
+import org.checkerframework.qualframework.base.TypecheckVisitorAdapter;
 
 /**
  * The {@link org.checkerframework.common.basetype.BaseTypeVisitor} for the Regex-Qual type system.
@@ -73,10 +71,14 @@ public class RegexTypecheckVisitor extends TypecheckVisitorAdapter<Regex> {
                 int paramGroups = (Integer) literal.getValue();
                 ExpressionTree receiver = TreeUtils.getReceiverTree(node);
                 int annoGroups = 0;
-                QualifiedTypeMirror<Regex> receiverType = context.getTypeFactory().getQualifiedType(receiver);
+                QualifiedTypeMirror<Regex> receiverType =
+                        context.getTypeFactory().getQualifiedType(receiver);
                 Regex regex = receiverType.getQualifier();
                 if (!regex.isRegexVal() || ((Regex.RegexVal) regex).getCount() < paramGroups) {
-                    checker.report(Result.failure("group.count.invalid", paramGroups, annoGroups, receiver), group);
+                    checker.report(
+                            Result.failure(
+                                    "group.count.invalid", paramGroups, annoGroups, receiver),
+                            group);
                 }
             } else {
                 checker.report(Result.warning("group.count.unknown"), group);

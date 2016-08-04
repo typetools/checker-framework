@@ -2,9 +2,7 @@ package org.checkerframework.dataflow.cfg.node;
 
 import java.util.Collection;
 import java.util.Collections;
-
 import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**

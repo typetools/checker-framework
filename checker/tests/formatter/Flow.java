@@ -4,18 +4,17 @@ import java.util.Date;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
-
-import org.junit.Assert;
 import org.checkerframework.checker.formatter.FormatUtil;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.Format;
+import org.junit.Assert;
 
 public class Flow {
     public static String callUnqual(String u) {
         return u;
     }
 
-    public static void main(String ... p) {
+    public static void main(String... p) {
         Formatter f = new Formatter();
 
         String unqual = System.lineSeparator();
@@ -40,7 +39,7 @@ public class Flow {
         @Format({ConversionCategory.GENERAL}) String err2 = "%$s";
         @Format({ConversionCategory.GENERAL}) String ok = "%s";
 
-        String u = "%s"+" %"+"d";
+        String u = "%s" + " %" + "d";
         String v = FormatUtil.asFormat(u, ConversionCategory.GENERAL, ConversionCategory.INT);
         f.format(u, "String", 1337);
         //:: error: (argument.type.incompatible)
@@ -49,40 +48,40 @@ public class Flow {
         try {
             String l = FormatUtil.asFormat(u, ConversionCategory.FLOAT, ConversionCategory.INT);
             Assert.fail("Expected Exception");
-        } catch (Error e) {}
+        } catch (Error e) {
+        }
 
         String a = "Success: %s %d %f";
         f.format(a, "String", 1337, 7.5);
 
         String b = "Fail: %d";
         //:: error: (argument.type.incompatible)
-        f.format(b,"Wrong");
+        f.format(b, "Wrong");
 
-        @Format({ConversionCategory.GENERAL,
+        @Format({
+            ConversionCategory.GENERAL,
             ConversionCategory.INT,
             ConversionCategory.FLOAT,
-            ConversionCategory.CHAR})
+            ConversionCategory.CHAR
+        })
         String s = "Success: %s %d %f %c";
-        f.format(s, "OK",42,3.14,'c');
+        f.format(s, "OK", 42, 3.14, 'c');
 
-        @Format({ConversionCategory.GENERAL,
-            ConversionCategory.INT,
-            ConversionCategory.FLOAT})
-        String t = "Fail: %s %d %f";
+        @Format({ConversionCategory.GENERAL, ConversionCategory.INT, ConversionCategory.FLOAT}) String t = "Fail: %s %d %f";
         //:: error: (argument.type.incompatible)
-        f.format(t, "OK","Wrong",3.14);
+        f.format(t, "OK", "Wrong", 3.14);
 
-        call(f,"Success: %tM");
+        call(f, "Success: %tM");
         //:: error: (argument.type.incompatible)
-        call(f,"Fail: %d");
+        call(f, "Fail: %d");
 
         System.out.println(f.toString());
         f.close();
     }
 
-    public static void call(Formatter f,@Format({ConversionCategory.TIME}) String s) {
+    public static void call(Formatter f, @Format({ConversionCategory.TIME}) String s) {
         f.format(s, new Date());
         //:: error: (argument.type.incompatible)
-        f.format(s,"Wrong");
+        f.format(s, "Wrong");
     }
 }

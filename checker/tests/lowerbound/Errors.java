@@ -1,6 +1,6 @@
 import org.checkerframework.checker.lowerbound.qual.*;
 
-public class Errors{
+public class Errors {
 
     void test() {
         int[] arr = new int[5];
@@ -22,5 +22,4 @@ public class Errors{
         int c = arr[nn];
         int d = arr[p];
     }
-
 }

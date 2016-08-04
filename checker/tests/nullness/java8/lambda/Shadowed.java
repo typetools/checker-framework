@@ -13,15 +13,17 @@ interface NNConsumer {
 
 class Shadowed {
 
-    Consumer c = s -> {
-        //:: error: (dereference.of.nullable)
-        s.toString();
-
-        class Inner {
-            NNConsumer n = s -> {
-                // No error
+    Consumer c =
+            s -> {
+                //:: error: (dereference.of.nullable)
                 s.toString();
+
+                class Inner {
+                    NNConsumer n =
+                            s -> {
+                                // No error
+                                s.toString();
+                            };
+                }
             };
-        }
-    };
 }

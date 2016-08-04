@@ -1,12 +1,5 @@
 package org.checkerframework.common.util.count;
 
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-
-import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.source.SourceVisitor;
-import org.checkerframework.framework.source.SupportedOptions;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.ClassTree;
@@ -22,6 +15,11 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.source.SourceVisitor;
+import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
@@ -97,7 +95,8 @@ public class Locations extends SourceChecker {
                 TreePath path = getCurrentPath();
                 Tree prev = null;
                 for (Tree t : path) {
-                    if (prev != null && prev.getKind() == Tree.Kind.BLOCK
+                    if (prev != null
+                            && prev.getKind() == Tree.Kind.BLOCK
                             && t.getKind() == Tree.Kind.METHOD) {
                         isBodyAnnotation = true;
                         break;
@@ -105,7 +104,8 @@ public class Locations extends SourceChecker {
                     prev = t;
                 }
 
-                System.out.printf(":annotation %s %s %s %s%n",
+                System.out.printf(
+                        ":annotation %s %s %s %s%n",
                         tree.getAnnotationType(),
                         tree,
                         root.getSourceFile().getName(),
@@ -238,6 +238,7 @@ public class Locations extends SourceChecker {
 
     @Override
     public AnnotationProvider getAnnotationProvider() {
-        throw new UnsupportedOperationException("getAnnotationProvider is not implemented for this class.");
+        throw new UnsupportedOperationException(
+                "getAnnotationProvider is not implemented for this class.");
     }
 }

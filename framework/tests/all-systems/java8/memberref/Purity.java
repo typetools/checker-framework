@@ -8,10 +8,14 @@ interface PureFunc {
 
 class TestPure {
 
-    static String myMethod() { return ""; }
+    static String myMethod() {
+        return "";
+    }
 
     @Pure
-    static String myPureMethod() { return ""; }
+    static String myPureMethod() {
+        return "";
+    }
 
     void context() {
         PureFunc f1 = TestPure::myPureMethod;

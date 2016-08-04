@@ -1,13 +1,12 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import java.util.Map;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeVariable;
-import java.util.Map;
 
 /**
  * Instances of TypeArgumentInference are used to infer the types of method type arguments
@@ -48,14 +47,16 @@ public interface TypeArgumentInference {
      * two uses of an AnnotatedTypeVariable may be uses of the same declaration but are not .equals to each other.
      *
      */
-    public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(final AnnotatedTypeFactory typeFactory,
-                                                                final ExpressionTree invocation,
-                                                                final ExecutableElement methodElem,
-                                                                final AnnotatedExecutableType methodType);
+    public Map<TypeVariable, AnnotatedTypeMirror> inferTypeArgs(
+            final AnnotatedTypeFactory typeFactory,
+            final ExpressionTree invocation,
+            final ExecutableElement methodElem,
+            final AnnotatedExecutableType methodType);
 
-    public void adaptMethodType(final AnnotatedTypeFactory typeFactory,
-                                final ExpressionTree invocation,
-                                final AnnotatedExecutableType methodType);
+    public void adaptMethodType(
+            final AnnotatedTypeFactory typeFactory,
+            final ExpressionTree invocation,
+            final AnnotatedExecutableType methodType);
     // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
     // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
 }

@@ -6,7 +6,9 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
-
+import java.util.Collections;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
@@ -15,11 +17,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.TreeUtils;
-
-import java.util.Collections;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
 
 public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     public FenumVisitor(BaseTypeChecker checker) {
@@ -56,16 +53,16 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
             if (realCaseExpr != null) {
                 AnnotatedTypeMirror caseType = atypeFactory.getAnnotatedType(realCaseExpr);
 
-                this.commonAssignmentCheck(exprType, caseType, caseExpr,
-                        "switch.type.incompatible");
+                this.commonAssignmentCheck(
+                        exprType, caseType, caseExpr, "switch.type.incompatible");
             }
         }
         return super.visitSwitch(node, p);
     }
 
     @Override
-    protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
-            AnnotatedExecutableType constructor, NewClassTree src) {
+    protected boolean checkConstructorInvocation(
+            AnnotatedDeclaredType dt, AnnotatedExecutableType constructor, NewClassTree src) {
         // Ignore the default annotation on the constructor
         return true;
     }
@@ -78,14 +75,12 @@ public class FenumVisitor extends BaseTypeVisitor<FenumAnnotatedTypeFactory> {
     // TODO: should we require a match between switch expression and cases?
 
     @Override
-    public boolean isValidUse(AnnotatedDeclaredType declarationType,
-                             AnnotatedDeclaredType useType,
-                             Tree tree) {
+    public boolean isValidUse(
+            AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         // The checker calls this method to compare the annotation used in a
         // type to the modifier it adds to the class declaration. As our default
         // modifier is Unqualified, this results in an error when a non-subtype
         // is used. Can we use FenumTop as default instead?
         return true;
     }
-
 }

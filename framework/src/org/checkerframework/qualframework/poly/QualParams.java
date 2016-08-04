@@ -1,8 +1,7 @@
 package org.checkerframework.qualframework.poly;
 
-import org.checkerframework.javacutil.ErrorReporter;
-
 import java.util.*;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /** A map of qualifier parameters.  A {@code QualParams} object maps
  * qualifier parameter names to {@code Wildcard} objects.
@@ -76,8 +75,9 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
         if (QualifierParameterHierarchy.PARAMS_BOTTOM_TO_STRING.equals(toString())
                 || QualifierParameterHierarchy.PARAMS_BOTTOM_TO_STRING.equals(substs.toString())) {
 
-            ErrorReporter.errorAbort(QualifierParameterHierarchy.PARAMS_BOTTOM_TO_STRING +
-                    " should never be a parameter to substitute.");
+            ErrorReporter.errorAbort(
+                    QualifierParameterHierarchy.PARAMS_BOTTOM_TO_STRING
+                            + " should never be a parameter to substitute.");
         }
 
         Map<String, Wildcard<Q>> newMap = new HashMap<>();
@@ -91,11 +91,10 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
         for (String k : substs.keySet()) {
             qualSubst.put(k, substs.get(k).getUpperBound());
         }
-        PolyQual<Q> newPrimary = primary == null? null : primary.substitute(qualSubst);
+        PolyQual<Q> newPrimary = primary == null ? null : primary.substitute(qualSubst);
 
         return new QualParams<Q>(newMap, newPrimary);
     }
-
 
     // The remaining functions implement the java.util.Map interface.
 

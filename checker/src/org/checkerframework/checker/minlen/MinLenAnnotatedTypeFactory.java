@@ -1,35 +1,26 @@
 package org.checkerframework.checker.minlen;
 
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
-
 import java.util.List;
-
 import javax.annotation.processing.ProcessingEnvironment;
-
 import javax.lang.model.element.AnnotationMirror;
-
 import org.checkerframework.checker.minlen.qual.*;
-
-import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-
-import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
-
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
-
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-
 import org.checkerframework.javacutil.AnnotationUtils;
 
 public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
@@ -45,9 +36,9 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /** @throws IllegalArgumentException
-        find the minimum value in a value type. If there is no information,
-        throw an illegal argument exception (callers should check for this)
-    */
+     * find the minimum value in a value type. If there is no information,
+     * throw an illegal argument exception (callers should check for this)
+     */
     public int minLenFromValueType(AnnotatedTypeMirror valueType) {
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues == null || possibleValues.size() == 0) {
@@ -67,8 +58,9 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         List<Long> possibleValues = null;
         try {
             possibleValues =
-                ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
-        } catch (NullPointerException npe) {}
+                    ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
+        } catch (NullPointerException npe) {
+        }
         return possibleValues;
     }
 
@@ -82,14 +74,12 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * The qh is responsible for determining the relationships
      * between various qualifiers - especially subtyping relations.
      */
-    private final class MinLenQualifierHierarchy extends
-            MultiGraphQualifierHierarchy {
+    private final class MinLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
         /**
          * @param factory
          *            MultiGraphFactory to use to construct this
          */
-        public MinLenQualifierHierarchy(
-                MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+        public MinLenQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
 
@@ -119,9 +109,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                                     new MinLenTreeAnnotator(this),
-                                     new PropagationTreeAnnotator(this)
-                                     );
+                new MinLenTreeAnnotator(this), new PropagationTreeAnnotator(this));
     }
 
     protected class MinLenTreeAnnotator extends TreeAnnotator {
@@ -145,14 +133,16 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             try { // try to use value checker information
                 int val = minLenFromValueType(valueType);
                 type.replaceAnnotation(createMinLen(val));
-            } catch (IllegalArgumentException iae) {} // if the value checker doesn't know anything
+            } catch (IllegalArgumentException iae) {
+            } // if the value checker doesn't know anything
             // the index checker has something about member select
             // trees here, but I don't know what those are so I'm just
             // going to not include them and see what happens
             AnnotationMirror ATM = getAnnotatedType(dim).getAnnotation(MinLen.class);
             if (dim.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree MST = (MemberSelectTree) dim;
-                AnnotationMirror dimType = getAnnotatedType(MST.getExpression()).getAnnotation(MinLen.class);
+                AnnotationMirror dimType =
+                        getAnnotatedType(MST.getExpression()).getAnnotation(MinLen.class);
                 // if it doesnt have this annotation it will be null
                 if (type != null) {
                     type.addAnnotation(dimType);
@@ -164,10 +154,9 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     static AnnotationMirror createMinLen(int val) {
-         AnnotationBuilder builder = new AnnotationBuilder(env, MinLen.class);
-         builder.setValue("value", val);
-         System.out.println("value: " + val);
-         return builder.build();
-     }
-
+        AnnotationBuilder builder = new AnnotationBuilder(env, MinLen.class);
+        builder.setValue("value", val);
+        System.out.println("value: " + val);
+        return builder.build();
+    }
 }

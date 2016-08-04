@@ -26,7 +26,7 @@ class ExceptionParam {
 
     void exc3() {
         try {
-        //:: error: (type.invalid)
+            //:: error: (type.invalid)
         } catch (@Nullable AssertionError e) {
             @NonNull Object o = e;
         }

@@ -1,7 +1,5 @@
 package org.checkerframework.framework.test.diagnostics;
 
-import org.checkerframework.javacutil.Pair;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -10,9 +8,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.checkerframework.javacutil.Pair;
 
 /**
  * A set of utilities and factory methods useful for working with TestDiagnostics
@@ -28,25 +26,32 @@ public class TestDiagnosticUtils {
     public static final String FLOW_POLICY_COMMENT = "//" + FLOW_POLICY_STRING;
 
     // this regex represents how the diagnostics appear in Java source files
-    public static final String DIAGNOSTIC_IN_JAVA_REGEX = "\\s*(error|fixable-error|warning|other):\\s*(\\(?.*\\)?)\\s*";
-    public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN = Pattern.compile(DIAGNOSTIC_IN_JAVA_REGEX);
+    public static final String DIAGNOSTIC_IN_JAVA_REGEX =
+            "\\s*(error|fixable-error|warning|other):\\s*(\\(?.*\\)?)\\s*";
+    public static final Pattern DIAGNOSTIC_IN_JAVA_PATTERN =
+            Pattern.compile(DIAGNOSTIC_IN_JAVA_REGEX);
 
     public static final String DIAGNOSTIC_WARNING_IN_JAVA_REGEX = "\\s*warning:\\s*(.*\\s*.*)\\s*";
-    public static final Pattern DIAGNOSTIC_WARNING_IN_JAVA_PATTERN = Pattern.compile(DIAGNOSTIC_WARNING_IN_JAVA_REGEX);
+    public static final Pattern DIAGNOSTIC_WARNING_IN_JAVA_PATTERN =
+            Pattern.compile(DIAGNOSTIC_WARNING_IN_JAVA_REGEX);
 
     // this regex represents how the diagnostics appear in javax tools diagnostics from the compiler
     public static final String DIAGNOSTIC_REGEX = ":(\\d+):" + DIAGNOSTIC_IN_JAVA_REGEX;
     public static final Pattern DIAGNOSTIC_PATTERN = Pattern.compile(DIAGNOSTIC_REGEX);
 
-    public static final String DIAGNOSTIC_WARNING_REGEX = ":(\\d+):" + DIAGNOSTIC_WARNING_IN_JAVA_REGEX;
-    public static final Pattern DIAGNOSTIC_WARNING_PATTERN = Pattern.compile(DIAGNOSTIC_WARNING_REGEX);
+    public static final String DIAGNOSTIC_WARNING_REGEX =
+            ":(\\d+):" + DIAGNOSTIC_WARNING_IN_JAVA_REGEX;
+    public static final Pattern DIAGNOSTIC_WARNING_PATTERN =
+            Pattern.compile(DIAGNOSTIC_WARNING_REGEX);
 
     // represents how the diagnostics appearn in diagnostic files (.out)
     public static final String DIAGNOSTIC_FILE_REGEX = ".+\\.java" + DIAGNOSTIC_REGEX;
     public static final Pattern DIAGNOSTIC_FILE_PATTERN = Pattern.compile(DIAGNOSTIC_FILE_REGEX);
 
-    public static final String DIAGNOSTIC_FILE_WARNING_REGEX = ".+\\.java" + DIAGNOSTIC_WARNING_REGEX;
-    public static final Pattern DIAGNOSTIC_FILE_WARNING_PATTERN = Pattern.compile(DIAGNOSTIC_FILE_WARNING_REGEX);
+    public static final String DIAGNOSTIC_FILE_WARNING_REGEX =
+            ".+\\.java" + DIAGNOSTIC_WARNING_REGEX;
+    public static final Pattern DIAGNOSTIC_FILE_WARNING_PATTERN =
+            Pattern.compile(DIAGNOSTIC_FILE_WARNING_REGEX);
 
     /**
      * Instantiate the diagnostic based on a string that would appear in diagnostic files
@@ -54,8 +59,11 @@ public class TestDiagnosticUtils {
      * @param stringFromDiagnosticFile a single diagnostic string to parse
      */
     public static TestDiagnostic fromDiagnosticFileString(String stringFromDiagnosticFile) {
-        return fromPatternMatching(DIAGNOSTIC_FILE_PATTERN, DIAGNOSTIC_WARNING_IN_JAVA_PATTERN,
-                                  null, stringFromDiagnosticFile);
+        return fromPatternMatching(
+                DIAGNOSTIC_FILE_PATTERN,
+                DIAGNOSTIC_WARNING_IN_JAVA_PATTERN,
+                null,
+                stringFromDiagnosticFile);
     }
 
     /**
@@ -65,14 +73,18 @@ public class TestDiagnosticUtils {
      * @param stringFromjavaFile the string containing the diagnostic
      */
     public static TestDiagnostic fromJavaFileComment(long lineNumber, String stringFromjavaFile) {
-        return fromPatternMatching(DIAGNOSTIC_IN_JAVA_PATTERN, DIAGNOSTIC_WARNING_IN_JAVA_PATTERN,
-                lineNumber, stringFromjavaFile);
+        return fromPatternMatching(
+                DIAGNOSTIC_IN_JAVA_PATTERN,
+                DIAGNOSTIC_WARNING_IN_JAVA_PATTERN,
+                lineNumber,
+                stringFromjavaFile);
     }
     /**
      * Instantiate a diagnostic using a diagnostic from the Java Compiler.  The resulting diagnostic
      * is never fixable and always has parentheses
      */
-    public static TestDiagnostic fromJavaxToolsDiagnostic(String diagnosticString, boolean noMsgText) {
+    public static TestDiagnostic fromJavaxToolsDiagnostic(
+            String diagnosticString, boolean noMsgText) {
         // It would be nice not to parse this from the diagnostic string
         // however, the interface provides no way to know when an [unchecked] or similar
         // message is added to the reported error.  That is, when doing diagnostic.toString
@@ -82,16 +94,18 @@ public class TestDiagnosticUtils {
         return fromPatternMatching(DIAGNOSTIC_PATTERN, DIAGNOSTIC_WARNING_PATTERN, null, trimmed);
     }
 
-
     static Pair<Boolean, String> dropParentheses(final String str) {
-        if (str.charAt(0) == '(' && str.charAt(str.length()-1) == ')') {
-            return Pair.of(true, str.substring(1, str.length()-1));
+        if (str.charAt(0) == '(' && str.charAt(str.length() - 1) == ')') {
+            return Pair.of(true, str.substring(1, str.length() - 1));
         }
         return Pair.of(false, str);
     }
 
-    protected static TestDiagnostic fromPatternMatching(Pattern diagnosticPattern, Pattern warningPattern,
-                                                        Long lineNumber, String diagnosticString) {
+    protected static TestDiagnostic fromPatternMatching(
+            Pattern diagnosticPattern,
+            Pattern warningPattern,
+            Long lineNumber,
+            String diagnosticString) {
         final DiagnosticKind kind;
         final String message;
         final boolean isFixable;
@@ -106,10 +120,12 @@ public class TestDiagnosticUtils {
 
         Matcher diagnosticMatcher = diagnosticPattern.matcher(diagnosticString);
         if (diagnosticMatcher.matches()) {
-            Pair<DiagnosticKind, Boolean> categoryToFixable = parseCategoryString(diagnosticMatcher.group(1 + groupOffset));
+            Pair<DiagnosticKind, Boolean> categoryToFixable =
+                    parseCategoryString(diagnosticMatcher.group(1 + groupOffset));
             kind = categoryToFixable.first;
             isFixable = categoryToFixable.second;
-            Pair<Boolean, String> dropQuotesToString = dropParentheses(diagnosticMatcher.group(2 + groupOffset).trim());
+            Pair<Boolean, String> dropQuotesToString =
+                    dropParentheses(diagnosticMatcher.group(2 + groupOffset).trim());
             message = dropQuotesToString.second;
             noParentheses = !dropQuotesToString.first;
 
@@ -203,23 +219,24 @@ public class TestDiagnosticUtils {
             String[] diagnosticStrs;
             if (normalDiagnostic) {
                 diagnosticStrs =
-                    trimmedLine
-                        .substring(4) // drop the //::
-                        .split("::");
+                        trimmedLine
+                                .substring(4) // drop the //::
+                                .split("::");
             } else {
-                diagnosticStrs = new String[]{ trimmedLine.substring(2) };
+                diagnosticStrs = new String[] {trimmedLine.substring(2)};
             }
 
             List<TestDiagnostic> diagnostics = new ArrayList<>(diagnosticStrs.length);
             for (String diagnostic : diagnosticStrs) {
-                diagnostics.add(fromJavaFileComment((normalDiagnostic) ? errorLine : 0, diagnostic));
+                diagnostics.add(
+                        fromJavaFileComment((normalDiagnostic) ? errorLine : 0, diagnostic));
             }
 
-            return new TestDiagnosticLine(errorLine, originalLine, Collections.unmodifiableList(diagnostics));
+            return new TestDiagnosticLine(
+                    errorLine, originalLine, Collections.unmodifiableList(diagnostics));
 
         } else {
             return new TestDiagnosticLine(errorLine, originalLine, EMPTY);
-
         }
     }
 
@@ -233,11 +250,12 @@ public class TestDiagnosticUtils {
         }
 
         TestDiagnostic diagnostic = fromDiagnosticFileString(diagnosticLine);
-        return new TestDiagnosticLine(diagnostic.getLineNumber(), diagnosticLine, Arrays.asList(diagnostic));
+        return new TestDiagnosticLine(
+                diagnostic.getLineNumber(), diagnosticLine, Arrays.asList(diagnostic));
     }
 
-    public static Set<TestDiagnostic> fromJavaxDiagnosticList(List<Diagnostic<? extends JavaFileObject>> javaxDiagnostics,
-                                                              boolean noMsgText) {
+    public static Set<TestDiagnostic> fromJavaxDiagnosticList(
+            List<Diagnostic<? extends JavaFileObject>> javaxDiagnostics, boolean noMsgText) {
         Set<TestDiagnostic> diagnostics = new LinkedHashSet<>(javaxDiagnostics.size());
 
         for (Diagnostic<? extends JavaFileObject> diagnostic : javaxDiagnostics) {
@@ -246,13 +264,14 @@ public class TestDiagnosticUtils {
             final String diagnosticString = diagnostic.toString();
 
             // suppress Xlint warnings
-            if (diagnosticString.contains("uses unchecked or unsafe operations.") ||
-                diagnosticString.contains("Recompile with -Xlint:unchecked for details.") ||
-                diagnosticString.endsWith(" declares unsafe vararg methods.") ||
-                diagnosticString.contains("Recompile with -Xlint:varargs for details."))
+            if (diagnosticString.contains("uses unchecked or unsafe operations.")
+                    || diagnosticString.contains("Recompile with -Xlint:unchecked for details.")
+                    || diagnosticString.endsWith(" declares unsafe vararg methods.")
+                    || diagnosticString.contains("Recompile with -Xlint:varargs for details."))
                 continue;
 
-            diagnostics.add(TestDiagnosticUtils.fromJavaxToolsDiagnostic(diagnosticString, noMsgText));
+            diagnostics.add(
+                    TestDiagnosticUtils.fromJavaxToolsDiagnostic(diagnosticString, noMsgText));
         }
 
         return diagnostics;
@@ -269,10 +288,12 @@ public class TestDiagnosticUtils {
         return strings;
     }
 
-    private static final List<TestDiagnostic> EMPTY = Collections.unmodifiableList(new ArrayList<TestDiagnostic>());
+    private static final List<TestDiagnostic> EMPTY =
+            Collections.unmodifiableList(new ArrayList<TestDiagnostic>());
 
-    public static void removeDiagnosticsOfKind(DiagnosticKind kind, List<TestDiagnostic> expectedDiagnostics) {
-        for (int i = 0; i < expectedDiagnostics.size(); /*no-increment*/) {
+    public static void removeDiagnosticsOfKind(
+            DiagnosticKind kind, List<TestDiagnostic> expectedDiagnostics) {
+        for (int i = 0; i < expectedDiagnostics.size(); /*no-increment*/ ) {
             if (expectedDiagnostics.get(i).getKind() == kind) {
                 expectedDiagnostics.remove(i);
             } else {

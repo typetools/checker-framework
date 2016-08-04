@@ -1,7 +1,7 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
 import java.io.File;
+import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
@@ -10,7 +10,8 @@ import org.junit.runners.Parameterized.Parameters;
 public class UpperBoundTest extends CheckerFrameworkTest {
 
     public UpperBoundTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.upperbound.UpperBoundChecker.class,
                 "upperbound",
                 "-Anomsgtext");
@@ -18,7 +19,6 @@ public class UpperBoundTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"upperbound"};
+        return new String[] {"upperbound"};
     }
-
 }

@@ -5,11 +5,9 @@
 // compile with: $CHECKERFRAMEWORK/checker/bin-devel/javac -g Issue520.java -processor nullness -AprintAllQualifiers
 
 import java.util.*;
-
 import org.checkerframework.checker.nullness.qual.*;
 
-public class Issue520 {
-}
+public class Issue520 {}
 
 abstract class Parent<T> {
     protected final List<? super @KeyForBottom T> list;
@@ -30,9 +28,13 @@ abstract class Child extends Parent<CharSequence> {
 }
 
 class WildCardAdd {
-    List<@UnknownKeyFor ? super @KeyForBottom CharSequence> wildCardList = new ArrayList<@KeyForBottom CharSequence>();
+    List<@UnknownKeyFor ? super @KeyForBottom CharSequence> wildCardList =
+            new ArrayList<@KeyForBottom CharSequence>();
 
-    void foo(List<@KeyFor("m") CharSequence> keyForMCharSeq, @UnknownKeyFor CharSequence unknownCharSeq) {        wildCardList = keyForMCharSeq;
+    void foo(
+            List<@KeyFor("m") CharSequence> keyForMCharSeq,
+            @UnknownKeyFor CharSequence unknownCharSeq) {
+        wildCardList = keyForMCharSeq;
         wildCardList.add(unknownCharSeq);
         @KeyFor("y") Object o = wildCardList.get(0);
     }

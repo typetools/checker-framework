@@ -1,13 +1,10 @@
 package org.checkerframework.framework.util.element;
 
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-
+import com.sun.tools.javac.code.Attribute;
 import java.util.List;
 import java.util.Map;
-
 import javax.lang.model.element.Element;
-
-import com.sun.tools.javac.code.Attribute;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * Some Elements are members of a list (formal method parameters and type parameters).
@@ -26,7 +23,6 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
      */
     public abstract int getElementIndex();
 
-
     /**
      * A TypeAnnotationPosition has a number of different indexes (type_index, bound_index, param_index)
      * Return the index we are interested in.  If offsetting needs to be done it should be done in getElementIndex
@@ -36,13 +32,14 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
      */
     public abstract int getTypeCompoundIndex(final Attribute.TypeCompound anno);
 
-
     @Override
-    protected Map<TargetClass, List<Attribute.TypeCompound>> sift(Iterable<Attribute.TypeCompound> typeCompounds) {
-        final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnnos = super.sift(typeCompounds);
+    protected Map<TargetClass, List<Attribute.TypeCompound>> sift(
+            Iterable<Attribute.TypeCompound> typeCompounds) {
+        final Map<TargetClass, List<Attribute.TypeCompound>> targetClassToAnnos =
+                super.sift(typeCompounds);
 
         final List<Attribute.TypeCompound> targeted = targetClassToAnnos.get(TargetClass.TARGETED);
-        final List<Attribute.TypeCompound> valid    = targetClassToAnnos.get(TargetClass.VALID);
+        final List<Attribute.TypeCompound> valid = targetClassToAnnos.get(TargetClass.VALID);
 
         final int paramIndex = getElementIndex();
 
@@ -51,7 +48,7 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
         // Place these annotations into the valid list.
         int i = 0;
         while (i < targeted.size()) {
-            if ( getTypeCompoundIndex(targeted.get(i)) != paramIndex) {
+            if (getTypeCompoundIndex(targeted.get(i)) != paramIndex) {
                 valid.add(targeted.remove(i));
             } else {
                 ++i;

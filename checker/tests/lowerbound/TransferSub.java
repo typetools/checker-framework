@@ -12,7 +12,7 @@ public class TransferSub {
         @GTENegativeOne int d = a - 2;
 
         //:: error: (assignment.type.incompatible)
-        @NonNegative int e = a -2;
+        @NonNegative int e = a - 2;
 
         @GTENegativeOne int f = b - 1;
         //:: error: (assignment.type.incompatible)
@@ -35,7 +35,7 @@ public class TransferSub {
         // this would be an error if the values of b and j (both zero) weren't known at compile time
         @NonNegative int o = b - j;
         /* i and d both have compile time value -1, so this is legal.
-           The general case of GTEN1 - GTEN1 is not, though. */
+        The general case of GTEN1 - GTEN1 is not, though. */
         @GTENegativeOne int p = i - d;
 
         // decrements

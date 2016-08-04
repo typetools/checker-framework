@@ -1,7 +1,5 @@
-import org.checkerframework.common.value.qual.*;
-
 import java.util.BitSet;
-
+import org.checkerframework.common.value.qual.*;
 
 class Binaries {
     private BitSet bitmap;
@@ -9,40 +7,40 @@ class Binaries {
     public void test() {
         int length = bitmap.length();
         for (int i = 0, t = 0; i < length; i++) {
-                t |= (bitmap.get(i) ? (1 << (7 - i % 8)) : 0);
-                if (i % 8 == 7 || i == length - 1) {
-                        write(t);
-                        t = 0;
-                }
+            t |= (bitmap.get(i) ? (1 << (7 - i % 8)) : 0);
+            if (i % 8 == 7 || i == length - 1) {
+                write(t);
+                t = 0;
+            }
         }
     }
 
     void write(int t) {}
+
     public void add() {
         int a = 1;
         if (true) {
             a = 2;
         }
-        @IntVal({ 3, 4 }) int b = a + 2;
+        @IntVal({3, 4}) int b = a + 2;
 
         double c = 1.0;
         if (true) {
             c = 2.0;
         }
-        @DoubleVal({ 3.0, 4.0 }) double d = c + 2;
+        @DoubleVal({3.0, 4.0}) double d = c + 2;
 
         char e = '1';
         if (true) {
             e = '2';
         }
-        @IntVal({ '3', '4' }) char f = (char) (e + 2);
+        @IntVal({'3', '4'}) char f = (char) (e + 2);
 
         String g = "A";
         if (true) {
             g = "B";
         }
-        @StringVal({ "AC", "BC" }) String h = g + "C";
-
+        @StringVal({"AC", "BC"}) String h = g + "C";
     }
 
     public void subtract() {
@@ -50,21 +48,20 @@ class Binaries {
         if (true) {
             a = 2;
         }
-        @IntVal({ -1, 0 }) int b = a - 2;
+        @IntVal({-1, 0}) int b = a - 2;
 
         double c = 1.0;
         if (true) {
             c = 2.0;
         }
-        @DoubleVal({ -1.0, 0.0 }) double d = c - 2;
+        @DoubleVal({-1.0, 0.0}) double d = c - 2;
 
         char e = '2';
         if (true) {
             e = '3';
         }
 
-        @IntVal({ '0', '1' }) char f = (char) (e - 2);
-
+        @IntVal({'0', '1'}) char f = (char) (e - 2);
     }
 
     public void multiply() {
@@ -72,13 +69,13 @@ class Binaries {
         if (true) {
             a = 2;
         }
-        @IntVal({ 2, 4 }) int b = a * 2;
+        @IntVal({2, 4}) int b = a * 2;
 
         double c = 1.0;
         if (true) {
             c = 2.0;
         }
-        @DoubleVal({ 2.0, 4.0 }) double d = (double) (c * 2);
+        @DoubleVal({2.0, 4.0}) double d = (double) (c * 2);
 
         char e = (char) 25;
         if (true) {
@@ -86,10 +83,9 @@ class Binaries {
             e = (char) 26;
         }
 
-        @IntVal({ '2', '4' }) char f = (char) (e * 2);
+        @IntVal({'2', '4'}) char f = (char) (e * 2);
 
         @DoubleVal(0.75) float g = 1 * 0.75f;
-
     }
 
     public void divide() {
@@ -97,25 +93,24 @@ class Binaries {
         if (true) {
             a = 4;
         }
-        @IntVal({ 1, 2 }) int b = a / 2;
+        @IntVal({1, 2}) int b = a / 2;
 
         double c = 1.0;
         if (true) {
             c = 2.0;
         }
-        @DoubleVal({ 0.5, 1.0 }) double d = c / 2;
+        @DoubleVal({0.5, 1.0}) double d = c / 2;
 
         char e = (char) 96;
         if (true) {
             e = (char) 98;
         }
 
-        @IntVal({ '0', '1' }) char f = (char) (e / 2);
+        @IntVal({'0', '1'}) char f = (char) (e / 2);
 
-        @IntVal(0) int g = 2/3;
-        @IntVal(0)  int h = (Integer.MAX_VALUE-1)/Integer.MAX_VALUE;
-        @IntVal(0) long l = (Long.MAX_VALUE-1)/Long.MAX_VALUE;
-
+        @IntVal(0) int g = 2 / 3;
+        @IntVal(0) int h = (Integer.MAX_VALUE - 1) / Integer.MAX_VALUE;
+        @IntVal(0) long l = (Long.MAX_VALUE - 1) / Long.MAX_VALUE;
     }
 
     public void remainder() {
@@ -123,37 +118,37 @@ class Binaries {
         if (true) {
             a = 5;
         }
-        @IntVal({ 1, 2 }) int b = a % 3;
+        @IntVal({1, 2}) int b = a % 3;
 
         double c = 4.0;
         if (true) {
             c = 5.0;
         }
-        @DoubleVal({ 1.0, 2.0 }) double d = c % 3;
+        @DoubleVal({1.0, 2.0}) double d = c % 3;
 
         char e = (char) 98;
         if (true) {
             e = (char) 99;
         }
 
-        @IntVal({ '0', '1' }) char f = (char) (e % 50);
-
+        @IntVal({'0', '1'}) char f = (char) (e % 50);
     }
 
     public boolean flag = true;
+
     public void and() {
         boolean a = true;
         if (flag) {
             a = false;
         }
         //:: error: (assignment.type.incompatible)
-        @BoolVal({ true }) boolean b = a & true;
+        @BoolVal({true}) boolean b = a & true;
 
         int c = 4;
         if (true) {
             c = 5;
         }
-        @IntVal({ 0, 1 }) int d = c & 3;
+        @IntVal({0, 1}) int d = c & 3;
 
         char e = (char) 48;
         if (true) {
@@ -161,7 +156,7 @@ class Binaries {
             e = (char) 51;
         }
 
-        @IntVal({ '0', '2' }) char f = (char) (e & 50);
+        @IntVal({'0', '2'}) char f = (char) (e & 50);
     }
 
     public void or() {
@@ -171,20 +166,20 @@ class Binaries {
         }
         //TODO: we could detect this case
         //:: error: (assignment.type.incompatible)
-        @BoolVal({ true }) boolean b = a | true;
+        @BoolVal({true}) boolean b = a | true;
 
         int c = 4;
         if (true) {
             c = 5;
         }
-        @IntVal({ 7 }) int d = c | 3;
+        @IntVal({7}) int d = c | 3;
 
         char e = (char) 48;
         if (true) {
             e = (char) 51;
         }
 
-        @IntVal({ '1', '3' }) char f = (char) (e | 1);
+        @IntVal({'1', '3'}) char f = (char) (e | 1);
     }
 
     public void xor() {
@@ -193,13 +188,13 @@ class Binaries {
             a = false;
         }
         //:: error: (assignment.type.incompatible)
-        @BoolVal({ true }) boolean b = a ^ true;
+        @BoolVal({true}) boolean b = a ^ true;
 
         int c = 4;
         if (true) {
             c = 5;
         }
-        @IntVal({ 7, 6 }) int d = c ^ 3;
+        @IntVal({7, 6}) int d = c ^ 3;
 
         char e = (char) 48;
         if (true) {
@@ -207,35 +202,31 @@ class Binaries {
             e = (char) 51;
         }
 
-        @IntVal({ '1', '2' }) char f = (char) (e ^ 1);
+        @IntVal({'1', '2'}) char f = (char) (e ^ 1);
     }
 
     public void boolAnd() {
-        @BoolVal({ false }) boolean a = true && false;
-        @BoolVal({ true }) boolean b = false || true;
-
+        @BoolVal({false}) boolean a = true && false;
+        @BoolVal({true}) boolean b = false || true;
     }
 
     public void conditionals() {
-        @BoolVal({ false }) boolean a = 1.0f == '1';
-        @BoolVal({ true }) boolean b = 1 != 2.0;
-        @BoolVal({ true }) boolean c = 1 > 0.5;
-        @BoolVal({ true }) boolean d = 1 >= 1.0;
-        @BoolVal({ true }) boolean e = 1 < 1.1f;
-        @BoolVal({ true }) boolean f = (char) 2 <= 2.0;
+        @BoolVal({false}) boolean a = 1.0f == '1';
+        @BoolVal({true}) boolean b = 1 != 2.0;
+        @BoolVal({true}) boolean c = 1 > 0.5;
+        @BoolVal({true}) boolean d = 1 >= 1.0;
+        @BoolVal({true}) boolean e = 1 < 1.1f;
+        @BoolVal({true}) boolean f = (char) 2 <= 2.0;
         @IntVal('!') Character BANG = '!';
         @BoolVal(true) boolean g = (BANG == '!');
         char bangChar = '!';
-        @BoolVal(true) boolean h =(BANG == bangChar);
+        @BoolVal(true) boolean h = (BANG == bangChar);
 
         Character bang = '!';
         // Reference equalitiy is used
         //:: error: (assignment.type.incompatible)
-        @BoolVal(false) boolean i =(BANG == bang);
-
-
+        @BoolVal(false) boolean i = (BANG == bang);
     }
-
 
     public void loop() throws InterruptedException {
         int spurious_count = 0;
@@ -255,26 +246,26 @@ class Binaries {
         if (true) {
             a = 4;
         }
-        @IntVal({ 1, -2 }) int b = a >> 2;
+        @IntVal({1, -2}) int b = a >> 2;
 
         int c = 1;
         if (true) {
             c = 2;
         }
-        @IntVal({ 4, 8 }) int d = c << 2;
+        @IntVal({4, 8}) int d = c << 2;
 
         int e = -8;
         if (true) {
             e = 4;
         }
-        @IntVal({ Integer.MAX_VALUE / 2 - 1, 1 }) int f = e >>> 2;
+        @IntVal({Integer.MAX_VALUE / 2 - 1, 1}) int f = e >>> 2;
 
         char g = (char) 24;
         if (true) {
             g = (char) 25;
         }
 
-        @IntVal({ '0', '2' }) char h = (char) (g << 1);
+        @IntVal({'0', '2'}) char h = (char) (g << 1);
     }
 
     public void chains() {
@@ -282,16 +273,16 @@ class Binaries {
         int b = 3;
         double c = 5;
 
-        @DoubleVal({ 1 }) double d = a * b - c;
+        @DoubleVal({1}) double d = a * b - c;
 
-        @DoubleVal({ 3 }) double e = a * c - 2 * b - (char) 1;
+        @DoubleVal({3}) double e = a * c - 2 * b - (char) 1;
     }
 
     public void compareWithNull() {
         String s = "1";
         //TODO
         //:: error: (assignment.type.incompatible)
-    @BoolVal(true) boolean b = (s != null);
+        @BoolVal(true) boolean b = (s != null);
     }
 
     public void conditionalComparisions() {
@@ -305,7 +296,7 @@ class Binaries {
         @BoolVal(false) boolean a7 = false && false;
         @BoolVal(false) boolean a8 = false && true;
 
-        boolean unknown = flag?true:false;
+        boolean unknown = flag ? true : false;
         @BoolVal(true) boolean a9 = true || unknown;
         @BoolVal(true) boolean a11 = unknown || true;
         //:: error: (assignment.type.incompatible)
@@ -320,5 +311,4 @@ class Binaries {
         @BoolVal(false) boolean a16 = unknown && false;
         @BoolVal(false) boolean a17 = false && unknown;
     }
-
 }

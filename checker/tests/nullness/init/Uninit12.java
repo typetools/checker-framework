@@ -6,21 +6,20 @@ import org.checkerframework.framework.qual.*;
 
 public class Uninit12 {
 
-  static Object f;
+    static Object f;
 
-  public Uninit12() {
-    f.toString();
-  }
+    public Uninit12() {
+        f.toString();
+    }
 
-  static Object g = new Object();
+    static Object g = new Object();
 
-  static Object h;
+    static Object h;
 
-  //:: error: (initialization.fields.uninitialized)
-  static {
-    h = new Object();
-  }
-
+    //:: error: (initialization.fields.uninitialized)
+    static {
+        h = new Object();
+    }
 }
 
 class Uninit12_OK {
@@ -30,7 +29,6 @@ class Uninit12_OK {
     static Object h;
 
     static {
-      h = new Object();
+        h = new Object();
     }
-
 }
