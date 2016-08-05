@@ -174,30 +174,42 @@ public class LowerBoundAnnotatedTypeFactory
          * May return null. */
         private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = null;
-            try {
-                possibleValues =
-                        ValueAnnotatedTypeFactory.getIntValues(
-                                valueType.getAnnotation(IntVal.class));
-            } catch (NullPointerException npe) {
+            AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
+            if (anm == null) {
+                return null;
             }
+            possibleValues = ValueAnnotatedTypeFactory.getIntValues(anm);
             return possibleValues;
         }
 
-        /** @throws IllegalArgumentException
-         * returns a single value equal to what the value checker believes the value
-         * of the argument is. If the value checker cannot determine the exact value
-         * of the input, throw an Illegal argument exception */
-        public int valFromValueType(AnnotatedTypeMirror valueType) {
-            List<Long> possibleValues = possibleValuesFromValueType(valueType);
-            if (possibleValues != null && possibleValues.size() == 1) {
-                return possibleValues.get(0).intValue();
-            } else {
-                throw new IllegalArgumentException();
+        /** This struct represents an optional integer. */
+        private class MaybeVal {
+            public int val;
+            public boolean fValid;
+
+            public MaybeVal(int v, boolean f) {
+                val = v;
+                fValid = f;
             }
         }
 
-        /** figure out which type in the lower bound hierarchy a value checker type corresponds to.
-         *  returns an annotation mirror. In the code, AnnotationMirror is abbr. as anm
+        /**
+         * Returns a struct containing an integer equal to what the value checker believes the value
+         * of the argument is. If the value checker cannot determine the exact value
+         * of the input, the struct also contains a flag telling the caller not to use the
+         * value.
+         */
+        public MaybeVal maybeValFromValueType(AnnotatedTypeMirror valueType) {
+            List<Long> possibleValues = possibleValuesFromValueType(valueType);
+            if (possibleValues != null && possibleValues.size() == 1) {
+                return new MaybeVal(possibleValues.get(0).intValue(), true);
+            } else {
+                return new MaybeVal(-10, false); // totally arbitrary value
+            }
+        }
+
+        /** Figure out which type in the lower bound hierarchy a value checker type corresponds to.
+         *  Returns an annotation mirror. In the code, AnnotationMirror is abbr. as anm.
          */
         public AnnotationMirror lowerBoundAnmFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
@@ -310,26 +322,27 @@ public class LowerBoundAnnotatedTypeFactory
          */
         public void computeTypesForPlus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // check if the right side's value is known at compile time
-            try {
-                AnnotatedTypeMirror valueType =
-                        valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = valFromValueType(valueType);
+            AnnotatedTypeMirror valueTypeRight =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight.fValid) {
+                int val = maybeValRight.val;
                 computeTypesForLiteralPlus(val, leftType, type);
                 return;
-            } catch (IllegalArgumentException iae) {
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
             // check if the left side's value is known at compile time
-            try {
-                AnnotatedTypeMirror valueType =
-                        valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
-                int val = valFromValueType(valueType);
+            AnnotatedTypeMirror valueTypeLeft =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            MaybeVal maybeValLeft = maybeValFromValueType(valueTypeLeft);
+            if (maybeValLeft.fValid) {
+                int val = maybeValLeft.val;
                 computeTypesForLiteralPlus(val, rightType, type);
                 return;
-            } catch (IllegalArgumentException iae) {
             }
 
             /* This section is handling the generic cases:
@@ -405,15 +418,16 @@ public class LowerBoundAnnotatedTypeFactory
          */
         public void computeTypesForMinus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // check if the right side's value is known at compile time
-            try {
-                AnnotatedTypeMirror valueType =
-                        valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = valFromValueType(valueType);
+            AnnotatedTypeMirror valueTypeRight =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight.fValid) {
+                int val = maybeValRight.val;
                 computeTypesForLiteralMinus(val, leftType, type);
                 return;
-            } catch (IllegalArgumentException iae) {
             }
 
             // we can't say anything about generic things that are being subtracted, sadly
@@ -444,26 +458,27 @@ public class LowerBoundAnnotatedTypeFactory
          */
         public void computeTypesForMultiply(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // check if the right side's value is known at compile time
-            try {
-                AnnotatedTypeMirror valueType =
-                        valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = valFromValueType(valueType);
+            AnnotatedTypeMirror valueTypeRight =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight.fValid) {
+                int val = maybeValRight.val;
                 computeTypesForLiteralMultiply(val, leftType, type);
                 return;
-            } catch (IllegalArgumentException iae) {
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
             // check if the left side's value is known at compile time
-            try {
-                AnnotatedTypeMirror valueType =
-                        valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
-                int val = valFromValueType(valueType);
+            AnnotatedTypeMirror valueTypeLeft =
+                    valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
+            MaybeVal maybeValLeft = maybeValFromValueType(valueTypeLeft);
+            if (maybeValLeft.fValid) {
+                int val = maybeValLeft.val;
                 computeTypesForLiteralMultiply(val, rightType, type);
                 return;
-            } catch (IllegalArgumentException iae) {
             }
 
             /* this section handles generic annotations
@@ -533,26 +548,27 @@ public class LowerBoundAnnotatedTypeFactory
          */
         public void computeTypesForDivide(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-            // check if the left side's value is known at compile time
-            try {
-                AnnotatedTypeMirror valueType =
-                        valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
-                int val = valFromValueType(valueType);
-                computeTypesForLiteralDivideLeft(val, rightType, type);
-                return;
-            } catch (IllegalArgumentException iae) {
-            }
 
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // check if the right side's value is known at compile time
-            try {
-                AnnotatedTypeMirror valueType =
-                        valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = valFromValueType(valueType);
+            AnnotatedTypeMirror valueTypeRight =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight.fValid) {
+                int val = maybeValRight.val;
                 computeTypesForLiteralDivideRight(val, leftType, type);
                 return;
-            } catch (IllegalArgumentException iae) {
+            }
+
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+            // check if the left side's value is known at compile time
+            AnnotatedTypeMirror valueTypeLeft =
+                    valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
+            MaybeVal maybeValLeft = maybeValFromValueType(valueTypeLeft);
+            if (maybeValLeft.fValid) {
+                int val = maybeValLeft.val;
+                computeTypesForLiteralDivideLeft(val, leftType, type);
+                return;
             }
 
             /* this section handles generic annotations
@@ -609,13 +625,13 @@ public class LowerBoundAnnotatedTypeFactory
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
 
             // check if the right side's value is known at compile time
-            try {
-                AnnotatedTypeMirror valueType =
-                        valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-                int val = valFromValueType(valueType);
+            AnnotatedTypeMirror valueTypeRight =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight.fValid) {
+                int val = maybeValRight.val;
                 computeTypesForLiteralRemainder(val, type);
                 return;
-            } catch (IllegalArgumentException iae) {
             }
 
             /* this section handles generic annotations
