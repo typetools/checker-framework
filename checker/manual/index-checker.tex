@@ -42,19 +42,18 @@ to zero, using the following qualifiers (all of which are inferred
 automatically):
 
 \begin{description}
+\item[\refqualclass{checker/lowerbound/qual}{Positive}]
+  This variable has value 1 or greater.
+  Variables of this type are safe for use as array indices.
+\item[\refqualclass{checker/lowerbound/qual}{NonNegative}]
+  This variable has value 0 or greater.
+  Variables of this type are safe for use as array indices.
+\item[\refqualclass{checker/lowerbound/qual}{GreaterThanOrEqualToNegativeOne}]
+  This variable has value -1 or greater.
+  Variables of this type are unsafe for use as array indices.
 \item[\refqualclass{checker/lowerbound/qual}{LowerBoundUnknown}]
   There is no information about the value of this variable.
-  This type is the top type. Variables of this type are
-  unsafe for use as array indices.
-\item[\refqualclass{checker/lowerbound/qual}{GreaterThanOrEqualToNegativeOne}]
-  This variable has value -1 or greater. This type is a subtype of LowerBoundUnknown.
-  Variables of this type are unsafe for use as array indices.
-\item[\refqualclass{checker/lowerbound/qual}{NonNegative}]
-  This variable has value 0 or greater. This type is a subtype of GreaterThanOrEqualToNegativeOne.
-  Variables of this type are safe for use as array indices.
-\item[\refqualclass{checker/lowerbound/qual}{Positive}]
-  This variable has value 1 or greater. This type is a subtype of NonNegative.
-  Variables of this type are safe for use as array indices.
+  This type is the top type.
 \end{description}
 
 \begin{figure}
