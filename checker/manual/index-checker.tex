@@ -1,7 +1,7 @@
 %\htmlhr
 \chapter{Index Checker for array bounds\label{index-checker}}
 
-This checker warns about the potential presence of unsafe array
+The Index Checker warns about unsafe array
 accesses.  To do so, it keeps track of the ranges of values potential
 indexes may take on.  The Index Checker is actually a combination of
 two different checkers, each of which is run independently: the Lower
@@ -80,13 +80,13 @@ qualifiers:
   There is no information about the value of this variable.
   This type is the top type. Variables of this type are
   unsafe for use as array indices.
-\item[\refqualclass{checker/upperbound/qual}{LessThanLength}(String[] names)]
+\item[\refqualclasswithparams{checker/upperbound/qual}{LessThanLength}{String[] names}]
   The parameter, names, stores a list of array names. A variable with this type
   has value less than the length of each array listed in names.
-\item[\refqualclass{checker/upperbound/qual}{EqualToLength}(String[] names)]
+\item[\refqualclasswithparams{checker/upperbound/qual}{EqualToLength}{String[] names}]
   The parameter, names, stores a list of array names. A variable with this type
   has value equal to the length of each array listed in names.
-\item[\refqualclass{checker/upperbound/qual}{LessThanOrEqualToLength}(String[] names)]
+\item[\refqualclasswithparams{checker/upperbound/qual}{LessThanOrEqualToLength}{String[] names}]
   The parameter, names, stores a list of array names. A variable with this type
   has value less than or equal to the length of each array listed in names.
   This is the bottom type.
