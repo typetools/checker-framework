@@ -1,8 +1,8 @@
-This is mostly just a list of the intro and transfer rules for the LBC:
+This is a list of the intro and transfer rules for the Lower Bound Checker:
 
 The type hierarchy is:
 
-   Top = lbu (unknown)
+   Top = lbu ("Lower Bound Unknown")
     |
    gte-1 ("Greater than or equal to -1")
     |
@@ -10,26 +10,34 @@ The type hierarchy is:
     |
    pos ("Positive")
 
-Intro rules (LowerBoundAnnotatedTypeFactory):
+Intro rules (implemented in LowerBoundAnnotatedTypeFactory):
 
-Int lit -> use its literal value
+First, check if the value checker can determine the value of any expression
+at compile time. If so:
 
-Increment:     pos -> pos
+   Single int literal -> use the lowest type that includes the value
+   Set of int literals -> find the min value, then apply the above rule
+
+Otherwise, use the following rules for unary and binary expressions:
+
+Increment:     
+               pos -> pos
                nn -> pos
                gte-1 -> nn
                * -> lbu
 
-Decrement:     pos -> nn
+Decrement:     
+               pos -> nn
                Nn -> gte-1
                * -> lbu
 
-Plus:	       int lit + int lit -> do the math
-	       lit 0 + * -> *
+Plus (rules are symmetric):          	       
+               lit -2 + pos -> gte-1
+               lit -1 + * -> call decrement
+               lit 0 + * -> *
 	       lit 1 + * -> call increment
-	       lit -1 + * -> call decrement
 	       lit >= 2 + gte-1, nn, or pos -> pos
-	       lit -2 + pos -> gte-1
-	       let all other lits fall through:
+	       let all other lits, including sets, fall through:
 	       pos + pos -> pos
 	       pos + nn -> pos
 	       nn + nn -> nn
@@ -38,17 +46,10 @@ Plus:	       int lit + int lit -> do the math
 	       * + * -> lbu
 
 Minus:
-	       int lit - int lit -> do the math
-	       * - lit 0 -> *
-	       * - lit 1 -> call decrement
-	       * - lit -1 -> call increment
-	       pos - lit 2 -> gte-1
-	       gte-1, nn, pos - lit <= -2 -> pos
+               * - lit -> call plus(*, -1 * the value of the lit)
 	       * - * -> lbu
 
-Multiply:
-
-	       int lit * int lit -> do the math
+Multiply (rules are symmetric):
 	       * * lit 0 -> nn (=0)
 	       * * lit 1 -> *
 	       pos * pos -> pos
@@ -57,7 +58,6 @@ Multiply:
 	       * * * -> lbu
 
 Divide:
-	       int lit / int lit -> do the math
 	       lit 0 / * -> nn (=0)
 	       * / lit 1 -> *
 	       pos / pos -> nn
@@ -69,8 +69,6 @@ Divide:
 	       * / * -> lbu
 
 Mod:
-
-	       int lit % int lit -> do the math
 	       * % 1/-1 -> nn (=0)
 	       pos/nn % * -> nn
 	       gte-1 % * -> gte-1
