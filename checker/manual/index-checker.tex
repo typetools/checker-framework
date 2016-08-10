@@ -1,23 +1,27 @@
 %\htmlhr
 \chapter{Index Checker for array bounds\label{index-checker}}
 
-The Index Checker warns about unsafe array
-accesses.
-It protects against Java's
-ArrayIndexOutOfBoundsException.
+The Index Checker warns about unsafe array accesses.  It protects
+against Java's ArrayIndexOutOfBoundsException. A class checked by the
+Index Checker cannot throw an ArrayIndexOutOfBoundException unless the
+index has overflowed or underflowed.
 
-To do so, it keeps track of the ranges of values potential
-indexes may take on.  The Index Checker is actually a combination of
-two different checkers: the Lower
-Bound Checker and the Upper Bound Checker.  The Lower Bound Checker
-will issue warning when the variable being used as an index may
-potentially be too low; the Upper Bound Checker warns about accesses
-that may be too high. Both checkers use automatic introduction and
-transfer rules which should make it unnecessary for the programmer to
-write annotations, so long as \textit{defensive programming} is being
-practiced---that is, so long as the programmer is careful to check
-that indices are within bounds before using them, the Index Checker
-requires no annotations from the programmer.
+To do so, it keeps track of the ranges of values potential indexes may
+take on. There are two ways an index can fail to be safe for use as an
+array index: either it can be too high or it can be too low. The Index
+Checker will warn about both types of dangerous accesses, and will
+issue different warnings for the two.
+
+Typically, programmers do not need to write annotations to use the
+Index Checker. The Index Checker will infer properties of indexes from
+the code around them (e.g.  it will infer that x is positive if we are
+inside the then block of an ``if (x > 0)'' statement).
+
+Internally, the Index Checker is composed of two checkers: the Lower
+Bound Checker, which checks whether potential accesses may be too low,
+and the Upper Bound Checker, which checks whether potential accesses
+may be too high. The two checkers and their type hierarchies are
+detailed in the remainder of this section.
 
 \section{Running the Index Checker\label{index-running}}
 
@@ -63,7 +67,6 @@ constants, and at each program operation, the Lower Bound
 Checker uses the rules of arithmetic to determine the type for the result.
 The full list of rules appears in file \<lowerbound\_rules.txt> in the
 source code's \<lowerbound/> directory.
-
 
 \section{The Upper Bound Checker\label{index-upperbound}}
 
