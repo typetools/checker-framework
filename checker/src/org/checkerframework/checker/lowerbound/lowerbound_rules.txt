@@ -102,6 +102,18 @@ x >= y           x >= y        y > x
 x < y            y > x         x >= y
 x <= y           y >= x        x > y
 
+Or, more formally:
+
+EXPR        THEN                                        ELSE
+x > y       x_refined = GLB(x_orig, promote(y))         y_refined = GLB(y_orig, x)
+x >= y      x_refined = GLB(x_orig, y)                  y_refined = GLB(y_orig, promote(x))
+x < y       y_refined = GLB(y_orig, promote(x))         x_refined = GLB(x_orig, y)
+x <= y      y_refined = GLB(y_orig, x)                  x_refined = GLB(x_orig, promote(y))
+
+where GLB is the greatest lower bound and promote is the function that moves a type to the
+type one below it in the hierarchy (or, equivalently, the function specified by the "x > y"
+information above).
+
 There's also ==, which is a special case. We only know
 things about the THEN branch:
 
