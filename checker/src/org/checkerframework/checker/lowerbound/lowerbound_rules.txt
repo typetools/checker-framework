@@ -20,18 +20,18 @@ at compile time. If so:
 
 Otherwise, use the following rules for unary and binary expressions:
 
-Increment:     
+Increment:
                pos -> pos
                nn -> pos
                gte-1 -> nn
                * -> lbu
 
-Decrement:     
+Decrement:
                pos -> nn
                Nn -> gte-1
                * -> lbu
 
-Plus (rules are symmetric):          	       
+Plus (rules are symmetric):
                lit -2 + pos -> gte-1
                lit -1 + * -> call decrement
                lit 0 + * -> *
