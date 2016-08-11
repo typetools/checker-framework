@@ -208,10 +208,9 @@ public class LowerBoundAnnotatedTypeFactory
         }
 
         /**
-         *  Returns a struct containing an integer equal to what the value checker believes the value
-         *  of the argument is. If the value checker cannot determine the exact value
-         *  of the input, the struct also contains a flag telling the caller not to use the
-         *  value.
+         * If the argument valueType indicates that the Constant Value
+         * Checker knows the exact value of the annotated expression,
+         * returns that integer.  Otherwise returns a nonsense MaybeVal.
          */
         public MaybeVal maybeValFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
