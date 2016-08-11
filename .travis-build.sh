@@ -61,7 +61,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
   # checker-framework-inference: 18 minutes
   (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework-inference.git)
-  (cd ../checker-framework-inference && gradle dist && gradle copytest && ant -f tests.xml run-tests)
+  (cd ../checker-framework-inference && gradle dist && ant -f tests.xml run-tests)
 
   # sparta: 1 minute, but the command is "true"!
   (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
