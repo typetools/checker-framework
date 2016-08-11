@@ -7,9 +7,11 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * In the Lower Bound Checker's type system, this type
- * represents any integer greater than or equal to 0
+ * represents any integer greater than or equal to 0.
+ * The Lower Bound Checker is a subchecker of the Index
+ * Checker, which checks for ArrayIndexOutOfBoundsExceptions.
  *
- * @checker_framework.manual #lowerbound-checker Lower Bound Checker
+ * @checker_framework.manual #index-checker Index Checker
  */
 @SubtypeOf({GTENegativeOne.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
