@@ -12,11 +12,9 @@ The type hierarchy is:
 
 Intro rules (implemented in LowerBoundAnnotatedTypeFactory):
 
-First, check if the value checker can determine the value of any expression
-at compile time. If so:
-
-   Single int literal -> use the lowest type that includes the value
-   Set of int literals -> find the min value, then apply the above rule
+First, check if the Constant Value Checker has an estimate for the value
+of the expression.  If so, use the most precise type that includes all the
+values, which is the most precise type that includes the minimum value.
 
 Otherwise, use the following rules for unary and binary expressions:
 
