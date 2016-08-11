@@ -3,19 +3,19 @@
 
 The Index Checker warns about unsafe array accesses.  It protects
 against Java's ArrayIndexOutOfBoundsException. A class checked by the
-Index Checker cannot throw an ArrayIndexOutOfBoundException unless the
+Index Checker  will not throw an ArrayIndexOutOfBoundException unless the
 index has overflowed or underflowed.
 
-To do so, it keeps track of the ranges of values potential indexes may
-take on. There are two ways an index can fail to be safe for use as an
-array index: either it can be too high or it can be too low. The Index
+The Index Checker maintains an estimate of the range of values for each array
+index expression.  There are two ways an expression can fail to be safe for use as an
+array index: either it can be too low or it can be too high. The Index
 Checker will warn about both types of dangerous accesses, and will
 issue different warnings for the two.
 
 Typically, programmers do not need to write annotations to use the
 Index Checker. The Index Checker will infer properties of indexes from
-the code around them (e.g.  it will infer that x is positive if we are
-inside the then block of an ``if (x > 0)'' statement).
+the code around them.  For example, it will infer that \<x> is positive
+within the then block of an \code{if (x > 0)} statement.
 
 Internally, the Index Checker is composed of two checkers: the Lower
 Bound Checker, which checks whether potential accesses may be too low,
@@ -27,32 +27,31 @@ detailed in the remainder of this section.
 
 To run the Index Checker, run the command
 
-\begin{Verbatim}
-javac -processor index MyJavaFile.java
-\end{Verbatim}
+\begin{alltt}
+javac -processor index \emph{MyJavaFile}.java
+\end{alltt}
 
 
 \section{The Lower Bound Checker\label{index-lowerbound}}
 
-The Lower Bound checker looks for accesses into arrays that might be
+The Lower Bound Checker looks for accesses into arrays that might be
 too low.  It warns its users about any such possible accesses. The
-Lower Bound checker's type system is linear and fairly
-straightforward. It primarily keeps track of each integer's relation
-to zero, using the following qualifiers (all of which are inferred
-automatically):
+Lower Bound Checker's type system uses the following qualifiers.
+The Lower Bound Checker infers all of these qualifiers automatically (the
+rules appear in file \<lowerbound\_rules.txt> in the implementation),
+so the programmer rarely has to write them.
 
 \begin{description}
 \item[\refqualclass{checker/lowerbound/qual}{Positive}]
-  This variable has value 1 or greater.
-  Variables of this type cannot be too low to be used as array indices.
+  The value is 1 or greater, so it is not too low to be used as an array index.
 \item[\refqualclass{checker/lowerbound/qual}{NonNegative}]
-  This variable has value 0 or greater.
-  Variables of this type cannot be too low to be used as array indices.
+  The value is 0 or greater, so it is not too low to be used as an array index.
 \item[\refqualclass{checker/lowerbound/qual}{GreaterThanOrEqualToNegativeOne}]
-  This variable has value -1 or greater.
-  Variables of this type are unsafe for use as array indices, as they could be too low.
+  The value is -1 or greater.
+  It may not be used as array indices, because it might be too low.
 \item[\refqualclass{checker/lowerbound/qual}{LowerBoundUnknown}]
-  There is no information about the value of this variable.
+  There is no information about the value.
+  It may not be used as an array index, because it might be too low.
   This type is the top type.
 \end{description}
 
@@ -62,11 +61,6 @@ automatically):
 \label{fig-lowerbound-types}
 \end{figure}
 
-Users rarely have to write these annotations.  They are inferred on
-constants, and at each program operation, the Lower Bound
-Checker uses the rules of arithmetic to determine the type for the result.
-The full list of rules appears in file \<lowerbound\_rules.txt> in the
-source code's \<lowerbound/> directory.
 
 \section{The Upper Bound Checker\label{index-upperbound}}
 
