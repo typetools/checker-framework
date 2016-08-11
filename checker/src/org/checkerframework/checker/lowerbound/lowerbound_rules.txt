@@ -22,23 +22,22 @@ Increment:
                pos -> pos
                nn -> pos
                gte-1 -> nn
-               * -> lbu
+               lbu -> lbu
 
 Decrement:
                pos -> nn
-               Nn -> gte-1
-               * -> lbu
+               nn -> gte-1
+               gte-1, lbu -> lbu
 
 Plus (rules are symmetric):
                lit -2 + pos -> gte-1
                lit -1 + * -> call decrement
                lit 0 + * -> *
 	       lit 1 + * -> call increment
-	       lit >= 2 + gte-1, nn, or pos -> pos
+	       lit >= 2 + {gte-1, nn, or pos} -> pos
 	       let all other lits, including sets, fall through:
 	       pos + pos -> pos
-	       pos + nn -> pos
-	       nn + nn -> nn
+	       nn + * -> *
 	       pos + gte-1 -> nn
 	       nn + gte-1 -> gte-1
 	       * + * -> lbu
@@ -55,15 +54,11 @@ Multiply (rules are symmetric):
 	       nn * nn -> nn
 	       * * * -> lbu
 
-Divide:
+Integer Division:
 	       lit 0 / * -> nn (=0)
 	       * / lit 1 -> *
-	       pos / pos -> nn
-	       nn / pos -> nn
-	       pos / nn -> nn
-	       nn / nn -> nn
-	       gte-1 / pos -> gte-1
-	       gte-1 / nn -> gte-1
+	       pos / {pos, nn} -> nn (can round to zero)
+	       * / {pos, nn} -> *
 	       * / * -> lbu
 
 Mod:
@@ -108,9 +103,9 @@ x >= y      x_refined = GLB(x_orig, y)                  y_refined = GLB(y_orig, 
 x < y       y_refined = GLB(y_orig, promote(x))         x_refined = GLB(x_orig, y)
 x <= y      y_refined = GLB(y_orig, x)                  x_refined = GLB(x_orig, promote(y))
 
-where GLB is the greatest lower bound and promote is the function that moves a type to the
-type one below it in the hierarchy (or, equivalently, the function specified by the "x > y"
-information above).
+where GLB is the greatest lower bound and promote is the increment
+function on types (or, equivalently, the function specified by the "x
+> y" information above).
 
 There's also ==, which is a special case. We only know
 things about the THEN branch:
@@ -118,7 +113,19 @@ things about the THEN branch:
 EXPR             THEN                   ELSE
 x == y           x >= y && y >= x       nothing known
 
+or, more formally:
+
+EXPR            THEN                                    ELSE
+x == y          x_refined = GLB(x_orig, y_orig)         nothing known
+                y_refined = GLB(x_orig, y_orig)
+
 finally, not equal:
 
 EXPR             THEN                   ELSE
 x != y           nothing known          x >= y && y >= x
+
+more formally:
+
+EXPR            THEN               ELSE
+x != y          nothing known      x_refined = GLB(x_orig, y_orig)
+                                   y_refined = GLB(x_orig, y_orig)

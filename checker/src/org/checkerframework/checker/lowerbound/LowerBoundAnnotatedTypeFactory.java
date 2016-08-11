@@ -315,18 +315,17 @@ public class LowerBoundAnnotatedTypeFactory
 
         /**
          *  addAnnotationForPlus handles the following cases:
-         *       lit 0 + * becomes *
-         *       lit 1 + * becomes call increment
-         *       lit -1 + * becomes call decrement
-         *       lit greater than or equal to 2 + gten1, nn, or pos becomes pos
-         *       lit -2 + pos becomes gten1
-         *       let all other lits fall through:
-         *       pos + pos becomes pos
-         *       pos + nn becomes pos
-         *       nn + nn becomes nn
-         *       pos + gten1 becomes nn
-         *       nn + gten1 becomes gten1
-         *      * + * becomes lbu
+         *      lit -2 + pos -> gte-1
+         *      lit -1 + * -> call decrement
+         *      lit 0 + * -> *
+         *      lit 1 + * -> call increment
+         *      lit >= 2 + {gte-1, nn, or pos} -> pos
+         *      let all other lits, including sets, fall through:
+         *      pos + pos -> pos
+         *      nn + * -> *
+         *      pos + gte-1 -> nn
+         *      nn + gte-1 -> gte-1
+         *      * + * -> lbu
          */
         public void addAnnotationForPlus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -354,12 +353,11 @@ public class LowerBoundAnnotatedTypeFactory
             }
 
             /* This section is handling the generic cases:
-             pos + pos becomes pos
-             pos + nn becomes pos
-             nn + nn becomes nn
-             pos + gten1 becomes nn
-             nn + gten1 becomes gten1
-            */
+             *      pos + pos -> pos
+             *      nn + * -> *
+             *      pos + gte-1 -> nn
+             *      nn + gte-1 -> gte-1
+             */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(POS);
                 return;
@@ -391,12 +389,8 @@ public class LowerBoundAnnotatedTypeFactory
 
         /**
          *  addAnnotationForMinus handles the following cases:
-         *     * - lit 0 becomes *
-         *     * - lit 1 becomes call decrement
-         *     * - lit -1 becomes call increment
-         *     pos - lit 2 becomes gten1
-         *     gten1, nn, pos - lit less than or equal to -2 becomes pos
-         *     * - * becomes lbu
+         *      * - lit -> call plus(*, -1 * the value of the lit)
+         *      * - * -> lbu
          */
         public void addAnnotationForMinus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -471,10 +465,10 @@ public class LowerBoundAnnotatedTypeFactory
             }
 
             /* This section handles generic annotations:
-                pos * pos becomes pos
-                nn * pos becomes nn
-                nn * nn becomes nn
-            */
+             *   pos * pos becomes pos
+             *   nn * pos becomes nn
+             *   nn * nn becomes nn
+             */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(POS);
                 return;
@@ -509,17 +503,18 @@ public class LowerBoundAnnotatedTypeFactory
         }
 
         /**
-         *   @throws ArithmeticException
-         *   when the value on the right is known at compile time.
-         *   If the value is zero, then we've discovered division by zero and we throw an exception.
+         *   When the value on the right is known at compile time.
+         *   If the value is zero, then we've discovered division by zero.
+         *   We over-approximate division by zero as positive infinity so that
+         *   users aren't warned about dead code that's dividing by zero. We
+         *   assume that actual code won't include literal divide by zeros...
          */
         private void addAnnotationForLiteralDivideRight(
                 int val, AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
             if (val == 0) {
                 // If we get here then this is a divide by zero error...
-                // TODO: I'm not convinced this is the right behavior, but
-                // I'm unsure of what's correct here.
-                throw new ArithmeticException();
+                type.addAnnotation(POS);
+                return;
             } else if (val == 1) {
                 type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
                 return;
@@ -528,16 +523,11 @@ public class LowerBoundAnnotatedTypeFactory
 
         /**
          *  addAnnotationForDivide handles these cases:
-         *      lit 0 / * becomes nn
-         *      * / lit 1 becomes *
-         *      pos / pos becomes nn
-         *      nn / pos becomes nn
-         *      pos / nn becomes nn
-         *      nn / nn becomes nn
-         *      pos / gten1 becomes gten1
-         *      nn / gten1 becomes gten1
-         *      gten1 / gten1 becomes nn
-         *      * / * becomes lbu
+         *	lit 0 / * -> nn (=0)
+         *      * / lit 1 -> *
+         *      pos / {pos, nn} -> nn (can round to zero)
+         *      * / {pos, nn} -> *
+         *      * / * -> lbu
          */
         public void addAnnotationForDivide(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -565,13 +555,9 @@ public class LowerBoundAnnotatedTypeFactory
             }
 
             /* This section handles generic annotations:
-               pos / pos becomes nn
-               nn / pos becomes nn
-               pos / nn becomes nn
-               nn / nn becomes nn
-               gten1 / pos becomes gten1
-               gten1 / nn becomes gten1
-            */
+             *    pos / {pos, nn} -> nn (can round to zero)
+             *    * / {pos, nn} -> *
+             */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(NN);
                 return;
