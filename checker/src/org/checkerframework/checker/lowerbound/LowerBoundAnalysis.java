@@ -9,6 +9,11 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 
+/** This class doesn't really have anything unique or interesting
+ * about it. As far as I can tell, the framework requires that I
+ * implement a special version for the lowerbound checker, though, so
+ * this is it.
+ */
 public class LowerBoundAnalysis extends CFAbstractAnalysis<CFValue, CFStore, LowerBoundTransfer> {
     public LowerBoundAnalysis(
             BaseTypeChecker checker,
