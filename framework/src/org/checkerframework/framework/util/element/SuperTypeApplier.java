@@ -73,7 +73,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
      */
     @Override
     public int getElementIndex() {
-        return index;
+        return index == 0xffff ? -1 : index;
     }
 
     /**
@@ -81,7 +81,8 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
      */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
-        return anno.getPosition().type_index;
+        int type_index = anno.getPosition().type_index;
+        return type_index == 0xffff ? -1 : type_index;
     }
 
     /**
