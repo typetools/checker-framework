@@ -212,9 +212,12 @@ public class LowerBoundAnnotatedTypeFactory
          */
         public AnnotationMirror lowerBoundAnmFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
-            /* It's possible that possibleValues could be null (if there was no value checker
-            annotation) or empty (if the value checker annotated it with its equivalent
-            of our unknown annotation. */
+            /* It's possible that possibleValues could be null (if
+             *  there was no value checker annotation, I guess, but this
+             *  definitely happens in practice) or empty (if the value
+             *  checker annotated it with its equivalent of our unknown
+             *  annotation.
+             */
             if (possibleValues == null || possibleValues.size() == 0) {
                 return UNKNOWN;
             }
