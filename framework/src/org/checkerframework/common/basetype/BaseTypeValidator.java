@@ -54,7 +54,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         this.atypeFactory = atypeFactory;
     }
 
-    /** The entry point to the type validator.
+    /**
+     * The entry point to the type validator.
      * Validate the type against the given tree.
      * Neither this method nor visit should be called directly by a visitor,
      * only use {@link BaseTypeVisitor#validateTypeOf(Tree)}.

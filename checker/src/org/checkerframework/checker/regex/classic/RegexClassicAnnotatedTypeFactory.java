@@ -258,7 +258,8 @@ public class RegexClassicAnnotatedTypeFactory
         return Pattern.compile(regex).matcher("").groupCount();
     }
 
-    /** This method is a copy of RegexUtil.isRegex.
+    /**
+     * This method is a copy of RegexUtil.isRegex.
      * We cannot directly use RegexUtil, because it uses type annotations
      * which cannot be used in IDEs (yet).
      */

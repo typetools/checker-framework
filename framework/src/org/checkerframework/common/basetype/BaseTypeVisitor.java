@@ -1422,7 +1422,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** TODO: something similar to visitReturn should be done.
+    /* TODO: something similar to visitReturn should be done.
      * public Void visitThrow(ThrowTree node, Void p) {
      * return super.visitThrow(node, p);
      * }

@@ -15,28 +15,31 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.qualframework.base.format.QualifiedTypeFormatter;
 
-/** Adapter class for {@link Checker}, extending
+/**
+ * Adapter class for {@link Checker}, extending
  * {@link BaseTypeChecker org.checkerframework.common.basetype.BaseTypeChecker}.
  */
 public class CheckerAdapter<Q> extends BaseTypeChecker {
     /** The underlying qualifier-based checker. */
     private final Checker<Q> underlying;
-    /** The {@link TypeMirrorConverter} used by this {@link CheckerAdapter} and
-     * its components. */
-    private TypeMirrorConverter<Q> typeMirrorConverter;
-    /** The adapter for the underlying checker's {@link QualifiedTypeFactory}.
+    /**
+     * The {@link TypeMirrorConverter} used by this {@link CheckerAdapter} and
+     * its components.
      */
+    private TypeMirrorConverter<Q> typeMirrorConverter;
+    /** The adapter for the underlying checker's {@link QualifiedTypeFactory}. */
     private QualifiedTypeFactoryAdapter<Q> typeFactory;
 
-    /** Constructs a {@link CheckerAdapter} from an underlying qualifier-based
-     * {@link Checker}. */
+    /** Constructs a {@link CheckerAdapter} from an underlying qualifier-based {@link Checker}. */
     public CheckerAdapter(Checker<Q> underlying) {
         this.underlying = underlying;
         underlying.setAdapter(this);
     }
 
-    /** Gets the {@link TypeMirrorConverter} used by this {@link CheckerAdapter}
-     * and its component adapters. */
+    /**
+     * Gets the {@link TypeMirrorConverter} used by this {@link CheckerAdapter}
+     * and its component adapters.
+     */
     public TypeMirrorConverter<Q> getTypeMirrorConverter() {
         if (this.typeMirrorConverter == null) {
             this.typeMirrorConverter = new TypeMirrorConverter<Q>(getProcessingEnvironment(), this);
@@ -72,8 +75,10 @@ public class CheckerAdapter<Q> extends BaseTypeChecker {
         return typeFactory;
     }
 
-    /** Constructs a {@link QualifiedTypeFactoryAdapter} for the underlying
-     * {@link QualifiedTypeFactory}. */
+    /**
+     * Constructs a {@link QualifiedTypeFactoryAdapter} for the underlying
+     * {@link QualifiedTypeFactory}.
+     */
     private QualifiedTypeFactoryAdapter<Q> createTypeFactory() {
         QualifiedTypeFactory<Q> underlyingFactory = underlying.getTypeFactory();
 

@@ -32,8 +32,10 @@ public interface QualifiedTypeFactory<Q> {
     /** Gets the qualified type from a type in {@link Tree} form. */
     QualifiedTypeMirror<Q> getQualifiedTypeFromTypeTree(Tree typeTree);
 
-    /** Gets the qualified types of the bounds of a type parameter, identified
-     * by its {@link Element}. */
+    /**
+     * Gets the qualified types of the bounds of a type parameter, identified
+     * by its {@link Element}.
+     */
     QualifiedTypeParameterBounds<Q> getQualifiedTypeParameterBounds(
             ExtendedParameterDeclaration etm);
 
@@ -41,8 +43,10 @@ public interface QualifiedTypeFactory<Q> {
     QualifierHierarchy<Q> getQualifierHierarchy();
     /** Gets the {@link TypeHierarchy} used with this type system. */
     TypeHierarchy<Q> getTypeHierarchy();
-    /** Gets the {@link QualifiedTypes} helper object used with this type
-     * system. */
+    /**
+     * Gets the {@link QualifiedTypes} helper object used with this type
+     * system.
+     */
     QualifiedTypes<Q> getQualifiedTypes();
 
     /**
@@ -60,7 +64,8 @@ public interface QualifiedTypeFactory<Q> {
     List<QualifiedTypeMirror<Q>> postDirectSuperTypes(
             QualifiedTypeMirror<Q> subtype, List<? extends QualifiedTypeMirror<Q>> supertypes);
 
-    /** Hook for customizing the behavior of {@code asMemberOf}.
+    /**
+     * Hook for customizing the behavior of {@code asMemberOf}.
      *
      * @param memberType
      *      the type of the element being accessed, according to the default
@@ -78,7 +83,8 @@ public interface QualifiedTypeFactory<Q> {
             QualifiedTypeMirror<Q> receiverType,
             Element memberElement);
 
-    /** Hook for customizing type parameter inference for methods.
+    /**
+     * Hook for customizing type parameter inference for methods.
      *
      * @param tree
      *      the AST node for the method call

@@ -1,7 +1,8 @@
 
 import org.checkerframework.checker.tainting.qual.*;
 
-/** Resolution of outer classes must take substitution of generic types
+/**
+ * Resolution of outer classes must take substitution of generic types
  * into account.
  * Thanks to EMS for finding this problem.
  *

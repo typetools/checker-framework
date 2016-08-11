@@ -63,7 +63,8 @@ public class QualifierPolymorphism {
 
     private final Completer completer;
 
-    /** The polymorphic qualifiers: mapping from the top of a qualifier
+    /**
+     * The polymorphic qualifiers: mapping from the top of a qualifier
      * hierarchy to the polymorphic qualifier of that hierarchy.
      * Field always non-null but might be an empty mapping.
      * The "null" key, if present, always maps to PolyAll.

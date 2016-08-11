@@ -204,7 +204,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected TypeArgumentInference typeArgumentInference;
 
-    /** To cache the supported type qualifiers.
+    /**
+     * To cache the supported type qualifiers.
      * call {@link #getSupportedTypeQualifiers()} instead of using this field
      * directly, as it may not have been initialized.
      */
@@ -264,13 +265,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
 
-    /** Annotation added to every method defined in a class file
+    /**
+     * Annotation added to every method defined in a class file
      * that is not in a stub file.
      */
     private final AnnotationMirror fromByteCode;
 
-    /** Annotation added to every method defined in a stub file.
-     */
+    /** Annotation added to every method defined in a stub file. */
     private final AnnotationMirror fromStubFile;
 
     /**
@@ -293,7 +294,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Should results be cached?
      * This means that ATM.deepCopy() will be called.
      * ATM.deepCopy() used to (and perhaps still does) side effect the ATM being copied.
-     * So setting this to false is not equivalent to setting shouldReadCache to false. */
+     * So setting this to false is not equivalent to setting shouldReadCache to false.
+     */
     public boolean shouldCache;
 
     /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
@@ -302,12 +304,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Mapping from a Tree to its annotated type; implicits have been applied. */
     private final Map<Tree, AnnotatedTypeMirror> treeCache;
 
-    /** Mapping from a Tree to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
+    /**
+     * Mapping from a Tree to its annotated type; before implicits are applied,
+     * just what the programmer wrote.
+     */
     protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache;
 
-    /** Mapping from an Element to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
+    /**
+     * Mapping from an Element to its annotated type; before implicits are applied,
+     * just what the programmer wrote.
+     */
     private final Map<Element, AnnotatedTypeMirror> elementCache;
 
     /** Mapping from an Element to the source Tree of the declaration. */
@@ -515,14 +521,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getClass().getSimpleName() + "#" + uid;
     }
 
-    /** Factory method to easily change what Factory is used to
+    /**
+     * Factory method to easily change what Factory is used to
      * create a QualifierHierarchy.
      */
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
-    /** Factory method to easily change what QualifierHierarchy is
+    /**
+     * Factory method to easily change what QualifierHierarchy is
      * created.
      * Needs to be public only because the GraphFactory must be able to call this method.
      * No external use of this method is necessary.
@@ -3511,26 +3519,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return awt.getUnderlyingType().getSuperBound() == null;
     }
 
-    /** Accessor for the element utilities.
-     */
+    /** Accessor for the element utilities. */
     public Elements getElementUtils() {
         return this.elements;
     }
 
-    /** Accessor for the tree utilities.
-     */
+    /** Accessor for the tree utilities. */
     public Trees getTreeUtils() {
         return this.trees;
     }
 
-    /** Accessor for the processing environment.
-     */
+    /** Accessor for the processing environment. */
     public ProcessingEnvironment getProcessingEnv() {
         return this.processingEnv;
     }
 
-    /** Accessor for the {@link CFContext}.
-     */
+    /** Accessor for the {@link CFContext}. */
     public CFContext getContext() {
         return checker;
     }

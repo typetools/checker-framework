@@ -8,7 +8,8 @@ import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
-/** A ListTreeAnnotator implementation that additionally
+/**
+ * A ListTreeAnnotator implementation that additionally
  * outputs debugging information.
  */
 public class DebugListTreeAnnotator extends ListTreeAnnotator {

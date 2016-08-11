@@ -30,7 +30,8 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
-    /** Copied from SubtypingChecker.
+    /**
+     * Copied from SubtypingChecker.
      * Instead of returning an empty set if no "quals" option is given,
      * we return Fenum as the only qualifier.
      */

@@ -559,8 +559,7 @@ public class Analysis<
         /** Map all blocks in the CFG to their depth-first order. */
         protected IdentityHashMap<Block, Integer> depthFirstOrder;
 
-        /** Comparator to allow priority queue to order blocks by their depth-first
-         * order. */
+        /** Comparator to allow priority queue to order blocks by their depth-first order. */
         public class DFOComparator implements Comparator<Block> {
             @Override
             public int compare(Block b1, Block b2) {

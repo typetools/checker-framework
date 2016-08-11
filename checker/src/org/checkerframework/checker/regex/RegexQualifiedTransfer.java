@@ -138,7 +138,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
         return resultIn;
     }
 
-    /** Determine the int value of the given Node.
+    /**
+     * Determine the int value of the given Node.
      *
      * @param num input Node
      * @return the int value of num. 0 if num is not an int literal.

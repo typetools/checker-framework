@@ -46,7 +46,8 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         // explanation.
     }
 
-    /** Allow CheckerAdapter to call postInit when it's ready.  See
+    /**
+     * Allow CheckerAdapter to call postInit when it's ready.  See
      * CheckerAdapter.getTypeFactory for explanation.
      */
     void doPostInit() {
@@ -77,8 +78,10 @@ class QualifiedTypeFactoryAdapter<Q> extends BaseAnnotatedTypeFactory {
         return (CheckerAdapter<Q>) checker;
     }
 
-    /** Returns the same result as {@link getQualifierHierarchy}, but downcast
-     * to a more precise type. */
+    /**
+     * Returns the same result as {@link getQualifierHierarchy}, but downcast
+     * to a more precise type.
+     */
     @SuppressWarnings("unchecked")
     private QualifierHierarchyAdapter<Q>.Implementation getQualifierHierarchyAdapter() {
         return (QualifierHierarchyAdapter<Q>.Implementation) getQualifierHierarchy();

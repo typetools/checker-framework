@@ -35,7 +35,8 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
         // See testcase tests/nullness/GeneralATFStore.java
     }
 
-    /** Return true to support any qualifier.
+    /**
+     * Return true to support any qualifier.
      * No handling of aliases.
      */
     @Override
@@ -49,7 +50,8 @@ public class GeneralAnnotatedTypeFactory extends AnnotatedTypeFactory {
     }
 }
 
-/** A very limited QualifierHierarchy that is used for access to
+/**
+ * A very limited QualifierHierarchy that is used for access to
  * qualifiers from different type systems.
  */
 class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {

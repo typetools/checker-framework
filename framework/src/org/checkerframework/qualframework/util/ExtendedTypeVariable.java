@@ -12,7 +12,9 @@ public interface ExtendedTypeVariable extends ExtendedReferenceType {
     /** Returns the element corresponding to this type variable. */
     Element asElement();
 
-    /** Get the {@link ExtendedParameterDeclaration} for the declaration of
-     * this type variable. */
+    /**
+     * Get the {@link ExtendedParameterDeclaration} for the declaration of
+     * this type variable.
+     */
     ExtendedParameterDeclaration getDeclaration();
 }
