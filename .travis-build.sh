@@ -1,5 +1,7 @@
 #!/bin/bash
 
+date
+
 # Optional argument $1 is one of:
 #   all, junit, nonjunit, downstream, plume-lib-typecheck, misc
 # If it is omitted, this script does everything.
@@ -34,6 +36,8 @@ export SHELLOPTS
 # The above command builds the JDK, so there is no need for a subsequent
 # command to rebuild it again.
 
+date
+
 if [[ "${GROUP}" == "junit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant junit-tests-nojtreg-nobuild)
 fi
@@ -55,13 +59,17 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
 
+  date
+
   # checker-framework-demos: 15 minutes
   (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
   (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
 
+  date
+
   # checker-framework-inference: 18 minutes
   (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework-inference.git)
-  (cd ../checker-framework-inference && gradle dist && ant -f tests.xml run-tests)
+  (cd ../checker-framework-inference && gradle dist && date && ant -f tests.xml run-tests)
 
   # sparta: 1 minute, but the command is "true"!
   (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
