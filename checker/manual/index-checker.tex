@@ -44,13 +44,13 @@ automatically):
 \begin{description}
 \item[\refqualclass{checker/lowerbound/qual}{Positive}]
   This variable has value 1 or greater.
-  Variables of this type are safe for use as array indices.
+  Variables of this type cannot be too low to be used as array indices.
 \item[\refqualclass{checker/lowerbound/qual}{NonNegative}]
   This variable has value 0 or greater.
-  Variables of this type are safe for use as array indices.
+  Variables of this type cannot be too low to be used as array indices.
 \item[\refqualclass{checker/lowerbound/qual}{GreaterThanOrEqualToNegativeOne}]
   This variable has value -1 or greater.
-  Variables of this type are unsafe for use as array indices.
+  Variables of this type are unsafe for use as array indices, as they could be too low.
 \item[\refqualclass{checker/lowerbound/qual}{LowerBoundUnknown}]
   There is no information about the value of this variable.
   This type is the top type.
