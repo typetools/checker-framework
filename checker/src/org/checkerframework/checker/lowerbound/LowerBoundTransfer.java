@@ -196,8 +196,9 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         return newResult;
     }
 
-    /** The implementation of the algorithm for refining a
-     * >. Effectively works by promoting the type of left (the greater
+    /**
+     * The implementation of the algorithm for refining a &gt; test.
+     * Effectively works by promoting the type of left (the greater
      * one) to one higher than the type of right.
      */
     private void refineGT(
@@ -221,7 +222,8 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         }
     }
 
-    /** Elevates left to exactly the level of right, since in the
+    /**
+     * Elevates left to exactly the level of right, since in the
      * worst case they're equal.
      */
     private void refineGTE(
