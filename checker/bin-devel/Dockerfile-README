@@ -24,17 +24,17 @@ alias create_upload_docker_image=' \
   docker push mdernst/$OS-for-$PROJECT-$JDKVER) && \
   rm -rf dockerdir'
 
-export OS=ubuntu   
-export JDKVER=jdk7   
-export PROJECT=cf 
+export OS=ubuntu
+export JDKVER=jdk7
+export PROJECT=cf
 create_upload_docker_image
 
-export OS=ubuntu   
-export JDKVER=jdk8   
-export PROJECT=cf 
+export OS=ubuntu
+export JDKVER=jdk8
+export PROJECT=cf
 create_upload_docker_image
 
-export OS=ubuntu   
-export JDKVER=jdkany 
-export PROJECT=cf 
+export OS=ubuntu
+export JDKVER=jdkany
+export PROJECT=cf
 create_upload_docker_image
