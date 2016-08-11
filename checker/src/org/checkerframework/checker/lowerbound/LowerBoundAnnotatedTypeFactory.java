@@ -99,30 +99,32 @@ public class LowerBoundAnnotatedTypeFactory
         }
 
         /**
-         *  Sets typeDst to one higher in the hierarchy than typeSrc.
+         *  Sets typeDst to the immediate supertype of typeSrc, unless typeSrc is already
+         *  Positive.
          */
         public void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-            if (typeSrc.hasAnnotation(GTEN1)) {
-                typeDst.replaceAnnotation(NN);
+            if (typeSrc.hasAnnotation(POS)) {
+                typeDst.replaceAnnotation(POS);
             } else if (typeSrc.hasAnnotation(NN)) {
                 typeDst.replaceAnnotation(POS);
-            } else if (typeSrc.hasAnnotation(POS)) {
-                typeDst.replaceAnnotation(POS);
-            } else {
+            } else if (typeSrc.hasAnnotation(GTEN1)) {
+                typeDst.replaceAnnotation(NN);
+            } else { //Only unknown is left.
                 typeDst.replaceAnnotation(UNKNOWN);
             }
             return;
         }
 
         /**
-         *  Sets typeDst to one lower in the hierarchy than typeSrc.
+         *  Sets typeDst to the immediate subtype of typeSrc, unless typeSrc is already
+         *  LowerBoundUnknown.
          */
         public void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
-            if (typeSrc.hasAnnotation(NN)) {
-                typeDst.replaceAnnotation(GTEN1);
-            } else if (typeSrc.hasAnnotation(POS)) {
+            if (typeSrc.hasAnnotation(POS)) {
                 typeDst.replaceAnnotation(NN);
-            } else {
+            } else if (typeSrc.hasAnnotation(NN)) {
+                typeDst.replaceAnnotation(GTEN1);
+            } else { // GTEN1 and UNKNOWN both become UNKNOWN.
                 typeDst.replaceAnnotation(UNKNOWN);
             }
             return;
@@ -183,41 +185,24 @@ public class LowerBoundAnnotatedTypeFactory
          *  May return null.
          */
         private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-            List<Long> possibleValues = null;
             AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
             if (anm == null) {
                 return null;
             }
-            possibleValues = ValueAnnotatedTypeFactory.getIntValues(anm);
-            return possibleValues;
-        }
-
-        /**
-         *  This struct represents an optional integer.
-         *  Note that this ought to be replaced with the Optional class from
-         *  Java 8 if we're okay with losing backwards compatibility.
-         */
-        private class MaybeVal {
-            public int val;
-            public boolean fValid;
-
-            public MaybeVal(int v, boolean f) {
-                val = v;
-                fValid = f;
-            }
+            return ValueAnnotatedTypeFactory.getIntValues(anm);
         }
 
         /**
          * If the argument valueType indicates that the Constant Value
          * Checker knows the exact value of the annotated expression,
-         * returns that integer.  Otherwise returns a nonsense MaybeVal.
+         * returns that integer.  Otherwise returns null.
          */
-        public MaybeVal maybeValFromValueType(AnnotatedTypeMirror valueType) {
+        public Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
             if (possibleValues != null && possibleValues.size() == 1) {
-                return new MaybeVal(possibleValues.get(0).intValue(), true);
+                return new Integer(possibleValues.get(0).intValue());
             } else {
-                return new MaybeVal(-10, false); // totally arbitrary value
+                return null;
             }
         }
 
@@ -334,9 +319,9 @@ public class LowerBoundAnnotatedTypeFactory
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
-            if (maybeValRight.fValid) {
-                int val = maybeValRight.val;
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                int val = maybeValRight.intValue();
                 addAnnotationForLiteralPlus(val, leftType, type);
                 return;
             }
@@ -345,9 +330,9 @@ public class LowerBoundAnnotatedTypeFactory
             // Check if the left side's value is known at compile time.
             AnnotatedTypeMirror valueTypeLeft =
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-            MaybeVal maybeValLeft = maybeValFromValueType(valueTypeLeft);
-            if (maybeValLeft.fValid) {
-                int val = maybeValLeft.val;
+            Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
+            if (maybeValLeft != null) {
+                int val = maybeValLeft.intValue();
                 addAnnotationForLiteralPlus(val, rightType, type);
                 return;
             }
@@ -399,9 +384,9 @@ public class LowerBoundAnnotatedTypeFactory
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
-            if (maybeValRight.fValid) {
-                int val = maybeValRight.val;
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                int val = maybeValRight.intValue();
                 // Instead of a separate method for subtraction, add the negative of a constant.
                 addAnnotationForLiteralPlus(-1 * val, leftType, type);
                 return;
@@ -446,9 +431,9 @@ public class LowerBoundAnnotatedTypeFactory
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
-            if (maybeValRight.fValid) {
-                int val = maybeValRight.val;
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                int val = maybeValRight.intValue();
                 addAnnotationForLiteralMultiply(val, leftType, type);
                 return;
             }
@@ -457,9 +442,9 @@ public class LowerBoundAnnotatedTypeFactory
             // Check if the left side's value is known at compile time.
             AnnotatedTypeMirror valueTypeLeft =
                     valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
-            MaybeVal maybeValLeft = maybeValFromValueType(valueTypeLeft);
-            if (maybeValLeft.fValid) {
-                int val = maybeValLeft.val;
+            Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
+            if (maybeValLeft != null) {
+                int val = maybeValLeft.intValue();
                 addAnnotationForLiteralMultiply(val, rightType, type);
                 return;
             }
@@ -536,9 +521,9 @@ public class LowerBoundAnnotatedTypeFactory
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
-            if (maybeValRight.fValid) {
-                int val = maybeValRight.val;
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                int val = maybeValRight.intValue();
                 addAnnotationForLiteralDivideRight(val, leftType, type);
                 return;
             }
@@ -547,9 +532,9 @@ public class LowerBoundAnnotatedTypeFactory
             // Check if the left side's value is known at compile time.
             AnnotatedTypeMirror valueTypeLeft =
                     valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
-            MaybeVal maybeValLeft = maybeValFromValueType(valueTypeLeft);
-            if (maybeValLeft.fValid) {
-                int val = maybeValLeft.val;
+            Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
+            if (maybeValLeft != null) {
+                int val = maybeValLeft.intValue();
                 addAnnotationForLiteralDivideLeft(val, leftType, type);
                 return;
             }
@@ -609,9 +594,9 @@ public class LowerBoundAnnotatedTypeFactory
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
-            MaybeVal maybeValRight = maybeValFromValueType(valueTypeRight);
-            if (maybeValRight.fValid) {
-                int val = maybeValRight.val;
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                int val = maybeValRight.intValue();
                 addAnnotationForLiteralRemainder(val, type);
                 return;
             }
