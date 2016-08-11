@@ -554,8 +554,6 @@ public class LowerBoundAnnotatedTypeFactory
                 return;
             }
 
-            EXPLODE THIS IS BROKEN OMG DID I EVEN GET AN EMAIL AT ALL????
-
             /* This section handles generic annotations:
              *    pos / {pos, nn} -> nn (can round to zero)
              *    * / {pos, nn} -> *
