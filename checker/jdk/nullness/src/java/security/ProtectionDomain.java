@@ -423,27 +423,4 @@ public class ProtectionDomain {
      * Used for storing ProtectionDomains as keys in a Map.
      */
     final class Key {}
-
-    static {
-        SharedSecrets.setJavaSecurityProtectionDomainAccess(
-            new JavaSecurityProtectionDomainAccess() {
-                @Override
-                public ProtectionDomainCache getProtectionDomainCache() {
-                    return new ProtectionDomainCache() {
-                        private final Map<Key, PermissionCollection> map =
-                            Collections.synchronizedMap
-                                (new WeakHashMap<Key, PermissionCollection>());
-                        @Override
-                        public void put(ProtectionDomain pd,
-                            PermissionCollection pc) {
-                            map.put((pd == null ? null : pd.key), pc);
-                        }
-                        @Override
-                        public PermissionCollection get(ProtectionDomain pd) {
-                            return pd == null ? map.get(null) : map.get(pd.key);
-                        }
-                    };
-                }
-            });
-    }
 }

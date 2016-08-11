@@ -215,6 +215,9 @@ public class NonNullMapValue {
     interface MyMap3<K, V> {
         @org.checkerframework.dataflow.qual.Pure
         @EnsuresNonNullIf(result = true, expression = "get(#1)")
+        // The following error is issued because, unlike in interface MyMap2,
+        // this interface has no get() method.
+        //:: error: (flowexpr.parse.error)
         boolean containsKey(@Nullable Object a1);
     }
 }

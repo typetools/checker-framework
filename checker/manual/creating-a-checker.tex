@@ -1381,7 +1381,7 @@ options).
 To specify a simple boolean flag, add:
 
 \begin{alltt}
-\refqualclass{framework/source}{SupportedLintOptions}({"myflag"})
+\refqualclass{framework/source}{SupportedLintOptions}(\{"myflag"\})
 \end{alltt}
 
 to your checker subclass.
@@ -1406,7 +1406,7 @@ For more complicated options, one can use the standard annotation
 processing \code{@SupportedOptions} annotation on the checker, as in:
 
 \begin{alltt}
-\refqualclass{framework/source}{SupportedOptions}({"myoption"})
+\refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
 \end{alltt}
 
 The value of the option can be queried using
@@ -1436,9 +1436,6 @@ The Checker Framework provides a convenient way to write tests for your
 checker.
 % Don't repeat the information here, to prevent them from getting out of sync.
 It is extensively documented in file \<checker-framework/checker/tests/README>.
-Also see the API documentation for
-\refclass{framework/test}{CheckerFrameworkTest},
-which all test classes should extend.
 \end{sloppypar}
 
 
@@ -1910,7 +1907,7 @@ other useful resources include the Java Infrastructure
 Developer's guide at
 \url{http://wiki.netbeans.org/Java_DevelopersGuide} and the compiler
 mailing list archives at
-\url{http://news.gmane.org/gmane.comp.java.openjdk.compiler.devel}
+\url{http://mail.openjdk.java.net/pipermail/compiler-dev/}
 (subscribe at
 \url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
 

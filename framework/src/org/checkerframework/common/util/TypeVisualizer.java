@@ -453,7 +453,7 @@ public class TypeVisualizer {
             @Override
             public Void visitIntersection(AnnotatedIntersectionType type, Void aVoid) {
                 if (checkOrAdd(type)) {
-                    addLabeledNode(type, getAnnoStr(type) + " Intersection", "shape=doublecircle");
+                    addLabeledNode(type, getAnnoStr(type) + " Intersection", "shape=octagon");
                     visitAll(type.directSuperTypes());
                 }
 
