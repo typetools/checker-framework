@@ -22,8 +22,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  *  Implements the refinement rules described in lowerbound_rules.txt.
- *  In particular, implements data flow refinements based on tests: <,
- *  >, ==, and their derivatives.
+ *  In particular, implements data flow refinements based on tests: &lt;,
+ *  &gt;, ==, and their derivatives.
  */
 public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, LowerBoundTransfer> {
 
@@ -50,9 +50,9 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
     }
 
     /**
-     *  We break all >, <, >=, <=, ==, and != nodes into which
-     *  combinations of > and >= they can be reprepresented as
-     *  (e.g. == is >= in both directions in the then branch) and
+     *  We break all &gt;, &lt;, &ge;, &le;, ==, and != nodes into which
+     *  combinations of &gt; and &ge; they can be reprepresented as
+     *  (e.g. == is &ge; in both directions in the then branch) and
      *  actually implement refinements based on these decompositions.
      */
     @Override
@@ -78,7 +78,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
     }
 
     /**
-     *  Equivalent to the above, but for >= nodes instead of >
+     *  Equivalent to the above, but for &ge; nodes instead of &gt;
      *  nodes. The rest of these methods proceed similarly.
      */
     @Override
