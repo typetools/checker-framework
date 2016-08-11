@@ -24,16 +24,23 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  *  Implements the refinement rules described in lowerbound_rules.txt.
  *  In particular, implements data flow refinements based on tests: &lt;,
  *  &gt;, ==, and their derivatives.
+ * <p>
+ *
+ *  We represent &gt;, &lt;, &ge;, &le;, ==, and != nodes as combinations
+ *  of &gt; and &ge; (e.g. == is &ge; in both directions in the then
+ *  branch), and implement refinements based on these decompositions.
  */
 public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, LowerBoundTransfer> {
 
     protected LowerBoundAnalysis analysis;
 
-    /* Because these qualifiers all do not require arguments, instead
-     * of factory methods for qualifiers we just need single instances
-     * of each. We've already built them in the ATF, so we'll just
-     * fetch them in the constructor. */
-    private final AnnotationMirror GTEN1, NN, POS, UNKNOWN;
+    public final AnnotationMirror GTEN1;
+    /** The canonical @Negative annotation. */
+    public final AnnotationMirror NN;
+    /** The canonical @Positive annotation. */
+    public final AnnotationMirror POS;
+    /** The canonical @LowerBoundUnknown annotation. */
+    public final AnnotationMirror UNKNOWN;
 
     // The ATF (Annotated Type Factory).
     private LowerBoundAnnotatedTypeFactory atypeFactory;
@@ -42,19 +49,13 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         super(analysis);
         this.analysis = analysis;
         atypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
-        // Fetch qualifiers.
+        // Initialize qualifiers.
         GTEN1 = atypeFactory.GTEN1;
         NN = atypeFactory.NN;
         POS = atypeFactory.POS;
         UNKNOWN = atypeFactory.UNKNOWN;
     }
 
-    /**
-     *  We break all &gt;, &lt;, &ge;, &le;, ==, and != nodes into which
-     *  combinations of &gt; and &ge; they can be reprepresented as
-     *  (e.g. == is &ge; in both directions in the then branch) and
-     *  actually implement refinements based on these decompositions.
-     */
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThan(
             GreaterThanNode node, TransferInput<CFValue, CFStore> in) {
@@ -77,10 +78,6 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         return newResult;
     }
 
-    /**
-     *  Equivalent to the above, but for &ge; nodes instead of &gt;
-     *  nodes. The rest of these methods proceed similarly.
-     */
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
             GreaterThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
