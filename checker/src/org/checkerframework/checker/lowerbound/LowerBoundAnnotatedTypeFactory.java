@@ -37,16 +37,20 @@ public class LowerBoundAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
                 CFValue, CFStore, LowerBoundTransfer, LowerBoundAnalysis> {
 
-    /* Since these annotations don't take arguments, we only need one version of each.
-    Initialize the individual annotations. */
+    /** The canonical @GTENegativeOne annotation. */
     public final AnnotationMirror GTEN1 = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
+    /** The canonical @Negative annotation. */
     public final AnnotationMirror NN = AnnotationUtils.fromClass(elements, NonNegative.class);
+    /** The canonical @Positive annotation. */
     public final AnnotationMirror POS = AnnotationUtils.fromClass(elements, Positive.class);
+    /** The canonical @LowerBoundUnknown annotation. */
     public final AnnotationMirror UNKNOWN =
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
 
-    /* Provides a way to query the value checker, which computes the values
-    of expressions known at compile time (constant prop + folding). */
+    /**
+     * Provides a way to query the Constant Value Checker, which computes the
+     * values of expressions known at compile time (constant prop + folding).
+     */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
             getTypeFactoryOfSubchecker(ValueChecker.class);
 
@@ -62,8 +66,9 @@ public class LowerBoundAnnotatedTypeFactory
     }
 
     /**
-     *  Suzanne's hack to make postfix increments and decrements work correctly.
-     *  We think this is just getting around an actual bug in the framework.
+     * Hack to make postfix increments and decrements work correctly.
+     * This is a workaround for issue #867:
+     * https://github.com/typetools/checker-framework/issues/867
      */
     @Override
     public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
