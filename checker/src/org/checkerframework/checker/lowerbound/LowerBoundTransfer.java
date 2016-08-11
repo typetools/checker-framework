@@ -20,27 +20,41 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
+/**
+ *  Implements the refinement rules described in lowerbound_rules.txt.
+ *  In particular, implements data flow refinements based on tests: <,
+ *  >, ==, and their derivatives.
+ */
 public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, LowerBoundTransfer> {
 
     protected LowerBoundAnalysis analysis;
 
-    // we'll pull these from our ATF
+    /* Because these qualifiers all do not require arguments, instead
+     * of factory methods for qualifiers we just need single instances
+     * of each. We've already built them in the ATF, so we'll just
+     * fetch them in the constructor. */
     private final AnnotationMirror GTEN1, NN, POS, UNKNOWN;
 
-    // this is the ATF
+    // The ATF (Annotated Type Factory).
     private LowerBoundAnnotatedTypeFactory atypeFactory;
 
     public LowerBoundTransfer(LowerBoundAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
         atypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
+        // Fetch qualifiers.
         GTEN1 = atypeFactory.GTEN1;
         NN = atypeFactory.NN;
         POS = atypeFactory.POS;
         UNKNOWN = atypeFactory.UNKNOWN;
     }
 
-    /** encodes what to do when we run into a greater-than node */
+    /**
+     *  We break all >, <, >=, <=, ==, and != nodes into which
+     *  combinations of > and >= they can be reprepresented as
+     *  (e.g. == is >= in both directions in the then branch) and
+     *  actually implement refinements based on these decompositions.
+     */
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThan(
             GreaterThanNode node, TransferInput<CFValue, CFStore> in) {
@@ -54,15 +68,19 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
-        /** do things here */
+        // Refine the then branch.
         refineGT(left, leftType, right, rightType, thenStore);
 
-        /** inverse */
+        // Refine the else branch, which is the inverse of the then branch.
         refineGTE(right, rightType, left, leftType, elseStore);
 
         return newResult;
     }
 
+    /**
+     *  Equivalent to the above, but for >= nodes instead of >
+     *  nodes. The rest of these methods proceed similarly.
+     */
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
             GreaterThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
@@ -77,11 +95,10 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
 
-        /** this makes sense because they have the same result in the chart. If I'm wrong about
-         * that, then we'd need to make something else to put here */
+        // Refine the then branch.
         refineGTE(left, leftType, right, rightType, thenStore);
 
-        /** call the inverse */
+        // Refine the else branch.
         refineGT(right, rightType, left, leftType, elseStore);
 
         return newResult;
@@ -101,10 +118,10 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
 
-        /** equivalent to a flipped GTE */
+        // Refine the then branch. A <= is just a flipped >=.
         refineGTE(right, rightType, left, leftType, thenStore);
 
-        /** call the inverse */
+        // Refine the else branch.
         refineGT(left, leftType, right, rightType, elseStore);
         return newResult;
     }
@@ -123,10 +140,10 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
 
-        /** x < y ~ y > x */
+        // Refine the then branch. A < is just a flipped >.
         refineGT(right, rightType, left, leftType, thenStore);
 
-        /** inverse */
+        // Refine the else branch.
         refineGTE(left, leftType, right, rightType, elseStore);
         return newResult;
     }
@@ -145,8 +162,12 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
 
-        /** have to call this in both directions since it only adjusts the first argument */
-        /** trust me, this is the simpler way to do this */
+        /*  In an ==, we only can make conclusions about the then
+         *  branch (i.e. when they are, actually, equal). In that
+         *  case, we essentially want to refine them to the more
+         *  precise of the two types, which we accomplish by refining
+         *  each as if it were greater than or equal to the other.
+         */
         refineGTE(left, leftType, right, rightType, thenStore);
         refineGTE(right, rightType, left, leftType, thenStore);
         return newResult;
@@ -166,13 +187,19 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
         AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
 
-        /** have to call this in both directions since it only adjusts the first argument */
-        /** trust me, this is the simpler way to do this */
+        /* != is equivalent to == and implemented the same way, but we
+         * !have information about the else branch (i.e. when they are
+         * !equal).
+         */
         refineGTE(left, leftType, right, rightType, elseStore);
         refineGTE(right, rightType, left, leftType, elseStore);
         return newResult;
     }
 
+    /** The implementation of the algorithm for refining a
+     * >. Effectively works by promoting the type of left (the greater
+     * one) to one higher than the type of right.
+     */
     private void refineGT(
             Node left,
             AnnotatedTypeMirror leftType,
@@ -194,8 +221,9 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
         }
     }
 
-    /** this works by elevating left to the level of right, basically */
-    /** to check equality, you'd want to call this twice - once in each direction */
+    /** Elevates left to exactly the level of right, since in the
+     * worst case they're equal.
+     */
     private void refineGTE(
             Node left,
             AnnotatedTypeMirror leftType,
