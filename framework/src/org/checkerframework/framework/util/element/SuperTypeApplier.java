@@ -82,6 +82,14 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
         int type_index = anno.getPosition().type_index;
+        // TODO: this is a temporary workaround of a bug in jsr308-langtools
+        // The bug is due to a difference in:
+        //  com.sun.tools.classfile.TypeAnnotation.read_position(...) (correct one)
+        //  com.sun.tools.javac.jvm.ClassReader.readPosition() (buggy one)
+        // In latter method readPosition(...), in the switch-block, the case CLASS_EXTENDS should
+        // set the value read by nextChar() to -1 if the read value is 0xffff, just same as 
+        // the former method read_position(...) did.
+        // This workaround should be removed when the corresponding langtools bug is fixed.
         return type_index == 0xffff ? -1 : type_index;
     }
 
