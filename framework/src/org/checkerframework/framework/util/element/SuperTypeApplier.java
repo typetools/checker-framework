@@ -73,7 +73,7 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
      */
     @Override
     public int getElementIndex() {
-        return index == 0xffff ? -1 : index;
+        return index;
     }
 
     /**
