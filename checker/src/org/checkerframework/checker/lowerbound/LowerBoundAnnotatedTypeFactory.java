@@ -303,17 +303,17 @@ public class LowerBoundAnnotatedTypeFactory
 
         /**
          *  addAnnotationForPlus handles the following cases:
-         *      lit -2 + pos -&gt gte-1
-         *      lit -1 + * -&gt call decrement
-         *      lit 0 + * -&gt *
-         *      lit 1 + * -&gt call increment
-         *      lit &gt= 2 + {gte-1, nn, or pos} -&gt pos
+         *      lit -2 + pos -&gt; gte-1
+         *      lit -1 + * -&gt; call decrement
+         *      lit 0 + * -&gt; *
+         *      lit 1 + * -&gt; call increment
+         *      lit &gt;= 2 + {gte-1, nn, or pos} -&gt; pos
          *      let all other lits, including sets, fall through:
-         *      pos + pos -&gt pos
-         *      nn + * -&gt *
-         *      pos + gte-1 -&gt nn
-         *      nn + gte-1 -&gt gte-1
-         *      * + * -&gt lbu
+         *      pos + pos -&gt; pos
+         *      nn + * -&gt; *
+         *      pos + gte-1 -&gt; nn
+         *      nn + gte-1 -&gt; gte-1
+         *      * + * -&gt; lbu
          */
         public void addAnnotationForPlus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -377,8 +377,8 @@ public class LowerBoundAnnotatedTypeFactory
 
         /**
          *  addAnnotationForMinus handles the following cases:
-         *      * - lit -&gt call plus(*, -1 * the value of the lit)
-         *      * - * -&gt lbu
+         *      * - lit -&gt; call plus(*, -1 * the value of the lit)
+         *      * - * -&gt; lbu
          */
         public void addAnnotationForMinus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -511,11 +511,11 @@ public class LowerBoundAnnotatedTypeFactory
 
         /**
          *  addAnnotationForDivide handles these cases:
-         *	lit 0 / * -&gt nn (=0)
-         *      * / lit 1 -&gt *
-         *      pos / {pos, nn} -&gt nn (can round to zero)
-         *      * / {pos, nn} -&gt *
-         *      * / * -&gt lbu
+         *	lit 0 / * -&gt; nn (=0)
+         *      * / lit 1 -&gt; *
+         *      pos / {pos, nn} -&gt; nn (can round to zero)
+         *      * / {pos, nn} -&gt; *
+         *      * / * -&gt; lbu
          */
         public void addAnnotationForDivide(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
