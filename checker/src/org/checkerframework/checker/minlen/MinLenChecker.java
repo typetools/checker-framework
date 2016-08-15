@@ -8,7 +8,7 @@ import org.checkerframework.common.value.ValueChecker;
  * An internal checker that collects information about the minimum
  * lengths of arrays. It is used by the Upper Bound Checker.
  *
- * @checker_framework.manual #minlen-checker MinLen Checker
+ * @checker_framework.manual #index-checker Index Checker
  */
 public class MinLenChecker extends BaseTypeChecker {
 

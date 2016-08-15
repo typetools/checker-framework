@@ -23,9 +23,21 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
+/**
+ *  The MinLen checker is responsible for annotating arrays with their
+ *  minimum lengths. It is meant to be run by the upper bound checker.
+ */
 public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+
+    /**
+     * Provides a way to query the Constant Value Checker, which computes the
+     * values of expressions known at compile time (constant prop + folding).
+     */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
+    /**
+     *  We need this to make an AnnotationBuilder for some reason.
+     */
     protected static ProcessingEnvironment env;
 
     public MinLenAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -35,16 +47,18 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
-    /** @throws IllegalArgumentException
-     * find the minimum value in a value type. If there is no information,
-     * throw an illegal argument exception (callers should check for this)
+    /**
+     * Finds the minimum value in a value type. If there is no information
+     * (such as when the list is empty or null), returns null. Otherwise,
+     * returns the smallest element in the list of possible values.
      */
-    public int minLenFromValueType(AnnotatedTypeMirror valueType) {
+    public Integer minLenFromValueType(AnnotatedTypeMirror valueType) {
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues == null || possibleValues.size() == 0) {
-            throw new IllegalArgumentException();
+            return null;
         }
-        int min = Integer.MAX_VALUE;
+        // We're sure there is at least one element in the list, because of the previous check.
+        Integer min = Integer.MAX_VALUE;
         for (Long l : possibleValues) {
             if (l < min) {
                 min = l.intValue();
@@ -53,15 +67,16 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return min;
     }
 
-    /** get the list of possible values from a value checker type */
+    /**
+     *  Get the list of possible values from a value checker type.
+     *  May return null.
+     */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        List<Long> possibleValues = null;
-        try {
-            possibleValues =
-                    ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
-        } catch (NullPointerException npe) {
+        AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
+        if (anm == null) {
+            return null;
         }
-        return possibleValues;
+        return ValueAnnotatedTypeFactory.getIntValues(anm);
     }
 
     @Override
@@ -70,9 +85,12 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * The qualifier hierarchy for the upperbound type system
+     * The qualifier hierarchy for the minlen type system.
      * The qh is responsible for determining the relationships
      * between various qualifiers - especially subtyping relations.
+     * In particular, it's used to determine the relationship between
+     * two identical qualifiers with differing arguments (i.e.
+     * @MinLen(2) vs @MinLen(3).
      */
     private final class MinLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
         /**
@@ -86,9 +104,9 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are the same. In this case, rhs is a
-         * subtype of lhs iff lhs contains at least every element of rhs
+         * subtype of lhs iff lhs contains at least every element of rhs.
          *
-         * @return true if rhs is a subtype of lhs, false otherwise
+         * @return true if rhs is a subtype of lhs, false otherwise.
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
@@ -97,7 +115,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (AnnotationUtils.areSameByClass(rhs, MinLenUnknown.class)) {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
-                // implies both are MinLen since that's the only other type
+                // Implies both are MinLen since that's the only other type.
                 Integer rhsVal = AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
                 Integer lhsVal = AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
                 return rhsVal >= lhsVal;
@@ -124,26 +142,29 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
+            // When there is an explicit initialization, we know the length.
             if (tree.getDimensions().size() == 0) {
                 type.replaceAnnotation(createMinLen(tree.getInitializers().size()));
                 return super.visitNewArray(tree, type);
             }
             ExpressionTree dim = tree.getDimensions().get(0);
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(dim);
-            try { // try to use value checker information
-                int val = minLenFromValueType(valueType);
+            // Try to use value checker information.
+            Integer val = minLenFromValueType(valueType);
+            if (val != null) {
                 type.replaceAnnotation(createMinLen(val));
-            } catch (IllegalArgumentException iae) {
-            } // if the value checker doesn't know anything
-            // the index checker has something about member select
-            // trees here, but I don't know what those are so I'm just
-            // going to not include them and see what happens
+            }
+            /* For when the value checker doesn't know anything.
+             * The old index checker had something about member select
+             * trees here, but I don't know what those are so I'm just
+             * going to not include them and see what happens.
+             */
             AnnotationMirror ATM = getAnnotatedType(dim).getAnnotation(MinLen.class);
             if (dim.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree MST = (MemberSelectTree) dim;
                 AnnotationMirror dimType =
                         getAnnotatedType(MST.getExpression()).getAnnotation(MinLen.class);
-                // if it doesnt have this annotation it will be null
+                // If it doesnt have this annotation it will be null.
                 if (type != null) {
                     type.addAnnotation(dimType);
                 }
