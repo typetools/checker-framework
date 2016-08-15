@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
@@ -564,15 +565,28 @@ public abstract class QualifierHierarchy {
         }
     }
 
+    /**
+     *
+     * @deprecated use {@link #getCorrespondingAnnotation(Collection, AnnotationMirror)} instead
+     */
+    @Deprecated
     public AnnotationMirror findCorrespondingAnnotation(
             AnnotationMirror aliased, Collection<? extends AnnotationMirror> a) {
-        AnnotationMirror top = this.getTopAnnotation(aliased);
-        for (AnnotationMirror anno : a) {
-            if (this.isSubtype(anno, top)) {
-                return anno;
-            }
-        }
-        return null;
+        return getCorrespondingAnnotation(a, aliased);
+    }
+
+    /**
+     * Returns the annotation from the hierarchy that corresponds to {@code annotationMirror} from
+     * a set of annotations.
+     *
+     * @param annos The set of annotations.
+     * @param annotationMirror annotation that is in same hierarchy as the returned annotation
+     * @return AnnotationMirror in annos in the same hierarchy as annotationMirror
+     */
+    public AnnotationMirror getCorrespondingAnnotation(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
+        AnnotationMirror top = this.getTopAnnotation(annotationMirror);
+        return getAnnotationInHierarchy(annos, top);
     }
 
     /**
@@ -587,10 +601,17 @@ public abstract class QualifierHierarchy {
     public AnnotationMirror getAnnotationInHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
         AnnotationMirror annoInHierarchy = null;
-        for (AnnotationMirror rhsAnno : annos) {
-            if (isSubtype(rhsAnno, top)) {
-                annoInHierarchy = rhsAnno;
+        AnnotationMirror polyAll = null;
+        for (AnnotationMirror anno : annos) {
+            boolean isSubtype = isSubtype(anno, top);
+            if (isSubtype && AnnotationUtils.areSameByClass(anno, PolyAll.class)) {
+                polyAll = anno;
+            } else if (isSubtype) {
+                annoInHierarchy = anno;
             }
+        }
+        if (annoInHierarchy == null) {
+            return polyAll;
         }
         return annoInHierarchy;
     }
