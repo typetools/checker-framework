@@ -8,7 +8,7 @@ import org.checkerframework.common.value.ValueChecker;
  * A type-checker for preventing arrays from being accessed with
  * values that are too high.
  *
- * @checker_framework.manual #upperbound-checker Upper Bound Checker
+ * @checker_framework.manual #index-checker Index Checker
  */
 public class UpperBoundChecker extends BaseTypeChecker {
 

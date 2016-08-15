@@ -9,6 +9,10 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 
+/**
+ *  For whatever reason, apparently I need this to have refinement
+ *  rules. So here it is. There is no logic in the class right now.
+ */
 public class UpperBoundAnalysis extends CFAbstractAnalysis<CFValue, CFStore, UpperBoundTransfer> {
     public UpperBoundAnalysis(
             BaseTypeChecker checker,

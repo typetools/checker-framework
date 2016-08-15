@@ -33,21 +33,37 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
+/**
+ * Implements the introduction rules for the upper bound checker.
+ * Works primarily by way of querying the minlen checker
+ * and comparing the min lengths of arrays to the known values
+ * of variables as supplied by the value checker.
+ */
 public class UpperBoundAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
                 CFValue, CFStore, UpperBoundTransfer, UpperBoundAnalysis> {
 
+    /**
+     * So Suzanne told me these were evil, but then I ended up using them
+     * to correctly implement the subtyping relation that I wanted. I'll get
+     * rid of them if I can figure out a better way to do that, but for now
+     * they stay.
+     */
     public static AnnotationMirror LTL, LTEL, EL, UNKNOWN;
+
+    /**
+     * Provides a way to query the Constant Value Checker, which computes the
+     * values of expressions known at compile time (constant prop + folding).
+     */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
+    /**
+     *  We need this to make an AnnotationBuilder for some reason.
+     */
     protected static ProcessingEnvironment env;
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        /* So Suzanne told me these were evil, but then I ended up using them
-        to correctly implement the subtyping relation that I wanted. I'll get
-        rid of them if I can figure out a better way to do that, but for now
-        they stay */
         LTL = AnnotationUtils.fromClass(elements, LessThanLength.class);
         LTEL = AnnotationUtils.fromClass(elements, LessThanOrEqualToLength.class);
         EL = AnnotationUtils.fromClass(elements, EqualToLength.class);
@@ -58,15 +74,16 @@ public class UpperBoundAnnotatedTypeFactory
         this.postInit();
     }
 
-    /** get the list of possible values from a value checker type */
+    /**
+     *  Get the list of possible values from a value checker type.
+     *  May return null.
+     */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-        List<Long> possibleValues = null;
-        try {
-            possibleValues =
-                    ValueAnnotatedTypeFactory.getIntValues(valueType.getAnnotation(IntVal.class));
-        } catch (NullPointerException npe) {
+        AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
+        if (anm == null) {
+            return null;
         }
-        return possibleValues;
+        return ValueAnnotatedTypeFactory.getIntValues(anm);
     }
 
     @Override
@@ -99,9 +116,9 @@ public class UpperBoundAnnotatedTypeFactory
     }
 
     /**
-     * The qualifier hierarchy for the upperbound type system
+     * The qualifier hierarchy for the upperbound type system.
      * The qh is responsible for determining the relationships
-     * between various qualifiers - especially subtyping relations.
+     * within the qualifiers - especially subtyping relations.
      */
     private final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
         /**
@@ -123,7 +140,7 @@ public class UpperBoundAnnotatedTypeFactory
                 /* If the two are unrelated, then the type hierarchy implies
                    that one is LTL and the other is EL, meaning that the GLB
                    is LTEL of every array that is in either - since LTEL
-                   is the bottom type
+                   is the bottom type.
                 */
                 List<Object> a1Names =
                         AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
@@ -168,7 +185,7 @@ public class UpperBoundAnnotatedTypeFactory
 
                 return createAnnotation(a1.getAnnotationType().toString(), newValues);
             }
-            // Annotations are in this hierarchy, but they are not the same
+            // Annotations are in this hierarchy, but they are not the same.
             else {
                 return UNKNOWN;
             }
@@ -177,9 +194,9 @@ public class UpperBoundAnnotatedTypeFactory
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are the same. In this case, rhs is a
-         * subtype of lhs iff lhs contains at least every element of rhs
+         * subtype of lhs iff lhs contains at least every element of rhs.
          *
-         * @return true if rhs is a subtype of lhs, false otherwise
+         * @return true if rhs is a subtype of lhs, false otherwise.
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
@@ -189,15 +206,15 @@ public class UpperBoundAnnotatedTypeFactory
             } else if (AnnotationUtils.areSameByClass(rhs, UpperBoundUnknown.class)) {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
-                // Same type, so might be subtype
+                // Same type, so might be subtype.
                 List<Object> lhsValues =
                         AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
                 List<Object> rhsValues =
                         AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
                 return rhsValues.containsAll(lhsValues);
             } else if (isSubtypeRelaxed(rhs, lhs)) {
-                /* different types that are subtypes of each other ->
-                 * rhs is a subtype of lhs iff lhs.value contains rhs.value
+                /* Different types that are subtypes of each other ->
+                 * rhs is a subtype of lhs iff lhs.value contains rhs.value.
                  */
                 List<Object> lhsValues =
                         AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
@@ -208,11 +225,16 @@ public class UpperBoundAnnotatedTypeFactory
             return false;
         }
 
-        // gives subtyping information but ignores all values
+        // Gives subtyping information but ignores all values.
         private boolean isSubtypeRelaxed(AnnotationMirror rhs, AnnotationMirror lhs) {
             return super.isSubtype(removeValue(rhs), removeValue(lhs));
         }
-        // #DoBeEvil #NewGoogleMotto #kludge
+
+        // FIXME: #DoBeEvil #NewGoogleMotto #kludge
+        // In all seriousness, this probably isn't a good idea but it works.
+        // The goal is to be able to tell if in the base hierarchy the two
+        // types would be subtypes if they had the same arguments. Lifted
+        // from similar evils observed in the old index checker.
         private AnnotationMirror removeValue(AnnotationMirror type) {
             if (AnnotationUtils.areSameIgnoringValues(type, LTL)) {
                 return LTL;

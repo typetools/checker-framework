@@ -9,6 +9,9 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
+/**
+ *  Warns about array accesses that could be too high.
+ */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
     private static final /*@CompilerMessageKey*/ String UPPER_BOUND = "array.access.unsafe.high";

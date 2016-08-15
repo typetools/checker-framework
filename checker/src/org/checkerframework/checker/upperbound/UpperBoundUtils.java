@@ -11,14 +11,21 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class UpperBoundUtils {
+
+    /**
+     *  Used to get the list of array names that an annotation applies to.
+     *  Can return null if the list would be empty.
+     */
     public static String[] getValue(AnnotationMirror anno) {
         if (!hasValueMethod(anno)) {
-            throw new IllegalArgumentException("anno must have a value method");
+            return null;
         }
         return getIndexValue(anno, getValueMethod(anno));
     }
 
-    // returns the value method specific to the class of the anno passed in
+    /**
+     *  Returns the value method specific to the class of the anno passed in.
+     */
     static ExecutableElement getValueMethod(AnnotationMirror anno) {
         if (AnnotationUtils.areSameIgnoringValues(anno, UpperBoundAnnotatedTypeFactory.LTL)) {
             return TreeUtils.getMethod(
@@ -44,13 +51,17 @@ public class UpperBoundUtils {
         return null;
     }
 
-    // returns the value of an annotation, given the annotation and Value method
+    /**
+     *  Returns the value of an annotation, given the annotation and Value method.
+     */
     static String[] getIndexValue(AnnotationMirror anno, ExecutableElement valueElement) {
         return (String[])
                 AnnotationUtils.getElementValuesWithDefaults(anno).get(valueElement).getValue();
     }
 
-    // determines if the given string is a member of the LTL annotation attached to type
+    /**
+     *  Determines if the given string is a member of the LTL annotation attached to type.
+     */
     public static boolean hasValue(AnnotatedTypeMirror type, String name) {
         String[] rgst = getValue(type.getAnnotation(LessThanLength.class));
         for (String st : rgst) {
@@ -61,6 +72,9 @@ public class UpperBoundUtils {
         return false;
     }
 
+    /**
+     *  Checks if a given annotation is one of those that can have a value.
+     */
     public static boolean hasValueMethod(AnnotationMirror anno) {
         boolean fLTL = AnnotationUtils.areSameByClass(anno, LessThanLength.class);
         boolean fEL = AnnotationUtils.areSameByClass(anno, EqualToLength.class);
