@@ -196,7 +196,9 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
     /**
      * The implementation of the algorithm for refining a &gt; test.
      * Effectively works by promoting the type of left (the greater
-     * one) to one higher than the type of right.
+     * one) to one higher than the type of right. Can't call the promote
+     * function from the ATF directly because we're not introducing a
+     * new expression here - we have to modify an existing one.
      */
     private void refineGT(
             Node left,
@@ -205,7 +207,10 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
             AnnotatedTypeMirror rightType,
             CFStore store) {
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
-        if (rightType.hasAnnotation(GTEN1)) {
+        /* We don't want to overwrite a more precise type, so we don't modify
+         * the left's type if it's already known to be positive.
+         */
+        if (rightType.hasAnnotation(GTEN1) && !leftType.hasAnnotation(POS)) {
             store.insertValue(leftRec, NN);
             return;
         }
@@ -221,7 +226,8 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
     /**
      * Elevates left to exactly the level of right, since in the
-     * worst case they're equal.
+     * worst case they're equal. Modifies an existing type in the
+     * store.
      */
     private void refineGTE(
             Node left,
@@ -230,6 +236,10 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
             AnnotatedTypeMirror rightType,
             CFStore store) {
         Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
+        /* We are effectively calling GLB(right, left) here, but we're
+         * doing it manually because of the need to modify things
+         * directly.
+         */
         if (rightType.hasAnnotation(POS)) {
             store.insertValue(leftRec, POS);
             return;
