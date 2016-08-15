@@ -416,6 +416,9 @@ public class LowerBoundAnnotatedTypeFactory
                 type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(POS));
                 return;
             }
+            /* We don't know anything about other literals, so we let
+             * the generic rules handle them by falling through.
+             */
         }
 
         /**
@@ -470,6 +473,8 @@ public class LowerBoundAnnotatedTypeFactory
                 type.addAnnotation(NN);
                 return;
             }
+            type.addAnnotation(UNKNOWN);
+            return;
         }
 
         /**
@@ -481,10 +486,11 @@ public class LowerBoundAnnotatedTypeFactory
                 type.addAnnotation(NN);
                 return;
             } else if (val == 1) {
-                if (rightType.hasAnnotation(GTEN1)) {
-                    type.addAnnotation(GTEN1);
-                } else if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
+                if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
                     type.addAnnotation(NN);
+                } else {
+                    // (1 / x) can't be outside the range [-1, 1] when x is an integer.
+                    type.addAnnotation(GTEN1);
                 }
                 return;
             }
@@ -500,7 +506,7 @@ public class LowerBoundAnnotatedTypeFactory
         private void addAnnotationForLiteralDivideRight(
                 int val, AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
             if (val == 0) {
-                // If we get here then this is a divide by zero error...
+                // If we get here then this is a divide by zero error. See above comment.
                 type.addAnnotation(POS);
                 return;
             } else if (val == 1) {
