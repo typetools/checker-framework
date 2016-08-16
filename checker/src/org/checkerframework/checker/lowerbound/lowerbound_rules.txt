@@ -27,7 +27,7 @@ Increment:
 Decrement:
                pos -> nn
                nn -> gte-1
-               gte-1, lbu -> lbu
+               {gte-1, lbu} -> lbu
 
 Plus (rules are symmetric):
                lit -2 + pos -> gte-1
