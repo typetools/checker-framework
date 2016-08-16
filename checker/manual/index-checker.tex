@@ -34,8 +34,8 @@ javac -processor index \emph{MyJavaFile}.java
 
 \section{The Lower Bound Checker\label{index-lowerbound}}
 
-The Lower Bound Checker looks for accesses into arrays that might be
-too low.  It warns its users about any such possible accesses. The
+The Lower Bound Checker warns about array indices that might be
+too low.  The
 Lower Bound Checker's type system uses the following qualifiers.
 The Lower Bound Checker infers all of these qualifiers automatically (the
 rules appear in file \<lowerbound\_rules.txt> in the implementation),
@@ -48,7 +48,7 @@ so the programmer rarely has to write them.
   The value is 0 or greater, so it is not too low to be used as an array index.
 \item[\refqualclass{checker/lowerbound/qual}{GreaterThanOrEqualToNegativeOne}]
   The value is -1 or greater.
-  It may not be used as array indices, because it might be too low.
+  It may not be used as an array index, because it might be too low.
 \item[\refqualclass{checker/lowerbound/qual}{LowerBoundUnknown}]
   There is no information about the value.
   It may not be used as an array index, because it might be too low.
@@ -70,15 +70,16 @@ qualifiers:
 
 \begin{description}
 \item[\refqualclasswithparams{checker/upperbound/qual}{LessThanLength}{String[] names}]
-  A variable with this type
-  has value less than the length of each array listed in names.
+  An expression with this type
+  has value less than the length of each array listed in \<names>.
 \item[\refqualclasswithparams{checker/upperbound/qual}{EqualToLength}{String[] names}]
-  A variable with this type
-  has value equal to the length of each array listed in names.
+  An expression with this type
+  has value equal to the length of each array listed in \<names>.
 \item[\refqualclasswithparams{checker/upperbound/qual}{LessThanOrEqualToLength}{String[] names}]
-  A variable with this type
-  has value less than or equal to the length of each array listed in names.
+  An expression with this type
+  has value less than or equal to the length of each array listed in \<names>.
 \item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
-  There is no information about the value of this variable.
+  There is no information about the value of an expression with this type.
+  It may not be used as an array index, because it might be too high.
   This type is the top type.
 \end{description}
