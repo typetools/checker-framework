@@ -177,7 +177,6 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     static AnnotationMirror createMinLen(int val) {
         AnnotationBuilder builder = new AnnotationBuilder(env, MinLen.class);
         builder.setValue("value", val);
-        System.out.println("value: " + val);
         return builder.build();
     }
 }

@@ -12,6 +12,8 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
+import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
+import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -44,18 +46,24 @@ public class UpperBoundAnnotatedTypeFactory
                 CFValue, CFStore, UpperBoundTransfer, UpperBoundAnalysis> {
 
     /**
-     * So Suzanne told me these were evil, but then I ended up using them
-     * to correctly implement the subtyping relation that I wanted. I'll get
-     * rid of them if I can figure out a better way to do that, but for now
-     * they stay.
+     *  So Suzanne told me these were evil, but then I ended up using them
+     *  to correctly implement the subtyping relation that I wanted. I'll get
+     *  rid of them if I can figure out a better way to do that, but for now
+     *  they stay.
      */
     public static AnnotationMirror LTL, LTEL, EL, UNKNOWN;
 
     /**
-     * Provides a way to query the Constant Value Checker, which computes the
-     * values of expressions known at compile time (constant prop + folding).
+     *  Provides a way to query the Constant Value Checker, which computes the
+     *  values of expressions known at compile time (constant prop + folding).
      */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
+
+    /**
+     *  Provides a way to query the Min Len (minimum length) Checker,
+     *  which computes the lengths of arrays.
+     */
+    private final MinLenAnnotatedTypeFactory minlenAnnotatedTypeFactory;
 
     /**
      *  We need this to make an AnnotationBuilder for some reason.
@@ -70,6 +78,7 @@ public class UpperBoundAnnotatedTypeFactory
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
 
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
+        minlenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
         env = checker.getProcessingEnvironment();
         this.postInit();
     }
