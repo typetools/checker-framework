@@ -4,10 +4,11 @@
 
 import java.nio.file.*;
 import java.util.function.Predicate;
+
 interface Issue871 {
     default Iterable<Path> a() {
         return f(Files::isRegularFile);
     }
 
-    Iterable<Path> f(Predicate<Path> condition) ;
+    Iterable<Path> f(Predicate<Path> condition);
 }
