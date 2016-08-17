@@ -592,13 +592,13 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the annotation in annos that is in the hierarchy of which annotationMirror is top
+     * Returns the annotation in annos that is in the hierarchy to which annotationMirror is top.
      *
      * If the annotation in the hierarchy is PolyAll, then the polymorphic qualifier in the
      * hierarchy is returned instead of PolyAll.
      *
      * @param annos set of annotations to search
-     * @param top annotation that is the top of hierarchy of which the returned annotation belongs
+     * @param top annotation that is the top of hierarchy to which the returned annotation belongs
      * @return annotation in the same hierarchy as annotationMirror or null if one is not found
      */
     public AnnotationMirror findAnnotationInHierarchy(
