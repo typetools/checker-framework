@@ -88,7 +88,7 @@ class QualifierHierarchyAdapter<Q> {
         }
 
         @Override
-        public AnnotationMirror getAnnotationInHierarchy(
+        public AnnotationMirror findAnnotationInHierarchy(
                 Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
             for (AnnotationMirror anno : annos) {
                 if (converter.isKey(anno)) {

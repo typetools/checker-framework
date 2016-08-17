@@ -80,7 +80,7 @@ class GeneralQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
     // Never find a corresponding qualifier.
     @Override
-    public AnnotationMirror getCorrespondingAnnotation(
+    public AnnotationMirror findAnnotationInSameHierarchy(
             Collection<? extends AnnotationMirror> annotations, AnnotationMirror annotationMirror) {
         return null;
     }

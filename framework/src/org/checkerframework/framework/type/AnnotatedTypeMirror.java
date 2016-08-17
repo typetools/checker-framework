@@ -260,7 +260,7 @@ public abstract class AnnotatedTypeMirror {
         }
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-            AnnotationMirror anno = qualHier.getCorrespondingAnnotation(annotations, aliased);
+            AnnotationMirror anno = qualHier.findAnnotationInSameHierarchy(annotations, aliased);
             if (anno != null) {
                 return anno;
             }
@@ -287,7 +287,7 @@ public abstract class AnnotatedTypeMirror {
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
             AnnotationMirror anno =
-                    qualHier.getCorrespondingAnnotation(getEffectiveAnnotations(), aliased);
+                    qualHier.findAnnotationInSameHierarchy(getEffectiveAnnotations(), aliased);
             if (anno != null) {
                 return anno;
             }
