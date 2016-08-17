@@ -99,130 +99,133 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
 
     protected LowerBoundAnalysis analysis;
 
+    /** The canonical {@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1;
-    /** The canonical @Negative annotation. */
+    /** The canonical {@link NonNegative} annotation. */
     public final AnnotationMirror NN;
-    /** The canonical @Positive annotation. */
+    /** The canonical {@link Positive} annotation. */
     public final AnnotationMirror POS;
-    /** The canonical @LowerBoundUnknown annotation. */
+    /** The canonical {@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN;
 
     // The ATF (Annotated Type Factory).
-    private LowerBoundAnnotatedTypeFactory atypeFactory;
+    private LowerBoundAnnotatedTypeFactory aTypeFactory;
 
     public LowerBoundTransfer(LowerBoundAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
-        atypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
+        aTypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         // Initialize qualifiers.
-        GTEN1 = atypeFactory.GTEN1;
-        NN = atypeFactory.NN;
-        POS = atypeFactory.POS;
-        UNKNOWN = atypeFactory.UNKNOWN;
+        GTEN1 = aTypeFactory.GTEN1;
+        NN = aTypeFactory.NN;
+        POS = aTypeFactory.POS;
+        UNKNOWN = aTypeFactory.UNKNOWN;
+    }
+
+    /**
+     *  This struct contains all of the information that the refinement
+     *  functions need. It's called by each node function (i.e. greater
+     *  than node, less than node, etc.) and then the results are passed
+     *  to the refinement function in whatever order is appropriate for
+     *  that node. It's constructor contains all of its logic.
+     */
+    private class RefinementInfo {
+        public Node left, right;
+        public AnnotatedTypeMirror leftType, rightType;
+        public CFStore thenStore, elseStore;
+        public ConditionalTransferResult<CFValue, CFStore> newResult;
+
+        public RefinementInfo(
+                TransferResult<CFValue, CFStore> result,
+                TransferInput<CFValue, CFStore> in,
+                Node r,
+                Node l) {
+            right = r;
+            left = l;
+
+            rightType = in.getValueOfSubNode(right).getType();
+            leftType = in.getValueOfSubNode(left).getType();
+
+            thenStore = result.getRegularStore();
+            elseStore = thenStore.copy();
+
+            newResult =
+                    new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+        }
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThan(
             GreaterThanNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThan(node, in);
-        Node left = node.getLeftOperand();
-        Node right = node.getRightOperand();
-        CFStore thenStore = result.getRegularStore();
-        CFStore elseStore = thenStore.copy();
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
-        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
-        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
         // Refine the then branch.
-        refineGT(left, leftType, right, rightType, thenStore);
+        refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
 
         // Refine the else branch, which is the inverse of the then branch.
-        refineGTE(right, rightType, left, leftType, elseStore);
+        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
 
-        return newResult;
+        return rfi.newResult;
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
             GreaterThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(node, in);
-        Node left = node.getLeftOperand();
-        Node right = node.getRightOperand();
-        CFStore thenStore = result.getRegularStore();
-        CFStore elseStore = thenStore.copy();
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
-        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
-        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
         // Refine the then branch.
-        refineGTE(left, leftType, right, rightType, thenStore);
+        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
 
         // Refine the else branch.
-        refineGT(right, rightType, left, leftType, elseStore);
+        refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
 
-        return newResult;
+        return rfi.newResult;
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
             LessThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(node, in);
-        Node left = node.getLeftOperand();
-        Node right = node.getRightOperand();
-        CFStore thenStore = result.getRegularStore();
-        CFStore elseStore = thenStore.copy();
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
-        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
-        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
         // Refine the then branch. A <= is just a flipped >=.
-        refineGTE(right, rightType, left, leftType, thenStore);
+        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
 
         // Refine the else branch.
-        refineGT(left, leftType, right, rightType, elseStore);
-        return newResult;
+        refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+        return rfi.newResult;
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitLessThan(
             LessThanNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitLessThan(node, in);
-        Node left = node.getLeftOperand();
-        Node right = node.getRightOperand();
-        CFStore thenStore = result.getRegularStore();
-        CFStore elseStore = thenStore.copy();
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
-        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
-        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
         // Refine the then branch. A < is just a flipped >.
-        refineGT(right, rightType, left, leftType, thenStore);
+        refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
 
         // Refine the else branch.
-        refineGTE(left, leftType, right, rightType, elseStore);
-        return newResult;
+        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+        return rfi.newResult;
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitEqualTo(
             EqualToNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitEqualTo(node, in);
-        Node left = node.getLeftOperand();
-        Node right = node.getRightOperand();
-        CFStore thenStore = result.getRegularStore();
-        CFStore elseStore = thenStore.copy();
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
-        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
-        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
         /*  In an ==, we only can make conclusions about the then
          *  branch (i.e. when they are, actually, equal). In that
@@ -230,32 +233,26 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
          *  precise of the two types, which we accomplish by refining
          *  each as if it were greater than or equal to the other.
          */
-        refineGTE(left, leftType, right, rightType, thenStore);
-        refineGTE(right, rightType, left, leftType, thenStore);
-        return newResult;
+        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
+        return rfi.newResult;
     }
 
     @Override
     public TransferResult<CFValue, CFStore> visitNotEqual(
             NotEqualNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitNotEqual(node, in);
-        Node left = node.getLeftOperand();
-        Node right = node.getRightOperand();
-        CFStore thenStore = result.getRegularStore();
-        CFStore elseStore = thenStore.copy();
-        ConditionalTransferResult<CFValue, CFStore> newResult =
-                new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
 
-        AnnotatedTypeMirror rightType = in.getValueOfSubNode(node.getRightOperand()).getType();
-        AnnotatedTypeMirror leftType = in.getValueOfSubNode(node.getLeftOperand()).getType();
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
         /* != is equivalent to == and implemented the same way, but we
          * !have information about the else branch (i.e. when they are
          * !equal).
          */
-        refineGTE(left, leftType, right, rightType, elseStore);
-        refineGTE(right, rightType, left, leftType, elseStore);
-        return newResult;
+        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
+        return rfi.newResult;
     }
 
     /**
@@ -271,7 +268,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
             Node right,
             AnnotatedTypeMirror rightType,
             CFStore store) {
-        Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
+        Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
         /* We don't want to overwrite a more precise type, so we don't modify
          * the left's type if it's already known to be positive.
          */
@@ -300,7 +297,7 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
             Node right,
             AnnotatedTypeMirror rightType,
             CFStore store) {
-        Receiver leftRec = FlowExpressions.internalReprOf(atypeFactory, left);
+        Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
         /* We are effectively calling GLB(right, left) here, but we're
          * doing it manually because of the need to modify things
          * directly.
