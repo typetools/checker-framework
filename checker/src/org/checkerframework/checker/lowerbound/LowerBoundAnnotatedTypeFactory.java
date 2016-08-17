@@ -531,7 +531,7 @@ public class LowerBoundAnnotatedTypeFactory
         /**
          *   When the value on the right is known at compile time.
          *   If the value is zero, then we've discovered division by zero.
-         *   We over-approximate division by zero as positive infinity so that
+         *   We treat division by zero as bottom (i.e. Positive) so that
          *   users aren't warned about dead code that's dividing by zero. We
          *   assume that actual code won't include literal divide by zeros...
          */
@@ -551,6 +551,7 @@ public class LowerBoundAnnotatedTypeFactory
          *  <pre>
          *  addAnnotationForDivide handles these cases:
          *	lit 0 / * &rarr; nn (=0)
+         *      * / lit 0 &rarr; pos
          *      lit 1 / {pos, nn} &rarr; nn
          *      lit 1 / * &rarr; gten1
          *      * / lit 1 &rarr; *
@@ -586,25 +587,13 @@ public class LowerBoundAnnotatedTypeFactory
              *    pos / {pos, nn} -> nn (can round to zero)
              *    * / {pos, nn} -> *
              */
-            if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
+            if (leftType.hasAnnotation(POS)
+                    && (rightType.hasAnnotation(POS) || rightType.hasAnnotation(NN))) {
                 type.addAnnotation(NN);
                 return;
             }
-            if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(NN))
-                    || (leftType.hasAnnotation(NN) && rightType.hasAnnotation(POS))) {
-                type.addAnnotation(NN);
-                return;
-            }
-            if (leftType.hasAnnotation(NN) && rightType.hasAnnotation(NN)) {
-                type.addAnnotation(NN);
-                return;
-            }
-            if (leftType.hasAnnotation(GTEN1) && rightType.hasAnnotation(POS)) {
-                type.addAnnotation(GTEN1);
-                return;
-            }
-            if (leftType.hasAnnotation(GTEN1) && rightType.hasAnnotation(NN)) {
-                type.addAnnotation(GTEN1);
+            if (rightType.hasAnnotation(POS) || rightType.hasAnnotation(NN)) {
+                type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
                 return;
             }
             // We don't know anything about other stuff.
