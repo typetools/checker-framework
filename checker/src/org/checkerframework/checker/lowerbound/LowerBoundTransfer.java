@@ -29,6 +29,71 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  *  We represent &gt;, &lt;, &ge;, &le;, ==, and != nodes as combinations
  *  of &gt; and &ge; (e.g. == is &ge; in both directions in the then
  *  branch), and implement refinements based on these decompositions.
+ *  <pre>
+ *Refinement/transfer rules for conditionals:
+ *
+ *There are two "primitives":
+ *
+ *x &gt; y, which implies things about x based on y's type:
+ *
+ *y has type:    implies x has type:
+ *  gte-1                nn
+ *  nn                   pos
+ *  pos                  pos
+ *
+ *and x &ge; y:
+ *
+ *y has type:    implies x has type:
+ *  gte-1                gte-1
+ *  nn                   nn
+ *  pos                  pos
+ *
+ *Then, we can use these two "building blocks" to make all
+ *other conditional expressions:
+ *
+ *EXPR             THEN          ELSE
+ *x &gt; y            x &gt; y         y &ge; x
+ *x &ge; y           x &ge; y        y &gt; x
+ *x &lt; y            y &gt; x         x &ge; y
+ *x &le; y           y &ge; x        x &gt; y
+ *
+ *Or, more formally:
+ *
+ *EXPR        THEN                                        ELSE
+ *x &gt; y       x_refined = GLB(x_orig, promote(y))         y_refined = GLB(y_orig, x)
+ *x &ge; y      x_refined = GLB(x_orig, y)                  y_refined = GLB(y_orig, promote(x))
+ *x &lt; y       y_refined = GLB(y_orig, promote(x))         x_refined = GLB(x_orig, y)
+ *x &le; y      y_refined = GLB(y_orig, x)                  x_refined = GLB(x_orig, promote(y))
+ *
+ *where GLB is the greatest lower bound and promote is the increment
+ *function on types (or, equivalently, the function specified by the "x
+ *&gt; y" information above).
+ *
+ *There's also ==, which is a special case. We only know
+ *things about the THEN branch:
+ *
+ *EXPR             THEN                   ELSE
+ *x == y           x &ge; y &amp;&amp; y &ge; x       nothing known
+ *
+ *or, more formally:
+ *
+ *EXPR            THEN                                    ELSE
+ *x == y          x_refined = GLB(x_orig, y_orig)         nothing known
+ *                y_refined = GLB(x_orig, y_orig)
+ *
+ *finally, not equal:
+ *
+ *EXPR             THEN                   ELSE
+ *x != y           nothing known          x &ge; y &amp;&amp; y &ge; x
+ *
+ *more formally:
+ *
+ *EXPR            THEN               ELSE
+ *x != y          nothing known      x_refined = GLB(x_orig, y_orig)
+ *                                   y_refined = GLB(x_orig, y_orig)
+ *
+ *</pre>
+ *
  */
 public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, LowerBoundTransfer> {
 

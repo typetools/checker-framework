@@ -30,8 +30,21 @@ import org.checkerframework.javacutil.Pair;
 
 /**
  *  Implements the introduction rules for the Lower Bound Checker.
- *  The rules this class implements are found in lowerbound_rules.txt,
- *  in the same directory in the source tree.
+ *  <pre>
+ *  The type hierarchy is:
+ *
+ *  Top = lbu ("Lower Bound Unknown")
+ *   |
+ *  gte-1 ("Greater than or equal to -1")
+ *   |
+ *  nn  ("NonNegative")
+ *   |
+ *  pos ("Positive")
+ *  </pre>
+ *  In general, check whether the constant value checker can determine the
+ *  value of a variable; if it can, use that; if not, use more specific rules
+ *  based on expression type. These rules are documented on the functions
+ *  implementing them.
  */
 public class LowerBoundAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
@@ -100,7 +113,13 @@ public class LowerBoundAnnotatedTypeFactory
 
         /**
          *  Sets typeDst to the immediate supertype of typeSrc, unless typeSrc is already
-         *  Positive.
+         *  Positive. Implements the following transitions:
+         *  <pre>
+         *      pos -> pos
+         *      nn -> pos
+         *      gte-1 -> nn
+         *      lbu -> lbu
+         *  </pre>
          */
         public void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
             if (typeSrc.hasAnnotation(POS)) {
@@ -117,7 +136,12 @@ public class LowerBoundAnnotatedTypeFactory
 
         /**
          *  Sets typeDst to the immediate subtype of typeSrc, unless typeSrc is already
-         *  LowerBoundUnknown.
+         *  LowerBoundUnknown. Implements the following transitions:
+         *  <pre>
+         *       pos -> nn
+         *       nn -> gte-1
+         *       gte-1, lbu -> lbu
+         *  </pre>
          */
         public void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
             if (typeSrc.hasAnnotation(POS)) {
@@ -302,18 +326,19 @@ public class LowerBoundAnnotatedTypeFactory
         }
 
         /**
+         *  <pre>
          *  addAnnotationForPlus handles the following cases:
-         *      lit -2 + pos -&gt; gte-1
-         *      lit -1 + * -&gt; call decrement
-         *      lit 0 + * -&gt; *
-         *      lit 1 + * -&gt; call increment
-         *      lit &gt;= 2 + {gte-1, nn, or pos} -&gt; pos
+         *      lit -2 + pos &rarr; gte-1
+         *      lit -1 + * &rarr; call demote
+         *      lit 0 + * &rarr; *
+         *      lit 1 + * &rarr; call promote
+         *      lit &gt;= 2 + {gte-1, nn, or pos} &rarr; pos
          *      let all other lits, including sets, fall through:
-         *      pos + pos -&gt; pos
-         *      nn + * -&gt; *
-         *      pos + gte-1 -&gt; nn
-         *      nn + gte-1 -&gt; gte-1
-         *      * + * -&gt; lbu
+         *      pos + pos &rarr; pos
+         *      nn + * &rarr; *
+         *      pos + gte-1 &rarr; nn
+         *      * + * &rarr; lbu
+         *  </pre>
          */
         public void addAnnotationForPlus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -376,9 +401,11 @@ public class LowerBoundAnnotatedTypeFactory
         }
 
         /**
+         *  <pre>
          *  addAnnotationForMinus handles the following cases:
-         *      * - lit -&gt; call plus(*, -1 * the value of the lit)
-         *      * - * -&gt; lbu
+         *      * - lit &rarr; call plus(*, -1 * the value of the lit)
+         *      * - * &rarr; lbu
+         *  </pre>
          */
         public void addAnnotationForMinus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -422,13 +449,15 @@ public class LowerBoundAnnotatedTypeFactory
         }
 
         /**
+         *  <pre>
          *  addAnnotationForMultiply handles the following cases:
-         *        * * lit 0 becomes nn (=0)
-         *        * * lit 1 becomes *
-         *        pos * pos becomes pos
-         *        pos * nn becomes nn
-         *        nn * nn becomes nn
-         *        * * * becomes lbu
+         *        * * lit 0 &rarr; nn (=0)
+         *        * * lit 1 &rarr; *
+         *        pos * pos &rarr; pos
+         *        pos * nn &rarr; nn
+         *        nn * nn &rarr; nn
+         *        * * * &rarr; lbu
+         *  </pre>
          */
         public void addAnnotationForMultiply(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -516,12 +545,16 @@ public class LowerBoundAnnotatedTypeFactory
         }
 
         /**
+         *  <pre>
          *  addAnnotationForDivide handles these cases:
-         *	lit 0 / * -&gt; nn (=0)
-         *      * / lit 1 -&gt; *
-         *      pos / {pos, nn} -&gt; nn (can round to zero)
-         *      * / {pos, nn} -&gt; *
-         *      * / * -&gt; lbu
+         *	lit 0 / * &rarr; nn (=0)
+         *      lit 1 / {pos, nn} &rarr; nn
+         *      lit 1 / * &rarr; gten1
+         *      * / lit 1 &rarr; *
+         *      pos / {pos, nn} &rarr; nn (can round to zero)
+         *      * / {pos, nn} &rarr; *
+         *      * / * &rarr; lbu
+         *  </pre>
          */
         public void addAnnotationForDivide(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
