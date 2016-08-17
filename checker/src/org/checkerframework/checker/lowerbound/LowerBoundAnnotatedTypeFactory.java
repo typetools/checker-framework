@@ -395,7 +395,7 @@ public class LowerBoundAnnotatedTypeFactory
                 return;
             }
 
-            // * + * becomes lbu.
+            // * + * -> lbu.
             type.addAnnotation(UNKNOWN);
             return;
         }
@@ -488,9 +488,9 @@ public class LowerBoundAnnotatedTypeFactory
             }
 
             /* This section handles generic annotations:
-             *   pos * pos becomes pos
-             *   nn * pos becomes nn
-             *   nn * nn becomes nn
+             *   pos * pos -> pos
+             *   nn * pos -> nn
+             *   nn * nn -> nn
              */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(POS);
@@ -613,10 +613,10 @@ public class LowerBoundAnnotatedTypeFactory
 
         /**
          *  addAnnotationForRemainder handles these cases:
-         *     * % 1/-1 becomes nn
-         *     pos/nn % * becomes nn
-         *     gten1 % * becomes gten1
-         *     * % * becomes lbu
+         *     * % 1/-1 &rarr; nn
+         *     pos/nn % * &rarr; nn
+         *     gten1 % * &rarr; gten1
+         *     * % * &rarr; lbu
          */
         public void addAnnotationForRemainder(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -633,8 +633,8 @@ public class LowerBoundAnnotatedTypeFactory
             }
 
             /* This section handles generic annotations:
-               pos/nn % * becomes nn
-               gten1 % * becomes gten1
+               pos/nn % * -> nn
+               gten1 % * -> gten1
             */
             if (leftType.hasAnnotation(POS) || leftType.hasAnnotation(NN)) {
                 type.addAnnotation(NN);
