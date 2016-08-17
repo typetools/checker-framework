@@ -41,7 +41,7 @@ import org.checkerframework.javacutil.Pair;
  *   |
  *  pos ("Positive")
  *  </pre>
- *  In general, check whether the constant value checker can determine the
+ *  In general, check whether the constant Value Checker can determine the
  *  value of a variable; if it can, use that; if not, use more specific rules
  *  based on expression type. These rules are documented on the functions
  *  implementing them.
@@ -115,10 +115,10 @@ public class LowerBoundAnnotatedTypeFactory
          *  Sets typeDst to the immediate supertype of typeSrc, unless typeSrc is already
          *  Positive. Implements the following transitions:
          *  <pre>
-         *      pos -> pos
-         *      nn -> pos
-         *      gte-1 -> nn
-         *      lbu -> lbu
+         *      pos &rarr; pos
+         *      nn &rarr; pos
+         *      gte-1 &rarr; nn
+         *      lbu &rarr; lbu
          *  </pre>
          */
         public void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
@@ -138,9 +138,9 @@ public class LowerBoundAnnotatedTypeFactory
          *  Sets typeDst to the immediate subtype of typeSrc, unless typeSrc is already
          *  LowerBoundUnknown. Implements the following transitions:
          *  <pre>
-         *       pos -> nn
-         *       nn -> gte-1
-         *       gte-1, lbu -> lbu
+         *       pos &rarr; nn
+         *       nn &rarr; gte-1
+         *       gte-1, lbu &rarr; lbu
          *  </pre>
          */
         public void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
@@ -171,7 +171,7 @@ public class LowerBoundAnnotatedTypeFactory
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            // We could call the constant value checker here but if we already know it's a literal...
+            // We could call the constant Value Checker here but if we already know it's a literal...
             if (tree.getKind() == Tree.Kind.INT_LITERAL
                     || tree.getKind() == Tree.Kind.LONG_LITERAL
                     || tree.getKind() == Tree.Kind.CHAR_LITERAL) {
@@ -205,11 +205,12 @@ public class LowerBoundAnnotatedTypeFactory
         }
 
         /**
-         *  Get the list of possible values from a value checker type.
+         *  Get the list of possible values from a Value Checker type.
          *  May return null.
          */
         private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
             AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
+            // Anm can be null if the Value Checker didn't assign an IntVal annotation
             if (anm == null) {
                 return null;
             }
@@ -231,13 +232,13 @@ public class LowerBoundAnnotatedTypeFactory
         }
 
         /**
-         *  Figure out which type in the lower bound hierarchy a value checker type corresponds to.
-         *  Returns an annotation mirror. In the code, AnnotationMirror is abbr. as anm.
+         *  Returns the type in the lower bound hierarchy a Value Checker type corresponds to.
          */
         public AnnotationMirror lowerBoundAnmFromValueType(AnnotatedTypeMirror valueType) {
+            // In the code, AnnotationMirror is abbr. as anm.
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
-            /* It's possible that possibleValues could be null (if
-             *  there was no value checker annotation, I guess, but this
+            /*  It's possible that possibleValues could be null (if
+             *  there was no Value Checker annotation, I guess, but this
              *  definitely happens in practice) or empty (if the value
              *  checker annotated it with its equivalent of our unknown
              *  annotation.
@@ -246,9 +247,10 @@ public class LowerBoundAnnotatedTypeFactory
                 return UNKNOWN;
             }
             // The annotation of the whole list is the min of the list.
-            long valMin = Collections.min(possibleValues);
-            // This cast introduces potential unsoundness.
-            return anmFromVal((int) valMin);
+            long lvalMin = Collections.min(possibleValues);
+            // Turn it into an integer.
+            int valMin = (int) Math.max(Math.min(Integer.MAX_VALUE, lvalMin), Integer.MIN_VALUE);
+            return anmFromVal(valMin);
         }
 
         /**
@@ -257,7 +259,7 @@ public class LowerBoundAnnotatedTypeFactory
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            // Check if the value checker's information puts it into a single type.
+            // Check if the Value Checker's information puts it into a single type.
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
             AnnotationMirror lowerBoundAnm = lowerBoundAnmFromValueType(valueType);
             if (lowerBoundAnm != UNKNOWN) {
@@ -323,6 +325,7 @@ public class LowerBoundAnnotatedTypeFactory
                     return;
                 }
             }
+            type.addAnnotation(UNKNOWN);
         }
 
         /**
@@ -332,7 +335,7 @@ public class LowerBoundAnnotatedTypeFactory
          *      lit -1 + * &rarr; call demote
          *      lit 0 + * &rarr; *
          *      lit 1 + * &rarr; call promote
-         *      lit &gt;= 2 + {gte-1, nn, or pos} &rarr; pos
+         *      lit &ge; 2 + {gte-1, nn, or pos} &rarr; pos
          *      let all other lits, including sets, fall through:
          *      pos + pos &rarr; pos
          *      nn + * &rarr; *
@@ -343,6 +346,8 @@ public class LowerBoundAnnotatedTypeFactory
         public void addAnnotationForPlus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
 
+            // Adding two literals is handled by visitBinary, so we
+            // don't have to worry about that case.
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
@@ -369,29 +374,24 @@ public class LowerBoundAnnotatedTypeFactory
              *      pos + pos -> pos
              *      nn + * -> *
              *      pos + gte-1 -> nn
-             *      nn + gte-1 -> gte-1
              */
             if (leftType.hasAnnotation(POS) && rightType.hasAnnotation(POS)) {
                 type.addAnnotation(POS);
                 return;
             }
-            if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(NN))
-                    || (leftType.hasAnnotation(NN) && rightType.hasAnnotation(POS))) {
-                type.addAnnotation(POS);
+
+            if (leftType.hasAnnotation(NN)) {
+                type.addAnnotation(rightType.getAnnotationInHierarchy(POS));
                 return;
             }
-            if (leftType.hasAnnotation(NN) && rightType.hasAnnotation(NN)) {
-                type.addAnnotation(NN);
+            if (rightType.hasAnnotation(NN)) {
+                type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
                 return;
             }
+
             if ((leftType.hasAnnotation(POS) && rightType.hasAnnotation(GTEN1))
                     || (leftType.hasAnnotation(GTEN1) && rightType.hasAnnotation(POS))) {
                 type.addAnnotation(NN);
-                return;
-            }
-            if ((leftType.hasAnnotation(GTEN1) && rightType.hasAnnotation(NN))
-                    || (leftType.hasAnnotation(NN) && rightType.hasAnnotation(GTEN1))) {
-                type.addAnnotation(GTEN1);
                 return;
             }
 
@@ -410,12 +410,12 @@ public class LowerBoundAnnotatedTypeFactory
         public void addAnnotationForMinus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
 
-            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
+                AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
                 int val = maybeValRight.intValue();
                 // Instead of a separate method for subtraction, add the negative of a constant.
                 addAnnotationForLiteralPlus(-1 * val, leftType, type);
@@ -442,10 +442,13 @@ public class LowerBoundAnnotatedTypeFactory
                 // Make the result type equal to nonLiteralType.
                 type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(POS));
                 return;
+            } else if (val > 1) {
+                if (nonLiteralType.hasAnnotation(POS) || nonLiteralType.hasAnnotation(NN)) {
+                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(POS));
+                    return;
+                }
             }
-            /* We don't know anything about other literals, so we let
-             * the generic rules handle them by falling through.
-             */
+            type.addAnnotation(UNKNOWN);
         }
 
         /**
@@ -567,7 +570,6 @@ public class LowerBoundAnnotatedTypeFactory
             if (maybeValRight != null) {
                 int val = maybeValRight.intValue();
                 addAnnotationForLiteralDivideRight(val, leftType, type);
-                return;
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
@@ -578,7 +580,6 @@ public class LowerBoundAnnotatedTypeFactory
             if (maybeValLeft != null) {
                 int val = maybeValLeft.intValue();
                 addAnnotationForLiteralDivideLeft(val, leftType, type);
-                return;
             }
 
             /* This section handles generic annotations:
@@ -640,7 +641,6 @@ public class LowerBoundAnnotatedTypeFactory
             if (maybeValRight != null) {
                 int val = maybeValRight.intValue();
                 addAnnotationForLiteralRemainder(val, type);
-                return;
             }
 
             /* This section handles generic annotations:
