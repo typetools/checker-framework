@@ -1,5 +1,6 @@
 package org.checkerframework.checker.upperbound;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
@@ -165,6 +166,37 @@ public class UpperBoundAnnotatedTypeFactory
         }
 
         /**
+         *  Finds the minimum value in the set of values represented
+         *  by a value checker annotation.
+         */
+        Integer valMinFromValueType(AnnotatedTypeMirror valueType) {
+            /*  It's possible that possibleValues could be null (if
+             *  there was no value checker annotation, I guess, but this
+             *  definitely happens in practice) or empty (if the value
+             *  checker annotated it with its equivalent of our unknown
+             *  annotation.
+             */
+            if (possibleValues == null || possibleValues.size() == 0) {
+                return null;
+            }
+            // The annotation of the whole list is the min of the list.
+            long valMin = Collections.min(possibleValues);
+            return new Integer((int) valMin);
+        }
+
+        /**
+         *  Get the list of possible values from a value checker type.
+         *  May return null.
+         */
+        private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
+            AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
+            if (anm == null) {
+                return null;
+            }
+            return ValueAnnotatedTypeFactory.getIntValues(anm);
+        }
+
+        /**
          * Determines the least upper bound of a1 and a2. If a1 and a2 are both
          * the same type of Value annotation, then the LUB is the result of
          * taking all values from both a1 and a2 and removing duplicates.
@@ -269,6 +301,17 @@ public class UpperBoundAnnotatedTypeFactory
 
         public UpperBoundTreeAnnotator(UpperBoundAnnotatedTypeFactory factory) {
             super(factory);
+        }
+
+        @Override
+        public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+            // Check if the value checker can determine the value.
+            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+            Integer valMin = valMinFromValueType(valueType);
+            if (valMin != null) {
+                // We need to figure out how this compares to the known minimum lengths of
+                // all the arrays that are in scope.
+            }
         }
     }
 }
