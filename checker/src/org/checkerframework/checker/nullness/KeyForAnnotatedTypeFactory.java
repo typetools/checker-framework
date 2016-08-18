@@ -84,7 +84,7 @@ import org.checkerframework.javacutil.TreeUtils;
 public class KeyForAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, CFStore, KeyForTransfer, KeyForAnalysis> {
 
-    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
+    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
 
     private final KeyForPropagator keyForPropagator;
     private final KeyForCanonicalizer keyForCanonicalizer = new KeyForCanonicalizer();
@@ -103,6 +103,7 @@ public class KeyForAnnotatedTypeFactory
 
         KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
         UNKNOWNKEYFOR = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
+        KEYFORBOTTOM = AnnotationUtils.fromClass(elements, KeyForBottom.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
         // Add compatibility annotations:
@@ -761,32 +762,7 @@ public class KeyForAnnotatedTypeFactory
     private final class KeyForQualifierHierarchy extends GraphQualifierHierarchy {
 
         public KeyForQualifierHierarchy(MultiGraphFactory factory) {
-            super(factory, null);
-        }
-
-        @Override
-        public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-            AnnotationMirror top = getTopAnnotation(start);
-
-            if (AnnotationUtils.areSameIgnoringValues(top, UNKNOWNKEYFOR)) {
-                return null;
-            }
-
-            if (polyQualifiers.containsKey(top)) {
-                return polyQualifiers.get(top);
-            } else if (polyQualifiers.containsKey(polymorphicQualifier)) {
-                return polyQualifiers.get(polymorphicQualifier);
-            } else {
-                // No polymorphic qualifier exists for that hierarchy.
-                ErrorReporter.errorAbort(
-                        "GraphQualifierHierarchy: did not find the polymorphic qualifier corresponding to qualifier "
-                                + start
-                                + "; all polymorphic qualifiers: "
-                                + polyQualifiers
-                                + "; this: "
-                                + this);
-                return null;
-            }
+            super(factory, KEYFORBOTTOM);
         }
 
         /*
