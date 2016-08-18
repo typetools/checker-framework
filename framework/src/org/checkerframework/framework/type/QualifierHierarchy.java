@@ -605,16 +605,16 @@ public abstract class QualifierHierarchy {
             Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
         boolean hasPolyAll = false;
         for (AnnotationMirror anno : annos) {
-            if (!isSubtype(anno, top)) {
-                continue;
-            } else if (!AnnotationUtils.areSameByClass(anno, PolyAll.class)) {
+            boolean isSubtype = isSubtype(anno, top);
+            if (isSubtype && AnnotationUtils.areSameByClass(anno, PolyAll.class)) {
+                // If the set contains @PolyAll, only return the polymorphic qualifier if annos
+                // contains no other annotation in the hierarchy.
+                hasPolyAll = true;
+            } else if (isSubtype) {
                 return anno;
             }
-            hasPolyAll = true;
         }
         if (hasPolyAll) {
-            // If the set contains @PolyAll, only return the polymorphic qualifier if annos
-            // contains no other annotation in the hierarchy.
             return getPolymorphicAnnotation(top);
         }
         return null;
