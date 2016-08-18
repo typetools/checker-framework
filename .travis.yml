@@ -8,6 +8,7 @@ services:
 
 # jdkany contains extra packages that permit it to be used to build the manual
 env:
+  matrix:
   - JDKVER=jdk7 GROUP=junit
   - JDKVER=jdk7 GROUP=nonjunit
   - JDKVER=jdk7 GROUP=downstream
@@ -18,7 +19,7 @@ env:
   - JDKVER=jdk8 GROUP=plume-lib-typecheck
   - JDKVER=jdkany GROUP=misc
   global:
-  - DOCKER_VERSION="1.9.1-0~trusty"
+   - DOCKER_VERSION="1.9.1-0~trusty"
 
 before_install:
   - sudo apt-get update
