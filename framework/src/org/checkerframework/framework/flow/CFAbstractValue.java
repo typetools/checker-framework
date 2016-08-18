@@ -326,8 +326,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             Collection<AnnotationMirror> b) {
         Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
-            AnnotationMirror aAnno = qualHierarchy.findAnnotationInSameHierarchy(a, top);
-            AnnotationMirror bAnno = qualHierarchy.findAnnotationInSameHierarchy(b, top);
+            AnnotationMirror aAnno = qualHierarchy.findCorrespondingAnnotation(top, a);
+            AnnotationMirror bAnno = qualHierarchy.findCorrespondingAnnotation(top, b);
             assert aAnno != null : "Did not find an annotation for '" + top + "' in '" + a + "'.";
             assert bAnno != null : "Did not find an annotation for '" + top + "' in '" + b + "'.";
             if (qualHierarchy.isSubtype(aAnno, bAnno)) {
