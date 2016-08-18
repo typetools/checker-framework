@@ -61,6 +61,7 @@ fully-qualified type name?
 \\ \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
 \\ \ref{faq-implicit-bounds}: Why are explicit and implicit bounds defaulted differently?
+\\ \ref{faq-runtime-retention}: Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?
 
 \faqtocpara{\ref{faq-create-a-checker-section}: Creating a new checker}
 \\ \ref{faq-create-a-checker}: How do I create a new checker?
@@ -1026,6 +1027,31 @@ It is better style to write no upper bound or to write an explicit type
 annotation on \<Object>.
 
 
+\subsection{Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?\label{faq-runtime-retention}}
+
+Annotations such as \refqualclass{checker/nullness/qual}{NonNull} are
+declared with
+\<\sunjavadocanno{java/lang/annotation/Retention.html}{Retention}(RetentionPolicy.\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#RUNTIME}{RUNTIME})>.  In other words,
+these type annotations are available to tools at run time.  Such run-time
+tools could check the annotations (like an \<assert> statement), type-check
+dynamically-loaded code, check casts and \<instanceof> operations, resolve
+reflection more precisely, or other tasks that we have not yet thought of.
+Not many such tools exist today, but the annotation designers wanted to
+accommodate them in the future.
+
+\<RUNTIME> retention has negligible costs (no run-time dependency, minimal
+increase in heap size).
+
+For the purpose of static checking at compile time,
+\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
+retention would be sufficient.  Note that
+\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#SOURCE}{SOURCE}
+retention would not be sufficient, because of separate compilation: when
+type-checking a class, the compiler needs to read the annotations on
+libraries that it uses, and separately-compiled libraries are available to
+the compiler only as class files.
+
+
 \section{Creating a new checker\label{faq-create-a-checker-section}}
 
 \subsection{How do I create a new checker?\label{faq-create-a-checker}}
@@ -1236,8 +1262,8 @@ annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre
+%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre dev
 %  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs
-%%  LocalWords:  featureful
+%%  LocalWords:  featureful RetentionPolicy
