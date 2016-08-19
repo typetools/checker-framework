@@ -1,11 +1,13 @@
 package org.checkerframework.checker.lowerbound;
 
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.lowerbound.qual.*;
+import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
+import org.checkerframework.checker.lowerbound.qual.LowerBoundUnknown;
+import org.checkerframework.checker.lowerbound.qual.NonNegative;
+import org.checkerframework.checker.lowerbound.qual.Positive;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
@@ -15,8 +17,9 @@ import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
-import org.checkerframework.framework.flow.CFAbstractTransfer;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
@@ -95,9 +98,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  *</pre>
  *
  */
-public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, LowerBoundTransfer> {
-
-    protected LowerBoundAnalysis analysis;
+public class LowerBoundTransfer extends CFTransfer {
 
     /** The canonical {@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1;
@@ -111,9 +112,8 @@ public class LowerBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Low
     // The ATF (Annotated Type Factory).
     private LowerBoundAnnotatedTypeFactory aTypeFactory;
 
-    public LowerBoundTransfer(LowerBoundAnalysis analysis) {
+    public LowerBoundTransfer(CFAnalysis analysis) {
         super(analysis);
-        this.analysis = analysis;
         aTypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         // Initialize qualifiers.
         GTEN1 = aTypeFactory.GTEN1;
