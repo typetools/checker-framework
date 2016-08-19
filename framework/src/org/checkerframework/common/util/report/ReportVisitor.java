@@ -13,8 +13,10 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
+import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -66,6 +68,24 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
             modifiers = mods.split(",");
         } else {
             modifiers = null;
+        }
+    }
+
+    @Override
+    protected BaseAnnotatedTypeFactory createTypeFactory() {
+        return new ReportAnnotatedTypeFactory(checker);
+    }
+
+    class ReportAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+
+        public ReportAnnotatedTypeFactory(BaseTypeChecker checker) {
+            super(checker);
+            postInit();
+        }
+
+        @Override
+        protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+            return getBundledTypeQualifiersWithoutPolyAll();
         }
     }
 

@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
@@ -151,6 +152,8 @@ public abstract class QualifierHierarchy {
     public Set<? extends AnnotationMirror> leastUpperBounds(
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
+        annos1 = replacePolyAll(annos1);
+        annos2 = replacePolyAll(annos2);
         if (annos1.size() != annos2.size()) {
             ErrorReporter.errorAbort(
                     "QualifierHierarchy.leastUpperBounds: tried to determine LUB with sets of different sizes!\n"
@@ -184,6 +187,26 @@ public abstract class QualifierHierarchy {
                         + result;
 
         return result;
+    }
+
+    /**
+     * Returns a new set that is the passed set, but PolyAll has been replaced with polymorphic
+     * qualifiers for hierarchies that do not have an annotation in the set.
+     *
+     * @param annos Set of annotations
+     * @return a new set with same annotations as anno, but PolyAll has been replaced with
+     * polymorphic qualifiers
+     */
+    protected Collection<? extends AnnotationMirror> replacePolyAll(
+            Collection<? extends AnnotationMirror> annos) {
+        Set<AnnotationMirror> returnAnnos2 = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror top : getTopAnnotations()) {
+            AnnotationMirror annotationInHierarchy = findAnnotationInHierarchy(annos, top);
+            if (annotationInHierarchy != null) {
+                returnAnnos2.add(annotationInHierarchy);
+            }
+        }
+        return returnAnnos2;
     }
 
     /**
@@ -564,35 +587,67 @@ public abstract class QualifierHierarchy {
         }
     }
 
+    /**
+     *
+     * @deprecated use {@link #findAnnotationInSameHierarchy(Collection, AnnotationMirror)} instead
+     */
+    @Deprecated
     public AnnotationMirror findCorrespondingAnnotation(
             AnnotationMirror aliased, Collection<? extends AnnotationMirror> a) {
-        AnnotationMirror top = this.getTopAnnotation(aliased);
-        for (AnnotationMirror anno : a) {
-            if (this.isSubtype(anno, top)) {
-                return anno;
-            }
-        }
-        return null;
+        return findAnnotationInSameHierarchy(a, aliased);
     }
 
     /**
-     * Returns the annotation from the hierarchy identified by its 'top' annotation
-     * from a set of annotations, using this QualifierHierarchy for subtype tests.
+     * Returns the annotation in annos that is in the same hierarchy as annotationMirror
      *
-     * @param annos
-     *            The set of annotations.
-     * @param top
-     *            The top annotation of the hierarchy to consider.
+     * If the annotation in the hierarchy is PolyAll, then the polymorphic qualifier in the
+     * hierarchy is returned instead of PolyAll.
+     *
+     * @param annos set of annotations to search
+     * @param annotationMirror annotation that is in same hierarchy as the returned annotation
+     * @return annotation in the same hierarchy as annotationMirror or null if one is not found
      */
+    public AnnotationMirror findAnnotationInSameHierarchy(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
+        AnnotationMirror top = this.getTopAnnotation(annotationMirror);
+        return findAnnotationInHierarchy(annos, top);
+    }
+
+    /**
+     *@deprecated use {@link #findAnnotationInHierarchy(Collection, AnnotationMirror)} instead
+     */
+    @Deprecated
     public AnnotationMirror getAnnotationInHierarchy(
+            Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
+        return findAnnotationInHierarchy(annos, annotationMirror);
+    }
+    /**
+     * Returns the annotation in annos that is in the hierarchy to which annotationMirror is top.
+     *
+     * If the annotation in the hierarchy is PolyAll, then the polymorphic qualifier in the
+     * hierarchy is returned instead of PolyAll.
+     *
+     * @param annos set of annotations to search
+     * @param top annotation that is the top of hierarchy to which the returned annotation belongs
+     * @return annotation in the same hierarchy as annotationMirror or null if one is not found
+     */
+    public AnnotationMirror findAnnotationInHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
-        AnnotationMirror annoInHierarchy = null;
-        for (AnnotationMirror rhsAnno : annos) {
-            if (isSubtype(rhsAnno, top)) {
-                annoInHierarchy = rhsAnno;
+        boolean hasPolyAll = false;
+        for (AnnotationMirror anno : annos) {
+            boolean isSubtype = isSubtype(anno, top);
+            if (isSubtype && AnnotationUtils.areSameByClass(anno, PolyAll.class)) {
+                // If the set contains @PolyAll, only return the polymorphic qualifier if annos
+                // contains no other annotation in the hierarchy.
+                hasPolyAll = true;
+            } else if (isSubtype) {
+                return anno;
             }
         }
-        return annoInHierarchy;
+        if (hasPolyAll) {
+            return getPolymorphicAnnotation(top);
+        }
+        return null;
     }
 
     /**

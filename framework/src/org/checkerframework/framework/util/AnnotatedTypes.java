@@ -1140,7 +1140,7 @@ public class AnnotatedTypes {
                     lubAnnotatedType.clearAnnotations();
                     lubAnnotatedType.addAnnotations(type.getAnnotations());
                     for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-                        AnnotationMirror o = otherType.getAnnotationInHierarchy(top);
+                        AnnotationMirror o = otherType.findAnnotationInHierarchy(top);
                         assert o != null : "null should have all annotations.";
                         if (AnnotationUtils.areSame(o,
                                 qualifierHierarchy.getBottomAnnotation(top))) {

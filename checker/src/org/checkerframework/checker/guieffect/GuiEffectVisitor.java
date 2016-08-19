@@ -15,11 +15,13 @@ import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
+import org.checkerframework.checker.guieffect.qual.PolyUIType;
 import org.checkerframework.checker.guieffect.qual.SafeEffect;
 import org.checkerframework.checker.guieffect.qual.UI;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -89,6 +91,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             Tree tree) {
         boolean ret =
                 useType.hasAnnotation(AlwaysSafe.class)
+                        || useType.hasAnnotation(PolyAll.class)
+                        || useType.hasAnnotation(PolyUI.class)
                         || atypeFactory.isPolymorphicType(
                                 (TypeElement) declarationType.getUnderlyingType().asElement())
                         || (useType.hasAnnotation(UI.class)
