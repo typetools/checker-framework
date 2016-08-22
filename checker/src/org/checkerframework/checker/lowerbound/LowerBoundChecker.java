@@ -6,9 +6,9 @@ import org.checkerframework.common.value.ValueChecker;
 
 /**
  * A type-checker for preventing arrays from being accessed with
- * values that are too low.
+ * values that are too low. Normally bundled as part of the Index Checker.
  *
- * @checker_framework.manual #index-checker Lower Bound Checker
+ * @checker_framework.manual #index-checker Index Checker
  */
 public class LowerBoundChecker extends BaseTypeChecker {
 
