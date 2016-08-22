@@ -18,6 +18,7 @@ if [ ! -z "$CHANGED_JAVA_FILES" ]; then
     python checker/bin-devel/check-google-java-format.py --aosp ${CHANGED_JAVA_FILES}
 fi
 
+# This is to handle non-.java files, since the above already handled .java files.
 # May need to remove files that are allowed to have trailing whitespace.
 CHANGED_STYLE_FILES=`git diff --staged --name-only --diff-filter=ACM` || true
 if [ ! -z "$CHANGED_STYLE_FILES" ]; then
