@@ -52,7 +52,7 @@ public class LowerBoundAnnotatedTypeFactory
 
     /** The canonical @{@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1 = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
-    /** The canonical @{@link Negative} annotation. */
+    /** The canonical @{@link NonNegative} annotation. */
     public final AnnotationMirror NN = AnnotationUtils.fromClass(elements, NonNegative.class);
     /** The canonical @{@link Positive} annotation. */
     public final AnnotationMirror POS = AnnotationUtils.fromClass(elements, Positive.class);
