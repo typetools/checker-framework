@@ -384,7 +384,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
      */
     private void checkSupportedQuals() {
+        boolean hasPolyAll = false;
+        boolean hasPolymorphicQualifier = false;
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
+            // Check @Target values
             ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
             List<ElementType> otherElementTypes = new ArrayList<>();
             for (ElementType element : elements) {
@@ -413,6 +416,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 buf.append(".");
                 ErrorReporter.errorAbort(buf.toString());
             }
+            // Check for PolyAll
+            if (annotationClass.equals(PolyAll.class)) {
+                hasPolyAll = true;
+            } else if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
+                hasPolymorphicQualifier = true;
+            }
+        }
+
+        if (hasPolyAll && !hasPolymorphicQualifier) {
+            ErrorReporter.errorAbort(
+                    "Checker added @PolyAll to list of supported qualifiers, but"
+                            + " the checker does not have a polymorphic qualifier.  Either remove "
+                            + "@PolyAll for the list of supported qualifiers or add a polymorphic "
+                            + "qualifier.");
         }
     }
 
