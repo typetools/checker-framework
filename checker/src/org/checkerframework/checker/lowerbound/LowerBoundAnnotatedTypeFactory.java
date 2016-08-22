@@ -37,13 +37,13 @@ public class LowerBoundAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
                 CFValue, CFStore, LowerBoundTransfer, LowerBoundAnalysis> {
 
-    /** The canonical @GTENegativeOne annotation. */
+    /** The canonical @{@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1 = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
-    /** The canonical @Negative annotation. */
+    /** The canonical @{@link Negative} annotation. */
     public final AnnotationMirror NN = AnnotationUtils.fromClass(elements, NonNegative.class);
-    /** The canonical @Positive annotation. */
+    /** The canonical @{@link Positive} annotation. */
     public final AnnotationMirror POS = AnnotationUtils.fromClass(elements, Positive.class);
-    /** The canonical @LowerBoundUnknown annotation. */
+    /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
 
@@ -134,12 +134,12 @@ public class LowerBoundAnnotatedTypeFactory
          *  Determine the annotation that should be associated with a literal.
          */
         private AnnotationMirror anmFromVal(int val) {
-            if (val == -1) {
-                return GTEN1;
-            } else if (val == 0) {
-                return NN;
-            } else if (val > 0) {
+            if (val >= 1) {
                 return POS;
+            } else if (val >= 0) {
+                return NN;
+            } else if (val >= -1) {
+                return GTEN1;
             } else {
                 return UNKNOWN;
             }
