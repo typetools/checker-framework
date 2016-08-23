@@ -14,8 +14,9 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.framework.flow.CFAbstractTransfer;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
@@ -24,18 +25,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * KeyForTransfer ensures that java.util.Map.put and containsKey
  * cause the appropriate @KeyFor annotation to be added to the key.
  */
-public class KeyForTransfer extends CFAbstractTransfer<CFValue, CFStore, KeyForTransfer> {
-
-    /** Type-specific version of super.analysis and super.checker. */
-    protected KeyForAnalysis analysis;
-    protected KeyForSubchecker checker;
+public class KeyForTransfer extends CFTransfer {
 
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
 
-    public KeyForTransfer(KeyForAnalysis analysis, KeyForSubchecker checker) {
+    public KeyForTransfer(CFAnalysis analysis, KeyForSubchecker checker) {
         super(analysis);
-        this.analysis = analysis;
-        this.checker = checker;
         UNKNOWNKEYFOR =
                 AnnotationUtils.fromClass(
                         analysis.getTypeFactory().getElementUtils(), UnknownKeyFor.class);
@@ -76,17 +71,13 @@ public class KeyForTransfer extends CFAbstractTransfer<CFValue, CFStore, KeyForT
             TypeMirror receiverType = types.erasure(node.getTarget().getReceiver().getType());
 
             if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
-
-                Node receiver = node.getTarget().getReceiver();
-                Receiver internalReceiver =
-                        FlowExpressions.internalReprOf(checker.getAnnotationProvider(), receiver);
-                String mapName = internalReceiver.toString();
-                Receiver keyReceiver =
-                        FlowExpressions.internalReprOf(
-                                checker.getAnnotationProvider(), node.getArgument(0));
-
                 KeyForAnnotatedTypeFactory atypeFactory =
                         (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
+                Node receiver = node.getTarget().getReceiver();
+                Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, receiver);
+                String mapName = internalReceiver.toString();
+                Receiver keyReceiver =
+                        FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
 
                 LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
                 keyForMaps.add(mapName);
