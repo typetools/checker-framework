@@ -7,14 +7,14 @@ import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 
 public class FormatterTransfer extends CFTransfer {
 
-    public FormatterTransfer(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+    public FormatterTransfer(CFAnalysis analysis) {
         super(analysis);
     }
 
