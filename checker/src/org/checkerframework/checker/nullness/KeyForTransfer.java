@@ -29,7 +29,7 @@ public class KeyForTransfer extends CFTransfer {
 
     protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
 
-    public KeyForTransfer(CFAnalysis analysis, KeyForSubchecker checker) {
+    public KeyForTransfer(CFAnalysis analysis) {
         super(analysis);
         UNKNOWNKEYFOR =
                 AnnotationUtils.fromClass(
