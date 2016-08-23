@@ -60,12 +60,6 @@ public class TypesIntoElements {
 
         storeTypeParameters(processingEnv, types, atypeFactory, tree.getTypeParameters(), csym);
 
-        /* TODO: storing extends/implements types results in
-         * a strange error e.g. from the Nullness Checker.
-         * I think somewhere we take the annotations on extends/implements as
-         * the receiver annotation on a constructor, breaking logic there.
-         * I assume that the problem is the default that we use for these locations.
-         * Once we've decided the defaulting, enable this.
         storeClassExtends(processingEnv, types, atypeFactory, tree.getExtendsClause(), csym, -1);
         {
             int implidx = 0;
@@ -74,7 +68,6 @@ public class TypesIntoElements {
                 ++implidx;
             }
         }
-        */
 
         for (Tree mem : tree.getMembers()) {
             if (mem.getKind() == Tree.Kind.METHOD) {
@@ -169,7 +162,17 @@ public class TypesIntoElements {
         addUniqueTypeCompounds(types, sym, tcs);
     }
 
-    @SuppressWarnings("unused") // TODO: see usage in comments above
+    /**
+     * Given a class symbol {@code cysm}, and the extendsClause/implementsClause tree {@code ext}
+     * of the corresponding class tree, store the type compounds on {@code ext} into {@code csym}.
+     * @param processingEnv
+     * @param types
+     * @param atypeFactory
+     * @param ext
+     * @param csym the given class symbol
+     * @param implidx the type index of extends/implements, see jsr308 specification:
+     *      http://types.cs.washington.edu/jsr308/specification/java-annotation-design.html#class-file%3Aext%3Ari%3Aextends
+     */
     private static void storeClassExtends(
             ProcessingEnvironment processingEnv,
             Types types,
@@ -181,9 +184,15 @@ public class TypesIntoElements {
         AnnotatedTypeMirror type;
         int pos;
         if (ext == null) {
-            // The implicit superclass is always java.lang.Object.
-            // TODO: is this a good way to get the type?
-            type = atypeFactory.fromElement(csym.getSuperclass().asElement());
+            Type superClass = csym.getSuperclass();
+            if (superClass.getKind() == TypeKind.NONE) {
+                // if superclass is NONE, then this class symbol is either
+                // an interface or it is java.lang.Object class itself.
+                // do nothing in both cases
+                return;
+            } else {
+                type = atypeFactory.fromElement(superClass.asElement());
+            }
             pos = -1;
         } else {
             type = atypeFactory.getAnnotatedTypeFromTypeTree(ext);
