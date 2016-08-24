@@ -2917,9 +2917,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     overriderParams = new ArrayList<>(overriderParams);
                     // remove the last parameter which is a vararg
                     overriderParams.remove(overriddenParams.size() - 1);
-                } else if (!overrider.isVarArgs() && overridden.isVarArgs()) {
-                    overriddenParams =
-                            AnnotatedTypes.expandVarArgsFromTypes(overridden, overriderParams);
                 }
             }
 
