@@ -8,25 +8,22 @@ import com.sun.source.tree.UnaryTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.VariableElement;
-import org.checkerframework.checker.lowerbound.qual.*;
+import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
+import org.checkerframework.checker.lowerbound.qual.LowerBoundUnknown;
+import org.checkerframework.checker.lowerbound.qual.NonNegative;
+import org.checkerframework.checker.lowerbound.qual.Positive;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 
 /**
  *  Implements the introduction rules for the Lower Bound Checker.
@@ -46,9 +43,7 @@ import org.checkerframework.javacutil.Pair;
  *  based on expression type. These rules are documented on the functions
  *  implementing them.
  */
-public class LowerBoundAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<
-                CFValue, CFStore, LowerBoundTransfer, LowerBoundAnalysis> {
+public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /** The canonical @{@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1 = AnnotationUtils.fromClass(elements, GTENegativeOne.class);
@@ -70,12 +65,6 @@ public class LowerBoundAnnotatedTypeFactory
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.postInit();
-    }
-
-    @Override
-    protected LowerBoundAnalysis createFlowAnalysis(
-            List<Pair<VariableElement, CFValue>> fieldValues) {
-        return new LowerBoundAnalysis(checker, this, fieldValues);
     }
 
     /**
