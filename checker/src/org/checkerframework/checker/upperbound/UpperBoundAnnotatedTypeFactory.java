@@ -305,13 +305,9 @@ public class UpperBoundAnnotatedTypeFactory
 
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            // Check if the value checker can determine the value.
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
-            Integer valMin = valMinFromValueType(valueType);
-            if (valMin != null) {
-                // We need to figure out how this compares to the known minimum lengths of
-                // all the arrays that are in scope.
-            }
+            // I'm not sure we actually care all that much about what's happening here.
+            // Maybe a few small rules for addition/subtraction by 0/1, etc. FIXME.
+            return super.visitBinary(tree, type);
         }
     }
 }
