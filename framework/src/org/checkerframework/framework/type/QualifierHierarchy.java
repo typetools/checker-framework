@@ -190,8 +190,8 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns a new set that is the passed set, but PolyAll has been replaced with polymorphic
-     * qualifiers for hierarchies that do not have an annotation in the set.
+     * Returns a new set that is the passed set, but PolyAll has been replaced by a polymorphic
+     * qualifiers, for hierarchies that do not have an annotation in the set.
      *
      * @param annos Set of annotations
      * @return a new set with same annotations as anno, but PolyAll has been replaced with

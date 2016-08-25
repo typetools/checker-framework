@@ -380,7 +380,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Issue an error and abort if any of the support qualifiers have @Target meta-annotations
+     * Issue an error and abort if any of the support qualifiers has a @Target meta-annotation
      * that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
      */
     private void checkSupportedQuals() {
@@ -426,9 +426,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         if (hasPolyAll && !hasPolymorphicQualifier) {
             ErrorReporter.errorAbort(
-                    "Checker added @PolyAll to list of supported qualifiers, but"
-                            + " the checker does not have a polymorphic qualifier.  Either remove "
-                            + "@PolyAll for the list of supported qualifiers or add a polymorphic "
+                    "Checker added @PolyAll to list of supported qualifiers, but "
+                            + "the checker does not have a polymorphic qualifier.  Either remove "
+                            + "@PolyAll from the list of supported qualifiers or add a polymorphic "
                             + "qualifier.");
         }
     }
