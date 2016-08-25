@@ -1,5 +1,4 @@
 // Test case for issue #871: https://github.com/typetools/checker-framework/issues/871
-// @skip-test until it is fixed
 // @below-java8-jdk-skip-test
 
 import java.nio.file.Files;

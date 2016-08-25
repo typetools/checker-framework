@@ -2900,18 +2900,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         private boolean checkParameters() {
-            boolean result = true;
-            // Check parameter values. (TODO: FIXME varargs)
             List<AnnotatedTypeMirror> overriderParams = overrider.getParameterTypes();
             List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
 
-            // The functional interface of an unbound member reference has an extra parameter (the receiver).
-            if (methodReference
-                    && ((JCTree.JCMemberReference) overriderTree)
-                            .hasKind(JCTree.JCMemberReference.ReferenceKind.UNBOUND)) {
-                overriddenParams = new ArrayList<>(overriddenParams);
-                overriddenParams.remove(0);
+            // Fix up method reference parameters.
+            // See https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.1
+            if (methodReference) {
+                // The functional interface of an unbound member reference has an extra parameter (the receiver).
+                if (((JCTree.JCMemberReference) overriderTree)
+                        .hasKind(JCTree.JCMemberReference.ReferenceKind.UNBOUND)) {
+                    overriddenParams = new ArrayList<>(overriddenParams);
+                    overriddenParams.remove(0);
+                }
+                // Deal with varargs
+                if (overrider.isVarArgs() && !overridden.isVarArgs()) {
+                    overriderParams =
+                            AnnotatedTypes.expandVarArgsFromTypes(overrider, overriddenParams);
+                }
             }
+
+            boolean result = true;
             for (int i = 0; i < overriderParams.size(); ++i) {
                 boolean success =
                         atypeFactory

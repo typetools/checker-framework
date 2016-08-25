@@ -264,6 +264,11 @@ public class QualifierPolymorphism {
             newRequiredArgs.addAll(requiredArgs);
             requiredArgs = newRequiredArgs;
         }
+        // Deal with varargs
+        if (memberReference.isVarArgs() && !functionalInterface.isVarArgs()) {
+            requiredArgs = AnnotatedTypes.expandVarArgsFromTypes(memberReference, args);
+        }
+
         Map<AnnotationMirror, Set<? extends AnnotationMirror>> matchingMapping =
                 collector.visit(args, requiredArgs);
 
