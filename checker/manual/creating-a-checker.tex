@@ -867,7 +867,8 @@ be included on the classpath like other components of your checker.
 
 \item \textbf{Configure the checker's type factory to use the extended
     \refclass{framework/flow}{CFTransfer}}
-\begin{sloppypar} If the checker's extended \refclass{framework/flow}{CFTransfer}
+
+If the checker's extended \refclass{framework/flow}{CFTransfer}
 starts with the name of the type system, then the type factory will use the
 transfer class without an further configuration. For example, if the checker class is FooChecker,
 then if the transfer class is FooTransfer, then it is not necessary to configure the type factory
@@ -876,7 +877,6 @@ to configure your checker's type factory to use the new extended
 \refclass{framework/flow}{CFTransfer}, override the
 \code{createFlowTransferFunction} method in your type factory to return a new instance
 of the extended \refclass{framework/flow}{CFTransfer}.
-\end{sloppypar}
 
 %BEGIN LATEX
 \begin{smaller}
