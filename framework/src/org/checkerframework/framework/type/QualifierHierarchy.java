@@ -199,11 +199,11 @@ public abstract class QualifierHierarchy {
      */
     protected Collection<? extends AnnotationMirror> replacePolyAll(
             Collection<? extends AnnotationMirror> annos) {
-        Set<AnnotationMirror> returnAnnos2 = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> returnAnnos = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror top : getTopAnnotations()) {
             AnnotationMirror annotationInHierarchy = findAnnotationInHierarchy(annos, top);
             if (annotationInHierarchy != null) {
-                returnAnnos2.add(annotationInHierarchy);
+                returnAnnos.add(annotationInHierarchy);
             }
         }
         return returnAnnos2;
