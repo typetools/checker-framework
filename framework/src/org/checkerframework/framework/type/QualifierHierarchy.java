@@ -206,7 +206,7 @@ public abstract class QualifierHierarchy {
                 returnAnnos.add(annotationInHierarchy);
             }
         }
-        return returnAnnos2;
+        return returnAnnos;
     }
 
     /**
