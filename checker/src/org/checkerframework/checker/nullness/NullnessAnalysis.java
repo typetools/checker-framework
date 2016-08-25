@@ -1,10 +1,15 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.Pair;
 
@@ -41,6 +46,17 @@ public class NullnessAnalysis
             // 'no information'.
             return null;
         }
-        return new NullnessValue(this, type);
+        if (type.getKind() == TypeKind.WILDCARD) {
+            AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type;
+            Set<AnnotationMirror> annos = wildcard.getExtendsBound().getAnnotations();
+            return new NullnessValue(this, annos, type.getUnderlyingType());
+        }
+        return new NullnessValue(this, type.getAnnotations(), type.getUnderlyingType());
+    }
+
+    @Override
+    public NullnessValue createAbstractValue(
+            Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
+        return new NullnessValue(this, annotations, underlyingType);
     }
 }

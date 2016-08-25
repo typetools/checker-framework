@@ -1,12 +1,14 @@
 package org.checkerframework.qualframework.base.dataflow;
 
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.TypeMirrorConverter;
 import org.checkerframework.qualframework.util.QualifierContext;
@@ -53,18 +55,25 @@ public class QualAnalysis<Q> extends Analysis<QualValue<Q>, QualStore<Q>, QualTr
     }
 
     public QualValue<Q> createAbstractValue(QualifiedTypeMirror<Q> type) {
-        return new QualValue<Q>(type, this);
+        return new QualValue<Q>(
+                type.getQualifier(), type.getUnderlyingType().getOriginalType(), this);
     }
 
-    @Override
-    public QualValue<Q> getValue(Node n) {
-        return new QualValue<>(converter.getQualifiedType(adapter.getValue(n).getType()), this);
+    public QualValue<Q> createAbstractValue(
+            Set<AnnotationMirror> annos, TypeMirror underlyingType) {
+        if (annos.size() == 0) {
+            return createSingleAnnotationValue(null, underlyingType);
+        } else if (annos.size() == 1) {
+            return createSingleAnnotationValue(
+                    converter.getQualifier(annos.iterator().next()), underlyingType);
+        } else {
+            ErrorReporter.errorAbort("QualAnalysis: unexpected size");
+            return null;
+        }
     }
 
     public QualValue<Q> createSingleAnnotationValue(Q qual, TypeMirror underlyingType) {
-        CFValue atm =
-                adapter.createSingleAnnotationValue(converter.getAnnotation(qual), underlyingType);
-        return new QualValue<>(converter.getQualifiedType(atm.getType()), this);
+        return new QualValue<>(qual, underlyingType, this);
     }
 
     public QualifierContext<Q> getContext() {

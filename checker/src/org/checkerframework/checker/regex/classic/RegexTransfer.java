@@ -103,8 +103,7 @@ public class RegexTransfer extends CFTransfer {
                 }
                 CFValue newResultValue =
                         analysis.createSingleAnnotationValue(
-                                regexAnnotation,
-                                result.getResultValue().getType().getUnderlyingType());
+                                regexAnnotation, result.getResultValue().getUnderlyingType());
                 return new RegularTransferResult<>(newResultValue, result.getRegularStore());
             }
         }

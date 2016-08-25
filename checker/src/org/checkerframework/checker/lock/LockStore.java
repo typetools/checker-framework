@@ -13,7 +13,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /*
  * The Lock Store behaves like CFAbstractStore but requires the ability
@@ -160,21 +160,11 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     boolean hasLockHeld(CFValue value) {
-        AnnotatedTypeMirror type = value.getType();
-        if (type == null) {
-            return false;
-        }
-
-        return type.hasAnnotation(atypeFactory.LOCKHELD);
+        return AnnotationUtils.containsSame(value.getAnnotations(), atypeFactory.LOCKHELD);
     }
 
     boolean hasLockPossiblyHeld(CFValue value) {
-        AnnotatedTypeMirror type = value.getType();
-        if (type == null) {
-            return false;
-        }
-
-        return type.hasAnnotation(atypeFactory.LOCKPOSSIBLYHELD);
+        return AnnotationUtils.containsSame(value.getAnnotations(), atypeFactory.LOCKPOSSIBLYHELD);
     }
 
     @Override

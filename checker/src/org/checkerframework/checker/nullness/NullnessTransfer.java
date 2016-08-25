@@ -1,9 +1,12 @@
 package org.checkerframework.checker.nullness;
 
+import static org.checkerframework.javacutil.AnnotationUtils.fromClass;
+
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -61,6 +64,7 @@ public class NullnessTransfer
 
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
+    protected final AnnotationMirror NONRAW, INITIALIZED;
 
     protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
 
@@ -76,6 +80,13 @@ public class NullnessTransfer
         NULLABLE =
                 AnnotationUtils.fromClass(
                         analysis.getTypeFactory().getElementUtils(), Nullable.class);
+
+        NONRAW =
+                AnnotationUtils.fromClass(
+                        analysis.getTypeFactory().getElementUtils(), NonRaw.class);
+        INITIALIZED =
+                AnnotationUtils.fromClass(
+                        analysis.getTypeFactory().getElementUtils(), Initialized.class);
     }
 
     /**
@@ -147,9 +158,12 @@ public class NullnessTransfer
                 }
             }
 
-            if (secondValue != null
-                    && (secondValue.getType().hasAnnotation(PolyNull.class)
-                            || secondValue.getType().hasAnnotation(PolyAll.class))) {
+            Set<AnnotationMirror> secondAnnos =
+                    secondValue != null
+                            ? secondValue.getAnnotations()
+                            : AnnotationUtils.createAnnotationSet();
+            if (AnnotationUtils.containsSameByClass(secondAnnos, PolyNull.class)
+                    || AnnotationUtils.containsSameByClass(secondAnnos, PolyAll.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
                 thenStore.setPolyNullNull(true);
@@ -267,7 +281,7 @@ public class NullnessTransfer
                     NullnessValue oldResultValue = result.getResultValue();
                     NullnessValue refinedResultValue =
                             analysis.createSingleAnnotationValue(
-                                    NONNULL, oldResultValue.getType().getUnderlyingType());
+                                    NONNULL, oldResultValue.getUnderlyingType());
                     NullnessValue newResultValue =
                             refinedResultValue.mostSpecific(oldResultValue, null);
                     result.setResultValue(newResultValue);
@@ -301,12 +315,8 @@ public class NullnessTransfer
      */
     private NullnessValue createDummyValue() {
         TypeMirror dummy = analysis.getEnv().getTypeUtils().getPrimitiveType(TypeKind.BOOLEAN);
-        AnnotatedTypeMirror annotatedDummy =
-                AnnotatedTypeMirror.createType(dummy, analysis.getTypeFactory(), false);
-        annotatedDummy.addAnnotation(NonNull.class);
-        annotatedDummy.addAnnotation(NonRaw.class);
-        annotatedDummy.addAnnotation(Initialized.class);
-        NullnessValue value = new NullnessValue(analysis, annotatedDummy);
-        return value;
+        Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+        annos.addAll(analysis.getTypeFactory().getQualifierHierarchy().getBottomAnnotations());
+        return new NullnessValue(analysis, annos, dummy);
     }
 }

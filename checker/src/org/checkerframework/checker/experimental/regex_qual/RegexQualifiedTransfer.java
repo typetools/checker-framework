@@ -100,11 +100,7 @@ public class RegexQualifiedTransfer extends QualTransfer<Regex> {
                 }
                 QualValue<Regex> newResultValue =
                         analysis.createSingleAnnotationValue(
-                                regex,
-                                result.getResultValue()
-                                        .getType()
-                                        .getUnderlyingType()
-                                        .getOriginalType());
+                                regex, result.getResultValue().getUnderlyingType());
                 return new RegularTransferResult<>(newResultValue, result.getRegularStore());
             }
         }

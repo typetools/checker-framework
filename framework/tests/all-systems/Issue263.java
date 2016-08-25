@@ -1,6 +1,6 @@
 // Test case for Issue 263:
 // https://github.com/typetools/checker-framework/issues/263
-
+@SuppressWarnings({"regex", "tainting"})
 abstract class Outer<T> {
 
     public class Inner {

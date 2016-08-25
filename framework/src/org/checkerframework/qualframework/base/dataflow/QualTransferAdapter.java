@@ -1,8 +1,11 @@
 package org.checkerframework.qualframework.base.dataflow;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -80,6 +83,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * QualTransferAdapter adapts the {@link CFTransfer} to a {@link QualTransfer}.
@@ -158,11 +162,16 @@ public class QualTransferAdapter<Q> extends CFTransfer {
 
         CFValue resultValue = null;
         if (transferResult.getResultValue() != null) {
+            Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+            if (transferResult.getResultValue().getQualifier() != null) {
+                annos.add(
+                        qualAnalysis
+                                .getConverter()
+                                .getAnnotation(transferResult.getResultValue().getQualifier()));
+            }
             resultValue =
                     analysis.createAbstractValue(
-                            qualAnalysis
-                                    .getConverter()
-                                    .getAnnotatedType(transferResult.getResultValue().getType()));
+                            annos, transferResult.getResultValue().getUnderlyingType());
         }
 
         if (transferResult.containsTwoStores()) {
@@ -199,9 +208,8 @@ public class QualTransferAdapter<Q> extends CFTransfer {
         if (transferResult.getResultValue() != null) {
             resultValue =
                     qualAnalysis.createAbstractValue(
-                            qualAnalysis
-                                    .getConverter()
-                                    .getQualifiedType(transferResult.getResultValue().getType()));
+                            transferResult.getResultValue().getAnnotations(),
+                            transferResult.getResultValue().getUnderlyingType());
         }
 
         if (transferResult.containsTwoStores()) {

@@ -331,6 +331,22 @@ public class AnnotationUtils {
     }
 
     /**
+     * Returns the AnnotationMirror in {@code c} that has the same class as {@code anno}.
+     *
+     * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
+     * to areSameByClass; otherwise, {@code null}
+     */
+    public static AnnotationMirror getAnnotationByClass(
+            Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
+        for (AnnotationMirror an : c) {
+            if (AnnotationUtils.areSameByClass(an, anno)) {
+                return an;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Checks that the collection contains the annotation ignoring values.
      * Using Collection.contains does not always work, because it
      * does not use areSameIgnoringValues for comparison.

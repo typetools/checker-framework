@@ -184,7 +184,7 @@ public class InitializationTransfer<
                 V oldResultValue = result.getResultValue();
                 V refinedResultValue =
                         analysis.createSingleAnnotationValue(
-                                inv, oldResultValue.getType().getUnderlyingType());
+                                inv, oldResultValue.getUnderlyingType());
                 V newResultValue = refinedResultValue.mostSpecific(oldResultValue, null);
                 result.setResultValue(newResultValue);
             }

@@ -128,11 +128,7 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
                     new QualParams<>(new GroundQual<Regex>(new RegexVal(groupCount)));
             QualValue<QualParams<Regex>> newResultValue =
                     analysis.createSingleAnnotationValue(
-                            regex,
-                            resultIn.getResultValue()
-                                    .getType()
-                                    .getUnderlyingType()
-                                    .getOriginalType());
+                            regex, resultIn.getResultValue().getUnderlyingType());
             return new RegularTransferResult<>(newResultValue, resultIn.getRegularStore());
         }
         return resultIn;
