@@ -2903,7 +2903,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             List<AnnotatedTypeMirror> overriderParams = overrider.getParameterTypes();
             List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
 
-            // Fix up method refernece parameters.
+            // Fix up method reference parameters.
             // See https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.1
             if (methodReference) {
                 // The functional interface of an unbound member reference has an extra parameter (the receiver).
