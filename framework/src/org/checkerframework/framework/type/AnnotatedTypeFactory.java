@@ -805,8 +805,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *         none
      */
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // by default support PolyAll
-        return getBundledTypeQualifiersWithPolyAll();
+        return getBundledTypeQualifiersWithoutPolyAll();
     }
 
     /**
