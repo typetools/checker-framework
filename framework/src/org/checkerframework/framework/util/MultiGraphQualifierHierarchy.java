@@ -355,7 +355,6 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             Collection<? extends AnnotationMirror> lhs) {
         rhs = replacePolyAll(rhs);
         lhs = replacePolyAll(lhs);
-
         if (lhs.isEmpty() || rhs.isEmpty()) {
             ErrorReporter.errorAbort(
                     "MultiGraphQualifierHierarchy: empty annotations in lhs: "
