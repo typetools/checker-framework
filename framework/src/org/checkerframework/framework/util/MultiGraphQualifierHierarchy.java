@@ -353,6 +353,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     public boolean isSubtype(
             Collection<? extends AnnotationMirror> rhs,
             Collection<? extends AnnotationMirror> lhs) {
+        rhs = replacePolyAll(rhs);
+        lhs = replacePolyAll(lhs);
         if (lhs.isEmpty() || rhs.isEmpty()) {
             ErrorReporter.errorAbort(
                     "MultiGraphQualifierHierarchy: empty annotations in lhs: "
@@ -384,8 +386,8 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
             Collection<? extends AnnotationMirror> rhs,
             Collection<? extends AnnotationMirror> lhs) {
         for (AnnotationMirror top : getTopAnnotations()) {
-            AnnotationMirror rhsForTop = getAnnotationInHierarchy(rhs, top);
-            AnnotationMirror lhsForTop = getAnnotationInHierarchy(lhs, top);
+            AnnotationMirror rhsForTop = findAnnotationInHierarchy(rhs, top);
+            AnnotationMirror lhsForTop = findAnnotationInHierarchy(lhs, top);
             if (!isSubtypeTypeVariable(rhsForTop, lhsForTop)) {
                 return false;
             }

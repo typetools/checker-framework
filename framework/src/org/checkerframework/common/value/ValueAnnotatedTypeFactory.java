@@ -110,11 +110,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithPolyAll(BottomVal.class);
-    }
-
     public void disableWarnings() {
         reportWarnings = false;
     }
@@ -146,6 +141,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else {
             return UNKNOWNVAL;
         }
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithoutPolyAll();
     }
 
     @Override

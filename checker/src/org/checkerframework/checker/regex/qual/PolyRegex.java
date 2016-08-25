@@ -7,6 +7,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 
+/**
+ * A polymorphic qualifier for the Regex type system.
+ *
+ * <p>
+ * Any method written using {@code @PolyRegex} conceptually has two versions:
+ * one in which every instance of {@code @PolyRegex String} has been replaced
+ * by {@code @Regex String}, and one in which every instance of
+ * {@code @PolyRegex String} has been replaced by {@code String}.
+ *
+ * @checker_framework.manual #regex-checker Regex Checker
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @Repeatable(MultiPolyRegex.class)

@@ -30,6 +30,8 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
  *    A&laquo;aParam=? extends @Tainted&raquo; b;
  *  }
  * </pre>
+ *
+ * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
