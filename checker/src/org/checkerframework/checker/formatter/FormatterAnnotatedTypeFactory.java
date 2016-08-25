@@ -11,12 +11,10 @@ import org.checkerframework.checker.formatter.qual.Format;
 import org.checkerframework.checker.formatter.qual.FormatBottom;
 import org.checkerframework.checker.formatter.qual.InvalidFormat;
 import org.checkerframework.checker.formatter.qual.UnknownFormat;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -34,9 +32,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *
  * @author Konstantin Weitz
  */
-public class FormatterAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<
-                CFValue, CFStore, FormatterTransfer, FormatterAnalysis> {
+public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror UNKNOWNFORMAT;
     protected final AnnotationMirror FORMAT;
