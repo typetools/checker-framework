@@ -12,6 +12,8 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
  * Untainted is the annotation to specify the untainted qualifier.
  *
  * @see Tainted
+ *
+ * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

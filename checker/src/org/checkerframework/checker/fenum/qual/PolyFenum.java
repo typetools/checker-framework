@@ -9,6 +9,8 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
  * A polymorphic qualifier for the fake enum type system.
+ *
+ * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
 @Documented
 @PolymorphicQualifier(FenumTop.class)

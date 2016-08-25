@@ -9,6 +9,8 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
  * A polymorphic qualifier for the signedness type system.
+ *
+ * @checker_framework.manual #signedness-checker Signedness Checker
  */
 @Documented
 @PolymorphicQualifier(UnknownSignedness.class)
