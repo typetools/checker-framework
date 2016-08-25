@@ -870,8 +870,9 @@ be included on the classpath like other components of your checker.
 
 If the checker's extended \refclass{framework/flow}{CFTransfer}
 starts with the name of the type system, then the type factory will use the
-transfer class without an further configuration. For example, if the checker class is FooChecker,
-then if the transfer class is FooTransfer, then it is not necessary to configure the type factory
+transfer class without further configuration. For example, if the checker
+class is FooChecker, then if the transfer class is FooTransfer, then it is
+not necessary to configure the type factory
 to use FooTransfer.  If some other naming convention is used, then
 to configure your checker's type factory to use the new extended
 \refclass{framework/flow}{CFTransfer}, override the
