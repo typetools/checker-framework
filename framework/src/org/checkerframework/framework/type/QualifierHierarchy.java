@@ -588,7 +588,6 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     *
      * @deprecated use {@link #findAnnotationInSameHierarchy(Collection, AnnotationMirror)} instead
      */
     @Deprecated
@@ -598,14 +597,15 @@ public abstract class QualifierHierarchy {
     }
 
     /**
-     * Returns the annotation in annos that is in the same hierarchy as annotationMirror
+     * Returns the annotation in annos that is in the same hierarchy as annotationMirror.
+     * <p>
      *
      * If the annotation in the hierarchy is PolyAll, then the polymorphic qualifier in the
      * hierarchy is returned instead of PolyAll.
      *
      * @param annos set of annotations to search
-     * @param annotationMirror annotation that is in same hierarchy as the returned annotation
-     * @return annotation in the same hierarchy as annotationMirror or null if one is not found
+     * @param annotationMirror annotation that is in the same hierarchy as the returned annotation
+     * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
      */
     public AnnotationMirror findAnnotationInSameHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror annotationMirror) {
@@ -622,14 +622,15 @@ public abstract class QualifierHierarchy {
         return findAnnotationInHierarchy(annos, annotationMirror);
     }
     /**
-     * Returns the annotation in annos that is in the hierarchy to which annotationMirror is top.
+     * Returns the annotation in annos that is in the hierarchy for which annotationMirror is top.
+     * <p>
      *
      * If the annotation in the hierarchy is PolyAll, then the polymorphic qualifier in the
      * hierarchy is returned instead of PolyAll.
      *
      * @param annos set of annotations to search
-     * @param top annotation that is the top of hierarchy to which the returned annotation belongs
-     * @return annotation in the same hierarchy as annotationMirror or null if one is not found
+     * @param top the top annotation in the hierarchy to which the returned annotation belongs
+     * @return annotation in the same hierarchy as annotationMirror, or null if one is not found
      */
     public AnnotationMirror findAnnotationInHierarchy(
             Collection<? extends AnnotationMirror> annos, AnnotationMirror top) {
