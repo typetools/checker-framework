@@ -1,8 +1,8 @@
 // Test case for Issue 263:
 // https://github.com/typetools/checker-framework/issues/263
 
-// Suppression required because of Issue 437
-// https://github.com/typetools/checker-framework/issues/437
+// Suppression required because of Issue 742
+// https://github.com/typetools/checker-framework/issues/742
 @SuppressWarnings({"regex", "tainting"})
 abstract class Outer<T> {
 
