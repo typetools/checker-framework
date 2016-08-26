@@ -64,7 +64,6 @@ public class NullnessTransfer
 
     /** Annotations of the non-null type system. */
     protected final AnnotationMirror NONNULL, NULLABLE;
-    protected final AnnotationMirror NONRAW, INITIALIZED;
 
     protected final KeyForAnnotatedTypeFactory keyForTypeFactory;
 
@@ -80,13 +79,6 @@ public class NullnessTransfer
         NULLABLE =
                 AnnotationUtils.fromClass(
                         analysis.getTypeFactory().getElementUtils(), Nullable.class);
-
-        NONRAW =
-                AnnotationUtils.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), NonRaw.class);
-        INITIALIZED =
-                AnnotationUtils.fromClass(
-                        analysis.getTypeFactory().getElementUtils(), Initialized.class);
     }
 
     /**
