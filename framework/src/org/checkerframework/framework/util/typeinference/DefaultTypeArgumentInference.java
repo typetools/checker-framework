@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeVariable;
@@ -47,6 +48,7 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7
@@ -101,7 +103,21 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets);
 
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
+        // Type arguments cannot be primitives, so box them if they are.
+        boxPrimitives(typeFactory, inferredArgs);
         return inferredArgs;
+    }
+
+    private void boxPrimitives(
+            AnnotatedTypeFactory factory, Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
+        for (TypeVariable key : new TreeSet<>(inferredArgs.keySet())) {
+            AnnotatedTypeMirror typeArg = inferredArgs.get(key);
+            if (TypesUtils.isPrimitive(typeArg.getUnderlyingType())) {
+                AnnotatedTypeMirror boxed = factory.getBoxedType((AnnotatedPrimitiveType) typeArg);
+                inferredArgs.remove(key);
+                inferredArgs.put(key, boxed);
+            }
+        }
     }
 
     @Override
