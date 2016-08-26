@@ -110,7 +110,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     private void boxPrimitives(
             AnnotatedTypeFactory factory, Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
-        for (TypeVariable key : new TreeSet<>(inferredArgs.keySet())) {
+        for (TypeVariable key : new HashSet<>(inferredArgs.keySet())) {
             AnnotatedTypeMirror typeArg = inferredArgs.get(key);
             if (TypesUtils.isPrimitive(typeArg.getUnderlyingType())) {
                 AnnotatedTypeMirror boxed = factory.getBoxedType((AnnotatedPrimitiveType) typeArg);
