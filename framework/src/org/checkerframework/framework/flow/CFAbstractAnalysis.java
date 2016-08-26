@@ -134,12 +134,7 @@ public abstract class CFAbstractAnalysis<
             // 'no information'.
             return null;
         }
-        if (type.getKind() == TypeKind.WILDCARD) {
-            AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type;
-            Set<AnnotationMirror> annos = wildcard.getExtendsBound().getAnnotations();
-            return new CFValue(analysis, annos, type.getUnderlyingType());
-        }
-        return new CFValue(analysis, type.getAnnotations(), type.getUnderlyingType());
+        return new CFValue(analysis, type);
     }
 
     /**

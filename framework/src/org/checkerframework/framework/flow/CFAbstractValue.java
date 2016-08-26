@@ -20,6 +20,7 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
@@ -34,6 +35,25 @@ import org.checkerframework.javacutil.TypesUtils;
  * An implementation of an abstract value used by the Checker Framework
  * org.checkerframework.dataflow analysis.
  *
+ * A value holds a set of annotations and a type mirror.  The set of annotations represents the
+ * primary annotation on a type; therefore, the set of annotations must have an annotation for
+ * each hierarchy unless the type mirror is a type variable or a wildcard that extends a type
+ * variable. Both type variables and wildcards may be missing a primary annotation.  For this set
+ * of annotations, there is an additional constraint that only wildcards that extend type
+ * variables can be missing annotations because
+ *
+ * In order to compute {@link #leastUpperBound(CFAbstractValue)} and
+ * {@link #mostSpecific(CFAbstractValue, CFAbstractValue)}, the case where one value has an
+ * annotation in a hierarchy and the other does not must be handled.  For type variables, the
+ * {@link AnnotatedTypeVariable} for the declaration of the type variable is used.  The
+ * {@link AnnotatedTypeVariable} is computed using the type mirror.  For wildcards, it is not
+ * always possible to get the {@link AnnotatedWildcardType} for the type mirror.  However, a
+ * CFAbstractValue's type mirror is only a wildcard if the type of some expression is a wildcard,
+ * so it is always the use of a wildcard rather than the declaration. For uses of wildcards, only
+ * the primary annotation on the upper bound is ever used.  So, the set of annotations represents
+ * the primary annotation on the wildcard's upper bound.  If that upper bound is a type variable,
+ * then the set of annotations could be missing an annotation in a hierarchy.
+ *
  * @author Stefan Heule
  */
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
@@ -47,8 +67,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     protected final GenericAnnotatedTypeFactory<V, ?, ?, ?> factory;
     protected final ProcessingEnvironment processingEnv;
     protected final QualifierHierarchy hierarchy;
-    private final TypeMirror underlyingType;
-    private final Set<AnnotationMirror> annotations;
+    protected final TypeMirror underlyingType;
+    protected final Set<AnnotationMirror> annotations;
 
     public CFAbstractValue(
             CFAbstractAnalysis<V, ?, ?> analysis,
@@ -58,6 +78,26 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         this.typeHierarchy = analysis.getTypeHierarchy();
         this.annotations = annotations;
         this.underlyingType = underlyingType;
+        this.factory = analysis.getTypeFactory();
+        this.processingEnv = factory.getProcessingEnv();
+        this.hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+
+        validateSet(this.getAnnotations(), this.getUnderlyingType());
+    }
+
+    public CFAbstractValue(CFAbstractAnalysis<V, ?, ?> analysis, AnnotatedTypeMirror type) {
+        if (type.getKind() == TypeKind.WILDCARD) {
+            // For wildcards, store the primary annotation of the upper bound.  See the class
+            // comment for more details.
+            AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type;
+            this.annotations = wildcard.getExtendsBound().getAnnotations();
+        } else {
+            this.annotations = type.getAnnotations();
+        }
+
+        this.analysis = analysis;
+        this.typeHierarchy = analysis.getTypeHierarchy();
+        this.underlyingType = type.getUnderlyingType();
         this.factory = analysis.getTypeFactory();
         this.processingEnv = factory.getProcessingEnv();
         this.hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
@@ -121,19 +161,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     @Pure // because the underlyingType field is final
     public TypeMirror getUnderlyingType() {
         return underlyingType;
-    }
-
-    /**
-     * Returns whether this value is a subtype of the argument {@code other}. The annotations are
-     * compared per hierarchy, and missing annotations are treated as 'top'.
-     */
-    @Deprecated
-    public boolean isSubtypeOf(CFAbstractValue<V> other) {
-        //        if (other == null) {
-        // 'null' is 'top'
-        return true;
-        //        }
-        //        return typeHierarchy.isSubtype(type, other.getType());
     }
 
     @Override

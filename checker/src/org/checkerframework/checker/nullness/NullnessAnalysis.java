@@ -46,12 +46,7 @@ public class NullnessAnalysis
             // 'no information'.
             return null;
         }
-        if (type.getKind() == TypeKind.WILDCARD) {
-            AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type;
-            Set<AnnotationMirror> annos = wildcard.getExtendsBound().getAnnotations();
-            return new NullnessValue(this, annos, type.getUnderlyingType());
-        }
-        return new NullnessValue(this, type.getAnnotations(), type.getUnderlyingType());
+        return new NullnessValue(this, type);
     }
 
     @Override
