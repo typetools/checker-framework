@@ -6,6 +6,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -176,6 +177,7 @@ public class UpperBoundAnnotatedTypeFactory
              *  checker annotated it with its equivalent of our unknown
              *  annotation.
              */
+            List<Long> possibleValues = possibleValuesFromValueType(valueType);
             if (possibleValues == null || possibleValues.size() == 0) {
                 return null;
             }

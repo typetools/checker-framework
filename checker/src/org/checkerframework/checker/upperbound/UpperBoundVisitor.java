@@ -48,7 +48,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return super.visitArrayAccess(tree, type);
         } else {
             // Unsafe, since neither the Upper bound or MinLen checks succeeded.
-            checker.report(Result.warning(UPPER_BOUND, indexType.toString(), arrName), index);
+            checker.report(Result.warning(UPPER_BOUND, indexType.toString(), arrName), indexTree);
             return super.visitArrayAccess(tree, type);
         }
     }
