@@ -20,16 +20,36 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         super(checker);
     }
 
+    /**
+     *  When we reach an array access, we need to check a couple of things.
+     *  First, we check if the index has been assigned a reasonable UpperBound type:
+     *  only an index with type LessThanLength(arr) is safe to access arr.
+     *  If that fails, we need to check if the access is still safe. To do
+     *  so, we check if we know the MinLen of arr by querying the MinLenATF.
+     *  If we do know the MinLen of the array, we can check if we know that
+     *  the index is less than the MinLen, using the Value Checker. If so
+     *  then the access is still safe. Otherwise, report a potential unsafe
+     *  access.
+     */
     @Override
     public Void visitArrayAccess(ArrayAccessTree tree, Void type) {
-        ExpressionTree index = tree.getIndex();
-        String arrName = tree.getExpression().toString();
-        AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(index);
-        if (!indexType.hasAnnotation(LessThanLength.class)
-                || !(UpperBoundUtils.hasValue(indexType, arrName))) {
+        ExpressionTree indexTree = tree.getIndex();
+        ExpressionTree arrTree = tree.getExpression();
+        // This is actually not a very generalizable way of keeping track of arrays...
+        String arrName = arrTree.toString();
+        AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
+        // Is indexType LTL of a set containing arrName?
+        if (indexType.hasAnnotation(LessThanLength.class)
+                && (UpperBoundUtils.hasValue(indexType, arrName))) {
+            // If so, this is safe - get out of here.
+            return super.visitArrayAccess(tree, type);
+        } else if (false) {
+            // Check if the MinLen Checker knows about this array.
+            return super.visitArrayAccess(tree, type);
+        } else {
+            // Unsafe, since neither the Upper bound or MinLen checks succeeded.
             checker.report(Result.warning(UPPER_BOUND, indexType.toString(), arrName), index);
+            return super.visitArrayAccess(tree, type);
         }
-
-        return super.visitArrayAccess(tree, type);
     }
 }
