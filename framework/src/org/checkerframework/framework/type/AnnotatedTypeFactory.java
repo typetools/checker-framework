@@ -828,10 +828,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<? extends Annotation>... explicitlyListedAnnotations) {
         Set<Class<? extends Annotation>> annotations =
                 loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
+        boolean addPolyAll = false;
         for (Class<? extends Annotation> annotationClass : annotations) {
             if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
-                annotations.add(PolyAll.class);
+                addPolyAll = true;
+                break;
             }
+        }
+        if (addPolyAll) {
+            annotations.add(PolyAll.class);
         }
         return annotations;
     }
