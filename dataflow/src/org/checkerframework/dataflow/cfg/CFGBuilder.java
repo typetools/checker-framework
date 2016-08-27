@@ -3913,6 +3913,9 @@ public class CFGBuilder {
 
             // We ignore any class body because its methods should
             // be visited separately.
+            // TODO: For anonymous classes we want to propagate the current store
+            // to the anonymous class.
+            // See Issues 266, 811.
 
             // Convert constructor arguments
             ExecutableElement constructor = TreeUtils.elementFromUse(tree);
@@ -3921,6 +3924,8 @@ public class CFGBuilder {
 
             List<Node> arguments = convertCallArguments(constructor, actualExprs);
 
+            // TODO: for anonymous classes, don't use the identifier alone.
+            // See Issue 890.
             Node constructorNode = scan(tree.getIdentifier(), p);
 
             Node node = new ObjectCreationNode(tree, constructorNode, arguments);
