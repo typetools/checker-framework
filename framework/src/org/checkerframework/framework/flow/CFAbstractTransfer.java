@@ -227,6 +227,7 @@ public abstract class CFAbstractTransfer<
     }
 
     private S fixedInitialStore = null;
+
     /**
      * Set a fixed initial Store.
      */
@@ -243,7 +244,9 @@ public abstract class CFAbstractTransfer<
             UnderlyingAST underlyingAST, /*@Nullable */ List<LocalVariableNode> parameters) {
         if (fixedInitialStore != null
                 && underlyingAST.getKind() != Kind.LAMBDA
-                && underlyingAST.getKind() != Kind.METHOD) return fixedInitialStore;
+                && underlyingAST.getKind() != Kind.METHOD) {
+            return fixedInitialStore;
+        }
 
         S info = analysis.createEmptyStore(sequentialSemantics);
 
