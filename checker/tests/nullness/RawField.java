@@ -1,7 +1,6 @@
 
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
 
 // This test does not correctly work in the FBC system,
 // see https://github.com/typetools/checker-framework/issues/223

@@ -25,9 +25,6 @@ import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
@@ -141,7 +138,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
         return resultIn;
     }
 
-    /** Determine the int value of the given Node.
+    /**
+     * Determine the int value of the given Node.
      *
      * @param num input Node
      * @return the int value of num. 0 if num is not an int literal.

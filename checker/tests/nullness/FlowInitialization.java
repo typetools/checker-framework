@@ -1,7 +1,6 @@
-
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.EnsuresQualifier;
 
 public class FlowInitialization {
 

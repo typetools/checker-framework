@@ -1,6 +1,8 @@
 package org.checkerframework.checker.units.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Specify the class that knows how to handle the meta-annotated unit

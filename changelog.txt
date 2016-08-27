@@ -1,5 +1,18 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.1, 1 August 2016
+
+The codebase conforms to a consistent coding style, which is enforced by
+a git pre-commit hook.
+
+AnnotatedTypeFactory#createSupportedTypeQualifiers() must now return a mutable
+list.  Checkers that override this method will have to be changed.
+
+Closed issues:
+384, 590, 681, 790, 805, 809, 810, 820, 824, 826, 829, 838, 845, 850, 856.
+
+---------------------------------------------------------------------------
+
 Version 2.1.0, 1 July 2016
 
 The new Signedness Checker prevents mixing of unsigned and signed

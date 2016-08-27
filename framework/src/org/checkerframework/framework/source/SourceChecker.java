@@ -336,7 +336,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The source tree that is being scanned. */
     protected CompilationUnitTree currentRoot;
 
-    /** If an error is detected in a CompilationUnitTree, skip
+    /**
+     * If an error is detected in a CompilationUnitTree, skip
      * all future calls of typeProcess with that same CompilationUnitTree.
      */
     private CompilationUnitTree previousErrorCompilationUnit;
@@ -394,7 +395,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The enabled lint options */
     private Set<String> activeLints;
 
-    /** The active options for this checker.
+    /**
+     * The active options for this checker.
      * This is a processed version of {@link ProcessingEnvironment#getOptions()}:
      * If the option is of the form "-ACheckerName@key=value" and the current checker class,
      * or one of its superclasses is named "CheckerName", then add key &rarr; value.
@@ -407,7 +409,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private Map<String, String> activeOptions;
 
-    /** The string that separates the checker name from the option name.
+    /**
+     * The string that separates the checker name from the option name.
      * This string may only consist of valid Java identifier part characters,
      * because it will be used within the key of an option.
      */
@@ -416,7 +419,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
-    /** The checker that called this one, whether that be a BaseTypeChecker (used
+    /**
+     * The checker that called this one, whether that be a BaseTypeChecker (used
      * as a compound checker) or an AggregateChecker.
      * Null if this is the checker that calls all others.
      * Note that in the case of a compound checker, the compound checker is the
@@ -425,7 +429,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected SourceChecker parentChecker = null;
 
-    /** List of upstream checker names.
+    /**
+     * List of upstream checker names.
      * Includes the current checker.
      */
     protected List<String> upstreamCheckerNames = null;

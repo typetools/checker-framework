@@ -110,7 +110,6 @@ Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} q
 \begin{alltt}
 package \textit{myModule}.qual;
 
-import org.checkerframework.framework.qual.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
@@ -118,10 +117,10 @@ import java.lang.annotation.Target;
  * Denotes that the representation of an object is encrypted.
  */
 @SubtypeOf(PossiblyUnencrypted.class)
-@ImplicitFor(literal= { LiteralKind.NULL })
-@DefaultFor({TypeUseLocation.LOWER_BOUND})
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface Encrypted {}
+@ImplicitFor(literal=\{LiteralKind.NULL\})
+@DefaultFor(\{TypeUseLocation.LOWER_BOUND\})
+@Target(\{ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\})
+public @interface Encrypted \{\}
 \end{alltt}
 
 % alltt because it uses \textit
@@ -137,9 +136,9 @@ import java.lang.annotation.Target;
  * Denotes that the representation of an object might not be encrypted.
  */
 @DefaultQualifierInHierarchy
-@SubtypeOf({})
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface PossiblyUnencrypted {}
+@SubtypeOf(\{\})
+@Target(\{ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\})
+public @interface PossiblyUnencrypted \{\}
 \end{alltt}
 
 Note that all custom annotations must have the
@@ -164,26 +163,26 @@ import \textit{myModule}.qual.Encrypted;
 
 ...
 
-public @Encrypted String encrypt(String text) {
+public @Encrypted String encrypt(String text) \{
     // ...
-}
+\}
 
 // Only send encrypted data!
-public void sendOverInternet(@Encrypted String msg) {
+public void sendOverInternet(@Encrypted String msg) \{
     // ...
-}
+\}
 
-void sendText() {
+void sendText() \{
     // ...
     @Encrypted String ciphertext = encrypt(plaintext);
     sendOverInternet(ciphertext);
     // ...
-}
+\}
 
-void sendPassword() {
+void sendPassword() \{
     String password = getUserPassword();
     sendOverInternet(password);
-}
+\}
 \end{alltt}
 
 You may also need to add \code{@SuppressWarnings} annotations to the

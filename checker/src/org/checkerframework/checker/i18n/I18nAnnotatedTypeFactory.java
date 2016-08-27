@@ -6,7 +6,6 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -28,9 +27,8 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new LinkedHashSet<Class<? extends Annotation>>(
-                        Arrays.asList(Localized.class, UnknownLocalized.class)));
+        return new LinkedHashSet<Class<? extends Annotation>>(
+                Arrays.asList(Localized.class, UnknownLocalized.class));
     }
 
     @Override
@@ -38,8 +36,7 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(super.createTreeAnnotator(), new I18nTreeAnnotator(this));
     }
 
-    /** Do not propagate types through binary/compound operations.
-     */
+    /** Do not propagate types through binary/compound operations. */
     private class I18nTreeAnnotator extends TreeAnnotator {
         private final AnnotationMirror LOCALIZED;
 

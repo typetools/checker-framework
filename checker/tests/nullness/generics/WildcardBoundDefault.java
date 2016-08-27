@@ -1,5 +1,6 @@
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 class MyGenClass<T extends @Nullable Object> {}
 

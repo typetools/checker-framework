@@ -15,25 +15,21 @@ import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 
-public class RegexTransfer extends CFAbstractTransfer<CFValue, CFStore, RegexTransfer> {
+public class RegexTransfer extends CFTransfer {
 
     private static final String IS_REGEX_METHOD_NAME = "isRegex";
     private static final String AS_REGEX_METHOD_NAME = "asRegex";
 
-    /** Like super.analysis, but more specific type. */
-    protected RegexAnalysis analysis;
-
-    public RegexTransfer(RegexAnalysis analysis) {
+    public RegexTransfer(CFAnalysis analysis) {
         super(analysis);
-        this.analysis = analysis;
     }
 
     // TODO: These are special cases for isRegex(String, int) and asRegex(String, int).

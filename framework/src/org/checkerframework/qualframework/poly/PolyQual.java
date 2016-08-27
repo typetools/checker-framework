@@ -1,8 +1,12 @@
 package org.checkerframework.qualframework.poly;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-/** A qualifier in the qualifier polymorphism system, with ground qualifier
+/**
+ * A qualifier in the qualifier polymorphism system, with ground qualifier
  * representation {@code Q}.  A {@code PolyQual<Q>} represents either a
  * qualifier from the original system ({@code GroundQual}, which simply wraps a
  * {@code Q}), a qualifier variable that ranges over ground qualifiers ({@code
@@ -10,28 +14,31 @@ import java.util.*;
  * CombiningOperation} ({@code Combined}).
  */
 public abstract class PolyQual<Q> {
-    /** Get the greatest lower bound of the possible types of this qualifier
+    /**
+     * Get the greatest lower bound of the possible types of this qualifier
      * under all valid assignments to qualifier variables.  (That is, for all
      * assignments of qualifiers to qualifier variables, {@code
      * pq.getMinimum()} is a subtype of {@code pq}.
      */
     public abstract Q getMinimum();
 
-    /** Get the least upper bound of the possible types of this qualifier under
+    /**
+     * Get the least upper bound of the possible types of this qualifier under
      * all valid assignments to qualifier variables.
      */
     public abstract Q getMaximum();
 
-    /** Substitute qualifiers for qualifier variables.
-     */
+    /** Substitute qualifiers for qualifier variables. */
     public abstract PolyQual<Q> substitute(Map<String, PolyQual<Q>> substs);
 
-    /** Convert this qualifier to an equivalent {@link Combined} qualifier
+    /**
+     * Convert this qualifier to an equivalent {@link Combined} qualifier
      * using the given {@link CombiningOperation}.
      */
     public abstract Combined<Q> asCombined(CombiningOperation<Q> op);
 
-    /** Combine this qualifier with another using the given {@link
+    /**
+     * Combine this qualifier with another using the given {@link
      * CombiningOperation}.
      */
     public PolyQual<Q> combineWith(PolyQual<Q> other, CombiningOperation<Q> op) {
@@ -178,8 +185,10 @@ public abstract class PolyQual<Q> {
         }
     }
 
-    /** A combination of several qualifiers and qualifier variables, using a
-     * combining function. */
+    /**
+     * A combination of several qualifiers and qualifier variables, using a
+     * combining function.
+     */
     public static class Combined<Q> extends PolyQual<Q> {
         // We keep only a single `Q` field because combining two Qs can be done
         // immediately using `op` - unlike combining `QualVar`s, which we can't
@@ -214,7 +223,8 @@ public abstract class PolyQual<Q> {
             this.ground = ground;
         }
 
-        /** Like the main {@code Combined<Q>} constructor, but returns a simpler
+        /**
+         * Like the main {@code Combined<Q>} constructor, but returns a simpler
          * PolyQual (GroundQual or QualVar) when possible.
          */
         public static <Q> PolyQual<Q> from(
@@ -232,7 +242,8 @@ public abstract class PolyQual<Q> {
             return new Combined<Q>(op, vars, ground);
         }
 
-        /** Combine two instances of {@code Combined} that were built with the
+        /**
+         * Combine two instances of {@code Combined} that were built with the
          * same {@link CombiningOperation}.
          */
         public PolyQual<Q> combineWith(Combined<Q> other) {

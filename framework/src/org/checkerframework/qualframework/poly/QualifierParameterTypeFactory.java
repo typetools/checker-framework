@@ -23,7 +23,8 @@ import org.checkerframework.qualframework.base.QualifierMapVisitor;
 import org.checkerframework.qualframework.base.SetQualifierVisitor;
 import org.checkerframework.qualframework.util.QualifierContext;
 
-/** Type factory with qualifier polymorphism support.  This type factory
+/**
+ * Type factory with qualifier polymorphism support.  This type factory
  * extends an underlying qualifier system with qualifier variables, combined
  * qualifiers (using {@link CombiningOperation}), wildcards, typechecking
  * support for all of the above, substitution for accessing fields whose types
@@ -46,7 +47,8 @@ public abstract class QualifierParameterTypeFactory<Q>
         return (QualifierParameterAnnotationConverter<Q>) super.getAnnotationConverter();
     }
 
-    /** Create a {@link QualifierHierarchy} for ground qualifiers (represented
+    /**
+     * Create a {@link QualifierHierarchy} for ground qualifiers (represented
      * by instances of {@code Q}).
      */
     protected abstract QualifierHierarchy<Q> createGroundQualifierHierarchy();
@@ -86,7 +88,8 @@ public abstract class QualifierParameterTypeFactory<Q>
     }
     */
 
-    /** Apply substitution to get the effective type of a class member when
+    /**
+     * Apply substitution to get the effective type of a class member when
      * accessed through an instance with particular qualifiers.  This method
      * roughly corresponds to AnnotatedTypes.asMemberOf.
      */
@@ -107,7 +110,8 @@ public abstract class QualifierParameterTypeFactory<Q>
         return memberQual.substituteAll(objectQual);
     }
 
-    /** Visitor to apply {@code qualifierAsMemberOf} at every location within a
+    /**
+     * Visitor to apply {@code qualifierAsMemberOf} at every location within a
      * {@link QualifiedTypeMirror}.
      */
     private final QualifierMapVisitor<QualParams<Q>, QualParams<Q>, QualParams<Q>>
@@ -160,7 +164,8 @@ public abstract class QualifierParameterTypeFactory<Q>
         return AS_MEMBER_OF_VISITOR.visit(memberType, effectiveReceiverQualifier);
     }
 
-    /** Visitor to apply substitution at every location within a {@link
+    /**
+     * Visitor to apply substitution at every location within a {@link
      * QualifiedTypeMirror}.  This is used in {@code methodFromUse} to
      * substitute in the newly-inferred values for method qualifier parameters.
      */

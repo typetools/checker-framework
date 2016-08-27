@@ -19,8 +19,9 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
+// TODO: large parts of this file are the same as PerFileSuite.java.
+// Reduce duplication by moving common parts to an abstract class.
 /**
- *
  * <p>PerDirectorySuite runs a test class once for each set of javaFiles returned by its method marked with {@code @Parameters}</p>
  * <p>To use:<br>
  *  Annotated your test class with {@code @RunWith(PerDirectorySuite.class)}<br>
@@ -60,7 +61,6 @@ public class PerDirectorySuite extends Suite {
     private List<List<File>> getParametersList(TestClass klass) throws Throwable {
         FrameworkMethod method = getParametersMethod(klass);
 
-        List<List<File>> javaFiles;
         // We must have a method getTestDirs which returns String[],
         // or getParametersMethod would fail.
         if (!method.getReturnType().isArray()) {

@@ -2,21 +2,21 @@ package org.checkerframework.qualframework.poly;
 
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
-/** A binary operation for combining qualifiers of type {@code Q}.
- */
+/** A binary operation for combining qualifiers of type {@code Q}. */
 public interface CombiningOperation<Q> {
-    /** Apply the operation to two qualifiers, producing a new qualifier.  The
+    /**
+     * Apply the operation to two qualifiers, producing a new qualifier.  The
      * operation is expected to be commutative and associative.
      */
     Q combine(Q a, Q b);
 
-    /** The identity element for this operation.  It should always be the case
+    /**
+     * The identity element for this operation.  It should always be the case
      * that {@code op.combine(op.identity(), x)} is equivalent to {@code x}.
      */
     Q identity();
 
-    /** The least-upper-bound operation over a qualifier hierarchy.
-     */
+    /** The least-upper-bound operation over a qualifier hierarchy. */
     public static class Lub<Q> implements CombiningOperation<Q> {
         QualifierHierarchy<Q> hierarchy;
 
@@ -55,8 +55,7 @@ public interface CombiningOperation<Q> {
         }
     }
 
-    /** The greatest-lower-bound operation over a qualifier hierarchy.
-     */
+    /** The greatest-lower-bound operation over a qualifier hierarchy. */
     public static class Glb<Q> implements CombiningOperation<Q> {
         QualifierHierarchy<Q> hierarchy;
 

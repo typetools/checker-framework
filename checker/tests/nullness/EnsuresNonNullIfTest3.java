@@ -15,7 +15,7 @@ class ValueTuple {
     public @Nullable Object[] vals = new Object[10];
 
     @EnsuresNonNullIf(result = false, expression = "vals[#1]")
-    boolean isMissing(final int value_index) {
+    boolean isMissing(int value_index) {
         return true;
     }
 }

@@ -16,7 +16,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface ClassBound {
-    /** The <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1">binary name</a>
-     * of the class or classes that upper-bound the values of this Class object. */
+    /**
+     * The <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1">binary name</a>
+     * of the class or classes that upper-bound the values of this Class object.
+     */
     String[] value();
 }

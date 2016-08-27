@@ -3,7 +3,6 @@ package tests.compound;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.checkerframework.common.aliasing.AliasingChecker;
@@ -26,9 +25,8 @@ public class AnotherCompoundCheckerAnnotatedTypeFactory extends BaseAnnotatedTyp
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(ACCTop.class, ACCBottom.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                Arrays.asList(ACCTop.class, ACCBottom.class));
     }
 
     @Override

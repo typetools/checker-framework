@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
 
 class StaticInitializer {
 

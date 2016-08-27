@@ -1,4 +1,3 @@
-import org.checkerframework.framework.qual.*;
 
 class PrimitiveDotClass {
 

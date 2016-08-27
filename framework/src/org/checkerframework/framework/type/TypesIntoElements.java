@@ -66,6 +66,10 @@ public class TypesIntoElements {
          * the receiver annotation on a constructor, breaking logic there.
          * I assume that the problem is the default that we use for these locations.
          * Once we've decided the defaulting, enable this.
+         * See example of code that fails when this is enabled in
+         * checker/jtreg/nullness/annotationsOnExtends. Also, see https://github
+         * .com/typetools/checker-framework/pull/876 for a better implementation (though it also
+         * causes the error).
         storeClassExtends(processingEnv, types, atypeFactory, tree.getExtendsClause(), csym, -1);
         {
             int implidx = 0;

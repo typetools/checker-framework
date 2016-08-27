@@ -1,6 +1,9 @@
 package org.checkerframework.qualframework.poly;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
@@ -8,16 +11,19 @@ import org.checkerframework.qualframework.base.QualifierMapVisitor;
 import org.checkerframework.qualframework.base.TypeHierarchy;
 import org.checkerframework.qualframework.poly.PolyQual.*;
 
-/** Helper class for performing method qualifier parameter inference.
- */
+/** Helper class for performing method qualifier parameter inference. */
 class MethodParameterInference<Q> {
     /** The names of the qualifier parameters we are trying to infer. */
     private List<String> qualParams;
-    /** The types of the method's formal parameters (ordinary parameters, not
-     * type or qualifier parameters). */
+    /**
+     * The types of the method's formal parameters (ordinary parameters, not
+     * type or qualifier parameters).
+     */
     private List<? extends QualifiedTypeMirror<QualParams<Q>>> formals;
-    /** The actual parameter types from the method call site, after type
-     * parameter inference has been done. */
+    /**
+     * The actual parameter types from the method call site, after type
+     * parameter inference has been done.
+     */
     private List<? extends QualifiedTypeMirror<QualParams<Q>>> actuals;
 
     private QualifierHierarchy<Q> groundHierarchy;
@@ -25,14 +31,20 @@ class MethodParameterInference<Q> {
     private QualifierParameterHierarchy<Q> qualParamHierarchy;
     private TypeHierarchy<QualParams<Q>> typeHierarchy;
 
-    /** This variable will be set to true if an unsatisfiable constraint is
-     * found. */
+    /**
+     * This variable will be set to true if an unsatisfiable constraint is
+     * found.
+     */
     private boolean unsatisfiable;
-    /** The strictest upper bound currently known for each qualifier parameter
-     * listed in {@link qualParams}. */
+    /**
+     * The strictest upper bound currently known for each qualifier parameter
+     * listed in {@link qualParams}.
+     */
     private List<PolyQual<Q>> upperBounds;
-    /** The strictest lower bound currently known for each qualifier parameter
-     * listed in {@link qualParams}. */
+    /**
+     * The strictest lower bound currently known for each qualifier parameter
+     * listed in {@link qualParams}.
+     */
     private List<PolyQual<Q>> lowerBounds;
 
     /** Set to true if the infer() method has already been run. */
@@ -84,8 +96,10 @@ class MethodParameterInference<Q> {
         return Integer.parseInt(name.substring(INFER_TAG.length(), name.indexOf(':')));
     }
 
-    /** Run qualifier parameter inference using the arguments provided to the
-     * constructor. */
+    /**
+     * Run qualifier parameter inference using the arguments provided to the
+     * constructor.
+     */
     public Map<String, PolyQual<Q>> infer() {
         if (this.alreadyRan) {
             throw new IllegalStateException(
@@ -110,10 +124,12 @@ class MethodParameterInference<Q> {
         return getAssignment();
     }
 
-    /** Collect the containment constraints that arise from requiring each
+    /**
+     * Collect the containment constraints that arise from requiring each
      * element in {@code actuals} to be a subtype of the corresponding element
      * of {@code formals}.  The resulting constraints will have inference
-     * variables in the place of the method's qualifier variables. */
+     * variables in the place of the method's qualifier variables.
+     */
     private List<Pair<Wildcard<Q>, Wildcard<Q>>> findConstraints() {
         // Replace each qualifier variable named in `this.qualParams` with a
         // new inference variable.  (An inference variable is just a qualifier
@@ -150,8 +166,10 @@ class MethodParameterInference<Q> {
         return constraints;
     }
 
-    /** Process a single containment constraint and update {@code upperBounds}
-     * and {@code lowerBounds} accordingly. */
+    /**
+     * Process a single containment constraint and update {@code upperBounds}
+     * and {@code lowerBounds} accordingly.
+     */
     private void processConstraint(Wildcard<Q> subset, Wildcard<Q> superset) {
         if (!isInferVar(subset.getLowerBound())
                 && !isInferVar(subset.getUpperBound())
@@ -190,8 +208,10 @@ class MethodParameterInference<Q> {
         }
     }
 
-    /** Build a map that gives the inferred qualifier for each qualifier
-     * parameter, or null if the constraints are unsatisfiable. */
+    /**
+     * Build a map that gives the inferred qualifier for each qualifier
+     * parameter, or null if the constraints are unsatisfiable.
+     */
     public Map<String, PolyQual<Q>> getAssignment() {
         if (unsatisfiable) {
             return null;
@@ -208,8 +228,10 @@ class MethodParameterInference<Q> {
         return map;
     }
 
-    /** Helper visitor to perform substitution at every location in a {@link
-     * QualifiedTypeMirror}. */
+    /**
+     * Helper visitor to perform substitution at every location in a {@link
+     * QualifiedTypeMirror}.
+     */
     private QualifierMapVisitor<QualParams<Q>, QualParams<Q>, Map<String, Wildcard<Q>>>
             SUBSTITUTE_VISITOR =
                     new QualifierMapVisitor<

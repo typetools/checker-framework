@@ -394,7 +394,8 @@ public class InternalUtils {
         return null;
     }
 
-    /** Helper function to extract the javac Context from the
+    /**
+     * Helper function to extract the javac Context from the
      * javac processing environment.
      *
      * @param env the processing environment

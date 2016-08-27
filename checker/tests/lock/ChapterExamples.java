@@ -1,7 +1,11 @@
 // This test contains the sample code from the Lock Checker manual chapter
 // modified to fit testing instead of illustrative purposes,
 // and contains other miscellaneous Lock Checker testing.
-import java.util.*;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
@@ -543,7 +547,8 @@ class ChapterExamples {
       a = b; // TODO: This assignment between two reference types should not require a lock to be held.
     }*/
 
-    final ReentrantLock lock1 = new ReentrantLock(), lock2 = new ReentrantLock();
+    final ReentrantLock lock1 = new ReentrantLock();
+    final ReentrantLock lock2 = new ReentrantLock();
 
     @GuardedBy("lock1") MyClass filename;
 
@@ -838,7 +843,7 @@ class ChapterExamples {
     void testSynchronizedExpressionIsFinal(boolean b) {
         synchronized (c1) {}
 
-        final Object o1 = new Object(); // o1 is effectively final - it is never reassigned
+        Object o1 = new Object(); // o1 is effectively final - it is never reassigned
         Object o2 = new Object(); // o2 is reassigned later - it is not effectively final
         synchronized (o1) {}
         //:: error: (lock.expression.not.final)
@@ -899,7 +904,7 @@ class ChapterExamples {
     void testExplicitLockExpressionIsFinal(boolean b) {
         c2.lock();
 
-        final ReentrantLock rl1 =
+        ReentrantLock rl1 =
                 new ReentrantLock(); // rl1 is effectively final - it is never reassigned
         ReentrantLock rl2 =
                 new ReentrantLock(); // rl2 is reassigned later - it is not effectively final

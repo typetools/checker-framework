@@ -1,6 +1,10 @@
 package org.checkerframework.checker.tainting.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Repeatable;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
 
@@ -8,6 +12,8 @@ import org.checkerframework.qualframework.poly.qual.Wildcard;
  * Untainted is the annotation to specify the untainted qualifier.
  *
  * @see Tainted
+ *
+ * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

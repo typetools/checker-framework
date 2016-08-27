@@ -1,6 +1,8 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
 
 public final class MissingBoundAnnotations {
 

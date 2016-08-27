@@ -7,10 +7,12 @@ import javax.lang.model.element.Element;
 public interface ExtendedDeclaredType extends ExtendedReferenceType {
     /** Returns the element corresponding to this type. */
     Element asElement();
-    /** Returns the type of the innermost enclosing instance, or a {@link
+    /**
+     * Returns the type of the innermost enclosing instance, or a {@link
      * ExtendedNoType} of kind {@code NONE} if there is no enclosing
      * instance.  Only types corresponding to inner classes have an enclosing
-     * instance. */
+     * instance.
+     */
     ExtendedTypeMirror getEnclosingType();
     /**
      * Returns the actual type arguments of this type. For a type nested within
