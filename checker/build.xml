@@ -420,11 +420,19 @@
     <target name="jar" depends="build,checker-qual-jar,checker-compat-qual-jar"
             description="Create checker.jar file">
 
+        <mkdir dir="dist" />
+
+        <!-- jar up compilation results to protect against being
+             overwritten by unjarring annotation-file-utilities.lib.
+             See https://github.com/typetools/checker-framework/issues/894 -->
+        <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/"/>
+
         <!-- Only unjar the stubparser and afu - everything else is recompiled. -->
         <unjar src="${stubparser.lib}" dest="${build}" />
         <unjar src="${annotation-file-utilities.lib}" dest="${build}" />
 
-        <mkdir dir="dist" />
+        <!-- Work-around for Issue 894, see above. -->
+        <unjar src="${checker.lib}" dest="${build}" />
 
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/">
             <manifest>
