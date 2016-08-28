@@ -704,7 +704,8 @@ public class CheckerMain {
         } catch (IOException e) {
             // When using CheckerDevelMain we might not have a checker.jar file built yet.
             // Issue a warning instead of aborting execution.
-            System.err.printf("Could not read %s. Shorthand processor names will not work.%n", checkerJar);
+            System.err.printf(
+                    "Could not read %s. Shorthand processor names will not work.%n", checkerJar);
         }
 
         return checkerClassNames;
