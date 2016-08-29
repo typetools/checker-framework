@@ -187,9 +187,14 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * If the argument valueType indicates that the Constant Value
          * Checker knows the exact value of the annotated expression,
-         * returns that integer.  Otherwise returns null.
+         * returns that integer.  Otherwise returns null. This method
+         * should only be used by clients who need exactly one value -
+         * such as the binary operator rules - and not by those that
+         * need to know whether a valueType belongs to an LBC qualifier.
+         * Clients needing a qualifier should use lowerBoundAnmFromValueType
+         * instead of this method.
          */
-        public Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
+        private Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
             if (possibleValues != null && possibleValues.size() == 1) {
                 return new Integer(possibleValues.get(0).intValue());
@@ -321,8 +326,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
-                int val = maybeValRight.intValue();
-                addAnnotationForLiteralPlus(val, leftType, type);
+                addAnnotationForLiteralPlus(maybeValRight, leftType, type);
                 return;
             }
 
@@ -332,8 +336,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
             Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
             if (maybeValLeft != null) {
-                int val = maybeValLeft.intValue();
-                addAnnotationForLiteralPlus(val, rightType, type);
+                addAnnotationForLiteralPlus(maybeValLeft, rightType, type);
                 return;
             }
 
@@ -383,9 +386,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
-                int val = maybeValRight.intValue();
                 // Instead of a separate method for subtraction, add the negative of a constant.
-                addAnnotationForLiteralPlus(-1 * val, leftType, type);
+                addAnnotationForLiteralPlus(-1 * maybeValRight, leftType, type);
                 return;
             }
 
@@ -438,8 +440,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
-                int val = maybeValRight.intValue();
-                addAnnotationForLiteralMultiply(val, leftType, type);
+                addAnnotationForLiteralMultiply(maybeValRight, leftType, type);
                 return;
             }
 
@@ -449,8 +450,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
             Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
             if (maybeValLeft != null) {
-                int val = maybeValLeft.intValue();
-                addAnnotationForLiteralMultiply(val, rightType, type);
+                addAnnotationForLiteralMultiply(maybeValLeft, rightType, type);
                 return;
             }
 
@@ -536,8 +536,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
-                int val = maybeValRight.intValue();
-                addAnnotationForLiteralDivideRight(val, leftType, type);
+                addAnnotationForLiteralDivideRight(maybeValRight, leftType, type);
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
@@ -546,8 +545,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     valueAnnotatedTypeFactory.getAnnotatedType(leftExpr);
             Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
             if (maybeValLeft != null) {
-                int val = maybeValLeft.intValue();
-                addAnnotationForLiteralDivideLeft(val, leftType, type);
+                addAnnotationForLiteralDivideLeft(maybeValLeft, leftType, type);
             }
 
             /* This section handles generic annotations:
@@ -595,8 +593,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
-                int val = maybeValRight.intValue();
-                addAnnotationForLiteralRemainder(val, type);
+                addAnnotationForLiteralRemainder(maybeValRight, type);
             }
 
             /* This section handles generic annotations:
