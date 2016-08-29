@@ -63,21 +63,23 @@ public class DefaultInferredTypesApplier {
             AnnotationMirror top) {
 
         AnnotationMirror primary = type.getAnnotationInHierarchy(top);
-        if (inferred == null && primary == null) {
-            // Type doesn't have a primary either, nothing to remove
-            return;
-        } else if (inferred == null && type.getKind() == TypeKind.TYPEVAR) {
-            removePrimaryAnnotationTypeVar(type, inferredTypeMirror, top, primary);
-        } else if (inferred == null) {
-            removePrimaryTypeVarApplyUpperBound(type, inferredTypeMirror, top, primary);
-        } else if (primary != null
-                && (omitSubtypingCheck || hierarchy.isSubtype(inferred, primary))) {
-            type.replaceAnnotation(inferred);
-        } else if (primary == null) {
-            Set<AnnotationMirror> lowerbounds =
-                    AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, type);
-            AnnotationMirror lowerbound = hierarchy.findAnnotationInHierarchy(lowerbounds, top);
-            if (omitSubtypingCheck || hierarchy.isSubtype(inferred, lowerbound)) {
+        if (inferred == null) {
+            if (primary == null) {
+                // Type doesn't have a primary either, nothing to remove
+            } else if (type.getKind() == TypeKind.TYPEVAR) {
+                removePrimaryAnnotationTypeVar(type, inferredTypeMirror, top, primary);
+            } else {
+                removePrimaryTypeVarApplyUpperBound(type, inferredTypeMirror, top, primary);
+            }
+        } else {
+            if (primary == null) {
+                Set<AnnotationMirror> lowerbounds =
+                        AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, type);
+                AnnotationMirror lowerbound = hierarchy.findAnnotationInHierarchy(lowerbounds, top);
+                if (omitSubtypingCheck || hierarchy.isSubtype(inferred, lowerbound)) {
+                    type.replaceAnnotation(inferred);
+                }
+            } else if ((omitSubtypingCheck || hierarchy.isSubtype(inferred, primary))) {
                 type.replaceAnnotation(inferred);
             }
         }
