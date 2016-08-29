@@ -90,7 +90,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * between various qualifiers - especially subtyping relations.
      * In particular, it's used to determine the relationship between
      * two identical qualifiers with differing arguments (i.e.
-     * @MinLen(2) vs @MinLen(3).
+     * MinLen(2) vs MinLen(3).
      */
     private final class MinLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
         /**
