@@ -5,18 +5,20 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The annotation to distinguish compiler message Strings from
- * normal Strings. The programmer should hardly ever need to use it
- * explicitly.
+ * Indicates that the {@code String} type has an unknown
+ * compiler message key property.
  *
- * @author wmdietl
  * @checker_framework.manual #compilermsgs-checker Compiler Message Key Checker
  */
-@SubtypeOf(UnknownCompilerMessageKey.class)
+@InvisibleQualifier
+@SubtypeOf({})
+@DefaultQualifierInHierarchy
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface CompilerMessageKey {}
+public @interface UnknownCompilerMessageKey {}

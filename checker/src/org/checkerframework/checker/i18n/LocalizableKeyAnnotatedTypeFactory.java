@@ -1,19 +1,15 @@
 package org.checkerframework.checker.i18n;
 
-import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.checkerframework.checker.i18n.qual.LocalizableKey;
+import org.checkerframework.checker.i18n.qual.LocalizableKeyBottom;
+import org.checkerframework.checker.i18n.qual.UnknownLocalizableKey;
 import org.checkerframework.checker.propkey.PropertyKeyAnnotatedTypeFactory;
-import org.checkerframework.checker.propkey.qual.PropertyKey;
-import org.checkerframework.checker.propkey.qual.PropertyKeyBottom;
-import org.checkerframework.checker.propkey.qual.UnknownPropertyKey;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 
 /**
@@ -32,19 +28,14 @@ public class LocalizableKeyAnnotatedTypeFactory extends PropertyKeyAnnotatedType
         return new LinkedHashSet<Class<? extends Annotation>>(
                 Arrays.asList(
                         LocalizableKey.class,
-                        PropertyKey.class,
-                        PropertyKeyBottom.class,
-                        UnknownPropertyKey.class));
+                        LocalizableKeyBottom.class,
+                        UnknownLocalizableKey.class));
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, PROPKEY_BOTTOM);
-
         return new ListTreeAnnotator(
-                new PropagationTreeAnnotator(this),
-                implicitsTreeAnnotator,
+                super.createBasicTreeAnnotator(),
                 new KeyLookupTreeAnnotator(this, LocalizableKey.class));
     }
 }
