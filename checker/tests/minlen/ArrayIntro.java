@@ -1,24 +1,20 @@
-import org.checkerframework.checker.upperbound.qual.*;
+import org.checkerframework.checker.minlen.qual.*;
 
 class ArrayIntro {
+    // Note that I had to put all these annotations in comments to prevent
+    // the autoformatter from screwing with them.
     void test() {
-        @MinLen(5)
-        int[] arr = new int[5];
+        int /*@MinLen(5)*/[] arr = new int[5];
         int a = 9;
-        a += 4;
-        a--;
-        @MinLen(12)
-        int[] arr1 = new int[a];
-        @MinLen(3)
-        Integer[] arr2 = {1, 2, 3};
+        a += 5;
+        a -= 2;
+        int /*@MinLen(12)*/[] arr1 = new int[a];
+        int /*@MinLen(3)*/[] arr2 = {1, 2, 3};
         //:: error: (assignment.type.incompatible)
-        @MinLen(4)
-        Integer[] arr3 = {4, 5, 6};
+        int /*@MinLen(4)*/[] arr3 = {4, 5, 6};
         //:: error: (assignment.type.incompatible)
-        @MinLen(7)
-        int[] arr4 = new int[4];
+        int /*@MinLen(7)*/[] arr4 = new int[4];
         //:: error: (assignment.type.incompatible)
-        @MinLen(16)
-        int[] arr5 = new int[a];
+        int /*@MinLen(16)*/[] arr5 = new int[a];
     }
 }
