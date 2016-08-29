@@ -322,12 +322,7 @@ public class AnnotationUtils {
      */
     public static boolean containsSameByClass(
             Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
-        for (AnnotationMirror an : c) {
-            if (AnnotationUtils.areSameByClass(an, anno)) {
-                return true;
-            }
-        }
-        return false;
+        return getAnnotationByClass(c, anno) != null;
     }
 
     /**

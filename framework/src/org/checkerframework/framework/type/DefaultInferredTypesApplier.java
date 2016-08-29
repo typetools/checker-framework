@@ -77,7 +77,7 @@ public class DefaultInferredTypesApplier {
             Set<AnnotationMirror> lowerbounds =
                     AnnotatedTypes.findEffectiveLowerBoundAnnotations(hierarchy, type);
             AnnotationMirror lowerbound = hierarchy.findAnnotationInHierarchy(lowerbounds, top);
-            if (omitSubtypingCheck | hierarchy.isSubtype(inferred, lowerbound)) {
+            if (omitSubtypingCheck || hierarchy.isSubtype(inferred, lowerbound)) {
                 type.replaceAnnotation(inferred);
             }
         }
@@ -89,7 +89,8 @@ public class DefaultInferredTypesApplier {
             AnnotationMirror top,
             AnnotationMirror notInferred) {
         if (inferredTypeMirror.getKind() != TypeKind.TYPEVAR) {
-            ErrorReporter.errorAbort("Missing annos");
+            ErrorReporter.errorAbort(
+                    "Inferred value should not be missing annotations: " + inferredTypeMirror);
             return;
         }
 
