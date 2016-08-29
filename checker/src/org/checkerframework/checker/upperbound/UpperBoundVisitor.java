@@ -14,7 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
-    private static final /*@CompilerMessageKey*/ String UPPER_BOUND = "array.access.unsafe.high";
+    private static final String UPPER_BOUND = "array.access.unsafe.high";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
