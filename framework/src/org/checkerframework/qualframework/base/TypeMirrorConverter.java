@@ -51,27 +51,30 @@ import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
  * which is a key into the lookup table indicating a particular qualifier.
  */
 public class TypeMirrorConverter<Q> {
-    /** The checker adapter, used for lazy initialization of {@link
-     * typeFactory}. */
+    /** The checker adapter, used for lazy initialization of {@link typeFactory}. */
     private final CheckerAdapter<Q> checkerAdapter;
-    /** Annotation processing environment, used to construct new {@link QualifierKey}
-     * {@link AnnotationMirror}s. */
+    /**
+     * Annotation processing environment, used to construct new {@link QualifierKey}
+     * {@link AnnotationMirror}s.
+     */
     private final ProcessingEnvironment processingEnv;
     /** A {@link QualifierKey} annotation with no {@code index} set. */
     private final AnnotationMirror blankKey;
-    /** The type factory adapter, used to construct {@link
-     * AnnotatedTypeMirror}s. */
+    /** The type factory adapter, used to construct {@link AnnotatedTypeMirror}s. */
     private QualifiedTypeFactoryAdapter<Q> typeFactory;
 
     /** The next unused index in the lookup table. */
     private int nextIndex = 0;
 
-    /** The qualifier-to-index half of the lookup table.  This lets us ensure
+    /**
+     * The qualifier-to-index half of the lookup table.  This lets us ensure
      * that the same qualifier maps to the same {@code @QualifierKey} annotation.
      */
     private final HashMap<Q, Integer> qualToIndex;
-    /** The index-to-qualifier half of the lookup table.  This is used for
-     * annotated-to-qualified conversions. */
+    /**
+     * The index-to-qualifier half of the lookup table.  This is used for
+     * annotated-to-qualified conversions.
+     */
     private final HashMap<Integer, Q> indexToQual;
 
     /** Cache @QualifierKey annotation mirrors so they are not to be recreated on every conversion */
@@ -100,8 +103,10 @@ public class TypeMirrorConverter<Q> {
         this.indexToQual = new HashMap<>();
     }
 
-    /** Returns the type factory to use for building {@link
-     * AnnotatedTypeMirror}s, running lazy initialization if necessary. */
+    /**
+     * Returns the type factory to use for building {@link
+     * AnnotatedTypeMirror}s, running lazy initialization if necessary.
+     */
     private QualifiedTypeFactoryAdapter<Q> getTypeFactory() {
         if (typeFactory == null) {
             typeFactory = checkerAdapter.getTypeFactory();
@@ -109,8 +114,10 @@ public class TypeMirrorConverter<Q> {
         return typeFactory;
     }
 
-    /** Constructs a new {@link QualifierKey} annotation with the provided index, using
-     * {@code desc.toString()} to set the {@link QualifierKey#desc()} field. */
+    /**
+     * Constructs a new {@link QualifierKey} annotation with the provided index, using
+     * {@code desc.toString()} to set the {@link QualifierKey#desc()} field.
+     */
     private AnnotationMirror createKey(int index, Object desc) {
         if (keyToAnnoCache.containsKey(index)) {
             return keyToAnnoCache.get(index);
@@ -125,7 +132,8 @@ public class TypeMirrorConverter<Q> {
         }
     }
 
-    /** Returns the index that represents {@code qual}.  If
+    /**
+     * Returns the index that represents {@code qual}.  If
      * {@code qual} has not been assigned an index yet, a new index will
      * be generated and assigned to it.
      */
@@ -140,8 +148,7 @@ public class TypeMirrorConverter<Q> {
         }
     }
 
-    /** Returns the {@code index} field of a {@link QualifierKey} {@link
-     * AnnotationMirror}. */
+    /** Returns the {@code index} field of a {@link QualifierKey} {@link AnnotationMirror}. */
     private int getIndex(AnnotationMirror anno) {
         Integer value = AnnotationUtils.getElementValue(anno, "index", Integer.class, true);
         if (value == null) {
@@ -153,7 +160,8 @@ public class TypeMirrorConverter<Q> {
 
     /* QTM -> ATM conversion functions */
 
-    /** Given a QualifiedTypeMirror and an AnnotatedTypeMirror with the same
+    /**
+     * Given a QualifiedTypeMirror and an AnnotatedTypeMirror with the same
      * underlying TypeMirror, recursively update annotations on the
      * AnnotatedTypeMirror to match the qualifiers present on the
      * QualifiedTypeMirror.  After running applyQualifiers, calling
@@ -186,7 +194,8 @@ public class TypeMirrorConverter<Q> {
         APPLY_COMPONENT_QUALIFIERS_VISITOR.visit(qtm, atm);
     }
 
-    /** Given a QualifiedTypeMirror, produce an AnnotatedTypeMirror with the
+    /**
+     * Given a QualifiedTypeMirror, produce an AnnotatedTypeMirror with the
      * same underlying TypeMirror and with annotations corresponding to the
      * qualifiers on the input QualifiedTypeMirror.  As with applyQualifiers,
      * calling getQualifiedType on the resulting AnnotatedTypeMirror should
@@ -224,8 +233,7 @@ public class TypeMirrorConverter<Q> {
         return atms;
     }
 
-    /** applyQualifiers lifted to operate on lists of augmented TypeMirrors.
-     */
+    /** applyQualifiers lifted to operate on lists of augmented TypeMirrors. */
     private void applyQualifiersToLists(
             List<? extends QualifiedTypeMirror<Q>> qtms, List<? extends AnnotatedTypeMirror> atms) {
         assert (qtms.size() == atms.size());
@@ -234,8 +242,8 @@ public class TypeMirrorConverter<Q> {
         }
     }
 
-    /** A visitor to recursively applyQualifiers to components of the
-     * TypeMirrors.
+    /**
+     * A visitor to recursively applyQualifiers to components of the TypeMirrors.
      *
      * This also has some special handling for ExecutableTypes.  Both
      * AnnotatedTypeMirror and ExtendedTypeMirror (the underlying types used by
@@ -380,7 +388,8 @@ public class TypeMirrorConverter<Q> {
 
     /* ATM -> QTM conversion functions */
 
-    /** Given an AnnotatedTypeMirror, construct a QualifiedTypeMirror with the
+    /**
+     * Given an AnnotatedTypeMirror, construct a QualifiedTypeMirror with the
      * same underlying type with the qualifiers extracted from the
      * AnnotatedTypeMirror's @QualifierKey annotations.
      */
@@ -442,8 +451,7 @@ public class TypeMirrorConverter<Q> {
 
     /* Conversion functions between qualifiers and @QualifierKey AnnotationMirrors */
 
-    /** Get the qualifier corresponding to a QualifierKey annotation.
-     */
+    /** Get the qualifier corresponding to a QualifierKey annotation. */
     public Q getQualifier(AnnotationMirror anno) {
         if (anno == null) {
             return null;
@@ -452,14 +460,16 @@ public class TypeMirrorConverter<Q> {
         return indexToQual.get(index);
     }
 
-    /** Get the qualifier corresponding to the QualifierKey annotation present on an
+    /**
+     * Get the qualifier corresponding to the QualifierKey annotation present on an
      * AnnotatedTypeMirror, or null if no such annotation exists.
      */
     public Q getQualifier(AnnotatedTypeMirror atm) {
         return getQualifier(atm.getAnnotation(QualifierKey.class));
     }
 
-    /** Get an AnnotationMirror for a QualifierKey annotation encoding the specified
+    /**
+     * Get an AnnotationMirror for a QualifierKey annotation encoding the specified
      * qualifier.
      */
     public AnnotationMirror getAnnotation(Q qual) {
@@ -468,16 +478,14 @@ public class TypeMirrorConverter<Q> {
 
     /* Miscellaneous utility functions */
 
-    /** Check if an AnnotationMirror is a valid QualifierKey annotation.
-     */
+    /** Check if an AnnotationMirror is a valid QualifierKey annotation. */
     public boolean isKey(AnnotationMirror anno) {
         // TODO: This should probably also check that 'anno' has a value in its
         // 'index' field.
         return anno != null && blankKey.getAnnotationType().equals(anno.getAnnotationType());
     }
 
-    /** Get a QualifierKey annotation containing no index.
-     */
+    /** Get a QualifierKey annotation containing no index. */
     public AnnotationMirror getBlankKeyAnnotation() {
         return blankKey;
     }

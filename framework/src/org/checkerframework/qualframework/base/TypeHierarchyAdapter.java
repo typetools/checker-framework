@@ -3,7 +3,8 @@ package org.checkerframework.qualframework.base;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
-/** Adapter class for {@link TypeHierarchy}, extending
+/**
+ * Adapter class for {@link TypeHierarchy}, extending
  * {@link org.checkerframework.framework.type.TypeHierarchy org.checkerframework.framework.type.TypeHierarchy}.
  */
 class TypeHierarchyAdapter<Q> extends org.checkerframework.framework.type.DefaultTypeHierarchy {

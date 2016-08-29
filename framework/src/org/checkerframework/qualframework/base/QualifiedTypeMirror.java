@@ -92,7 +92,8 @@ public abstract class QualifiedTypeMirror<Q> {
         return this.qualifier.hashCode() * 17 + this.underlying.hashCode() * 37;
     }
 
-    /** Check that the underlying ExtendedTypeMirror has a specific TypeKind, and
+    /**
+     * Check that the underlying ExtendedTypeMirror has a specific TypeKind, and
      * throw an exception if it does not.  This is a helper method for
      * QualifiedTypeMirror subclass constructors.
      *
@@ -120,7 +121,8 @@ public abstract class QualifiedTypeMirror<Q> {
         checkUnderlyingKind(underlying, expectedKind, false);
     }
 
-    /** Check that the underlying ExtendedTypeMirror has one of the indicated
+    /**
+     * Check that the underlying ExtendedTypeMirror has one of the indicated
      * TypeKinds, and throw an exception if it does not.  This is a helper
      * method for QualifiedTypeMirror subclass constructors.
      *
@@ -154,7 +156,8 @@ public abstract class QualifiedTypeMirror<Q> {
                         + actualKind);
     }
 
-    /** Check that the underlying ExtendedTypeMirror has a primitive TypeKind, and
+    /**
+     * Check that the underlying ExtendedTypeMirror has a primitive TypeKind, and
      * throw an exception if it does not.
      */
     // This method is here instead of in QualifiedPrimitiveType to keep it near
@@ -167,7 +170,8 @@ public abstract class QualifiedTypeMirror<Q> {
         }
     }
 
-    /** Helper function to raise an appropriate exception in case of a mismatch
+    /**
+     * Helper function to raise an appropriate exception in case of a mismatch
      * between qualified and unqualified versions of the same ExtendedTypeMirror.
      */
     private static <Q> void checkTypeMirrorsMatch(
@@ -178,7 +182,8 @@ public abstract class QualifiedTypeMirror<Q> {
         }
     }
 
-    /** Check if the underlying types of a list of QualifiedTypeMirrors match
+    /**
+     * Check if the underlying types of a list of QualifiedTypeMirrors match
      * the actual TypeMirrors from a second list.
      */
     private static <Q> void checkTypeMirrorListsMatch(
@@ -191,9 +196,11 @@ public abstract class QualifiedTypeMirror<Q> {
         }
     }
 
-    /** Helper function for checkTypeMirrorsMatch.  Returns a boolean
+    /**
+     * Helper function for checkTypeMirrorsMatch.  Returns a boolean
      * indicating whether the qualified and unqualified types are
-     * representations of the same type. */
+     * representations of the same type.
+     */
     private static <Q> boolean typeMirrorsMatch(
             QualifiedTypeMirror<Q> qualified, ExtendedTypeMirror unqualified) {
         if (qualified == null && unqualified == null) {
@@ -209,7 +216,8 @@ public abstract class QualifiedTypeMirror<Q> {
         return true;
     }
 
-    /** Helper function for checkTypeMirrorListsMatch.  Returns a boolean
+    /**
+     * Helper function for checkTypeMirrorListsMatch.  Returns a boolean
      * indicating whether the qualified and unqualified lists have matching
      * TypeMirrors.
      */
@@ -235,9 +243,11 @@ public abstract class QualifiedTypeMirror<Q> {
         return true;
     }
 
-    /** Helper function for subclass toString methods.  Concatenates together
+    /**
+     * Helper function for subclass toString methods.  Concatenates together
      * the results of calling toString on each of 'objs', with 'punct' between
-     * each pair of elements. */
+     * each pair of elements.
+     */
     private static String punctuatedList(String punct, List<? extends Object> objs) {
         StringBuilder sb = new StringBuilder();
         boolean first = true;

@@ -13,8 +13,7 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedType
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedUnionType;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedWildcardType;
 
-/** Visitor that replaces the qualifier of a {@link QualifiedTypeMirror}.
- */
+/** Visitor that replaces the qualifier of a {@link QualifiedTypeMirror}. */
 public class SetQualifierVisitor<Q> implements QualifiedTypeVisitor<Q, QualifiedTypeMirror<Q>, Q> {
     // This class has no fields that refer to `Q`, so all instances have the
     // same representation.  That means we can reuse a single instance for all

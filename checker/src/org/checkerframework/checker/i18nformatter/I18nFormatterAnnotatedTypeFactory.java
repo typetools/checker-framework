@@ -20,12 +20,10 @@ import org.checkerframework.checker.i18nformatter.qual.I18nFormatBottom;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormatFor;
 import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nUnknownFormat;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -47,9 +45,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *                           Format String Checker
  * @author Siwakorn Srisakaokul
  */
-public class I18nFormatterAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<
-                CFValue, CFStore, I18nFormatterTransfer, I18nFormatterAnalysis> {
+public class I18nFormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror I18NUNKNOWNFORMAT;
     protected final AnnotationMirror I18NFORMAT;

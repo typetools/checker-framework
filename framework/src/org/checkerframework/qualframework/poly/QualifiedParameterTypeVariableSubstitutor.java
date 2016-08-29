@@ -15,7 +15,8 @@ import org.checkerframework.qualframework.base.TypeVariableSubstitutor;
 public abstract class QualifiedParameterTypeVariableSubstitutor<Q>
         extends TypeVariableSubstitutor<QualParams<Q>> {
 
-    /** Combine two wildcards into one when substituting a qualified type into
+    /**
+     * Combine two wildcards into one when substituting a qualified type into
      * a qualified type variable use (for example, substituting {@code
      * [T := C《Q=TAINTED》]} into the use {@code T + 《Q=UNTAINTED》}).
      */

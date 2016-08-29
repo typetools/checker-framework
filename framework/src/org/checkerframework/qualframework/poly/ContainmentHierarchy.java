@@ -2,7 +2,8 @@ package org.checkerframework.qualframework.poly;
 
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
-/** A hierarchy of {@link Wildcard}s, ordered by the containment relation (JLS
+/**
+ * A hierarchy of {@link Wildcard}s, ordered by the containment relation (JLS
  * 4.5.1).
  */
 public class ContainmentHierarchy<Q> implements QualifierHierarchy<Wildcard<Q>> {

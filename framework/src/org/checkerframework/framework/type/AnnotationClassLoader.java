@@ -90,8 +90,10 @@ public class AnnotationClassLoader {
     /** The resource URL of the qual directory of a checker class */
     private final URL resourceURL;
 
-    /** The loaded annotation classes.  Call {@link #getLoadedAnnotationClasses} rather than using
-     * this field directly as it may be null. */
+    /**
+     * The loaded annotation classes.  Call {@link #getLoadedAnnotationClasses} rather than using
+     * this field directly as it may be null.
+     */
     private Set<Class<? extends Annotation>> loadedAnnotations;
 
     /**

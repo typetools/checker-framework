@@ -489,7 +489,7 @@ public class NullnessVisitor
 
     /**
      * @return true if the type of the tree is a super of String
-     * */
+     */
     private final boolean isString(ExpressionTree tree) {
         TypeMirror type = InternalUtils.typeOf(tree);
         return types.isAssignable(stringType, type);

@@ -3,7 +3,6 @@
 // Test case for Issue 152:
 // https://github.com/typetools/checker-framework/issues/152
 
-import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 
 public class Issue152 {

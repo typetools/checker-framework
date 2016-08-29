@@ -21,8 +21,12 @@ import org.checkerframework.checker.regex.classic.qual.PolyRegex;
 import org.checkerframework.checker.regex.classic.qual.RegexBottom;
 import org.checkerframework.checker.regex.classic.qual.UnknownRegex;
 import org.checkerframework.checker.regex.qual.Regex;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -82,8 +86,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * Also, adds {@link PolyRegex} to the type of String/char concatenation of
  * a Regex and a PolyRegex or two PolyRegexs.
  */
-public class RegexClassicAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<CFValue, CFStore, RegexTransfer, RegexAnalysis> {
+public class RegexClassicAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * The Pattern.compile method.
@@ -160,8 +163,9 @@ public class RegexClassicAnnotatedTypeFactory
     }
 
     @Override
-    protected RegexAnalysis createFlowAnalysis(List<Pair<VariableElement, CFValue>> fieldValues) {
-        return new RegexAnalysis(checker, this, fieldValues);
+    public CFTransfer createFlowTransferFunction(
+            CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+        return new RegexTransfer((CFAnalysis) analysis);
     }
 
     @Override
@@ -258,7 +262,8 @@ public class RegexClassicAnnotatedTypeFactory
         return Pattern.compile(regex).matcher("").groupCount();
     }
 
-    /** This method is a copy of RegexUtil.isRegex.
+    /**
+     * This method is a copy of RegexUtil.isRegex.
      * We cannot directly use RegexUtil, because it uses type annotations
      * which cannot be used in IDEs (yet).
      */

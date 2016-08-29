@@ -36,6 +36,7 @@ import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.KeyForBottom;
 import org.checkerframework.checker.nullness.qual.PolyKeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -46,8 +47,6 @@ import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.ObjectCreationNode;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -56,7 +55,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeReplacer;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -81,10 +79,9 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-public class KeyForAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<CFValue, CFStore, KeyForTransfer, KeyForAnalysis> {
+public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR;
+    protected final AnnotationMirror UNKNOWNKEYFOR, KEYFOR, KEYFORBOTTOM;
 
     private final KeyForPropagator keyForPropagator;
     private final KeyForCanonicalizer keyForCanonicalizer = new KeyForCanonicalizer();
@@ -103,6 +100,7 @@ public class KeyForAnnotatedTypeFactory
 
         KEYFOR = AnnotationUtils.fromClass(elements, KeyFor.class);
         UNKNOWNKEYFOR = AnnotationUtils.fromClass(elements, UnknownKeyFor.class);
+        KEYFORBOTTOM = AnnotationUtils.fromClass(elements, KeyForBottom.class);
         keyForPropagator = new KeyForPropagator(UNKNOWNKEYFOR);
 
         // Add compatibility annotations:
@@ -761,32 +759,7 @@ public class KeyForAnnotatedTypeFactory
     private final class KeyForQualifierHierarchy extends GraphQualifierHierarchy {
 
         public KeyForQualifierHierarchy(MultiGraphFactory factory) {
-            super(factory, null);
-        }
-
-        @Override
-        public AnnotationMirror getPolymorphicAnnotation(AnnotationMirror start) {
-            AnnotationMirror top = getTopAnnotation(start);
-
-            if (AnnotationUtils.areSameIgnoringValues(top, UNKNOWNKEYFOR)) {
-                return null;
-            }
-
-            if (polyQualifiers.containsKey(top)) {
-                return polyQualifiers.get(top);
-            } else if (polyQualifiers.containsKey(polymorphicQualifier)) {
-                return polyQualifiers.get(polymorphicQualifier);
-            } else {
-                // No polymorphic qualifier exists for that hierarchy.
-                ErrorReporter.errorAbort(
-                        "GraphQualifierHierarchy: did not find the polymorphic qualifier corresponding to qualifier "
-                                + start
-                                + "; all polymorphic qualifiers: "
-                                + polyQualifiers
-                                + "; this: "
-                                + this);
-                return null;
-            }
+            super(factory, KEYFORBOTTOM);
         }
 
         /*

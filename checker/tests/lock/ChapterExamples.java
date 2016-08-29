@@ -547,7 +547,8 @@ class ChapterExamples {
       a = b; // TODO: This assignment between two reference types should not require a lock to be held.
     }*/
 
-    final ReentrantLock lock1 = new ReentrantLock(), lock2 = new ReentrantLock();
+    final ReentrantLock lock1 = new ReentrantLock();
+    final ReentrantLock lock2 = new ReentrantLock();
 
     @GuardedBy("lock1") MyClass filename;
 

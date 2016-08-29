@@ -234,7 +234,8 @@ public class RegexQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Regex
         return Pattern.compile(regex).matcher("").groupCount();
     }
 
-    /** This method is a copy of RegexUtil.isValidRegex.
+    /**
+     * This method is a copy of RegexUtil.isValidRegex.
      * We cannot directly use RegexUtil, because it uses type annotations
      * which cannot be used in IDEs (yet).
      */

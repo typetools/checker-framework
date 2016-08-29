@@ -23,7 +23,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  */
 public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
-    /** If true, indicates that the store refers to a point in the code
+    /**
+     * If true, indicates that the store refers to a point in the code
      * inside a constructor or initializer. This is useful because
      * constructors and initializers are special with regard to
      * the set of locks that is considered to be held. For example,
