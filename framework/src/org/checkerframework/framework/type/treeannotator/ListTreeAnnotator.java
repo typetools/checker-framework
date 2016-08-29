@@ -1,10 +1,13 @@
 package org.checkerframework.framework.type.treeannotator;
 
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 
 /**
  * ListTreeAnnotator is a TreeVisitor that executes a list of
@@ -28,7 +31,15 @@ public class ListTreeAnnotator extends TreeAnnotator {
      */
     public ListTreeAnnotator(TreeAnnotator... annotators) {
         super(null);
-        this.annotators = Collections.unmodifiableList(Arrays.asList(annotators));
+        List<TreeAnnotator> annotatorList = new ArrayList<>();
+        for (TreeAnnotator annotator : annotators) {
+            if (annotator instanceof ListTreeAnnotator) {
+                annotatorList.addAll(((ListTreeAnnotator) annotator).annotators);
+            } else {
+                annotatorList.add(annotator);
+            }
+        }
+        this.annotators = Collections.unmodifiableList(annotatorList);
     }
 
     @Override

@@ -68,6 +68,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
+import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -77,6 +78,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.IrrelevantTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -277,9 +279,20 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator() {
-        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
+        List<TypeAnnotator> typeAnnotators = new ArrayList<>();
+        RelevantJavaTypes relevantJavaTypes =
+                checker.getClass().getAnnotation(RelevantJavaTypes.class);
+        if (relevantJavaTypes != null) {
+            Class<?>[] classes = relevantJavaTypes.value();
+            typeAnnotators.add(
+                    new IrrelevantTypeAnnotator(
+                            this, getQualifierHierarchy().getTopAnnotations(), classes));
+        }
 
-        return new ListTypeAnnotator(new PropagationTypeAnnotator(this), implicitsTypeAnnotator);
+        implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
+        typeAnnotators.add(implicitsTypeAnnotator);
+        typeAnnotators.add(new PropagationTypeAnnotator(this));
+        return new ListTypeAnnotator(typeAnnotators.toArray(new TypeAnnotator[0]));
     }
 
     protected void addTypeNameImplicit(Class<?> clazz, AnnotationMirror implicitAnno) {

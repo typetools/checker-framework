@@ -5,19 +5,20 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class SignednessTest extends CheckerFrameworkPerDirectoryTest {
+public class SignednessUncheckedDefaultsTest extends CheckerFrameworkPerDirectoryTest {
 
-    public SignednessTest(List<File> testFiles) {
+    public SignednessUncheckedDefaultsTest(List<File> testFiles) {
         super(
                 testFiles,
                 org.checkerframework.checker.signedness.SignednessChecker.class,
                 "signedness",
                 "-Anomsgtext",
-                "-AprintErrorStack");
+                "-AprintErrorStack",
+                "-AuseDefaultsForUncheckedCode=-source,bytecode");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"signedness", "all-systems"};
+        return new String[] {"signedness-unchecked-defaults"};
     }
 }

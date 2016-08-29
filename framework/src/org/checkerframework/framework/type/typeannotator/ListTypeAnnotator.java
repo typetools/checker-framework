@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type.typeannotator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,7 +27,15 @@ public final class ListTypeAnnotator extends TypeAnnotator {
      */
     public ListTypeAnnotator(TypeAnnotator... annotators) {
         super(null);
-        this.annotators = Collections.unmodifiableList(Arrays.asList(annotators));
+        List<TypeAnnotator> annotatorList = new ArrayList<>();
+        for (TypeAnnotator annotator : annotators) {
+            if (annotator instanceof ListTypeAnnotator) {
+                annotatorList.addAll(((ListTypeAnnotator) annotator).annotators);
+            } else {
+                annotatorList.add(annotator);
+            }
+        }
+        this.annotators = Collections.unmodifiableList(annotatorList);
     }
 
     @Override
