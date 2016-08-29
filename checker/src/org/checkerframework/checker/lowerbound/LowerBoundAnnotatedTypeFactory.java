@@ -67,28 +67,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.postInit();
     }
 
-    /**
-     * Hack to make postfix increments and decrements work correctly.
-     * This is a workaround for issue #867:
-     * https://github.com/typetools/checker-framework/issues/867
-     */
-    @Override
-    public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-        if (tree.getKind() == Tree.Kind.POSTFIX_DECREMENT
-                || tree.getKind() == Tree.Kind.POSTFIX_INCREMENT) {
-            // TODO: This is a workaround for Issue 867
-            // https://github.com/typetools/checker-framework/issues/867
-            AnnotatedTypeMirror refinedType = super.getAnnotatedType(tree);
-            AnnotatedTypeMirror typeOfExpression =
-                    getAnnotatedType(((UnaryTree) tree).getExpression());
-            // Call asSuper in case the type of decrement tree is different than the type of its
-            // expression.
-            return AnnotatedTypes.asSuper(this, typeOfExpression, typeOfExpression);
-        } else {
-            return super.getAnnotatedType(tree);
-        }
-    }
-
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -183,7 +161,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case PREFIX_DECREMENT:
                     demoteType(typeSrc, typeDst);
                     break;
-                case POSTFIX_INCREMENT: // Do nothing. The hack above takes care of these.
+                case POSTFIX_INCREMENT: // Do nothing. The CF should take care of these itself.
                     break;
                 case POSTFIX_DECREMENT:
                     break;
