@@ -23,7 +23,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -63,7 +62,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      */
     protected final CFAbstractAnalysis<V, ?, ?> analysis;
 
-    protected final TypeHierarchy typeHierarchy;
     protected final GenericAnnotatedTypeFactory<V, ?, ?, ?> factory;
     protected final ProcessingEnvironment processingEnv;
     protected final QualifierHierarchy hierarchy;
@@ -75,7 +73,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             Set<AnnotationMirror> annotations,
             TypeMirror underlyingType) {
         this.analysis = analysis;
-        this.typeHierarchy = analysis.getTypeHierarchy();
         this.annotations = annotations;
         this.underlyingType = underlyingType;
         this.factory = analysis.getTypeFactory();
@@ -86,23 +83,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     public CFAbstractValue(CFAbstractAnalysis<V, ?, ?> analysis, AnnotatedTypeMirror type) {
-        if (type.getKind() == TypeKind.WILDCARD) {
-            // For wildcards, store the primary annotation of the upper bound.  See the class
-            // comment for more details.
-            AnnotatedWildcardType wildcard = (AnnotatedWildcardType) type;
-            this.annotations = wildcard.getExtendsBound().getAnnotations();
-        } else {
-            this.annotations = type.getAnnotations();
-        }
-
-        this.analysis = analysis;
-        this.typeHierarchy = analysis.getTypeHierarchy();
-        this.underlyingType = type.getUnderlyingType();
-        this.factory = analysis.getTypeFactory();
-        this.processingEnv = factory.getProcessingEnv();
-        this.hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
-
-        validateSet(this.getAnnotations(), this.getUnderlyingType());
+        this(
+                analysis,
+                (type.getKind() == TypeKind.WILDCARD
+                        ? ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations()
+                        : type.getAnnotations()),
+                type.getUnderlyingType());
     }
 
     private boolean validateSet(Set<AnnotationMirror> annos, TypeMirror typeMirror) {
