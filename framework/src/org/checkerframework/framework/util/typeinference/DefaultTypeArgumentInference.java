@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.TreeSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeVariable;
@@ -103,21 +102,21 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets);
 
         handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
-        // Type arguments cannot be primitives, so box them if they are.
-        boxPrimitives(typeFactory, inferredArgs);
         return inferredArgs;
     }
 
-    private void boxPrimitives(
-            AnnotatedTypeFactory factory, Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
-        for (TypeVariable key : new HashSet<>(inferredArgs.keySet())) {
-            AnnotatedTypeMirror typeArg = inferredArgs.get(key);
-            if (TypesUtils.isPrimitive(typeArg.getUnderlyingType())) {
-                AnnotatedTypeMirror boxed = factory.getBoxedType((AnnotatedPrimitiveType) typeArg);
-                inferredArgs.remove(key);
-                inferredArgs.put(key, boxed);
+    private List<AnnotatedTypeMirror> boxPrimitives(
+            AnnotatedTypeFactory factory, List<AnnotatedTypeMirror> args) {
+        List<AnnotatedTypeMirror> boxedArgs = new ArrayList<>(args.size());
+        for (AnnotatedTypeMirror arg : args) {
+            if (TypesUtils.isPrimitive(arg.getUnderlyingType())) {
+                AnnotatedTypeMirror boxed = factory.getBoxedType((AnnotatedPrimitiveType) arg);
+                boxedArgs.add(boxed);
+            } else {
+                boxedArgs.add(arg);
             }
         }
+        return boxedArgs;
     }
 
     @Override
@@ -135,12 +134,22 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final ExpressionTree expression, final AnnotatedTypeFactory typeFactory) {
         final List<? extends ExpressionTree> argTrees =
                 TypeArgInferenceUtil.expressionToArgTrees(expression);
-        return TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
+        List<AnnotatedTypeMirror> argtypes =
+                TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
+        return boxPrimitives(typeFactory, argtypes);
     }
 
     protected AnnotatedTypeMirror getAssignedTo(
             ExpressionTree expression, AnnotatedTypeFactory typeFactory) {
-        return TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
+        AnnotatedTypeMirror assignedTo =
+                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
+        if (assignedTo == null) {
+            return null;
+        } else if (TypesUtils.isPrimitive(assignedTo.getUnderlyingType())) {
+            return typeFactory.getBoxedType((AnnotatedPrimitiveType) assignedTo);
+        } else {
+            return assignedTo;
+        }
     }
 
     /**
