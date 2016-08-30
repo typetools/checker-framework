@@ -1,9 +1,7 @@
 package org.checkerframework.qualframework.poly.qual;
 
-import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
-
 /**
- * When using {@link SimpleQualifierParameterAnnotationConverter}, this enum
+ * When using {@link org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter}, this enum
  * allows specifying super and extends bounds, e.g {@code {@literal @}Tainted(wildcard=Extends) MyClass} is equivalent
  * to MyClass《? extends {@literal @}Tainted》.
  */

@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.nullness.AbstractNullnessChecker;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
@@ -18,11 +17,11 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * {@link Nullable} type may it be assigned {@code null}.
  *
  * <p>
- * This annotation is associated with the {@link AbstractNullnessChecker}.
+ * This annotation is associated with the {@link org.checkerframework.checker.nullness.AbstractNullnessChecker}.
  *
  * @see NonNull
  * @see MonotonicNonNull
- * @see AbstractNullnessChecker
+ * @see org.checkerframework.checker.nullness.AbstractNullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SubtypeOf({})

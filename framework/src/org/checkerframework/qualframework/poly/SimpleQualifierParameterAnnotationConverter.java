@@ -14,6 +14,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.PolyQual.QualVar;
+import org.checkerframework.qualframework.poly.qual.DefaultValue;
 import org.checkerframework.qualframework.util.ExtendedExecutableType;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
@@ -32,7 +33,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q>
      * The default "Target" in an annotation is the primary qualifier.
      * We can't use null in the annotation, so we use this special value.
      */
-    public static final String PRIMARY_TARGET = "_primary";
+    public static final String PRIMARY_TARGET = DefaultValue.PRIMARY_TARGET;
     public static final String TARGET_PARAM_NAME = "param";
     /** The name of the qualifier parameter to use for polymorphic qualifiers. */
     public static final String POLY_NAME = "_poly";

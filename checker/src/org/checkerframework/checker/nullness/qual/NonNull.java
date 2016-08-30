@@ -6,8 +6,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.checker.initialization.InitializationChecker;
-import org.checkerframework.checker.nullness.AbstractNullnessChecker;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -25,7 +23,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * field is never {@code null}
  * <em>after the class has been fully initialized</em>. Class initialization is
  * controlled by the Freedom Before Commitment type system, see
- * {@link InitializationChecker} for more details.
+ * {@link  org.checkerframework.checker.initialization.InitializationChecker} for more details.
  *
  * <p>
  * For static fields, the {@link NonNull} annotation indicates that this field
@@ -35,11 +33,11 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * This annotation is rarely written in source code, because it is the default.
  *
  * <p>
- * This annotation is associated with the {@link AbstractNullnessChecker}.
+ * This annotation is associated with the {@link  org.checkerframework.checker.nullness.AbstractNullnessChecker}.
  *
  * @see Nullable
  * @see MonotonicNonNull
- * @see AbstractNullnessChecker
+ * @see  org.checkerframework.checker.nullness.AbstractNullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @SubtypeOf(MonotonicNonNull.class)
