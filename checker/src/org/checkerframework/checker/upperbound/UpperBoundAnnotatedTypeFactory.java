@@ -58,8 +58,10 @@ public class UpperBoundAnnotatedTypeFactory
     /**
      *  Provides a way to query the Constant Value Checker, which computes the
      *  values of expressions known at compile time (constant prop + folding).
+     *  The field is public so that it can be accessed from the UpperBoundVisitor
+     *  when comparing index values against the known minimum lengths of arrays.
      */
-    private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
+    public final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
     /**
      *  Provides a way to query the Min Len (minimum length) Checker,
@@ -184,18 +186,6 @@ public class UpperBoundAnnotatedTypeFactory
             // The annotation of the whole list is the min of the list.
             long valMin = Collections.min(possibleValues);
             return new Integer((int) valMin);
-        }
-
-        /**
-         *  Get the list of possible values from a value checker type.
-         *  May return null.
-         */
-        private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-            AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
-            if (anm == null) {
-                return null;
-            }
-            return ValueAnnotatedTypeFactory.getIntValues(anm);
         }
 
         /**
