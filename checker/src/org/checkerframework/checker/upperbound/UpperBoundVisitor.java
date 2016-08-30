@@ -38,12 +38,20 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // This is actually not a very generalizable way of keeping track of arrays...
         String arrName = arrTree.toString();
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
+
+        // Need to be able to check this as part of the conditional below.
+        // We need the max because we want to know whether the index is
+        // less than the minimum length of the array. If it could be any
+        // of several values, we want the highest one.
+        Integer valMax = atypeFactory.valMaxFromValueChecker(indexTree);
+
         // Is indexType LTL of a set containing arrName?
         if (indexType.hasAnnotation(LessThanLength.class)
                 && (UpperBoundUtils.hasValue(indexType, arrName))) {
             // If so, this is safe - get out of here.
             return super.visitArrayAccess(tree, type);
-        } else if (false) {
+        } else if (valMax != null) {
+
             // Check if the MinLen Checker knows about this array.
             return super.visitArrayAccess(tree, type);
         } else {

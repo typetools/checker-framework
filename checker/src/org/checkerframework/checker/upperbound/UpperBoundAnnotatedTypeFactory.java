@@ -58,10 +58,8 @@ public class UpperBoundAnnotatedTypeFactory
     /**
      *  Provides a way to query the Constant Value Checker, which computes the
      *  values of expressions known at compile time (constant prop + folding).
-     *  The field is public so that it can be accessed from the UpperBoundVisitor
-     *  when comparing index values against the known minimum lengths of arrays.
      */
-    public final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
+    private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
     /**
      *  Provides a way to query the Min Len (minimum length) Checker,
@@ -97,6 +95,27 @@ public class UpperBoundAnnotatedTypeFactory
             return null;
         }
         return ValueAnnotatedTypeFactory.getIntValues(anm);
+    }
+
+    /**
+     *  Finds the maximum value in the set of values represented
+     *  by a value checker annotation.
+     */
+    Integer valMaxFromValueChecker(ExpressionTree tree) {
+        /*  It's possible that possibleValues could be null (if
+         *  there was no value checker annotation, I guess, but this
+         *  definitely happens in practice) or empty (if the value
+         *  checker annotated it with its equivalent of our unknown
+         *  annotation.
+         */
+        AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+        List<Long> possibleValues = possibleValuesFromValueType(valueType);
+        if (possibleValues == null || possibleValues.size() == 0) {
+            return null;
+        }
+        // The annotation of the whole list is the max of the list.
+        long valMax = Collections.max(possibleValues);
+        return new Integer((int) valMax);
     }
 
     @Override
