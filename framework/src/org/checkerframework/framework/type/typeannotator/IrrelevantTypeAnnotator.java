@@ -9,38 +9,44 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.TypesUtils;
 
+/**
+ * Adds annotations to types that are not relevant specified by the {@link RelevantJavaTypes} on
+ * a checker
+ */
 public class IrrelevantTypeAnnotator extends TypeAnnotator {
-    List<TypeMirror> supportedTypes;
-    Set<TypeMirror> allFoundSupportedTypes;
+    private List<TypeMirror> supportedTypes;
+    /** Cache of types found that are supportedTypes or subclass of supported types. Used so that
+     * isSubtype doesn't need to be called repeatedly on the same types.*/
+    private Set<TypeMirror> allFoundRelevantTypes;
 
-    boolean excludeArrays = false;
-    Set<? extends AnnotationMirror> annotations;
+    private boolean arraysAreRelevant;
+    private Set<? extends AnnotationMirror> annotations;
 
     /**
      * Annotate every type with the annotationMirror except for those whose underlying Java type is
-     * one of (or a subtype of) a class in classes.  (Only adds annotationMirror if no annotation
+     * one of (or a subtype of) a class in relevantClasses.  (Only adds annotationMirror if no annotation
      * in the hierarchy are already on the type.)
      * @param typeFactory AnnotatedTypeFactory
-     * @param annotations
-     * @param classes types that should not be annotated with annotationMirror
+     * @param annotations annotations to add
+     * @param relevantClasses types that should not be annotated with annotationMirror
      */
     public IrrelevantTypeAnnotator(
             AnnotatedTypeFactory typeFactory,
             Set<? extends AnnotationMirror> annotations,
-            Class<?>[] classes) {
+            Class<?>[] relevantClasses) {
         super(typeFactory);
         this.annotations = annotations;
-
-        this.supportedTypes = new ArrayList<>(classes.length);
-        for (Class<?> clazz : classes) {
+        this.arraysAreRelevant = false;
+        this.supportedTypes = new ArrayList<>(relevantClasses.length);
+        for (Class<?> clazz : relevantClasses) {
             if (clazz.equals(Object[].class)) {
-                excludeArrays = true;
+                arraysAreRelevant = true;
             } else {
                 supportedTypes.add(
                         TypesUtils.typeFromClass(
@@ -49,8 +55,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
                                 clazz));
             }
         }
-        this.allFoundSupportedTypes = new HashSet<>();
-        allFoundSupportedTypes.addAll(supportedTypes);
+        this.allFoundRelevantTypes = new HashSet<>(supportedTypes);
     }
 
     @Override
@@ -79,19 +84,21 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
         }
 
         boolean shouldAnnotate = true;
-        if (allFoundSupportedTypes.contains(typeMirror)) {
+        if (allFoundRelevantTypes.contains(typeMirror)) {
             shouldAnnotate = false;
         } else if (typeMirror.getKind() == TypeKind.DECLARED) {
             for (TypeMirror supportedType : supportedTypes) {
                 if (types.isSubtype(typeMirror, supportedType)) {
                     shouldAnnotate = false;
-                    allFoundSupportedTypes.add(typeMirror);
+                    allFoundRelevantTypes.add(typeMirror);
                     break;
                 }
             }
         } else if (typeMirror.getKind() == TypeKind.ARRAY) {
-            allFoundSupportedTypes.add(typeMirror);
-            shouldAnnotate = excludeArrays;
+            shouldAnnotate = arraysAreRelevant;
+            if (arraysAreRelevant) {
+                allFoundRelevantTypes.add(typeMirror);
+            }
         }
 
         if (shouldAnnotate) {

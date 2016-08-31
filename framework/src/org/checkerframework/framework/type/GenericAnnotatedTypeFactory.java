@@ -261,8 +261,14 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
      * on the contents of a tree.
      *
-     * Subclasses may override this method to specify a more appropriate
-     * {@link TreeAnnotator}.
+     * Subclasses may override this method to specify a more appropriate {@link TreeAnnotator}.
+     * The default tree annotator is a {@link ListTreeAnnotator}
+     * of the following:
+     * <ol>
+     *   <li> {@link PropagationTreeAnnotator}: Propagates annotations from subtrees.
+     *   <li> {@link ImplicitsTreeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *  meta-annotations
+     * </ol>
      *
      * @return a tree annotator
      */
@@ -276,6 +282,16 @@ public abstract class GenericAnnotatedTypeFactory<
      * {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
      * that adds annotations to a type based on the content of the type itself.
      *
+     * Subclass may override this method.  The default type annotator is a {@link ListTypeAnnotator}
+     * of the following:
+     * <ol>
+     *   <li> {@link IrrelevantTypeAnnotator}: Adds top to types not listed in
+     *  the {@link RelevantJavaTypes} annotation on the checker
+     *   <li> {@link PropagationTypeAnnotator}: Propagates annotation onto wildcards
+     *   <li> {@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *  meta-annotations
+     * </ol>
+     *
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator() {
@@ -284,14 +300,15 @@ public abstract class GenericAnnotatedTypeFactory<
                 checker.getClass().getAnnotation(RelevantJavaTypes.class);
         if (relevantJavaTypes != null) {
             Class<?>[] classes = relevantJavaTypes.value();
+            // Must be first in order to annotated all irrelevant types that are not explicilty
+            // annotated.
             typeAnnotators.add(
                     new IrrelevantTypeAnnotator(
                             this, getQualifierHierarchy().getTopAnnotations(), classes));
         }
-
+        typeAnnotators.add(new PropagationTypeAnnotator(this));
         implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
         typeAnnotators.add(implicitsTypeAnnotator);
-        typeAnnotators.add(new PropagationTypeAnnotator(this));
         return new ListTypeAnnotator(typeAnnotators.toArray(new TypeAnnotator[0]));
     }
 
