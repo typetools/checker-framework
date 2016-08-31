@@ -39,23 +39,20 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         String arrName = arrTree.toString();
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
 
-        // Need to be able to check this as part of the conditional below.
+        // Need to be able to check these as part of the conditional below.
         // We need the max because we want to know whether the index is
         // less than the minimum length of the array. If it could be any
         // of several values, we want the highest one.
         Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
+        Integer minLen = atypeFactory.minLenFromExpressionTree(arrTree);
 
         // Is indexType LTL of a set containing arrName?
         if (indexType.hasAnnotation(LessThanLength.class)
                 && (UpperBoundUtils.hasValue(indexType, arrName))) {
             // If so, this is safe - get out of here.
             return super.visitArrayAccess(tree, type);
-        } else if (valMax != null) {
-            // Check if the MinLen Checker knows about this array.
-            Integer minLen = atypeFactory.minLenFromExpressionTree(arrTree);
-            if (minLen != null && valMax < minLen) {
-                return super.visitArrayAccess(tree, type);
-            }
+        } else if (valMax != null && minLen != null && valMax < minLen) {
+            return super.visitArrayAccess(tree, type);
         } else {
             // Unsafe, since neither the Upper bound or MinLen checks succeeded.
             checker.report(Result.warning(UPPER_BOUND, indexType.toString(), arrName), indexTree);
