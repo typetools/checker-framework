@@ -5,7 +5,7 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
+import org.checkerframework.qualframework.poly.qual.DefaultValue;
 
 /**
  * A polymorphic qualifier for the Regex type system.
@@ -25,5 +25,5 @@ public @interface PolyRegex {
     /**
      * The name of the qualifier parameter to set.
      */
-    String param() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
+    String param() default DefaultValue.PRIMARY_TARGET;
 }

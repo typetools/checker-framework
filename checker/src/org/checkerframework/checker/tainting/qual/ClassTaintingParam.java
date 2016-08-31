@@ -5,7 +5,7 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
+import org.checkerframework.qualframework.poly.qual.DefaultValue;
 
 /**
  * ClassTaintingParam declares a tainting qualifier parameter on a class.
@@ -25,5 +25,5 @@ public @interface ClassTaintingParam {
     /**
      * The name of the qualifier parameter to declare.
      */
-    String value() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
+    String value() default DefaultValue.PRIMARY_TARGET;
 }

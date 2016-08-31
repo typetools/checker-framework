@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.nullness.NullnessChecker;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -16,7 +15,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * This type qualifier belongs to the freedom-before-commitment initialization
  * tracking type-system. This type-system is not used on its own, but in
  * conjunction with some other type-system that wants to ensure safe
- * initialization. For instance, {@link NullnessChecker} uses
+ * initialization. For instance, {@link org.checkerframework.checker.nullness.NullnessChecker} uses
  * freedom-before-commitment to track initialization of {@link NonNull} fields.
  *
  * <p>
