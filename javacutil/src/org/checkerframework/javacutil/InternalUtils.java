@@ -241,10 +241,7 @@ public class InternalUtils {
      * Returns whether a TypeVariable represents a captured type.
      */
     public static boolean isCaptured(TypeVariable typeVar) {
-        if (typeVar instanceof AnnotatedType) {
-            return ((Type.TypeVar) ((Type.AnnotatedType) typeVar).unannotatedType()).isCaptured();
-        }
-        return ((Type.TypeVar) typeVar).isCaptured();
+        return ((Type.TypeVar) ((Type.TypeVar) typeVar).unannotatedType()).isCaptured();
     }
 
     /**
@@ -252,10 +249,7 @@ public class InternalUtils {
      */
     public static WildcardType getCapturedWildcard(TypeVariable typeVar) {
         if (isCaptured(typeVar)) {
-            if (typeVar instanceof AnnotatedType) {
-                return ((CapturedType) ((AnnotatedType) typeVar).unannotatedType()).wildcard;
-            }
-            return ((CapturedType) typeVar).wildcard;
+            return ((CapturedType) ((Type.TypeVar) typeVar).unannotatedType()).wildcard;
         }
         return null;
     }
