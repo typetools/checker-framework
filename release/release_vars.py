@@ -116,7 +116,9 @@ CHECKER_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-source.jar')
 CHECKER_JAVADOC = os.path.join(CHECKER_BIN_DIR, 'checker-javadoc.jar')
 
 CHECKER_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-qual.jar')
+CHECKER_QUAL_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-qual-source.jar')
 CHECKER_COMPAT_QUAL = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual.jar')
+CHECKER_COMPAT_QUAL_SOURCE = os.path.join(CHECKER_BIN_DIR, 'checker-compat-qual-source.jar')
 CHECKER_MANUAL = os.path.join(CHECKER_FRAMEWORK, "checker", "manual")
 
 JAVAC_BINARY = os.path.join(CHECKER_BIN_DIR, 'javac.jar')

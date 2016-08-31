@@ -47,6 +47,7 @@ import org.checkerframework.framework.util.typeinference.solver.SubtypesSolver;
 import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7
@@ -104,6 +105,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return inferredArgs;
     }
 
+    private List<AnnotatedTypeMirror> boxPrimitives(
+            AnnotatedTypeFactory factory, List<AnnotatedTypeMirror> args) {
+        List<AnnotatedTypeMirror> boxedArgs = new ArrayList<>(args.size());
+        for (AnnotatedTypeMirror arg : args) {
+            if (TypesUtils.isPrimitive(arg.getUnderlyingType())) {
+                AnnotatedTypeMirror boxed = factory.getBoxedType((AnnotatedPrimitiveType) arg);
+                boxedArgs.add(boxed);
+            } else {
+                boxedArgs.add(arg);
+            }
+        }
+        return boxedArgs;
+    }
+
     @Override
     public void adaptMethodType(
             AnnotatedTypeFactory typeFactory,
@@ -119,12 +134,22 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final ExpressionTree expression, final AnnotatedTypeFactory typeFactory) {
         final List<? extends ExpressionTree> argTrees =
                 TypeArgInferenceUtil.expressionToArgTrees(expression);
-        return TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
+        List<AnnotatedTypeMirror> argtypes =
+                TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
+        return boxPrimitives(typeFactory, argtypes);
     }
 
     protected AnnotatedTypeMirror getAssignedTo(
             ExpressionTree expression, AnnotatedTypeFactory typeFactory) {
-        return TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
+        AnnotatedTypeMirror assignedTo =
+                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
+        if (assignedTo == null) {
+            return null;
+        } else if (TypesUtils.isPrimitive(assignedTo.getUnderlyingType())) {
+            return typeFactory.getBoxedType((AnnotatedPrimitiveType) assignedTo);
+        } else {
+            return assignedTo;
+        }
     }
 
     /**

@@ -5,7 +5,7 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
+import org.checkerframework.qualframework.poly.qual.DefaultValue;
 import org.checkerframework.qualframework.poly.qual.Wildcard;
 
 /**
@@ -20,12 +20,12 @@ public @interface Var {
     /**
      * Which parameter this @Var is a use of.
      */
-    String arg() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
+    String arg() default DefaultValue.PRIMARY_TARGET;
 
     /**
      * The name of the parameter to set.
      */
-    String param() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
+    String param() default DefaultValue.PRIMARY_TARGET;
 
     /**
      * Specify that this use is a wildcard with a bound.

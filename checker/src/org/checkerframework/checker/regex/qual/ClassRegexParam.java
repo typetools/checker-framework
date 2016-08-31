@@ -6,7 +6,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.checkerframework.checker.tainting.qual.ClassTaintingParam;
-import org.checkerframework.qualframework.poly.SimpleQualifierParameterAnnotationConverter;
+import org.checkerframework.qualframework.poly.qual.DefaultValue;
+
 /**
  * ClassRegexParam declares a regex qualifier parameter on a class.
  *
@@ -19,5 +20,5 @@ public @interface ClassRegexParam {
     /**
      * The name of the qualifier parameter to declare.
      */
-    String value() default SimpleQualifierParameterAnnotationConverter.PRIMARY_TARGET;
+    String value() default DefaultValue.PRIMARY_TARGET;
 }
