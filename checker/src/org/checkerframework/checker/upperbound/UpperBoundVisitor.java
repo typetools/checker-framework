@@ -43,7 +43,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // We need the max because we want to know whether the index is
         // less than the minimum length of the array. If it could be any
         // of several values, we want the highest one.
-        Integer valMax = atypeFactory.valMaxFromValueChecker(indexTree);
+        Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
 
         // Is indexType LTL of a set containing arrName?
         if (indexType.hasAnnotation(LessThanLength.class)
@@ -51,9 +51,11 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // If so, this is safe - get out of here.
             return super.visitArrayAccess(tree, type);
         } else if (valMax != null) {
-
             // Check if the MinLen Checker knows about this array.
-            return super.visitArrayAccess(tree, type);
+            Integer minLen = atypeFactory.minLenFromExpressionTree(arrTree);
+            if (minLen != null && valMax < minLen) {
+                return super.visitArrayAccess(tree, type);
+            }
         } else {
             // Unsafe, since neither the Upper bound or MinLen checks succeeded.
             checker.report(Result.warning(UPPER_BOUND, indexType.toString(), arrName), indexTree);

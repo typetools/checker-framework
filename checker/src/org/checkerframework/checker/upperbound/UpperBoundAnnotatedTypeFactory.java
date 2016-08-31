@@ -16,6 +16,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
+import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -39,7 +40,7 @@ import org.checkerframework.javacutil.Pair;
 
 /**
  * Implements the introduction rules for the upper bound checker.
- * Works primarily by way of querying the minlen checker
+ * Works primarily by way of querying the minLen checker
  * and comparing the min lengths of arrays to the known values
  * of variables as supplied by the value checker.
  */
@@ -65,7 +66,7 @@ public class UpperBoundAnnotatedTypeFactory
      *  Provides a way to query the Min Len (minimum length) Checker,
      *  which computes the lengths of arrays.
      */
-    private final MinLenAnnotatedTypeFactory minlenAnnotatedTypeFactory;
+    private final MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory;
 
     /**
      *  We need this to make an AnnotationBuilder for some reason.
@@ -80,9 +81,21 @@ public class UpperBoundAnnotatedTypeFactory
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
 
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
-        minlenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
+        minLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
         env = checker.getProcessingEnvironment();
         this.postInit();
+    }
+
+    /**
+     *  Queries the MinLen Checker to determine if there
+     *  is a known minimum length for the array. If not,
+     *  returns null.
+     */
+    public Integer minLenFromExpressionTree(ExpressionTree tree) {
+        AnnotatedTypeMirror minLenType = minLenAnnotatedTypeFactory.getAnnotatedType(tree);
+        AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
+        Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
+        return minLen;
     }
 
     /**
@@ -101,7 +114,7 @@ public class UpperBoundAnnotatedTypeFactory
      *  Finds the maximum value in the set of values represented
      *  by a value checker annotation.
      */
-    Integer valMaxFromValueChecker(ExpressionTree tree) {
+    public Integer valMaxFromExpressionTree(ExpressionTree tree) {
         /*  It's possible that possibleValues could be null (if
          *  there was no value checker annotation, I guess, but this
          *  definitely happens in practice) or empty (if the value
