@@ -16,6 +16,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.AnnotatedType;
+import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
@@ -240,10 +241,17 @@ public class InternalUtils {
      * Returns whether a TypeVariable represents a captured type.
      */
     public static boolean isCaptured(TypeVariable typeVar) {
-        if (typeVar instanceof AnnotatedType) {
-            return ((Type.TypeVar) ((Type.AnnotatedType) typeVar).unannotatedType()).isCaptured();
+        return ((Type.TypeVar) ((Type.TypeVar) typeVar).unannotatedType()).isCaptured();
+    }
+
+    /**
+     * If typeVar is a captured wildcard, returns that wildcard; otherwise returns null.
+     */
+    public static WildcardType getCapturedWildcard(TypeVariable typeVar) {
+        if (isCaptured(typeVar)) {
+            return ((CapturedType) ((Type.TypeVar) typeVar).unannotatedType()).wildcard;
         }
-        return ((Type.TypeVar) typeVar).isCaptured();
+        return null;
     }
 
     /**
