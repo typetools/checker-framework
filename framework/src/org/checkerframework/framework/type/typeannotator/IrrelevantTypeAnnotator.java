@@ -17,11 +17,14 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Adds annotations to types that are not relevant specified by the {@link RelevantJavaTypes} on
- * a checker
+ * a checker.
  */
 public class IrrelevantTypeAnnotator extends TypeAnnotator {
-    private List<TypeMirror> supportedTypes;
-    /** Cache of types found that are supportedTypes or subclass of supported types. Used so that
+    /** List of relevantTypes translated from classes in {@link RelevantJavaTypes} to
+     * {@link TypeMirror}s*/
+    private List<TypeMirror> relevantTypes;
+
+    /** Cache of types found that are relevantTypes or subclass of supported types. Used so that
      * isSubtype doesn't need to be called repeatedly on the same types.*/
     private Set<TypeMirror> allFoundRelevantTypes;
 
@@ -31,7 +34,9 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
     /**
      * Annotate every type with the annotationMirror except for those whose underlying Java type is
      * one of (or a subtype of) a class in relevantClasses.  (Only adds annotationMirror if no annotation
-     * in the hierarchy are already on the type.)
+     * in the hierarchy are already on the type.)  If relevantClasses includes Object[].class,
+     * then all arrays are considered relevant.
+     *
      * @param typeFactory AnnotatedTypeFactory
      * @param annotations annotations to add
      * @param relevantClasses types that should not be annotated with annotationMirror
@@ -43,19 +48,19 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
         super(typeFactory);
         this.annotations = annotations;
         this.arraysAreRelevant = false;
-        this.supportedTypes = new ArrayList<>(relevantClasses.length);
+        this.relevantTypes = new ArrayList<>(relevantClasses.length);
         for (Class<?> clazz : relevantClasses) {
             if (clazz.equals(Object[].class)) {
                 arraysAreRelevant = true;
             } else {
-                supportedTypes.add(
+                relevantTypes.add(
                         TypesUtils.typeFromClass(
                                 typeFactory.getContext().getTypeUtils(),
                                 typeFactory.getElementUtils(),
                                 clazz));
             }
         }
-        this.allFoundRelevantTypes = new HashSet<>(supportedTypes);
+        this.allFoundRelevantTypes = new HashSet<>(relevantTypes);
     }
 
     @Override
@@ -87,7 +92,7 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
         if (allFoundRelevantTypes.contains(typeMirror)) {
             shouldAnnotate = false;
         } else if (typeMirror.getKind() == TypeKind.DECLARED) {
-            for (TypeMirror supportedType : supportedTypes) {
+            for (TypeMirror supportedType : relevantTypes) {
                 if (types.isSubtype(typeMirror, supportedType)) {
                     shouldAnnotate = false;
                     allFoundRelevantTypes.add(typeMirror);
