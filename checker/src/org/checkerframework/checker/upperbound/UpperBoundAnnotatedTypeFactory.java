@@ -331,7 +331,54 @@ public class UpperBoundAnnotatedTypeFactory
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             // I'm not sure we actually care all that much about what's happening here.
             // Maybe a few small rules for addition/subtraction by 0/1, etc. FIXME.
+            ExpressionTree left = tree.getLeftOperand();
+            ExpressionTree right = tree.getRightOperand();
+            switch (tree.getKind()) {
+                case MINUS:
+                    addAnnotationForMinus(left, right, type);
+                    break;
+                default:
+                    break;
+            }
             return super.visitBinary(tree, type);
         }
+
+        private void addAnnotationForMinus(
+                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {}
+    }
+
+    // Factory methods for annotations.
+
+    static AnnotationMirror createEqualToLengthAnnotation(String name) {
+        String[] names = {name};
+        return createEqualToLengthAnnotation(names);
+    }
+
+    static AnnotationMirror createEqualToLengthAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, EqualToLength.class);
+        builder.setValue("value", names);
+        return builder.build();
+    }
+
+    static AnnotationMirror createLessThanLengthAnnotation(String name) {
+        String[] names = {name};
+        return createLessThanLengthAnnotation(names);
+    }
+
+    static AnnotationMirror createLessThanLengthAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanLength.class);
+        builder.setValue("value", names);
+        return builder.build();
+    }
+
+    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String name) {
+        String[] names = {name};
+        return createLessThanOrEqualToLengthAnnotation(names);
+    }
+
+    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanOrEqualToLength.class);
+        builder.setValue("value", names);
+        return builder.build();
     }
 }
