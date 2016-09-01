@@ -309,7 +309,7 @@ public abstract class GenericAnnotatedTypeFactory<
         typeAnnotators.add(new PropagationTypeAnnotator(this));
         implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
         typeAnnotators.add(implicitsTypeAnnotator);
-        return new ListTypeAnnotator(typeAnnotators.toArray(new TypeAnnotator[0]));
+        return new ListTypeAnnotator(typeAnnotators);
     }
 
     protected void addTypeNameImplicit(Class<?> clazz, AnnotationMirror implicitAnno) {

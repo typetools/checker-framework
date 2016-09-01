@@ -1,7 +1,9 @@
 package org.checkerframework.framework.type.typeannotator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -13,6 +15,7 @@ import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.CollectionUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
@@ -60,7 +63,8 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
                                 clazz));
             }
         }
-        this.allFoundRelevantTypes = new HashSet<>(relevantTypes);
+        this.allFoundRelevantTypes =
+                Collections.newSetFromMap(CollectionUtils.<TypeMirror, Boolean>createLRUCache(300));
     }
 
     @Override

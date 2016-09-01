@@ -2,6 +2,7 @@ package org.checkerframework.framework.type.typeannotator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -26,6 +27,14 @@ public final class ListTypeAnnotator extends TypeAnnotator {
      *                   They are executed in the order passed in.
      */
     public ListTypeAnnotator(TypeAnnotator... annotators) {
+        this(Arrays.asList(annotators));
+    }
+    /**
+     * @param annotators the annotators that will be executed for
+     *                   each type scanned by this TypeAnnotator.
+     *                   They are executed in the order passed in.
+     */
+    public ListTypeAnnotator(List<TypeAnnotator> annotators) {
         super(null);
         List<TypeAnnotator> annotatorList = new ArrayList<>();
         for (TypeAnnotator annotator : annotators) {
