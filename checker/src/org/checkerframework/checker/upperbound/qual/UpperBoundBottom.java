@@ -5,13 +5,10 @@ import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- *  Indicates that whatever is annotated with this type is less than the
- *  length of the listed arrays
+ *  A bottom type for the Upper Bound type system.
  *
  *  */
-@SubtypeOf(LessThanOrEqualToLength.class)
+@SubtypeOf({LessThanLength.class, EqualToLength.class})
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface LessThanLength {
-    public String[] value();
-}
+public @interface UpperBoundBottom {}

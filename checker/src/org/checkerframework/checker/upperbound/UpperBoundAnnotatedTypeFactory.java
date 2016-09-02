@@ -417,17 +417,16 @@ public class UpperBoundAnnotatedTypeFactory
                 return;
             }
             if (val == 1) {
-                if (nonLiteralType.hasAnnotation(LTL)) {
+                if (nonLiteralType.hasAnnotationRelaxed(LTL)) {
                     String[] names =
                             UpperBoundUtils.getValue(nonLiteralType.getAnnotationInHierarchy(LTEL));
-                    type.addAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+                    type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
                     return;
                 }
                 type.addAnnotation(UNKNOWN);
                 return;
             }
             if (val < 0) {
-                System.out.println("negative sighted");
                 if (nonLiteralType.hasAnnotationRelaxed(LTL)
                         || nonLiteralType.hasAnnotationRelaxed(EL)
                         || nonLiteralType.hasAnnotationRelaxed(LTEL)) {
@@ -480,7 +479,42 @@ public class UpperBoundAnnotatedTypeFactory
             return;
         }
 
+        /**
+         *  Implements two rules:
+         *  1. If there is a literal on the right side of a subtraction, call our literal add method,
+         *     replacing the literal with the literal times negative one.
+         *  2. Since EL implies that the number is either positive or zero, subtracting it from
+         *     something that's already LTL or EL always implies LTL, and from LTEL implies LTEL.
+         */
         private void addAnnotationForMinus(
-                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {}
+                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+
+            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+            // Check if the right side's value is known at compile time.
+            AnnotatedTypeMirror valueTypeRight =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                addAnnotationForLiteralPlus(-1 * maybeValRight, leftType, type);
+                return;
+            }
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+            if (rightType.hasAnnotationRelaxed(EL)) {
+                if (leftType.hasAnnotationRelaxed(EL) || leftType.hasAnnotationRelaxed(LTL)) {
+                    String[] names =
+                            UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+                    type.replaceAnnotation(createLessThanLengthAnnotation(names));
+                    return;
+                }
+                if (leftType.hasAnnotationRelaxed(LTEL)) {
+                    String[] names =
+                            UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+                    type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+                    return;
+                }
+            }
+            type.addAnnotation(UNKNOWN);
+            return;
+        }
     }
 }

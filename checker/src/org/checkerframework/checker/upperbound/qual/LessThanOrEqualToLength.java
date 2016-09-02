@@ -9,7 +9,7 @@ import org.checkerframework.framework.qual.*;
  *  length of the listed arrays
  *
  *  */
-@SubtypeOf({LessThanLength.class, EqualToLength.class})
+@SubtypeOf(UpperBoundUnknown.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
