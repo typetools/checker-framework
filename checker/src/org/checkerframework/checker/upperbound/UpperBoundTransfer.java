@@ -12,6 +12,7 @@ import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
@@ -56,10 +57,6 @@ public class UpperBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Upp
             Node dim = acNode.getDimension(0);
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), dim);
             String name = node.getTarget().toString();
-            if (name.contains(".")) {
-                String[] objs = name.split("\\.");
-                name = objs[objs.length - 1];
-            }
 
             // FIXME: the Index Checker includes this here. Not sure why - investigate.
             // if (dim instanceof NumericalAdditionNode) {
@@ -71,6 +68,26 @@ public class UpperBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Upp
 
             store.insertValue(
                     rec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+        }
+        return result;
+    }
+
+    // Make array.length have type EL(array).
+    @Override
+    public TransferResult<CFValue, CFStore> visitFieldAccess(
+            FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitFieldAccess(node, in);
+        if (node.getFieldName().equals("length")) {
+            // I'm concerned about the level of evil present in this code.
+            // It's modeled on similar code in the old Index Checker, and it feels like a bad
+            // way to do this, but I don't know a better way.
+            String arrName = node.getReceiver().toString();
+            AnnotationMirror anm =
+                    UpperBoundAnnotatedTypeFactory.createEqualToLengthAnnotation(arrName);
+            CFValue newResultValue =
+                    analysis.createSingleAnnotationValue(
+                            anm, result.getResultValue().getType().getUnderlyingType());
+            return new RegularTransferResult<>(newResultValue, result.getRegularStore());
         }
         return result;
     }
