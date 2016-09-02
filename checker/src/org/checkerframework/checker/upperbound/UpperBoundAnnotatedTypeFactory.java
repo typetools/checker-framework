@@ -6,6 +6,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -111,6 +112,23 @@ public class UpperBoundAnnotatedTypeFactory
     }
 
     /**
+     * If the argument valueType indicates that the Constant Value
+     * Checker knows the exact value of the annotated expression,
+     * returns that integer.  Otherwise returns null. This method
+     * should only be used by clients who need exactly one value -
+     * such as the binary operator rules - and not by those that
+     * need to know whether a valueType belongs to a qualifier.
+     */
+    private Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
+        List<Long> possibleValues = possibleValuesFromValueType(valueType);
+        if (possibleValues != null && possibleValues.size() == 1) {
+            return new Integer(possibleValues.get(0).intValue());
+        } else {
+            return null;
+        }
+    }
+
+    /**
      *  Finds the maximum value in the set of values represented
      *  by a value checker annotation.
      */
@@ -137,6 +155,10 @@ public class UpperBoundAnnotatedTypeFactory
         return new UpperBoundAnalysis(checker, this, fieldValues);
     }
 
+    // FIXME: In an unsurprising turn of events, this isn't working.
+    // Going to ignore it for now and use specialized ones but we
+    // should come back and fix later...
+
     /**
      * Creates an annotation of the name given with the set of values given.
      * Exists in place of a series of createXAnnotation methods because that
@@ -144,7 +166,7 @@ public class UpperBoundAnnotatedTypeFactory
      *
      * @return annotation given by name with names=values, or UNKNOWN
      */
-    private AnnotationMirror createAnnotation(String name, Set<?> values) {
+    private static AnnotationMirror createAnnotation(String name, Set<?> values) {
         if (values.size() > 0) {
             AnnotationBuilder builder = new AnnotationBuilder(env, name);
             List<Object> valuesList = new ArrayList<Object>(values);
@@ -153,6 +175,43 @@ public class UpperBoundAnnotatedTypeFactory
         } else {
             return UNKNOWN;
         }
+    }
+
+    private static AnnotationMirror createAnnotation(String name, String[] values) {
+        return createAnnotation(name, new HashSet<String>(Arrays.asList(values)));
+    }
+
+    static AnnotationMirror createLessThanLengthAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanLength.class);
+        builder.setValue("value", names);
+        return builder.build();
+    }
+
+    static AnnotationMirror createLessThanLengthAnnotation(String name) {
+        String[] names = {name};
+        return createLessThanLengthAnnotation(names);
+    }
+
+    static AnnotationMirror createEqualToLengthAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, EqualToLength.class);
+        builder.setValue("value", names);
+        return builder.build();
+    }
+
+    static AnnotationMirror createEqualToLengthAnnotation(String name) {
+        String[] names = {name};
+        return createEqualToLengthAnnotation(names);
+    }
+
+    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanOrEqualToLength.class);
+        builder.setValue("value", names);
+        return builder.build();
+    }
+
+    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String name) {
+        String[] names = {name};
+        return createLessThanOrEqualToLengthAnnotation(names);
     }
 
     @Override
@@ -195,8 +254,13 @@ public class UpperBoundAnnotatedTypeFactory
 
                 newValues.addAll(a1Names);
                 newValues.addAll(a2Names);
+                Object[] values = newValues.toArray();
+                String[] names = new String[values.length];
+                for (int i = 0; i < names.length; i++) {
+                    names[i] = values[i].toString();
+                }
 
-                return createAnnotation("LTEL", newValues);
+                return createLessThanOrEqualToLengthAnnotation(names);
             }
         }
 
@@ -334,6 +398,9 @@ public class UpperBoundAnnotatedTypeFactory
             ExpressionTree left = tree.getLeftOperand();
             ExpressionTree right = tree.getRightOperand();
             switch (tree.getKind()) {
+                case PLUS:
+                    addAnnotationForPlus(left, right, type);
+                    break;
                 case MINUS:
                     addAnnotationForMinus(left, right, type);
                     break;
@@ -343,42 +410,77 @@ public class UpperBoundAnnotatedTypeFactory
             return super.visitBinary(tree, type);
         }
 
+        private void addAnnotationForLiteralPlus(
+                int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
+            if (val == 0) {
+                type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(LTEL));
+                return;
+            }
+            if (val == 1) {
+                if (nonLiteralType.hasAnnotation(LTL)) {
+                    String[] names =
+                            UpperBoundUtils.getValue(nonLiteralType.getAnnotationInHierarchy(LTEL));
+                    type.addAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+                    return;
+                }
+                type.addAnnotation(UNKNOWN);
+                return;
+            }
+            if (val < 0) {
+                System.out.println("negative sighted");
+                if (nonLiteralType.hasAnnotationRelaxed(LTL)
+                        || nonLiteralType.hasAnnotationRelaxed(EL)
+                        || nonLiteralType.hasAnnotationRelaxed(LTEL)) {
+
+                    String[] names =
+                            UpperBoundUtils.getValue(nonLiteralType.getAnnotationInHierarchy(LTEL));
+                    type.replaceAnnotation(createLessThanLengthAnnotation(names));
+                    return;
+                }
+                type.addAnnotation(UNKNOWN);
+                return;
+            }
+            // Covers positive numbers.
+            type.addAnnotation(UNKNOWN);
+            return;
+        }
+
+        /** addAnnotationForPlus handles the following cases:
+         *  <pre>
+         *      lit 0 + * &rarr; *
+         *      lit 1 + LTL &rarr; LTEL
+         *      LTL,EL,LTEL + negative lit &rarr; LTL
+         *      * + * &rarr; UNKNOWN
+         *  </pre>
+         */
+        private void addAnnotationForPlus(
+                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+            // Adding two literals isn't interesting, so we ignore it.
+            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+            // Check if the right side's value is known at compile time.
+            AnnotatedTypeMirror valueTypeRight =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                addAnnotationForLiteralPlus(maybeValRight, leftType, type);
+                return;
+            }
+
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+            // Check if the left side's value is known at compile time.
+            AnnotatedTypeMirror valueTypeLeft =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
+            if (maybeValLeft != null) {
+                addAnnotationForLiteralPlus(maybeValLeft, rightType, type);
+                return;
+            }
+
+            type.addAnnotation(UNKNOWN);
+            return;
+        }
+
         private void addAnnotationForMinus(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {}
-    }
-
-    // Factory methods for annotations.
-
-    static AnnotationMirror createEqualToLengthAnnotation(String name) {
-        String[] names = {name};
-        return createEqualToLengthAnnotation(names);
-    }
-
-    static AnnotationMirror createEqualToLengthAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, EqualToLength.class);
-        builder.setValue("value", names);
-        return builder.build();
-    }
-
-    static AnnotationMirror createLessThanLengthAnnotation(String name) {
-        String[] names = {name};
-        return createLessThanLengthAnnotation(names);
-    }
-
-    static AnnotationMirror createLessThanLengthAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanLength.class);
-        builder.setValue("value", names);
-        return builder.build();
-    }
-
-    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String name) {
-        String[] names = {name};
-        return createLessThanOrEqualToLengthAnnotation(names);
-    }
-
-    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanOrEqualToLength.class);
-        builder.setValue("value", names);
-        return builder.build();
     }
 }

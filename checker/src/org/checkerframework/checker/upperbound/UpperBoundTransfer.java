@@ -67,9 +67,10 @@ public class UpperBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Upp
             //         return result;
             //     }
             // }
+            String[] names = {name};
 
             store.insertValue(
-                    rec, UpperBoundAnnotatedTypeFactory.createEqualToLengthAnnotation(name));
+                    rec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
         }
         return result;
     }

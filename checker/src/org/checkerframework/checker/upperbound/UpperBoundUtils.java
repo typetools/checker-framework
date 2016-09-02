@@ -2,6 +2,8 @@ package org.checkerframework.checker.upperbound;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+import java.util.Arrays;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.upperbound.qual.*;
@@ -55,8 +57,24 @@ public class UpperBoundUtils {
      *  Returns the value of an annotation, given the annotation and Value method.
      */
     static String[] getIndexValue(AnnotationMirror anno, ExecutableElement valueElement) {
-        return (String[])
+        Object val =
                 AnnotationUtils.getElementValuesWithDefaults(anno).get(valueElement).getValue();
+        if (val instanceof List) {
+            // Bad and evil but not sure how else to do it.
+            @SuppressWarnings("unchecked")
+            List<Object> l = (List<Object>) val;
+            String[] values = new String[l.size()];
+            for (int i = 0; i < l.size(); i++) {
+                values[i] = l.get(i).toString();
+                // The function toString() puts quotes around things that are already strings,
+                // and we don't want that.
+                values[i] = values[i].replaceAll("\"", "");
+            }
+            return values;
+        } else if (val instanceof Object[]) {
+            return Arrays.copyOf((Object[]) val, ((Object[]) val).length, String[].class);
+        }
+        return null; // Shouldn't ever happen.
     }
 
     /**
