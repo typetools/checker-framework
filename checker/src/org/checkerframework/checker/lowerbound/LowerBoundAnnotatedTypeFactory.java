@@ -138,13 +138,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
-            // We could call the constant Value Checker here but if we already know it's a literal...
-            if (tree.getKind() == Tree.Kind.INT_LITERAL
-                    || tree.getKind() == Tree.Kind.LONG_LITERAL
-                    || tree.getKind() == Tree.Kind.CHAR_LITERAL) {
-                int val = (int) tree.getValue();
-                type.addAnnotation(anmFromVal(val));
-            }
+            // Call the constant value checker since we want to rely
+            // on it handling constants correctly...
+            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+            type.addAnnotation(lowerBoundAnmFromValueType(valueType));
             return super.visitLiteral(tree, type);
         }
 
