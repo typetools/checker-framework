@@ -9,12 +9,13 @@ public class Issue905 {
     final Object mBar;
 
     Issue905() {
+        // this should be @UnderInitialization(Object.class), so this call
+        // should be forbidden.
         baz();
         mBar = "";
     }
 
     void baz(@UnknownInitialization(Issue905.class) Issue905 this) {
-        //:: error: (dereference.of.nullable)
         mBar.toString();
     }
 
