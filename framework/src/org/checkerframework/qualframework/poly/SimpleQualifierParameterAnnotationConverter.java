@@ -14,6 +14,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.poly.PolyQual.GroundQual;
 import org.checkerframework.qualframework.poly.PolyQual.QualVar;
+import org.checkerframework.qualframework.poly.qual.DefaultValue;
 import org.checkerframework.qualframework.util.ExtendedExecutableType;
 import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 
@@ -28,11 +29,6 @@ import org.checkerframework.qualframework.util.ExtendedTypeMirror;
 public abstract class SimpleQualifierParameterAnnotationConverter<Q>
         implements QualifierParameterAnnotationConverter<Q> {
 
-    /**
-     * The default "Target" in an annotation is the primary qualifier.
-     * We can't use null in the annotation, so we use this special value.
-     */
-    public static final String PRIMARY_TARGET = "_primary";
     public static final String TARGET_PARAM_NAME = "param";
     /** The name of the qualifier parameter to use for polymorphic qualifiers. */
     public static final String POLY_NAME = "_poly";
@@ -185,7 +181,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q>
             Q qual = getQualifier(anno);
             String target =
                     AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-            if (!PRIMARY_TARGET.equals(target)) {
+            if (!DefaultValue.PRIMARY_TARGET.equals(target)) {
                 result =
                         Collections.singletonMap(
                                 target, handleWildcard(anno, new Wildcard<>(qual)));
@@ -196,7 +192,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q>
                     AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             String value =
                     AnnotationUtils.getElementValue(anno, SOURCE_VALUE_NAME, String.class, true);
-            if (!PRIMARY_TARGET.equals(target)) {
+            if (!DefaultValue.PRIMARY_TARGET.equals(target)) {
                 Wildcard<Q> valueWild =
                         handleWildcard(anno, new Wildcard<>(new QualVar<>(value, BOTTOM, TOP)));
                 result = Collections.singletonMap(target, valueWild);
@@ -205,7 +201,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q>
         } else if (name.equals(polyAnno.getName())) {
             String target =
                     AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-            if (!PRIMARY_TARGET.equals(target)) {
+            if (!DefaultValue.PRIMARY_TARGET.equals(target)) {
                 Wildcard<Q> polyWild = new Wildcard<>(new QualVar<>(POLY_NAME, BOTTOM, TOP));
                 result = Collections.singletonMap(target, polyWild);
             }
@@ -246,7 +242,7 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q>
             Q qual = getQualifier(anno);
             String target =
                     AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-            if (PRIMARY_TARGET.equals(target)) {
+            if (DefaultValue.PRIMARY_TARGET.equals(target)) {
                 newQual = new GroundQual<>(qual);
             }
 
@@ -255,14 +251,14 @@ public abstract class SimpleQualifierParameterAnnotationConverter<Q>
                     AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
             String value =
                     AnnotationUtils.getElementValue(anno, SOURCE_VALUE_NAME, String.class, true);
-            if (PRIMARY_TARGET.equals(target)) {
+            if (DefaultValue.PRIMARY_TARGET.equals(target)) {
                 newQual = new QualVar<>(value, BOTTOM, TOP);
             }
 
         } else if (name.equals(polyAnno.getName())) {
             String target =
                     AnnotationUtils.getElementValue(anno, TARGET_PARAM_NAME, String.class, true);
-            if (PRIMARY_TARGET.equals(target)) {
+            if (DefaultValue.PRIMARY_TARGET.equals(target)) {
                 newQual = new QualVar<>(POLY_NAME, BOTTOM, TOP);
             }
         }

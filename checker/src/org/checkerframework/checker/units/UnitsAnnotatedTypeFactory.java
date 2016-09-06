@@ -29,6 +29,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -285,16 +286,25 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
-                Class<? extends UnitsRelations> theclass =
-                        AnnotationUtils.getElementValueClass(ama, "value", true)
-                                .asSubclass(UnitsRelations.class);
+                Class<? extends UnitsRelations> theclass;
+                try {
+                    theclass =
+                            AnnotationUtils.getElementValueClass(ama, "value", true)
+                                    .asSubclass(UnitsRelations.class);
+                } catch (ClassCastException ex) {
+                    Class<?> clazz = AnnotationUtils.getElementValueClass(ama, "value", true);
+                    ErrorReporter.errorAbort(
+                            "Invalid @UnitsRelations meta-annotation found in %s. @UnitsRelations value,"
+                                    + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
+                            qual.toString(),
+                            clazz.toString());
+                    continue;
+                }
                 String classname = theclass.getCanonicalName();
 
                 if (!getUnitsRel().containsKey(classname)) {
                     try {
-                        unitsRel.put(
-                                classname,
-                                ((UnitsRelations) theclass.newInstance()).init(processingEnv));
+                        unitsRel.put(classname, theclass.newInstance().init(processingEnv));
                     } catch (InstantiationException e) {
                         // TODO
                         e.printStackTrace();

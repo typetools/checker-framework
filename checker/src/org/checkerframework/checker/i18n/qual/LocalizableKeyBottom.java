@@ -5,16 +5,24 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.DefaultFor;
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Indicates that the {@code String} is a key into a property file
- * or resource bundle containing Localized Strings.
+ * The bottom qualifier for the Internationalization Checker.
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */
-@SubtypeOf(UnknownLocalizableKey.class)
+@SubtypeOf(LocalizableKey.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface LocalizableKey {}
+@ImplicitFor(
+    typeNames = {java.lang.Void.class},
+    literals = {LiteralKind.NULL}
+)
+@DefaultFor(TypeUseLocation.LOWER_BOUND)
+public @interface LocalizableKeyBottom {}

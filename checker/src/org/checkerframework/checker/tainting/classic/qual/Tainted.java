@@ -5,16 +5,15 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.tainting.classic.TaintingClassicChecker;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * The top qualifier of the tainting type system.
- * This annotation is associated with the {@link TaintingClassicChecker}.
+ * This annotation is associated with the {@link  org.checkerframework.checker.tainting.classic.TaintingClassicChecker}.
  *
  * @see Untainted
- * @see TaintingClassicChecker
+ * @see  org.checkerframework.checker.tainting.classic.TaintingClassicChecker
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @Documented

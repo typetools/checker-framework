@@ -77,6 +77,7 @@ public class CheckerMain {
      * The path to the jar containing CheckerMain.class (i.e. checker.jar)
      */
     protected final File checkerJar;
+
     /**
      * The path to checker-qual.jar
      */
@@ -233,13 +234,14 @@ public class CheckerMain {
     }
 
     /**
-     * Find all args that match the given pattern and extract their index 1 group.  Add all the index 1 groups to the
-     * returned list.   Remove all matching args from the input args list.
+     * Find all args that match the given pattern and extract their index 1 group.
+     * Add all the index 1 groups to the returned list.
+     * Remove all matching args from the input args list.
      * @param pattern      a pattern with at least one matching group
      * @param allowEmpties whether or not to add empty group(1) matches to the returned list
      * @param args         the arguments to extract from
-     * @return a list of arguments from the first group that matched the pattern for each input args or the empty list
-     *         if there were none
+     * @return a list of arguments from the first group that matched the pattern for each input args
+     *         or the empty list if there were none
      */
     protected static List<String> extractOptWithPattern(
             final Pattern pattern, boolean allowEmpties, final List<String> args) {
@@ -566,9 +568,10 @@ public class CheckerMain {
 
         int idx = uri.indexOf('!');
         // Sanity check
-        if (idx == -1)
+        if (idx == -1) {
             throw new IllegalStateException(
                     "You appear to have loaded this class from a local jar file, but I can't make sense of the URL!");
+        }
 
         try {
             String fileName =
@@ -700,7 +703,10 @@ public class CheckerMain {
             }
             checkerJarIs.close();
         } catch (IOException e) {
-            throw new RuntimeException("Could not read " + checkerJar, e);
+            // When using CheckerDevelMain we might not have a checker.jar file built yet.
+            // Issue a warning instead of aborting execution.
+            System.err.printf(
+                    "Could not read %s. Shorthand processor names will not work.%n", checkerJar);
         }
 
         return checkerClassNames;

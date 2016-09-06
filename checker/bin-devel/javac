@@ -31,9 +31,11 @@ jdkPaths="${mydir}"/../jdk/annotated
 
 cfDir="${mydir}"/../..
 annoToolsDir="${cfDir}"/../annotation-tools
-# Put "checker" last, as "ant bindist" puts other projects
-# into the checker/build directory.
-buildDirs="${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar:"${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build
+
+# Put afu jar files last, as they might contain out-of-date CF files.
+# Put "checker" after the other sub-projects, as "ant bindist" puts
+# other projects into the checker/build directory.
+buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build:"${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.
@@ -48,10 +50,17 @@ for i in "$@" ; do
    IFS="$saveIFS"
 done
 
-# TODO: pass only the qualifiers in .cp
+# TODO: We really only want the qualifiers on the CP, but there is no
+# easy way to determine them here. ../bin/javac can use
+# checker-qual.jar, but it might not exist yet.
+# Set .cp to all build directories for now.
+
+# Add the following option for verbose output:
+#     "-DCheckerDevelMain.verbose=TRUE" \
 
 eval "java" \
-     "-DCheckerDevelMain.cp= " \
+     "-ea " \
+     "-DCheckerDevelMain.cp=${buildDirs} " \
      "-DCheckerDevelMain.pp=${buildDirs} " \
      "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
      "-DCheckerDevelMain.runtime.bcp=${ltBinDir} " \

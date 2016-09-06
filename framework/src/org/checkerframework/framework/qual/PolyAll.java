@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.util.QualifierPolymorphism;
 
 /**
  * A polymorphic type qualifier that varies over all type hierarchies.
@@ -38,8 +37,7 @@ import org.checkerframework.framework.util.QualifierPolymorphism;
  *
  * @see org.checkerframework.checker.nullness.qual.PolyNull
  * @see org.checkerframework.checker.interning.qual.PolyInterned
- * @see PolymorphicQualifier
- * @see QualifierPolymorphism
+ * @see org.checkerframework.framework.util.QualifierPolymorphism
  *
  * @checker_framework.manual #polyall The @PolyAll qualifier applies to every type system
  */
