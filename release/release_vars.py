@@ -238,7 +238,7 @@ PATH = PATH + ":/homes/gws/mernst/.local/bin/:." # for html5validator
 os.environ['PATH'] = PATH
 
 # Tools that must be on your PATH (besides common *nix ones like grep)
-TOOLS = ['hevea', 'perl', 'java', 'latex', 'mvn', 'hg', 'git', 'html5validator', EDITOR]
+TOOLS = ['hevea', 'perl', 'java', 'dia', 'latex', 'mvn', 'hg', 'git', 'html5validator', EDITOR]
 
 # Script option constants
 LT_OPT = "langtools"
