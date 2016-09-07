@@ -503,6 +503,12 @@ qualifier hierarchy; see the Nullness Checker's implementation for an
 example.
 \end{sloppypar}
 
+\subsection{Relevant Java types\label{relevant-java-types}}
+
+A checker can use the \refqualclass{framework/qual}{RelevantJavaTypes}
+annotation on the checker class to specify which Java types are relevant to the
+checker.  All irrelevant types without explicit annotations are defaulted to
+the top annotation.
 
 \subsection{Do not re-use type qualifiers\label{do-not-re-use-type-qualifiers}}
 

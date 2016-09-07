@@ -746,6 +746,9 @@
         <antcall target="-run-tests">
             <param name="param" value="tests.I18nTest"/>
         </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.I18nUncheckedDefaultsTest"/>
+        </antcall>
     </target>
 
     <target name="interning-tests" depends="jar,build-tests"
@@ -826,6 +829,9 @@
             description="Run tests for the Signedness Checker">
         <antcall target="-run-tests">
             <param name="param" value="tests.SignednessTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SignednessUncheckedDefaultsTest"/>
         </antcall>
     </target>
 
@@ -935,6 +941,9 @@
     <target name="formatter-tests" depends="jar,build-tests"
             description="Run tests for the Formatter Checker">
         <antcall target="-run-tests">
+            <param name="param" value="tests.FormatterUncheckedDefaultsTest"/>
+        </antcall>
+        <antcall target="-run-tests">
             <param name="param" value="tests.FormatterTest"/>
         </antcall>
         <antcall target="-run-tests">
@@ -949,6 +958,9 @@
         </antcall>
         <antcall target="-run-tests">
             <param name="param" value="tests.I18nFormatterLubGlbCheckerTest"/>
+        </antcall>
+        <antcall target="-run-tests">
+            <param name="param" value="tests.I18nFormatterFormatterUncheckedDefaultsTest"/>
         </antcall>
     </target>
 
