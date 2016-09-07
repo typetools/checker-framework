@@ -71,6 +71,9 @@ A checker test case has two parts:
   2. a set of expected errors.
 Both parts can be expressed in one Java file.
 
+Classes in checker-framework/framework/tests/src/tests/lib can be referenced by
+tests to check behavior related to unchecked bytecode.
+
 
 Specifying expected warnings and errors
 =======================================
