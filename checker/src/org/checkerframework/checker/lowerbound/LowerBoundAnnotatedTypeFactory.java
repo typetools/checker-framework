@@ -12,6 +12,7 @@ import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
 import org.checkerframework.checker.lowerbound.qual.LowerBoundUnknown;
 import org.checkerframework.checker.lowerbound.qual.NonNegative;
 import org.checkerframework.checker.lowerbound.qual.Positive;
+import org.checkerframework.checker.minlen.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -61,6 +62,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
             getTypeFactoryOfSubchecker(ValueChecker.class);
+
+    private final MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory =
+            getTypeFactoryOfSubchecker(MinLenChecker.class);
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
