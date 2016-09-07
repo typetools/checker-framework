@@ -1,5 +1,6 @@
 package org.checkerframework.checker.upperbound;
 
+import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.upperbound.qual.*;
@@ -205,13 +206,9 @@ public class UpperBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Upp
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
         /*  In an ==, we only can make conclusions about the then
-         *  branch (i.e. when they are, actually, equal). In that
-         *  case, we essentially want to refine them to the more
-         *  precise of the two types, which we accomplish by refining
-         *  each as if it were greater than or equal to the other.
+         *  branch (i.e. when they are, actually, equal).
          */
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
+        refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
         return rfi.newResult;
     }
 
@@ -224,11 +221,10 @@ public class UpperBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Upp
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
         /* != is equivalent to == and implemented the same way, but we
-         * !have information about the else branch (i.e. when they are
-         * !equal).
+         * only have information about the else branch (i.e. when they are
+         * not equal).
          */
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
+        refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
         return rfi.newResult;
     }
 
@@ -278,7 +274,7 @@ public class UpperBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Upp
                     rightRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
             return;
         } else if (leftType.hasAnnotationRelaxed(EL) || leftType.hasAnnotationRelaxed(LTEL)) {
-            // Create an LTL for the right type.
+            // Create an LTEL for the right type.
             // There's a slight danger of losing information here but I'm going to do
             // it the simple-to-implement way for now and we can come back later FIXME.
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -288,5 +284,88 @@ public class UpperBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, Upp
                     UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
             return;
         }
+    }
+
+    private void refineEq(
+            Node left,
+            AnnotatedTypeMirror leftType,
+            Node right,
+            AnnotatedTypeMirror rightType,
+            CFStore store) {
+        // LTEL always implies that the other is LTEL.
+        if (leftType.hasAnnotationRelaxed(LTEL)) {
+            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            store.insertValue(
+                    rightRec,
+                    UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
+        }
+        if (rightType.hasAnnotationRelaxed(LTEL)) {
+            Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
+            String[] names = UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(LTEL));
+            store.insertValue(
+                    leftRec,
+                    UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
+        }
+        // Handles the case where either both are EL or one is EL and the other is Unknown.
+        if (rightType.hasAnnotationRelaxed(EL)
+                && (!leftType.hasAnnotationRelaxed(LTEL))
+                && (!leftType.hasAnnotationRelaxed(LTL))) {
+            Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
+            String[] names = UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(LTEL));
+            store.insertValue(
+                    leftRec, UpperBoundAnnotatedTypeFactory.createEqualToLengthAnnotation(names));
+        }
+
+        if (leftType.hasAnnotationRelaxed(EL)
+                && (!rightType.hasAnnotationRelaxed(LTEL))
+                && (!rightType.hasAnnotationRelaxed(LTL))) {
+            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            store.insertValue(
+                    rightRec, UpperBoundAnnotatedTypeFactory.createEqualToLengthAnnotation(names));
+        }
+        // An LTL and an EL mean that both are LTEL for the combined list of arrays.
+        if ((leftType.hasAnnotationRelaxed(EL) && rightType.hasAnnotationRelaxed(LTL))
+                || (leftType.hasAnnotationRelaxed(LTL) && rightType.hasAnnotationRelaxed(EL))) {
+            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+            Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
+            String[] namesRight =
+                    UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(LTEL));
+            String[] namesLeft = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            String[] names = concat(namesRight, namesLeft);
+            store.insertValue(
+                    rightRec,
+                    UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
+            store.insertValue(
+                    leftRec,
+                    UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
+        }
+        if (leftType.hasAnnotationRelaxed(LTL) && fOnlyUnknown(rightType)) {
+            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            store.insertValue(
+                    rightRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+        }
+        if (rightType.hasAnnotationRelaxed(LTL) && fOnlyUnknown(leftType)) {
+            Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
+            String[] names = UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(LTEL));
+            store.insertValue(
+                    leftRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+        }
+    }
+
+    private boolean fOnlyUnknown(AnnotatedTypeMirror type) {
+        return (!type.hasAnnotationRelaxed(LTL)
+                && !type.hasAnnotationRelaxed(EL)
+                && !type.hasAnnotationRelaxed(LTEL));
+    }
+
+    // From: http://stackoverflow.com/questions/80476/how-can-i-concatenate-two-arrays-in-java
+    // This just concatenates two generic arrays.
+    public static <T> T[] concat(T[] first, T[] second) {
+        T[] result = Arrays.copyOf(first, first.length + second.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
     }
 }
