@@ -39,7 +39,7 @@ import org.checkerframework.javacutil.TypesUtils;
  * each hierarchy unless the type mirror is a type variable or a wildcard that extends a type
  * variable. Both type variables and wildcards may be missing a primary annotation.  For this set
  * of annotations, there is an additional constraint that only wildcards that extend type
- * variables can be missing annotations because
+ * variables can be missing annotations.
  *
  * In order to compute {@link #leastUpperBound(CFAbstractValue)} and
  * {@link #mostSpecific(CFAbstractValue, CFAbstractValue)}, the case where one value has an
@@ -47,8 +47,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * {@link AnnotatedTypeVariable} for the declaration of the type variable is used.  The
  * {@link AnnotatedTypeVariable} is computed using the type mirror.  For wildcards, it is not
  * always possible to get the {@link AnnotatedWildcardType} for the type mirror.  However, a
- * CFAbstractValue's type mirror is only a wildcard if the type of some expression is a wildcard,
- * so it is always the use of a wildcard rather than the declaration. For uses of wildcards, only
+ * CFAbstractValue's type mirror is only a wildcard if the type of some expression is a wildcard.
+ * The type of an expression is only a wildcard because the Checker Framework does not implement
+ * capture conversion.  For these uses of uncaptured wildcards, only
  * the primary annotation on the upper bound is ever used.  So, the set of annotations represents
  * the primary annotation on the wildcard's upper bound.  If that upper bound is a type variable,
  * then the set of annotations could be missing an annotation in a hierarchy.
@@ -135,12 +136,12 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * the set of annotations may not have an annotation for every hierarchy.
      * @return Returns a set of annotations
      */
-    @Pure // because the annotations field is final
+    @Pure
     public Set<AnnotationMirror> getAnnotations() {
         return annotations;
     }
 
-    @Pure // because the underlyingType field is final
+    @Pure
     public TypeMirror getUnderlyingType() {
         return underlyingType;
     }
