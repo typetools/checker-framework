@@ -15,6 +15,11 @@ public class Issue905 {
         mBar = "";
     }
 
+    Issue905(int i) {
+        mBar = "";
+        baz();
+    }
+
     void baz(@UnknownInitialization(Issue905.class) Issue905 this) {
         mBar.toString();
     }
