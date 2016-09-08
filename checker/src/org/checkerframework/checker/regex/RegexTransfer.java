@@ -164,8 +164,8 @@ public class RegexTransfer extends CFTransfer {
      * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
      * @param possibleConstant the Node that might be a constant
      * @param isAlsoEqual whether the comparison operation is strict or reflexive
-     * @param in the input TransferResult
-     * @param resultIn
+     * @param in the TransferInput
+     * @param resultIn TransferResult
      * @return the possibly refined output TransferResult
      */
     private TransferResult<CFValue, CFStore> handleMatcherGroupCount(
