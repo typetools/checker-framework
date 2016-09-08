@@ -736,13 +736,10 @@ public abstract class InitializationAnnotatedTypeFactory<
                 return isFbcBottom(rhs);
             }
             boolean unc2 = isUnclassified(lhs);
-            if (unc2) {
-                // If the LHS is unclassified, subtyping always holds.
-                return true;
-            }
+
             // @Initialized is only a subtype of @UnknownInitialization.
-            if (isCommitted(rhs)) {
-                return false;
+            if (isCommitted(rhs) && unc2) {
+                return true;
             }
             // @FBCBottom is a supertype of nothing.
             if (isFbcBottom(lhs)) {
