@@ -1,8 +1,10 @@
 package org.checkerframework.checker.lowerbound;
 
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.Collections;
@@ -13,6 +15,7 @@ import org.checkerframework.checker.lowerbound.qual.LowerBoundUnknown;
 import org.checkerframework.checker.lowerbound.qual.NonNegative;
 import org.checkerframework.checker.lowerbound.qual.Positive;
 import org.checkerframework.checker.minlen.*;
+import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -224,6 +227,44 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Turn it into an integer.
             int valMin = (int) Math.max(Math.min(Integer.MAX_VALUE, lvalMin), Integer.MIN_VALUE);
             return anmFromVal(valMin);
+        }
+
+        /**
+         * For dealing with array length expressions. We look for array length accesses
+         * specifically, then dispatch to the MinLen checker to deteremine the length
+         * of the relevant array. If we find it, we use it to give the expression a type.
+         */
+        @Override
+        public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
+            if (tree.getIdentifier().contentEquals("length")) {
+                // We only care about fields named "length".
+                // Next, we check if the MinLen checker knows anything about the receiver
+                // object. If it's not an array, the MinLen checker won't know anything,
+                // so it's not necessary for us to check.
+                AnnotatedTypeMirror minLenType =
+                        minLenAnnotatedTypeFactory.getAnnotatedType(tree.getExpression());
+                AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
+                if (anm == null) {
+                    // So this is unsound. Basically, I'm assuming that anything
+                    // with a .length field has the same restrictions arrays do:
+                    // the length must be non-negative. Ideally, I'd like to be
+                    // able to test for whether we've got an array right here, but
+                    // I haven't been able to find a way to do that.
+
+                    if (!type.hasAnnotation(POS)) {
+                        type.replaceAnnotation(NN);
+                    }
+
+                    return super.visitMemberSelect(tree, type);
+                }
+                Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
+                System.out.println(minLen);
+                if (minLen == null) {
+                    return super.visitMemberSelect(tree, type);
+                }
+                type.addAnnotation(anmFromVal(minLen));
+            }
+            return super.visitMemberSelect(tree, type);
         }
 
         /**
