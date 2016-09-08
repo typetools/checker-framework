@@ -343,9 +343,14 @@
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/"/>
 
         <!-- Only unjar the stubparser and afu - everything else is recompiled. -->
-        <unjar src="${stubparser.lib}" dest="${build}" />
         <unjar src="${annotation-file-utilities.lib}" dest="${build}" />
+        <!-- Also delete anything in the org/checkerframework package in case it has be removed
+        from the framework-->
+        <delete includeemptydirs="true">
+            <fileset dir="${build}/org/checkerframework"/>
+         </delete>
 
+        <unjar src="${stubparser.lib}" dest="${build}" />
         <!-- Work-around for Issue 894, see above. -->
         <unjar src="${checker.lib}" dest="${build}" />
 
