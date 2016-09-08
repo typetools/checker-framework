@@ -1,3 +1,5 @@
+import org.checkerframework.checker.tainting.qual.Untainted;
+
 /**
  * Resolution of outer classes must take substitution of generic types
  * into account.

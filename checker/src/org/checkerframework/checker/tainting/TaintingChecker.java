@@ -13,5 +13,5 @@ import org.checkerframework.framework.source.SuppressWarningsKeys;
  *
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
-@SuppressWarningsKeys("untainted")
+@SuppressWarningsKeys({"untainted", "tainting"})
 public class TaintingChecker extends BaseTypeChecker {}
