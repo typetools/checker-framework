@@ -735,12 +735,7 @@ public abstract class InitializationAnnotatedTypeFactory<
             if (isCommitted(lhs)) {
                 return isFbcBottom(rhs);
             }
-            boolean unc2 = isUnclassified(lhs);
 
-            // @Initialized is only a subtype of @UnknownInitialization.
-            if (isCommitted(rhs) && unc2) {
-                return true;
-            }
             // @FBCBottom is a supertype of nothing.
             if (isFbcBottom(lhs)) {
                 return false;
@@ -750,8 +745,14 @@ public abstract class InitializationAnnotatedTypeFactory<
                 return true;
             }
             boolean unc1 = isUnclassified(rhs);
+            boolean unc2 = isUnclassified(lhs);
             boolean free1 = isFree(rhs);
             boolean free2 = isFree(lhs);
+
+            // @Initialized is only a subtype of @UnknownInitialization.
+            if (isCommitted(rhs)) {
+                return unc2;
+            }
             // @UnknownInitialization is not a subtype of @UnderInitialization.
             if (unc1 && free2) {
                 return false;
