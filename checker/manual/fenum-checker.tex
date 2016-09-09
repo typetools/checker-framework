@@ -31,6 +31,8 @@ use existing Java types.  You can apply fenum annotations to any Java type,
 including all primitive types and also reference types.  Thus, you could
 use it (for example) to represent floating-point values between 0 and 1, or
 \<String>s with some particular characteristic.
+(Note that the Fake Enum Checker does not let you create a shorter alias
+for a long type name, as a real typedef would if Java supported it.)
 
 As explained in Section~\ref{fenum-annotations}, you can either define your
 own fenum annotations, such as \<@NavigationMode> above, or you can use the
