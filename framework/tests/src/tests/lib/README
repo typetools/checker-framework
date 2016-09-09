@@ -1,0 +1,4 @@
+Test writers can add classes to this directory and reference them in tests in
+checker/tests and framework/tests to test unchecked bytecode behavior.  Classes
+in this directory are compiled without using a checker and so do not contain
+any type annotations.
