@@ -178,7 +178,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
             }
 
-            if (!issueGSwithMRLWarning) { // Skip this loop if it is already known that the warning must be issued.
+            if (!issueGSwithMRLWarning) { // Skip this loop if we have already decided to issue the warning.
                 for (VariableTree vt : node.getParameters()) {
                     if (atypeFactory
                             .getAnnotatedType(vt)
