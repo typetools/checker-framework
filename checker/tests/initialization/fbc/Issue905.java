@@ -11,8 +11,14 @@ public class Issue905 {
     Issue905() {
         // this should be @UnderInitialization(Object.class), so this call
         // should be forbidden.
+        //:: error: (method.invocation.invalid)
         baz();
         mBar = "";
+    }
+
+    Issue905(int i) {
+        mBar = "";
+        baz();
     }
 
     void baz(@UnknownInitialization(Issue905.class) Issue905 this) {
