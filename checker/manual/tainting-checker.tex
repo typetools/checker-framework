@@ -144,19 +144,6 @@ the Tainting Checker to create a new annotation and checker with a more
 specific name and semantics.  See Chapter~\ref{writing-a-checker} for more
 details.
 
-\subsection{Qualifier Parameters\label{tainting-qual-params}}
-The Tainting Checker supports qualifier parameters.
-See Section~\ref{qualifier-parameters} for more details on qualifier parameters.
-
-\begin{sloppypar}
-The qualifier parameter system currently
-% (as of December 2015)
-incurs a 50\% performance penalty. If this is unacceptable you can run the
-original Tainting Checker by passing the
-\code{-processor org.checkerframework.checker.tainting.classic.TaintingClassicChecker}
-command-line option to javac.
-\end{sloppypar}
-
 % TODO: one could add a String[] value to @Untainted to distinguish different
 % values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.
 

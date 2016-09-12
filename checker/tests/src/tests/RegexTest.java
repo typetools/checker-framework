@@ -17,6 +17,6 @@ public class RegexTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"regex", "regex_poly", "regex_qual_poly", "all-systems"};
+        return new String[] {"regex", "regex_poly", "all-systems"};
     }
 }
