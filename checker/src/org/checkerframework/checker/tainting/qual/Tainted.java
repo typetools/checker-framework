@@ -13,7 +13,7 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * This annotation is associated with the {@link  org.checkerframework.checker.tainting.TaintingChecker}.
  *
  * @see Untainted
- * @see  TaintingChecker
+ * @see org.checkerframework.checker.tainting.TaintingChecker
  * @checker_framework.manual #tainting-checker Tainting Checker
  */
 @Documented
