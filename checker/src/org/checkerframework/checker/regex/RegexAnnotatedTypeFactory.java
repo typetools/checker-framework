@@ -120,7 +120,8 @@ public class RegexAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
 
         patternCompile =
-                TreeUtils.getMethod("java.util.regex.Pattern", "compile", 1, processingEnv);
+                TreeUtils.getMethod(
+                        java.util.regex.Pattern.class.getName(), "compile", 1, processingEnv);
         partialRegexValue =
                 TreeUtils.getMethod(
                         org.checkerframework.checker.regex.qual.PartialRegex.class.getName(),
