@@ -67,7 +67,8 @@ public class SystemGetPropertyHandler {
         this.env = env;
         this.factory = factory;
 
-        systemGetProperty = TreeUtils.getMethod("java.lang.System", "getProperty", 1, env);
+        systemGetProperty =
+                TreeUtils.getMethod(java.lang.System.class.getName(), "getProperty", 1, env);
     }
 
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
