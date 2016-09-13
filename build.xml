@@ -243,7 +243,7 @@
   <property name="maxparallel" value="-1"/>
   <target name="reformat"
           description="Reformat Java code">
-    <get src="${run-gjf-website-dir}/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" maxtime="60"/>
+    <get src="${run-gjf-website-dir}/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" ignoreerrors="true"/>
     <chmod file="checker/bin-devel/run-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="./checker/bin-devel/run-google-java-format.py"/>
@@ -254,7 +254,7 @@
 
   <target name="check-format"
           description="Check Java code formatting">
-    <get src="${run-gjf-website-dir}/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" maxtime="60"/>
+    <get src="${run-gjf-website-dir}/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" ignoreerrors="true"/>
     <chmod file="checker/bin-devel/check-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
       <arg value="./checker/bin-devel/check-google-java-format.py"/>
