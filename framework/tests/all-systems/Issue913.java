@@ -1,6 +1,5 @@
 // Test case for Issue 913
 // https://github.com/typetools/checker-framework/issues/913
-// @skip-test
 
 class Issue913 {
     void test(Ordering<Object> o) {
@@ -8,7 +7,7 @@ class Issue913 {
     }
 
     static <V> Multimap<V> create(Ordering<? super V> valueComparator) {
-        return null;
+        throw new RuntimeException();
     }
 
     interface Multimap<V> {}
