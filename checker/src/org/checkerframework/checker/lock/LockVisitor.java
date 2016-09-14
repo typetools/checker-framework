@@ -1124,7 +1124,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues an error if a GuardSatisfied annotation is found in a location other than a method return type, receiver or parameter.
+     * Issues an error if a GuardSatisfied annotation is found in a location other than a method return type or parameter (including the receiver).
      * @param annotationTree AnnotationTree used for error reporting and to help determine that an array parameter has no GuardSatisfied
      * annotations except on the array type
      */
