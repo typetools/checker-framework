@@ -11,12 +11,10 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
-import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
@@ -140,6 +138,9 @@ public abstract class CFAbstractAnalysis<
             CFAbstractAnalysis<CFValue, ?, ?> analysis,
             Set<AnnotationMirror> annotations,
             TypeMirror underlyingType) {
+        if (underlyingType.getKind() == TypeKind.VOID) {
+            return null;
+        }
         return new CFValue(analysis, annotations, underlyingType);
     }
 
