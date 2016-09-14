@@ -590,6 +590,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                             typeFactory.getContext().getTypeUtils(),
                             equalityATM.getUnderlyingType(),
                             superATM.getUnderlyingType())) {
+                        // If the underlying type of equalityATM is a subtype of the underlying
+                        // type of superATM, then the call to isSubtype below will issue an error.
+                        // So call asSuper so that the isSubtype call below works correctly.
                         equalityATM = AnnotatedTypes.asSuper(typeFactory, equalityATM, superATM);
                     }
                     if (typeHierarchy.isSubtype(superATM, equalityATM)) {
