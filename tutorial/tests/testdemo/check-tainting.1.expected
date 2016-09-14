@@ -9,8 +9,8 @@ javac 1.8.0-jsr308-1.9.9
 /home/mernst/research/types/checker-framework-REAL/tutorial/eclipse-projects/personalblog-demo/src/net/eyde/personalblog/struts/action/ReadAction.java:58: error: [argument.type.incompatible] incompatible types in argument.
                         pblog.getPostsByCategory(reqCategory));
                                                  ^
-  found   : @TAINTED String
-  required: @UNTAINTED String
+  found   : @Tainted String
+  required: @Untainted String
 1 error
 
 BUILD FAILED

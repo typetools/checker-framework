@@ -343,9 +343,14 @@
         <jar destfile="${checker.lib}" basedir="${build}" excludes="polyall/,tests/,lubglb/,jtreg/,reports/"/>
 
         <!-- Only unjar the stubparser and afu - everything else is recompiled. -->
-        <unjar src="${stubparser.lib}" dest="${build}" />
         <unjar src="${annotation-file-utilities.lib}" dest="${build}" />
+        <!-- Also delete anything in the org/checkerframework package in case it has be removed
+        from the framework-->
+        <delete includeemptydirs="true">
+            <fileset dir="${build}/org/checkerframework"/>
+         </delete>
 
+        <unjar src="${stubparser.lib}" dest="${build}" />
         <!-- Work-around for Issue 894, see above. -->
         <unjar src="${checker.lib}" dest="${build}" />
 
@@ -971,20 +976,6 @@
         </antcall>
     </target>
 
-    <target name="regex-classic-tests" depends="jar,build-tests"
-            description="Run tests for the Regex Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.RegexClassicTest"/>
-        </antcall>
-    </target>
-
-    <target name="regex-qual-tests" depends="jar,build-tests"
-            description="Run tests for the qualifier API Regex Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.RegexQualTest"/>
-        </antcall>
-    </target>
-
     <target name="signature-tests" depends="jar,build-tests"
             description="Run tests for the Signature Checker">
         <antcall target="-run-tests">
@@ -992,24 +983,10 @@
         </antcall>
     </target>
 
-    <target name="tainting-qual-poly-tests" depends="jar,build-tests"
-            description="Run tests for the Tainting Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.TaintingQualPolyTest"/>
-        </antcall>
-    </target>
-
-    <target name="tainting-classic-tests" depends="jar,build-tests"
+    <target name="tainting-tests" depends="jar,build-tests"
             description="Run tests for the classic Tainting Checker">
         <antcall target="-run-tests">
-            <param name="param" value="tests.TaintingClassicTest"/>
-        </antcall>
-    </target>
-
-    <target name="tainting-qual-tests" depends="jar,build-tests"
-            description="Run tests for the qualifier API Tainting Checker">
-        <antcall target="-run-tests">
-            <param name="param" value="tests.TaintingQualTest"/>
+            <param name="param" value="tests.TaintingTest"/>
         </antcall>
     </target>
 

@@ -94,8 +94,10 @@ public class NullnessVisitor
         stringType = elements.getTypeElement("java.lang.String").asType();
 
         ProcessingEnvironment env = checker.getProcessingEnvironment();
-        this.collectionSize = TreeUtils.getMethod("java.util.Collection", "size", 0, env);
-        this.collectionToArray = TreeUtils.getMethod("java.util.Collection", "toArray", 1, env);
+        this.collectionSize =
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
+        this.collectionToArray =
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 1, env);
 
         checkForAnnotatedJdk();
     }

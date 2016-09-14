@@ -9,9 +9,11 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
 import java.util.ArrayList;
@@ -359,7 +361,7 @@ public class FlowExpressionParseUtil {
             if (fieldElem != null) {
                 break;
             }
-            receiverType = ((DeclaredType) receiverType).getEnclosingType();
+            receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
             originalReceiver = false;
         }
 
@@ -474,7 +476,7 @@ public class FlowExpressionParseUtil {
                 if (element.getKind() == ElementKind.METHOD) {
                     break;
                 }
-                receiverType = ((DeclaredType) receiverType).getEnclosingType();
+                receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
             }
 
             if (element == null) {
@@ -1073,6 +1075,39 @@ public class FlowExpressionParseUtil {
         public FlowExpressionContext copyAndUseOuterReceiver() {
             return new FlowExpressionContext(
                     outerReceiver, outerReceiver, arguments, checkerContext, false, useLocalScope);
+        }
+    }
+
+    /**
+     * Returns the type of the inner most enclosing class.Type.noType is returned if no enclosing
+     * class is found. This is in contrast to {@link DeclaredType#getEnclosingType()} which
+     * returns the type of the inner most instance.  If the inner most enclosing class is static
+     * this method will return the type of that class where as
+     * {@link DeclaredType#getEnclosingType()} will return the type of the inner most enclosing
+     * class that is not static.
+     *
+     * @param type a DeclaredType
+     * @return the type of the innermost enclosing class or Type.noType
+     */
+    private static TypeMirror getTypeOfEnclosingClass(DeclaredType type) {
+        if (type instanceof ClassType) {
+            // enclClass() needs to be called on tsym.owner,
+            // otherwise it simply returns tsym.
+            Symbol sym = ((ClassType) type).tsym.owner;
+
+            if (sym == null) {
+                return Type.noType;
+            }
+
+            ClassSymbol cs = sym.enclClass();
+
+            if (cs == null) {
+                return Type.noType;
+            }
+
+            return cs.asType();
+        } else {
+            return type.getEnclosingType();
         }
     }
 

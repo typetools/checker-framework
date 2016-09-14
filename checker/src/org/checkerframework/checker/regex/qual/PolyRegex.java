@@ -1,11 +1,11 @@
 package org.checkerframework.checker.regex.qual;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.qualframework.poly.qual.DefaultValue;
+import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
  * A polymorphic qualifier for the Regex type system.
@@ -18,12 +18,8 @@ import org.checkerframework.qualframework.poly.qual.DefaultValue;
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */
+@Documented
+@PolymorphicQualifier
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@Repeatable(MultiPolyRegex.class)
-public @interface PolyRegex {
-    /**
-     * The name of the qualifier parameter to set.
-     */
-    String param() default DefaultValue.PRIMARY_TARGET;
-}
+public @interface PolyRegex {}

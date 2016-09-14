@@ -584,9 +584,18 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             if (equalityInferred != null && equalityInferred instanceof InferredType) {
 
                 if (supertypeInferred != null && supertypeInferred instanceof InferredType) {
-                    if (typeHierarchy.isSubtype(
-                            ((InferredType) supertypeInferred).type,
-                            ((InferredType) equalityInferred).type)) {
+                    AnnotatedTypeMirror superATM = ((InferredType) supertypeInferred).type;
+                    AnnotatedTypeMirror equalityATM = ((InferredType) equalityInferred).type;
+                    if (TypesUtils.isErasedSubtype(
+                            typeFactory.getContext().getTypeUtils(),
+                            equalityATM.getUnderlyingType(),
+                            superATM.getUnderlyingType())) {
+                        // If the underlying type of equalityATM is a subtype of the underlying
+                        // type of superATM, then the call to isSubtype below will issue an error.
+                        // So call asSuper so that the isSubtype call below works correctly.
+                        equalityATM = AnnotatedTypes.asSuper(typeFactory, equalityATM, superATM);
+                    }
+                    if (typeHierarchy.isSubtype(superATM, equalityATM)) {
                         outputValue = equalityInferred;
                     } else {
                         outputValue = supertypeInferred;

@@ -150,7 +150,7 @@ would look similar to:
 
 \section{Warnings\label{value-checker-warnings}}
 
-The Constant Value Checker issues a warning if it cannot load and run, at
+If the option \code{-AreportEvalWarns} options is used, the Constant Value Checker issues a warning if it cannot load and run, at
 compile time, a method marked as \<@StaticallyExecutable>.  If it issues
 such a warning, then the return value of the method will be \<@UnknownVal>
 instead of being able to be resolved to a specific value annotation.
