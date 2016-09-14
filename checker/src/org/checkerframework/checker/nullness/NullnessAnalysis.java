@@ -40,16 +40,6 @@ public class NullnessAnalysis
     }
 
     @Override
-    public NullnessValue createAbstractValue(AnnotatedTypeMirror type) {
-        if (!AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
-            // If the type is not valid, we return null, which is the same as
-            // 'no information'.
-            return null;
-        }
-        return new NullnessValue(this, type);
-    }
-
-    @Override
     public NullnessValue createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
         return new NullnessValue(this, annotations, underlyingType);

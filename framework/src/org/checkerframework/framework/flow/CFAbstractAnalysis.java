@@ -110,9 +110,21 @@ public abstract class CFAbstractAnalysis<
     public abstract S createCopiedStore(S s);
 
     /**
+     * Creates an abstract value from the annotated type mirror.  The value contains the set of
+     * primary annotations on the type; unless, the type is an AnnotatedWildcardType.  In that
+     * case, the annotations are a in the created value are the primary annotations on the
+     * extends bound.  See {@link CFAbstractValue} for an explaination.
      * @return an abstract value containing the given annotated {@code type}.
      */
-    public abstract /*@Nullable*/ V createAbstractValue(AnnotatedTypeMirror type);
+    public /*@Nullable*/ V createAbstractValue(AnnotatedTypeMirror type) {
+        Set<AnnotationMirror> annos;
+        if (type.getKind() == TypeKind.WILDCARD) {
+            annos = ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations();
+        } else {
+            annos = type.getAnnotations();
+        }
+        return createAbstractValue(annos, type.getUnderlyingType());
+    }
 
     /**
      * @return an abstract value containing the given {@code annotations}
@@ -120,22 +132,6 @@ public abstract class CFAbstractAnalysis<
      */
     public abstract /*@Nullable*/ V createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType);
-
-    /**
-     * Default implementation for
-     * {@link #createAbstractValue(AnnotatedTypeMirror)} that takes care of
-     * invalid types.
-     */
-    public CFValue defaultCreateAbstractValue(
-            CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        if (type instanceof AnnotatedNoType
-                || !AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
-            // If the type is not valid, we return null, which is the same as
-            // 'no information'.
-            return null;
-        }
-        return new CFValue(analysis, type);
-    }
 
     /**
      * Default implementation for {@link #createAbstractValue(Set, TypeMirror)}

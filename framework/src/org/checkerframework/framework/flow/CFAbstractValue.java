@@ -77,15 +77,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         validateSet(this.getAnnotations(), this.getUnderlyingType());
     }
 
-    public CFAbstractValue(CFAbstractAnalysis<V, ?, ?> analysis, AnnotatedTypeMirror type) {
-        this(
-                analysis,
-                (type.getKind() == TypeKind.WILDCARD
-                        ? ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations()
-                        : type.getAnnotations()),
-                type.getUnderlyingType());
-    }
-
     private boolean validateSet(Set<AnnotationMirror> annos, TypeMirror typeMirror) {
         QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
 

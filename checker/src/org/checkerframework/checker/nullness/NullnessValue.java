@@ -26,9 +26,4 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
             TypeMirror underlyingType) {
         super(analysis, annotations, underlyingType);
     }
-
-    public NullnessValue(
-            CFAbstractAnalysis<NullnessValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        super(analysis, type);
-    }
 }

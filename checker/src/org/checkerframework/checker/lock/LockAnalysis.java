@@ -7,13 +7,16 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * The analysis class for the lock type system (serves as factory for the
- * transfer function, stores and abstract values).
+ * The analysis class for the lock type system.
+ *
+ * This class extends {@link CFAbstractAnalysis} so that {@link LockStore} is used rather than
+ * {@link CFStore};
  */
 public class LockAnalysis extends CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {
 
@@ -37,11 +40,6 @@ public class LockAnalysis extends CFAbstractAnalysis<CFValue, LockStore, LockTra
     @Override
     public LockStore createCopiedStore(LockStore s) {
         return new LockStore(this, s);
-    }
-
-    @Override
-    public CFValue createAbstractValue(AnnotatedTypeMirror type) {
-        return defaultCreateAbstractValue(this, type);
     }
 
     @Override

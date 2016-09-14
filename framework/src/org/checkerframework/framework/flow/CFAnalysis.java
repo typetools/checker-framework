@@ -36,11 +36,6 @@ public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer>
     }
 
     @Override
-    public CFValue createAbstractValue(AnnotatedTypeMirror type) {
-        return defaultCreateAbstractValue(this, type);
-    }
-
-    @Override
     public CFValue createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
         return defaultCreateAbstractValue(this, annotations, underlyingType);

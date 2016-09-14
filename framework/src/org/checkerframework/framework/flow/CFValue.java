@@ -21,8 +21,4 @@ public class CFValue extends CFAbstractValue<CFValue> {
             TypeMirror underlyingType) {
         super(analysis, annotations, underlyingType);
     }
-
-    public CFValue(CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        super(analysis, type);
-    }
 }
