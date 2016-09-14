@@ -361,7 +361,7 @@ public class FlowExpressionParseUtil {
             if (fieldElem != null) {
                 break;
             }
-            receiverType = getEnclosingType((DeclaredType) receiverType);
+            receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
             originalReceiver = false;
         }
 
@@ -476,7 +476,7 @@ public class FlowExpressionParseUtil {
                 if (element.getKind() == ElementKind.METHOD) {
                     break;
                 }
-                receiverType = getEnclosingType((DeclaredType) receiverType);
+                receiverType = getTypeOfEnclosingClass((DeclaredType) receiverType);
             }
 
             if (element == null) {
@@ -1079,13 +1079,17 @@ public class FlowExpressionParseUtil {
     }
 
     /**
-     * Returns the innermost enclosing type of the given type, or Type.noType if no such type was
-     * found.
+     * Returns the type of the inner most enclosing class.Type.noType is returned if no enclosing
+     * class is found. This is in contrast to {@link DeclaredType#getEnclosingType()} which
+     * returns the type of the inner most instance.  If the inner most enclosing class is static
+     * this method will return the type of that class where as
+     * {@link DeclaredType#getEnclosingType()} will return the type of the inner most enclosing
+     * class that is not static.
      *
      * @param type a DeclaredType
-     * @return the innermost enclosing type, or Type.noType
+     * @return the type of the innermost enclosing class or Type.noType
      */
-    private static TypeMirror getEnclosingType(DeclaredType type) {
+    private static TypeMirror getTypeOfEnclosingClass(DeclaredType type) {
         if (type instanceof ClassType) {
             // enclClass() needs to be called on tsym.owner,
             // otherwise it simply returns tsym.
