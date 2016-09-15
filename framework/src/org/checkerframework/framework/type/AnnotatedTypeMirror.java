@@ -261,7 +261,8 @@ public abstract class AnnotatedTypeMirror {
         }
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-            AnnotationMirror anno = qualHier.findAnnotationInSameHierarchy(annotations, aliased);
+            AnnotationMirror anno =
+                    qualHier.findAnnotationInSameHierarchy(getAnnotations(), aliased);
             if (anno != null) {
                 return anno;
             }
@@ -304,7 +305,7 @@ public abstract class AnnotatedTypeMirror {
      *
      * @return  a unmodifiable set of the annotations on this
      */
-    public final Set<AnnotationMirror> getAnnotations() {
+    public Set<AnnotationMirror> getAnnotations() {
         return Collections.unmodifiableSet(annotations);
     }
 
@@ -2081,6 +2082,14 @@ public abstract class AnnotatedTypeMirror {
         }
     }
 
+    /**
+     * The primary annotation on an intersection type is the GLB of the primary annotations
+     * of the bounds.
+     * <p>
+     * Example (java) subtyping relationship:<br>
+     * {@code C <: A & B <: A <:Object, where class C extends A implements B {...}}
+     * <p>
+     */
     public static class AnnotatedIntersectionType extends AnnotatedTypeMirror {
 
         /**
@@ -2098,6 +2107,36 @@ public abstract class AnnotatedTypeMirror {
         private AnnotatedIntersectionType(
                 IntersectionType type, AnnotatedTypeFactory atypeFactory) {
             super(type, atypeFactory);
+        }
+
+        @Override
+        public Set<AnnotationMirror> getAnnotations() {
+            Set<AnnotationMirror> glbs = null;
+            for (AnnotatedDeclaredType directST : directSuperTypes()) {
+                if (glbs == null) {
+                    glbs = directST.getAnnotations();
+                } else {
+                    Set<AnnotationMirror> newGlbs = AnnotationUtils.createAnnotationSet();
+                    for (AnnotationMirror glb : glbs) {
+                        AnnotationMirror anno = directST.getAnnotationInHierarchy(glb);
+                        newGlbs.add(
+                                anno == null
+                                        ? glb
+                                        : atypeFactory
+                                                .getQualifierHierarchy()
+                                                .greatestLowerBound(anno, glb));
+                    }
+                    glbs = newGlbs;
+                }
+            }
+            return glbs;
+        }
+
+        @Override
+        public void addAnnotation(AnnotationMirror a) {
+            for (AnnotatedDeclaredType directST : directSuperTypes()) {
+                directST.addMissingAnnotations(Collections.singleton(a));
+            }
         }
 
         @Override

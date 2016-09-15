@@ -1,6 +1,5 @@
 // Test case for Issue 868
 // https://github.com/typetools/checker-framework/issues/868
-// @skip-test
 
 import java.util.List;
 import org.checkerframework.checker.nullness.qual.Nullable;
