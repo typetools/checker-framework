@@ -39,7 +39,7 @@ public class FormatterTransfer extends CFTransfer {
                         atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
                 CFValue newResultValue =
                         analysis.createSingleAnnotationValue(
-                                anno, result.getResultValue().getType().getUnderlyingType());
+                                anno, result.getResultValue().getUnderlyingType());
                 return new RegularTransferResult<>(newResultValue, result.getRegularStore());
             }
         }

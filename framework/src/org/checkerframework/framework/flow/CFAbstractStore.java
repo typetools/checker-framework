@@ -218,12 +218,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                                     monotonicAnnotation, "value", false);
                     AnnotationMirror target =
                             AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
-                    AnnotationMirror anno = otherVal.getType().getAnnotationInHierarchy(target);
                     // Make sure the 'target' annotation is present.
-                    if (anno != null && AnnotationUtils.areSame(anno, target)) {
+                    if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
                         newOtherVal =
                                 analysis.createSingleAnnotationValue(
-                                                target, otherVal.getType().getUnderlyingType())
+                                                target, otherVal.getUnderlyingType())
                                         .mostSpecific(newOtherVal, null);
                     }
                 }
@@ -398,9 +397,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                                 monotonicAnnotation, "value", false);
                 AnnotationMirror target =
                         AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
-                AnnotationMirror valueAM = value.getType().getAnnotationInHierarchy(target);
                 // Make sure the 'target' annotation is present.
-                if (valueAM != null && AnnotationUtils.areSame(valueAM, target)) {
+                if (AnnotationUtils.containsSame(value.getAnnotations(), target)) {
                     isMonotonic = true;
                     break;
                 }
