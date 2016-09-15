@@ -8,6 +8,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.Pair;
 
 /**
@@ -39,7 +40,7 @@ public class NullnessAnalysis
     @Override
     public NullnessValue createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
-        if (underlyingType.getKind() == TypeKind.VOID) {
+        if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
             return null;
         }
         return new NullnessValue(this, annotations, underlyingType);

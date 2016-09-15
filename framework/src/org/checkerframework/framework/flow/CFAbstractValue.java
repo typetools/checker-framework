@@ -74,11 +74,18 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         this.annotations = annotations;
         this.underlyingType = underlyingType;
 
-        validateSet(this.getAnnotations(), this.getUnderlyingType());
+        assert validateSet(
+                        this.getAnnotations(),
+                        this.getUnderlyingType(),
+                        analysis.getTypeFactory().getQualifierHierarchy())
+                : "Encountered invalid type: "
+                        + underlyingType
+                        + " annotations: "
+                        + PluginUtil.join(", ", annotations);
     }
 
-    private boolean validateSet(Set<AnnotationMirror> annos, TypeMirror typeMirror) {
-        QualifierHierarchy hierarchy = analysis.getTypeFactory().getQualifierHierarchy();
+    public static boolean validateSet(
+            Set<AnnotationMirror> annos, TypeMirror typeMirror, QualifierHierarchy hierarchy) {
 
         if (canBeMissingAnnotations(typeMirror)) {
             return true;
@@ -95,13 +102,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             }
         }
 
-        if (missingHierarchy != null) {
-            String missing = PluginUtil.join(", ", missingHierarchy);
-            ErrorReporter.errorAbort(
-                    "CFAbstractValue: missing annotation in the following hierarchies: " + missing);
-            return false;
-        }
-        return true;
+        return missingHierarchy == null;
     }
 
     /**
@@ -112,9 +113,14 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         return canBeMissingAnnotations(underlyingType);
     }
 
-    private boolean canBeMissingAnnotations(TypeMirror typeMirror) {
+    private static boolean canBeMissingAnnotations(TypeMirror typeMirror) {
         if (typeMirror == null) {
             return false;
+        }
+        if (typeMirror.getKind() == TypeKind.VOID
+                || typeMirror.getKind() == TypeKind.NONE
+                || typeMirror.getKind() == TypeKind.PACKAGE) {
+            return true;
         }
         if (typeMirror.getKind() == TypeKind.WILDCARD) {
             return canBeMissingAnnotations(((WildcardType) typeMirror).getExtendsBound());

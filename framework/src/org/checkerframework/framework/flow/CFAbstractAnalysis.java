@@ -138,7 +138,7 @@ public abstract class CFAbstractAnalysis<
             CFAbstractAnalysis<CFValue, ?, ?> analysis,
             Set<AnnotationMirror> annotations,
             TypeMirror underlyingType) {
-        if (underlyingType.getKind() == TypeKind.VOID) {
+        if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
             return null;
         }
         return new CFValue(analysis, annotations, underlyingType);
