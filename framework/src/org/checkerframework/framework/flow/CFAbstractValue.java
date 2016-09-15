@@ -404,7 +404,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * depending on whether an annotation exists for the hierarchy in each set.  Also, passes a
      * {@link AnnotatedTypeVariable} if an annotation does not exist.
      */
-    abstract class AnnotationSetAndTypeMirrorVisitor {
+    protected abstract class AnnotationSetAndTypeMirrorVisitor {
         TypeMirror result;
 
         private AnnotatedTypeVariable aAtv;

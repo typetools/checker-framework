@@ -110,8 +110,8 @@ public abstract class CFAbstractAnalysis<
     /**
      * Creates an abstract value from the annotated type mirror.  The value contains the set of
      * primary annotations on the type; unless, the type is an AnnotatedWildcardType.  In that
-     * case, the annotations are a in the created value are the primary annotations on the
-     * extends bound.  See {@link CFAbstractValue} for an explaination.
+     * case, the annotations in the created value are the primary annotations on the
+     * extends bound.  See {@link CFAbstractValue} for an explanation.
      * @return an abstract value containing the given annotated {@code type}.
      */
     public /*@Nullable*/ V createAbstractValue(AnnotatedTypeMirror type) {
