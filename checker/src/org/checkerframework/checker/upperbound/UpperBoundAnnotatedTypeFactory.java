@@ -14,21 +14,17 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -37,7 +33,6 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 
 /**
  * Implements the introduction rules for the upper bound checker.
@@ -45,9 +40,7 @@ import org.checkerframework.javacutil.Pair;
  * and comparing the min lengths of arrays to the known values
  * of variables as supplied by the value checker.
  */
-public class UpperBoundAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<
-                CFValue, CFStore, UpperBoundTransfer, UpperBoundAnalysis> {
+public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      *  So Suzanne told me these were evil, but then I ended up using them
@@ -149,16 +142,9 @@ public class UpperBoundAnnotatedTypeFactory
         return new Integer((int) valMax);
     }
 
-    @Override
-    protected UpperBoundAnalysis createFlowAnalysis(
-            List<Pair<VariableElement, CFValue>> fieldValues) {
-        return new UpperBoundAnalysis(checker, this, fieldValues);
-    }
-
     // FIXME: In an unsurprising turn of events, this isn't working.
     // Going to ignore it for now and use specialized ones but we
     // should come back and fix later...
-
     /**
      * Creates an annotation of the name given with the set of values given.
      * Exists in place of a series of createXAnnotation methods because that
@@ -393,8 +379,7 @@ public class UpperBoundAnnotatedTypeFactory
 
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            // I'm not sure we actually care all that much about what's happening here.
-            // Maybe a few small rules for addition/subtraction by 0/1, etc. FIXME.
+            // A few small rules for addition/subtraction by 0/1, etc.
             ExpressionTree left = tree.getLeftOperand();
             ExpressionTree right = tree.getRightOperand();
             switch (tree.getKind()) {

@@ -20,21 +20,20 @@ import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
-import org.checkerframework.framework.flow.CFAbstractTransfer;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
-public class UpperBoundTransfer extends CFAbstractTransfer<CFValue, CFStore, UpperBoundTransfer> {
-    protected UpperBoundAnalysis analysis;
+public class UpperBoundTransfer extends CFTransfer {
 
     private final AnnotationMirror LTL, EL, LTEL, UNKNOWN;
 
     private UpperBoundAnnotatedTypeFactory atypeFactory;
 
-    public UpperBoundTransfer(UpperBoundAnalysis analysis) {
+    public UpperBoundTransfer(CFAnalysis analysis) {
         super(analysis);
-        this.analysis = analysis;
         atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         LTL = UpperBoundAnnotatedTypeFactory.LTL;
         EL = UpperBoundAnnotatedTypeFactory.EL;
