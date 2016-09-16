@@ -261,7 +261,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (minLen == null) {
                     return super.visitMemberSelect(tree, type);
                 }
-                type.addAnnotation(anmFromVal(minLen));
+                type.replaceAnnotation(anmFromVal(minLen));
             }
             return super.visitMemberSelect(tree, type);
         }

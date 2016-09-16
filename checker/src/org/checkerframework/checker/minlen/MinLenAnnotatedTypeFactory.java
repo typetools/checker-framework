@@ -144,12 +144,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitArray(AnnotatedArrayType type, Void aVoid) {
-            //	    ArrayList<AnnotationMirror> rganm = new ArrayList<AnnotationMirror>();
-            //rganm.add(createMinLen(0));
-            //type.addMissingAnnotations(rganm);
-            System.out.println(type);
             type.replaceAnnotation(createMinLen(0));
-            System.out.println(type);
             return super.visitArray(type, aVoid);
         }
     }
