@@ -57,13 +57,7 @@ public class UpperBoundTransfer extends CFTransfer {
             Node dim = acNode.getDimension(0);
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), dim);
             String name = node.getTarget().toString();
-
-            // FIXME: the Index Checker includes this here. Not sure why - investigate.
-            // if (dim instanceof NumericalAdditionNode) {
-            //     if (isVarPlusOne((NumericalAdditionNode)dim, store, name)) {
-            //         return result;
-            //     }
-            // }
+            // This is silly, but...
             String[] names = {name};
 
             store.insertValue(
@@ -72,7 +66,9 @@ public class UpperBoundTransfer extends CFTransfer {
         return result;
     }
 
-    // Make array.length have type EL(array).
+    /**
+     *  Makes array.length have type EL(array).
+     */
     @Override
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
@@ -129,7 +125,9 @@ public class UpperBoundTransfer extends CFTransfer {
 
     // So I actually just ended up copying these from Lower Bound Transfer too.
     // The only parts that are actually different are the definitions of
-    // refineGT and refineGTE.
+    // refineGT and refineGTE, and the handling of equals and not equals. The
+    // code for the visitGreaterThan, visitLessThan, etc., are all identical to
+    // their LBC counterparts.
 
     @Override
     public TransferResult<CFValue, CFStore> visitGreaterThan(
@@ -362,7 +360,7 @@ public class UpperBoundTransfer extends CFTransfer {
 
     // From: http://stackoverflow.com/questions/80476/how-can-i-concatenate-two-arrays-in-java
     // This just concatenates two generic arrays.
-    public static <T> T[] concat(T[] first, T[] second) {
+    private static <T> T[] concat(T[] first, T[] second) {
         T[] result = Arrays.copyOf(first, first.length + second.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
