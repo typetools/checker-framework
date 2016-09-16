@@ -120,9 +120,19 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
                 // Implies both are MinLen since that's the only other type.
-                Integer rhsVal = AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
-                Integer lhsVal = AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
-                return rhsVal >= lhsVal;
+                // But we're going to check anyway to make sure they both have
+                // values to avoid crashing.
+                if (AnnotationUtils.hasElementValue(rhs, "value")
+                        && AnnotationUtils.hasElementValue(lhs, "value")) {
+                    Integer rhsVal =
+                            AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
+                    Integer lhsVal =
+                            AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
+                    return rhsVal >= lhsVal;
+                } else {
+                    // They aren't subtypes is one doesn't have a value.
+                    return true;
+                }
             }
             return false;
         }
