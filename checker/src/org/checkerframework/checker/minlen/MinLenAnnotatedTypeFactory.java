@@ -4,6 +4,7 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -14,10 +15,13 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -121,6 +125,32 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return rhsVal >= lhsVal;
             }
             return false;
+        }
+    }
+
+    // This is based on a suggestion Suzanne had for making arrays always default
+    // to MinLen(0).
+
+    @Override
+    protected TypeAnnotator createTypeAnnotator() {
+        return new ListTypeAnnotator(new MinLenTypeAnnotator(this));
+    }
+
+    protected class MinLenTypeAnnotator extends TypeAnnotator {
+
+        public MinLenTypeAnnotator(MinLenAnnotatedTypeFactory atf) {
+            super(atf);
+        }
+
+        @Override
+        public Void visitArray(AnnotatedArrayType type, Void aVoid) {
+            //	    ArrayList<AnnotationMirror> rganm = new ArrayList<AnnotationMirror>();
+            //rganm.add(createMinLen(0));
+            //type.addMissingAnnotations(rganm);
+            System.out.println(type);
+            type.replaceAnnotation(createMinLen(0));
+            System.out.println(type);
+            return super.visitArray(type, aVoid);
         }
     }
 

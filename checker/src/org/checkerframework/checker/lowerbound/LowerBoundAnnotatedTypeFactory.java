@@ -251,14 +251,13 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // able to test for whether we've got an array right here, but
                     // I haven't been able to find a way to do that.
 
-                    if (!type.hasAnnotation(POS)) {
-                        type.replaceAnnotation(NN);
-                    }
+                    // if (!type.hasAnnotation(POS)) {
+                    //     type.replaceAnnotation(NN);
+                    // }
 
                     return super.visitMemberSelect(tree, type);
                 }
                 Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
-                System.out.println(minLen);
                 if (minLen == null) {
                     return super.visitMemberSelect(tree, type);
                 }
