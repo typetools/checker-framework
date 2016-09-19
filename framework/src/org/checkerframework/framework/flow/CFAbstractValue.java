@@ -460,8 +460,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * of that TypeMirror. If the TypeMirror is a wildcard that extends a type variable, the
      * AnnotatedTypeVariable return is the declaration of that type variable.  Otherwise, null is
      * returned.
-     * @param typeMirror
-     * @return
      */
     private AnnotatedTypeVariable getEffectTypeVar(TypeMirror typeMirror) {
         if (typeMirror == null) {
