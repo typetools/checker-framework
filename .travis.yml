@@ -27,7 +27,7 @@ script:
 after_script:
   - |
       declare exitCode;
-      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | node
+      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | node
       exitCode=$?
 
       if [ "$exitCode" -eq 0 ]; then
