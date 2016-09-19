@@ -97,6 +97,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     public Void visitVariable(VariableTree node, Void p) { // visit a variable declaration
         // A user may not annotate a primitive type, a boxed primitive type or a String
         // with any qualifier from the @GuardedBy hierarchy.
+        // They are immutable, so there is no need to guard them.
 
         TypeMirror tm = InternalUtils.typeOf(node);
 
@@ -108,7 +109,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     || atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDEDBY)
                     || atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYUNKNOWN)
                     || atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYBOTTOM)) {
-                checker.report(Result.failure("primitive.type.guardedby"), node);
+                checker.report(Result.failure("immutable.type.guardedby"), node);
             }
         }
 

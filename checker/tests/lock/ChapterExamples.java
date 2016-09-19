@@ -296,7 +296,7 @@ class ChapterExamples {
         y5 = x5; // ILLEGAL
     }
 
-    //:: error: (primitive.type.guardedby)
+    //:: error: (immutable.type.guardedby)
     @GuardedBy("a") String s = "string";
 
     @GuardedBy({}) MyClass o1;
@@ -479,14 +479,14 @@ class ChapterExamples {
     // TODO: For now, boxed types are treated as primitive types. This may change in the future.
     void unboxing() {
         int a = 1;
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy("lock") Integer c;
         synchronized (lock) {
             //:: error: (assignment.type.incompatible)
             c = a;
         }
 
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy("lock") Integer b = 1;
         int d;
         synchronized (lock) {

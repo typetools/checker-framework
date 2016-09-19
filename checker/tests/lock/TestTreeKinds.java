@@ -467,18 +467,18 @@ public class TestTreeKinds {
     }
 
     void testPrimitiveTypeGuardedby() {
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy("lock") int a = 0;
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy int b = 0;
-        //:: error: (primitive.type.guardedby) :: error: (guardsatisfied.location.disallowed)
+        //:: error: (immutable.type.guardedby) :: error: (guardsatisfied.location.disallowed)
         @GuardSatisfied int c = 0;
-        //:: error: (primitive.type.guardedby) :: error: (guardsatisfied.location.disallowed)
+        //:: error: (immutable.type.guardedby) :: error: (guardsatisfied.location.disallowed)
         @GuardSatisfied(1) int d = 0;
         int e = 0;
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedByUnknown int f = 0;
-        //:: error: (primitive.type.guardedby) :: error: (assignment.type.incompatible)
+        //:: error: (immutable.type.guardedby) :: error: (assignment.type.incompatible)
         @GuardedByBottom int g = 0;
     }
 
