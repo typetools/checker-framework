@@ -13,6 +13,7 @@ RUN apt-get -qqy update && apt-get -qqy install \
   git \
   make \
   mercurial \
+  node \
   unzip \
   default-jdk \
 && apt-get clean \
