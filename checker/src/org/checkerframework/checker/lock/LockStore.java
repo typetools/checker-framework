@@ -4,6 +4,8 @@ package org.checkerframework.checker.lock;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -13,6 +15,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /*
@@ -62,34 +65,57 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
      * This is only done for @LockPossiblyHeld. This is not sound for other type qualifiers.
      */
     public void insertLockPossiblyHeld(FlowExpressions.Receiver r) {
-        CFValue value =
-                analysis.createSingleAnnotationValue(atypeFactory.LOCKPOSSIBLYHELD, r.getType());
-        assert value != null;
-
         if (r.containsUnknown()) {
             // Expressions containing unknown expressions are not stored.
             return;
         }
         if (r instanceof FlowExpressions.LocalVariable) {
             FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
+            CFValue current = localVariableValues.get(localVar);
+            CFValue value = changeLockAnnoToTop(current);
             localVariableValues.put(localVar, value);
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
+            CFValue current = fieldValues.get(fieldAcc);
+            CFValue value = changeLockAnnoToTop(current);
             fieldValues.put(fieldAcc, value);
         } else if (r instanceof FlowExpressions.MethodCall) {
             FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
+            CFValue current = methodValues.get(method);
+            CFValue value = changeLockAnnoToTop(current);
             methodValues.put(method, value);
         } else if (r instanceof FlowExpressions.ArrayAccess) {
             FlowExpressions.ArrayAccess arrayAccess = (ArrayAccess) r;
+            CFValue current = arrayValues.get(arrayAccess);
+            CFValue value = changeLockAnnoToTop(current);
             arrayValues.put(arrayAccess, value);
         } else if (r instanceof FlowExpressions.ThisReference) {
-            thisValue = value;
+            thisValue = changeLockAnnoToTop(thisValue);
         } else if (r instanceof FlowExpressions.ClassName) {
             FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
+            CFValue current = classValues.get(className);
+            CFValue value = changeLockAnnoToTop(current);
             classValues.put(className, value);
         } else {
             // No other types of expressions need to be stored.
         }
+    }
+
+    /**
+     * Makes a new CFValue with the same annotations as currentValue except that the annotation
+     * in the LockPossiblyHeld hierarchy is set to LockPossiblyHeld.
+     */
+    private CFValue changeLockAnnoToTop(CFValue currentValue) {
+        QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+        Set<AnnotationMirror> currentSet = currentValue.getAnnotations();
+        AnnotationMirror gb =
+                hierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);
+        Set<AnnotationMirror> newSet = AnnotationUtils.createAnnotationSet();
+        newSet.add(atypeFactory.LOCKPOSSIBLYHELD);
+        if (gb != null) {
+            newSet.add(gb);
+        }
+        return analysis.createAbstractValue(newSet, currentValue.getUnderlyingType());
     }
 
     public void setInConstructorOrInitializer() {
