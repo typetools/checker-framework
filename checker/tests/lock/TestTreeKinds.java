@@ -391,13 +391,6 @@ public class TestTreeKinds {
             foo.field.toString();
         }
 
-        // An error is raised here because non-side-effect-free method unlockTheLock() is called above,
-        // and is due to this line in LockStore.updateForMethodCall:
-        // localVariableValues.clear();
-        // which clears the value of 'r' in the store to its CLIMB-to-top default of @GuardedByUnknown.
-        // TODO: Fix LockStore.updateForMethodCall so it is less conservative and remove
-        // the expected error.
-        //:: error: (method.invocation.invalid)
         if (r.nextBoolean()) {
             lockTheLock();
             sideEffectFreeMethod();
@@ -409,14 +402,6 @@ public class TestTreeKinds {
             foo.field.toString();
         }
 
-        // An error is raised here because the non-side-effect-free methods unlockTheLock() and nonSideEffectFreeMethod() are called above
-        // (for the method.invocation.invalid error not to be issued, neither of those two methods can be called above),
-        // and is due to this line in LockStore.updateForMethodCall:
-        // localVariableValues.clear();
-        // which clears the value of 'r' in the store to its CLIMB-to-top default of @GuardedByUnknown.
-        // TODO: Fix LockStore.updateForMethodCall so it is less conservative and remove
-        // the expected error.
-        //:: error: (method.invocation.invalid)
         if (r.nextBoolean()) {
             lockTheLock();
             lockingFreeMethod();

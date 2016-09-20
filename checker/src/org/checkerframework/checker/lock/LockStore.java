@@ -4,15 +4,19 @@ package org.checkerframework.checker.lock;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import java.util.ArrayList;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -179,17 +183,26 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         super.updateForMethodCall(n, atypeFactory, val);
         ExecutableElement method = n.getTarget().getMethod();
         if (!isSideEffectFree(atypeFactory, method)) {
-            // Fields are always modifiable as far as the Lock Checker is concerned, even if they are final.
-            fieldValues.clear();
+            // After the call to super.updateForMethodCall, only final fields are left in
+            // fieldValues (if the method called is side-effecting). For the LockPossiblyHeld
+            // hierarchy, even a final field might be locked or unlocked by a side-effecting
+            // method.  So, final fields must be set to @LockPossiblyHeld, but the annotation in
+            // the GuardedBy hierarchy should not be changed.
+            for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
+                fieldValues.put(field, changeLockAnnoToTop(field, fieldValues.get(field)));
+            }
 
-            // Necessary because a method could unlock a lock that is a local variable, e.g.:
-            // void foo() {
-            //     ReentrantLock lock = new ReentrantLock();
-            //     lock.lock();
-            //     unlockMyLock(lock);
-            // }
-            localVariableValues.clear();
-            // TODO: This is too conservative. Clear only the values for the local variables that could be affected.
+            // Local variables could also be unlocked if passed as an argument.
+            for (Node argument : n.getArguments()) {
+                Receiver arg = FlowExpressions.internalReprOf(atypeFactory, argument);
+                if (arg instanceof LocalVariable) {
+                    CFValue localValue = localVariableValues.get(arg);
+                    if (localValue != null) {
+                        localVariableValues.put(
+                                (LocalVariable) arg, changeLockAnnoToTop(arg, localValue));
+                    }
+                }
+            }
         }
     }
 
