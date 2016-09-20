@@ -10,6 +10,7 @@ import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
@@ -72,29 +73,29 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         if (r instanceof FlowExpressions.LocalVariable) {
             FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
             CFValue current = localVariableValues.get(localVar);
-            CFValue value = changeLockAnnoToTop(current);
+            CFValue value = changeLockAnnoToTop(r, current);
             localVariableValues.put(localVar, value);
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
             CFValue current = fieldValues.get(fieldAcc);
-            CFValue value = changeLockAnnoToTop(current);
+            CFValue value = changeLockAnnoToTop(r, current);
             fieldValues.put(fieldAcc, value);
         } else if (r instanceof FlowExpressions.MethodCall) {
             FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
             CFValue current = methodValues.get(method);
-            CFValue value = changeLockAnnoToTop(current);
+            CFValue value = changeLockAnnoToTop(r, current);
             methodValues.put(method, value);
         } else if (r instanceof FlowExpressions.ArrayAccess) {
             FlowExpressions.ArrayAccess arrayAccess = (ArrayAccess) r;
             CFValue current = arrayValues.get(arrayAccess);
-            CFValue value = changeLockAnnoToTop(current);
+            CFValue value = changeLockAnnoToTop(r, current);
             arrayValues.put(arrayAccess, value);
         } else if (r instanceof FlowExpressions.ThisReference) {
-            thisValue = changeLockAnnoToTop(thisValue);
+            thisValue = changeLockAnnoToTop(r, thisValue);
         } else if (r instanceof FlowExpressions.ClassName) {
             FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
             CFValue current = classValues.get(className);
-            CFValue value = changeLockAnnoToTop(current);
+            CFValue value = changeLockAnnoToTop(r, current);
             classValues.put(className, value);
         } else {
             // No other types of expressions need to be stored.
@@ -103,9 +104,16 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
     /**
      * Makes a new CFValue with the same annotations as currentValue except that the annotation
-     * in the LockPossiblyHeld hierarchy is set to LockPossiblyHeld.
+     * in the LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null,
+     * then a new value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown
      */
-    private CFValue changeLockAnnoToTop(CFValue currentValue) {
+    private CFValue changeLockAnnoToTop(Receiver r, CFValue currentValue) {
+        if (currentValue == null) {
+            currentValue =
+                    analysis.createSingleAnnotationValue(
+                            atypeFactory.GUARDEDBYUNKNOWN, r.getType());
+        }
+
         QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
         Set<AnnotationMirror> currentSet = currentValue.getAnnotations();
         AnnotationMirror gb =
