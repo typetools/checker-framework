@@ -192,16 +192,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
                 fieldValues.put(field, changeLockAnnoToTop(field, fieldValues.get(field)));
             }
 
-            // Local variables could also be unlocked if passed as an argument.
-            for (Node argument : n.getArguments()) {
-                Receiver arg = FlowExpressions.internalReprOf(atypeFactory, argument);
-                if (arg instanceof LocalVariable) {
-                    CFValue localValue = localVariableValues.get(arg);
-                    if (localValue != null) {
-                        localVariableValues.put(
-                                (LocalVariable) arg, changeLockAnnoToTop(arg, localValue));
-                    }
-                }
+            // Local variables could also be unlocked via an alias
+            for (LocalVariable var : new ArrayList<>(localVariableValues.keySet())) {
+                CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
+                localVariableValues.put(var, newValue);
             }
         }
     }
