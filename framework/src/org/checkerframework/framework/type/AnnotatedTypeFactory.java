@@ -98,6 +98,8 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.CFContext;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
+import org.checkerframework.framework.util.FrameworkVPUtil;
+import org.checkerframework.framework.util.GenericVPUtil;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -319,6 +321,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Mapping from an Element to the source Tree of the declaration. */
     private final Map<Element, Tree> elementToTreeCache;
 
+    /** viewpoint adaptation utility to perform viewpoint adaptation */
+    protected final GenericVPUtil<?> vputil;
+
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
      * instance and syntax tree root. (These parameters are required so that
@@ -368,6 +373,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
+        this.vputil = createVPUtil();
 
         infer = checker.hasOption("infer");
         if (infer) {
@@ -376,6 +382,29 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     new WholeProgramInferenceScenes(
                             !"NullnessAnnotatedTypeFactory"
                                     .equals(this.getClass().getSimpleName()));
+        }
+    }
+
+    /**
+     * Method to reflectively set vputil. By default, this method gets the name of type system from
+     * the canonical name of "this", and concatenate it with "VPUtil". If the target class can be
+     * instantiated successfully, it's used. Otherwise, FrameworkVPUtil is returned. Note that
+     * FrameworkVPUtil deosn't perform any viewpoint adaptation function. It's only the base class
+     * for all VPUtil classes of concrete type system. If the concrete type system has a different
+     * naming mechanism, then developer of that type system should override this method to instantiate
+     * it correctly. Otherwise, FrameworkVPUtil is returned but NO viewpoint adaptation is performed.
+     * See <Link>FrameworkVPUtil</Link> for more information.
+     * @return GenericVPUtil newly created
+     */
+    protected GenericVPUtil<?> createVPUtil() {
+        // Reflectively lookup subclass of vputil using type factory naming convention
+        String clazzName =
+                this.getClass().getCanonicalName().replace("AnnotatedTypeFactory", "") + "VPUtil";
+        try {
+            return (GenericVPUtil<?>) Class.forName(clazzName).newInstance();
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            // If didn't find or failed instantiation, use the default implementation
+            return new FrameworkVPUtil();
         }
     }
 
