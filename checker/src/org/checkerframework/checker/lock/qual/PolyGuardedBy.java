@@ -13,9 +13,9 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
  * A polymorphic qualifier for the GuardedBy type system.
- * Indicates that is unknown what the guards are or whether they are held.
+ * Indicates that it is unknown what the guards are or whether they are held.
  * An expression whose type is {@code @PolyGuardedBy} cannot be dereferenced.
- * Hence, unlike for @GuardSatisfied, when an expression of type {@code @PolyGuardedBy}
+ * Hence, unlike for {@code @GuardSatisfied}, when an expression of type {@code @PolyGuardedBy}
  * is the LHS of an assignment, the locks guarding the RHS do not need to be held.
  * <p>
  *
