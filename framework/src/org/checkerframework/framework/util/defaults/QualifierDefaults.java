@@ -49,6 +49,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Determines the default qualifiers on a type.
@@ -946,15 +947,17 @@ public class QualifierDefaults {
                     case IMPLICIT_UPPER_BOUND:
                         {
                             if (isUpperBound
-                                    && boundType.isOneOf(BoundType.UNBOUND, BoundType.LOWER)) {
+                                    && boundType.isOneOf(
+                                            BoundType.UNBOUND,
+                                            BoundType.LOWER,
+                                            BoundType.UNKNOWN)) {
                                 doApply(t, qual);
                             }
                             break;
                         }
                     case EXPLICIT_UPPER_BOUND:
                         {
-                            if (isUpperBound
-                                    && boundType.isOneOf(BoundType.UPPER, BoundType.UNKNOWN)) {
+                            if (isUpperBound && boundType.isOneOf(BoundType.UPPER)) {
                                 doApply(t, qual);
                             }
                             break;
@@ -1140,7 +1143,16 @@ public class QualifierDefaults {
         if (typeParamDecl == null) {
             // This is not only for elements from binaries, but also
             // when the compilation unit is no-longer available.
-            boundType = BoundType.UNKNOWN;
+            if (typeParamElem.getBounds().size() == 1
+                    && TypesUtils.isObject(typeParamElem.getBounds().get(0))) {
+                // If the bound was Object, then it may or may not have been explicitly written.
+                // Assume that it was not.
+                boundType = BoundType.UNBOUND;
+            } else {
+                // The bound is not Object, so it must have been explicitly written and thus the
+                // type variable has an upper bound.
+                boundType = BoundType.UPPER;
+            }
 
         } else {
             if (typeParamDecl.getKind() == Tree.Kind.TYPE_PARAMETER) {

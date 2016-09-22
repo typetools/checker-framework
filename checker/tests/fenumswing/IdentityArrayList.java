@@ -1,10 +1,14 @@
 import java.util.Arrays;
+import org.checkerframework.checker.fenum.qual.FenumTop;
 
 /*
  * This test case violates an assertion in the compiler.
  * It does not depend on the Fenum Checker, it breaks for any checker.
  */
 public class IdentityArrayList {
+    // The type the third argument to Arrays.copyOf should be:
+    // Class<? extends T @FenumTop []>
+    @SuppressWarnings("argument.type.incompatible")
     public <T> T[] toArray(T[] a) {
         // Warnings only with -Alint=cast:strict.
         //TODO:: warning: (cast.unsafe)
@@ -19,11 +23,13 @@ public class IdentityArrayList {
         return (T[]) myCopyOf(null, 0, a.getClass());
     }
 
-    public static <T, U> T[] myCopyOf(U[] original, int newLength, Class<? extends T[]> newType) {
+    public static <T, U> T[] myCopyOf(
+            U[] original, int newLength, Class<? extends T @FenumTop []> newType) {
         return null;
     }
 
-    public static <T, U> T[] wc(U[] original, int newLength, java.util.List<? extends T[]> arr) {
+    public static <T, U> T[] wc(
+            U[] original, int newLength, java.util.List<? extends T @FenumTop []> arr) {
         return null;
     }
 }
