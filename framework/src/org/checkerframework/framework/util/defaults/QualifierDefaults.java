@@ -770,11 +770,10 @@ public class QualifierDefaults {
                 final AnnotatedTypeMirror type, final boolean applyToTypeVar) {
 
             return !(type == null
-                    ||
                     // TODO: executables themselves should not be annotated
-                    // For some reason polyall-tests failes with this.
-                    // type.getKind() == TypeKind.EXECUTABLE ||
-                    type.getKind() == TypeKind.NONE
+                    // For some reason polyall-tests fails with this.
+                    // || type.getKind() == TypeKind.EXECUTABLE
+                    || type.getKind() == TypeKind.NONE
                     || type.getKind() == TypeKind.WILDCARD
                     || (type.getKind() == TypeKind.TYPEVAR && !applyToTypeVar)
                     || type instanceof AnnotatedNoType);
@@ -1023,8 +1022,8 @@ public class QualifierDefaults {
             }
 
             /**
-             * Visit the bounds of a type variable or a wildcard and potentially apply qual
-             * to those bounds.  This method will also update the boundType, isLowerBound, and isUpperbound
+             * Visit the bounds of a type variable or a wildcard and potentially apply qual to those
+             * bounds.  This method will also update the boundType, isLowerBound, and isUpperbound
              * fields.
              */
             protected void visitBounds(
