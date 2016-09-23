@@ -1125,6 +1125,7 @@ public class QualifierDefaults {
     /**
      * @return the boundType (UPPER, UNBOUND, or UNKNOWN) of the declaration of typeParamElem
      */
+    // Results are cached in {@link elementToBoundType}.
     private static BoundType getTypeVarBoundType(
             final TypeParameterElement typeParamElem, final AnnotatedTypeFactory typeFactory) {
         final BoundType prev = elementToBoundType.get(typeParamElem);
@@ -1138,7 +1139,7 @@ public class QualifierDefaults {
         final BoundType boundType;
         if (typeParamDecl == null) {
             // This is not only for elements from binaries, but also
-            // when the compilation unit is no-longer available.
+            // when the compilation unit is no longer available.
             boundType = BoundType.UNKNOWN;
 
         } else {
