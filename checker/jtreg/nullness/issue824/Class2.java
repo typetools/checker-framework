@@ -1,7 +1,9 @@
 /*
  * @test
  * @summary Test case for Issue 824 https://github.com/typetools/checker-framework/issues/824
- * The defaults for type variable upper bounds with type Object changed since the issue was filed.  So, this test case has been changed so that annotations on type variable bounds in stub files is still tested.
+ * The defaults for type variable upper bounds with type Object changed since
+ * the issue was filed.  So, this test case has been changed so that
+ * annotations on type variable bounds in stub files is still tested.
  * @compile -XDrawDiagnostics -Xlint:unchecked ../issue824lib/Class1.java
  * @compile/fail/ref=Class2.out -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Class2.java -Astubs=Class1.astub -AstubWarnIfNotFound
  * @compile -XDrawDiagnostics -Xlint:unchecked -processor org.checkerframework.checker.nullness.NullnessChecker -AprintErrorStack -Anomsgtext Class2.java

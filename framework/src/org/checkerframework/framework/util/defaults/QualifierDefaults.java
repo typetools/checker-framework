@@ -1061,7 +1061,6 @@ public class QualifierDefaults {
     /**
      * Specifies whether the type variable or wildcard has an explicit upper bound (UPPER), an
      * explicit lower bound (LOWER), or no explicit bounds (UNBOUNDED).
-     * lower bound
      */
     enum BoundType {
 
@@ -1077,7 +1076,7 @@ public class QualifierDefaults {
 
         /**
          * Neither bound is specified, BOTH are implicit. (If a type variable is declared in
-         * byte code and the type of the upper bound is Object, then assume that the bound was not
+         * bytecode and the type of the upper bound is Object, then assume that the bound was not
          * explicitly written in source code.)
          */
         UNBOUNDED;
@@ -1122,7 +1121,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * @return the boundType (UPPER, UNBOUNDED, or UNKNOWN) of the declaration of typeParamElem
+     * @return the boundType (UPPER or UNBOUNDED) of the declaration of typeParamElem
      */
     private static BoundType getTypeVarBoundType(
             final TypeParameterElement typeParamElem, final AnnotatedTypeFactory typeFactory) {
