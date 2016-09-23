@@ -919,10 +919,7 @@ public class QualifierDefaults {
                     case IMPLICIT_LOWER_BOUND:
                         {
                             if (isLowerBound
-                                    && boundType.isOneOf(
-                                            BoundType.UNBOUND,
-                                            BoundType.UPPER,
-                                            BoundType.UNKNOWN)) {
+                                    && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.UPPER)) {
                                 doApply(t, qual);
                             }
                             break;
@@ -947,10 +944,7 @@ public class QualifierDefaults {
                     case IMPLICIT_UPPER_BOUND:
                         {
                             if (isUpperBound
-                                    && boundType.isOneOf(
-                                            BoundType.UNBOUND,
-                                            BoundType.LOWER,
-                                            BoundType.UNKNOWN)) {
+                                    && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.LOWER)) {
                                 doApply(t, qual);
                             }
                             break;
@@ -993,7 +987,7 @@ public class QualifierDefaults {
                 super.reset();
                 impl.isLowerBound = false;
                 impl.isUpperBound = false;
-                impl.boundType = BoundType.UNBOUND;
+                impl.boundType = BoundType.UNBOUNDED;
             }
 
             // are we currently defaulting the lower bound of a type variable or wildcard
@@ -1003,7 +997,7 @@ public class QualifierDefaults {
             private boolean isUpperBound = false;
 
             // the bound type of the current wildcard or type variable being defaulted
-            private BoundType boundType = BoundType.UNBOUND;
+            private BoundType boundType = BoundType.UNBOUNDED;
 
             @Override
             public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror qual) {
@@ -1064,6 +1058,11 @@ public class QualifierDefaults {
         }
     }
 
+    /**
+     * Specifies whether the type variable or wildcard has an explicit upper bound (UPPER), an
+     * explicit lower bound (LOWER), or no explicit bounds (UNBOUNDED).
+     * lower bound
+     */
     enum BoundType {
 
         /**
@@ -1077,15 +1076,11 @@ public class QualifierDefaults {
         LOWER,
 
         /**
-         * Neither bound is specified, BOTH are implicit
+         * Neither bound is specified, BOTH are implicit. (If a type variable is declared in
+         * byte code and the type of the upper bound is Object, then assume that the bound was not
+         * explicitly written in source code.)
          */
-        UNBOUND,
-
-        /**
-         * For bytecode, or trees for which we no longer have the compilation unit.
-         * We treat UNKNOWN bounds as if they are an UPPER bound.
-         */
-        UNKNOWN;
+        UNBOUNDED;
 
         public boolean isOneOf(final BoundType... choices) {
             for (final BoundType choice : choices) {
@@ -1127,7 +1122,7 @@ public class QualifierDefaults {
     }
 
     /**
-     * @return the boundType (UPPER, UNBOUND, or UNKNOWN) of the declaration of typeParamElem
+     * @return the boundType (UPPER, UNBOUNDED, or UNKNOWN) of the declaration of typeParamElem
      */
     private static BoundType getTypeVarBoundType(
             final TypeParameterElement typeParamElem, final AnnotatedTypeFactory typeFactory) {
@@ -1147,7 +1142,7 @@ public class QualifierDefaults {
                     && TypesUtils.isObject(typeParamElem.getBounds().get(0))) {
                 // If the bound was Object, then it may or may not have been explicitly written.
                 // Assume that it was not.
-                boundType = BoundType.UNBOUND;
+                boundType = BoundType.UNBOUNDED;
             } else {
                 // The bound is not Object, so it must have been explicitly written and thus the
                 // type variable has an upper bound.
@@ -1162,7 +1157,7 @@ public class QualifierDefaults {
                 if (bnds != null && !bnds.isEmpty()) {
                     boundType = BoundType.UPPER;
                 } else {
-                    boundType = BoundType.UNBOUND;
+                    boundType = BoundType.UNBOUNDED;
                 }
             } else {
                 ErrorReporter.errorAbort(
