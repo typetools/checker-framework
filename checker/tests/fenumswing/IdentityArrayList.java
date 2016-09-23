@@ -8,7 +8,7 @@ import org.checkerframework.checker.fenum.qual.FenumTop;
 public class IdentityArrayList {
     // The type of the third argument to Arrays.copyOf should be:
     // Class<? extends T @FenumTop []>
-    // But the annotated JDK does not have annotations for the Fenum Checker
+    // But the annotated JDK does not have annotations for the Fenum Checker.
     @SuppressWarnings("argument.type.incompatible")
     public <T> T[] toArray(T[] a) {
         // Warnings only with -Alint=cast:strict.
