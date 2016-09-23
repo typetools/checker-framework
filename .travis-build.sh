@@ -2,7 +2,7 @@
 
 # Optional argument $1 is one of:  junit, nonjunit, misc, downstream
 # If it is omitted, this script does everything.
-
+#
 
 # Fail the whole script if any command fails
 set -e
