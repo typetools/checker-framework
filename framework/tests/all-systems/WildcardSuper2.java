@@ -7,7 +7,7 @@ interface AInterface<T> {
 }
 
 class B implements AInterface<Object> {
-    // This shouldn't work for nullness as the function won't take possibly nullable values
+    // This shouldn't work for nullness as the function won't take possibly nullable values.
     @SuppressWarnings("nullness")
     @Override
     public int transform(List<Object> function) {
