@@ -24,9 +24,8 @@ before_script:
 script:
 - REMOTE_ORIGIN_URL=`git config --get remote.origin.url`
 - >-
-  docker run mdernst/ubuntu-for-cf-$JDKVER
-    /bin/sh -c
-    "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
+  docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "true &&
+     export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
      git clone --quiet -b $TRAVIS_BRANCH --depth 3 $REMOTE_ORIGIN_URL checker-framework &&
      cd checker-framework &&
      if [ $TRAVIS_EVENT_TYPE = push ] ; then
