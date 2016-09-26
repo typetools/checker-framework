@@ -12,6 +12,8 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -30,6 +32,7 @@ import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.TypeArgumentMapper;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -919,30 +922,6 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
     @Override
     public Boolean visitWildcard_Wildcard(
             AnnotatedWildcardType subtype, AnnotatedWildcardType supertype, VisitHistory visited) {
-        // This method is called at a method invocation where a type variable in the method
-        // declaration is substituted with a wildcard.
-        // For example:
-        // <T> void method(Gen<T> t) {}
-        // Gen<?> x;
-        // method(x); // this method is called when checking this method call
-
-        if (subtype.getUnderlyingType() == supertype.getUnderlyingType()) {
-            boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
-            boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
-
-            if (subtypeHasAnno && supertypeHasAnno) {
-                // if both have primary annotations then just check the primary annotations
-                // as the bounds are the same
-                return isPrimarySubtype(subtype, supertype, true);
-
-            } else if (!subtypeHasAnno
-                    && !supertypeHasAnno
-                    && areEqualInHierarchy(subtype, supertype, currentTop)) {
-                // TODO: wildcard capture conversion
-                // Two unannotated uses of reference-equal wildcard types are the same type
-                return true;
-            }
-        }
         return visitWildcardSubtype(subtype, supertype, visited);
     }
 
@@ -1006,6 +985,40 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
 
     protected boolean visitWildcardSubtype(
             AnnotatedWildcardType subtype, AnnotatedTypeMirror supertype, VisitHistory visited) {
+        TypeMirror superTypeMirror = supertype.getUnderlyingType();
+        if (supertype.getKind() == TypeKind.TYPEVAR) {
+            TypeVariable atv = (TypeVariable) supertype.getUnderlyingType();
+            if (InternalUtils.isCaptured(atv)) {
+                superTypeMirror = InternalUtils.getCapturedWildcard(atv);
+            }
+        }
+
+        if (subtype.getUnderlyingType() == superTypeMirror) {
+            // This can happen at a method invocation where a type variable in the method
+            // declaration is substituted with a wildcard.
+            // For example:
+            // <T> void method(Gen<T> t) {}
+            // Gen<?> x;
+            // method(x); // this method is called when checking this method call
+            // And also when checking lambdas
+
+            boolean subtypeHasAnno = subtype.getAnnotationInHierarchy(currentTop) != null;
+            boolean supertypeHasAnno = supertype.getAnnotationInHierarchy(currentTop) != null;
+
+            if (subtypeHasAnno && supertypeHasAnno) {
+                // if both have primary annotations then just check the primary annotations
+                // as the bounds are the same
+                return isPrimarySubtype(subtype, supertype, true);
+
+            } else if (!subtypeHasAnno
+                    && !supertypeHasAnno
+                    && areEqualInHierarchy(subtype, supertype, currentTop)) {
+                // TODO: wildcard capture conversion
+                // Two unannotated uses of reference-equal wildcard types are the same type
+                return true;
+            }
+        }
+
         return isSubtype(subtype.getExtendsBound(), supertype, visited);
     }
 

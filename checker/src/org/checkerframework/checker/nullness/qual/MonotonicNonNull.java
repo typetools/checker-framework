@@ -5,11 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.nullness.AbstractNullnessChecker;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.checkerframework.framework.qual.MonotonicQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
@@ -48,12 +43,12 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Final fields are treated as MonotonicNonNull by default.
  * <p>
  *
- * This annotation is associated with the {@link AbstractNullnessChecker}.
+ * This annotation is associated with the {@link org.checkerframework.checker.nullness.AbstractNullnessChecker}.
  *
  * @see EnsuresNonNull
  * @see RequiresNonNull
  * @see MonotonicQualifier
- * @see AbstractNullnessChecker
+ * @see org.checkerframework.checker.nullness.AbstractNullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented

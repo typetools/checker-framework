@@ -2,6 +2,11 @@ sudo: false
 
 language: generic
 
+# Alternative to "language: java" which has node installed
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq node
+
 services:
   - docker
 
@@ -17,19 +22,33 @@ before_script:
 - docker pull mdernst/ubuntu-for-cf-$JDKVER
 
 script:
-- docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` && git clone --quiet -b $TRAVIS_BRANCH --depth 3 https://github.com/$TRAVIS_REPO_SLUG.git checker-framework && cd checker-framework && java -version && javac -version && ./.travis-build.sh $GROUP"
+- REMOTE_ORIGIN_URL=`git config --get remote.origin.url`
+- >-
+  docker run mdernst/ubuntu-for-cf-$JDKVER /bin/sh -c "true &&
+     export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
+     git clone --quiet -b $TRAVIS_BRANCH --depth 3 $REMOTE_ORIGIN_URL checker-framework &&
+     cd checker-framework &&
+     if [ $TRAVIS_EVENT_TYPE = push ] ; then
+       git config user.email noone@cares.com
+       git config user.name Noone Cares
+       git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git ;
+       git pull theupstream master ;
+     fi &&
+     java -version &&
+     javac -version &&
+     ./.travis-build.sh $GROUP"
 
 after_script:
   - |
       declare exitCode;
-      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | node
+      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | node
       exitCode=$?
 
       if [ "$exitCode" -eq 0 ]; then
         if [[ ($TRAVIS_BRANCH == master) &&
               ($TRAVIS_PULL_REQUEST == false) ]] ; then
           curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-          sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
+          sh trigger-travis.sh typetools checker-framework.demos $TRAVISTOKEN
           sh trigger-travis.sh typetools checker-framework-inference $TRAVISTOKEN
           sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
           sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN

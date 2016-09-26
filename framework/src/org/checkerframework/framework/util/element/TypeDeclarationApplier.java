@@ -41,7 +41,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      * If a type_index == -1 it means that the index refers to the immediate supertype class
      * of the declaration.  There is only ever one of these since java has no multiple inheritance
      */
-    public static int SUPERCLASS_INDEX = -1;
+    public static final int SUPERCLASS_INDEX = -1;
 
     /**
      * @return true if type is an annotated declared type and element is a ClassSymbol

@@ -805,14 +805,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *         none
      */
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // by default support PolyAll
         return getBundledTypeQualifiersWithPolyAll();
     }
 
     /**
      * Loads all annotations contained in the qual directory of a checker via
-     * reflection, and adds {@link PolyAll} and an explicit array of annotations
-     * to the set of annotation classes.
+     * reflection, and adds {@link PolyAll}, if a polymorphic type qualifier exists,
+     * and an explicit array of annotations to the set of annotation classes.
      * <p>
      * This method can be called in the overridden versions of
      * {@link #createSupportedTypeQualifiers()} in each checker.
@@ -829,7 +828,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<? extends Annotation>... explicitlyListedAnnotations) {
         Set<Class<? extends Annotation>> annotations =
                 loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
-        annotations.add(PolyAll.class);
+        boolean addPolyAll = false;
+        for (Class<? extends Annotation> annotationClass : annotations) {
+            if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
+                addPolyAll = true;
+                break;
+            }
+        }
+        if (addPolyAll) {
+            annotations.add(PolyAll.class);
+        }
         return annotations;
     }
 
