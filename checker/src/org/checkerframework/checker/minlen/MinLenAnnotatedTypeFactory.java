@@ -180,12 +180,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (val != null) {
                 type.replaceAnnotation(createMinLen(val));
             }
-            /* For when the value checker doesn't know anything.
-             * The old index checker had something about member select
-             * trees here, but I don't know what those are so I'm just
-             * going to not include them and see what happens.
-             */
-            AnnotationMirror ATM = getAnnotatedType(dim).getAnnotation(MinLen.class);
+            // For when the value checker doesn't know anything.
             if (dim.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree MST = (MemberSelectTree) dim;
                 AnnotationMirror dimType =
