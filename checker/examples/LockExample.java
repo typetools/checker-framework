@@ -17,7 +17,7 @@ class BankAccount {
 class LockExample {
     final @GuardedBy("<self>") BankAccount myAccount;
 
-    LockDemo(@GuardedBy("<self>") BankAccount in) {
+    LockExample(@GuardedBy("<self>") BankAccount in) {
         this.myAccount = in;
     }
 
