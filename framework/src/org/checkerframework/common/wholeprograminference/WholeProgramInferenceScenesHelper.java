@@ -407,11 +407,6 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
 
-        // Special cases that should be ignored:
-        // {@link org.checkerframework.framework.qual.QualifierKey}
-        if (AnnotationUtils.areSameByClass(am, QualifierKey.class)) {
-            return true;
-        }
         return false;
     }
 
