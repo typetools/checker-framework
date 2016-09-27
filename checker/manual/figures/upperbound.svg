@@ -22,7 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -114,7 +114,7 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1280"
-     inkscape:window-height="695"
+     inkscape:window-height="704"
      id="namedview76"
      showgrid="false"
      inkscape:snap-page="true"
@@ -188,7 +188,8 @@
       <tspan
          x="775.69952"
          y="405.85001"
-         id="tspan74">@LessThanLength({&quot;java.lang.String&quot;})</tspan>
+         id="tspan74"
+         style="stroke:#000000">@LessThanLength({&quot;java.lang.String&quot;})</tspan>
     </text>
   </g>
   <g
@@ -218,7 +219,8 @@
       <tspan
          x="820"
          y="405.85001"
-         id="tspan74-4">@LessThanOrEqualToLength({&quot;java.lang.String&quot;})</tspan>
+         id="tspan74-4"
+         style="stroke:#000000">@LessThanOrEqualToLength({&quot;java.lang.String&quot;})</tspan>
     </text>
   </g>
   <path
@@ -298,7 +300,8 @@
       <tspan
          x="775.69952"
          y="405.85001"
-         id="tspan74-0">@EqualToLength({&quot;java.lang.String&quot;})</tspan>
+         id="tspan74-0"
+         style="stroke:#000000">@EqualToLength({&quot;java.lang.String&quot;})</tspan>
     </text>
   </g>
   <path

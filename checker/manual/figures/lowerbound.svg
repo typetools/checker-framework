@@ -22,7 +22,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -83,18 +83,18 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1136"
+     inkscape:window-width="1280"
+     inkscape:window-height="704"
      id="namedview76"
      showgrid="false"
      inkscape:snap-page="true"
-     inkscape:zoom="1.094736"
-     inkscape:cx="-29.066045"
+     inkscape:zoom="1.1039267"
+     inkscape:cx="-109.77282"
      inkscape:cy="192.95958"
      inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-y="1"
      inkscape:window-maximized="1"
-     inkscape:current-layer="g24"
+     inkscape:current-layer="svg2"
      inkscape:snap-others="true"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -158,13 +158,14 @@
       <tspan
          x="820"
          y="405.85001"
-         id="tspan74">@NonNegative</tspan>
+         id="tspan74"
+         style="stroke:#000000">@NonNegative</tspan>
     </text>
   </g>
   <g
      transform="translate(-36.571851,-56.489865)"
      id="g66-5"
-     style="opacity:0.5">
+     style="display:inline;opacity:0.5">
     <rect
        style="fill:#ffffff"
        x="700"
@@ -188,7 +189,8 @@
       <tspan
          x="820"
          y="405.85001"
-         id="tspan74-4">@GreaterThanOrEqualToNegativeOne</tspan>
+         id="tspan74-4"
+         style="fill:#000000;fill-opacity:1;stroke:#000000">@GreaterThanOrEqualToNegativeOne</tspan>
     </text>
   </g>
   <path
@@ -223,7 +225,8 @@
       <tspan
          x="820"
          y="405.85001"
-         id="tspan74-3">@Positive</tspan>
+         id="tspan74-3"
+         style="stroke:#000000">@Positive</tspan>
     </text>
   </g>
   <path
