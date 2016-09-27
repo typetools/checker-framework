@@ -70,9 +70,10 @@ it from the webpages, or include it in the Checker Framework distribution.
 For examples, see \chapterpageref{third-party-checkers}.
 
 
-\section{Relationship of the Checker Framework to other tools\label{tool-relationships}}
+\section{How checkers build on the Checker Framework\label{tool-relationships}}
 
-This table shows the relationship among various tools.
+This table shows the relationship among tools that the Checker Framework
+builds on or that are built on the Checker Framework.
 All of the tools support the Java 8 type annotation syntax.
 You use the Checker Framework to build pluggable type systems, and the
 Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
@@ -111,7 +112,9 @@ Other \par tools
 \end{center}
 
 
-The Base Checker enforces the standard subtyping rules on extended types.
+The Base Checker
+(more precisely, the \refclass{common/basetype}{BaseTypeChecker})
+enforces the standard subtyping rules on extended types.
 The Subtyping Checker is a simple use of the Base Checker that supports
 providing type qualifiers on the command line.
 You usually want to build your checker on the Base Checker.

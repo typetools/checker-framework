@@ -294,7 +294,6 @@
             <package name="org.checkerframework.dataflow.*"/>
             <package name="org.checkerframework.stubparser.*"/>
             <package name="org.checkerframework.framework.*"/>
-            <package name="org.checkerframework.qualframework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
 
