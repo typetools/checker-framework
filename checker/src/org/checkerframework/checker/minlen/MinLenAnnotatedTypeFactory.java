@@ -154,7 +154,9 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitArray(AnnotatedArrayType type, Void aVoid) {
-            type.replaceAnnotation(createMinLen(0));
+            if (!type.hasAnnotation(MinLen.class)) {
+                type.replaceAnnotation(createMinLen(0));
+            }
             return super.visitArray(type, aVoid);
         }
     }

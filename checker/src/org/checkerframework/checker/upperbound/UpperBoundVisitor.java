@@ -46,6 +46,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
         Integer minLen = atypeFactory.minLenFromExpressionTree(arrTree);
 
+        System.out.println(valMax);
+        System.out.println(minLen);
+
         // Is indexType LTL of a set containing arrName?
         if (indexType.hasAnnotation(LessThanLength.class)
                 && (UpperBoundUtils.hasValue(indexType, arrName))) {
