@@ -28,7 +28,7 @@ detailed in the remainder of this section.
 To run the Index Checker, run the command
 
 \begin{alltt}
-javac -processor index \emph{MyJavaFile}.java
+  javac -processor index \emph{MyJavaFile}.java
 \end{alltt}
 
 
@@ -37,9 +37,10 @@ javac -processor index \emph{MyJavaFile}.java
 The Lower Bound Checker warns about array indices that might be
 too low.  The
 Lower Bound Checker's type system uses the following qualifiers.
-The Lower Bound Checker infers all of these qualifiers automatically (the
-rules appear in file \<lowerbound\_rules.txt> in the implementation),
-so the programmer rarely has to write them.
+The Lower Bound Checker infers all of these qualifiers automatically,
+so the programmer rarely has to write them. Only at the function interface
+does the programmer need to write annotations, when functions make assumptions
+about the parameters that are being passed in.
 
 \begin{description}
 \item[\refqualclass{checker/lowerbound/qual}{Positive}]
@@ -56,9 +57,9 @@ so the programmer rarely has to write them.
 \end{description}
 
 \begin{figure}
-\includeimage{lowerbound}{7cm}
-\caption{The type hierarchy used by the Lower Bound Checker.}
-\label{fig-lowerbound-types}
+  \includeimage{lowerbound}{7cm}
+  \caption{The type hierarchy used by the Lower Bound Checker.}
+  \label{fig-lowerbound-types}
 \end{figure}
 
 
@@ -81,5 +82,15 @@ qualifiers:
 \item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
   There is no information about the value of an expression with this type.
   It may not be used as an array index, because it might be too high.
-  This type is the top type.
-\end{description}
+  This type is the top type, and should never need to be written by the
+  programmer.
+\item[\refqualclass{checker/upperbound/qual}{UpperBoundBottom}]
+  This is the bottom type for the Upper Bound type system. It should
+  never be assigned or written, but is included for completeness.
+  \end{description}
+
+\begin{figure}
+  \includeimage{upperbound}{7cm}
+  \caption{The type hierarchy used by the Upper Bound Checker.}
+  \label{fig-upperbound-types}
+\end{figure}
