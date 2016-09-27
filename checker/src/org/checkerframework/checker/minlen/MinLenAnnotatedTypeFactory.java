@@ -5,8 +5,8 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -39,14 +39,8 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
-    /**
-     *  We need this to make an AnnotationBuilder for some reason.
-     */
-    protected static ProcessingEnvironment env;
-
     public MinLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        env = checker.getProcessingEnvironment();
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         this.postInit();
     }
@@ -62,12 +56,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         // We're sure there is at least one element in the list, because of the previous check.
-        Integer min = Integer.MAX_VALUE;
-        for (Long l : possibleValues) {
-            if (l < min) {
-                min = l.intValue();
-            }
-        }
+        Integer min = Collections.min(possibleValues).intValue();
         return min;
     }
 
@@ -211,8 +200,8 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    static AnnotationMirror createMinLen(int val) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, MinLen.class);
+    private AnnotationMirror createMinLen(int val) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", val);
         return builder.build();
     }
