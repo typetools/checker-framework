@@ -1,5 +1,6 @@
 package org.checkerframework.dataflow.cfg.node;
 
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.Tree.Kind;
 import org.checkerframework.dataflow.util.HashCodeUtils;
