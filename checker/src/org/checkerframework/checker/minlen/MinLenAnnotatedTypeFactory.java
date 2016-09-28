@@ -94,6 +94,50 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(factory);
         }
 
+        @Override
+        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSameByClass(a1, MinLenUnknown.class)
+                    || AnnotationUtils.areSameByClass(a2, MinLenUnknown.class)) {
+                return createMinLenUnknown();
+            }
+            // Because of the above, neither can be MLU.
+            if (AnnotationUtils.hasElementValue(a1, "value")
+                    && AnnotationUtils.hasElementValue(a2, "value")) {
+                Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
+                Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
+                if (a1Val >= a2Val) {
+                    return a2;
+                } else {
+                    return a1;
+                }
+            }
+            // This should be unreachable but we want the function to be complete.
+            return createMinLenUnknown();
+        }
+
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSameByClass(a1, MinLenUnknown.class)) {
+                return a2;
+            }
+            if (AnnotationUtils.areSameByClass(a2, MinLenUnknown.class)) {
+                return a1;
+            }
+            // Because of the above, neither can be MLU.
+            if (AnnotationUtils.hasElementValue(a1, "value")
+                    && AnnotationUtils.hasElementValue(a2, "value")) {
+                Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
+                Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
+                if (a1Val >= a2Val) {
+                    return a1;
+                } else {
+                    return a2;
+                }
+            }
+            // This should be unreachable but we want the function to be complete.
+            return createMinLenUnknown();
+        }
+
         /**
          * Computes subtyping as per the subtyping in the qualifier hierarchy
          * structure unless both annotations are the same. In this case, rhs is a
@@ -181,6 +225,9 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 type.replaceAnnotation(createMinLen(val));
             }
             // For when the value checker doesn't know anything.
+            // We can check if this happens to be this case:
+            // int[] array1 = {2};
+            // int[] array2 = new int[array1.length];
             if (dim.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree MST = (MemberSelectTree) dim;
                 AnnotationMirror dimType =
@@ -198,6 +245,11 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private AnnotationMirror createMinLen(int val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", val);
+        return builder.build();
+    }
+
+    private AnnotationMirror createMinLenUnknown() {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLenUnknown.class);
         return builder.build();
     }
 }

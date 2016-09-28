@@ -7,9 +7,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * In the MinLen Checker's type system, this type
- * represents any array with unknown length
+ * represents any array with unknown length.
  *
- * @checker_framework.manual #minlen MinLen Checker
  */
 @DefaultQualifierInHierarchy
 @SubtypeOf({})
