@@ -113,9 +113,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
      */
     private CFValue changeLockAnnoToTop(Receiver r, CFValue currentValue) {
         if (currentValue == null) {
-            currentValue =
-                    analysis.createSingleAnnotationValue(
-                            atypeFactory.GUARDEDBYUNKNOWN, r.getType());
+            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+            set.add(atypeFactory.GUARDEDBYUNKNOWN);
+            set.add(atypeFactory.LOCKPOSSIBLYHELD);
+            return analysis.createAbstractValue(set, r.getType());
         }
 
         QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
