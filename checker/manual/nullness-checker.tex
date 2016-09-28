@@ -826,7 +826,11 @@ assert var != null : "@AssumeAssertion(nullness)";
 \newcommand{\linktoNullable}{\refclass{checker/nullness/qual}{Nullable}}
 
 The Checker Framework's nullness annotations are similar to annotations used
-in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, NetBeans, and other tools.  Also
+in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, NetBeans, and other
+tools.  In particular, IDE tools such as Eclipse and IntelliJ should be
+viewed as bug-finding tools rather than verification tools, since they
+give up precision, soundness, or both in favor of being fast and
+easy to use.  Also
 see Section~\ref{other-tools} for a comparison to other tools.
 
 You might prefer to use the Checker Framework because it has a more
@@ -956,7 +960,7 @@ brief comparison with FindBugs, but similar points apply to other tools.
 
 The Checker Framework has a more powerful nullness analysis; FindBugs misses
 some real
-errors.  However, FindBugs does not require you to annotate your code as
+errors.  FindBugs requires you to annotate your code, but usually not as
 thoroughly as the Checker Framework does.  Depending on the importance of
 your code, you may desire:  no nullness checking, the cursory checking of
 FindBugs, or the thorough checking of the Checker Framework.  You might

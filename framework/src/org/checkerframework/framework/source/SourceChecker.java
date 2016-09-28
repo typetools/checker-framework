@@ -875,8 +875,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.visitor = createSourceVisitor();
 
         // TODO: hack to clear out static caches.
-        // When the {@link org.checkerframework.qualframework.util.QualifierContext}
-        // gets used by all utilities, this shouldn't be an issue anymore.
         AnnotationUtils.clear();
     }
 
