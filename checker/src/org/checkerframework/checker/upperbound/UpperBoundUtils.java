@@ -29,21 +29,21 @@ public class UpperBoundUtils {
      *  Returns the value method specific to the class of the anno passed in.
      */
     static ExecutableElement getValueMethod(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameIgnoringValues(anno, UpperBoundAnnotatedTypeFactory.LTL)) {
+        if (AnnotationUtils.areSameByClass(anno, LessThanLength.class)) {
             return TreeUtils.getMethod(
                     "org.checkerframework.checker.upperbound.qual.LessThanLength",
                     "value",
                     0,
                     UpperBoundAnnotatedTypeFactory.env);
         }
-        if (AnnotationUtils.areSameIgnoringValues(anno, UpperBoundAnnotatedTypeFactory.EL)) {
+        if (AnnotationUtils.areSameByClass(anno, EqualToLength.class)) {
             return TreeUtils.getMethod(
                     "org.checkerframework.checker.upperbound.qual.EqualToLength",
                     "value",
                     0,
                     UpperBoundAnnotatedTypeFactory.env);
         }
-        if (AnnotationUtils.areSameIgnoringValues(anno, UpperBoundAnnotatedTypeFactory.LTEL)) {
+        if (AnnotationUtils.areSameByClass(anno, LessThanOrEqualToLength.class)) {
             return TreeUtils.getMethod(
                     "org.checkerframework.checker.upperbound.qual.LessThanOrEqualToLength",
                     "value",

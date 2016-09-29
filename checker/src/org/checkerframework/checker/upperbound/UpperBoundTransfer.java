@@ -28,16 +28,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 public class UpperBoundTransfer extends CFTransfer {
 
-    private final AnnotationMirror LTL, EL, LTEL, UNKNOWN;
+    private final AnnotationMirror UNKNOWN;
 
     private UpperBoundAnnotatedTypeFactory atypeFactory;
 
     public UpperBoundTransfer(CFAnalysis analysis) {
         super(analysis);
         atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
-        LTL = UpperBoundAnnotatedTypeFactory.LTL;
-        EL = UpperBoundAnnotatedTypeFactory.EL;
-        LTEL = UpperBoundAnnotatedTypeFactory.LTEL;
         UNKNOWN = UpperBoundAnnotatedTypeFactory.UNKNOWN;
     }
 
@@ -237,14 +234,14 @@ public class UpperBoundTransfer extends CFTransfer {
             AnnotatedTypeMirror rightType,
             CFStore store) {
         // First, check if the left type is one of the ones that tells us something.
-        if (leftType.hasAnnotationRelaxed(LTL)
-                || leftType.hasAnnotationRelaxed(EL)
-                || leftType.hasAnnotationRelaxed(LTEL)) {
+        if (leftType.hasAnnotation(LessThanLength.class)
+                || leftType.hasAnnotation(EqualToLength.class)
+                || leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
             // Create an LTL for the right type.
             // There's a slight danger of losing information here but I'm going to do
             // it the simple-to-implement way for now and we can come back later FIXME.
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
                     rightRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
             return;
@@ -261,21 +258,22 @@ public class UpperBoundTransfer extends CFTransfer {
             Node right,
             AnnotatedTypeMirror rightType,
             CFStore store) {
-        if (leftType.hasAnnotationRelaxed(LTL)) {
+        if (leftType.hasAnnotation(LessThanLength.class)) {
             // Create an LTL for the right type.
             // There's a slight danger of losing information here but I'm going to do
             // it the simple-to-implement way for now and we can come back later FIXME.
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
                     rightRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
             return;
-        } else if (leftType.hasAnnotationRelaxed(EL) || leftType.hasAnnotationRelaxed(LTEL)) {
+        } else if (leftType.hasAnnotation(EqualToLength.class)
+                || leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
             // Create an LTEL for the right type.
             // There's a slight danger of losing information here but I'm going to do
             // it the simple-to-implement way for now and we can come back later FIXME.
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
                     rightRec,
                     UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
@@ -290,46 +288,49 @@ public class UpperBoundTransfer extends CFTransfer {
             AnnotatedTypeMirror rightType,
             CFStore store) {
         // LTEL always implies that the other is LTEL.
-        if (leftType.hasAnnotationRelaxed(LTEL)) {
+        if (leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
                     rightRec,
                     UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
         }
-        if (rightType.hasAnnotationRelaxed(LTEL)) {
+        if (rightType.hasAnnotation(LessThanOrEqualToLength.class)) {
             Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-            String[] names = UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(LTEL));
+            String[] names = UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
                     leftRec,
                     UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
         }
         // Handles the case where either both are EL or one is EL and the other is Unknown.
-        if (rightType.hasAnnotationRelaxed(EL)
-                && (!leftType.hasAnnotationRelaxed(LTEL))
-                && (!leftType.hasAnnotationRelaxed(LTL))) {
+        if (rightType.hasAnnotation(EqualToLength.class)
+                && (!leftType.hasAnnotation(LessThanOrEqualToLength.class))
+                && (!leftType.hasAnnotation(LessThanLength.class))) {
             Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-            String[] names = UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(LTEL));
+            String[] names = UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
                     leftRec, UpperBoundAnnotatedTypeFactory.createEqualToLengthAnnotation(names));
         }
 
-        if (leftType.hasAnnotationRelaxed(EL)
-                && (!rightType.hasAnnotationRelaxed(LTEL))
-                && (!rightType.hasAnnotationRelaxed(LTL))) {
+        if (leftType.hasAnnotation(EqualToLength.class)
+                && (!rightType.hasAnnotation(LessThanOrEqualToLength.class))
+                && (!rightType.hasAnnotation(LessThanLength.class))) {
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
                     rightRec, UpperBoundAnnotatedTypeFactory.createEqualToLengthAnnotation(names));
         }
         // An LTL and an EL mean that both are LTEL for the combined list of arrays.
-        if ((leftType.hasAnnotationRelaxed(EL) && rightType.hasAnnotationRelaxed(LTL))
-                || (leftType.hasAnnotationRelaxed(LTL) && rightType.hasAnnotationRelaxed(EL))) {
+        if ((leftType.hasAnnotation(EqualToLength.class)
+                        && rightType.hasAnnotation(LessThanLength.class))
+                || (leftType.hasAnnotation(LessThanLength.class)
+                        && rightType.hasAnnotation(EqualToLength.class))) {
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
             String[] namesRight =
-                    UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(LTEL));
-            String[] namesLeft = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+                    UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(UNKNOWN));
+            String[] namesLeft =
+                    UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             String[] names = concat(namesRight, namesLeft);
             store.insertValue(
                     rightRec,
@@ -338,24 +339,24 @@ public class UpperBoundTransfer extends CFTransfer {
                     leftRec,
                     UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
         }
-        if (leftType.hasAnnotationRelaxed(LTL) && fOnlyUnknown(rightType)) {
+        if (leftType.hasAnnotation(LessThanLength.class) && fOnlyUnknown(rightType)) {
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(LTEL));
+            String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
                     rightRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
         }
-        if (rightType.hasAnnotationRelaxed(LTL) && fOnlyUnknown(leftType)) {
+        if (rightType.hasAnnotation(LessThanLength.class) && fOnlyUnknown(leftType)) {
             Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-            String[] names = UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(LTEL));
+            String[] names = UpperBoundUtils.getValue(rightType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
                     leftRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
         }
     }
 
     private boolean fOnlyUnknown(AnnotatedTypeMirror type) {
-        return (!type.hasAnnotationRelaxed(LTL)
-                && !type.hasAnnotationRelaxed(EL)
-                && !type.hasAnnotationRelaxed(LTEL));
+        return (!type.hasAnnotation(LessThanLength.class)
+                && !type.hasAnnotation(EqualToLength.class)
+                && !type.hasAnnotation(LessThanOrEqualToLength.class));
     }
 
     // From: http://stackoverflow.com/questions/80476/how-can-i-concatenate-two-arrays-in-java
