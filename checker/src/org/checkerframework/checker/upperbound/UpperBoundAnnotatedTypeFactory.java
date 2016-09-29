@@ -136,9 +136,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new Integer((int) valMax);
     }
 
-    // FIXME: In an unsurprising turn of events, this isn't working.
-    // Going to ignore it for now and use specialized ones but we
-    // should come back and fix later...
+    // I attempted to move all of these static methods into UpperBoundUtils on
+    // 9.29.16. Do not try this. It does not work. They rely on the processing
+    // environment, which is only available here. DO NOT TRY TO MOVE THEM.
+
     /**
      * Creates an annotation of the name given with the set of values given.
      * Exists in place of a series of createXAnnotation methods because that
@@ -146,19 +147,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @return annotation given by name with names=values, or UNKNOWN
      */
-    private static AnnotationMirror createAnnotation(String name, Set<?> values) {
-        if (values.size() > 0) {
-            AnnotationBuilder builder = new AnnotationBuilder(env, name);
-            List<Object> valuesList = new ArrayList<Object>(values);
-            builder.setValue("value", valuesList);
-            return builder.build();
+    private static AnnotationMirror createAnnotation(String name, String[] names) {
+        if (name.equals("LessThanLength")) {
+            return createLessThanLengthAnnotation(names);
+        } else if (name.equals("EqualToLength")) {
+            return createEqualToLengthAnnotation(names);
+        } else if (name.equals("LessThanOrEqualToLength")) {
+            return createLessThanOrEqualToLengthAnnotation(names);
         } else {
             return UNKNOWN;
         }
-    }
-
-    private static AnnotationMirror createAnnotation(String name, String[] values) {
-        return createAnnotation(name, new HashSet<String>(Arrays.asList(values)));
     }
 
     static AnnotationMirror createLessThanLengthAnnotation(String[] names) {
@@ -291,8 +289,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 newValues.addAll(a1Values);
                 newValues.addAll(a2Values);
+                Object[] values = newValues.toArray();
+                String[] names = new String[values.length];
+                for (int i = 0; i < names.length; i++) {
+                    names[i] = values[i].toString();
+                }
 
-                return createAnnotation(a1.getAnnotationType().toString(), newValues);
+                return createAnnotation(a1.getAnnotationType().toString(), names);
             }
             // Annotations are in this hierarchy, but they are not the same.
             else {
