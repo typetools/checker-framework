@@ -142,8 +142,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Creates an annotation of the name given with the set of values given.
-     * Exists in place of a series of createXAnnotation methods because that
-     * would be silly.
      *
      * @return annotation given by name with names=values, or UNKNOWN
      */
@@ -224,11 +222,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                    is LTEL of every array that is in either - since LTEL
                    is the bottom type.
                 */
-                List<Object> a1Names =
-                        AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                List<Object> a2Names =
-                        AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                HashSet<Object> newValues = new HashSet<Object>(a1Names.size() + a2Names.size());
+                List<String> a1Names =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                List<String> a2Names =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
 
                 newValues.addAll(a1Names);
                 newValues.addAll(a2Names);
@@ -281,11 +279,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             // If both are the same type, determine the type and merge:
             else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-                List<Object> a1Values =
-                        AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                List<Object> a2Values =
-                        AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                HashSet<Object> newValues = new HashSet<Object>(a1Values.size() + a2Values.size());
+                List<String> a1Values =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                List<String> a2Values =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                HashSet<String> newValues = new HashSet<String>(a1Values.size() + a2Values.size());
 
                 newValues.addAll(a1Values);
                 newValues.addAll(a2Values);
