@@ -241,26 +241,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         *  Finds the minimum value in the set of values represented
-         *  by a value checker annotation.
-         */
-        Integer valMinFromValueType(AnnotatedTypeMirror valueType) {
-            /*  It's possible that possibleValues could be null (if
-             *  there was no value checker annotation, I guess, but this
-             *  definitely happens in practice) or empty (if the value
-             *  checker annotated it with its equivalent of our unknown
-             *  annotation.
-             */
-            List<Long> possibleValues = possibleValuesFromValueType(valueType);
-            if (possibleValues == null || possibleValues.size() == 0) {
-                return null;
-            }
-            // The annotation of the whole list is the min of the list.
-            long valMin = Collections.min(possibleValues);
-            return new Integer((int) valMin);
-        }
-
-        /**
          * Determines the least upper bound of a1 and a2. If a1 and a2 are both
          * the same type of Value annotation, then the LUB is the result of
          * taking all values from both a1 and a2 and removing duplicates.
@@ -314,6 +294,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (AnnotationUtils.areSameByClass(lhs, UpperBoundUnknown.class)) {
                 return true;
             } else if (AnnotationUtils.areSameByClass(rhs, UpperBoundUnknown.class)) {
+                return false;
+            } else if (AnnotationUtils.areSameByClass(rhs, UpperBoundBottom.class)) {
+                return true;
+            } else if (AnnotationUtils.areSameByClass(lhs, UpperBoundBottom.class)) {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
                 // Same type, so might be subtype.
