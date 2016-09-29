@@ -6,26 +6,25 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.VariableElement;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
+import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
-import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -34,25 +33,19 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.Pair;
 
 /**
  * Implements the introduction rules for the upper bound checker.
- * Works primarily by way of querying the minlen checker
+ * Works primarily by way of querying the minLen checker
  * and comparing the min lengths of arrays to the known values
  * of variables as supplied by the value checker.
  */
-public class UpperBoundAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<
-                CFValue, CFStore, UpperBoundTransfer, UpperBoundAnalysis> {
+public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
-     *  So Suzanne told me these were evil, but then I ended up using them
-     *  to correctly implement the subtyping relation that I wanted. I'll get
-     *  rid of them if I can figure out a better way to do that, but for now
-     *  they stay.
+     *  Easy shorthand for UpperBoundUnknown.class, basically.
      */
-    public static AnnotationMirror LTL, LTEL, EL, UNKNOWN;
+    public static AnnotationMirror UNKNOWN;
 
     /**
      *  Provides a way to query the Constant Value Checker, which computes the
@@ -64,7 +57,7 @@ public class UpperBoundAnnotatedTypeFactory
      *  Provides a way to query the Min Len (minimum length) Checker,
      *  which computes the lengths of arrays.
      */
-    private final MinLenAnnotatedTypeFactory minlenAnnotatedTypeFactory;
+    private final MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory;
 
     /**
      *  We need this to make an AnnotationBuilder for some reason.
@@ -73,15 +66,24 @@ public class UpperBoundAnnotatedTypeFactory
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        LTL = AnnotationUtils.fromClass(elements, LessThanLength.class);
-        LTEL = AnnotationUtils.fromClass(elements, LessThanOrEqualToLength.class);
-        EL = AnnotationUtils.fromClass(elements, EqualToLength.class);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
 
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
-        minlenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
+        minLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
         env = checker.getProcessingEnvironment();
         this.postInit();
+    }
+
+    /**
+     *  Queries the MinLen Checker to determine if there
+     *  is a known minimum length for the array. If not,
+     *  returns null.
+     */
+    public Integer minLenFromExpressionTree(ExpressionTree tree) {
+        AnnotatedTypeMirror minLenType = minLenAnnotatedTypeFactory.getAnnotatedType(tree);
+        AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
+        Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
+        return minLen;
     }
 
     /**
@@ -96,28 +98,96 @@ public class UpperBoundAnnotatedTypeFactory
         return ValueAnnotatedTypeFactory.getIntValues(anm);
     }
 
-    @Override
-    protected UpperBoundAnalysis createFlowAnalysis(
-            List<Pair<VariableElement, CFValue>> fieldValues) {
-        return new UpperBoundAnalysis(checker, this, fieldValues);
+    /**
+     * If the argument valueType indicates that the Constant Value
+     * Checker knows the exact value of the annotated expression,
+     * returns that integer.  Otherwise returns null. This method
+     * should only be used by clients who need exactly one value -
+     * such as the binary operator rules - and not by those that
+     * need to know whether a valueType belongs to a qualifier.
+     */
+    private Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
+        List<Long> possibleValues = possibleValuesFromValueType(valueType);
+        if (possibleValues != null && possibleValues.size() == 1) {
+            return new Integer(possibleValues.get(0).intValue());
+        } else {
+            return null;
+        }
     }
 
     /**
+     *  Finds the maximum value in the set of values represented
+     *  by a value checker annotation.
+     */
+    public Integer valMaxFromExpressionTree(ExpressionTree tree) {
+        /*  It's possible that possibleValues could be null (if
+         *  there was no value checker annotation, I guess, but this
+         *  definitely happens in practice) or empty (if the value
+         *  checker annotated it with its equivalent of our unknown
+         *  annotation.
+         */
+        AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+        List<Long> possibleValues = possibleValuesFromValueType(valueType);
+        if (possibleValues == null || possibleValues.size() == 0) {
+            return null;
+        }
+        // The annotation of the whole list is the max of the list.
+        long valMax = Collections.max(possibleValues);
+        return new Integer((int) valMax);
+    }
+
+    // I attempted to move all of these static methods into UpperBoundUtils on
+    // 9.29.16. Do not try this. It does not work. They rely on the processing
+    // environment, which is only available here. DO NOT TRY TO MOVE THEM.
+
+    /**
      * Creates an annotation of the name given with the set of values given.
-     * Exists in place of a series of createXAnnotation methods because that
-     * would be silly.
      *
      * @return annotation given by name with names=values, or UNKNOWN
      */
-    private AnnotationMirror createAnnotation(String name, Set<?> values) {
-        if (values.size() > 0) {
-            AnnotationBuilder builder = new AnnotationBuilder(env, name);
-            List<Object> valuesList = new ArrayList<Object>(values);
-            builder.setValue("value", valuesList);
-            return builder.build();
+    private static AnnotationMirror createAnnotation(String name, String[] names) {
+        if (name.equals("LessThanLength")) {
+            return createLessThanLengthAnnotation(names);
+        } else if (name.equals("EqualToLength")) {
+            return createEqualToLengthAnnotation(names);
+        } else if (name.equals("LessThanOrEqualToLength")) {
+            return createLessThanOrEqualToLengthAnnotation(names);
         } else {
             return UNKNOWN;
         }
+    }
+
+    static AnnotationMirror createLessThanLengthAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanLength.class);
+        builder.setValue("value", names);
+        return builder.build();
+    }
+
+    static AnnotationMirror createLessThanLengthAnnotation(String name) {
+        String[] names = {name};
+        return createLessThanLengthAnnotation(names);
+    }
+
+    static AnnotationMirror createEqualToLengthAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, EqualToLength.class);
+        builder.setValue("value", names);
+        return builder.build();
+    }
+
+    static AnnotationMirror createEqualToLengthAnnotation(String name) {
+        String[] names = {name};
+        return createEqualToLengthAnnotation(names);
+    }
+
+    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanOrEqualToLength.class);
+        builder.setValue("value", names);
+        return builder.build();
+    }
+
+    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String name) {
+        String[] names = {name};
+        return createLessThanOrEqualToLengthAnnotation(names);
     }
 
     @Override
@@ -152,48 +222,22 @@ public class UpperBoundAnnotatedTypeFactory
                    is LTEL of every array that is in either - since LTEL
                    is the bottom type.
                 */
-                List<Object> a1Names =
-                        AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                List<Object> a2Names =
-                        AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                HashSet<Object> newValues = new HashSet<Object>(a1Names.size() + a2Names.size());
+                List<String> a1Names =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                List<String> a2Names =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
 
                 newValues.addAll(a1Names);
                 newValues.addAll(a2Names);
+                Object[] values = newValues.toArray();
+                String[] names = new String[values.length];
+                for (int i = 0; i < names.length; i++) {
+                    names[i] = values[i].toString();
+                }
 
-                return createAnnotation("LTEL", newValues);
+                return createLessThanOrEqualToLengthAnnotation(names);
             }
-        }
-
-        /**
-         *  Finds the minimum value in the set of values represented
-         *  by a value checker annotation.
-         */
-        Integer valMinFromValueType(AnnotatedTypeMirror valueType) {
-            /*  It's possible that possibleValues could be null (if
-             *  there was no value checker annotation, I guess, but this
-             *  definitely happens in practice) or empty (if the value
-             *  checker annotated it with its equivalent of our unknown
-             *  annotation.
-             */
-            if (possibleValues == null || possibleValues.size() == 0) {
-                return null;
-            }
-            // The annotation of the whole list is the min of the list.
-            long valMin = Collections.min(possibleValues);
-            return new Integer((int) valMin);
-        }
-
-        /**
-         *  Get the list of possible values from a value checker type.
-         *  May return null.
-         */
-        private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-            AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
-            if (anm == null) {
-                return null;
-            }
-            return ValueAnnotatedTypeFactory.getIntValues(anm);
         }
 
         /**
@@ -215,16 +259,21 @@ public class UpperBoundAnnotatedTypeFactory
             }
             // If both are the same type, determine the type and merge:
             else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-                List<Object> a1Values =
-                        AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                List<Object> a2Values =
-                        AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                HashSet<Object> newValues = new HashSet<Object>(a1Values.size() + a2Values.size());
+                List<String> a1Values =
+                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+                List<String> a2Values =
+                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+                HashSet<String> newValues = new HashSet<String>(a1Values.size() + a2Values.size());
 
                 newValues.addAll(a1Values);
                 newValues.addAll(a2Values);
+                Object[] values = newValues.toArray();
+                String[] names = new String[values.length];
+                for (int i = 0; i < names.length; i++) {
+                    names[i] = values[i].toString();
+                }
 
-                return createAnnotation(a1.getAnnotationType().toString(), newValues);
+                return createAnnotation(a1.getAnnotationType().toString(), names);
             }
             // Annotations are in this hierarchy, but they are not the same.
             else {
@@ -245,6 +294,10 @@ public class UpperBoundAnnotatedTypeFactory
             if (AnnotationUtils.areSameByClass(lhs, UpperBoundUnknown.class)) {
                 return true;
             } else if (AnnotationUtils.areSameByClass(rhs, UpperBoundUnknown.class)) {
+                return false;
+            } else if (AnnotationUtils.areSameByClass(rhs, UpperBoundBottom.class)) {
+                return true;
+            } else if (AnnotationUtils.areSameByClass(lhs, UpperBoundBottom.class)) {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
                 // Same type, so might be subtype.
@@ -268,26 +321,31 @@ public class UpperBoundAnnotatedTypeFactory
 
         // Gives subtyping information but ignores all values.
         private boolean isSubtypeRelaxed(AnnotationMirror rhs, AnnotationMirror lhs) {
-            return super.isSubtype(removeValue(rhs), removeValue(lhs));
-        }
+            if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
+                return true;
+            }
 
-        // FIXME: #DoBeEvil #NewGoogleMotto #kludge
-        // In all seriousness, this probably isn't a good idea but it works.
-        // The goal is to be able to tell if in the base hierarchy the two
-        // types would be subtypes if they had the same arguments. Lifted
-        // from similar evils observed in the old index checker.
-        private AnnotationMirror removeValue(AnnotationMirror type) {
-            if (AnnotationUtils.areSameIgnoringValues(type, LTL)) {
-                return LTL;
+            // To avoid doing evil things, we here enumerate all the conditions.
+            if (AnnotationUtils.areSameByClass(lhs, UpperBoundUnknown.class)) {
+                return true;
+            } else if (AnnotationUtils.areSameByClass(rhs, UpperBoundUnknown.class)) {
+                return false;
             }
-            if (AnnotationUtils.areSameIgnoringValues(type, EL)) {
-                return EL;
+            // Neither is UB Unknown.
+            if (AnnotationUtils.areSameByClass(lhs, LessThanOrEqualToLength.class)) {
+                return true;
+            } else if (AnnotationUtils.areSameByClass(rhs, LessThanOrEqualToLength.class)) {
+                return false;
             }
-            if (AnnotationUtils.areSameIgnoringValues(type, LTEL)) {
-                return LTEL;
-            } else {
-                return UNKNOWN;
+
+            // Neither is LTEL. Both must be EL, LTL, or Bottom. And the two must be
+            // different. The only way this can return true is if rhs is Bottom.
+            if (AnnotationUtils.areSameByClass(rhs, UpperBoundBottom.class)) {
+                return true;
             }
+
+            // Every other case results in false.
+            return false;
         }
     }
 
@@ -305,9 +363,130 @@ public class UpperBoundAnnotatedTypeFactory
 
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
-            // I'm not sure we actually care all that much about what's happening here.
-            // Maybe a few small rules for addition/subtraction by 0/1, etc. FIXME.
+            // A few small rules for addition/subtraction by 0/1, etc.
+            ExpressionTree left = tree.getLeftOperand();
+            ExpressionTree right = tree.getRightOperand();
+            switch (tree.getKind()) {
+                case PLUS:
+                    addAnnotationForPlus(left, right, type);
+                    break;
+                case MINUS:
+                    addAnnotationForMinus(left, right, type);
+                    break;
+                default:
+                    break;
+            }
             return super.visitBinary(tree, type);
+        }
+
+        private void addAnnotationForLiteralPlus(
+                int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
+            if (val == 0) {
+                type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                return;
+            }
+            if (val == 1) {
+                if (nonLiteralType.hasAnnotation(LessThanLength.class)) {
+                    String[] names =
+                            UpperBoundUtils.getValue(
+                                    nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+                    return;
+                }
+                type.addAnnotation(UNKNOWN);
+                return;
+            }
+            if (val < 0) {
+                if (nonLiteralType.hasAnnotation(LessThanLength.class)
+                        || nonLiteralType.hasAnnotation(EqualToLength.class)
+                        || nonLiteralType.hasAnnotation(LessThanOrEqualToLength.class)) {
+
+                    String[] names =
+                            UpperBoundUtils.getValue(
+                                    nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    type.replaceAnnotation(createLessThanLengthAnnotation(names));
+                    return;
+                }
+                type.addAnnotation(UNKNOWN);
+                return;
+            }
+            // Covers positive numbers.
+            type.addAnnotation(UNKNOWN);
+            return;
+        }
+
+        /** addAnnotationForPlus handles the following cases:
+         *  <pre>
+         *      lit 0 + * &rarr; *
+         *      lit 1 + LTL &rarr; LTEL
+         *      LTL,EL,LTEL + negative lit &rarr; LTL
+         *      * + * &rarr; UNKNOWN
+         *  </pre>
+         */
+        private void addAnnotationForPlus(
+                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+            // Adding two literals isn't interesting, so we ignore it.
+            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+            // Check if the right side's value is known at compile time.
+            AnnotatedTypeMirror valueTypeRight =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                addAnnotationForLiteralPlus(maybeValRight, leftType, type);
+                return;
+            }
+
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+            // Check if the left side's value is known at compile time.
+            AnnotatedTypeMirror valueTypeLeft =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
+            if (maybeValLeft != null) {
+                addAnnotationForLiteralPlus(maybeValLeft, rightType, type);
+                return;
+            }
+
+            type.addAnnotation(UNKNOWN);
+            return;
+        }
+
+        /**
+         *  Implements two rules:
+         *  1. If there is a literal on the right side of a subtraction, call our literal add method,
+         *     replacing the literal with the literal times negative one.
+         *  2. Since EL implies that the number is either positive or zero, subtracting it from
+         *     something that's already LTL or EL always implies LTL, and from LTEL implies LTEL.
+         */
+        private void addAnnotationForMinus(
+                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+
+            AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+            // Check if the right side's value is known at compile time.
+            AnnotatedTypeMirror valueTypeRight =
+                    valueAnnotatedTypeFactory.getAnnotatedType(rightExpr);
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                addAnnotationForLiteralPlus(-1 * maybeValRight, leftType, type);
+                return;
+            }
+            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+            if (rightType.hasAnnotation(EqualToLength.class)) {
+                if (leftType.hasAnnotation(EqualToLength.class)
+                        || leftType.hasAnnotation(LessThanLength.class)) {
+                    String[] names =
+                            UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
+                    type.replaceAnnotation(createLessThanLengthAnnotation(names));
+                    return;
+                }
+                if (leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
+                    String[] names =
+                            UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
+                    type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+                    return;
+                }
+            }
+            type.addAnnotation(UNKNOWN);
+            return;
         }
     }
 }

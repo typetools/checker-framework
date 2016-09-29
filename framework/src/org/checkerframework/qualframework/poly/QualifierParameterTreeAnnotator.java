@@ -61,7 +61,8 @@ public class QualifierParameterTreeAnnotator<Q> extends TreeAnnotator<QualParams
         return filterParams(result);
     }
 
-    /** Filter the {@link QualParams} on a {@link QualifiedTypeMirror} to
+    /**
+     * Filter the {@link QualParams} on a {@link QualifiedTypeMirror} to
      * ensure that only the type's declared parameters are present.
      */
     private QualifiedTypeMirror<QualParams<Q>> filterParams(

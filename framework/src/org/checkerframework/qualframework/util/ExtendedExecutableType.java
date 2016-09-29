@@ -30,11 +30,15 @@ public interface ExtendedExecutableType extends ExtendedTypeMirror {
      */
     ExtendedTypeMirror getReturnType();
 
-    /** Returns the exceptions and other throwables listed in this executable's
-     * {@code throws} clause. */
+    /**
+     * Returns the exceptions and other throwables listed in this executable's
+     * {@code throws} clause.
+     */
     List<? extends ExtendedTypeMirror> getThrownTypes();
 
-    /** Returns the type variables declared by the formal type parameters of
-     * this executable. */
+    /**
+     * Returns the type variables declared by the formal type parameters of
+     * this executable.
+     */
     List<? extends ExtendedParameterDeclaration> getTypeParameters();
 }

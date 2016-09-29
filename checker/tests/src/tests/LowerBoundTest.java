@@ -1,17 +1,18 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Lower Bound checker.
  */
-public class LowerBoundTest extends CheckerFrameworkTest {
+public class LowerBoundTest extends CheckerFrameworkPerDirectoryTest {
 
-    public LowerBoundTest(File testFile) {
+    public LowerBoundTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.lowerbound.LowerBoundChecker.class,
                 "lowerbound",
                 "-Anomsgtext");

@@ -2,6 +2,8 @@ package org.checkerframework.checker.upperbound;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+import java.util.Arrays;
+import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.upperbound.qual.*;
@@ -17,46 +19,11 @@ public class UpperBoundUtils {
      *  Can return null if the list would be empty.
      */
     public static String[] getValue(AnnotationMirror anno) {
-        if (!hasValueMethod(anno)) {
+        if (!AnnotationUtils.hasElementValue(anno, "value")) {
             return null;
         }
-        return getIndexValue(anno, getValueMethod(anno));
-    }
-
-    /**
-     *  Returns the value method specific to the class of the anno passed in.
-     */
-    static ExecutableElement getValueMethod(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameIgnoringValues(anno, UpperBoundAnnotatedTypeFactory.LTL)) {
-            return TreeUtils.getMethod(
-                    "org.checkerframework.checker.upperbound.qual.LessThanLength",
-                    "value",
-                    0,
-                    UpperBoundAnnotatedTypeFactory.env);
-        }
-        if (AnnotationUtils.areSameIgnoringValues(anno, UpperBoundAnnotatedTypeFactory.EL)) {
-            return TreeUtils.getMethod(
-                    "org.checkerframework.checker.upperbound.qual.EqualToLength",
-                    "value",
-                    0,
-                    UpperBoundAnnotatedTypeFactory.env);
-        }
-        if (AnnotationUtils.areSameIgnoringValues(anno, UpperBoundAnnotatedTypeFactory.LTEL)) {
-            return TreeUtils.getMethod(
-                    "org.checkerframework.checker.upperbound.qual.LessThanOrEqualToLength",
-                    "value",
-                    0,
-                    UpperBoundAnnotatedTypeFactory.env);
-        }
-        return null;
-    }
-
-    /**
-     *  Returns the value of an annotation, given the annotation and Value method.
-     */
-    static String[] getIndexValue(AnnotationMirror anno, ExecutableElement valueElement) {
-        return (String[])
-                AnnotationUtils.getElementValuesWithDefaults(anno).get(valueElement).getValue();
+        return AnnotationUtils.getElementValueArray(anno, "value", String.class, true)
+                .toArray(new String[0]);
     }
 
     /**

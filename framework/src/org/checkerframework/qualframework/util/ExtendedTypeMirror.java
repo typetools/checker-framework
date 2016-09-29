@@ -26,7 +26,8 @@ public interface ExtendedTypeMirror extends AnnotatedConstruct {
     /** Applies an {@link ExtendedTypeVisitor} to this object. */
     <R, P> R accept(ExtendedTypeVisitor<R, P> v, P p);
 
-    /** Returns true iff this {@link ExtendedTypeMirror} represents a type
+    /**
+     * Returns true iff this {@link ExtendedTypeMirror} represents a type
      * declaration, rather than a use of a type.  This can happen only because
      * the underlying annotation-based framework uses {@link
      * org.checkerframework.framework.type.AnnotatedTypeMirror}s for both

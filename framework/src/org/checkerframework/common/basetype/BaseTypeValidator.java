@@ -16,6 +16,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -54,7 +55,8 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         this.atypeFactory = atypeFactory;
     }
 
-    /** The entry point to the type validator.
+    /**
+     * The entry point to the type validator.
      * Validate the type against the given tree.
      * Neither this method nor visit should be called directly by a visitor,
      * only use {@link BaseTypeVisitor#validateTypeOf(Tree)}.
@@ -385,7 +387,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                 for (AnnotationMirror aOnVar : onVar) {
                     if (upper.isAnnotatedInHierarchy(aOnVar) &&
                             !checker.getQualifierHierarchy().isSubtype(aOnVar,
-                                    upper.getAnnotationInHierarchy(aOnVar))) {
+                                    upper.findAnnotationInHierarchy(aOnVar))) {
                         this.reportError(type, tree);
                     }
                 }
@@ -431,7 +433,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
                 for (AnnotationMirror aOnVar : onVar) {
                     if (upper.isAnnotatedInHierarchy(aOnVar) &&
                             !atypeFactory.getQualifierHierarchy().isSubtype(aOnVar,
-                                    upper.getAnnotationInHierarchy(aOnVar))) {
+                                    upper.findAnnotationInHierarchy(aOnVar))) {
                         this.reportError(type, tree);
                     }
                 }
@@ -494,8 +496,12 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
         boolean error = false;
         Set<AnnotationMirror> seenTops = AnnotationUtils.createAnnotationSet();
         for (AnnotationMirror aOnVar : type.getAnnotations()) {
+            if (AnnotationUtils.areSameByClass(aOnVar, PolyAll.class)) {
+                continue;
+            }
             AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
             if (seenTops.contains(top)) {
+                System.out.println("too many qualifiers from same hierarchy");
                 this.reportError(type, tree);
                 error = true;
             }

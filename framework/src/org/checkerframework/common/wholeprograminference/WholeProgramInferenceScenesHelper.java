@@ -40,7 +40,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.qualframework.qual.QualifierKey;
 
-/** This class stores annotations for fields, method return types, and method
+/**
+ * This class stores annotations for fields, method return types, and method
  * parameters.
  * <p>
  * The set of annotations inferred for a certain class is stored in an

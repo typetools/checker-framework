@@ -22,7 +22,8 @@ import org.checkerframework.qualframework.util.QualifierContext;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror;
 import org.checkerframework.qualframework.util.WrappedAnnotatedTypeMirror.WrappedAnnotatedTypeVariable;
 
-/** Default implementation of {@link QualifiedTypeFactory}.  Most type systems
+/**
+ * Default implementation of {@link QualifiedTypeFactory}.  Most type systems
  * should extend this class (or a subclass) instead of implementing {@link
  * QualifiedTypeFactory} directly.
  *

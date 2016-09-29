@@ -6,8 +6,10 @@ import org.checkerframework.qualframework.base.QualifiedTypeMirror;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.*;
 import org.checkerframework.qualframework.base.QualifiedTypeVisitor;
 
-/** Visitor that maps a function over every qualifier in a {@link
- * QualifiedTypeMirror}. */
+/**
+ * Visitor that maps a function over every qualifier in a {@link
+ * QualifiedTypeMirror}.
+ */
 public abstract class QualifierMapVisitor<Q, R, P>
         implements QualifiedTypeVisitor<Q, QualifiedTypeMirror<R>, P> {
 

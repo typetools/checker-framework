@@ -6,7 +6,8 @@ import java.util.Map;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.qualframework.base.QualifierHierarchy;
 
-/** This class provides a {@code QualifierHierarchy} implementation for
+/**
+ * This class provides a {@code QualifierHierarchy} implementation for
  * sets of qualifier parameters.  Under this hierarchy, A is a subtype of B iff
  * the value of each qualifier parameter in A is contained within the value of
  * the corresponding parameter in B.
@@ -34,7 +35,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
     // We can't use constructor overloads for the following variants because
     // they all have the same erasure.
 
-    /** Construct an instance from a {@link ContainmentHierarchy} or
+    /**
+     * Construct an instance from a {@link ContainmentHierarchy} or
      * equivalent.
      */
     public static <Q> QualifierParameterHierarchy<Q> fromContainment(
@@ -43,7 +45,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
         return new QualifierParameterHierarchy<>(containmentHierarchy, polyQualHierarchy);
     }
 
-    /** Construct an instance from a {@link PolyQualHierarchy} or equivalent,
+    /**
+     * Construct an instance from a {@link PolyQualHierarchy} or equivalent,
      * using the default {@link ContainmentHierarchy} implementation.
      */
     public static <Q> QualifierParameterHierarchy<Q> fromPolyQual(
@@ -51,7 +54,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
         return fromContainment(new ContainmentHierarchy<Q>(polyQualHierarchy), polyQualHierarchy);
     }
 
-    /** Construct an instance from a {@code QualifierHierarchy<Q>}, using the
+    /**
+     * Construct an instance from a {@code QualifierHierarchy<Q>}, using the
      * default {@link PolyQualHierarchy} and {@link ContainmentHierarchy}
      * implementations.
      */
@@ -65,7 +69,8 @@ public class QualifierParameterHierarchy<Q> implements QualifierHierarchy<QualPa
         return containmentHierarchy;
     }
 
-    /** Set a target for constraint generation.  When the current constraint
+    /**
+     * Set a target for constraint generation.  When the current constraint
      * target is not {@code null}, all subtyping checks return {@code true} and
      * populate the target with a (subtype, supertype) pair for each
      * containment check that would normally be made.

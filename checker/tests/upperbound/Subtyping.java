@@ -9,7 +9,9 @@ public class Subtyping {
         //:: error: (assignment.type.incompatible)
         @EqualToLength({"arr"}) int a2 = 1;
 
+        //:: error: (assignment.type.incompatible)
         @LessThanLength({"arr"}) int b = a;
+        //:: error: (assignment.type.incompatible)
         @EqualToLength({"arr"}) int c = a;
         @UpperBoundUnknown int d = a;
 
@@ -25,7 +27,7 @@ public class Subtyping {
         @LessThanOrEqualToLength({"arr", "arr2", "arr3"}) int h = 2;
 
         @LessThanOrEqualToLength({"arr", "arr2"}) int h2 = h;
-        @LessThanLength({"arr"}) int i = h;
-        @EqualToLength({"arr", "arr3"}) int j = h;
+        @LessThanOrEqualToLength({"arr"}) int i = h;
+        @LessThanOrEqualToLength({"arr", "arr3"}) int j = h;
     }
 }

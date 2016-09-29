@@ -6,7 +6,8 @@ import java.util.Map;
 import java.util.Set;
 import org.checkerframework.javacutil.ErrorReporter;
 
-/** A map of qualifier parameters.  A {@code QualParams} object maps
+/**
+ * A map of qualifier parameters.  A {@code QualParams} object maps
  * qualifier parameter names to {@code Wildcard} objects.
  */
 public class QualParams<Q> implements Map<String, Wildcard<Q>> {
@@ -18,15 +19,15 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
         this.map = new HashMap<>();
     }
 
-    /** Construct a map containing a single entry whose value is a qualifier
+    /**
+     * Construct a map containing a single entry whose value is a qualifier
      * from the underlying hierarchy.
      */
     public QualParams(String name, Q qual, PolyQual<Q> primary) {
         this(name, new Wildcard<Q>(qual), primary);
     }
 
-    /** Construct a map containing a single entry.
-     */
+    /** Construct a map containing a single entry. */
     public QualParams(String name, Wildcard<Q> qual, PolyQual<Q> primary) {
         this();
         this.map.put(name, qual);
@@ -43,8 +44,7 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
         this.primary = primary;
     }
 
-    /** Apply capture conversion to each value in this map.
-     */
+    /** Apply capture conversion to each value in this map. */
     /*
     public QualParams<Q> capture() {
         if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom()) {

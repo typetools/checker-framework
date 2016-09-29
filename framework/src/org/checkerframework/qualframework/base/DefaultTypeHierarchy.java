@@ -2,7 +2,8 @@ package org.checkerframework.qualframework.base;
 
 import javax.lang.model.type.TypeKind;
 
-/** Default implementation of {@link TypeHierarchy}.  Applies standard Java
+/**
+ * Default implementation of {@link TypeHierarchy}.  Applies standard Java
  * subtyping rules to compare Java types.
  */
 public class DefaultTypeHierarchy<Q> implements TypeHierarchy<Q> {

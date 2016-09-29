@@ -3,8 +3,7 @@ package org.checkerframework.qualframework.poly;
 import java.util.HashMap;
 import java.util.Map;
 
-/** A qualifier wildcard, bounded above and below by {@link PolyQual}s.
- */
+/** A qualifier wildcard, bounded above and below by {@link PolyQual}s. */
 public class Wildcard<Q> {
     private final PolyQual<Q> lower;
     private final PolyQual<Q> upper;
@@ -46,14 +45,18 @@ public class Wildcard<Q> {
         return new Wildcard<Q>();
     }
 
-    /** Get the lower bound of the wildcard, or {@code null} if this is the
-     * empty wildcard. */
+    /**
+     * Get the lower bound of the wildcard, or {@code null} if this is the
+     * empty wildcard.
+     */
     public PolyQual<Q> getLowerBound() {
         return this.lower;
     }
 
-    /** Get the upper bound of the wildcard, or {@code null} if this is the
-     * empty wildcard. */
+    /**
+     * Get the upper bound of the wildcard, or {@code null} if this is the
+     * empty wildcard.
+     */
     public PolyQual<Q> getUpperBound() {
         return this.upper;
     }
@@ -78,7 +81,8 @@ public class Wildcard<Q> {
         return new Wildcard<Q>(newLower, newUpper);
     }
 
-    /** Combine with another wildcard, using the provided {@link
+    /**
+     * Combine with another wildcard, using the provided {@link
      * CombiningOperation}s for the upper and lower bounds.
      */
     public Wildcard<Q> combineWith(

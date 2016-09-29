@@ -13,7 +13,8 @@ import org.checkerframework.qualframework.base.format.DefaultQualifiedTypeFormat
 import org.checkerframework.qualframework.base.format.QualifiedTypeFormatter;
 import org.checkerframework.qualframework.util.QualifierContext;
 
-/** Main entry point for a pluggable type system.  Each type system must
+/**
+ * Main entry point for a pluggable type system.  Each type system must
  * provide an implementation of this abstract class that produces an
  * appropriate {@link QualifiedTypeFactory} for the type system.
  */

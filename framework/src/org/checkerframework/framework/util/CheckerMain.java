@@ -77,6 +77,7 @@ public class CheckerMain {
      * The path to the jar containing CheckerMain.class (i.e. checker.jar)
      */
     protected final File checkerJar;
+
     /**
      * The path to checker-qual.jar
      */
@@ -566,9 +567,10 @@ public class CheckerMain {
 
         int idx = uri.indexOf('!');
         // Sanity check
-        if (idx == -1)
+        if (idx == -1) {
             throw new IllegalStateException(
                     "You appear to have loaded this class from a local jar file, but I can't make sense of the URL!");
+        }
 
         try {
             String fileName =
@@ -700,7 +702,10 @@ public class CheckerMain {
             }
             checkerJarIs.close();
         } catch (IOException e) {
-            throw new RuntimeException("Could not read " + checkerJar, e);
+            // When using CheckerDevelMain we might not have a checker.jar file built yet.
+            // Issue a warning instead of aborting execution.
+            System.err.printf(
+                    "Could not read %s. Shorthand processor names will not work.%n", checkerJar);
         }
 
         return checkerClassNames;

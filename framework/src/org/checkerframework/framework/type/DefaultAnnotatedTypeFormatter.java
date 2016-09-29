@@ -142,7 +142,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             this.currentPrintVerboseGenerics = defaultPrintVerboseGenerics;
         }
 
-        /** print to sb keyWord followed by field.  NULL types are substituted with
+        /**
+         * print to sb keyWord followed by field.  NULL types are substituted with
          * their annotations followed by " Void"
          */
         @SideEffectFree

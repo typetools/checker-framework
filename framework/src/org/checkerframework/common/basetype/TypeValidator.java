@@ -9,7 +9,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  */
 public interface TypeValidator {
 
-    /** The entry point to the type validator.
+    /**
+     * The entry point to the type validator.
      * Validate the type against the given tree.
      *
      * @param type the type to validate

@@ -16,6 +16,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -812,13 +813,11 @@ public abstract class GenericAnnotatedTypeFactory<
                             }
                             break;
                         case CLASS:
-                            // Visit inner and nested classes.
-                            queue.add((ClassTree) m);
-                            break;
                         case ANNOTATION_TYPE:
                         case INTERFACE:
                         case ENUM:
-                            // not necessary to handle
+                            // Visit inner and nested class trees.
+                            queue.add((ClassTree) m);
                             break;
                         case BLOCK:
                             BlockTree b = (BlockTree) m;
@@ -868,7 +867,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 }
 
                 // by convention we store the static initialization store as the regular exit
-                // store of the class node, os that it can later be used to check
+                // store of the class node, so that it can later be used to check
                 // that all fields are initialized properly.
                 // see InitializationVisitor.visitClass
                 if (initializationStaticStore == null) {
@@ -1124,7 +1123,15 @@ public abstract class GenericAnnotatedTypeFactory<
         defaults.annotate(tree, type);
 
         if (iUseFlow) {
-            Value as = getInferredValueFor(tree);
+            Value as;
+            if (tree.getKind() == Kind.POSTFIX_DECREMENT
+                    || tree.getKind() == Kind.POSTFIX_INCREMENT) {
+                // Dataflow incorrectly treats postfix as prefix.
+                // See Issue 867: https://github.com/typetools/checker-framework/issues/867
+                as = getInferredValueFor(((UnaryTree) tree).getExpression());
+            } else {
+                as = getInferredValueFor(tree);
+            }
             if (as != null) {
                 applyInferredAnnotations(type, as);
             }

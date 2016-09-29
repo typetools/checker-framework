@@ -11,6 +11,7 @@ nullness-checker.tex \
 map-key-checker.tex \
 interning-checker.tex \
 lock-checker.tex \
+index-checker.tex \
 fenum-checker.tex \
 tainting-checker.tex \
 regex-checker.tex \
@@ -37,8 +38,7 @@ annotating-libraries.tex \
 creating-a-checker.tex \
 external-tools.tex \
 faq.tex \
-troubleshooting.tex \
-index-checker.tex
+troubleshooting.tex
 
 all: manual.pdf manual.html
 

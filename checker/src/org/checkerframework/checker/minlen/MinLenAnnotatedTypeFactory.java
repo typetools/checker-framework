@@ -4,8 +4,9 @@ import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -14,10 +15,13 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
@@ -35,14 +39,8 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
-    /**
-     *  We need this to make an AnnotationBuilder for some reason.
-     */
-    protected static ProcessingEnvironment env;
-
     public MinLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        env = checker.getProcessingEnvironment();
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         this.postInit();
     }
@@ -58,12 +56,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return null;
         }
         // We're sure there is at least one element in the list, because of the previous check.
-        Integer min = Integer.MAX_VALUE;
-        for (Long l : possibleValues) {
-            if (l < min) {
-                min = l.intValue();
-            }
-        }
+        Integer min = Collections.min(possibleValues).intValue();
         return min;
     }
 
@@ -90,7 +83,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * between various qualifiers - especially subtyping relations.
      * In particular, it's used to determine the relationship between
      * two identical qualifiers with differing arguments (i.e.
-     * @MinLen(2) vs @MinLen(3).
+     * MinLen(2) vs MinLen(3).
      */
     private final class MinLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
         /**
@@ -99,6 +92,50 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         public MinLenQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
+        }
+
+        @Override
+        public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSameByClass(a1, MinLenUnknown.class)
+                    || AnnotationUtils.areSameByClass(a2, MinLenUnknown.class)) {
+                return createMinLenUnknown();
+            }
+            // Because of the above, neither can be MLU.
+            if (AnnotationUtils.hasElementValue(a1, "value")
+                    && AnnotationUtils.hasElementValue(a2, "value")) {
+                Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
+                Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
+                if (a1Val >= a2Val) {
+                    return a2;
+                } else {
+                    return a1;
+                }
+            }
+            // This should be unreachable but we want the function to be complete.
+            return createMinLenUnknown();
+        }
+
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (AnnotationUtils.areSameByClass(a1, MinLenUnknown.class)) {
+                return a2;
+            }
+            if (AnnotationUtils.areSameByClass(a2, MinLenUnknown.class)) {
+                return a1;
+            }
+            // Because of the above, neither can be MLU.
+            if (AnnotationUtils.hasElementValue(a1, "value")
+                    && AnnotationUtils.hasElementValue(a2, "value")) {
+                Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
+                Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
+                if (a1Val >= a2Val) {
+                    return a1;
+                } else {
+                    return a2;
+                }
+            }
+            // This should be unreachable but we want the function to be complete.
+            return createMinLenUnknown();
         }
 
         /**
@@ -116,11 +153,44 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
                 // Implies both are MinLen since that's the only other type.
-                Integer rhsVal = AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
-                Integer lhsVal = AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
-                return rhsVal >= lhsVal;
+                // But we're going to check anyway to make sure they both have
+                // values to avoid crashing.
+                if (AnnotationUtils.hasElementValue(rhs, "value")
+                        && AnnotationUtils.hasElementValue(lhs, "value")) {
+                    Integer rhsVal =
+                            AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
+                    Integer lhsVal =
+                            AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
+                    return rhsVal >= lhsVal;
+                } else {
+                    // They aren't subtypes is one doesn't have a value.
+                    return true;
+                }
             }
             return false;
+        }
+    }
+
+    // This is based on a suggestion Suzanne had for making arrays always default
+    // to MinLen(0).
+
+    @Override
+    protected TypeAnnotator createTypeAnnotator() {
+        return new ListTypeAnnotator(new MinLenTypeAnnotator(this));
+    }
+
+    protected class MinLenTypeAnnotator extends TypeAnnotator {
+
+        public MinLenTypeAnnotator(MinLenAnnotatedTypeFactory atf) {
+            super(atf);
+        }
+
+        @Override
+        public Void visitArray(AnnotatedArrayType type, Void aVoid) {
+            if (!type.hasAnnotation(MinLen.class)) {
+                type.replaceAnnotation(createMinLen(0));
+            }
+            return super.visitArray(type, aVoid);
         }
     }
 
@@ -154,12 +224,10 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (val != null) {
                 type.replaceAnnotation(createMinLen(val));
             }
-            /* For when the value checker doesn't know anything.
-             * The old index checker had something about member select
-             * trees here, but I don't know what those are so I'm just
-             * going to not include them and see what happens.
-             */
-            AnnotationMirror ATM = getAnnotatedType(dim).getAnnotation(MinLen.class);
+            // For when the value checker doesn't know anything.
+            // We can check if this happens to be this case:
+            // int[] array1 = {2};
+            // int[] array2 = new int[array1.length];
             if (dim.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree MST = (MemberSelectTree) dim;
                 AnnotationMirror dimType =
@@ -174,9 +242,14 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    static AnnotationMirror createMinLen(int val) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, MinLen.class);
+    private AnnotationMirror createMinLen(int val) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", val);
+        return builder.build();
+    }
+
+    private AnnotationMirror createMinLenUnknown() {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLenUnknown.class);
         return builder.build();
     }
 }

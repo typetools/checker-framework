@@ -4,8 +4,7 @@ import com.sun.source.tree.ExpressionTree;
 import java.util.List;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 
-/** Helper functions for various manipulations of {@link QualifiedTypeMirror}s.
- */
+/** Helper functions for various manipulations of {@link QualifiedTypeMirror}s. */
 public interface QualifiedTypes<Q> {
     /**
      * Returns the method parameters for the invoked method, with the same number
