@@ -3,6 +3,7 @@ package org.checkerframework.checker.upperbound;
 import java.util.Arrays;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -38,7 +39,9 @@ public class UpperBoundTransfer extends CFTransfer {
         UNKNOWN = UpperBoundAnnotatedTypeFactory.UNKNOWN;
     }
 
-    // Make variables used in array creation have reasonable types.
+    // Refine the type of expressions used as an array dimension to be
+    // less than length of the array to which the new array is
+    // assigned.
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
@@ -47,14 +50,12 @@ public class UpperBoundTransfer extends CFTransfer {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
             CFStore store = result.getRegularStore();
             List<Node> nodeList = acNode.getDimensions();
-            // The dimenions list is empty -> dimensions aren't known, I believe.
             if (nodeList.size() < 1) {
                 return result;
             }
             Node dim = acNode.getDimension(0);
             Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), dim);
             String name = node.getTarget().toString();
-            // This is silly, but...
             String[] names = {name};
 
             store.insertValue(
@@ -70,10 +71,8 @@ public class UpperBoundTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitFieldAccess(node, in);
-        if (node.getFieldName().equals("length")) {
-            // I'm concerned about the level of evil present in this code.
-            // It's modeled on similar code in the old Index Checker, and it feels like a bad
-            // way to do this, but I don't know a better way.
+        if (node.getFieldName().equals("length")
+                && node.getReceiver().getType().getKind() == TypeKind.ARRAY) {
             String arrName = node.getReceiver().toString();
             AnnotationMirror anm =
                     UpperBoundAnnotatedTypeFactory.createEqualToLengthAnnotation(arrName);
