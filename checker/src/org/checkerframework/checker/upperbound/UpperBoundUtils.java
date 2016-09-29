@@ -19,62 +19,11 @@ public class UpperBoundUtils {
      *  Can return null if the list would be empty.
      */
     public static String[] getValue(AnnotationMirror anno) {
-        if (!hasValueMethod(anno)) {
+        if (!AnnotationUtils.hasElementValue(anno, "value")) {
             return null;
         }
-        return getIndexValue(anno, getValueMethod(anno));
-    }
-
-    /**
-     *  Returns the value method specific to the class of the anno passed in.
-     */
-    static ExecutableElement getValueMethod(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, LessThanLength.class)) {
-            return TreeUtils.getMethod(
-                    "org.checkerframework.checker.upperbound.qual.LessThanLength",
-                    "value",
-                    0,
-                    UpperBoundAnnotatedTypeFactory.env);
-        }
-        if (AnnotationUtils.areSameByClass(anno, EqualToLength.class)) {
-            return TreeUtils.getMethod(
-                    "org.checkerframework.checker.upperbound.qual.EqualToLength",
-                    "value",
-                    0,
-                    UpperBoundAnnotatedTypeFactory.env);
-        }
-        if (AnnotationUtils.areSameByClass(anno, LessThanOrEqualToLength.class)) {
-            return TreeUtils.getMethod(
-                    "org.checkerframework.checker.upperbound.qual.LessThanOrEqualToLength",
-                    "value",
-                    0,
-                    UpperBoundAnnotatedTypeFactory.env);
-        }
-        return null;
-    }
-
-    /**
-     *  Returns the value of an annotation, given the annotation and Value method.
-     */
-    static String[] getIndexValue(AnnotationMirror anno, ExecutableElement valueElement) {
-        Object val =
-                AnnotationUtils.getElementValuesWithDefaults(anno).get(valueElement).getValue();
-        if (val instanceof List) {
-            // Bad and evil but not sure how else to do it.
-            @SuppressWarnings("unchecked")
-            List<Object> l = (List<Object>) val;
-            String[] values = new String[l.size()];
-            for (int i = 0; i < l.size(); i++) {
-                values[i] = l.get(i).toString();
-                // The function toString() puts quotes around things that are already strings,
-                // and we don't want that.
-                values[i] = values[i].replaceAll("\"", "");
-            }
-            return values;
-        } else if (val instanceof Object[]) {
-            return Arrays.copyOf((Object[]) val, ((Object[]) val).length, String[].class);
-        }
-        return null; // Shouldn't ever happen.
+        return AnnotationUtils.getElementValueArray(anno, "value", String.class, true)
+                .toArray(new String[0]);
     }
 
     /**

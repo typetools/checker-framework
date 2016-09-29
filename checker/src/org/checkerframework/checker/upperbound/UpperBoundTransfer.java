@@ -237,8 +237,9 @@ public class UpperBoundTransfer extends CFTransfer {
                 || leftType.hasAnnotation(EqualToLength.class)
                 || leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
             // Create an LTL for the right type.
-            // There's a slight danger of losing information here but I'm going to do
-            // it the simple-to-implement way for now and we can come back later FIXME.
+            // There's a slight danger of losing information here:
+            // if the two annotations are LTL(a) and EL(b), for instance,
+            // we lose some information.
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
@@ -259,8 +260,9 @@ public class UpperBoundTransfer extends CFTransfer {
             CFStore store) {
         if (leftType.hasAnnotation(LessThanLength.class)) {
             // Create an LTL for the right type.
-            // There's a slight danger of losing information here but I'm going to do
-            // it the simple-to-implement way for now and we can come back later FIXME.
+            // There's a slight danger of losing information here:
+            // if the two annotations are LTL(a) and EL(b), for instance,
+            // we lose some information.
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
@@ -268,9 +270,10 @@ public class UpperBoundTransfer extends CFTransfer {
             return;
         } else if (leftType.hasAnnotation(EqualToLength.class)
                 || leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
-            // Create an LTEL for the right type.
-            // There's a slight danger of losing information here but I'm going to do
-            // it the simple-to-implement way for now and we can come back later FIXME.
+            // Create an LTL for the right type.
+            // There's a slight danger of losing information here:
+            // if the two annotations are LTL(a) and EL(b), for instance,
+            // we lose some information.
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             String[] names = UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
             store.insertValue(
@@ -352,10 +355,10 @@ public class UpperBoundTransfer extends CFTransfer {
         }
     }
 
+    // This method really only exists because it's easier to leave it. It used
+    // to serve an actual function.
     private boolean fOnlyUnknown(AnnotatedTypeMirror type) {
-        return (!type.hasAnnotation(LessThanLength.class)
-                && !type.hasAnnotation(EqualToLength.class)
-                && !type.hasAnnotation(LessThanOrEqualToLength.class));
+        return type.hasAnnotation(UpperBoundUnknown.class);
     }
 
     // From: http://stackoverflow.com/questions/80476/how-can-i-concatenate-two-arrays-in-java
