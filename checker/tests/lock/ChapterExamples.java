@@ -910,15 +910,9 @@ class ChapterExamples {
                 new ReentrantLock(); // rl2 is reassigned later - it is not effectively final
         rl1.lock();
         rl1.unlock();
-        // TODO: The two method.invocation.invalid errors below are due to the fact
-        // that unlock() called above is a non-side-effect-free method
-        // and is due to this line in LockStore.updateForMethodCall:
-        // localVariableValues.clear();
-        // Fix LockStore.updateForMethodCall so it is less conservative and remove
-        // the expected error.
-        //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
+        //:: error: (lock.expression.not.final)
         rl2.lock();
-        //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
+        //:: error: (lock.expression.not.final)
         rl2.unlock();
 
         rl2 =

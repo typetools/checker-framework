@@ -418,7 +418,7 @@ responsibilities by passing bad values, then the \emph{callee} is absolved
 of its responsibilities.  It is polite for the callee to try to provide a
 useful diagnostic to the misbehaving caller (for example, by raising a
 particular exception quickly), but it is \emph{not} required.  In such a
-situation, the callee has flexibility to do anything to do anything that is
+situation, the callee has the flexibility to do anything that is
 convenient.
 
 In some cases a routine has a \emph{complete} specification:  the contract
@@ -1189,19 +1189,29 @@ analysis differs from the Checker Framework in several respects.
 
 The Checker Framework's Nullness Checker
 (see~\chapterpageref{nullness-checker}) is more precise:  it does a deeper
-semantic analysis, so it issues fewer false positives than Eclipse.  For
-example, the Nullness Checker handles initialization and map key checking,
-it supports method pre- and post-conditions, and it includes a powerful
-dataflow analysis.
+semantic analysis, so it issues fewer false positives than Eclipse.
+Eclipse's nullness analysis is missing many features that the Checker
+Framework supports, such as handling of map keys, partially-initialized
+objects, method pre- and post-conditions, polymorphism, and a powerful
+dataflow analysis.  These are essential for practical verification of
+real-world code without poor precision.
+Furthermore, Eclipse by default ignores unannotated code (even unannotated
+parameters within a method that contains other annotations).
+As a result, Eclipse is more useful for bug-finding than for verification,
+and that is what the Eclipse documentation recommends.
+% See heading "Interpretation of null annotations" under
+% http://help.eclipse.org/neon/index.jsp?topic=%2Forg.eclipse.jdt.doc.user%2Ftasks%2Ftask-using_external_null_annotations.htm
 
-Eclipse assumes that all code is multi-threaded, which cripples its local
-type inference.  By contrast, the Checker Framework allows the user to
+Eclipse assumes by default that all code is multi-threaded, which cripples its local
+type inference.  (This default can be turned off, however.)
+By contrast, the Checker Framework allows the user to
 specify whether code will be run concurrently or not via the
 \<-AconcurrentSemantics> command-line option (see
 Section~\ref{faq-concurrency}).
 
-The Checker Framework is easier to run in integration scripts or in
-environments where not all developers are using Eclipse.
+The Checker Framework builds on javac, so it is easier to run in
+integration scripts or in
+environments where not all developers have installed Eclipse.
 % It is possible to use ecj as one's compiler:
 % https://wiki.eclipse.org/JDT/FAQ#Can_I_use_JDT_outside_Eclipse_to_compile_Java_code.3F
 
