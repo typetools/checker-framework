@@ -21,12 +21,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     *  When we reach an array access, we need to check a couple of things.
-     *  First, we check if the index has been assigned a reasonable UpperBound type:
+     *  When the visitor reachs an array access, it needs to check a couple of things.
+     *  First, it checks if the index has been assigned a reasonable UpperBound type:
      *  only an index with type LessThanLength(arr) is safe to access arr.
-     *  If that fails, we need to check if the access is still safe. To do
-     *  so, we check if we know the MinLen of arr by querying the MinLenATF.
-     *  If we do know the MinLen of the array, we can check if we know that
+     *  If that fails, it checks if the access is still safe. To do
+     *  so, it checks if the MinLen checker knows the minimum
+     *  length of arr by querying the MinLenATF.
+     *  If the MinLen of the array is known, the visitor can check if
      *  the index is less than the MinLen, using the Value Checker. If so
      *  then the access is still safe. Otherwise, report a potential unsafe
      *  access.
@@ -35,7 +36,6 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     public Void visitArrayAccess(ArrayAccessTree tree, Void type) {
         ExpressionTree indexTree = tree.getIndex();
         ExpressionTree arrTree = tree.getExpression();
-        // This is actually not a very generalizable way of keeping track of arrays...
         String arrName = arrTree.toString();
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
 
