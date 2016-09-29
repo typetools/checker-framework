@@ -5,6 +5,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredTarget;
@@ -47,6 +48,10 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
             final InferredValue inferred = this.get(target);
 
             if (inferred == null || inferred instanceof InferredTarget) {
+                return false;
+            } else if (inferred instanceof InferredType
+                    && ((InferredType) inferred).type.getKind() == TypeKind.NULL) {
+                // NullType is not a valid type argument, so continue looking for the correct type.
                 return false;
             }
         }
@@ -141,6 +146,16 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
                     return newType;
                 }
             } else {
+                if (newType.type.getKind() == TypeKind.NULL) {
+                    // If the newType is null, then use the subordinate type, but with the
+                    // primary annotations on null.
+                    final InferredValue subValue = subordinate.get(target);
+                    if (subValue != null && subValue instanceof InferredType) {
+                        AnnotatedTypeMirror copy = ((InferredType) subValue).type.deepCopy();
+                        copy.replaceAnnotations(newType.type.getAnnotations());
+                        newType = new InferredType(copy);
+                    }
+                }
                 this.put(target, newType);
                 return newType;
             }

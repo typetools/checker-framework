@@ -3153,7 +3153,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * This method is a hack to use when a method type argument
      * could not be inferred automatically or if a raw type is used.
      * The only use should be:
-     * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment, AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
      * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {

@@ -14,6 +14,7 @@ import java.util.Queue;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -61,6 +62,10 @@ import org.checkerframework.javacutil.TypesUtils;
  *     that constraints are more complicated than their Java equivalents.  Every constraint must identify the
  *     hierarchies to which they apply.  This makes solving the constraint sets more complicated.
  *
+ *     c.) If an argument to a method is null, then the JLS says that it does not constrain the
+ *     type argument.  However, null may constrain the qualifiers on the type argument, so it is
+ *     included in the constraints but is not used as the underlying type of the type argument.
+ *
  *  TODO: The following limitations need to be fixed, as at the time of this writing we do not have the time
  *        to handle them:
  *      1) The GlbUtil does not correctly handled wildcards/typevars when the glb result should be a wildcard or typevar
@@ -101,7 +106,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs =
                 infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets);
 
-        handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
+        handleUninferredTypeVariables(methodType, targets, inferredArgs);
         return inferredArgs;
     }
 
@@ -259,6 +264,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         // a variable, assignedTo is the type of that variable
         if (assignedTo == null) {
             fromArgEqualities.mergeSubordinate(fromArgSubandSupers);
+
             return fromArgEqualities.toAtmMap();
         } // else
 
@@ -624,7 +630,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * For any types we have not inferred, use a wildcard with the bounds from the original type parameter.
      */
     private void handleUninferredTypeVariables(
-            AnnotatedTypeFactory typeFactory,
             AnnotatedExecutableType methodType,
             Set<TypeVariable> targets,
             Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
@@ -635,8 +640,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
 
                 if (inferredType == null) {
-                    AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
-                    inferredArgs.put(atv.getUnderlyingType(), dummy);
+                    AnnotatedTypeMirror dummy = atv.getUpperBound().deepCopy();
+                    inferredArgs.put(typeVar, dummy);
+                } else if (inferredType.getKind() == TypeKind.NULL) {
+                    // Type argument cannot be null type, use upper bound instead.
+                    AnnotatedTypeMirror dummy = atv.getUpperBound().deepCopy();
+                    dummy.replaceAnnotations(inferredType.getAnnotations());
+                    inferredArgs.put(typeVar, dummy);
                 }
             }
         }
