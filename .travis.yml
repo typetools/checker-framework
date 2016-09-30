@@ -28,6 +28,8 @@ script:
      export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
      git clone --quiet -b $TRAVIS_BRANCH --depth 3 $REMOTE_ORIGIN_URL checker-framework &&
      cd checker-framework &&
+     echo Travis event type: $TRAVIS_EVENT_TYPE &&
+     echo Travis pull request: $TRAVIS_PULL_REQUEST &&
      if [ $TRAVIS_EVENT_TYPE = push  -a  $TRAVIS_PULL_REQUEST = true ] ; then
        git config user.email noone@cares.com
        git config user.name Noone Cares
