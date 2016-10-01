@@ -30,7 +30,7 @@ script:
      cd checker-framework &&
      echo Travis event type: $TRAVIS_EVENT_TYPE &&
      echo Travis pull request: $TRAVIS_PULL_REQUEST &&
-     if [ $TRAVIS_EVENT_TYPE = push  -a  $TRAVIS_PULL_REQUEST = true ] ; then
+     if [ $TRAVIS_EVENT_TYPE = push  -a  $TRAVIS_PULL_REQUEST = false ] ; then
        git config user.email noone@cares.com
        git config user.name Noone Cares
        git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git ;
