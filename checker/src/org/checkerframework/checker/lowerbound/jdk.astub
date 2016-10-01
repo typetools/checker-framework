@@ -1,8 +1,8 @@
-import org.checkerframework.checker.lowerbound.qual
+import org.checkerframework.checker.lowerbound.qual.*;
 
 package java.util;
 
-public interface List<E> {
+interface List<E> {
 	public E get(@NonNegative int index);
 	public void set(@NonNegative int index, E element);
 	public @GTENegativeOne int indexOf(Object o);
