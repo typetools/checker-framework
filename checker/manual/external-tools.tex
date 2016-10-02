@@ -718,7 +718,8 @@ and type annotations.
 Even in a version of Eclipse that supports Java 8's type annotations, you
 still need to run the Checker Framework via Ant or via the plug-in, rather
 than by supplying the \<-processor> command-line option to the ejc
-compiler.  The reason is that the Checker Framework is built upon javac,
+compiler, which is also known as eclipsec.
+The reason is that the Checker Framework is built upon javac,
 and ejc represents the Java program differently.  (If both javac and ejc
 implemented JSR 198~\cite{JSR198}, then it would be possible to build
 a type-checking plug-in that works with both compilers.)
