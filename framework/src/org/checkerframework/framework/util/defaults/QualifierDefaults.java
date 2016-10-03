@@ -1087,8 +1087,8 @@ public class QualifierDefaults {
 
         /**
          * Neither bound is specified, BOTH are implicit. (If a type variable is declared in
-         * bytecode and the type of the upper bound is Object, then assume that the bound was not
-         * explicitly written in source code.)
+         * bytecode and the type of the upper bound is Object, then the checker assumes that the
+         * bound was not explicitly written in source code.)
          */
         UNBOUNDED;
 
