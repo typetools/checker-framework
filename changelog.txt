@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------
 
-Version 2.1.4, 3 October 2016
+Version 2.1.5, 1 November 2016
 
 In bytecode, type variable upper bounds of type Object may or may not have
 been explicitly written.  The Checker Framework now assumes they were not
