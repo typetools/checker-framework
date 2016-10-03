@@ -3,6 +3,7 @@ package org.checkerframework.checker.minlen;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -239,6 +240,13 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             return super.visitNewArray(tree, type);
+        }
+        
+        @Override
+        public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type){
+            System.out.println(tree);
+            System.out.println(tree.getIdentifier());
+            return super.visitNewClass(tree, type);
         }
     }
 
