@@ -7,6 +7,6 @@ interface List<E> {
 	public void set(@NonNegative int index, E element);
 	public @GTENegativeOne int indexOf(Object o);
 	public @GTENegativeOne int lastIndexOf(Object o);
-	public @NonNegative size();
+	public @NonNegative int size();
 	public List<E> subList(@NonNegative int fromIndex, @NonNegative int toIndex);
 }
