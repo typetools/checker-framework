@@ -176,7 +176,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected TypeAnnotator createTypeAnnotator() {
-        return new ListTypeAnnotator(new MinLenTypeAnnotator(this));
+        return new ListTypeAnnotator(new MinLenTypeAnnotator(this), super.createTypeAnnotator());
     }
 
     protected class MinLenTypeAnnotator extends TypeAnnotator {
