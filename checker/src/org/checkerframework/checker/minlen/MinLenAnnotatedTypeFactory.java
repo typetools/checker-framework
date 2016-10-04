@@ -96,11 +96,6 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSameByClass(a1, MinLenUnknown.class)
-                    || AnnotationUtils.areSameByClass(a2, MinLenUnknown.class)) {
-                return createMinLenUnknown();
-            }
-            // Because of the above, neither can be MLU.
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
@@ -110,20 +105,21 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     return a1;
                 }
+            } else {
+                // One of these is bottom. GLB of anything and bottom is the anything.
+                if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
+                    return a2;
+                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                    return a1;
+                }
             }
+
             // This should be unreachable but we want the function to be complete.
-            return createMinLenUnknown();
+            return createMinLen(0);
         }
 
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.areSameByClass(a1, MinLenUnknown.class)) {
-                return a2;
-            }
-            if (AnnotationUtils.areSameByClass(a2, MinLenUnknown.class)) {
-                return a1;
-            }
-            // Because of the above, neither can be MLU.
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
@@ -133,9 +129,17 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 } else {
                     return a2;
                 }
+            } else {
+                // One of these is bottom. LUB of anything and bottom is bottom.
+                if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
+                    return a1;
+                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                    return a2;
+                }
             }
+
             // This should be unreachable but we want the function to be complete.
-            return createMinLenUnknown();
+            return createMinLen(0);
         }
 
         /**
@@ -147,10 +151,10 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameByClass(lhs, MinLenUnknown.class)) {
-                return true;
-            } else if (AnnotationUtils.areSameByClass(rhs, MinLenUnknown.class)) {
+            if (AnnotationUtils.areSameByClass(lhs, MinLenBottom.class)) {
                 return false;
+            } else if (AnnotationUtils.areSameByClass(rhs, MinLenBottom.class)) {
+                return true;
             } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
                 // Implies both are MinLen since that's the only other type.
                 // But we're going to check anyway to make sure they both have
@@ -248,8 +252,8 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
-    private AnnotationMirror createMinLenUnknown() {
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLenUnknown.class);
+    private AnnotationMirror createMinLenBottom() {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLenBottom.class);
         return builder.build();
     }
 }

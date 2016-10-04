@@ -2,7 +2,7 @@ package org.checkerframework.checker.minlen.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.*;
 
 /**
  * This type annotation indicates that an expression's value is
@@ -10,7 +10,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  *
  */
-@SubtypeOf(MinLenUnknown.class)
+@DefaultQualifierInHierarchy
+@SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface MinLen {
     /** The minimum number of elements in this array. */
