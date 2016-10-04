@@ -14,6 +14,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -25,6 +26,7 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -43,6 +45,12 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super(checker);
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         this.postInit();
+    }
+
+    @Override
+    protected void addCheckedCodeDefaults(QualifierDefaults defaults) {
+        AnnotationMirror minLen0 = createMinLen(0);
+        defaults.addCheckedCodeDefault(minLen0, TypeUseLocation.OTHERWISE);
     }
 
     /**

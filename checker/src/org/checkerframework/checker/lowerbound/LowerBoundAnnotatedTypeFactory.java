@@ -10,6 +10,7 @@ import com.sun.source.tree.UnaryTree;
 import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
 import org.checkerframework.checker.lowerbound.qual.LowerBoundUnknown;
 import org.checkerframework.checker.lowerbound.qual.NonNegative;
@@ -28,7 +29,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
-
+import org.checkerframework.javacutil.InternalUtils;
 /**
  *  Implements the introduction rules for the Lower Bound Checker.
  *  <pre>
@@ -236,7 +237,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            if (tree.getIdentifier().contentEquals("length")) {
+            if (tree.getIdentifier().contentEquals("length")
+                    && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
                 // We only care about fields named "length".
                 // Next, we check if the MinLen checker knows anything about the receiver
                 // object. If it's not an array, the MinLen checker won't know anything,
