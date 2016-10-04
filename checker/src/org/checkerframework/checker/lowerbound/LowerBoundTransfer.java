@@ -220,6 +220,14 @@ public class LowerBoundTransfer extends CFTransfer {
     }
 
     @Override
+    protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
+       TransferResult<CFValue, CFStore> in, Node firstNode, Node secondNode,	     CFValue firstValue, CFValue secondValue, boolean notEqualTo) {
+	// FIXME: move logic from visitEqualTo and visitNotEqualTo to here.
+	// Eliminate the overrides of those methods. See Suzanne's email.
+	return in;
+    }
+    
+    @Override
     public TransferResult<CFValue, CFStore> visitEqualTo(
             EqualToNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitEqualTo(node, in);
