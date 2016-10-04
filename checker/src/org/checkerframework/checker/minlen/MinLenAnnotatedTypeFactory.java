@@ -241,11 +241,10 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             return super.visitNewArray(tree, type);
         }
-        
+
         @Override
-        public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type){
-            System.out.println(tree);
-            System.out.println(tree.getIdentifier());
+        public Void visitNewClass(NewClassTree tree, AnnotatedTypeMirror type) {
+            type.addAnnotation(createMinLen(0));
             return super.visitNewClass(tree, type);
         }
     }

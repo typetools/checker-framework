@@ -1,3 +1,4 @@
+import java.util.*;
 import org.checkerframework.checker.minlen.qual.*;
 
 class ArrayIntro {
@@ -18,13 +19,14 @@ class ArrayIntro {
         int /*@MinLen(16)*/[] arr5 = new int[a];
     }
 
-    void listToArray(@MinLen(10) List<String> arg) {
-        Object @MinLen(10) [] a1 = arg.toArray();
-        String @MinLen(10) [] a2 = arg.toArray(new String[0]);
-    }
+    /*
+        void listToArray(@MinLen(10) List<String> arg) {
+            Object @MinLen(10) [] a1 = arg.toArray();
+            String @MinLen(10) [] a2 = arg.toArray(new String[0]);
+        }
 
-    void arrayToList(String @MinLen(10) [] arg) {
-        @MinLen(10)
-        List<String> lst = Arrays.asList(arg);
-    }
+        void arrayToList(String @MinLen(10) [] arg) {
+            @MinLen(10) List<String> lst = Arrays.asList(arg);
+        }
+    */
 }
