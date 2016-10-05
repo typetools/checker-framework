@@ -28,7 +28,9 @@ script:
      export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
      git clone --quiet -b $TRAVIS_BRANCH --depth 3 $REMOTE_ORIGIN_URL checker-framework &&
      cd checker-framework &&
-     if [ $TRAVIS_EVENT_TYPE = push  -a  $TRAVIS_PULL_REQUEST = true ] ; then
+     echo Travis event type: $TRAVIS_EVENT_TYPE &&
+     echo Travis pull request: $TRAVIS_PULL_REQUEST &&
+     if [ $TRAVIS_EVENT_TYPE = push  -a  $TRAVIS_PULL_REQUEST = false ] ; then
        git config user.email noone@cares.com
        git config user.name Noone Cares
        git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git ;
@@ -43,6 +45,7 @@ after_script:
       declare exitCode;
       curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | node
       exitCode=$?
+      echo "exitCode=$exitCode TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
 
       if [ "$exitCode" -eq 0 ]; then
         if [[ ($TRAVIS_BRANCH == master) &&

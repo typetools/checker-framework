@@ -2903,7 +2903,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns true if the element is from byte code
+     * Returns true if the element is from bytecode
      * and the if the element did not appear in a stub file
      * (Currently only works for methods, constructors, and fields)
      */
