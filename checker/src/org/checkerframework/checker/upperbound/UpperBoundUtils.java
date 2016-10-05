@@ -44,8 +44,7 @@ public class UpperBoundUtils {
      */
     public static boolean hasValueMethod(AnnotationMirror anno) {
         boolean fLTL = AnnotationUtils.areSameByClass(anno, LessThanLength.class);
-        boolean fEL = AnnotationUtils.areSameByClass(anno, EqualToLength.class);
         boolean fLTEL = AnnotationUtils.areSameByClass(anno, LessThanOrEqualToLength.class);
-        return fLTL || fEL || fLTEL;
+        return fLTL || fLTEL;
     }
 }

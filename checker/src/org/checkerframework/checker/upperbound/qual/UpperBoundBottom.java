@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.*;
  *  A bottom type for the Upper Bound type system.
  *
  *  */
-@SubtypeOf({LessThanLength.class, EqualToLength.class})
+@SubtypeOf(LessThanLength.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface UpperBoundBottom {}

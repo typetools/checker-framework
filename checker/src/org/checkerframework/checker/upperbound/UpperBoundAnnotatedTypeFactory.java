@@ -148,8 +148,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private static AnnotationMirror createAnnotation(String name, String[] names) {
         if (name.equals("LessThanLength")) {
             return createLessThanLengthAnnotation(names);
-        } else if (name.equals("EqualToLength")) {
-            return createEqualToLengthAnnotation(names);
         } else if (name.equals("LessThanOrEqualToLength")) {
             return createLessThanOrEqualToLengthAnnotation(names);
         } else {
@@ -166,17 +164,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     static AnnotationMirror createLessThanLengthAnnotation(String name) {
         String[] names = {name};
         return createLessThanLengthAnnotation(names);
-    }
-
-    static AnnotationMirror createEqualToLengthAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, EqualToLength.class);
-        builder.setValue("value", names);
-        return builder.build();
-    }
-
-    static AnnotationMirror createEqualToLengthAnnotation(String name) {
-        String[] names = {name};
-        return createEqualToLengthAnnotation(names);
     }
 
     static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String[] names) {
@@ -398,7 +385,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             if (val < 0) {
                 if (nonLiteralType.hasAnnotation(LessThanLength.class)
-                        || nonLiteralType.hasAnnotation(EqualToLength.class)
                         || nonLiteralType.hasAnnotation(LessThanOrEqualToLength.class)) {
 
                     String[] names =
@@ -469,22 +455,22 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 addAnnotationForLiteralPlus(-1 * maybeValRight, leftType, type);
                 return;
             }
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-            if (rightType.hasAnnotation(EqualToLength.class)) {
-                if (leftType.hasAnnotation(EqualToLength.class)
-                        || leftType.hasAnnotation(LessThanLength.class)) {
-                    String[] names =
-                            UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
-                    type.replaceAnnotation(createLessThanLengthAnnotation(names));
-                    return;
-                }
-                if (leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
-                    String[] names =
-                            UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
-                    type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
-                    return;
-                }
-            }
+            // AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+            // if (rightType.hasAnnotation(EqualToLength.class)) {
+            //     if (leftType.hasAnnotation(EqualToLength.class)
+            //             || leftType.hasAnnotation(LessThanLength.class)) {
+            //         String[] names =
+            //                 UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
+            //         type.replaceAnnotation(createLessThanLengthAnnotation(names));
+            //         return;
+            //     }
+            //     if (leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
+            //         String[] names =
+            //                 UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
+            //         type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+            //         return;
+            //     }
+            // }
             type.addAnnotation(UNKNOWN);
             return;
         }
