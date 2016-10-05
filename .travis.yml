@@ -44,6 +44,10 @@ after_script:
   - |
       declare exitCode;
 
+      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js
+
+      echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
+
       node --version
 
       curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | node
