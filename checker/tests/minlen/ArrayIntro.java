@@ -30,6 +30,7 @@ class ArrayIntro {
     }
 
     void arrayToList(String @MinLen(10) [] arg) {
+        //:: error: (assignment.type.incompatible)
         @MinLen(10) List<String> lst = Arrays.asList(arg);
     }
 }
