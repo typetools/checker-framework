@@ -1,6 +1,5 @@
 // Test case for Issue 906
 // https://github.com/typetools/checker-framework/issues/906
-// @skip-test
 /**
  * @author Michael Grafl
  */
