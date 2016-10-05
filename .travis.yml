@@ -46,19 +46,16 @@ after_script:
 
       curl -v https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js
       exitCode=$?
-      echo "exitCode=$exitCode"
+      echo "exitCode (curl -v) =$exitCode"
 
       echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
 
+      which node
       node --version
       exitCode=$?
-      echo "exitCode=$exitCode"
+      echo "exitCode (node --version)=$exitCode"
 
       curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | node
-      exitCode=$?
-      echo "exitCode=$exitCode TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
-
-      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | node
       exitCode=$?
       echo "exitCode=$exitCode TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
 
