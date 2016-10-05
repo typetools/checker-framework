@@ -44,6 +44,8 @@ after_script:
   - |
       declare exitCode;
 
+      node --version
+
       curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | node
       exitCode=$?
       echo "exitCode=$exitCode TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
