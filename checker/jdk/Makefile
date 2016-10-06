@@ -62,15 +62,12 @@ annotated/%.class:
 
 %.classes:
 	cd $*; JDKDIR=$* $(MAKE) classes
-	echo "Finished 'make classes' in $*"
 
 %.jaifs:
 	cd $*; $(MAKE) jaifs
-	echo "Finished 'make jaifs' in $*"
 
 %.annotated:
 	cd $*; $(MAKE) annotated
-	echo "Finished 'make annotated' in $*"
 
 TAGS: tags
 tags:
