@@ -416,4 +416,16 @@ public class InternalUtils {
     public static TypeElement getTypeElement(TypeMirror type) {
         return (TypeElement) ((Type) type).tsym;
     }
+
+    /**
+     * Obtain the class loader for {@code clazz}, if that is not available then the system class loader
+     * will be returned
+     * @param clazz
+     * @return the class loader used to {@code clazz}, or the system
+     *         class loader, or null if both are unavailable
+     */
+    public static ClassLoader getClassLoaderForClass(Class<? extends Object> clazz) {
+        ClassLoader classLoader = clazz.getClassLoader();
+        return classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader;
+    }
 }

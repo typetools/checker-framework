@@ -28,6 +28,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -424,19 +425,7 @@ public class AnnotationClassLoader {
      *         classloader, or null if both are unavailable
      */
     private final /*@Nullable*/ ClassLoader getAppClassLoader() {
-        ClassLoader applicationClassLoader = checker.getClass().getClassLoader();
-
-        // see if we can access the application classloader
-        if (applicationClassLoader == null) {
-            // if the application classloader for the checker isn't available,
-            // then try to obtain the System application classloader
-            applicationClassLoader = ClassLoader.getSystemClassLoader();
-
-            // Debug use:
-            // processingEnv.getMessager().printMessage(Kind.NOTE, "Using System application class loader!");
-        }
-
-        return applicationClassLoader;
+        return InternalUtils.getClassLoaderForClass(checker.getClass());
     }
 
     /**
@@ -589,7 +578,7 @@ public class AnnotationClassLoader {
             final String annoName) {
         try {
             final Class<? extends Annotation> annoClass =
-                    Class.forName(annoName).asSubclass(Annotation.class);
+                    Class.forName(annoName, true, getAppClassLoader()).asSubclass(Annotation.class);
             return annoClass;
         } catch (ClassNotFoundException e) {
             checker.userErrorAbort(
