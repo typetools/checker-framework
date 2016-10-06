@@ -74,8 +74,9 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   (cd ../checker-framework-inference && gradle dist && date && ant -f tests.xml run-tests)
 
   # sparta: 1 minute, but the command is "true"!
-  (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
-  (cd ../sparta && ant jar all-tests)
+  # TODO: requires Android installation
+  # (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
+  # (cd ../sparta && ant jar all-tests)
 fi
 
 if [[ "${GROUP}" == "plume-lib-typecheck" || "${GROUP}" == "all" ]]; then
