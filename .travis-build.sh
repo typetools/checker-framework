@@ -66,7 +66,8 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   (cd ../checker-framework-inference && gradle dist && ant -f tests.xml run-tests)
 
   # sparta: 1 minute, but the command is "true"!
-  # TODO: requires Android installation
+  # TODO: requires Android installation (and at one time, it caused weird
+  # Travis hangs if enabled without Android installation).
   # (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
   # (cd ../sparta && ant jar all-tests)
 fi
