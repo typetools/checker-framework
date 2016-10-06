@@ -50,7 +50,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## downstream tests:  projects that depend on the the Checker Framework.
   ## These are here so they can be run by pull requests.  (Pull requests
   ## currently don't trigger downstream jobs.)
-  ## Not done in the main "downstream" job:
+  ## Not done in the main "downstream" job, but in its own job to avoid timeouts:
   ##  * plume-lib-typecheck (takes 30 minutes)
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
