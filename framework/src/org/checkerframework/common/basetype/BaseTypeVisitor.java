@@ -618,10 +618,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // check anything
                 } else {
                     CFAbstractValue<?> value = exitStore.getValue(expr);
-                    AnnotationMirror inferredAnno =
-                            value == null
-                                    ? null
-                                    : value.getType().getAnnotationInHierarchy(annotation);
+                    AnnotationMirror inferredAnno = null;
+                    if (value != null) {
+                        QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                        Set<AnnotationMirror> annos = value.getAnnotations();
+                        inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+                    }
                     if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
                         checker.report(
                                 Result.failure(
@@ -774,8 +776,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!(retVal == null || retVal == result)) {
                 continue;
             }
-            AnnotationMirror inferredAnno =
-                    value == null ? null : value.getType().getAnnotationInHierarchy(annotation);
+            AnnotationMirror inferredAnno = null;
+            if (value != null) {
+                QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                Set<AnnotationMirror> annos = value.getAnnotations();
+                inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+            }
+
             if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
                 checker.report(
                         Result.failure(
@@ -1061,11 +1068,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 CFAbstractValue<?> value = store.getValue(expr);
 
                 AnnotationMirror inferredAnno = null;
-
                 if (value != null) {
-                    inferredAnno = value.getType().getAnnotationInHierarchy(anno);
+                    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                    Set<AnnotationMirror> annos = value.getAnnotations();
+                    inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
                 }
-
                 if (!checkContract(expr, anno, inferredAnno, store)) {
                     checker.report(
                             Result.failure(
@@ -1422,7 +1429,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** TODO: something similar to visitReturn should be done.
+    /* TODO: something similar to visitReturn should be done.
      * public Void visitThrow(ThrowTree node, Void p) {
      * return super.visitThrow(node, p);
      * }
@@ -2900,18 +2907,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         private boolean checkParameters() {
-            boolean result = true;
-            // Check parameter values. (TODO: FIXME varargs)
             List<AnnotatedTypeMirror> overriderParams = overrider.getParameterTypes();
             List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
 
-            // The functional interface of an unbound member reference has an extra parameter (the receiver).
-            if (methodReference
-                    && ((JCTree.JCMemberReference) overriderTree)
-                            .hasKind(JCTree.JCMemberReference.ReferenceKind.UNBOUND)) {
-                overriddenParams = new ArrayList<>(overriddenParams);
-                overriddenParams.remove(0);
+            // Fix up method reference parameters.
+            // See https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.1
+            if (methodReference) {
+                // The functional interface of an unbound member reference has an extra parameter (the receiver).
+                if (((JCTree.JCMemberReference) overriderTree)
+                        .hasKind(JCTree.JCMemberReference.ReferenceKind.UNBOUND)) {
+                    overriddenParams = new ArrayList<>(overriddenParams);
+                    overriddenParams.remove(0);
+                }
+                // Deal with varargs
+                if (overrider.isVarArgs() && !overridden.isVarArgs()) {
+                    overriderParams =
+                            AnnotatedTypes.expandVarArgsFromTypes(overrider, overriddenParams);
+                }
             }
+
+            boolean result = true;
             for (int i = 0; i < overriderParams.size(); ++i) {
                 boolean success =
                         atypeFactory

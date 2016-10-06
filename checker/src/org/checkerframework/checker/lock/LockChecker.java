@@ -18,8 +18,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 // Would it be a useful feature for the Lock Checker to warn about missing unlock calls when there is a call to .lock() in a method?
 // Or is this a common pattern to lock in one method and unlock in a different one?
 
-// Issue an error if @GuardSatisfied is written on a location other than a primary annotation.
-
 /**
  * @checker_framework.manual #lock-checker Lock Checker
  */

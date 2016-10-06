@@ -544,7 +544,8 @@ public class StubParser {
                         : "StubParser: could not find superclass "
                                 + superType
                                 + " from type "
-                                + type;
+                                + type
+                                + "\nStub file does not match bytecode";
                 if (foundType != null) {
                     annotate(foundType, superType);
                 }
@@ -563,7 +564,8 @@ public class StubParser {
                         : "StubParser: could not find superinterface "
                                 + superType
                                 + " from type "
-                                + type;
+                                + type
+                                + "\nStub file does not match bytecode";
                 if (foundType != null) {
                     annotate(foundType, superType);
                 }

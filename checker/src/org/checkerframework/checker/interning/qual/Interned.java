@@ -6,7 +6,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.checker.interning.InterningChecker;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
@@ -27,9 +26,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * annotated.
  * <p>
  *
- * This annotation is associated with the {@link InterningChecker}.
+ * This annotation is associated with the {@link org.checkerframework.checker.interning.InterningChecker}.
  *
- * @see InterningChecker
+ * @see org.checkerframework.checker.interning.InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */
 @SubtypeOf(UnknownInterned.class)

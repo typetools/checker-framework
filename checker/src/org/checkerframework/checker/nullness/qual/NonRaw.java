@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.nullness.NullnessRawnessChecker;
 import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -15,7 +14,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * This type qualifier belongs to the rawness initialization tracking
  * type-system. This type-system is not used on its own, but in conjunction with
  * some other type-system that wants to ensure safe initialization. For
- * instance, {@link NullnessRawnessChecker} uses rawness to track initialization
+ * instance, {@link org.checkerframework.checker.nullness.NullnessRawnessChecker} uses rawness to track initialization
  * of {@link NonNull} fields.
  *
  * <p>

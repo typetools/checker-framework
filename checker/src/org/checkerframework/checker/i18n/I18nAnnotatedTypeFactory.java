@@ -36,8 +36,7 @@ public class I18nAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(super.createTreeAnnotator(), new I18nTreeAnnotator(this));
     }
 
-    /** Do not propagate types through binary/compound operations.
-     */
+    /** Do not propagate types through binary/compound operations. */
     private class I18nTreeAnnotator extends TreeAnnotator {
         private final AnnotationMirror LOCALIZED;
 

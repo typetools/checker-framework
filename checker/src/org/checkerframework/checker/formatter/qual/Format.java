@@ -18,8 +18,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *
  * <blockquote><pre>
  * {@literal @}Format({ConversionCategory.GENERAL, ConversionCategory.INT})
- * String f = "String '%s' has length %d";
- * String.format(f, "Example", 7);
+ *  String f = "String '%s' has length %d";
+ *  String.format(f, "Example", 7);
  * </pre></blockquote>
  *
  * The annotation indicates that the format string requires any Object as the

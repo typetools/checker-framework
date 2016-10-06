@@ -47,8 +47,6 @@ public class AnnotationUtils {
     }
 
     // TODO: hack to clear out static state.
-    // {@link org.checkerframework.qualframework.util.QualifierContext} should
-    // handle instantiation of utility classes.
     public static void clear() {
         annotationsFromNames.clear();
         annotationMirrorNames.clear();
@@ -322,12 +320,23 @@ public class AnnotationUtils {
      */
     public static boolean containsSameByClass(
             Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
+        return getAnnotationByClass(c, anno) != null;
+    }
+
+    /**
+     * Returns the AnnotationMirror in {@code c} that has the same class as {@code anno}.
+     *
+     * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
+     * to areSameByClass; otherwise, {@code null}
+     */
+    public static AnnotationMirror getAnnotationByClass(
+            Collection<? extends AnnotationMirror> c, Class<? extends Annotation> anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameByClass(an, anno)) {
-                return true;
+                return an;
             }
         }
-        return false;
+        return null;
     }
 
     /**

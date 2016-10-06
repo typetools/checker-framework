@@ -32,6 +32,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Types;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -260,7 +261,7 @@ public abstract class AnnotatedTypeMirror {
         }
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
-            AnnotationMirror anno = qualHier.findCorrespondingAnnotation(aliased, annotations);
+            AnnotationMirror anno = qualHier.findAnnotationInSameHierarchy(annotations, aliased);
             if (anno != null) {
                 return anno;
             }
@@ -287,7 +288,7 @@ public abstract class AnnotatedTypeMirror {
         if (atypeFactory.isSupportedQualifier(aliased)) {
             QualifierHierarchy qualHier = this.atypeFactory.getQualifierHierarchy();
             AnnotationMirror anno =
-                    qualHier.findCorrespondingAnnotation(aliased, getEffectiveAnnotations());
+                    qualHier.findAnnotationInSameHierarchy(getEffectiveAnnotations(), aliased);
             if (anno != null) {
                 return anno;
             }
@@ -616,7 +617,9 @@ public abstract class AnnotatedTypeMirror {
      * @param a the annotation to add
      */
     public void replaceAnnotation(AnnotationMirror a) {
-        this.removeAnnotationInHierarchy(a);
+        if (!AnnotationUtils.areSameByClass(a, PolyAll.class)) {
+            this.removeAnnotationInHierarchy(a);
+        }
         this.addAnnotation(a);
     }
 
@@ -663,8 +666,7 @@ public abstract class AnnotatedTypeMirror {
      */
     public void replaceAnnotations(Iterable<? extends AnnotationMirror> replAnnos) {
         for (AnnotationMirror a : replAnnos) {
-            this.removeAnnotationInHierarchy(a);
-            this.addAnnotation(a);
+            this.replaceAnnotation(a);
         }
     }
 

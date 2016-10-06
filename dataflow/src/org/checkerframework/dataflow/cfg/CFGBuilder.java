@@ -2600,16 +2600,24 @@ public class CFGBuilder {
          *            the ClassTree enclosing the field access
          * @return the receiver of the field access
          */
-        private Node getReceiver(Tree tree, ClassTree classTree) {
+        private Node getReceiver(ExpressionTree tree, ClassTree classTree) {
             assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
             if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
                 return scan(mtree.getExpression(), null);
             } else {
-                TypeMirror classType = InternalUtils.typeOf(classTree);
-                Node node = new ImplicitThisLiteralNode(classType);
-                extendWithNode(node);
-                return node;
+                Element ele = TreeUtils.elementFromUse(tree);
+                TypeElement declaringClass = ElementUtils.enclosingClass(ele);
+                TypeMirror type = ElementUtils.getType(declaringClass);
+                if (ElementUtils.isStatic(ele)) {
+                    Node node = new ClassNameNode(type, declaringClass);
+                    extendWithNode(node);
+                    return node;
+                } else {
+                    Node node = new ImplicitThisLiteralNode(type);
+                    extendWithNode(node);
+                    return node;
+                }
             }
         }
 
@@ -3913,6 +3921,9 @@ public class CFGBuilder {
 
             // We ignore any class body because its methods should
             // be visited separately.
+            // TODO: For anonymous classes we want to propagate the current store
+            // to the anonymous class.
+            // See Issues 266, 811.
 
             // Convert constructor arguments
             ExecutableElement constructor = TreeUtils.elementFromUse(tree);
@@ -3921,6 +3932,8 @@ public class CFGBuilder {
 
             List<Node> arguments = convertCallArguments(constructor, actualExprs);
 
+            // TODO: for anonymous classes, don't use the identifier alone.
+            // See Issue 890.
             Node constructorNode = scan(tree.getIdentifier(), p);
 
             Node node = new ObjectCreationNode(tree, constructorNode, arguments);

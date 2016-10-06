@@ -1,5 +1,8 @@
 package org.checkerframework.checker.nullness;
 
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -18,7 +21,9 @@ public class NullnessValue extends CFAbstractValue<NullnessValue> {
     protected boolean isPolyNullNull;
 
     public NullnessValue(
-            CFAbstractAnalysis<NullnessValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        super(analysis, type);
+            CFAbstractAnalysis<NullnessValue, ?, ?> analysis,
+            Set<AnnotationMirror> annotations,
+            TypeMirror underlyingType) {
+        super(analysis, annotations, underlyingType);
     }
 }

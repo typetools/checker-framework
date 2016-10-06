@@ -204,7 +204,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected TypeArgumentInference typeArgumentInference;
 
-    /** To cache the supported type qualifiers.
+    /**
+     * To cache the supported type qualifiers.
      * call {@link #getSupportedTypeQualifiers()} instead of using this field
      * directly, as it may not have been initialized.
      */
@@ -264,13 +265,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
 
-    /** Annotation added to every method defined in a class file
+    /**
+     * Annotation added to every method defined in a class file
      * that is not in a stub file.
      */
     private final AnnotationMirror fromByteCode;
 
-    /** Annotation added to every method defined in a stub file.
-     */
+    /** Annotation added to every method defined in a stub file. */
     private final AnnotationMirror fromStubFile;
 
     /**
@@ -293,21 +294,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Should results be cached?
      * This means that ATM.deepCopy() will be called.
      * ATM.deepCopy() used to (and perhaps still does) side effect the ATM being copied.
-     * So setting this to false is not equivalent to setting shouldReadCache to false. */
+     * So setting this to false is not equivalent to setting shouldReadCache to false.
+     */
     public boolean shouldCache;
 
     /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
     private final static int DEFAULT_CACHE_SIZE = 300;
 
     /** Mapping from a Tree to its annotated type; implicits have been applied. */
-    private final Map<Tree, AnnotatedTypeMirror> treeCache;
+    private final Map<Tree, AnnotatedTypeMirror> classAndMethodTreeCache;
 
-    /** Mapping from a Tree to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
+    /**
+     * Mapping from a Tree to its annotated type; before implicits are applied,
+     * just what the programmer wrote.
+     */
     protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache;
 
-    /** Mapping from an Element to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
+    /**
+     * Mapping from an Element to its annotated type; before implicits are applied,
+     * just what the programmer wrote.
+     */
     private final Map<Element, AnnotatedTypeMirror> elementCache;
 
     /** Mapping from an Element to the source Tree of the declaration. */
@@ -349,12 +355,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.shouldCache = !checker.hasOption("atfDoNotCache");
         if (shouldCache) {
             int cacheSize = getCacheSize();
-            this.treeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.classAndMethodTreeCache = CollectionUtils.createLRUCache(cacheSize);
             this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
         } else {
-            this.treeCache = null;
+            this.classAndMethodTreeCache = null;
             this.fromTreeCache = null;
             this.elementCache = null;
             this.elementToTreeCache = null;
@@ -374,11 +380,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Issue an error and abort if any of the support qualifiers have @Target meta-annotations
+     * Issue an error and abort if any of the support qualifiers has a @Target meta-annotation
      * that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
      */
     private void checkSupportedQuals() {
+        boolean hasPolyAll = false;
+        boolean hasPolymorphicQualifier = false;
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
+            // Check @Target values
             ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
             List<ElementType> otherElementTypes = new ArrayList<>();
             for (ElementType element : elements) {
@@ -407,6 +416,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 buf.append(".");
                 ErrorReporter.errorAbort(buf.toString());
             }
+            // Check for PolyAll
+            if (annotationClass.equals(PolyAll.class)) {
+                hasPolyAll = true;
+            } else if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
+                hasPolymorphicQualifier = true;
+            }
+        }
+
+        if (hasPolyAll && !hasPolymorphicQualifier) {
+            ErrorReporter.errorAbort(
+                    "Checker added @PolyAll to list of supported qualifiers, but "
+                            + "the checker does not have a polymorphic qualifier.  Either remove "
+                            + "@PolyAll from the list of supported qualifiers or add a polymorphic "
+                            + "qualifier.");
         }
     }
 
@@ -498,15 +521,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
-
-        // There is no need to clear the following caches, they
-        // are all limited by CACHE_SIZE.
-        /*
-        treeCache.clear();
-        fromTreeCache.clear();
-        elementCache.clear();
+        // Clear the caches with trees because once the compilation unit changes,
+        // the trees may be modified and lose type arguments.
         elementToTreeCache.clear();
-        */
+        fromTreeCache.clear();
+        classAndMethodTreeCache.clear();
+
+        // There is no need to clear the following cache, it is limited by cache size and it
+        // contents won't change between compilation units.
+        // elementCache.clear();
     }
 
     @SideEffectFree
@@ -515,14 +538,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getClass().getSimpleName() + "#" + uid;
     }
 
-    /** Factory method to easily change what Factory is used to
+    /**
+     * Factory method to easily change what Factory is used to
      * create a QualifierHierarchy.
      */
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
-    /** Factory method to easily change what QualifierHierarchy is
+    /**
+     * Factory method to easily change what QualifierHierarchy is
      * created.
      * Needs to be public only because the GraphFactory must be able to call this method.
      * No external use of this method is necessary.
@@ -780,14 +805,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *         none
      */
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // by default support PolyAll
         return getBundledTypeQualifiersWithPolyAll();
     }
 
     /**
      * Loads all annotations contained in the qual directory of a checker via
-     * reflection, and adds {@link PolyAll} and an explicit array of annotations
-     * to the set of annotation classes.
+     * reflection, and adds {@link PolyAll}, if a polymorphic type qualifier exists,
+     * and an explicit array of annotations to the set of annotation classes.
      * <p>
      * This method can be called in the overridden versions of
      * {@link #createSupportedTypeQualifiers()} in each checker.
@@ -804,7 +828,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<? extends Annotation>... explicitlyListedAnnotations) {
         Set<Class<? extends Annotation>> annotations =
                 loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
-        annotations.add(PolyAll.class);
+        boolean addPolyAll = false;
+        for (Class<? extends Annotation> annotationClass : annotations) {
+            if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
+                addPolyAll = true;
+                break;
+            }
+        }
+        if (addPolyAll) {
+            annotations.add(PolyAll.class);
+        }
         return annotations;
     }
 
@@ -968,8 +1001,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
             return null; // dead code
         }
-        if (shouldCache && treeCache.containsKey(tree)) {
-            return treeCache.get(tree).deepCopy();
+        if (shouldCache && classAndMethodTreeCache.containsKey(tree)) {
+            return classAndMethodTreeCache.get(tree).deepCopy();
         }
 
         AnnotatedTypeMirror type;
@@ -992,7 +1025,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (TreeUtils.isClassTree(tree) || tree.getKind() == Tree.Kind.METHOD) {
             // Don't cache VARIABLE
             if (shouldCache) {
-                treeCache.put(tree, type.deepCopy());
+                classAndMethodTreeCache.put(tree, type.deepCopy());
             }
         } else {
             // No caching otherwise
@@ -2870,7 +2903,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns true if the element is from byte code
+     * Returns true if the element is from bytecode
      * and the if the element did not appear in a stub file
      * (Currently only works for methods, constructors, and fields)
      */
@@ -3511,26 +3544,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return awt.getUnderlyingType().getSuperBound() == null;
     }
 
-    /** Accessor for the element utilities.
-     */
+    /** Accessor for the element utilities. */
     public Elements getElementUtils() {
         return this.elements;
     }
 
-    /** Accessor for the tree utilities.
-     */
+    /** Accessor for the tree utilities. */
     public Trees getTreeUtils() {
         return this.trees;
     }
 
-    /** Accessor for the processing environment.
-     */
+    /** Accessor for the processing environment. */
     public ProcessingEnvironment getProcessingEnv() {
         return this.processingEnv;
     }
 
-    /** Accessor for the {@link CFContext}.
-     */
+    /** Accessor for the {@link CFContext}. */
     public CFContext getContext() {
         return checker;
     }
