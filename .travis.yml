@@ -30,7 +30,7 @@ before_install:
   - sudo apt-get update
   - sudo apt-get remove docker-engine -yq
   - sudo apt-get install docker-engine=$DOCKER_VERSION -yq --no-install-suggests --no-install-recommends --force-yes -o Dpkg::Options::="--force-confnew"
-  - sudo apt-get install -y haveged
+  - sudo apt-get install -y haveged imagemagick
   - sudo service haveged start
 
 before_script:
