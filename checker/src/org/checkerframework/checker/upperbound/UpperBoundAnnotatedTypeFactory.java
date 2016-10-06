@@ -3,6 +3,7 @@ package org.checkerframework.checker.upperbound;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.minlen.qual.*;
@@ -33,6 +35,7 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Implements the introduction rules for the upper bound checker.
@@ -148,8 +151,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     private static AnnotationMirror createAnnotation(String name, String[] names) {
         if (name.equals("LessThanLength")) {
             return createLessThanLengthAnnotation(names);
-        } else if (name.equals("EqualToLength")) {
-            return createEqualToLengthAnnotation(names);
         } else if (name.equals("LessThanOrEqualToLength")) {
             return createLessThanOrEqualToLengthAnnotation(names);
         } else {
@@ -168,17 +169,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return createLessThanLengthAnnotation(names);
     }
 
-    static AnnotationMirror createEqualToLengthAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, EqualToLength.class);
-        builder.setValue("value", names);
-        return builder.build();
-    }
-
-    static AnnotationMirror createEqualToLengthAnnotation(String name) {
-        String[] names = {name};
-        return createEqualToLengthAnnotation(names);
-    }
-
     static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String[] names) {
         AnnotationBuilder builder = new AnnotationBuilder(env, LessThanOrEqualToLength.class);
         builder.setValue("value", names);
@@ -193,6 +183,23 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new UpperBoundQualifierHierarchy(factory);
+    }
+
+    private String[] getCombinedNames(AnnotationMirror a1, AnnotationMirror a2) {
+        List<String> a1Names =
+                AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+        List<String> a2Names =
+                AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+        HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
+
+        newValues.addAll(a1Names);
+        newValues.addAll(a2Names);
+        Object[] values = newValues.toArray();
+        String[] names = new String[values.length];
+        for (int i = 0; i < names.length; i++) {
+            names[i] = values[i].toString();
+        }
+        return names;
     }
 
     /**
@@ -222,20 +229,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                    is LTEL of every array that is in either - since LTEL
                    is the bottom type.
                 */
-                List<String> a1Names =
-                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
-                List<String> a2Names =
-                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
-                HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
-
-                newValues.addAll(a1Names);
-                newValues.addAll(a2Names);
-                Object[] values = newValues.toArray();
-                String[] names = new String[values.length];
-                for (int i = 0; i < names.length; i++) {
-                    names[i] = values[i].toString();
-                }
-
+                String[] names = getCombinedNames(a1, a2);
                 return createLessThanOrEqualToLengthAnnotation(names);
             }
         }
@@ -259,20 +253,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             // If both are the same type, determine the type and merge:
             else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-                List<String> a1Values =
-                        AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
-                List<String> a2Values =
-                        AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
-                HashSet<String> newValues = new HashSet<String>(a1Values.size() + a2Values.size());
 
-                newValues.addAll(a1Values);
-                newValues.addAll(a2Values);
-                Object[] values = newValues.toArray();
-                String[] names = new String[values.length];
-                for (int i = 0; i < names.length; i++) {
-                    names[i] = values[i].toString();
-                }
-
+                String[] names = getCombinedNames(a1, a2);
                 return createAnnotation(a1.getAnnotationType().toString(), names);
             }
             // Annotations are in this hierarchy, but they are not the same.
@@ -361,6 +343,48 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             super(factory);
         }
 
+        /**
+         *  This exists specifically for Math.min.
+         *  We need to special case Math.min because it has unusual
+         *  semantics: it can be used to combine annotations for the UBC,
+         *  so it needs to be special cased. Do not special case other
+         *  methods here unless you have a compelling reason to do so.
+         */
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+            ExecutableElement fcnMin =
+                    TreeUtils.getMethod("java.lang.Math", "min", 2, processingEnv);
+            if (TreeUtils.isMethodInvocation(tree, fcnMin, processingEnv)) {
+                AnnotatedTypeMirror leftType = getAnnotatedType(tree.getArguments().get(0));
+                AnnotatedTypeMirror rightType = getAnnotatedType(tree.getArguments().get(1));
+
+                // If either is unknown or bottom, bail. We don't learn anything.
+                if (leftType.hasAnnotation(UpperBoundUnknown.class)
+                        || leftType.hasAnnotation(UpperBoundBottom.class)
+                        || rightType.hasAnnotation(UpperBoundUnknown.class)
+                        || rightType.hasAnnotation(UpperBoundBottom.class)) {
+                    return super.visitMethodInvocation(tree, type);
+                }
+                // Now, both rightType and leftType are either LTL or LTEL.
+                if (leftType.hasAnnotation(LessThanLength.class)
+                        && rightType.hasAnnotation(LessThanLength.class)) {
+                    // Both are LTL -> the result is LTL of the union.
+                    AnnotationMirror leftAnno = leftType.getAnnotationInHierarchy(UNKNOWN);
+                    AnnotationMirror rightAnno = rightType.getAnnotationInHierarchy(UNKNOWN);
+                    String[] names = getCombinedNames(leftAnno, rightAnno);
+                    type.replaceAnnotation(createLessThanLengthAnnotation(names));
+                } else {
+                    // Otherwise, one must be LTEL. This means that
+                    // the result is LTEL of the union of the arrays.
+                    AnnotationMirror leftAnno = leftType.getAnnotationInHierarchy(UNKNOWN);
+                    AnnotationMirror rightAnno = rightType.getAnnotationInHierarchy(UNKNOWN);
+                    String[] names = getCombinedNames(leftAnno, rightAnno);
+                    type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+                }
+            }
+            return super.visitMethodInvocation(tree, type);
+        }
+
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             // A few small rules for addition/subtraction by 0/1, etc.
@@ -398,7 +422,6 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             if (val < 0) {
                 if (nonLiteralType.hasAnnotation(LessThanLength.class)
-                        || nonLiteralType.hasAnnotation(EqualToLength.class)
                         || nonLiteralType.hasAnnotation(LessThanOrEqualToLength.class)) {
 
                     String[] names =
@@ -469,22 +492,26 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 addAnnotationForLiteralPlus(-1 * maybeValRight, leftType, type);
                 return;
             }
-            AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
-            if (rightType.hasAnnotation(EqualToLength.class)) {
-                if (leftType.hasAnnotation(EqualToLength.class)
-                        || leftType.hasAnnotation(LessThanLength.class)) {
-                    String[] names =
-                            UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
-                    type.replaceAnnotation(createLessThanLengthAnnotation(names));
-                    return;
-                }
-                if (leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
-                    String[] names =
-                            UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
-                    type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
-                    return;
-                }
-            }
+            //
+            // I've commented this out because it relies on EqualToLength, which
+            // I'm removing after talking with Joe and Mike.
+            //
+            // AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+            // if (rightType.hasAnnotation(EqualToLength.class)) {
+            //     if (leftType.hasAnnotation(EqualToLength.class)
+            //             || leftType.hasAnnotation(LessThanLength.class)) {
+            //         String[] names =
+            //                 UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
+            //         type.replaceAnnotation(createLessThanLengthAnnotation(names));
+            //         return;
+            //     }
+            //     if (leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
+            //         String[] names =
+            //                 UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
+            //         type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+            //         return;
+            //     }
+            // }
             type.addAnnotation(UNKNOWN);
             return;
         }

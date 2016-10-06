@@ -6,19 +6,10 @@ public class Subtyping {
         @LessThanOrEqualToLength({"arr"}) int a = 1;
         //:: error: (assignment.type.incompatible)
         @LessThanLength({"arr"}) int a1 = 1;
-        //:: error: (assignment.type.incompatible)
-        @EqualToLength({"arr"}) int a2 = 1;
 
         //:: error: (assignment.type.incompatible)
         @LessThanLength({"arr"}) int b = a;
-        //:: error: (assignment.type.incompatible)
-        @EqualToLength({"arr"}) int c = a;
         @UpperBoundUnknown int d = a;
-
-        //:: error: (assignment.type.incompatible)
-        @EqualToLength({"arr"}) int e = a1;
-        //:: error: (assignment.type.incompatible)
-        @LessThanLength({"arr"}) int f = a2;
 
         //:: error: (assignment.type.incompatible)
         @LessThanLength({"arr2"}) int g = a;
