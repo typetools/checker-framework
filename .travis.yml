@@ -1,7 +1,6 @@
 sudo: false
 
-# So the "node" program is installed
-language: javascript
+language: generic
 
 # Alternative to "language: java" which has node installed
 before_install:
