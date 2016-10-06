@@ -6,7 +6,6 @@ language: generic
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq nodejs
-  - nodejs --version
 
 services:
   - docker
@@ -44,28 +43,6 @@ script:
 after_script:
   - |
       declare exitCode;
-
-      curl -v https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js
-      exitCode=$?
-      echo "exitCode (curl -v) =$exitCode"
-
-      echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
-
-      which node
-      node --version
-      exitCode=$?
-      echo "exitCode (node --version)=$exitCode"
-
-      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | node
-      exitCode=$?
-      echo "exitCode=$exitCode TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
-
-      echo "-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-"
-
-      which nodejs
-      nodejs --version
-      exitCode=$?
-      echo "exitCode (nodejs --version)=$exitCode"
 
       curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | nodejs
       exitCode=$?
