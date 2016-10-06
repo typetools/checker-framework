@@ -29,6 +29,8 @@ before_install:
   - sudo apt-get update
   - sudo apt-get remove docker-engine -yq
   - sudo apt-get install docker-engine=$DOCKER_VERSION -yq --no-install-suggests --no-install-recommends --force-yes -o Dpkg::Options::="--force-confnew"
+# Most packages needed by tests should be installed in the Docker image, not
+# here in the .travis.yml file.
 
 before_script:
 - docker pull mdernst/ubuntu-for-cf-$JDKVER
