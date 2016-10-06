@@ -25,12 +25,12 @@ env:
   global:
    - DOCKER_VERSION="1.9.1-0~trusty"
 
+# haveged is a source of randomness; prevents reads of /dev/random from hanging blocked while waiting for more entropy
+
 before_install:
   - sudo apt-get update
   - sudo apt-get remove docker-engine -yq
   - sudo apt-get install docker-engine=$DOCKER_VERSION -yq --no-install-suggests --no-install-recommends --force-yes -o Dpkg::Options::="--force-confnew"
-  - sudo apt-get install -y haveged imagemagick
-  - sudo service haveged start
 
 before_script:
 - docker pull mdernst/ubuntu-for-cf-$JDKVER
