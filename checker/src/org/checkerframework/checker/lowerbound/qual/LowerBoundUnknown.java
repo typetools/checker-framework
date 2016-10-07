@@ -6,10 +6,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * In the Lower Bound Checker's type system, this type represents any
- * variable not known to be an integer greater than or equal to -1.
- * The Lower Bound Checker is a subchecker of the Index
- * Checker, which checks for ArrayIndexOutOfBoundsExceptions.
+ * This type represents any variable whose lower bound is not known.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
