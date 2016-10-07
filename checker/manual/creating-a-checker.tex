@@ -499,12 +499,13 @@ files that the checker reads.
 
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
-by calling the
-\refmethod{framework/util/defaults}{QualifierDefaults}{addCheckedCodeDefault}{-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.TypeUseLocation-}
+by overriding the
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{addCheckedCodeDefaults}{-org.checkerframework.framework.utils.defaults.QualifierDefaults-}
 method.  You may do this even if you have declaratively defined the
-qualifier hierarchy; see the Nullness Checker's implementation for an
-example.
+qualifier hierarchy.
 \end{sloppypar}
+
+If the default qualifier in the type hierarchy requires a value, there are ways for the type system designer to specify a default value both declaratively and procedurally, as well. To do so declaratively, append the string ``default <value>'' where ``<value>'' is the actual value you want to be the default, after the declaration of the value in the qualifier file. For instance, \code{int value() default 0;} would make \code{value} default to zero. Alternatively, the procedural method described above can be used.
 
 \subsection{Relevant Java types\label{relevant-java-types}}
 
@@ -1742,6 +1743,8 @@ following sections:
   Draw a diagram of the type hierarchy.  A textual description of
   the hierarchy is not sufficient; the diagram really helps readers to
   understand the system.
+  The diagram will appear in directory \<checker/manual/figures/>;
+  see its \<README> file for tips.
 
   The Javadoc for the annotations deserves the same care as the manual
   chapter.  Each annotation's Javadoc comment should use the
