@@ -22,16 +22,6 @@ env:
   - JDKVER=jdk8 GROUP=downstream
   - JDKVER=jdk8 GROUP=plume-lib-typecheck
   - JDKVER=jdkany GROUP=misc
-## Experimentally try without installing a special version of Docker.
-##   global:
-##    - DOCKER_VERSION="1.9.1-0~trusty"
-##
-## before_install:
-##   - sudo apt-get update
-##   - sudo apt-get remove docker-engine -yq
-##   - sudo apt-get install docker-engine=$DOCKER_VERSION -yq --no-install-suggests --no-install-recommends --force-yes -o Dpkg::Options::="--force-confnew"
-## # Most packages needed by tests should be installed in the Docker image, not
-## # here in the .travis.yml file.
 
 before_script:
 - docker pull mdernst/ubuntu-for-cf-$JDKVER
