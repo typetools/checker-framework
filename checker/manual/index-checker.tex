@@ -21,9 +21,10 @@ Internally, the Index Checker is composed of three checkers: the Lower
 Bound Checker, which checks whether potential accesses may be too low;
 the Upper Bound Checker, which checks whether potential accesses
 may be too high; and the MinLen Checker, which determines the minimum
-length that any array might be. The first two checkers and their type hierarchies are
-detailed in the remainder of this section; the MinLen checker is used as a
-subchecker by both the Upper Bound Checker and the Lower Bound Checker.
+length that any array might be. The three checkers and their type hierarchies are
+detailed in the remainder of this section. The MinLen checker is used as a
+subchecker by both the Upper Bound Checker and the Lower Bound Checker,
+which run independently.
 
 \section{Running the Index Checker\label{index-running}}
 
@@ -33,6 +34,7 @@ To run the Index Checker, run the command
   javac -processor index \emph{MyJavaFile}.java
 \end{alltt}
 
+This invokes both the Lower Bound Checker and the Upper Bound checker on the target file.
 
 \section{The Lower Bound Checker\label{index-lowerbound}}
 
@@ -52,7 +54,7 @@ about the parameters that are being passed in.
 \item[\refqualclass{checker/lowerbound/qual}{GreaterThanOrEqualToNegativeOne}]
   The value is -1 or greater.
   It may not be used as an array index, because it might be too low.
-\item[\refqualclass{checker/lowerbound/qual}{Lower BoundUnknown}]
+\item[\refqualclass{checker/lowerbound/qual}{LowerBoundUnknown}]
   There is no information about the value.
   It may not be used as an array index, because it might be too low.
   This type is the top type.
@@ -64,6 +66,13 @@ about the parameters that are being passed in.
   \label{fig-lowerbound-types}
 \end{figure}
 
+Internally, the Lower Bound Checker uses both the Constant Value Checker and the MinLen
+Checker. The Constant Value Checker is used to reason about constants, and to assign
+them the appropriate Lower Bound types. The MinLen Checker is used to give correct types
+to calls to \code{arr.length}, where \code{arr} is any array. The Lower Bound checker
+implements a large number of transfer rules. Because there are so many, they are
+not documented here; the code implementing them contains JavaDoc comments that describe
+the rules it implements.
 
 \section{The Upper Bound Checker\label{index-upperbound}}
 
@@ -81,12 +90,12 @@ qualifiers:
 \item[\refqualclasswithparams{checker/upperbound/qual}{LessThanOrEqualToLength}{String[] names}]
   An expression with this type
   has value less than or equal to the length of each array listed in \<names>.
-\item[\refqualclass{checker/upperbound/qual}{Upper BoundUnknown}]
+\item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
   There is no information about the value of an expression with this type.
   It may not be used as an array index, because it might be too high.
   This type is the top type, and should never need to be written by the
   programmer.
-\item[\refqualclass{checker/upperbound/qual}{Upper BoundBottom}]
+\item[\refqualclass{checker/upperbound/qual}{UpperBoundBottom}]
   This is the bottom type for the Upper Bound type system. It should
   never be assigned or written, but is included for completeness.
   \end{description}
@@ -95,4 +104,39 @@ qualifiers:
   \includeimage{upperbound}{7cm}
   \caption{The type hierarchy used by the Upper Bound Checker.}
   \label{fig-upperbound-types}
+\end{figure}
+
+Like the Lower Bound checker, the Upper Bound checker relies on both the Constant
+Value Checker and the MinLen checker. It uses the Constant Value Checker to determine
+precisely the value of particular indexes, and uses the MinLen checker both in the way
+described above (for constant indexes) and to determine when potential indexes should
+be assigned
+\refqualclasswithparams{checker/upperbound/qual}{LessThanLength}{String[] names}] or
+\refqualclasswithparams{checker/upperbound/qual}{LessThanOrEqualToLength}{String[] names}].
+
+
+\section{The MinLen Checker\label{index-upperbound}}
+
+The MinLen Checker assigns types to arrays and other array-like structures
+to indicate their minimum length. It primarily does this by looking at the
+initialization of those types and determining the size they are initialized
+to. It relies on the Constant Value Checker.
+
+The MinLen Checker uses the following type hierarchy:
+
+\begin{description}
+\item[\refqualclasswithparams{checker/minlen/qual}{MinLen}{int value}]
+  An expression with this type represents an array or other sequential structure
+  with at least \code{value} elements. By default, new objects are always
+  assigned \code{@MinLen(0)}, since an arbitrary object has at least 0 elements.
+\item[\refqualclass{checker/minlen/qual}{MinLenBottom}]
+  This is the bottom type for the MinLen type system. It should
+  never be written, but is included for completeness. \code{null} has
+  this type.
+  \end{description}
+
+\begin{figure}
+  \includeimage{minlen}{7cm}
+  \caption{The type hierarchy used by the MinLen Checker.}
+  \label{fig-minlen-types}
 \end{figure}
