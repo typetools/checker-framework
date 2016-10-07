@@ -302,6 +302,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case REMAINDER:
                     addAnnotationForRemainder(left, right, type);
                     break;
+                case AND:
+                    addAnnotationForAnd(left, right, type);
+                    break;
                 default:
                     break;
             }
@@ -656,5 +659,22 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.addAnnotation(UNKNOWN);
             return;
         }
+    }
+
+    /**
+     *  Handles masking.
+     *  Particularly, handles the following cases:
+     *  * & NonNegative &rarr; NonNegative
+     */
+    private void addAnnotationForAnd(
+            ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+        AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+        if (rightType.hasAnnotation(NN)) {
+            type.addAnnotation(NN);
+            return;
+        }
+
+        type.addAnnotation(UNKNOWN);
+        return;
     }
 }
