@@ -16,11 +16,9 @@ env:
   - JDKVER=jdk7 GROUP=junit
   - JDKVER=jdk7 GROUP=nonjunit
   - JDKVER=jdk7 GROUP=downstream
-  - JDKVER=jdk7 GROUP=plume-lib-typecheck
   - JDKVER=jdk8 GROUP=junit
   - JDKVER=jdk8 GROUP=nonjunit
   - JDKVER=jdk8 GROUP=downstream
-  - JDKVER=jdk8 GROUP=plume-lib-typecheck
   - JDKVER=jdkany GROUP=misc
 
 before_script:

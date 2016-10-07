@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Optional argument $1 is one of:
-#   all, junit, nonjunit, downstream, plume-lib-typecheck, misc
+#   all, junit, nonjunit, downstream, misc
 # If it is omitted, this script does everything.
 
 export GROUP=$1
@@ -9,8 +9,8 @@ if [[ "${GROUP}" == "" ]]; then
   export GROUP=all
 fi
 
-if [[ "${GROUP}" != "all" && "${GROUP}" != "misc" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "downstream" && "${GROUP}" != "plume-lib-typecheck" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: all, misc, junit, nonjunit, downstream, plume-lib-typecheck."
+if [[ "${GROUP}" != "all" && "${GROUP}" != "junit" && "${GROUP}" != "nonjunit" && "${GROUP}" != "downstream" && "${GROUP}" != "misc" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: all, junit, nonjunit, downstream, misc."
   exit 1
 fi
 
@@ -44,20 +44,19 @@ if [[ "${GROUP}" == "nonjunit" || "${GROUP}" == "all" ]]; then
   # It's cheaper to run the demos test here than to trigger the
   # checker-framework-demos job, which has to build the whole Checker Framework.
   (cd checker && ant check-demos)
+  # Here's a more verbose way to do the same thing as "ant check-demos":
+  # (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
+  # (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
 fi
 
 if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   ## downstream tests:  projects that depend on the the Checker Framework.
   ## These are here so they can be run by pull requests.  (Pull requests
   ## currently don't trigger downstream jobs.)
-  ## Not done in the main "downstream" job, but in its own job to avoid timeouts:
-  ##  * plume-lib-typecheck (takes 30 minutes)
+  ## Done in "nonjunit" above:
+  ##  * checker-framework.demos (takes 15 minutes)
   ## Not done in the Travis build, but triggered as a separate Travis project:
   ##  * daikon-typecheck: (takes 2 hours)
-
-  # checker-framework-demos: 15 minutes
-  (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework.demos.git)
-  (cd ../checker-framework.demos && ant -Djsr308.home=$ROOT)
 
   # checker-framework-inference: 18 minutes
   (cd .. && git clone --depth 1 https://github.com/typetools/checker-framework-inference.git)
@@ -65,17 +64,16 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
   export PATH=$AFU/scripts:$PATH
   (cd ../checker-framework-inference && gradle dist && ant -f tests.xml run-tests)
 
+  # plume-lib-typecheck: 30 minutes
+  (cd .. && git clone https://github.com/mernst/plume-lib.git)
+  export CHECKERFRAMEWORK=`pwd`
+  (cd ../plume-lib/java && make check-types)
+
   # sparta: 1 minute, but the command is "true"!
   # TODO: requires Android installation (and at one time, it caused weird
   # Travis hangs if enabled without Android installation).
   # (cd .. && git clone --depth 1 https://github.com/typetools/sparta.git)
   # (cd ../sparta && ant jar all-tests)
-fi
-
-if [[ "${GROUP}" == "plume-lib-typecheck" || "${GROUP}" == "all" ]]; then
-  (cd .. && git clone https://github.com/mernst/plume-lib.git)
-  export CHECKERFRAMEWORK=`pwd`
-  (cd ../plume-lib/java && make check-types)
 fi
 
 if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
