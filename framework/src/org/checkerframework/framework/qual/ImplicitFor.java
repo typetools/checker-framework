@@ -21,18 +21,19 @@ import javax.lang.model.type.TypeKind;
  * <pre>
  *   &#064;ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
  * </pre>
- * to denote that
- * the framework should automatically apply {@code Nullable} to all instances
- * of "null."
- *
+ * to denote that the literal {@code null} always has the type qualifier {@code @Nullable}.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface ImplicitFor {
 
     /**
-     * @return {@link LiteralKind}s for which an annotation should be
-     *         implicitly added
+     * @return {@link LiteralKind}s for which an annotation should be implicitly added.  For
+     * example, if {@code @MyAnno} is meta-annotated with {@code
+     * @ImplicitFor(literals={LiteralKind.STRING})}, then a literal {@code String} constant such as
+     * {@code "hello world"} has type {@code @MyAnno String}, but other occurrences of {@code
+     * String} in the source code are not affected.  For String literals, also see the {@link
+     * #stringPatterns} annotation field.
      */
     LiteralKind[] literals() default {};
 
@@ -43,10 +44,16 @@ public @interface ImplicitFor {
     TypeKind[] types() default {};
 
     /**
-     * @return {@link Class}es (in the actual program) for which an annotation
-     *         should be implicitly added.
-     *         For example, "java.lang.Void.class" should receive the same annotation
-     *         as the null literal.
+     * @return {@link Class}es (in the actual program) for which an annotation should be implicitly
+     * added.  For example, if {@code @MyAnno} is meta-annotated with {@code
+     * @ImplicitFor(typeNames=String.class)}, then every occurrence of {@code String} is actually
+     * {@code @MyAnno String}.  This has the same effect as writing the annotation on the class
+     * definition (possibly in an annotated library):
+     * <pre>
+     *   class @MyAnno String {...}
+     * </pre>
+     *         As another example, {code java.lang.Void.class} should receive the same annotation
+     *         as the {@code null} literal.
      */
     Class<?>[] typeNames() default {};
 
