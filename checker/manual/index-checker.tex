@@ -17,11 +17,13 @@ Index Checker. The Index Checker will infer properties of indexes from
 the code around them.  For example, it will infer that \<x> is positive
 within the then block of an \code{if (x > 0)} statement.
 
-Internally, the Index Checker is composed of two checkers: the Lower
-Bound Checker, which checks whether potential accesses may be too low,
-and the Upper Bound Checker, which checks whether potential accesses
-may be too high. The two checkers and their type hierarchies are
-detailed in the remainder of this section.
+Internally, the Index Checker is composed of three checkers: the Lower
+Bound Checker, which checks whether potential accesses may be too low;
+the Upper Bound Checker, which checks whether potential accesses
+may be too high; and the MinLen Checker, which determines the minimum
+length that any array might be. The first two checkers and their type hierarchies are
+detailed in the remainder of this section; the MinLen checker is used as a
+subchecker by both the Upper Bound Checker and the Lower Bound Checker.
 
 \section{Running the Index Checker\label{index-running}}
 
@@ -50,7 +52,7 @@ about the parameters that are being passed in.
 \item[\refqualclass{checker/lowerbound/qual}{GreaterThanOrEqualToNegativeOne}]
   The value is -1 or greater.
   It may not be used as an array index, because it might be too low.
-\item[\refqualclass{checker/lowerbound/qual}{LowerBoundUnknown}]
+\item[\refqualclass{checker/lowerbound/qual}{Lower BoundUnknown}]
   There is no information about the value.
   It may not be used as an array index, because it might be too low.
   This type is the top type.
@@ -66,7 +68,10 @@ about the parameters that are being passed in.
 \section{The Upper Bound Checker\label{index-upperbound}}
 
 The Upper Bound Checker warns about array accesses whose index might be
-too high. The Upper Bound Checker uses the following
+too high. If the Upper Bound Checker cannot determine whether an index might
+be too high by itself, it checks whether the index's value is known (via the Constant
+Value Checker) and whether that known value is less than the minimum length of the
+array (via the MinLen Checker). The Upper Bound Checker uses the following
 qualifiers:
 
 \begin{description}
@@ -79,12 +84,12 @@ qualifiers:
 \item[\refqualclasswithparams{checker/upperbound/qual}{LessThanOrEqualToLength}{String[] names}]
   An expression with this type
   has value less than or equal to the length of each array listed in \<names>.
-\item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
+\item[\refqualclass{checker/upperbound/qual}{Upper BoundUnknown}]
   There is no information about the value of an expression with this type.
   It may not be used as an array index, because it might be too high.
   This type is the top type, and should never need to be written by the
   programmer.
-\item[\refqualclass{checker/upperbound/qual}{UpperBoundBottom}]
+\item[\refqualclass{checker/upperbound/qual}{Upper BoundBottom}]
   This is the bottom type for the Upper Bound type system. It should
   never be assigned or written, but is included for completeness.
   \end{description}
