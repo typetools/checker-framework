@@ -7,73 +7,27 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="8.6153088cm"
-   height="6.373446cm"
-   viewBox="619 259 329.84325 233.69302"
-   id="svg2"
+   width="4.8510008cm"
+   height="5.84027cm"
+   viewBox="358 100 152.46002 292.0135"
+   id="svg3577"
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="lowerbound.svg">
   <metadata
-     id="metadata80">
+     id="metadata3693">
     <rdf:RDF>
       <cc:Work
          rdf:about="">
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs78">
-    <marker
-       inkscape:stockid="TriangleOutL"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker4669"
-       style="overflow:visible"
-       inkscape:isstock="true">
-      <path
-         id="path4671"
-         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
-         transform="scale(0.8,0.8)"
-         inkscape:connector-curvature="0" />
-    </marker>
-    <marker
-       inkscape:stockid="TriangleOutL"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker4669-5"
-       style="overflow:visible"
-       inkscape:isstock="true">
-      <path
-         inkscape:connector-curvature="0"
-         id="path4671-6"
-         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
-         transform="scale(0.8,0.8)" />
-    </marker>
-    <marker
-       inkscape:stockid="TriangleOutL"
-       orient="auto"
-       refY="0"
-       refX="0"
-       id="marker4669-5-9"
-       style="overflow:visible"
-       inkscape:isstock="true">
-      <path
-         inkscape:connector-curvature="0"
-         id="path4671-6-1"
-         d="m 5.77,0 -8.65,5 0,-10 8.65,5 z"
-         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1pt;stroke-opacity:1"
-         transform="scale(0.8,0.8)" />
-    </marker>
-  </defs>
+     id="defs3691" />
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -83,160 +37,211 @@
      guidetolerance="10"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:window-width="1280"
-     inkscape:window-height="704"
-     id="namedview76"
+     inkscape:window-width="664"
+     inkscape:window-height="685"
+     id="namedview3689"
      showgrid="false"
-     inkscape:snap-page="true"
-     inkscape:zoom="1.1039267"
-     inkscape:cx="-109.77282"
-     inkscape:cy="192.95958"
+     inkscape:zoom="1.1774114"
+     inkscape:cx="40.421248"
+     inkscape:cy="131.67426"
      inkscape:window-x="0"
-     inkscape:window-y="1"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="svg2"
-     inkscape:snap-others="true"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg3577"
+     inkscape:connector-spacing="5"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0"
-     inkscape:snap-global="false" />
+     fit-margin-bottom="0" />
   <g
-     id="g24"
-     style="opacity:0.5"
-     transform="translate(-40.868512,-5.159458)">
+     id="g3589"
+     transform="translate(-31.601887,-18.999996)">
     <rect
        style="fill:#ffffff"
-       x="730"
-       y="260"
-       width="180"
-       height="42"
-       id="rect26" />
+       x="360"
+       y="120"
+       width="201"
+       height="44"
+       id="rect3591" />
     <rect
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2.10870743"
-       x="720.18433"
-       y="260.05435"
-       width="200.61836"
-       height="41.891293"
-       id="rect28" />
+       style="fill:none;fill-opacity:0;stroke:#7f7f7f;stroke-width:2.18256378;stroke-opacity:1"
+       x="340.9155"
+       y="120.09128"
+       width="240.36746"
+       height="43.817436"
+       id="rect3593" />
     <text
-       font-size="16"
-       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
-       x="820"
-       y="285.85001"
-       id="text30">
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:14.32277775px;font-family:'courier new';text-anchor:middle;fill:#7f7f7f;fill-opacity:1"
+       x="460.5"
+       y="146.772"
+       id="text3595">
       <tspan
-         x="820"
-         y="285.85001"
-         id="tspan32">@LowerBoundUnknown</tspan>
+         x="460.5"
+         y="146.772"
+         id="tspan3597"
+         style="font-size:21.16666603px;fill:#7f7f7f;fill-opacity:1">@LowerBoundUnknown</tspan>
+    </text>
+  </g>
+  <text
+     font-size="12.8"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="582.51611"
+     y="257.31573"
+     id="text3619">
+    <tspan
+       x="582.51611"
+       y="257.31573"
+       id="tspan3621" />
+  </text>
+  <g
+     id="g3657"
+     transform="translate(-31.601887,-17.999786)">
+    <line
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       x1="460.5"
+       y1="200"
+       x2="460.5"
+       y2="173.73599"
+       id="line3659" />
+    <polygon
+       style="fill:#000000"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       id="polygon3661" />
+    <polygon
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       id="polygon3663" />
+  </g>
+  <text
+     font-size="12.8"
+     style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
+     x="582.51611"
+     y="257.31573"
+     id="text3673">
+    <tspan
+       x="582.51611"
+       y="257.31573"
+       id="tspan3675" />
+  </text>
+  <rect
+     style="fill:#ffffff"
+     x="328.39813"
+     y="347.00104"
+     width="201"
+     height="44"
+     id="rect3559" />
+  <rect
+     style="fill:#000000;fill-opacity:0;stroke:#7f7f7f;stroke-width:1.65556252;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     x="360.5849"
+     y="346.82867"
+     width="136.62643"
+     height="44.344681"
+     id="rect3561" />
+  <text
+     font-size="15.8044"
+     style="font-style:normal;font-weight:normal;font-size:15.80440044px;font-family:'courier new';text-anchor:middle;fill:#7f7f7f;fill-opacity:1"
+     x="428.8981"
+     y="373.77304"
+     id="text3563">
+    <tspan
+       style="font-size:21.16666603px;fill:#000000;fill-opacity:1"
+       x="428.8981"
+       y="373.77304"
+       id="tspan3565">@Positive</tspan>
+  </text>
+  <g
+     id="g3631"
+     transform="translate(-11.428586,149.91457)">
+    <rect
+       id="rect3583"
+       height="42.654793"
+       width="214.14209"
+       y="33.758381"
+       x="332.6564"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:0.91046369;stroke-miterlimit:4;stroke-dasharray:none" />
+    <text
+       id="text3585"
+       y="56.765598"
+       x="441.76974"
+       style="font-style:normal;font-weight:normal;font-size:15.80440044px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       font-size="15.8044">
+      <tspan
+         id="tspan3587"
+         y="56.765598"
+         x="441.76974"
+         style="font-size:21.16666603px">@GTENegativeOne</tspan>
     </text>
   </g>
   <g
-     id="g66"
-     style="opacity:0.5"
-     transform="translate(-35.933368,9.6455908)">
+     transform="translate(-31.601897,146.00089)"
+     id="g3590">
+    <line
+       id="line3592"
+       y2="173.73599"
+       x2="460.5"
+       y1="200"
+       x1="460.5"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+    <polygon
+       id="polygon3594"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       style="fill:#000000" />
+    <polygon
+       id="polygon3596"
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+  </g>
+  <g
+     transform="translate(-40.397866,231.91491)"
+     id="g4844">
     <rect
-       style="fill:#ffffff"
-       x="760"
-       y="380"
-       width="120"
-       height="42"
-       id="rect68" />
-    <rect
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2.26770639"
-       x="742.3678"
-       y="380.13385"
-       width="155.2644"
-       height="41.732292"
-       id="rect70" />
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.05518711;stroke-miterlimit:4;stroke-dasharray:none"
+       x="374.85611"
+       y="33.420906"
+       width="187.6813"
+       height="43.32975"
+       id="rect4846" />
     <text
-       font-size="16"
-       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
-       x="820"
-       y="405.85001"
-       id="text72">
+       font-size="15.8044"
+       style="font-style:normal;font-weight:normal;font-size:21.16666603px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="469.17535"
+       y="56.765598"
+       id="text4848">
       <tspan
-         x="820"
-         y="405.85001"
-         id="tspan74"
-         style="stroke:#000000">@NonNegative</tspan>
+         x="469.17535"
+         y="56.765598"
+         id="tspan4850"
+         style="font-size:21.16666603px">@NonNegative</tspan>
     </text>
   </g>
   <g
-     transform="translate(-36.571851,-56.489865)"
-     id="g66-5"
-     style="display:inline;opacity:0.5">
-    <rect
-       style="fill:#ffffff"
-       x="700"
-       y="380"
-       width="240"
-       height="42"
-       id="rect68-5" />
-    <rect
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2.32724524"
-       x="656.73547"
-       y="380.1636"
-       width="327.51602"
-       height="41.672752"
-       id="rect70-0" />
-    <text
-       font-size="16"
-       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
-       x="820"
-       y="405.85001"
-       id="text72-7">
-      <tspan
-         x="820"
-         y="405.85001"
-         id="tspan74-4"
-         style="fill:#000000;fill-opacity:1;stroke:#000000">@GreaterThanOrEqualToNegativeOne</tspan>
-    </text>
+     transform="translate(-31.601887,64.000554)"
+     id="g4856">
+    <line
+       id="line4858"
+       y2="173.73599"
+       x2="460.5"
+       y1="200"
+       x1="460.5"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
+    <polygon
+       id="polygon4860"
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       style="fill:#000000" />
+    <polygon
+       id="polygon4862"
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
   </g>
   <path
-     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.98684537px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker4669)"
-     d="m 783.68809,455.12539 0,-19.75932"
-     id="path4239"
+     style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:1.19848609"
+     d=""
+     id="path5762"
      inkscape:connector-curvature="0" />
-  <g
-     id="g66-3"
-     style="opacity:0.5"
-     transform="translate(-35.32491,74.852461)">
-    <rect
-       style="fill:#ffffff"
-       x="760"
-       y="380"
-       width="120"
-       height="42"
-       id="rect68-6" />
-    <rect
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2.26072717"
-       x="742.36432"
-       y="380.13037"
-       width="154.28439"
-       height="41.739269"
-       id="rect70-7" />
-    <text
-       font-size="16"
-       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
-       x="820"
-       y="405.85001"
-       id="text72-5">
-      <tspan
-         x="820"
-         y="405.85001"
-         id="tspan74-3"
-         style="stroke:#000000">@Positive</tspan>
-    </text>
-  </g>
   <path
-     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.98684537px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker4669-5)"
-     d="m 781.71409,389.80243 0,-19.75932"
-     id="path4239-2"
-     inkscape:connector-curvature="0" />
-  <path
-     style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.98684537px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#marker4669-5-9)"
-     d="m 782.70109,322.68621 0,-19.75932"
-     id="path4239-2-2"
+     style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.29962152"
+     d="m 359.91544,368.94265 0,-22.92105 69.06275,0 69.06277,0 0,22.92105 0,22.92104 -69.06277,0 -69.06275,0 0,-22.92104 z m 136.62741,0 0,-21.42294 -67.56466,0 -67.56465,0 0,21.42294 0,21.42293 67.56465,0 67.56466,0 0,-21.42293 z"
+     id="path5764"
      inkscape:connector-curvature="0" />
 </svg>
