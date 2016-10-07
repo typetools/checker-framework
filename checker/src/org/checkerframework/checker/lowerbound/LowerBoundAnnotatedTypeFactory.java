@@ -664,7 +664,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      *  Handles masking.
      *  Particularly, handles the following cases:
-     *  * & NonNegative &rarr; NonNegative
+     *  * &amp; NonNegative &rarr; NonNegative
      */
     private void addAnnotationForAnd(
             ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
