@@ -232,7 +232,11 @@ public class JavaSource2CFGDOT {
 
         Context context = new Context();
         JavaCompiler javac = new JavaCompiler(context);
-        javac.attrParseOnly = true;
+        // TODO: find way to do this in JDK 9
+        // javac.attrParseOnly = true;
+        // effect used to be:
+        // compilePolicy = CompilePolicy.ATTR_ONLY;
+
         JavacFileManager fileManager = (JavacFileManager) context
                 .get(JavaFileManager.class);
 
