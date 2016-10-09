@@ -23,7 +23,7 @@ jdk.jar:
 # Helper
 
 # All class files that contain an annotation, by directory
-ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class')
+ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class' | sort)
 # All class files that contain some annotation, possibly with duplicates.
 # These, and only these, need to be extracted from $(CTSYM).
 ANNOTATED_CLASSES = \
@@ -53,7 +53,6 @@ annotated/%.class:
 	-cp -R annotated/8/* annotated
 	-mv annotated/$*.sig annotated/$*.class
 	-rm -rf annotated/8
-
 
 
 # Helper targets to invoke subdir make files

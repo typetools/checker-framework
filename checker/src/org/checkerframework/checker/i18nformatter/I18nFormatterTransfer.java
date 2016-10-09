@@ -11,13 +11,11 @@ import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.framework.flow.CFAbstractTransfer;
+import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.util.AnnotationBuilder;
-import org.checkerframework.framework.util.FlowExpressionParseUtil;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
-import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
 
 /**
  *
@@ -25,16 +23,10 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
  *                           Format String Checker
  * @author Siwakorn Srisakaokul
  */
-public class I18nFormatterTransfer
-        extends CFAbstractTransfer<CFValue, CFStore, I18nFormatterTransfer> {
+public class I18nFormatterTransfer extends CFTransfer {
 
-    protected I18nFormatterAnalysis analysis;
-    protected I18nFormatterChecker checker;
-
-    public I18nFormatterTransfer(I18nFormatterAnalysis analysis, I18nFormatterChecker checker) {
+    public I18nFormatterTransfer(CFAnalysis analysis) {
         super(analysis);
-        this.analysis = analysis;
-        this.checker = checker;
     }
 
     @Override
@@ -92,7 +84,7 @@ public class I18nFormatterTransfer
                         atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
                 CFValue newResultValue =
                         analysis.createSingleAnnotationValue(
-                                anno, result.getResultValue().getType().getUnderlyingType());
+                                anno, result.getResultValue().getUnderlyingType());
                 return new RegularTransferResult<>(newResultValue, result.getRegularStore());
             }
         }

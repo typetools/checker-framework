@@ -178,8 +178,10 @@ public class PurityChecker {
             extends SimpleTreeVisitor<PurityResult, PurityResult> {
 
         protected final AnnotationProvider annoProvider;
-        /** True if all methods should be assumed to be @SideEffectFree,
-         * for the purposes of org.checkerframework.dataflow analysis. */
+        /**
+         * True if all methods should be assumed to be @SideEffectFree,
+         * for the purposes of org.checkerframework.dataflow analysis.
+         */
         private final boolean assumeSideEffectFree;
         protected /*@Nullable*/ List<Element> methodParameter;
 

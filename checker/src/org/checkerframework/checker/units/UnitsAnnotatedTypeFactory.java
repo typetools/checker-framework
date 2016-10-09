@@ -5,7 +5,6 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,6 +29,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.GraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -164,7 +164,7 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // copy all loaded external Units to qual set
         qualSet.addAll(externalQualsMap.values());
 
-        return Collections.unmodifiableSet(qualSet);
+        return qualSet;
     }
 
     private void loadAllExternalUnits() {
@@ -286,16 +286,25 @@ public class UnitsAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         for (AnnotationMirror ama : am.getAnnotationType().asElement().getAnnotationMirrors()) {
             if (AnnotationUtils.areSameByClass(ama, unitsRelationsAnnoClass)) {
-                Class<? extends UnitsRelations> theclass =
-                        AnnotationUtils.getElementValueClass(ama, "value", true)
-                                .asSubclass(UnitsRelations.class);
+                Class<? extends UnitsRelations> theclass;
+                try {
+                    theclass =
+                            AnnotationUtils.getElementValueClass(ama, "value", true)
+                                    .asSubclass(UnitsRelations.class);
+                } catch (ClassCastException ex) {
+                    Class<?> clazz = AnnotationUtils.getElementValueClass(ama, "value", true);
+                    ErrorReporter.errorAbort(
+                            "Invalid @UnitsRelations meta-annotation found in %s. @UnitsRelations value,"
+                                    + " %s, is not a subclass of org.checkerframework.checker.units.UnitsRelations.",
+                            qual.toString(),
+                            clazz.toString());
+                    continue;
+                }
                 String classname = theclass.getCanonicalName();
 
                 if (!getUnitsRel().containsKey(classname)) {
                     try {
-                        unitsRel.put(
-                                classname,
-                                ((UnitsRelations) theclass.newInstance()).init(processingEnv));
+                        unitsRel.put(classname, theclass.newInstance().init(processingEnv));
                     } catch (InstantiationException e) {
                         // TODO
                         e.printStackTrace();

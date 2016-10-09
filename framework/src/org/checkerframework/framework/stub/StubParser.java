@@ -133,6 +133,12 @@ public class StubParser {
     private final AnnotationMirror fromStubFile;
 
     /**
+     * List of AnnotatedTypeMirrors for class or method type parameters that are in scope of the
+     * elements currently parsed.
+     */
+    private final List<AnnotatedTypeVariable> typeParameters = new ArrayList<>();
+
+    /**
      *
      * @param filename name of stub file
      * @param inputStream of stub file to parse
@@ -145,15 +151,6 @@ public class StubParser {
             AnnotatedTypeFactory factory,
             ProcessingEnvironment env) {
         this.filename = filename;
-        IndexUnit parsedindex;
-        try {
-            parsedindex = JavaParser.parse(inputStream);
-        } catch (Exception e) {
-            ErrorReporter.errorAbort(
-                    "StubParser: exception from JavaParser.parse for file " + filename, e);
-            parsedindex = null; // dead code, but needed for def. assignment checks
-        }
-        this.index = parsedindex;
         this.atypeFactory = factory;
         this.processingEnv = env;
         this.elements = env.getElementUtils();
@@ -165,11 +162,26 @@ public class StubParser {
         this.warnIfStubOverwritesBytecode = options.containsKey("stubWarnIfOverwritesBytecode");
         this.debugStubParser = options.containsKey("stubDebug");
 
+        if (debugStubParser) {
+            stubDebug(String.format("parsing stub file %s%n", filename));
+        }
+        IndexUnit parsedindex;
+        try {
+            parsedindex = JavaParser.parse(inputStream);
+        } catch (Exception e) {
+            ErrorReporter.errorAbort(
+                    "StubParser: exception from JavaParser.parse for file " + filename, e);
+            parsedindex = null; // dead code, but needed for def. assignment checks
+        }
+        this.index = parsedindex;
+
         // getSupportedAnnotations also sets imports. This should be refactored to be nicer.
         supportedAnnotations = getSupportedAnnotations();
         if (supportedAnnotations.isEmpty()) {
             stubWarnIfNotFound(
-                    "No supported annotations found! This likely means your stub file doesn't import them correctly.");
+                    String.format(
+                            "No supported annotations found! This likely means stub file %s doesn't import them correctly.",
+                            filename));
         }
         faexprcache = new HashMap<FieldAccessExpr, VariableElement>();
         nexprcache = new HashMap<NameExpr, VariableElement>();
@@ -410,7 +422,8 @@ public class StubParser {
         } else if (typeElt.getKind() == ElementKind.ANNOTATION_TYPE) {
             stubWarnIfNotFound("Skipping annotation type: " + typeName);
         } else if (typeDecl instanceof ClassOrInterfaceDeclaration) {
-            parseType((ClassOrInterfaceDeclaration) typeDecl, typeElt, atypes, declAnnos);
+            typeParameters.addAll(
+                    parseType((ClassOrInterfaceDeclaration) typeDecl, typeElt, atypes, declAnnos));
         } // else it's an EmptyTypeDeclaration.  TODO:  An EmptyTypeDeclaration can have annotations, right?
 
         Map<Element, BodyDeclaration> elementsToDecl = getMembers(typeElt, typeDecl);
@@ -429,9 +442,13 @@ public class StubParser {
                 stubWarnIfNotFound("StubParser ignoring: " + elt);
             }
         }
+        typeParameters.clear();
     }
 
-    private void parseType(
+    /**
+     * @return List of AnnotatedTypeVariable of the type's type parameter declarations
+     */
+    private List<AnnotatedTypeVariable> parseType(
             ClassOrInterfaceDeclaration decl,
             TypeElement elt,
             Map<Element, AnnotatedTypeMirror> atypes,
@@ -500,9 +517,22 @@ public class StubParser {
             */
         }
 
-        annotateParameters(typeArguments, typeParameters);
+        annotateTypeParameters(typeArguments, typeParameters);
         annotateSupertypes(decl, type);
         putNew(atypes, elt, type);
+        List<AnnotatedTypeVariable> typeVariables = new ArrayList<>();
+        for (AnnotatedTypeMirror typeV : type.getTypeArguments()) {
+            if (typeV.getKind() != TypeKind.TYPEVAR) {
+                stubAlwaysWarn(
+                        "Expected an AnnotatedTypeVariable but found type kind"
+                                + typeV.getKind()
+                                + ": "
+                                + typeV);
+            } else {
+                typeVariables.add((AnnotatedTypeVariable) typeV);
+            }
+        }
+        return typeVariables;
     }
 
     private void annotateSupertypes(
@@ -514,7 +544,8 @@ public class StubParser {
                         : "StubParser: could not find superclass "
                                 + superType
                                 + " from type "
-                                + type;
+                                + type
+                                + "\nStub file does not match bytecode";
                 if (foundType != null) {
                     annotate(foundType, superType);
                 }
@@ -533,7 +564,8 @@ public class StubParser {
                         : "StubParser: could not find superinterface "
                                 + superType
                                 + " from type "
-                                + type;
+                                + type
+                                + "\nStub file does not match bytecode";
                 if (foundType != null) {
                     annotate(foundType, superType);
                 }
@@ -552,7 +584,8 @@ public class StubParser {
         addDeclAnnotations(declAnnos, elt);
 
         AnnotatedExecutableType methodType = atypeFactory.fromElement(elt);
-        annotateParameters(methodType.getTypeVariables(), decl.getTypeParameters());
+        annotateTypeParameters(methodType.getTypeVariables(), decl.getTypeParameters());
+        typeParameters.addAll(methodType.getTypeVariables());
         annotate(methodType.getReturnType(), decl.getType());
 
         List<Parameter> params = decl.getParameters();
@@ -591,6 +624,7 @@ public class StubParser {
         }
 
         putNew(atypes, elt, methodType);
+        typeParameters.removeAll(methodType.getTypeVariables());
     }
 
     /**
@@ -712,9 +746,6 @@ public class StubParser {
 
         handleExistingAnnotations(atype, typeDef);
 
-        if (typeDef.getAnnotations() != null) {
-            annotate(atype, typeDef.getAnnotations());
-        }
         ClassOrInterfaceType declType = unwrapDeclaredType(typeDef);
         if (atype.getKind() == TypeKind.DECLARED && declType != null) {
             AnnotatedDeclaredType adeclType = (AnnotatedDeclaredType) atype;
@@ -737,9 +768,25 @@ public class StubParser {
             WildcardType wildcardDef = (WildcardType) typeDef;
             if (wildcardDef.getExtends() != null) {
                 annotate(wildcardType.getExtendsBound(), wildcardDef.getExtends());
+                annotate(wildcardType.getSuperBound(), typeDef.getAnnotations());
             } else if (wildcardDef.getSuper() != null) {
                 annotate(wildcardType.getSuperBound(), wildcardDef.getSuper());
+                annotate(wildcardType.getExtendsBound(), typeDef.getAnnotations());
+            } else {
+                annotate(atype, typeDef.getAnnotations());
             }
+        } else if (atype.getKind() == TypeKind.TYPEVAR) {
+            //Add annotations from the declaration of the TypeVariable
+            AnnotatedTypeVariable typeVarUse = (AnnotatedTypeVariable) atype;
+            for (AnnotatedTypeVariable typePar : typeParameters) {
+                if (typePar.getUnderlyingType() == atype.getUnderlyingType()) {
+                    AnnotatedTypeMerger.merge(typePar.getUpperBound(), typeVarUse.getUpperBound());
+                    AnnotatedTypeMerger.merge(typePar.getLowerBound(), typeVarUse.getLowerBound());
+                }
+            }
+        }
+        if (typeDef.getAnnotations() != null && atype.getKind() != TypeKind.WILDCARD) {
+            annotate(atype, typeDef.getAnnotations());
         }
     }
 
@@ -820,7 +867,7 @@ public class StubParser {
         putOrAddToMap(declAnnos, key, annos);
     }
 
-    private void annotateParameters(
+    private void annotateTypeParameters(
             List<? extends AnnotatedTypeMirror> typeArguments, List<TypeParameter> typeParameters) {
         if (typeParameters == null) {
             return;
@@ -829,7 +876,7 @@ public class StubParser {
         if (typeParameters.size() != typeArguments.size()) {
             stubAlwaysWarn(
                     String.format(
-                            "annotateParameters: mismatched sizes%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n  For more details, run with -AstubDebug%n",
+                            "annotateTypeParameters: mismatched sizes%n  typeParameters (size %d)=%s%n  typeArguments (size %d)=%s%n  For more details, run with -AstubDebug%n",
                             typeParameters.size(),
                             typeParameters,
                             typeArguments.size(),
@@ -839,9 +886,16 @@ public class StubParser {
             TypeParameter param = typeParameters.get(i);
             AnnotatedTypeVariable paramType = (AnnotatedTypeVariable) typeArguments.get(i);
 
-            annotate(paramType, param.getAnnotations());
-            if (param.getTypeBound() != null && param.getTypeBound().size() == 1) {
+            if (param.getTypeBound() == null || param.getTypeBound().isEmpty()) {
+                // No bound so annotations are both lower and upper bounds
+                annotate(paramType, param.getAnnotations());
+            } else if (param.getTypeBound() != null && param.getTypeBound().size() > 0) {
+                annotate(paramType.getLowerBound(), param.getAnnotations());
                 annotate(paramType.getUpperBound(), param.getTypeBound().get(0));
+                if (param.getTypeBound().size() > 1) {
+                    // TODO: add support for intersection types
+                    stubWarnIfNotFound("Annotations on intersection types are not yet supported");
+                }
             }
         }
     }

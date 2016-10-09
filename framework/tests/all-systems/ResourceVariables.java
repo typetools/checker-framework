@@ -1,5 +1,4 @@
 import java.io.*;
-import org.checkerframework.framework.qual.*;
 
 // Tests related to resource variables in try-with-resources statements.
 

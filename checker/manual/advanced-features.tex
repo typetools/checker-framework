@@ -206,10 +206,8 @@ rules are used in order, until one applies.
 
 The end-user programmer specifies a default qualifier by writing the \refqualclass{framework/qual}{DefaultQualifier}
 annotation on a package, class, method, or variable declaration.  The
-argument to \refqualclass{framework/qual}{DefaultQualifier} is the \code{String}
-name of an annotation.  It may be a short name like \code{"NonNull"}, if an
-appropriate import statement exists.  Otherwise, it should be
-fully-qualified, like \code{"org.checkerframework.checker.nullness.qual.NonNull"}.
+argument to \refqualclass{framework/qual}{DefaultQualifier} is the \code{Class}
+name of an annotation.
 The optional second argument indicates where the default
 applies.  If the second argument is omitted, the specified annotation is
 the default in all locations.  See the Javadoc of \refclass{framework/qual}{DefaultQualifier} for details.
@@ -427,7 +425,9 @@ implementation can enable it if desired.
 
 If a wildcard is unbounded and has no annotation (e.g. \code{List<?>}),
 the annotations on the wildcard's bounds are copied from the type parameter
-to which the wildcard is an argument.  For example, the two wildcards in
+to which the wildcard is an argument.
+
+For example, the two wildcards in
 the declarations below are equivalent.
 
 \begin{Verbatim}
@@ -437,11 +437,15 @@ MyList<?> listOfNullables;
 MyList<@Nullable ? extends @Nullable Object> listOfNullables;
 \end{Verbatim}
 
-We copy these annotations because wildcards must be within the bounds of their
-corresponding type parameter.  Therefore, there would be many false positive
-\code{type.argument.type.incompatible} warnings if the bounds of a wildcard
-were defaulted differently from the bounds of its corresponding type parameter.
-Here is another example:
+The Checker Framework copies
+these annotations because wildcards must be within the bounds of their
+corresponding type parameter.
+By contrast, if the bounds of a wildcard
+were defaulted differently from the bounds of its corresponding type
+parameter, then there would be many false positive
+\code{type.argument.type.incompatible} warnings
+
+Here is another example of two equivalent wildcard declarations:
 
 \begin{Verbatim}
 class MyList<@Regex(5) T extends @Regex(1) Object> {}
@@ -450,7 +454,8 @@ MyList<?> listOfRegexes;
 MyList<@Regex(5) ? extends @Regex(1) Object> listOfRegexes;
 \end{Verbatim}
 
-Note, this applies only to unbounded wildcards.  The two wildcards in the
+Note, this copying of annotations for a wildcard's bounds applies only to
+unbounded wildcards.  The two wildcards in the
 following example are equivalent.
 
 \begin{Verbatim}
@@ -788,7 +793,7 @@ Type systems that cannot support a run-time test are:
   \chapterpageref{initialization-checker})
 \item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
-  patterns (see \chapterpageref{fenum-checker})
+  patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
 \item
   \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})

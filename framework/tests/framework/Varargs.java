@@ -1,5 +1,4 @@
 import tests.util.*;
-import java.util.*;
 
 public class Varargs {
     public void testVarargsInvocation() {

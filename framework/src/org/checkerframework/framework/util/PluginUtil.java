@@ -495,10 +495,15 @@ public class PluginUtil {
         final Pattern oldVersionPattern = Pattern.compile("^\\d\\.(\\d+)\\..*$");
         final String jreVersionStr = System.getProperty("java.version");
         final Matcher oldVersionMatcher = oldVersionPattern.matcher(jreVersionStr);
+        // For Early Access version of the JDK
+        final Pattern eaVersionPattern = Pattern.compile("^(\\d+)-ea$");
+        final Matcher eaVersionMatcher = eaVersionPattern.matcher(jreVersionStr)
 
         final int version;
         if (oldVersionMatcher.matches()) {
             version = Integer.parseInt(oldVersionMatcher.group(1));
+        } else if (eaVersionMatcher.matches()) {
+            version = Integer.parseInt(eaVersionMatcher.group(1));
         } else {
             // See http://openjdk.java.net/jeps/223
             // We only care about the major version number.
@@ -518,11 +523,12 @@ public class PluginUtil {
     /**
      * Determine the version of the JRE that we are currently running and select a jdkX where
      * X is the version of Java that is being run (e.g. 6, 7, ...)
-     * @return the jdkX where X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 6, 7, ...)
      */
     public static String getJdkJarPrefix() {
         final int jreVersion = getJreVersion();
         final String prefix;
+
         if (jreVersion <= 6 || jreVersion > 9) {
             throw new AssertionError("Unsupported JRE version: " + jreVersion);
         } else {

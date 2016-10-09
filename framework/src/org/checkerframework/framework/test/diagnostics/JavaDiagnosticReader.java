@@ -200,7 +200,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
      * Instances of DiagnosticCodec represent the various formats diagnostic strings can take
      */
     public interface DiagnosticCodec {
-        public TestDiagnosticLine convertLine(long lineNumber, String line);
+        public TestDiagnosticLine convertLine(String filename, long lineNumber, String line);
     }
 
     /**
@@ -209,8 +209,9 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     public static DiagnosticCodec JAVA_COMMENT_CODEC =
             new DiagnosticCodec() {
                 @Override
-                public TestDiagnosticLine convertLine(long lineNumber, String line) {
-                    return TestDiagnosticUtils.fromJavaSourceLine(line, lineNumber);
+                public TestDiagnosticLine convertLine(
+                        String filename, long lineNumber, String line) {
+                    return TestDiagnosticUtils.fromJavaSourceLine(filename, line, lineNumber);
                 }
             };
 
@@ -220,7 +221,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     public static DiagnosticCodec DIAGNOSTIC_FILE_CODEC =
             new DiagnosticCodec() {
                 @Override
-                public TestDiagnosticLine convertLine(long lineNumber, String line) {
+                public TestDiagnosticLine convertLine(
+                        String filename, long lineNumber, String line) {
                     return TestDiagnosticUtils.fromDiagnosticFileLine(line);
                 }
             };
@@ -228,6 +230,8 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
     public final File toRead;
     public final JavaFileObject toReadFileObject;
     public final DiagnosticCodec codec;
+
+    private final String filename;
 
     private boolean initialized = false;
     private boolean closed = false;
@@ -239,6 +243,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 
     public JavaDiagnosticReader(File toRead, DiagnosticCodec codec) {
         this.toRead = toRead;
+        this.filename = shortFileName(toRead.getAbsolutePath());
         this.toReadFileObject = null;
         this.codec = codec;
     }
@@ -247,6 +252,12 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
         this.toRead = null;
         this.toReadFileObject = toRead;
         this.codec = codec;
+        this.filename = shortFileName(toRead.getName());
+    }
+
+    private String shortFileName(String name) {
+        int index = name.lastIndexOf(File.separator);
+        return name.substring(index + 1, name.length());
     }
 
     private void init() throws IOException {
@@ -299,7 +310,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
                 close();
             }
 
-            return codec.convertLine(currentLineNumber, current);
+            return codec.convertLine(filename, currentLineNumber, current);
 
         } catch (IOException e) {
             throw new RuntimeException(e);

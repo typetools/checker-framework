@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.checkerframework.checker.nullness.qual.*;
 
-class A {
+class Issue273 {
     public static void main(String... p) {
         Map<String, Integer> m0 = new HashMap<String, Integer>();
         Map<String, Integer> m1 = new HashMap<String, Integer>();

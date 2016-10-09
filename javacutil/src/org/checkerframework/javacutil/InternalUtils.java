@@ -15,6 +15,8 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.AnnotatedType;
+import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
@@ -243,6 +245,16 @@ public class InternalUtils {
     }
 
     /**
+     * If typeVar is a captured wildcard, returns that wildcard; otherwise returns null.
+     */
+    public static WildcardType getCapturedWildcard(TypeVariable typeVar) {
+        if (isCaptured(typeVar)) {
+            return ((CapturedType) TypeAnnotationUtils.unannotatedType((Type) typeVar)).wildcard;
+        }
+        return null;
+    }
+
+    /**
      * Returns whether a TypeMirror represents a class type.
      */
     public static boolean isClassType(TypeMirror type) {
@@ -390,7 +402,8 @@ public class InternalUtils {
         return null;
     }
 
-    /** Helper function to extract the javac Context from the
+    /**
+     * Helper function to extract the javac Context from the
      * javac processing environment.
      *
      * @param env the processing environment
@@ -402,5 +415,17 @@ public class InternalUtils {
 
     public static TypeElement getTypeElement(TypeMirror type) {
         return (TypeElement) ((Type) type).tsym;
+    }
+
+    /**
+     * Obtain the class loader for {@code clazz}, if that is not available then the system class loader
+     * will be returned
+     * @param clazz
+     * @return the class loader used to {@code clazz}, or the system
+     *         class loader, or null if both are unavailable
+     */
+    public static ClassLoader getClassLoaderForClass(Class<? extends Object> clazz) {
+        ClassLoader classLoader = clazz.getClassLoader();
+        return classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader;
     }
 }

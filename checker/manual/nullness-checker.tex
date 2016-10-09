@@ -302,8 +302,8 @@ appear in your code.
 For example, enum types are implicitly non-null, so you never need to write
 \<@NonNull MyEnumType>.
 
-For a complete description of all implicit nullness qualifiers, see the
-Javadoc for \refclass{checker/nullness}{NullnessAnnotatedTypeFactory}.
+For more information about implicitly-added nullness qualifiers, see the
+implementation of \refclass{checker/nullness}{NullnessAnnotatedTypeFactory}.
 
 
 
@@ -314,7 +314,18 @@ The standard defaulting rule is CLIMB-to-top,  described in
 Section~\ref{climb-to-top}.  Its effect is to default all types to
 \<@NonNull>, except that \<@Nullable> is used for casts, locals,
 instanceof, and implicit bounds.  A user can choose a different defaulting
-rule.
+rule by writing a \refqualclass{framework/qual}{DefaultQualifier} annotation on a
+ package, class, or method.  In the example below, fields are defaulted to
+\<@Nullable> instead of \<@NonNull>.
+
+\begin{Verbatim}
+@DefaultQualifier(value = Nullable.class, locations = TypeUseLocation.FIELD)
+class MyClass {
+    Object nullableField = null;
+    @NonNull Object nonNullField = new Object();
+}
+\end{Verbatim}
+
 
 %% Cut this to shorten the section.  Most users won't care about it.
 % %BEGIN LATEX
@@ -679,7 +690,7 @@ The Nullness Checker itself.
 
 \item
 The
-\href{http://mernst.github.io/plume-lib/}{Plume-lib library}.
+\href{https://mernst.github.io/plume-lib/}{Plume-lib library}.
 Run the command \code{make check-nullness}.
 
 
@@ -815,7 +826,11 @@ assert var != null : "@AssumeAssertion(nullness)";
 \newcommand{\linktoNullable}{\refclass{checker/nullness/qual}{Nullable}}
 
 The Checker Framework's nullness annotations are similar to annotations used
-in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, NetBeans, and other tools.  Also
+in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, NetBeans, and other
+tools.  In particular, IDE tools such as Eclipse and IntelliJ should be
+viewed as bug-finding tools rather than verification tools, since they
+give up precision, soundness, or both in favor of being fast and
+easy to use.  Also
 see Section~\ref{other-tools} for a comparison to other tools.
 
 You might prefer to use the Checker Framework because it has a more
@@ -945,7 +960,7 @@ brief comparison with FindBugs, but similar points apply to other tools.
 
 The Checker Framework has a more powerful nullness analysis; FindBugs misses
 some real
-errors.  However, FindBugs does not require you to annotate your code as
+errors.  FindBugs requires you to annotate your code, but usually not as
 thoroughly as the Checker Framework does.  Depending on the importance of
 your code, you may desire:  no nullness checking, the cursory checking of
 FindBugs, or the thorough checking of the Checker Framework.  You might

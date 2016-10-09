@@ -1,8 +1,7 @@
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
-
 // This is a test case for issue #105:
 // https://github.com/typetools/checker-framework/issues/105
+
+import org.checkerframework.checker.nullness.qual.*;
 
 // field f1, which is non-null, but is never initialized.
 // Fields f2 and f3 are OK.

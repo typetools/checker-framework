@@ -1,3 +1,4 @@
+import java.util.Collections;
 /**
  * Test case for Issue 143:
  * https://github.com/typetools/checker-framework/issues/143

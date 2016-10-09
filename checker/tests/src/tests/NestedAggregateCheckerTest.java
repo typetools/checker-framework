@@ -5,14 +5,15 @@ package tests;
 // This exists to just run the NestedAggregateChecker
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class NestedAggregateCheckerTest extends CheckerFrameworkTest {
+public class NestedAggregateCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
-    public NestedAggregateCheckerTest(File testFile) {
+    public NestedAggregateCheckerTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 NestedAggregateChecker.class,
                 "",
                 "-Anomsgtext",

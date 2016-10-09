@@ -91,13 +91,17 @@ import org.checkerframework.javacutil.TreeUtils;
     // 1. Add a brief blurb here about the use case
     //    and a pointer to one prominent use of the option.
     // 2. Update the Checker Framework manual:
-    //     * introduction.tex contains an overview of all options, which
-    //       should be in the same order as this source code file.
+    //     * checker/manual/introduction.tex contains a list of all options,
+    //       which should be in the same order as this source code file.
     //     * a specific section should contain a detailed discussion.
 
     ///
     /// Unsound checking: ignore some errors
     ///
+
+    // A comma-separated list of warnings to suppress
+    // org.checkerframework.framework.source.SourceChecker.createSuppressWarnings
+    "suppressWarnings",
 
     // Set inclusion/exclusion of type uses or definitions
     // org.checkerframework.framework.source.SourceChecker.shouldSkipUses and similar
@@ -106,25 +110,30 @@ import org.checkerframework.javacutil.TreeUtils;
     "skipDefs",
     "onlyDefs",
 
-    // A comma-separated list of warnings to suppress
-    // org.checkerframework.framework.source.SourceChecker.createSuppressWarnings
-    "suppressWarnings",
-
-    // With each warning, in addition to the concrete error key,
-    // output the suppress warning keys that can be used to
-    // suppress that warning.
-    "showSuppressWarningKeys",
-
-    // Unsoundly ignore side effects
-    "assumeSideEffectFree",
-
     // Whether to ignore all subtype tests for type arguments that
     // were inferred for a raw type
     // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
     "ignoreRawTypeArguments",
 
+    // Unsoundly ignore side effects
+    "assumeSideEffectFree",
+
+    // Whether to assume that assertions are enabled or disabled
+    // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder
+    "assumeAssertionsAreEnabled",
+    "assumeAssertionsAreDisabled",
+
+    // Treat checker errors as warnings
+    // org.checkerframework.framework.source.SourceChecker.report
+    "warns",
+
+    ///
+    /// More sound (strict checking): enable errors that are disabled by default
+    ///
+
     // The next ones *increase* rather than *decrease* soundness.
-    // They will eventually be replaced by their complements.
+    // They will eventually be replaced by their complements
+    // (except -AconcurrentSemantics) and moved into the above section.
 
     // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
     // @Pure methods is temporarily disabled unless -AcheckPurityAnnotations is
@@ -141,9 +150,22 @@ import org.checkerframework.javacutil.TreeUtils;
     // casting to an array or generic type. This will be the new default soon.
     "checkCastElementType",
 
-    // Whether to output errors or warnings only
-    // org.checkerframework.framework.source.SourceChecker.report
-    "warns",
+    // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
+    // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
+    // This option takes arguments "source" and/or "bytecode".
+    // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
+    // Note, if unchecked code defaults are turned on for source code, the unchecked
+    // defaults are not applied to code in scope of an @AnnotatedFor.
+    // See the "Compiling partially-annotated libraries" and
+    // "Default qualifiers for \<.class> files (conservative library defaults)"
+    // sections in the manual for more details
+    // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
+    "useDefaultsForUncheckedCode",
+
+    // Whether to assume sound concurrent semantics or
+    // simplified sequential semantics
+    // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
+    "concurrentSemantics",
 
     ///
     /// Type-checking modes:  enable/disable functionality
@@ -158,38 +180,21 @@ import org.checkerframework.javacutil.TreeUtils;
     // org.checkerframework.common.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
     "suggestPureMethods",
 
-    // Whether to assume that assertions are enabled or disabled
-    // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder
-    "assumeAssertionsAreEnabled",
-    "assumeAssertionsAreDisabled",
-
-    // Whether to assume sound concurrent semantics or
-    // simplified sequential semantics
-    // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
-    "concurrentSemantics",
-
-    // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
-    // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
-    // This option takes arguments "source" and/or "bytecode".
-    // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
-    // Note, if unchecked code defaults are turned on for source code, the unchecked
-    // defaults are not applied to code in scope of an @AnnotatedFor.
-    // See the "Compiling partially-annotated libraries" and
-    // "Default qualifiers for \<.class> files (conservative library defaults)"
-    // sections in the manual for more details
-    // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
-    "useDefaultsForUncheckedCode",
-
-    // Whether to resolve reflective method invocations
-    // resolveReflection=debug cause debugging information
+    // Whether to resolve reflective method invocations.
+    // "-AresolveReflection=debug" causes debugging information
     // to be output.
     "resolveReflection",
 
     // Whether to use .jaif files whole-program inference
     "infer",
 
+    // With each warning, in addition to the concrete error key,
+    // output the suppress warning keys that can be used to
+    // suppress that warning.
+    "showSuppressWarningKeys",
+
     ///
-    /// Stub libraries
+    /// Partially-annotated libraries
     ///
 
     // Additional stub files to use
@@ -202,6 +207,8 @@ import org.checkerframework.javacutil.TreeUtils;
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
     "stubWarnIfOverwritesBytecode",
+    // Already listed above, but worth noting again in this section:
+    // "useDefaultsForUncheckedCode"
 
     ///
     /// Debugging
@@ -260,7 +267,10 @@ import org.checkerframework.javacutil.TreeUtils;
     // org.checkerframework.common.basetype.BaseTypeVisitor
     "showchecks",
 
-    /// Miscellaneous debugging options
+    /// Visualizing the CFG
+
+    // Implemented in the wrapper rather than this file, but worth noting here.
+    // -AoutputArgsToFile
 
     // Mechanism to visualize the control flow graph (CFG).
     // The argument is a sequence of values or key-value pairs.
@@ -288,6 +298,8 @@ import org.checkerframework.javacutil.TreeUtils;
     // is short-hand for
     // -Acfgviz=MyClass,verbose
     "verbosecfg",
+
+    /// Miscellaneous debugging options
 
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
@@ -324,7 +336,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The source tree that is being scanned. */
     protected CompilationUnitTree currentRoot;
 
-    /** If an error is detected in a CompilationUnitTree, skip
+    /**
+     * If an error is detected in a CompilationUnitTree, skip
      * all future calls of typeProcess with that same CompilationUnitTree.
      */
     private CompilationUnitTree previousErrorCompilationUnit;
@@ -382,7 +395,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The enabled lint options */
     private Set<String> activeLints;
 
-    /** The active options for this checker.
+    /**
+     * The active options for this checker.
      * This is a processed version of {@link ProcessingEnvironment#getOptions()}:
      * If the option is of the form "-ACheckerName@key=value" and the current checker class,
      * or one of its superclasses is named "CheckerName", then add key &rarr; value.
@@ -395,7 +409,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     private Map<String, String> activeOptions;
 
-    /** The string that separates the checker name from the option name.
+    /**
+     * The string that separates the checker name from the option name.
      * This string may only consist of valid Java identifier part characters,
      * because it will be used within the key of an option.
      */
@@ -404,7 +419,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /** The line separator */
     private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
-    /** The checker that called this one, whether that be a BaseTypeChecker (used
+    /**
+     * The checker that called this one, whether that be a BaseTypeChecker (used
      * as a compound checker) or an AggregateChecker.
      * Null if this is the checker that calls all others.
      * Note that in the case of a compound checker, the compound checker is the
@@ -413,7 +429,8 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      */
     protected SourceChecker parentChecker = null;
 
-    /** List of upstream checker names.
+    /**
+     * List of upstream checker names.
      * Includes the current checker.
      */
     protected List<String> upstreamCheckerNames = null;
@@ -858,8 +875,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.visitor = createSourceVisitor();
 
         // TODO: hack to clear out static caches.
-        // When the {@link org.checkerframework.qualframework.util.QualifierContext}
-        // gets used by all utilities, this shouldn't be an issue anymore.
         AnnotationUtils.clear();
     }
 

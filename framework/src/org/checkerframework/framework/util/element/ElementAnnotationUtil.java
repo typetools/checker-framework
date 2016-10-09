@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.framework.util.AnnotatedTypes;
@@ -150,7 +151,7 @@ public class ElementAnnotationUtil {
      * <? super @B CharSequence> - @B is placed on the super bound (CharSequence)
      * }</pre>
      *
-     * c) If an Annotation is on an unbounded wildard there are two subcases.
+     * c) If an Annotation is on an unbounded wildcard there are two subcases.
      *    c.1 The user wrote the annotation explicitly - these annotations apply to both bounds
      *    e.g. the user wrote
      * <pre>{@code
@@ -362,6 +363,8 @@ public class ElementAnnotationUtil {
             return getLocationTypeAWT((AnnotatedWildcardType) type, location);
         } else if (type.getKind() == TypeKind.ARRAY) {
             return getLocationTypeAAT((AnnotatedArrayType) type, location);
+        } else if (type.getKind() == TypeKind.UNION) {
+            return getLocationTypeAUT((AnnotatedUnionType) type, location);
         } else {
             ErrorReporter.errorAbort(
                     "ElementAnnotationUtil.getTypeAtLocation: only declared types, "
@@ -413,12 +416,26 @@ public class ElementAnnotationUtil {
                     if (toret.getEnclosingType() != null) {
                         toret = toret.getEnclosingType();
                         loc = tail(loc);
+                    } else {
+                        ErrorReporter.errorAbort(
+                                "ElementAnnotationUtil.getLocationTypeADT: "
+                                        + "invalid location "
+                                        + location
+                                        + " for type: "
+                                        + type);
+                        return null; // dead code
                     }
                 }
                 return getTypeAtLocation(toret, loc);
             }
         } else {
-            return type;
+            ErrorReporter.errorAbort(
+                    "ElementAnnotationUtil.getLocationTypeADT: "
+                            + "invalid location "
+                            + location
+                            + " for type: "
+                            + type);
+            return null; // dead code
         }
     }
 
@@ -514,6 +531,20 @@ public class ElementAnnotationUtil {
                             + type);
             return null; // dead code
         }
+    }
+
+    /*
+     * TODO: this case should never occur!
+     * A union type can only occur in special locations, e.g. for exception
+     * parameters. The EXCEPTION_PARAMETER TartetType should be used to
+     * decide which of the alternatives in the union to annotate.
+     * Only the TypePathEntry is not enough.
+     * As a hack, always annotate the first alternative.
+     */
+    private static AnnotatedTypeMirror getLocationTypeAUT(
+            AnnotatedUnionType type, List<TypeAnnotationPosition.TypePathEntry> location) {
+        AnnotatedTypeMirror comptype = type.getAlternatives().get(0);
+        return getTypeAtLocation(comptype, location);
     }
 
     private static <T> List<T> tail(List<T> list) {

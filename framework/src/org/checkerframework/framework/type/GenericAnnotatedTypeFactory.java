@@ -16,6 +16,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
+import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -76,6 +78,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.IrrelevantTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -195,6 +198,18 @@ public abstract class GenericAnnotatedTypeFactory<
     }
 
     /**
+     * Preforms flow-sensitive type refinement on {@code classTree} if this type factory is
+     * configured to do so.
+     * @param classTree tree on which to preform flow-sensitive type refinement
+     */
+    @Override
+    public void preProcessClassTree(ClassTree classTree) {
+        if (this.everUseFlow) {
+            checkAndPerformFlowAnalysis(classTree);
+        }
+    }
+
+    /**
      * Creates a type factory for checking the given compilation unit with
      * respect to the given annotation.
      *
@@ -246,8 +261,14 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
      * on the contents of a tree.
      *
-     * Subclasses may override this method to specify a more appropriate
-     * {@link TreeAnnotator}.
+     * Subclasses may override this method to specify a more appropriate {@link TreeAnnotator}.
+     * The default tree annotator is a {@link ListTreeAnnotator}
+     * of the following:
+     * <ol>
+     *   <li> {@link PropagationTreeAnnotator}: Propagates annotations from subtrees.
+     *   <li> {@link ImplicitsTreeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *  meta-annotations
+     * </ol>
      *
      * @return a tree annotator
      */
@@ -261,12 +282,34 @@ public abstract class GenericAnnotatedTypeFactory<
      * {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
      * that adds annotations to a type based on the content of the type itself.
      *
+     * Subclass may override this method.  The default type annotator is a {@link ListTypeAnnotator}
+     * of the following:
+     * <ol>
+     *   <li> {@link IrrelevantTypeAnnotator}: Adds top to types not listed in
+     *  the {@link RelevantJavaTypes} annotation on the checker
+     *   <li> {@link PropagationTypeAnnotator}: Propagates annotation onto wildcards
+     *   <li> {@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *  meta-annotations
+     * </ol>
+     *
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator() {
+        List<TypeAnnotator> typeAnnotators = new ArrayList<>();
+        RelevantJavaTypes relevantJavaTypes =
+                checker.getClass().getAnnotation(RelevantJavaTypes.class);
+        if (relevantJavaTypes != null) {
+            Class<?>[] classes = relevantJavaTypes.value();
+            // Must be first in order to annotated all irrelevant types that are not explicilty
+            // annotated.
+            typeAnnotators.add(
+                    new IrrelevantTypeAnnotator(
+                            this, getQualifierHierarchy().getTopAnnotations(), classes));
+        }
+        typeAnnotators.add(new PropagationTypeAnnotator(this));
         implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
-
-        return new ListTypeAnnotator(new PropagationTypeAnnotator(this), implicitsTypeAnnotator);
+        typeAnnotators.add(implicitsTypeAnnotator);
+        return new ListTypeAnnotator(typeAnnotators);
     }
 
     protected void addTypeNameImplicit(Class<?> clazz, AnnotationMirror implicitAnno) {
@@ -800,13 +843,11 @@ public abstract class GenericAnnotatedTypeFactory<
                             }
                             break;
                         case CLASS:
-                            // Visit inner and nested classes.
-                            queue.add((ClassTree) m);
-                            break;
                         case ANNOTATION_TYPE:
                         case INTERFACE:
                         case ENUM:
-                            // not necessary to handle
+                            // Visit inner and nested class trees.
+                            queue.add((ClassTree) m);
                             break;
                         case BLOCK:
                             BlockTree b = (BlockTree) m;
@@ -856,7 +897,7 @@ public abstract class GenericAnnotatedTypeFactory<
                 }
 
                 // by convention we store the static initialization store as the regular exit
-                // store of the class node, os that it can later be used to check
+                // store of the class node, so that it can later be used to check
                 // that all fields are initialized properly.
                 // see InitializationVisitor.visitClass
                 if (initializationStaticStore == null) {
@@ -1107,24 +1148,20 @@ public abstract class GenericAnnotatedTypeFactory<
                         + " root needs to be set when used on trees; factory: "
                         + this.getClass();
 
-        if (iUseFlow) {
-            /**
-             * We perform flow analysis on each {@link ClassTree} that is
-             * passed to addComputedTypeAnnotations.  This works correctly when
-             * a {@link ClassTree} is passed to this method before any of its
-             * sub-trees.  It also helps to satisfy the requirement that a
-             * {@link ClassTree} has been advanced to annotation before we
-             * analyze it.
-             */
-            checkAndPerformFlowAnalysis(tree);
-        }
-
         treeAnnotator.visit(tree, type);
         typeAnnotator.visit(type, null);
         defaults.annotate(tree, type);
 
         if (iUseFlow) {
-            Value as = getInferredValueFor(tree);
+            Value as;
+            if (tree.getKind() == Kind.POSTFIX_DECREMENT
+                    || tree.getKind() == Kind.POSTFIX_INCREMENT) {
+                // Dataflow incorrectly treats postfix as prefix.
+                // See Issue 867: https://github.com/typetools/checker-framework/issues/867
+                as = getInferredValueFor(((UnaryTree) tree).getExpression());
+            } else {
+                as = getInferredValueFor(tree);
+            }
             if (as != null) {
                 applyInferredAnnotations(type, as);
             }
@@ -1181,8 +1218,9 @@ public abstract class GenericAnnotatedTypeFactory<
      * Applies the annotations inferred by the org.checkerframework.dataflow analysis to the type {@code type}.
      */
     protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
-        new DefaultInferredTypesApplier()
-                .applyInferredType(getQualifierHierarchy(), type, as.getType());
+        DefaultInferredTypesApplier applier =
+                new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
+        applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
 
     @Override

@@ -283,17 +283,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return null;
         }
 
+        atypeFactory.preProcessClassTree(node);
+
         AnnotatedDeclaredType preACT = visitorState.getClassType();
         ClassTree preCT = visitorState.getClassTree();
         AnnotatedDeclaredType preAMT = visitorState.getMethodReceiver();
         MethodTree preMT = visitorState.getMethodTree();
         Pair<Tree, AnnotatedTypeMirror> preAssCtxt = visitorState.getAssignmentContext();
-
-        // For flow-sensitive type checking, it's significant that we get the
-        // annotated type of the ClassTree before checking the type of any
-        // code within the class.  The call below causes flow analysis to
-        // be run over the class.  See GenericAnnotatedTypeFactory
-        // .annotateImplicitWithFlow where analysis is performed.
         visitorState.setClassType(atypeFactory.getAnnotatedType(node));
         visitorState.setClassTree(node);
         visitorState.setMethodReceiver(null);
@@ -307,7 +303,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             /* Visit the extends and implements clauses.
              * The superclass also visits them, but only calls visitParameterizedType, which
-             * looses a main modifier.
+             * loses a main modifier.
              */
             Tree ext = node.getExtendsClause();
             if (ext != null) {
@@ -320,8 +316,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     validateTypeOf(im);
                 }
             }
-
-            return super.visitClass(node, p);
+            Void returnValue = super.visitClass(node, p);
+            atypeFactory.postProcessClassTree(node);
+            return returnValue;
         } finally {
             this.visitorState.setClassType(preACT);
             this.visitorState.setClassTree(preCT);
@@ -621,10 +618,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // check anything
                 } else {
                     CFAbstractValue<?> value = exitStore.getValue(expr);
-                    AnnotationMirror inferredAnno =
-                            value == null
-                                    ? null
-                                    : value.getType().getAnnotationInHierarchy(annotation);
+                    AnnotationMirror inferredAnno = null;
+                    if (value != null) {
+                        QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                        Set<AnnotationMirror> annos = value.getAnnotations();
+                        inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+                    }
                     if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
                         checker.report(
                                 Result.failure(
@@ -682,6 +681,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             try {
                 FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath(), false);
             } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
+
                 // ignore expressions that do not parse
                 continue;
             }
@@ -736,62 +738,57 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // annotation is invalid.
                     continue;
                 }
-
-                List<?> returnStatements = atypeFactory.getReturnStatementStores(node);
-                for (Object rt : returnStatements) {
-                    @SuppressWarnings("unchecked")
-                    Pair<
-                                    ReturnNode,
-                                    TransferResult<
-                                            ? extends CFAbstractValue<?>,
-                                            ? extends CFAbstractStore<?, ?>>>
-                            r =
-                                    (Pair<
-                                                    ReturnNode,
-                                                    TransferResult<
-                                                            ? extends CFAbstractValue<?>,
-                                                            ? extends CFAbstractStore<?, ?>>>)
-                                            rt;
-                    ReturnNode returnStmt = r.first;
-                    if (r.second == null) {
-                        // Unreachable return statements have no stores, but
-                        // there
-                        // is no need to check them.
-                        continue;
-                    }
-                    Node retValNode = returnStmt.getResult();
-                    Boolean retVal =
-                            retValNode instanceof BooleanLiteralNode
-                                    ? ((BooleanLiteralNode) retValNode).getValue()
-                                    : null;
-                    CFAbstractStore<?, ?> exitStore;
-                    if (result) {
-                        exitStore = r.second.getThenStore();
-                    } else {
-                        exitStore = r.second.getElseStore();
-                    }
-                    CFAbstractValue<?> value = exitStore.getValue(expr);
-                    // don't check if return statement certainly does not
-                    // match 'result'. at the moment, this means the result
-                    // is a boolean literal
-                    if (retVal == null || retVal == result) {
-                        AnnotationMirror inferredAnno =
-                                value == null
-                                        ? null
-                                        : value.getType().getAnnotationInHierarchy(annotation);
-                        if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
-                            checker.report(
-                                    Result.failure(
-                                            "contracts.conditional.postcondition.not.satisfied",
-                                            expr.toString()),
-                                    returnStmt.getTree());
-                        }
-                    }
-                }
+                checkConditionalPostconditionAtReturnStatements(result, annotation, expr, node);
 
             } catch (FlowExpressionParseException e) {
                 // report errors here
                 checker.report(e.getResult(), node);
+            }
+        }
+    }
+
+    private void checkConditionalPostconditionAtReturnStatements(
+            boolean result, AnnotationMirror annotation, Receiver expr, MethodTree methodTree) {
+        for (Object r : atypeFactory.getReturnStatementStores(methodTree)) {
+            Pair<?, ?> pair = (Pair<?, ?>) r;
+            ReturnNode returnStmt = (ReturnNode) pair.first;
+
+            Node retValNode = returnStmt.getResult();
+            Boolean retVal =
+                    retValNode instanceof BooleanLiteralNode
+                            ? ((BooleanLiteralNode) retValNode).getValue()
+                            : null;
+
+            TransferResult<?, ?> transferResult = (TransferResult<?, ?>) pair.second;
+            if (transferResult == null) {
+                // Unreachable return statements have no stores, but there is no need to check them.
+                continue;
+            }
+            CFAbstractStore<?, ?> exitStore =
+                    (CFAbstractStore<?, ?>)
+                            (result
+                                    ? transferResult.getThenStore()
+                                    : transferResult.getElseStore());
+            CFAbstractValue<?> value = exitStore.getValue(expr);
+
+            // don't check if return statement certainly does not match 'result'. at the moment,
+            // this means the result is a boolean literal
+            if (!(retVal == null || retVal == result)) {
+                continue;
+            }
+            AnnotationMirror inferredAnno = null;
+            if (value != null) {
+                QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                Set<AnnotationMirror> annos = value.getAnnotations();
+                inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+            }
+
+            if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
+                checker.report(
+                        Result.failure(
+                                "contracts.conditional.postcondition.not.satisfied",
+                                expr.toString()),
+                        returnStmt.getTree());
             }
         }
     }
@@ -839,6 +836,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             try {
                 FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath(), false);
             } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
+
                 // ignore expressions that do not parse
                 continue;
             }
@@ -961,7 +961,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Skip calls to the Enum constructor (they're generated by javac and
         // hard to check), also see CFGBuilder.visitMethodInvocation.
-        if (TreeUtils.isEnumSuper(node)) {
+        if (TreeUtils.elementFromUse(node) == null || TreeUtils.isEnumSuper(node)) {
             return super.visitMethodInvocation(node, p);
         }
 
@@ -1068,11 +1068,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 CFAbstractValue<?> value = store.getValue(expr);
 
                 AnnotationMirror inferredAnno = null;
-
                 if (value != null) {
-                    inferredAnno = value.getType().getAnnotationInHierarchy(anno);
+                    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                    Set<AnnotationMirror> annos = value.getAnnotations();
+                    inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
                 }
-
                 if (!checkContract(expr, anno, inferredAnno, store)) {
                     checker.report(
                             Result.failure(
@@ -1084,7 +1084,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             treeForErrorReporting);
                 }
             } catch (FlowExpressionParseException e) {
-                // errors are reported at declaration site
+                // report errors here
+                checker.report(e.getResult(), treeForErrorReporting);
             }
         }
     }
@@ -1213,6 +1214,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             try {
                 FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath(), false);
             } catch (FlowExpressionParseException e) {
+                // report errors here
+                checker.report(e.getResult(), node);
+
                 // ignore expressions that do not parse
                 continue;
             }
@@ -1425,7 +1429,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /** TODO: something similar to visitReturn should be done.
+    /* TODO: something similar to visitReturn should be done.
      * public Void visitThrow(ThrowTree node, Void p) {
      * return super.visitThrow(node, p);
      * }
@@ -2903,18 +2907,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
 
         private boolean checkParameters() {
-            boolean result = true;
-            // Check parameter values. (TODO: FIXME varargs)
             List<AnnotatedTypeMirror> overriderParams = overrider.getParameterTypes();
             List<AnnotatedTypeMirror> overriddenParams = overridden.getParameterTypes();
 
-            // The functional interface of an unbound member reference has an extra parameter (the receiver).
-            if (methodReference
-                    && ((JCTree.JCMemberReference) overriderTree)
-                            .hasKind(JCTree.JCMemberReference.ReferenceKind.UNBOUND)) {
-                overriddenParams = new ArrayList<>(overriddenParams);
-                overriddenParams.remove(0);
+            // Fix up method reference parameters.
+            // See https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html#jls-15.13.1
+            if (methodReference) {
+                // The functional interface of an unbound member reference has an extra parameter (the receiver).
+                if (((JCTree.JCMemberReference) overriderTree)
+                        .hasKind(JCTree.JCMemberReference.ReferenceKind.UNBOUND)) {
+                    overriddenParams = new ArrayList<>(overriddenParams);
+                    overriddenParams.remove(0);
+                }
+                // Deal with varargs
+                if (overrider.isVarArgs() && !overridden.isVarArgs()) {
+                    overriderParams =
+                            AnnotatedTypes.expandVarArgsFromTypes(overrider, overriddenParams);
+                }
             }
+
+            boolean result = true;
             for (int i = 0; i < overriderParams.size(); ++i) {
                 boolean success =
                         atypeFactory
@@ -3177,7 +3189,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         FlowExpressionParseUtil.parse(expression, flowExprContext, path, false);
                 result.add(Pair.of(expr, annotation));
             } catch (FlowExpressionParseException e) {
-                // errors are reported elsewhere + ignore this contract
+                // report errors here
+                checker.report(e.getResult(), methodTree);
             }
         }
         return result;

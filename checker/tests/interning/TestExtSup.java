@@ -1,6 +1,6 @@
 // Test case for issue #237: https://github.com/typetools/checker-framework/issues/237
 
-import java.util.*;
+import java.util.List;
 
 interface A<T> {
     public abstract int transform(List<? super T> function);

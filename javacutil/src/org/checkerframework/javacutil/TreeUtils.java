@@ -419,8 +419,14 @@ public final class TreeUtils {
     }
 
     // Specialization for return type.
+    // Might return null if element wasn't found.
     public static final ExecutableElement elementFromUse(MethodInvocationTree node) {
-        return (ExecutableElement) elementFromUse((ExpressionTree) node);
+        Element el = elementFromUse((ExpressionTree) node);
+        if (el instanceof ExecutableElement) {
+            return (ExecutableElement) el;
+        } else {
+            return null;
+        }
     }
 
     // Specialization for return type.
@@ -913,7 +919,8 @@ public final class TreeUtils {
         return null; // dead code
     }
 
-    /** Determine whether the given tree represents an ExpressionTree.
+    /**
+     * Determine whether the given tree represents an ExpressionTree.
      *
      * TODO: is there a nicer way than an instanceof?
      *
@@ -936,7 +943,8 @@ public final class TreeUtils {
         return correctClass && correctMethod;
     }
 
-    /** Determine whether the given tree represents a declaration of a type
+    /**
+     * Determine whether the given tree represents a declaration of a type
      * (including type parameters).
      *
      * @param node  the Tree to test

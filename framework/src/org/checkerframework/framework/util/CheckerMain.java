@@ -56,7 +56,9 @@ public class CheckerMain {
      */
     public static void main(String[] args) {
         final File pathToThisJar = new File(findPathTo(CheckerMain.class, false));
-        final CheckerMain program = new CheckerMain(pathToThisJar, args);
+        ArrayList<String> alargs = new ArrayList<>(args.length);
+        alargs.addAll(Arrays.asList(args));
+        final CheckerMain program = new CheckerMain(pathToThisJar, alargs);
         final int exitStatus = program.invokeCompiler();
         System.exit(exitStatus);
     }
@@ -75,6 +77,7 @@ public class CheckerMain {
      * The path to the jar containing CheckerMain.class (i.e. checker.jar)
      */
     protected final File checkerJar;
+
     /**
      * The path to checker-qual.jar
      */
@@ -98,35 +101,29 @@ public class CheckerMain {
      * Construct all the relevant file locations and Java version given the path to this jar and
      * a set of directories in which to search for jars.
      */
-    public CheckerMain(final File checkerJar, final String[] args) {
+    public CheckerMain(final File checkerJar, final List<String> args) {
 
         this.checkerJar = checkerJar;
         final File searchPath = checkerJar.getParentFile();
         this.checkerQualJar = new File(searchPath, "checker-qual.jar");
 
-        final List<String> argsList = new ArrayList<String>(args.length);
-        for (String arg : args) {
-            argsList.add(arg.trim());
-        }
-
-        replaceShorthandProcessor(argsList);
-        argListFiles = collectArgFiles(argsList);
+        replaceShorthandProcessor(args);
+        argListFiles = collectArgFiles(args);
 
         this.javacJar =
-                extractFileArg(
-                        PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), argsList);
+                extractFileArg(PluginUtil.JAVAC_PATH_OPT, new File(searchPath, "javac.jar"), args);
 
         final String jdkJarName = PluginUtil.getJdkJarName();
         this.jdkJar =
-                extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), argsList);
+                extractFileArg(PluginUtil.JDK_PATH_OPT, new File(searchPath, jdkJarName), args);
 
-        this.compilationBootclasspath = createCompilationBootclasspath(argsList);
-        this.runtimeBootClasspath = createRuntimeBootclasspath(argsList);
-        this.jvmOpts = extractJvmOpts(argsList);
+        this.compilationBootclasspath = createCompilationBootclasspath(args);
+        this.runtimeBootClasspath = createRuntimeBootclasspath(args);
+        this.jvmOpts = extractJvmOpts(args);
 
-        this.cpOpts = createCpOpts(argsList);
-        this.ppOpts = createPpOpts(argsList);
-        this.toolOpts = argsList;
+        this.cpOpts = createCpOpts(args);
+        this.ppOpts = createPpOpts(args);
+        this.toolOpts = args;
 
         assertValidState();
     }
@@ -237,13 +234,14 @@ public class CheckerMain {
     }
 
     /**
-     * Find all args that match the given pattern and extract their index 1 group.  Add all the index 1 groups to the
-     * returned list.   Remove all matching args from the input args list.
+     * Find all args that match the given pattern and extract their index 1 group.
+     * Add all the index 1 groups to the returned list.
+     * Remove all matching args from the input args list.
      * @param pattern      a pattern with at least one matching group
      * @param allowEmpties whether or not to add empty group(1) matches to the returned list
      * @param args         the arguments to extract from
-     * @return a list of arguments from the first group that matched the pattern for each input args or the empty list
-     *         if there were none
+     * @return a list of arguments from the first group that matched the pattern for each input args
+     *         or the empty list if there were none
      */
     protected static List<String> extractOptWithPattern(
             final Pattern pattern, boolean allowEmpties, final List<String> args) {
@@ -570,9 +568,10 @@ public class CheckerMain {
 
         int idx = uri.indexOf('!');
         // Sanity check
-        if (idx == -1)
+        if (idx == -1) {
             throw new IllegalStateException(
                     "You appear to have loaded this class from a local jar file, but I can't make sense of the URL!");
+        }
 
         try {
             String fileName =
@@ -704,7 +703,10 @@ public class CheckerMain {
             }
             checkerJarIs.close();
         } catch (IOException e) {
-            throw new RuntimeException("Could not read " + checkerJar, e);
+            // When using CheckerDevelMain we might not have a checker.jar file built yet.
+            // Issue a warning instead of aborting execution.
+            System.err.printf(
+                    "Could not read %s. Shorthand processor names will not work.%n", checkerJar);
         }
 
         return checkerClassNames;

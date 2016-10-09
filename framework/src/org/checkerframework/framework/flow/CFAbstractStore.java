@@ -14,7 +14,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
-import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
@@ -219,12 +218,11 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                                     monotonicAnnotation, "value", false);
                     AnnotationMirror target =
                             AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
-                    AnnotationMirror anno = otherVal.getType().getAnnotationInHierarchy(target);
                     // Make sure the 'target' annotation is present.
-                    if (anno != null && AnnotationUtils.areSame(anno, target)) {
+                    if (AnnotationUtils.containsSame(otherVal.getAnnotations(), target)) {
                         newOtherVal =
                                 analysis.createSingleAnnotationValue(
-                                                target, otherVal.getType().getUnderlyingType())
+                                                target, otherVal.getUnderlyingType())
                                         .mostSpecific(newOtherVal, null);
                     }
                 }
@@ -399,9 +397,8 @@ public abstract class CFAbstractStore<V extends CFAbstractValue<V>, S extends CF
                                 monotonicAnnotation, "value", false);
                 AnnotationMirror target =
                         AnnotationUtils.fromName(atypeFactory.getElementUtils(), annotation);
-                AnnotationMirror valueAM = value.getType().getAnnotationInHierarchy(target);
                 // Make sure the 'target' annotation is present.
-                if (valueAM != null && AnnotationUtils.areSame(valueAM, target)) {
+                if (AnnotationUtils.containsSame(value.getAnnotations(), target)) {
                     isMonotonic = true;
                     break;
                 }

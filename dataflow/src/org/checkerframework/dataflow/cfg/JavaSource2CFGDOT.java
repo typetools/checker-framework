@@ -11,6 +11,7 @@ import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Options;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -234,12 +235,8 @@ public class JavaSource2CFGDOT {
                 };
 
         Context context = new Context();
+        Options.instance(context).put("compilePolicy", "ATTR_ONLY");
         JavaCompiler javac = new JavaCompiler(context);
-        // TODO: find way to do this in JDK 9
-        // javac.attrParseOnly = true;
-        // effect used to be:
-        // compilePolicy = CompilePolicy.ATTR_ONLY;
-
         JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);
 
         JavaFileObject l =

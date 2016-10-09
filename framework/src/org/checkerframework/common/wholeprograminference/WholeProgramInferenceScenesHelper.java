@@ -38,9 +38,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.qualframework.qual.QualifierKey;
 
-/** This class stores annotations for fields, method return types, and method
+/**
+ * This class stores annotations for fields, method return types, and method
  * parameters.
  * <p>
  * The set of annotations inferred for a certain class is stored in an
@@ -407,11 +407,6 @@ public class WholeProgramInferenceScenesHelper {
             }
         }
 
-        // Special cases that should be ignored:
-        // {@link org.checkerframework.framework.qual.QualifierKey}
-        if (AnnotationUtils.areSameByClass(am, QualifierKey.class)) {
-            return true;
-        }
         return false;
     }
 

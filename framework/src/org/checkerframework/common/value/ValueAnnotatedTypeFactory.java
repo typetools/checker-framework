@@ -9,7 +9,6 @@ import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
-import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,8 +31,6 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.common.value.util.NumberMath;
-import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -73,11 +70,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected Set<String> coveredClassStrings;
 
     /** should this type factory report warnings? **/
-    private boolean reportWarnings = true;
+    private final boolean reportEvalWarnings;
 
     /** Helper class that evaluates statically executable methods, constructor, and fields.*/
-    private final ReflectiveEvalutator evalutator =
-            new ReflectiveEvalutator(checker, this, reportWarnings);
+    private final ReflectiveEvalutator evalutator;
 
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -104,6 +100,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         coveredClassStrings.add("short");
         coveredClassStrings.add("java.lang.Short");
         coveredClassStrings.add("byte[]");
+        reportEvalWarnings = checker.hasOption(ValueChecker.REPORT_EVAL_WARNS);
+        evalutator = new ReflectiveEvalutator(checker, this, reportEvalWarnings);
 
         if (this.getClass().equals(ValueAnnotatedTypeFactory.class)) {
             this.postInit();
@@ -111,77 +109,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return getBundledTypeQualifiersWithPolyAll(BottomVal.class);
-    }
-
-    public void disableWarnings() {
-        reportWarnings = false;
-    }
-
-    public void enableWarnings() {
-        reportWarnings = true;
-    }
-
-    @Override
     public CFTransfer createFlowTransferFunction(
             CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         return new ValueTransfer(analysis);
-    }
-
-    @Override
-    public AnnotatedTypeMirror getAnnotatedType(Tree tree) {
-        if (tree.getKind() == Tree.Kind.POSTFIX_DECREMENT
-                || tree.getKind() == Tree.Kind.POSTFIX_INCREMENT) {
-
-            return getPostFixAnno((UnaryTree) tree, super.getAnnotatedType(tree));
-
-        } else {
-            return super.getAnnotatedType(tree);
-        }
-    }
-
-    private AnnotatedTypeMirror getPostFixAnno(UnaryTree tree, AnnotatedTypeMirror anno) {
-        if (anno.hasAnnotation(DoubleVal.class)) {
-            return postFixDouble(anno, tree.getKind() == Tree.Kind.POSTFIX_INCREMENT);
-        } else if (anno.hasAnnotation(IntVal.class)) {
-            return postFixInt(anno, tree.getKind() == Tree.Kind.POSTFIX_INCREMENT);
-        }
-        return anno;
-    }
-
-    private AnnotatedTypeMirror postFixInt(AnnotatedTypeMirror anno, boolean increment) {
-        List<Long> values = getIntValues(anno.getAnnotation(IntVal.class));
-        List<? extends Number> castedValues =
-                NumberUtils.castNumbers(anno.getUnderlyingType(), values);
-        List<Long> results = new ArrayList<>();
-        for (Number value : castedValues) {
-            NumberMath<?> number = NumberMath.getNumberMath(value);
-            if (increment) {
-                results.add(number.minus(1).longValue());
-            } else {
-                results.add(number.plus(1).longValue());
-            }
-        }
-        anno.replaceAnnotation(createIntValAnnotation(results));
-        return anno;
-    }
-
-    private AnnotatedTypeMirror postFixDouble(AnnotatedTypeMirror anno, boolean increment) {
-        List<Double> values = getDoubleValues(anno.getAnnotation(DoubleVal.class));
-        List<? extends Number> castedValues =
-                NumberUtils.castNumbers(anno.getUnderlyingType(), values);
-        List<Double> results = new ArrayList<>();
-        for (Number value : castedValues) {
-            NumberMath<?> number = NumberMath.getNumberMath(value);
-            if (increment) {
-                results.add(number.minus(1).doubleValue());
-            } else {
-                results.add(number.plus(1).doubleValue());
-            }
-        }
-        anno.replaceAnnotation(createDoubleValAnnotation(results));
-        return anno;
     }
 
     /**
@@ -201,6 +131,11 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else {
             return UNKNOWNVAL;
         }
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithoutPolyAll();
     }
 
     @Override

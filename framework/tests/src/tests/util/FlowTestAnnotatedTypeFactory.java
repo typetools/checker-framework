@@ -2,7 +2,6 @@ package tests.util;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -36,14 +35,13 @@ public class FlowTestAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        return Collections.unmodifiableSet(
-                new HashSet<Class<? extends Annotation>>(
-                        Arrays.asList(
-                                Value.class,
-                                Odd.class,
-                                MonotonicOdd.class,
-                                Unqualified.class,
-                                Bottom.class)));
+        return new HashSet<Class<? extends Annotation>>(
+                Arrays.asList(
+                        Value.class,
+                        Odd.class,
+                        MonotonicOdd.class,
+                        Unqualified.class,
+                        Bottom.class));
     }
 
     @Override

@@ -3,8 +3,10 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
+import java.lang.annotation.Annotation;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.signedness.qual.*;
+import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -21,8 +23,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final AnnotationMirror UNSIGNED;
-    private final AnnotationMirror SIGNED;
+    // private final AnnotationMirror UNSIGNED;
+    // private final AnnotationMirror SIGNED;
     private final AnnotationMirror UNKNOWN_SIGNEDNESS;
 
     // These are commented out until issues with making boxed implicitly signed
@@ -36,11 +38,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public SignednessAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        UNSIGNED = AnnotationUtils.fromClass(elements, Unsigned.class);
-        SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
+        // UNSIGNED = AnnotationUtils.fromClass(elements, Unsigned.class);
+        // SIGNED = AnnotationUtils.fromClass(elements, Signed.class);
         UNKNOWN_SIGNEDNESS = AnnotationUtils.fromClass(elements, UnknownSignedness.class);
 
         postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithoutPolyAll();
     }
 
     /**
@@ -78,6 +85,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 QualifierDefaults defaults = new QualifierDefaults(elements, this);
                 defaults.addCheckedCodeDefault(UNKNOWN_SIGNEDNESS, TypeUseLocation.LOCAL_VARIABLE);
                 defaults.annotate(tree, type);
+                break;
+            default:
+                // Nothing for other cases.
         }
 
         // This code commented out until issues with making boxed implicitly signed
@@ -122,6 +132,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             switch (type.getKind()) {
                 case BOOLEAN:
                     type.addAnnotation(UNKNOWN_SIGNEDNESS);
+                    break;
+                default:
+                    // Nothing for other cases.
             }
 
             return null;

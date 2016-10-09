@@ -1,15 +1,25 @@
 // This test contains the sample code from the Lock Checker manual chapter
 // modified to fit testing instead of illustrative purposes,
 // and contains other miscellaneous Lock Checker testing.
-import java.util.*;
+
+import java.util.AbstractCollection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
-import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.lock.qual.GuardedBy;
+import org.checkerframework.checker.lock.qual.GuardedByBottom;
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
+import org.checkerframework.checker.lock.qual.Holding;
+import org.checkerframework.checker.lock.qual.LockingFree;
+import org.checkerframework.checker.lock.qual.MayReleaseLocks;
+import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 class ChapterExamples {
     // This code crashed when there was a bug before issue 524 was fixed.
@@ -292,7 +302,7 @@ class ChapterExamples {
         y5 = x5; // ILLEGAL
     }
 
-    //:: error: (primitive.type.guardedby)
+    //:: error: (immutable.type.guardedby)
     @GuardedBy("a") String s = "string";
 
     @GuardedBy({}) MyClass o1;
@@ -475,14 +485,14 @@ class ChapterExamples {
     // TODO: For now, boxed types are treated as primitive types. This may change in the future.
     void unboxing() {
         int a = 1;
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy("lock") Integer c;
         synchronized (lock) {
             //:: error: (assignment.type.incompatible)
             c = a;
         }
 
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy("lock") Integer b = 1;
         int d;
         synchronized (lock) {
@@ -543,7 +553,8 @@ class ChapterExamples {
       a = b; // TODO: This assignment between two reference types should not require a lock to be held.
     }*/
 
-    final ReentrantLock lock1 = new ReentrantLock(), lock2 = new ReentrantLock();
+    final ReentrantLock lock1 = new ReentrantLock();
+    final ReentrantLock lock2 = new ReentrantLock();
 
     @GuardedBy("lock1") MyClass filename;
 
@@ -905,15 +916,9 @@ class ChapterExamples {
                 new ReentrantLock(); // rl2 is reassigned later - it is not effectively final
         rl1.lock();
         rl1.unlock();
-        // TODO: The two method.invocation.invalid errors below are due to the fact
-        // that unlock() called above is a non-side-effect-free method
-        // and is due to this line in LockStore.updateForMethodCall:
-        // localVariableValues.clear();
-        // Fix LockStore.updateForMethodCall so it is less conservative and remove
-        // the expected error.
-        //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
+        //:: error: (lock.expression.not.final)
         rl2.lock();
-        //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
+        //:: error: (lock.expression.not.final)
         rl2.unlock();
 
         rl2 =

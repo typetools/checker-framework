@@ -1,6 +1,8 @@
 package org.checkerframework.checker.units.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Specify the class that knows how to handle the meta-annotated unit
@@ -14,5 +16,9 @@ public @interface UnitsRelations {
     /**
      * @return the UnitsRelations subclass to use
      */
-    Class<? extends org.checkerframework.checker.units.UnitsRelations> value();
+    // The more precise type is Class<? extends org.checkerframework.checker.units.UnitsRelations>,
+    // but org.checkerframework.checker.units.UnitsRelations is not in checker-qual.jar, nor can
+    // it be since it uses AnnotatedTypeMirrors.  So use a less precise type and check that it
+    // is a sub class in UnitsAnnotatedTypeFactory
+    Class<?> value();
 }

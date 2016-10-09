@@ -1,12 +1,10 @@
-import java.util.*;
-import org.checkerframework.framework.qual.*;
 import org.checkerframework.framework.test.*;
 import tests.util.*;
 
-class Postcondition {
+class MetaPostcondition {
 
     String f1, f2, f3;
-    Postcondition p;
+    MetaPostcondition p;
 
     /***** normal postcondition ******/
     @EnsuresOdd("f1")
@@ -20,7 +18,7 @@ class Postcondition {
     }
 
     @EnsuresOdd("#1.f1")
-    void oddF1_2(final Postcondition param) {
+    void oddF1_2(final MetaPostcondition param) {
         param.f1 = null;
     }
 
@@ -61,11 +59,13 @@ class Postcondition {
         oddF1();
         @Odd String l2 = f1;
 
+        //:: error: (flowexpr.parse.error)
         error();
     }
 
     // test parameter syntax
     void t2(@Odd String p1, String p2) {
+        //:: error: (flowexpr.parse.index.too.big)
         param3();
     }
 
@@ -79,7 +79,7 @@ class Postcondition {
 
     // postcondition with more complex flow expression
     void tn2(boolean b) {
-        Postcondition param = null;
+        MetaPostcondition param = null;
         //:: error: (assignment.type.incompatible)
         @Odd String l1 = param.f1;
         oddF1_2(param);
@@ -93,6 +93,7 @@ class Postcondition {
         //:: error: (assignment.type.incompatible)
         @Value String l2 = f2;
 
+        //:: error: (flowexpr.parse.error)
         error2(p1, p2);
     }
 

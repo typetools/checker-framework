@@ -28,6 +28,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 
 /*>>>
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -90,8 +91,10 @@ public class AnnotationClassLoader {
     /** The resource URL of the qual directory of a checker class */
     private final URL resourceURL;
 
-    /** The loaded annotation classes.  Call {@link #getLoadedAnnotationClasses} rather than using
-     * this field directly as it may be null. */
+    /**
+     * The loaded annotation classes.  Call {@link #getLoadedAnnotationClasses} rather than using
+     * this field directly as it may be null.
+     */
     private Set<Class<? extends Annotation>> loadedAnnotations;
 
     /**
@@ -105,7 +108,10 @@ public class AnnotationClassLoader {
 
         // package name must use dots, this is later prepended to annotation
         // class names as we load the classes using the class loader
-        packageName = checker.getClass().getPackage().getName() + QUAL_PACKAGE_SUFFIX;
+        packageName =
+                checker.getClass().getPackage() != null
+                        ? checker.getClass().getPackage().getName() + QUAL_PACKAGE_SUFFIX
+                        : QUAL_PACKAGE_SUFFIX.substring(1);
 
         // the package name with dots replaced by slashes will be used to scan
         // file directories
@@ -419,24 +425,13 @@ public class AnnotationClassLoader {
      *         classloader, or null if both are unavailable
      */
     private final /*@Nullable*/ ClassLoader getAppClassLoader() {
-        ClassLoader applicationClassLoader = checker.getClass().getClassLoader();
-
-        // see if we can access the application classloader
-        if (applicationClassLoader == null) {
-            // if the application classloader for the checker isn't available,
-            // then try to obtain the System application classloader
-            applicationClassLoader = ClassLoader.getSystemClassLoader();
-
-            // Debug use:
-            // processingEnv.getMessager().printMessage(Kind.NOTE, "Using System application class loader!");
-        }
-
-        return applicationClassLoader;
+        return InternalUtils.getClassLoaderForClass(checker.getClass());
     }
 
     /**
      * Debug Use Displays all classpaths
      */
+    @SuppressWarnings("unused") // for debugging
     private final void printPaths() {
         // all paths in Xbootclasspath
         String[] bootclassPaths = System.getProperty("sun.boot.class.path").split(":");
@@ -583,7 +578,7 @@ public class AnnotationClassLoader {
             final String annoName) {
         try {
             final Class<? extends Annotation> annoClass =
-                    Class.forName(annoName).asSubclass(Annotation.class);
+                    Class.forName(annoName, true, getAppClassLoader()).asSubclass(Annotation.class);
             return annoClass;
         } catch (ClassNotFoundException e) {
             checker.userErrorAbort(

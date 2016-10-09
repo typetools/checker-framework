@@ -1,14 +1,17 @@
-import java.lang.annotation.*;
-import org.checkerframework.framework.qual.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.SubtypeOf;
+import org.checkerframework.framework.qual.Unused;
 
 public final class UnusedOnClass {
-    public static void read_serialized_pptmap2(@MyNonPrototype MyInvariant inv) {
+    public static void read_serialized_pptmap2(@MyNonPrototype MyInvariant2 inv) {
         inv.ppt.toString();
     }
 }
 
 @MyPrototype
-abstract class MyInvariant {
+abstract class MyInvariant2 {
     @Unused(when = MyPrototype.class)
     public String ppt = "hello";
 }

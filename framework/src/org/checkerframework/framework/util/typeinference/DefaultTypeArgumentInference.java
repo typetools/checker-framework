@@ -20,7 +20,6 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
@@ -50,6 +49,7 @@ import org.checkerframework.framework.util.typeinference.solver.SupertypesSolver
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * An implementation of TypeArgumentInference that mostly follows the process outlined in JLS7
@@ -107,6 +107,20 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         return inferredArgs;
     }
 
+    private List<AnnotatedTypeMirror> boxPrimitives(
+            AnnotatedTypeFactory factory, List<AnnotatedTypeMirror> args) {
+        List<AnnotatedTypeMirror> boxedArgs = new ArrayList<>(args.size());
+        for (AnnotatedTypeMirror arg : args) {
+            if (TypesUtils.isPrimitive(arg.getUnderlyingType())) {
+                AnnotatedTypeMirror boxed = factory.getBoxedType((AnnotatedPrimitiveType) arg);
+                boxedArgs.add(boxed);
+            } else {
+                boxedArgs.add(arg);
+            }
+        }
+        return boxedArgs;
+    }
+
     @Override
     public void adaptMethodType(
             AnnotatedTypeFactory typeFactory,
@@ -122,12 +136,22 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final ExpressionTree expression, final AnnotatedTypeFactory typeFactory) {
         final List<? extends ExpressionTree> argTrees =
                 TypeArgInferenceUtil.expressionToArgTrees(expression);
-        return TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
+        List<AnnotatedTypeMirror> argtypes =
+                TypeArgInferenceUtil.treesToTypes(argTrees, typeFactory);
+        return boxPrimitives(typeFactory, argtypes);
     }
 
     protected AnnotatedTypeMirror getAssignedTo(
             ExpressionTree expression, AnnotatedTypeFactory typeFactory) {
-        return TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
+        AnnotatedTypeMirror assignedTo =
+                TypeArgInferenceUtil.assignedTo(typeFactory, typeFactory.getPath(expression));
+        if (assignedTo == null) {
+            return null;
+        } else if (TypesUtils.isPrimitive(assignedTo.getUnderlyingType())) {
+            return typeFactory.getBoxedType((AnnotatedPrimitiveType) assignedTo);
+        } else {
+            return assignedTo;
+        }
     }
 
     /**
@@ -317,7 +341,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             InferenceResult fromArgSupertypes,
             List<AnnotatedTypeVariable> targetDeclarations,
             AnnotatedTypeFactory typeFactory) {
-        final Types types = typeFactory.getProcessingEnv().getTypeUtils();
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
         final Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
 
@@ -563,9 +586,18 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             if (equalityInferred != null && equalityInferred instanceof InferredType) {
 
                 if (supertypeInferred != null && supertypeInferred instanceof InferredType) {
-                    if (typeHierarchy.isSubtype(
-                            ((InferredType) supertypeInferred).type,
-                            ((InferredType) equalityInferred).type)) {
+                    AnnotatedTypeMirror superATM = ((InferredType) supertypeInferred).type;
+                    AnnotatedTypeMirror equalityATM = ((InferredType) equalityInferred).type;
+                    if (TypesUtils.isErasedSubtype(
+                            typeFactory.getContext().getTypeUtils(),
+                            equalityATM.getUnderlyingType(),
+                            superATM.getUnderlyingType())) {
+                        // If the underlying type of equalityATM is a subtype of the underlying
+                        // type of superATM, then the call to isSubtype below will issue an error.
+                        // So call asSuper so that the isSubtype call below works correctly.
+                        equalityATM = AnnotatedTypes.asSuper(typeFactory, equalityATM, superATM);
+                    }
+                    if (typeHierarchy.isSubtype(superATM, equalityATM)) {
                         outputValue = equalityInferred;
                     } else {
                         outputValue = supertypeInferred;

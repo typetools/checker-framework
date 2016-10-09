@@ -36,6 +36,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-code-clutter}: Will my code become cluttered with type annotations?
 \\ \ref{faq-slowdown}: Will using the Checker Framework slow down my program?  Will it slow down the compiler?
 \\ \ref{faq-shorten-command-line}: How do I shorten the command line when invoking a checker?
+\\ \ref{faq-pre-conditions}: Method pre-condition contracts, including formal parameter annotations, make no sense for public methods.
 
 \faqtocpara{\ref{faq-warnings-section}: How to handle warnings}
 \\ \ref{faq-handling-warnings}: What should I do if a checker issues a warning about my code?
@@ -61,6 +62,7 @@ fully-qualified type name?
 \\ \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?
 \\ \ref{faq-typestate}: How can I handle typestate, or phases of my program with different data properties?
 \\ \ref{faq-implicit-bounds}: Why are explicit and implicit bounds defaulted differently?
+\\ \ref{faq-runtime-retention}: Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?
 
 \faqtocpara{\ref{faq-create-a-checker-section}: Creating a new checker}
 \\ \ref{faq-create-a-checker}: How do I create a new checker?
@@ -73,7 +75,7 @@ fully-qualified type name?
 \\ \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java?
 \\ \ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305?
 \\ \ref{faq-jsr-308}: What is the relationship between the Checker Framework and JSR 308?
-
+\\ \ref{faq-checked-exceptions}: Is there a type-checker for managing checked and unchecked exceptions?
 
 \section{Motivation for pluggable type-checking\label{faq-motivation-section}}
 
@@ -373,11 +375,60 @@ compilation, and you can do it as part of your normal development process.
 \subsection{How do I shorten the command line when invoking a checker?\label{faq-shorten-command-line}}
 
 \begin{sloppypar}
-The compile options to javac can be a pain to type; for example,
+The compile options to javac can be long to type; for example,
 \code{javac -processor org.checkerframework.checker.nullness.NullnessChecker ...}.
 See Section~\ref{checker-auto-discovery} for a way to avoid the need for
 the \code{-processor} command-line option.
 \end{sloppypar}
+
+
+\subsection{Method pre-condition contracts, including formal parameter annotations, make no sense for public methods\label{faq-pre-conditions}}
+
+Some people go further and say that pre-condition contracts make no sense
+for any method.  This objection is sometimes stated as, "A method parameter
+should never be annotated as \<@NonNull>.  A client could pass any value at
+all, so the method implementation cannot depend on the value being
+non-null.  Furthermore, if a client passes an illegal value, it is the
+method's responsibility to immediately tell the client about the illegal
+value."
+
+Here is an example that invalidates this general argument.  Consider a
+binary search routine.  Its specification requires that clients pass in a
+sorted array.
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  /** Return index of the search key, if it is contained it the sorted array a; otherwise ... */
+  int binarySearch(Object @Sorted [] a, Object key)
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+The \<binarySearch> routine is fast --- it runs in O(log n) time where n is
+the length of the array.  If the routine had to validate that its input
+array is sorted, then it would run in O(n) time, negating all benefit of
+binary search.  In other words, \<binarySearch> should \emph{not} validate
+its input!
+
+The nature of a contract is that if the \emph{caller} violates its
+responsibilities by passing bad values, then the \emph{callee} is absolved
+of its responsibilities.  It is polite for the callee to try to provide a
+useful diagnostic to the misbehaving caller (for example, by raising a
+particular exception quickly), but it is \emph{not} required.  In such a
+situation, the callee has the flexibility to do anything that is
+convenient.
+
+In some cases a routine has a \emph{complete} specification:  the contract
+permits the caller to pass any value, and the callee is required to throw
+particular exceptions for particular inputs.  This approach is common for
+public methods, but it is not required and is not always the right thing.
+As explained in section~\ref{annotate-normal-behavior}, even when a method
+has a complete specification, the annotations should indicate normal
+behavior:  behavior that will avoid exceptions.
+
 
 
 \section{How to handle warnings and errors\label{faq-warnings-section}}
@@ -1026,6 +1077,31 @@ It is better style to write no upper bound or to write an explicit type
 annotation on \<Object>.
 
 
+\subsection{Why are type annotations declared with \<@Retention(RetentionPolicy.RUNTIME)>?\label{faq-runtime-retention}}
+
+Annotations such as \refqualclass{checker/nullness/qual}{NonNull} are
+declared with
+\<\sunjavadocanno{java/lang/annotation/Retention.html}{Retention}(RetentionPolicy.\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#RUNTIME}{RUNTIME})>.  In other words,
+these type annotations are available to tools at run time.  Such run-time
+tools could check the annotations (like an \<assert> statement), type-check
+dynamically-loaded code, check casts and \<instanceof> operations, resolve
+reflection more precisely, or other tasks that we have not yet thought of.
+Not many such tools exist today, but the annotation designers wanted to
+accommodate them in the future.
+
+\<RUNTIME> retention has negligible costs (no run-time dependency, minimal
+increase in heap size).
+
+For the purpose of static checking at compile time,
+\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#CLASS}{CLASS}
+retention would be sufficient.  Note that
+\sunjavadoc{java/lang/annotation/RetentionPolicy.html\#SOURCE}{SOURCE}
+retention would not be sufficient, because of separate compilation: when
+type-checking a class, the compiler needs to read the annotations on
+libraries that it uses, and separately-compiled libraries are available to
+the compiler only as class files.
+
+
 \section{Creating a new checker\label{faq-create-a-checker-section}}
 
 \subsection{How do I create a new checker?\label{faq-create-a-checker}}
@@ -1113,19 +1189,29 @@ analysis differs from the Checker Framework in several respects.
 
 The Checker Framework's Nullness Checker
 (see~\chapterpageref{nullness-checker}) is more precise:  it does a deeper
-semantic analysis, so it issues fewer false positives than Eclipse.  For
-example, the Nullness Checker handles initialization and map key checking,
-it supports method pre- and post-conditions, and it includes a powerful
-dataflow analysis.
+semantic analysis, so it issues fewer false positives than Eclipse.
+Eclipse's nullness analysis is missing many features that the Checker
+Framework supports, such as handling of map keys, partially-initialized
+objects, method pre- and post-conditions, polymorphism, and a powerful
+dataflow analysis.  These are essential for practical verification of
+real-world code without poor precision.
+Furthermore, Eclipse by default ignores unannotated code (even unannotated
+parameters within a method that contains other annotations).
+As a result, Eclipse is more useful for bug-finding than for verification,
+and that is what the Eclipse documentation recommends.
+% See heading "Interpretation of null annotations" under
+% http://help.eclipse.org/neon/index.jsp?topic=%2Forg.eclipse.jdt.doc.user%2Ftasks%2Ftask-using_external_null_annotations.htm
 
-Eclipse assumes that all code is multi-threaded, which cripples its local
-type inference.  By contrast, the Checker Framework allows the user to
+Eclipse assumes by default that all code is multi-threaded, which cripples its local
+type inference.  (This default can be turned off, however.)
+By contrast, the Checker Framework allows the user to
 specify whether code will be run concurrently or not via the
 \<-AconcurrentSemantics> command-line option (see
 Section~\ref{faq-concurrency}).
 
-The Checker Framework is easier to run in integration scripts or in
-environments where not all developers are using Eclipse.
+The Checker Framework builds on javac, so it is easier to run in
+integration scripts or in
+environments where not all developers have installed Eclipse.
 % It is possible to use ecj as one's compiler:
 % https://wiki.eclipse.org/JDT/FAQ#Can_I_use_JDT_outside_Eclipse_to_compile_Java_code.3F
 
@@ -1231,13 +1317,29 @@ be used with previous versions of the Java language via the
 annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 
 
+\subsection{Is there a type-checker for managing checked and unchecked exceptions?\label{faq-checked-exceptions}}
+
+It is possible to annotate exceptions, and any type-checker built on the
+Checker Framework enforces that type annotations are consistent between
+\<throw> statements and \<catch> clauses that might catch them.
+
+The Java compiler already enforces that all checked exceptions are caught
+or are declared to be passed through, so you would use annotations to
+express other properties about exceptions.
+
+Checked exceptions are an example of a ``type and effect'' system, which is
+like a type system but also accounts for actions/behaviors such as side
+effects.  The GUI Effect Checker (\chapterpageref{guieffect-checker}) is a
+type-and-effect system that is distributed with the Checker Framework.
+
+
 % LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtils
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre
+%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre dev
 %  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs
-%%  LocalWords:  featureful
+%%  LocalWords:  featureful RetentionPolicy

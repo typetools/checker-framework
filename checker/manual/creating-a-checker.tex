@@ -70,9 +70,10 @@ it from the webpages, or include it in the Checker Framework distribution.
 For examples, see \chapterpageref{third-party-checkers}.
 
 
-\section{Relationship of the Checker Framework to other tools\label{tool-relationships}}
+\section{How checkers build on the Checker Framework\label{tool-relationships}}
 
-This table shows the relationship among various tools.
+This table shows the relationship among tools that the Checker Framework
+builds on or that are built on the Checker Framework.
 All of the tools support the Java 8 type annotation syntax.
 You use the Checker Framework to build pluggable type systems, and the
 Annotation File Utilities to manipulate \code{.java} and \code{.class} files.
@@ -111,7 +112,9 @@ Other \par tools
 \end{center}
 
 
-The Base Checker enforces the standard subtyping rules on extended types.
+The Base Checker
+(more precisely, the \refclass{common/basetype}{BaseTypeChecker})
+enforces the standard subtyping rules on extended types.
 The Subtyping Checker is a simple use of the Base Checker that supports
 providing type qualifiers on the command line.
 You usually want to build your checker on the Base Checker.
@@ -496,12 +499,38 @@ files that the checker reads.
 
 \begin{sloppypar}
 Alternately, the type system designer may specify a default procedurally,
-by calling the
-\refmethod{framework/util/defaults}{QualifierDefaults}{addCheckedCodeDefault}{-javax.lang.model.element.AnnotationMirror-org.checkerframework.framework.qual.TypeUseLocation-}
+by overriding the
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{addCheckedCodeDefaults}{-org.checkerframework.framework.utils.defaults.QualifierDefaults-}
 method.  You may do this even if you have declaratively defined the
-qualifier hierarchy; see the Nullness Checker's implementation for an
-example.
+qualifier hierarchy.
 \end{sloppypar}
+
+If the default qualifier in the type hierarchy requires a value, there are ways for the type system designer to specify a default value both declaratively and procedurally, as well. To do so declaratively, append the string ``default <value>'' where ``<value>'' is the actual value you want to be the default, after the declaration of the value in the qualifier file. For instance, \code{int value() default 0;} would make \code{value} default to zero. Alternatively, the procedural method described above can be used.
+
+\subsection{Relevant Java types\label{relevant-java-types}}
+
+A checker can use the \refqualclass{framework/qual}{RelevantJavaTypes}
+annotation on the checker class to specify which Java types are relevant to the
+checker.  All irrelevant types without explicit annotations are defaulted to
+the top annotation.
+
+\subsection{Do not re-use type qualifiers\label{do-not-re-use-type-qualifiers}}
+
+Every annotation should belong to only one type system.  No annotation
+should be used by multiple type systems.  This is true even of annotations
+that are internal to the type system and are not intended to be written by
+the programmer.
+
+Suppose that you have two type systems that both use the same type
+qualifier \<@A>.  In a client program, a use of type \<T> may require type
+qualifier \<@A> for one type system but a different qualifier for the other
+type system.  There is no annotation that a programmer can write to make
+the program type-check under both type systems.
+
+This also applies to type qualifiers that a programmer does not write,
+because the compiler outputs \<.class> files that contain an explicit type
+qualifier on every type --- a defaulted or inferred type qualifier if the
+programmer didn't write a type qualifier explicitly.
 
 
 \subsection{Completeness of the type hierarchy\label{bottom-and-top-qualifier}}
@@ -596,7 +625,9 @@ whenever the type system is violated.
 
 A checker's visitor overrides one method in the base visitor for each special
 rule in the type qualifier system.  Most type-checkers
-override only a few methods in \refclass{common/basetype}{BaseTypeVisitor}.  For example, the
+override only a few methods in \refclass{common/basetype}{BaseTypeVisitor};
+the overridden version does its own checks and also invokes the version in
+its superclass so that standard checks are also performed.  For example, the
 visitor for the Nullness type system of Chapter~\ref{nullness-checker}
 contains a single 4-line method that warns if an expression of nullable type
 is dereferenced, as in:
@@ -814,7 +845,7 @@ Framework's dataflow framework.
 
 The steps to customizing type refinement are:
 \begin{enumerate}
-\item{\ref{dataflow-create-classes}} Create required classes and configure their
+\item{\ref{dataflow-create-classes}} Create required class and configure its
     use
 \item{\ref{dataflow-override-methods}} Override methods that handle
     \refclass{dataflow/cfg/node}{Node}s of interest
@@ -828,87 +859,116 @@ The Regex Checker's dataflow customization for the
 run-time check is used as an example throughout the steps.
 
 
-\subsection{Create required classes and configure their use\label{dataflow-create-classes}}
+\subsection{Create required class and configure its use\label{dataflow-create-classes}}
 
-The following classes must be created to customize dataflow. These classes must
+The following class must be created to customize dataflow. This class must
 be included on the classpath like other components of your checker.
 
 \begin{enumerate}
 \item \textbf{Create a class that extends
-    \refclass{framework/flow}{CFAbstractTransfer}}
+    \refclass{framework/flow}{CFTransfer}}
 
-  \refclass{framework/flow}{CFAbstractTransfer} performs the default Checker
+  \refclass{framework/flow}{CFTransfer} performs the default Checker
   Framework type refinement.  The extended class will add functionality by
   overriding superclass methods.
 
-  The Regex Checker's extended \refclass{framework/flow}{CFAbstractTransfer} is
-  \refclass{checker/regex/classic}{RegexTransfer}.
-
-\item \textbf{Create a class that extends
-    \refclass{framework/flow}{CFAbstractAnalysis} and uses the extended
-    \refclass{framework/flow}{CFAbstractTransfer}}
-
-  \begin{sloppypar}
-  \refclass{framework/flow}{CFAbstractTransfer} and its superclass,
-  \refclass{dataflow/analysis}{Analysis}, are the central coordinating classes
-  in the Checker Framework's dataflow algorithm. The
-  \code{createTransferFunction} method must be overridden in an extended
-  \refclass{framework/flow}{CFAbstractTransfer} to return a new instance of the
-  extended \refclass{framework/flow}{CFAbstractTransfer}.
-  \end{sloppypar}
-
-  \begin{sloppypar}
-  The Regex Checker's extended \refclass{framework/flow}{CFAbstractAnalysis} is
-  \refclass{checker/regex/classic}{RegexAnalysis}, which overrides the
-  \code{createTransferFunction} to return a new
-  \refclass{checker/regex/classic}{RegexTransfer} instance:
-  \end{sloppypar}
-
-%BEGIN LATEX
-\begin{smaller}
-%END LATEX
-\begin{Verbatim}
-  @Override
-  public RegexTransfer createTransferFunction() {
-      return new RegexTransfer(this);
-  }
-\end{Verbatim}
-%BEGIN LATEX
-\end{smaller}
-%END LATEX
+  The Regex Checker's extended \refclass{framework/flow}{CFTransfer} is
+  \refclass{checker/regex}{RegexTransfer}.
 
 \item \textbf{Configure the checker's type factory to use the extended
-    \refclass{framework/flow}{CFAbstractAnalysis}}
+    \refclass{framework/flow}{CFTransfer}}
 
-\begin{sloppypar}
-To configure your checker's type factory to use the new extended
-\refclass{framework/flow}{CFAbstractAnalysis}, override the
-\code{createFlowAnalysis} method in your type factory to return a new instance
-of the extended \refclass{framework/flow}{CFAbstractAnalysis}.
-\end{sloppypar}
+If the checker's extended \refclass{framework/flow}{CFTransfer}
+starts with the name of the type system, then the type factory will use the
+transfer class without further configuration. For example, if the checker
+class is FooChecker, then if the transfer class is FooTransfer, then it is
+not necessary to configure the type factory
+to use FooTransfer.  If some other naming convention is used, then
+to configure your checker's type factory to use the new extended
+\refclass{framework/flow}{CFTransfer}, override the
+\code{createFlowTransferFunction} method in your type factory to return a new instance
+of the extended \refclass{framework/flow}{CFTransfer}.
 
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
 \begin{Verbatim}
   @Override
-  protected RegexAnalysis createFlowAnalysis(
-          List<Pair<VariableElement, CFValue>> fieldValues) {
-
-      return new RegexAnalysis(checker, this, fieldValues);
+  public CFTransfer createFlowTransferFunction(
+          CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
+      return new RegexTransfer((CFAnalysis) analysis);
   }
 \end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
+
+%% The text below is true, but not required.
+%\item \textbf{Create a class that extends
+%    \refclass{framework/flow}{CFAbstractAnalysis} and uses the extended
+%    \refclass{framework/flow}{CFAbstractTransfer}}
+%
+%  \begin{sloppypar}
+%  \refclass{framework/flow}{CFAbstractTransfer} and its superclass,
+%  \refclass{dataflow/analysis}{Analysis}, are the central coordinating classes
+%  in the Checker Framework's dataflow algorithm. The
+%  \code{createTransferFunction} method must be overridden in an extended
+%  \refclass{framework/flow}{CFAbstractTransfer} to return a new instance of the
+%  extended \refclass{framework/flow}{CFAbstractTransfer}.
+%  \end{sloppypar}
+%
+%  \begin{sloppypar}
+%  The Regex Checker's extended \refclass{framework/flow}{CFAbstractAnalysis} is
+%  \refclass{checker/regex/classic}{RegexAnalysis}, which overrides the
+%  \code{createTransferFunction} to return a new
+%  \refclass{checker/regex/classic}{RegexTransfer} instance:
+%  \end{sloppypar}
+%
+%%BEGIN LATEX
+%\begin{smaller}
+%%END LATEX
+%\begin{Verbatim}
+%  @Override
+%  public RegexTransfer createTransferFunction() {
+%      return new RegexTransfer(this);
+%  }
+%\end{Verbatim}
+%%BEGIN LATEX
+%\end{smaller}
+%%END LATEX
+%
+%\item \textbf{Configure the checker's type factory to use the extended
+%    \refclass{framework/flow}{CFAbstractAnalysis}}
+%
+%\begin{sloppypar}
+%To configure your checker's type factory to use the new extended
+%\refclass{framework/flow}{CFAbstractAnalysis}, override the
+%\code{createFlowAnalysis} method in your type factory to return a new instance
+%of the extended \refclass{framework/flow}{CFAbstractAnalysis}.
+%\end{sloppypar}
+%
+%%BEGIN LATEX
+%\begin{smaller}
+%%END LATEX
+%\begin{Verbatim}
+%  @Override
+%  protected RegexAnalysis createFlowAnalysis(
+%          List<Pair<VariableElement, CFValue>> fieldValues) {
+%
+%      return new RegexAnalysis(checker, this, fieldValues);
+%  }
+%\end{Verbatim}
+%%BEGIN LATEX
+%\end{smaller}
+%%END LATEX
 
 \end{enumerate}
 
 \subsection{Override methods that handle Nodes of interest\label{dataflow-override-methods}}
 
 At this point, your checker is configured to use your extended
-\refclass{framework/flow}{CFAbstractAnalysis}, but it uses only the default
-behavior. Next, in your extended \refclass{framework/flow}{CFAbstractTransfer}
+\refclass{framework/flow}{CFTransfer}, but it uses only the default
+behavior. Next, in your extended \refclass{framework/flow}{CFTransfer}
 override the visitor method that handles the \refclass{dataflow/cfg/node}{Node}s
 relevant to your run-time check or run-time operation can be used to refine
 types.
@@ -946,7 +1006,7 @@ The \refclass{dataflow/cfg/node}{Node} subclasses can be found in the
 \refclass{dataflow/cfg/node}{VariableDeclarationNode}.
 
 The Regex Checker refines the type of a run-time test method call, so
-\refclass{checker/regex/classic}{RegexTransfer} overrides the method that handles
+\refclass{checker/regex}{RegexTransfer} overrides the method that handles
 \refclass{dataflow/cfg/node}{MethodInvocationNode}s,
 \code{visitMethodInvocation}.
 
@@ -1014,7 +1074,7 @@ visited.  (Remember that \refclass{common/basetype}{BaseTypeVisitor} uses the
 \refTreeclass{tree}{Tree}s.)
 \end{sloppypar}
 
-When \refclass{checker/regex/classic}{RegexTransfer} evaluates a
+When \refclass{checker/regex}{RegexTransfer} evaluates a
 \code{RegexUtils.asRegex} invocation, it updates the
 \refclass{dataflow/analysis}{TransferResult}'s result type. This changes the
 type of the \code{RegexUtils.asRegex} invocation when its
@@ -1073,7 +1133,7 @@ instances of that \refclass{dataflow/cfg/node}{Node} kind in the program, so the
 \refclass{dataflow/cfg/node}{Node} must be inspected to determine if it is an
 instance of the desired run-time test or operation. For example,
 \code{visitMethodInvocation} is called when dataflow processes any method
-invocation, but the \refclass{checker/regex/classic}{RegexTransfer} should only refine
+invocation, but the \refclass{checker/regex}{RegexTransfer} should only refine
 the result of \code{RegexUtils.asRegex} invocations:
 
 %BEGIN LATEX
@@ -1109,7 +1169,7 @@ on the parts of run-time test or operation itself, such as arguments passed to
 it.
 
 For example, the refined type of \code{RegexUtils.asRegex} is dependent on the
-integer argument to the method call. The \refclass{checker/regex/classic}{RegexTransfer}
+integer argument to the method call. The \refclass{checker/regex}{RegexTransfer}
 uses this argument to build the resulting type \code{@Regex(i)}, where \code{i}
 is the value of the integer argument.  Note that currently this code only uses
 the value of the integer argument if the argument was an integer literal.  It
@@ -1134,7 +1194,7 @@ constant or was inferred at compile time by another analysis, such as the
 %END LATEX
 
 If the integer argument was not a literal integer, the
-\refclass{checker/regex/classic}{RegexTransfer} falls back to refining the type to just
+\refclass{checker/regex}{RegexTransfer} falls back to refining the type to just
 \code{@Regex(0)}.
 
 %BEGIN LATEX
@@ -1155,7 +1215,7 @@ If the integer argument was not a literal integer, the
 As discussed in Section~\ref{dataflow-determine-expressions}, the type of an
 expression is refined by modifying the
 \refclass{dataflow/analysis}{TransferResult}.  Since the
-\refclass{checker/regex/classic}{RegexTransfer} is updating the type of the run-time
+\refclass{checker/regex}{RegexTransfer} is updating the type of the run-time
 test itself, it will update the result type and not the
 \refclass{dataflow/analysis}{Store}.
 
@@ -1216,6 +1276,9 @@ checker classes for the Interning Checker and the Nullness Checker:
   @SupportedLintOptions({"flow", "cast", "cast:redundant"})
   public class NullnessChecker extends BaseTypeChecker { }
 \end{Verbatim}
+
+(The \refqualclass{framework/source}{SupportedLintOptions} annotation is
+optional, and many checker classes do not have one.)
 
 The checker class bridges between the compiler and the rest of the checker.  It
 invokes the type-rule check visitor on every Java source file being
@@ -1356,15 +1419,15 @@ options).
 
 To specify a simple boolean flag, add:
 
-\begin{Verbatim}
-@SupportedLintOptions({"flag"})
-\end{Verbatim}
+\begin{alltt}
+\refqualclass{framework/source}{SupportedLintOptions}(\{"myflag"\})
+\end{alltt}
 
 to your checker subclass.
 The value of the flag can be queried using
 
 \begin{Verbatim}
-checker.getLintOption("flag", false)
+checker.getLintOption("myflag", false)
 \end{Verbatim}
 
 The second argument sets the default value that should be returned.
@@ -1372,7 +1435,7 @@ The second argument sets the default value that should be returned.
 To pass a flag on the command line, call javac as follows:
 
 \begin{Verbatim}
-javac -processor Mine -Alint=flag
+javac -processor MyChecker -Alint=myflag
 \end{Verbatim}
 
 
@@ -1381,20 +1444,20 @@ javac -processor Mine -Alint=flag
 For more complicated options, one can use the standard annotation
 processing \code{@SupportedOptions} annotation on the checker, as in:
 
-\begin{Verbatim}
-@SupportedOptions({"info"})
-\end{Verbatim}
+\begin{alltt}
+\refqualclass{framework/source}{SupportedOptions}(\{"myoption"\})
+\end{alltt}
 
 The value of the option can be queried using
 
 \begin{Verbatim}
-checker.getOption("info")
+checker.getOption("myoption")
 \end{Verbatim}
 
 To pass an option on the command line, call javac as follows:
 
 \begin{Verbatim}
-javac -processor Mine -Ainfo=p1,p2
+javac -processor MyChecker -Amyoption=p1,p2
 \end{Verbatim}
 
 The value is returned as a single string and you have to perform the
@@ -1412,9 +1475,6 @@ The Checker Framework provides a convenient way to write tests for your
 checker.
 % Don't repeat the information here, to prevent them from getting out of sync.
 It is extensively documented in file \<checker-framework/checker/tests/README>.
-Also see the API documentation for
-\refclass{framework/test}{CheckerFrameworkTest},
-which all test classes should extend.
 \end{sloppypar}
 
 
@@ -1683,6 +1743,8 @@ following sections:
   Draw a diagram of the type hierarchy.  A textual description of
   the hierarchy is not sufficient; the diagram really helps readers to
   understand the system.
+  The diagram will appear in directory \<checker/manual/figures/>;
+  see its \<README> file for tips.
 
   The Javadoc for the annotations deserves the same care as the manual
   chapter.  Each annotation's Javadoc comment should use the
@@ -1886,7 +1948,7 @@ other useful resources include the Java Infrastructure
 Developer's guide at
 \url{http://wiki.netbeans.org/Java_DevelopersGuide} and the compiler
 mailing list archives at
-\url{http://news.gmane.org/gmane.comp.java.openjdk.compiler.devel}
+\url{http://mail.openjdk.java.net/pipermail/compiler-dev/}
 (subscribe at
 \url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
 

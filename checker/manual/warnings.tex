@@ -8,7 +8,7 @@
 % misbehaves at run time.
 
 When the Checker Framework reports a warning, it's best to change the code
-or its annotations, to eliminate the warning.  Alternately, you can
+or its annotations, to fix the underlying problem.  Alternately, you can
 suppress the warning, which does not change the code but prevents the
 Checker Framework from reporting this particular warning to you.
 
@@ -47,7 +47,7 @@ You can suppress warnings throughout the codebase by using the following mechani
   the \code{-AuseDefaultsForUncheckedCode=source} command-line
   option (Section~\ref{compiling-libraries}),
 \item
-  the \code{-Alint} command-line option (Section~\ref{alint}), or
+  the \code{-Alint} command-line option enables/disables optional checks (Section~\ref{alint}), or
 \item
   not using the \code{-processor} command-line option
   (Section~\ref{no-processor}).

@@ -1,18 +1,19 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Nullness Checker (that uses the Freedom Before Commitment
  * type system for initialization).
  */
-public class NullnessAssumeAssertionsAreDisabled extends CheckerFrameworkTest {
+public class NullnessAssumeAssertionsAreDisabled extends CheckerFrameworkPerDirectoryTest {
 
-    public NullnessAssumeAssertionsAreDisabled(File testFile) {
+    public NullnessAssumeAssertionsAreDisabled(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-AassumeAssertionsAreDisabled",

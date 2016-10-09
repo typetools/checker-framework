@@ -221,12 +221,11 @@ public abstract class CFAbstractTransfer<
         if (annotatedValue == null) return null;
         GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
                 analysis.atypeFactory;
-        AnnotatedTypeMirror at = AnnotatedTypeMirror.createType(type, factory, false);
-        at.replaceAnnotations(annotatedValue.getType().getAnnotations());
-        return analysis.createAbstractValue(at);
+        return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
     }
 
     private S fixedInitialStore = null;
+
     /**
      * Set a fixed initial Store.
      */
@@ -243,7 +242,9 @@ public abstract class CFAbstractTransfer<
             UnderlyingAST underlyingAST, /*@Nullable */ List<LocalVariableNode> parameters) {
         if (fixedInitialStore != null
                 && underlyingAST.getKind() != Kind.LAMBDA
-                && underlyingAST.getKind() != Kind.METHOD) return fixedInitialStore;
+                && underlyingAST.getKind() != Kind.METHOD) {
+            return fixedInitialStore;
+        }
 
         S info = analysis.createEmptyStore(sequentialSemantics);
 
@@ -1020,7 +1021,8 @@ public abstract class CFAbstractTransfer<
                                 false);
                 store.insertValue(r, anno);
             } catch (FlowExpressionParseException e) {
-                // these errors are reported at the declaration, ignore here
+                // report errors here
+                analysis.checker.report(e.getResult(), tree);
             }
         }
     }
@@ -1074,7 +1076,8 @@ public abstract class CFAbstractTransfer<
                     elseStore.insertValue(r, anno);
                 }
             } catch (FlowExpressionParseException e) {
-                // these errors are reported at the declaration, ignore here
+                // report errors here
+                analysis.checker.report(e.getResult(), tree);
             }
         }
     }

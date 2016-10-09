@@ -8,7 +8,7 @@ Created by Jonathan Burke on 2013-12-30.
 Copyright (c) 2013-2016 University of Washington. All rights reserved.
 """
 
-# See README-maintainers.html for more information
+# See README-release-process.html for more information
 
 import os
 from release_vars  import *
@@ -97,16 +97,16 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             CHECKER_SOURCE, CHECKER_JAVADOC,
                             pgp_user, pgp_passphrase)
 
-    # checker.jar is a superset of checker-qual.jar, so use the same source/javadoc jars
+    # checker.jar is a superset of checker-qual.jar, so use the same javadoc jar
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_SOURCE),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
-    # checker.jar is a superset of checker-compat-qual.jar, so use the same source/javadoc jars
+    # checker.jar is a superset of checker-compat-qual.jar, so use the same javadoc jar
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
                             CHECKER_COMPAT_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_COMPAT_QUAL_SOURCE),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
@@ -279,7 +279,7 @@ def main(argv):
     if not auto:
         print_step("Push Step 0: Verify Requirements\n") # MANUAL
         print("If this is your first time running the release_push script, please verify that you have met " +
-              "all the requirements specified in README-maintainers.html \"Pre-release Checklist\"\n")
+              "all the requirements specified in README-release-process.html \"Pre-release Checklist\"\n")
 
         continue_or_exit("")
 

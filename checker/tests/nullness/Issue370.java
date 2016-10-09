@@ -1,7 +1,7 @@
 // Test case for issue 370:
 // https://github.com/typetools/checker-framework/issues/370
 
-import java.util.*;
+import java.util.Collections;
 
 class Issue370 {
 

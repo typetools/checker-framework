@@ -8,7 +8,7 @@ interface Noop {
     void noop();
 }
 
-interface Function<T extends @Nullable Object, R> {
+interface FunctionNull<T extends @Nullable Object, R> {
     R apply(T t);
 }
 
@@ -16,7 +16,7 @@ interface Supplier<R extends @Nullable Object> {
     R supply();
 }
 
-interface BiFunction<T, U, R> {
+interface BiFunctionNull<T, U, R> {
     R apply(T t, U u);
 }
 
@@ -29,7 +29,7 @@ class LambdaNullness {
     // is stored on here because it is the last defined constructor.
     //
     // See TypeFromElement::annotateParam
-    LambdaNullness(Function<String, String> f, Object e) {}
+    LambdaNullness(FunctionNull<String, String> f, Object e) {}
 
     // No parameters; result is void
     Noop f1 = () -> {};
@@ -76,21 +76,21 @@ class LambdaNullness {
             };
 
     // Single declared-type parameter
-    Function<@Nullable Integer, Integer> f7 = (@Nullable Integer x) -> 1;
+    FunctionNull<@Nullable Integer, Integer> f7 = (@Nullable Integer x) -> 1;
 
     // Single declared-type parameter
-    Function<@Nullable String, String> f9 =
+    FunctionNull<@Nullable String, String> f9 =
             //:: error: (lambda.param.type.incompatible)
             (@NonNull String x) -> {
                 return x + "";
             };
     // Single inferred-type parameter
-    Function<@NonNull Integer, Integer> f10 = (x) -> x + 1;
+    FunctionNull<@NonNull Integer, Integer> f10 = (x) -> x + 1;
     // Parentheses optional for single
-    Function<@Nullable Integer, Integer> f11 = x -> 1;
+    FunctionNull<@Nullable Integer, Integer> f11 = x -> 1;
 
     // Multiple declared-type parameters
-    BiFunction<Integer, Integer, Integer> f16 =
+    BiFunctionNull<Integer, Integer, Integer> f16 =
             (@Nullable Integer x, final Integer y) -> {
                 x = null;
                 //:: error: (unboxing.of.nullable)
@@ -98,10 +98,10 @@ class LambdaNullness {
             };
 
     // Multiple inferred-type parameters
-    BiFunction<String, String, String> f18 = (x, y) -> x + y;
+    BiFunctionNull<String, String, String> f18 = (x, y) -> x + y;
 
     // Infer based on context.
-    Function<@Nullable String, String> fn =
+    FunctionNull<@Nullable String, String> fn =
             (s) -> {
                 //:: error: (dereference.of.nullable)
                 s.toString();

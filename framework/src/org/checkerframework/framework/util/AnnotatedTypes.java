@@ -195,15 +195,6 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Tests that t2 is the erased type of t2
-     *
-     * @return true iff t2 is erased type of t1
-     */
-    private static boolean isErased(Types types, AnnotatedTypeMirror t1, AnnotatedTypeMirror t2) {
-        return types.isSameType(types.erasure(t1.getUnderlyingType()), t2.getUnderlyingType());
-    }
-
-    /**
      * @see #asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)
      */
     public static AnnotatedExecutableType asMemberOf(
@@ -726,7 +717,6 @@ public class AnnotatedTypes {
             AnnotatedTypeFactory atypeFactory,
             AnnotatedTypeMirror lub,
             Collection<AnnotatedTypeMirror> types) {
-        Types typeutils = processingEnv.getTypeUtils();
         Elements elements = processingEnv.getElementUtils();
 
         // Is it anonymous?
@@ -1150,7 +1140,7 @@ public class AnnotatedTypes {
                     lubAnnotatedType.clearAnnotations();
                     lubAnnotatedType.addAnnotations(type.getAnnotations());
                     for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-                        AnnotationMirror o = otherType.getAnnotationInHierarchy(top);
+                        AnnotationMirror o = otherType.findAnnotationInHierarchy(top);
                         assert o != null : "null should have all annotations.";
                         if (AnnotationUtils.areSame(o,
                                 qualifierHierarchy.getBottomAnnotation(top))) {

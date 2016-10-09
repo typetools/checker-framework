@@ -8,20 +8,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.checker.propkey.qual.PropertyKey;
-import org.checkerframework.checker.propkey.qual.PropertyKeyBottom;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
@@ -33,28 +33,23 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final Set<String> lookupKeys;
-    protected AnnotationMirror PROPKEY_BOTTOM;
 
     public PropertyKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.lookupKeys = Collections.unmodifiableSet(buildLookupKeys());
-
-        // Reuse the framework Bottom annotation and make it the default for the
-        // null literal.
-        PROPKEY_BOTTOM = AnnotationUtils.fromClass(elements, PropertyKeyBottom.class);
 
         this.postInit();
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, PROPKEY_BOTTOM);
-
         return new ListTreeAnnotator(
-                new PropagationTreeAnnotator(this),
-                implicitsTreeAnnotator,
-                new KeyLookupTreeAnnotator(this, PropertyKey.class));
+                super.createTreeAnnotator(), new KeyLookupTreeAnnotator(this, PropertyKey.class));
+    }
+
+    // To allow subclasses access to createTreeAnnotator from the BATF.
+    protected TreeAnnotator createBasicTreeAnnotator() {
+        return super.createTreeAnnotator();
     }
 
     /**
@@ -228,10 +223,5 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             result.addAll(bundle.keySet());
         }
         return result;
-    }
-
-    @Override
-    public GraphQualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, PROPKEY_BOTTOM);
     }
 }

@@ -324,7 +324,11 @@ public class I18nFormatterTreeUtil {
                                             true);
                             paramIndex = flowExprContext.arguments.indexOf(paramArg);
                         } catch (FlowExpressionParseException e) {
-                            // errors are reported at declaration site
+                            // report errors here
+                            checker.report(
+                                    org.checkerframework.framework.source.Result.failure(
+                                            "i18nformat.invalid.formatfor"),
+                                    tree);
                         }
                     }
                     break;

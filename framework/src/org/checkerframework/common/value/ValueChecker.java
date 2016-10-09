@@ -4,6 +4,7 @@ import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.StubFiles;
+import org.checkerframework.framework.source.SupportedOptions;
 
 /**
  * @author plvines
@@ -11,7 +12,9 @@ import org.checkerframework.framework.qual.StubFiles;
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @StubFiles("statically-executable.astub")
+@SupportedOptions(ValueChecker.REPORT_EVAL_WARNS)
 public class ValueChecker extends BaseTypeChecker {
+    public static final String REPORT_EVAL_WARNS = "reportEvalWarns";
 
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {

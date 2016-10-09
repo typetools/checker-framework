@@ -220,7 +220,6 @@
             <package name="org.checkerframework.dataflow.*"/>
             <package name="org.checkerframework.stubparser.*"/>
             <package name="org.checkerframework.framework.*"/>
-            <package name="org.checkerframework.qualframework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
 
@@ -677,7 +676,7 @@
                     workDir="${build.jtreg.dir}/@{name}/work"
                     reportDir="${build.jtreg.dir}/@{name}/report"
                     samevm="@{samevm}" verbose="@{verbose}"
-                    failonerror="false" resultproperty="jtreg.@{name}.result"
+                    failonerror="true" resultproperty="jtreg.@{name}.result"
                     javacoptions="-g"
                     vmoptions="${coverage.options} @{jpda.jvmargs}">
                     <!-- Option no longer exists in JDK 9.

@@ -1,10 +1,10 @@
 package org.checkerframework.checker.nullness.qual;
 
-import java.lang.annotation.*;
-import org.checkerframework.checker.nullness.NullnessChecker;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.checker.nullness.qual.RequiresNonNull;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.SubtypeOf;
 
@@ -46,10 +46,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * Final fields are treated as LazyNonNull by default.
  * <p>
  *
- * This annotation is associated with the {@link NullnessChecker}.
+ * This annotation is associated with the {@link org.checkerframework.checker.nullness.NullnessChecker}.
  *
  * @see Nullable
- * @see NullnessChecker
+ * @see org.checkerframework.checker.nullness.NullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Deprecated

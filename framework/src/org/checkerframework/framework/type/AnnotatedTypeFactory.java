@@ -66,6 +66,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.reflection.DefaultReflectionResolver;
 import org.checkerframework.common.reflection.MethodValAnnotatedTypeFactory;
 import org.checkerframework.common.reflection.MethodValChecker;
@@ -203,7 +204,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     protected TypeArgumentInference typeArgumentInference;
 
-    /** To cache the supported type qualifiers. */
+    /**
+     * To cache the supported type qualifiers.
+     * call {@link #getSupportedTypeQualifiers()} instead of using this field
+     * directly, as it may not have been initialized.
+     */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
     /** Types read from stub files (but not those from the annotated JDK jar file). */
@@ -260,13 +265,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
 
-    /** Annotation added to every method defined in a class file
+    /**
+     * Annotation added to every method defined in a class file
      * that is not in a stub file.
      */
     private final AnnotationMirror fromByteCode;
 
-    /** Annotation added to every method defined in a stub file.
-     */
+    /** Annotation added to every method defined in a stub file. */
     private final AnnotationMirror fromStubFile;
 
     /**
@@ -289,21 +294,26 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Should results be cached?
      * This means that ATM.deepCopy() will be called.
      * ATM.deepCopy() used to (and perhaps still does) side effect the ATM being copied.
-     * So setting this to false is not equivalent to setting shouldReadCache to false. */
+     * So setting this to false is not equivalent to setting shouldReadCache to false.
+     */
     public boolean shouldCache;
 
     /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
     private final static int DEFAULT_CACHE_SIZE = 300;
 
     /** Mapping from a Tree to its annotated type; implicits have been applied. */
-    private final Map<Tree, AnnotatedTypeMirror> treeCache;
+    private final Map<Tree, AnnotatedTypeMirror> classAndMethodTreeCache;
 
-    /** Mapping from a Tree to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
+    /**
+     * Mapping from a Tree to its annotated type; before implicits are applied,
+     * just what the programmer wrote.
+     */
     protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache;
 
-    /** Mapping from an Element to its annotated type; before implicits are applied,
-     * just what the programmer wrote. */
+    /**
+     * Mapping from an Element to its annotated type; before implicits are applied,
+     * just what the programmer wrote.
+     */
     private final Map<Element, AnnotatedTypeMirror> elementCache;
 
     /** Mapping from an Element to the source Tree of the declaration. */
@@ -335,8 +345,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.visitorState = new VisitorState();
 
         this.loader = new AnnotationClassLoader(checker);
-        this.supportedQuals = createSupportedTypeQualifiers();
-        checkSupportedQuals();
+        this.supportedQuals = new HashSet<>();
 
         this.fromByteCode = AnnotationUtils.fromClass(elements, FromByteCode.class);
         this.fromStubFile = AnnotationUtils.fromClass(elements, FromStubFile.class);
@@ -346,16 +355,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.shouldCache = !checker.hasOption("atfDoNotCache");
         if (shouldCache) {
             int cacheSize = getCacheSize();
-            this.treeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.classAndMethodTreeCache = CollectionUtils.createLRUCache(cacheSize);
             this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
         } else {
-            this.treeCache = null;
+            this.classAndMethodTreeCache = null;
             this.fromTreeCache = null;
             this.elementCache = null;
             this.elementToTreeCache = null;
         }
+
         this.typeFormatter = createAnnotatedTypeFormatter();
         this.annotationFormatter = createAnnotationFormatter();
 
@@ -370,11 +380,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Issue an error and abort if any of the support qualifiers have @Target meta-annotations
+     * Issue an error and abort if any of the support qualifiers has a @Target meta-annotation
      * that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
      */
     private void checkSupportedQuals() {
+        boolean hasPolyAll = false;
+        boolean hasPolymorphicQualifier = false;
         for (Class<? extends Annotation> annotationClass : supportedQuals) {
+            // Check @Target values
             ElementType[] elements = annotationClass.getAnnotation(Target.class).value();
             List<ElementType> otherElementTypes = new ArrayList<>();
             for (ElementType element : elements) {
@@ -403,6 +416,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 buf.append(".");
                 ErrorReporter.errorAbort(buf.toString());
             }
+            // Check for PolyAll
+            if (annotationClass.equals(PolyAll.class)) {
+                hasPolyAll = true;
+            } else if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
+                hasPolymorphicQualifier = true;
+            }
+        }
+
+        if (hasPolyAll && !hasPolymorphicQualifier) {
+            ErrorReporter.errorAbort(
+                    "Checker added @PolyAll to list of supported qualifiers, but "
+                            + "the checker does not have a polymorphic qualifier.  Either remove "
+                            + "@PolyAll from the list of supported qualifiers or add a polymorphic "
+                            + "qualifier.");
         }
     }
 
@@ -494,15 +521,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
-
-        // There is no need to clear the following caches, they
-        // are all limited by CACHE_SIZE.
-        /*
-        treeCache.clear();
-        fromTreeCache.clear();
-        elementCache.clear();
+        // Clear the caches with trees because once the compilation unit changes,
+        // the trees may be modified and lose type arguments.
         elementToTreeCache.clear();
-        */
+        fromTreeCache.clear();
+        classAndMethodTreeCache.clear();
+
+        // There is no need to clear the following cache, it is limited by cache size and it
+        // contents won't change between compilation units.
+        // elementCache.clear();
     }
 
     @SideEffectFree
@@ -511,14 +538,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getClass().getSimpleName() + "#" + uid;
     }
 
-    /** Factory method to easily change what Factory is used to
+    /**
+     * Factory method to easily change what Factory is used to
      * create a QualifierHierarchy.
      */
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
-    /** Factory method to easily change what QualifierHierarchy is
+    /**
+     * Factory method to easily change what QualifierHierarchy is
      * created.
      * Needs to be public only because the GraphFactory must be able to call this method.
      * No external use of this method is necessary.
@@ -673,9 +702,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an immutable set of annotation classes that are supported by a checker
+     * Returns a mutable set of annotation classes that are supported by a checker
      * <p>
-     * Subclasses may override this method and to return an immutable set
+     * Subclasses may override this method and to return a mutable set
      * of their supported type qualifiers through one of the 5 approaches shown below.
      * <p>
      * Subclasses should not call this method; they should call
@@ -754,22 +783,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * <li>
      * Supporting only annotations that are explicitly listed:
      * Override
-     * {@link #createSupportedTypeQualifiers()} and return an immutable
+     * {@link #createSupportedTypeQualifiers()} and return a mutable
      * set of the supported annotations. Code example:
      * <pre>
      * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-     *      return Collections.unmodifiableSet(
-     *          new HashSet<Class<? extends Annotation>>(
-     *              Arrays.asList(A.class, B.class)));
+     *      return new HashSet<Class<? extends Annotation>>(
+     *              Arrays.asList(A.class, B.class));
      *  } }
      * </pre>
      *
      * The set of qualifiers returned by
-     * {@link #createSupportedTypeQualifiers()} must be an immutable
+     * {@link #createSupportedTypeQualifiers()} must be a fresh, mutable
      * set. The methods
      * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} and
      * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} each
-     * return an immutable set.
+     * must return a fresh, mutable set
      * </li>
      * </ol>
      *
@@ -777,14 +805,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *         none
      */
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
-        // by default support PolyAll
         return getBundledTypeQualifiersWithPolyAll();
     }
 
     /**
      * Loads all annotations contained in the qual directory of a checker via
-     * reflection, and adds {@link PolyAll} and an explicit array of annotations
-     * to the set of annotation classes.
+     * reflection, and adds {@link PolyAll}, if a polymorphic type qualifier exists,
+     * and an explicit array of annotations to the set of annotation classes.
      * <p>
      * This method can be called in the overridden versions of
      * {@link #createSupportedTypeQualifiers()} in each checker.
@@ -793,7 +820,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            a varargs array of explicitly listed annotation classes to be
      *            added to the returned set. For example, it is used frequently
      *            to add Bottom qualifiers.
-     * @return an immutable set of the loaded and listed annotation classes, as
+     * @return a mutable set of the loaded and listed annotation classes, as
      *         well as {@link PolyAll}.
      */
     @SafeVarargs
@@ -801,8 +828,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             Class<? extends Annotation>... explicitlyListedAnnotations) {
         Set<Class<? extends Annotation>> annotations =
                 loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
-        annotations.add(PolyAll.class);
-        return Collections.unmodifiableSet(annotations);
+        boolean addPolyAll = false;
+        for (Class<? extends Annotation> annotationClass : annotations) {
+            if (annotationClass.getAnnotation(PolymorphicQualifier.class) != null) {
+                addPolyAll = true;
+                break;
+            }
+        }
+        if (addPolyAll) {
+            annotations.add(PolyAll.class);
+        }
+        return annotations;
     }
 
     /**
@@ -817,13 +853,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *            a varargs array of explicitly listed annotation classes to be
      *            added to the returned set. For example, it is used frequently
      *            to add Bottom qualifiers.
-     * @return an immutable set of the loaded, and listed annotation classes
+     * @return a mutable set of the loaded, and listed annotation classes
      */
     @SafeVarargs
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithoutPolyAll(
             Class<? extends Annotation>... explicitlyListedAnnotations) {
-        return Collections.unmodifiableSet(
-                loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations));
+        return loadTypeAnnotationsFromQualDir(explicitlyListedAnnotations);
     }
 
     /**
@@ -893,7 +928,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *         empty set if no qualifiers are supported
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
-        return supportedQuals;
+        if (this.supportedQuals.isEmpty()) {
+            supportedQuals.addAll(createSupportedTypeQualifiers());
+            checkSupportedQuals();
+        }
+        return Collections.unmodifiableSet(supportedQuals);
     }
 
     // **********************************************************************
@@ -962,8 +1001,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
             return null; // dead code
         }
-        if (shouldCache && treeCache.containsKey(tree)) {
-            return treeCache.get(tree).deepCopy();
+        if (shouldCache && classAndMethodTreeCache.containsKey(tree)) {
+            return classAndMethodTreeCache.get(tree).deepCopy();
         }
 
         AnnotatedTypeMirror type;
@@ -986,14 +1025,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (TreeUtils.isClassTree(tree) || tree.getKind() == Tree.Kind.METHOD) {
             // Don't cache VARIABLE
             if (shouldCache) {
-                treeCache.put(tree, type.deepCopy());
+                classAndMethodTreeCache.put(tree, type.deepCopy());
             }
         } else {
             // No caching otherwise
-        }
-
-        if (TreeUtils.isClassTree(tree)) {
-            postProcessClassTree((ClassTree) tree);
         }
 
         // System.out.println("AnnotatedTypeFactory::getAnnotatedType(Tree) result: " + type);
@@ -1001,13 +1036,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Called by getAnnotatedType(Tree) for each ClassTree after determining the type.
+     * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} before the classTree is type
+     * checked.
+     * @param classTree ClassTree on which to perfrom preprocessing
+     */
+    public void preProcessClassTree(ClassTree classTree) {}
+
+    /**
+     * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} after the ClassTree has been
+     * type checked.
+     * <p>
      * The default implementation uses this to store the defaulted AnnotatedTypeMirrors
      * and inherited declaration annotations back into the corresponding Elements.
      * Subclasses might want to override this method if storing defaulted types is
      * not desirable.
      */
-    protected void postProcessClassTree(ClassTree tree) {
+    public void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
         DeclarationsIntoElements.store(processingEnv, this, tree);
         if (checker.hasOption("infer") && wholeProgramInference != null) {
@@ -2859,7 +2903,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns true if the element is from byte code
+     * Returns true if the element is from bytecode
      * and the if the element did not appear in a stub file
      * (Currently only works for methods, constructors, and fields)
      */
@@ -3140,7 +3184,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * If {@code wildcard}'s upper bound is a super type of {@code annotatedTypeMirror},
-     * this method returns an AnnotatedTypeMirror with the same qualfiers as {@code annotatedTypeMirror}, but
+     * this method returns an AnnotatedTypeMirror with the same qualifiers as {@code
+     * annotatedTypeMirror}, but
      * the underlying Java type is the the most specific base type of {@code annotatedTypeMirror} whose erasure type
      * is equivalent to the upper bound of {@code wildcard}.
      * <p>
@@ -3183,15 +3228,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      */
     public AnnotatedTypeMirror widenToUpperBound(
             final AnnotatedTypeMirror annotatedTypeMirror, final AnnotatedWildcardType wildcard) {
-        /**
-         *
-         */
         final TypeMirror toModifyTypeMirror = annotatedTypeMirror.getUnderlyingType();
-        final TypeMirror wildcardUpperBoundTypeMirror =
-                wildcard.getExtendsBound().getUnderlyingType();
-        if (!types.isSubtype(wildcardUpperBoundTypeMirror, toModifyTypeMirror)
-                && types.isSubtype(toModifyTypeMirror, wildcardUpperBoundTypeMirror)) {
+        final TypeMirror wildcardUBTypeMirror = wildcard.getExtendsBound().getUnderlyingType();
+        if (types.isSubtype(wildcardUBTypeMirror, toModifyTypeMirror)) {
+            return annotatedTypeMirror;
+        } else if (types.isSubtype(toModifyTypeMirror, wildcardUBTypeMirror)) {
             return AnnotatedTypes.asSuper(this, annotatedTypeMirror, wildcard);
+        } else if (wildcardUBTypeMirror.getKind() == TypeKind.DECLARED
+                && InternalUtils.getTypeElement(wildcardUBTypeMirror).getKind().isInterface()) {
+            // If the Checker Framework implemented capture conversion, then in this case, then
+            // the upper bound of the capture converted wildcard would be an intersection type.
+            // See JLS 15.1.10
+            // (https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.1.10)
+
+            // For example:
+            // class MyClass<@A T extends @B Number> { }
+            // MyClass<@C ? extends @D Serializable>
+            // The upper bound of the captured wildcard:
+            // glb(@B Number, @D Serializable) = @B Number & @D Serializable
+            // The about upper bound must be a subtype of the declared upper bound:
+            // @B Number & @D Serializable <: @B Number, which is always true.
+
+            // So, replace the upper bound at the declaration with the wildcard's upper bound so
+            // that the rest of the subtyping test pass.
+            return wildcard.getExtendsBound();
         }
 
         return annotatedTypeMirror;
@@ -3484,26 +3544,22 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return awt.getUnderlyingType().getSuperBound() == null;
     }
 
-    /** Accessor for the element utilities.
-     */
+    /** Accessor for the element utilities. */
     public Elements getElementUtils() {
         return this.elements;
     }
 
-    /** Accessor for the tree utilities.
-     */
+    /** Accessor for the tree utilities. */
     public Trees getTreeUtils() {
         return this.trees;
     }
 
-    /** Accessor for the processing environment.
-     */
+    /** Accessor for the processing environment. */
     public ProcessingEnvironment getProcessingEnv() {
         return this.processingEnv;
     }
 
-    /** Accessor for the {@link CFContext}.
-     */
+    /** Accessor for the {@link CFContext}. */
     public CFContext getContext() {
         return checker;
     }

@@ -11,7 +11,7 @@ import org.checkerframework.javacutil.InternalUtils;
  * A node for an array access:
  *
  * <pre>
- *   <em>array ref</em> [ <em>index</em> ]
+ *   <em>arrayref</em> [ <em>index</em> ]
  * </pre>
  *
  * We allow array accesses without corresponding AST {@link Tree}s.

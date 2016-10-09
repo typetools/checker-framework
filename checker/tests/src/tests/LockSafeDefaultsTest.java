@@ -1,17 +1,18 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
  * JUnit tests for the Lock checker when using safe defaults for unchecked source code.
  */
-public class LockSafeDefaultsTest extends CheckerFrameworkTest {
+public class LockSafeDefaultsTest extends CheckerFrameworkPerDirectoryTest {
 
-    public LockSafeDefaultsTest(File testFile) {
+    public LockSafeDefaultsTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.lock.LockChecker.class,
                 "lock",
                 "-AuseDefaultsForUncheckedCode=source",

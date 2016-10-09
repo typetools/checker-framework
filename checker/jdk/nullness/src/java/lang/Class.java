@@ -55,7 +55,7 @@ public final class Class<T> extends Object implements java.io.Serializable, java
   public java.security.ProtectionDomain getProtectionDomain() { throw new RuntimeException("skeleton method"); }
   public boolean desiredAssertionStatus() { throw new RuntimeException("skeleton method"); }
   @Pure public boolean isEnum() { throw new RuntimeException("skeleton method"); }
-  public T @Nullable [] getEnumConstants() { throw new RuntimeException("skeleton method"); }
+  public @NonNull T @Nullable [] getEnumConstants() { throw new RuntimeException("skeleton method"); }
   java.util.Map<String, T> enumConstantDirectory() { throw new RuntimeException("skeleton method"); }
   public @PolyNull T cast(@PolyNull Object a1) { throw new RuntimeException("skeleton method"); }
   public <U> Class<? extends U> asSubclass(Class<U> a1) { throw new RuntimeException("skeleton method"); }

@@ -1,17 +1,19 @@
 package tests;
 
 import java.io.File;
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class SignednessTest extends CheckerFrameworkTest {
+public class SignednessTest extends CheckerFrameworkPerDirectoryTest {
 
-    public SignednessTest(File testFile) {
+    public SignednessTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.signedness.SignednessChecker.class,
                 "signedness",
-                "-Anomsgtext");
+                "-Anomsgtext",
+                "-AprintErrorStack");
     }
 
     @Parameters

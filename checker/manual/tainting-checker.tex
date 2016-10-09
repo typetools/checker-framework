@@ -114,9 +114,9 @@ libraries):
 The \code{@Tainted} and \code{@Untainted} annotations have only minimal
 built-in semantics.  In fact, the Tainting Checker provides only a small
 amount of functionality beyond the Subtyping Checker
-(Chapter~\ref{subtyping-checker}).  This lack of hard-coded behavior means that
-the annotations can serve many different purposes.  Here are just a few
-examples:
+(Chapter~\ref{subtyping-checker}).  This lack of hard-coded behavior has
+two consequences.  The first consequence is that
+the annotations can serve many different purposes, such as:
 
 \begin{itemize}
 \item
@@ -130,35 +130,28 @@ examples:
   \code{@Untainted} may be displayed to a user.
 \end{itemize}
 
-In each case, you need to annotate the appropriate untainting/sanitization
-routines.  This is similar to the \code{@Encrypted} annotation
-(Section~\ref{encrypted-example}), where the cryptographic functions are
-beyond the reasoning abilities of the type system.  In each case, the type
-system verifies most of your code, and the \code{@SuppressWarnings}
-annotations indicate the few places where human attention is needed.
+The second consequence is that the Tainting Checker is not useful unless
+you annotate the appropriate sources, sinks, and untainting/sanitization
+routines.
+% This is similar to the \code{@Encrypted} annotation
+% (Section~\ref{encrypted-example}), where the cryptographic functions are
+% beyond the reasoning abilities of the type system.  In each case, the type
+% system verifies most of your code, and the \code{@SuppressWarnings}
+% annotations indicate the few places where human attention is needed.
 
 
 If you want more specialized semantics, or you want to annotate multiple
-types of tainting in a single program, then you can copy the definition of
+types of tainting (for example, HTML and SQL) in a single program,
+then you can copy the definition of
 the Tainting Checker to create a new annotation and checker with a more
-specific name and semantics.  See Chapter~\ref{writing-a-checker} for more
+specific name and semantics.  You will change the copy to rename the
+annotations, and you will annotate libraries and/or your code to identify
+sources, sinks, and validation/sanitization routines.
+See Chapter~\ref{writing-a-checker} for more
 details.
-
-\subsection{Qualifier Parameters\label{tainting-qual-params}}
-The Tainting Checker supports qualifier parameters.
-See Section~\ref{qualifier-parameters} for more details on qualifier parameters.
-
-\begin{sloppypar}
-The qualifier parameter system currently
-% (as of December 2015)
-incurs a 50\% performance penalty. If this is unacceptable you can run the
-original Tainting Checker by passing the
-\code{-processor org.checkerframework.checker.tainting.classic.TaintingClassicChecker}
-command-line option to javac.
-\end{sloppypar}
 
 % TODO: one could add a String[] value to @Untainted to distinguish different
 % values, eg @Untainted{``SQL''} versus @Untainted{``HTML''}.
 
 % LocalWords:  quals untaint PolyTainted mis untainting sanitization java
-%%  LocalWords:  TaintingChecker
+%%  LocalWords:  TaintingChecker untrusted unvalidated

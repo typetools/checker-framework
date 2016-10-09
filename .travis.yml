@@ -1,67 +1,64 @@
-language: java
-
-script: travis_wait 120 ./.travis-build.sh
-
-## Version for Ubuntu 14.04 Trusty.
-## Problem: The job times out on travis-ci.org, but the container-based version
-## does not.  Presumably container-based gets a bigger time limit.
-# sudo: required
-# dist: trusty
-# before_install:
-#   - sudo apt-get update -qq
-#   - sudo apt-get install -qq hevea librsvg2-bin texlive-fonts-recommended texlive-latex-base texlive-latex-extra
-
-## Version for container-based infrastructure: Ubuntu 12.04.
-## Problem:  Cannot build the manual because of problems generating fonts.
 sudo: false
-addons:
-  apt:
-    packages:
-      - junit4
-      # Reinstate jtreg when the build can use a standard Ubuntu jtreg install;
-      # for now, it needs to download and install the jtreg zipfile.
-      # - jtreg
-      # for rsvg-convert
-      - librsvg2-bin
-      ## Save time by not installing LaTeX which is needed only for the manual
-      # - hevea
-      # # both for ecrm1000 (a font)
-      # # This didn't help: - texlive-fonts-extra
-      # - texlive-fonts-recommended
-      # # for url.sty
-      # - texlive-latex-base
-      # # for fullpage.sty
-      # - texlive-latex-extra
 
-## Enable this when you wish to see JUnit reports.
-## Disable to minimize use of Amazon S3.
-# addons:
-#   artifacts:
-#     paths:
-#       - $(ls checker/build/reports/* | tr "\n" ":")
-#       - $(ls framework/build/reports/* | tr "\n" ":")
-#       - $(find -name 'hs_err_pid*.log' | tr "\n" ":")
-#     s3_region: "us-west-2"
-#     # debug: true
+language: generic
 
-jdk:
-  - oraclejdk8
-  - oraclejdk7
-  - openjdk7
-  # openjdk8 is not a legal option: - openjdk8
+# Alternative to "language: java", which has node installed
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq nodejs
 
-after_success:
+services:
+  - docker
+
+# jdkany contains extra packages that permit it to be used to build the manual
+env:
+  - JDKVER=jdk7 GROUP=junit
+  - JDKVER=jdk7 GROUP=nonjunit
+  - JDKVER=jdk8 GROUP=junit
+  - JDKVER=jdk8 GROUP=nonjunit
+  - JDKVER=jdkany GROUP=misc
+
+before_script:
+- docker pull mdernst/ubuntu-for-cf-$JDKVER
+
+script:
+- REMOTE_ORIGIN_URL=`git config --get remote.origin.url`
+- >-
+  docker run mdernst/ubuntu-for-cf-$JDKVER /bin/bash -c "true &&
+     export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
+     git clone --quiet -b $TRAVIS_BRANCH --depth 9 $REMOTE_ORIGIN_URL checker-framework &&
+     cd checker-framework &&
+     echo Travis event type: $TRAVIS_EVENT_TYPE &&
+     echo Travis pull request: $TRAVIS_PULL_REQUEST &&
+     if [ $TRAVIS_EVENT_TYPE = pull_request ] ; then
+       git config user.email noone@cares.com
+       git config user.name Noone Cares
+       git remote add theupstream https://github.com/$TRAVIS_REPO_SLUG.git ;
+       git pull theupstream master ;
+     fi &&
+     java -version &&
+     javac -version &&
+     ./.travis-build.sh $GROUP"
+
+after_script:
   - |
-      if [[ ($TRAVIS_BRANCH == master) &&
-            ($TRAVIS_PULL_REQUEST == false) &&
-            ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
-        curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-#        sh trigger-travis.sh eisop checker-framework-demos $TRAVISTOKEN
-        sh trigger-travis.sh eisop checker-framework-inference $TRAVISTOKEN
-#        sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
-#        sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
-#        sh trigger-travis.sh eisop sparta $TRAVISTOKEN
+      declare exitCode;
+
+      curl -sSL https://raw.githubusercontent.com/mernst/travis-after-all/master/lib/travis-after-all.js | tac | tac | nodejs
+      exitCode=$?
+      echo "exitCode=$exitCode TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST=$TRAVIS_PULL_REQUEST"
+
+      if [ "$exitCode" -eq 0 ]; then
+        if [[ ($TRAVIS_BRANCH == master) &&
+              ($TRAVIS_PULL_REQUEST == false) ]] ; then
+          curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
+#          sh trigger-travis.sh eisop checker-framework.demos $TRAVISTOKEN
+          sh trigger-travis.sh eisop checker-framework-inference $TRAVISTOKEN
+#          sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
+#          sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
+#          sh trigger-travis.sh eisop sparta $TRAVISTOKEN
+        fi
       fi
 
 git:
-  depth: 3
+  depth: 9

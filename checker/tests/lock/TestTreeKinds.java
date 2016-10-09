@@ -391,13 +391,6 @@ public class TestTreeKinds {
             foo.field.toString();
         }
 
-        // An error is raised here because non-side-effect-free method unlockTheLock() is called above,
-        // and is due to this line in LockStore.updateForMethodCall:
-        // localVariableValues.clear();
-        // which clears the value of 'r' in the store to its CLIMB-to-top default of @GuardedByUnknown.
-        // TODO: Fix LockStore.updateForMethodCall so it is less conservative and remove
-        // the expected error.
-        //:: error: (method.invocation.invalid)
         if (r.nextBoolean()) {
             lockTheLock();
             sideEffectFreeMethod();
@@ -409,14 +402,6 @@ public class TestTreeKinds {
             foo.field.toString();
         }
 
-        // An error is raised here because the non-side-effect-free methods unlockTheLock() and nonSideEffectFreeMethod() are called above
-        // (for the method.invocation.invalid error not to be issued, neither of those two methods can be called above),
-        // and is due to this line in LockStore.updateForMethodCall:
-        // localVariableValues.clear();
-        // which clears the value of 'r' in the store to its CLIMB-to-top default of @GuardedByUnknown.
-        // TODO: Fix LockStore.updateForMethodCall so it is less conservative and remove
-        // the expected error.
-        //:: error: (method.invocation.invalid)
         if (r.nextBoolean()) {
             lockTheLock();
             lockingFreeMethod();
@@ -467,18 +452,18 @@ public class TestTreeKinds {
     }
 
     void testPrimitiveTypeGuardedby() {
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy("lock") int a = 0;
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy int b = 0;
-        //:: error: (primitive.type.guardedby) :: error: (guardsatisfied.location.disallowed)
+        //:: error: (immutable.type.guardedby) :: error: (guardsatisfied.location.disallowed)
         @GuardSatisfied int c = 0;
-        //:: error: (primitive.type.guardedby) :: error: (guardsatisfied.location.disallowed)
+        //:: error: (immutable.type.guardedby) :: error: (guardsatisfied.location.disallowed)
         @GuardSatisfied(1) int d = 0;
         int e = 0;
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedByUnknown int f = 0;
-        //:: error: (primitive.type.guardedby) :: error: (assignment.type.incompatible)
+        //:: error: (immutable.type.guardedby) :: error: (assignment.type.incompatible)
         @GuardedByBottom int g = 0;
     }
 

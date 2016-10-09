@@ -16,6 +16,7 @@ import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntry;
 import com.sun.tools.javac.code.TypeAnnotationPosition.TypePathEntryKind;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
@@ -65,6 +66,10 @@ public class TypesIntoElements {
          * the receiver annotation on a constructor, breaking logic there.
          * I assume that the problem is the default that we use for these locations.
          * Once we've decided the defaulting, enable this.
+         * See example of code that fails when this is enabled in
+         * checker/jtreg/nullness/annotationsOnExtends. Also, see https://github
+         * .com/typetools/checker-framework/pull/876 for a better implementation (though it also
+         * causes the error).
         storeClassExtends(processingEnv, types, atypeFactory, tree.getExtendsClause(), csym, -1);
         {
             int implidx = 0;
@@ -367,6 +372,9 @@ public class TypesIntoElements {
             visitedNodes.put(type, List.<TypeCompound>nil());
             List<Attribute.TypeCompound> res;
 
+            TypeAnnotationPosition oldpos = TypeAnnotationUtils.copyTAPosition(tapos);
+            locateNestedTypes(type, tapos);
+
             res = directAnnotations(type, tapos);
 
             // we sometimes fix-up raw types with wildcards, do not write these into the bytecode as there are
@@ -384,13 +392,35 @@ public class TypesIntoElements {
             }
 
             AnnotatedTypeMirror encl = type.getEnclosingType();
-            if (encl != null && encl.getKind() != TypeKind.NONE) {
-                TypeAnnotationPosition newpos = TypeAnnotationUtils.copyTAPosition(tapos);
-                newpos.location = tapos.location.append(TypePathEntry.INNER_TYPE);
-                res = scanAndReduce(encl, newpos, res);
+            if (encl != null
+                    && encl.getKind() != TypeKind.NONE
+                    && encl.getKind() != TypeKind.ERROR) {
+                // use original tapos
+                res = scanAndReduce(encl, oldpos, res);
             }
             visitedNodes.put(type, res);
             return res;
+        }
+
+        /* Modeled after
+         * {@link com.sun.tools.javac.code.TypeAnnotations.TypeAnnotationPositions#locateNestedTypes(Type, TypeAnnotationPosition)}
+         */
+        private void locateNestedTypes(AnnotatedDeclaredType type, TypeAnnotationPosition p) {
+            // The number of "steps" to get from the full type to the
+            // left-most outer type.
+            ListBuffer<TypePathEntry> depth = new ListBuffer<>();
+
+            Type encl = (Type) type.getUnderlyingType().getEnclosingType();
+            while (encl != null
+                    && encl.getKind() != TypeKind.NONE
+                    && encl.getKind() != TypeKind.ERROR) {
+                depth = depth.append(TypePathEntry.INNER_TYPE);
+                encl = encl.getEnclosingType();
+            }
+
+            if (depth.nonEmpty()) {
+                p.location = p.location.appendList(depth.toList());
+            }
         }
 
         @Override
