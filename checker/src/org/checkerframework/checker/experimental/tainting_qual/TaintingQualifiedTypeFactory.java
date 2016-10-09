@@ -30,7 +30,8 @@ public class TaintingQualifiedTypeFactory extends DefaultQualifiedTypeFactory<Ta
     protected TreeAnnotator<Tainting> createTreeAnnotator() {
         return new TreeAnnotator<Tainting>() {
             @Override
-            public QualifiedTypeMirror<Tainting> visitLiteral(LiteralTree tree, ExtendedTypeMirror type) {
+            public QualifiedTypeMirror<Tainting> visitLiteral(
+                    LiteralTree tree, ExtendedTypeMirror type) {
                 QualifiedTypeMirror<Tainting> result = super.visitLiteral(tree, type);
                 if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
                     result = SetQualifierVisitor.apply(result, Tainting.UNTAINTED);

@@ -8,5 +8,4 @@ public class NullnessRawnessChecker extends AbstractNullnessChecker {
     public NullnessRawnessChecker() {
         super(false);
     }
-
 }

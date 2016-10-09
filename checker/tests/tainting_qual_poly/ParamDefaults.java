@@ -3,26 +3,30 @@ import org.checkerframework.checker.tainting.qual.*;
 
 @ClassTaintingParam("Main")
 class A {
-    public @Var(arg="Main", param="Main2") B z;
+    public @Var(arg = "Main", param = "Main2") B z;
 }
 
 @ClassTaintingParam("Main2")
-class B { }
+class B {}
 
 abstract class Test {
     // Defaults to A<<?>> (? is the top of the containment hierarchy, so A<<?>>
     // is the top of the hierarchy of instantiations of A).
     abstract A make();
-    abstract @Tainted(param="Main") A makeTainted();
 
-    abstract void takeTainted(@Tainted(param="Main2") B o);
-    abstract void takeUntainted(@Untainted(param="Main2") B o);
+    abstract @Tainted(param = "Main") A makeTainted();
+
+    abstract void takeTainted(@Tainted(param = "Main2") B o);
+
+    abstract void takeUntainted(@Untainted(param = "Main2") B o);
+
     abstract void take(B o);
+
     abstract void takeA(A a);
 
     void test() {
         A a = make();
-        @Tainted(param="Main") A ta = makeTainted();
+        @Tainted(param = "Main") A ta = makeTainted();
 
         //:: error: (argument.type.incompatible)
         takeUntainted(a.z);

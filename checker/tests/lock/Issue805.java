@@ -6,9 +6,11 @@ import org.checkerframework.checker.lock.qual.Holding;
 class Issue805 {
     @Holding("this.Issue805.class")
     //:: error: (flowexpr.parse.error)
-    void method() { }
+    void method() {}
+
     @Holding("Issue805.class")
-    void method2() { }
+    void method2() {}
+
     @Holding("java.lang.String.class")
-    void method3() { }
+    void method3() {}
 }

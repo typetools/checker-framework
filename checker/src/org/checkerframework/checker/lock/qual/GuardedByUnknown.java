@@ -1,7 +1,6 @@
 package org.checkerframework.checker.lock.qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.framework.qual.DefaultInUncheckedCodeFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
@@ -22,6 +21,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @SubtypeOf({})
 @Retention(RetentionPolicy.RUNTIME)
-@DefaultInUncheckedCodeFor({ TypeUseLocation.RECEIVER })
-@Target({ ElementType.TYPE_USE, ElementType.TYPE_PARAMETER })
+@DefaultInUncheckedCodeFor({TypeUseLocation.RECEIVER})
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface GuardedByUnknown {}

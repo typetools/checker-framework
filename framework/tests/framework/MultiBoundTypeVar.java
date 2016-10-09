@@ -14,5 +14,4 @@ public class MultiBoundTypeVar {
         Appendable d1 = t;
         @Odd Appendable d2 = t;
     }
-
 }

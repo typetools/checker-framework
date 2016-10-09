@@ -5,12 +5,11 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import javax.lang.model.element.ExecutableElement;
-
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -25,11 +24,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
     /** If true, indicates that the store refers to a point in the code
-      * inside a constructor or initializer. This is useful because
-      * constructors and initializers are special with regard to
-      * the set of locks that is considered to be held. For example,
-      * 'this' is considered to be held inside a constructor.
-      */
+     * inside a constructor or initializer. This is useful because
+     * constructors and initializers are special with regard to
+     * the set of locks that is considered to be held. For example,
+     * 'this' is considered to be held inside a constructor.
+     */
     protected boolean inConstructorOrInitializer = false;
     private LockAnnotatedTypeFactory atypeFactory;
 
@@ -39,11 +38,10 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     /** Copy constructor. */
-    public LockStore(LockAnalysis analysis,
-            CFAbstractStore<CFValue, LockStore> other) {
+    public LockStore(LockAnalysis analysis, CFAbstractStore<CFValue, LockStore> other) {
         super(other);
-        inConstructorOrInitializer = ((LockStore)other).inConstructorOrInitializer;
-        this.atypeFactory = ((LockStore)other).atypeFactory;
+        inConstructorOrInitializer = ((LockStore) other).inConstructorOrInitializer;
+        this.atypeFactory = ((LockStore) other).atypeFactory;
     }
 
     @Override
@@ -51,7 +49,8 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         LockStore newStore = super.leastUpperBound(other);
 
         // Least upper bound of a boolean
-        newStore.inConstructorOrInitializer = this.inConstructorOrInitializer && other.inConstructorOrInitializer;
+        newStore.inConstructorOrInitializer =
+                this.inConstructorOrInitializer && other.inConstructorOrInitializer;
         newStore.atypeFactory = this.atypeFactory;
 
         return newStore;
@@ -62,7 +61,8 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
      * This is only done for @LockPossiblyHeld. This is not sound for other type qualifiers.
      */
     public void insertLockPossiblyHeld(FlowExpressions.Receiver r) {
-        CFValue value = analysis.createSingleAnnotationValue(atypeFactory.LOCKPOSSIBLYHELD, r.getType());
+        CFValue value =
+                analysis.createSingleAnnotationValue(atypeFactory.LOCKPOSSIBLYHELD, r.getType());
         assert value != null;
 
         if (r.containsUnknown()) {
@@ -108,8 +108,8 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
                 initializeThisValue(atypeFactory.LOCKHELD, expr.getType());
             } else if (expr instanceof FlowExpressions.FieldAccess) {
                 FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) expr;
-                if (!fieldAcc.isStatic() &&
-                    fieldAcc.getReceiver() instanceof FlowExpressions.ThisReference) {
+                if (!fieldAcc.isStatic()
+                        && fieldAcc.getReceiver() instanceof FlowExpressions.ThisReference) {
                     insertValue(fieldAcc.getReceiver(), atypeFactory.LOCKHELD);
                 }
             }
@@ -128,17 +128,19 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     @Override
-    protected boolean isSideEffectFree(AnnotatedTypeFactory atypeFactory,
-            ExecutableElement method) {
+    protected boolean isSideEffectFree(
+            AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
         LockAnnotatedTypeFactory lockAnnotatedTypeFactory = (LockAnnotatedTypeFactory) atypeFactory;
-        return ((LockChecker) lockAnnotatedTypeFactory.getContext()).hasOption("assumeSideEffectFree") ||
-                lockAnnotatedTypeFactory.methodSideEffectAnnotation(method, false) == SideEffectAnnotation.RELEASESNOLOCKS ||
-                super.isSideEffectFree(atypeFactory, method);
+        return ((LockChecker) lockAnnotatedTypeFactory.getContext())
+                        .hasOption("assumeSideEffectFree")
+                || lockAnnotatedTypeFactory.methodSideEffectAnnotation(method, false)
+                        == SideEffectAnnotation.RELEASESNOLOCKS
+                || super.isSideEffectFree(atypeFactory, method);
     }
 
     @Override
-    public void updateForMethodCall(MethodInvocationNode n,
-        AnnotatedTypeFactory atypeFactory, CFValue val) {
+    public void updateForMethodCall(
+            MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, CFValue val) {
         super.updateForMethodCall(n, atypeFactory, val);
         ExecutableElement method = n.getTarget().getMethod();
         if (!isSideEffectFree(atypeFactory, method)) {

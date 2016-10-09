@@ -1,37 +1,36 @@
 public class Uninit4 {
 
-  class Mam {
-    Object a=new Object();
-  }
-
-  //:: error: (initialization.fields.uninitialized)
-  class BadSon {
-    Object b;
-  }
-
-  class GoodSon {
-    Object b=new Object();
-  }
-
-  class WeirdSon {
-    Object b;
+    class Mam {
+        Object a = new Object();
+    }
 
     //:: error: (initialization.fields.uninitialized)
-    WeirdSon() {
-      super();
+    class BadSon {
+        Object b;
     }
-  }
 
-  class Daughter {
-    Object b;
-
-    //:: error: (initialization.fields.uninitialized)
-    Daughter() {
-
+    class GoodSon {
+        Object b = new Object();
     }
-    Daughter(Object val) {
-      this();
-      b = val;
+
+    class WeirdSon {
+        Object b;
+
+        //:: error: (initialization.fields.uninitialized)
+        WeirdSon() {
+            super();
+        }
     }
-  }
+
+    class Daughter {
+        Object b;
+
+        //:: error: (initialization.fields.uninitialized)
+        Daughter() {}
+
+        Daughter(Object val) {
+            this();
+            b = val;
+        }
+    }
 }

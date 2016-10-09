@@ -1,7 +1,6 @@
 package org.checkerframework.checker.experimental.tainting_qual.qual;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.framework.qual.*;
 
 /**

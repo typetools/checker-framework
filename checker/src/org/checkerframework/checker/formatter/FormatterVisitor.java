@@ -2,6 +2,10 @@ package org.checkerframework.checker.formatter;
 /*>>>
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.FormatCall;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
@@ -10,12 +14,6 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
-
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
 
 /**
  * Whenever a format method invocation is found in the syntax tree,
@@ -42,63 +40,66 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                 Result<InvocationType> invc = fc.getInvocationType();
                 ConversionCategory[] formatCats = fc.getFormatCategories();
                 switch (invc.value()) {
-                case VARARG:
-                    Result<TypeMirror>[] paramTypes = fc.getParamTypes();
-                    int paraml = paramTypes.length;
-                    int formatl = formatCats.length;
-                    if (paraml < formatl) {
-                        // For assignments, format.missing.arguments is issued
-                        // from commonAssignmentCheck.
-                        // II.1
-                        tu.failure(invc, "format.missing.arguments", formatl, paraml);
-                    } else {
-                        if (paraml > formatl) {
-                            // II.2
-                            tu.warning(invc, "format.excess.arguments", formatl, paraml);
-                        }
-                        for (int i = 0; i < formatl; ++i) {
-                            ConversionCategory formatCat = formatCats[i];
-                            Result<TypeMirror> param = paramTypes[i];
-                            TypeMirror paramType = param.value();
+                    case VARARG:
+                        Result<TypeMirror>[] paramTypes = fc.getParamTypes();
+                        int paraml = paramTypes.length;
+                        int formatl = formatCats.length;
+                        if (paraml < formatl) {
+                            // For assignments, format.missing.arguments is issued
+                            // from commonAssignmentCheck.
+                            // II.1
+                            tu.failure(invc, "format.missing.arguments", formatl, paraml);
+                        } else {
+                            if (paraml > formatl) {
+                                // II.2
+                                tu.warning(invc, "format.excess.arguments", formatl, paraml);
+                            }
+                            for (int i = 0; i < formatl; ++i) {
+                                ConversionCategory formatCat = formatCats[i];
+                                Result<TypeMirror> param = paramTypes[i];
+                                TypeMirror paramType = param.value();
 
-                            switch (formatCat) {
-                            case UNUSED:
-                                // I.2
-                                tu.warning(param, "format.argument.unused"," "+(1+i));
-                                break;
-                            case NULL:
-                                // I.3
-                                tu.failure(param, "format.specifier.null"," "+(1+i));
-                                break;
-                            case GENERAL:
-                                break;
-                            default:
-                                if (!fc.isValidParameter(formatCat, paramType)) {
-                                    // II.3
-                                    tu.failure(param, "argument.type.incompatible", paramType,
-                                            formatCat);
+                                switch (formatCat) {
+                                    case UNUSED:
+                                        // I.2
+                                        tu.warning(param, "format.argument.unused", " " + (1 + i));
+                                        break;
+                                    case NULL:
+                                        // I.3
+                                        tu.failure(param, "format.specifier.null", " " + (1 + i));
+                                        break;
+                                    case GENERAL:
+                                        break;
+                                    default:
+                                        if (!fc.isValidParameter(formatCat, paramType)) {
+                                            // II.3
+                                            tu.failure(
+                                                    param,
+                                                    "argument.type.incompatible",
+                                                    paramType,
+                                                    formatCat);
+                                        }
+                                        break;
                                 }
-                                break;
                             }
                         }
-                    }
-                    break;
-                case NULLARRAY:
-                    /* continue */
-                case ARRAY:
-                    for (ConversionCategory cat : formatCats) {
-                        if (cat == ConversionCategory.NULL) {
-                            // I.3
-                            tu.failure(invc, "format.specifier.null","");
+                        break;
+                    case NULLARRAY:
+                        /* continue */
+                    case ARRAY:
+                        for (ConversionCategory cat : formatCats) {
+                            if (cat == ConversionCategory.NULL) {
+                                // I.3
+                                tu.failure(invc, "format.specifier.null", "");
+                            }
+                            if (cat == ConversionCategory.UNUSED) {
+                                // I.2
+                                tu.warning(invc, "format.argument.unused", "");
+                            }
                         }
-                        if (cat == ConversionCategory.UNUSED) {
-                            // I.2
-                            tu.warning(invc, "format.argument.unused","");
-                        }
-                    }
-                    // III
-                    tu.warning(invc, "format.indirect.arguments");
-                    break;
+                        // III
+                        tu.warning(invc, "format.indirect.arguments");
+                        break;
                 }
             }
         }
@@ -106,8 +107,11 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
     }
 
     @Override
-    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            /*@CompilerMessageKey*/ String errorKey) {
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
 
         AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
@@ -118,18 +122,21 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
         // than required, but a warning is issued.
         // The format.missing.arguments warning is issued here for assignments.
         // For method calls, it is issued in visitMethodInvocation.
-        if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.FORMAT) &&
-            AnnotationUtils.areSameIgnoringValues(lhs, atypeFactory.FORMAT)) {
+        if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.FORMAT)
+                && AnnotationUtils.areSameIgnoringValues(lhs, atypeFactory.FORMAT)) {
             ConversionCategory[] rhsArgTypes =
                     atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
             ConversionCategory[] lhsArgTypes =
                     atypeFactory.treeUtil.formatAnnotationToCategories(lhs);
 
             if (rhsArgTypes.length < lhsArgTypes.length) {
-                checker.report(org.checkerframework.framework.source.Result.warning("format.missing.arguments",
-                        varType.toString(), valueType.toString()), valueTree);
+                checker.report(
+                        org.checkerframework.framework.source.Result.warning(
+                                "format.missing.arguments",
+                                varType.toString(),
+                                valueType.toString()),
+                        valueTree);
             }
         }
-
     }
 }

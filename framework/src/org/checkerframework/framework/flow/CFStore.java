@@ -12,9 +12,9 @@ public class CFStore extends CFAbstractStore<CFValue, CFStore> {
         super(analysis, sequentialSemantics);
     }
 
-    public CFStore(CFAbstractAnalysis<CFValue, CFStore, ?> analysis,
+    public CFStore(
+            CFAbstractAnalysis<CFValue, CFStore, ?> analysis,
             CFAbstractStore<CFValue, CFStore> other) {
         super(other);
     }
-
 }

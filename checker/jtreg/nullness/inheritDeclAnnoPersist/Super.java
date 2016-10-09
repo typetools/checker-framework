@@ -19,5 +19,4 @@ class Super {
     void seth() {
         h = null;
     }
-
 }

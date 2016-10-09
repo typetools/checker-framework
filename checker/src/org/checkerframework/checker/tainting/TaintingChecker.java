@@ -21,14 +21,13 @@ public class TaintingChecker extends CheckerAdapter<QualParams<Tainting>> {
     @Override
     public void setupDefaults(QualifierDefaults defaults) {
         defaults.addCheckedCodeDefault(
-                getTypeMirrorConverter().getAnnotation(
-                        new QualParams<>(new GroundQual<>(Tainting.UNTAINTED))),
+                getTypeMirrorConverter()
+                        .getAnnotation(new QualParams<>(new GroundQual<>(Tainting.UNTAINTED))),
                 TypeUseLocation.IMPLICIT_LOWER_BOUND);
 
         defaults.addCheckedCodeDefault(
-                getTypeMirrorConverter().getAnnotation(
-                        new QualParams<>(new GroundQual<>(Tainting.TAINTED))),
+                getTypeMirrorConverter()
+                        .getAnnotation(new QualParams<>(new GroundQual<>(Tainting.TAINTED))),
                 TypeUseLocation.LOCAL_VARIABLE);
     }
-
 }

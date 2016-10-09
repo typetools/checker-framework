@@ -1,11 +1,5 @@
 package org.checkerframework.framework.test;
 
-import org.checkerframework.framework.util.PluginUtil;
-
-import javax.tools.Diagnostic;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.ToolProvider;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -23,10 +17,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
+import javax.tools.Diagnostic;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.ToolProvider;
+import org.checkerframework.framework.util.PluginUtil;
 import org.junit.Assert;
 
 public class TestUtilities {
-
 
     public static final boolean isJSR308Compiler;
     public static final boolean isAtLeast8Jvm;
@@ -48,7 +46,7 @@ public class TestUtilities {
     }
 
     public static List<File> findRelativeNestedJavaFiles(File parent, String... dirNames) {
-        File [] dirs = new File[dirNames.length];
+        File[] dirs = new File[dirNames.length];
 
         int i = 0;
         for (String dirName : dirNames) {
@@ -59,10 +57,10 @@ public class TestUtilities {
         return getJavaFilesAsArgumentList(dirs);
     }
 
-    public static List<Object[]> findFilesInParent(File parent, String ... fileNames) {
+    public static List<Object[]> findFilesInParent(File parent, String... fileNames) {
         List<Object[]> files = new ArrayList<Object[]>();
         for (String fileName : fileNames) {
-            files.add(new Object[] { new File(parent, fileName) });
+            files.add(new Object[] {new File(parent, fileName)});
         }
         return files;
     }
@@ -96,12 +94,14 @@ public class TestUtilities {
         List<File> javaFiles = new ArrayList<File>();
 
         File[] in = directory.listFiles();
-        Arrays.sort(in, new Comparator<File>() {
-            @Override
-            public int compare(File o1, File o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        Arrays.sort(
+                in,
+                new Comparator<File>() {
+                    @Override
+                    public int compare(File o1, File o2) {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                });
         for (File file : in) {
             if (file.isDirectory()) {
                 javaFiles.addAll(deeplyEnclosedJavaTestFiles(file));
@@ -137,9 +137,9 @@ public class TestUtilities {
 
         while (in.hasNext()) {
             String nextLine = in.nextLine();
-            if (nextLine.contains("@skip-test") ||
-                    (!isJSR308Compiler && nextLine.contains("@non-308-skip-test")) ||
-                    (!isAtLeast8Jvm && nextLine.contains("@below-java8-jdk-skip-test"))) {
+            if (nextLine.contains("@skip-test")
+                    || (!isJSR308Compiler && nextLine.contains("@non-308-skip-test"))
+                    || (!isAtLeast8Jvm && nextLine.contains("@below-java8-jdk-skip-test"))) {
                 in.close();
                 return false;
             }
@@ -149,15 +149,16 @@ public class TestUtilities {
         return true;
     }
 
-    public static String diagnosticToString(final Diagnostic<? extends JavaFileObject> diagnostic, boolean usingAnomsgtxt) {
+    public static String diagnosticToString(
+            final Diagnostic<? extends JavaFileObject> diagnostic, boolean usingAnomsgtxt) {
 
         String result = diagnostic.toString().trim();
 
         // suppress Xlint warnings
-        if ( result.contains("uses unchecked or unsafe operations.")
-          || result.contains("Recompile with -Xlint:unchecked for details.")
-          || result.endsWith(" declares unsafe vararg methods.")
-          || result.contains("Recompile with -Xlint:varargs for details.")) {
+        if (result.contains("uses unchecked or unsafe operations.")
+                || result.contains("Recompile with -Xlint:unchecked for details.")
+                || result.endsWith(" declares unsafe vararg methods.")
+                || result.contains("Recompile with -Xlint:varargs for details.")) {
             return null;
         }
 
@@ -181,7 +182,9 @@ public class TestUtilities {
         return result;
     }
 
-    public static Set<String> diagnosticsToStrings(final Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics, boolean usingAnomsgtxt) {
+    public static Set<String> diagnosticsToStrings(
+            final Iterable<Diagnostic<? extends JavaFileObject>> actualDiagnostics,
+            boolean usingAnomsgtxt) {
         Set<String> actualDiagnosticsStr = new LinkedHashSet<String>();
         for (Diagnostic<? extends JavaFileObject> diagnostic : actualDiagnostics) {
             String diagnosticStr = TestUtilities.diagnosticToString(diagnostic, usingAnomsgtxt);
@@ -214,7 +217,8 @@ public class TestUtilities {
     }
 
     public static File findComparisonFile(File testFile) {
-        final File comparisonFile = new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
+        final File comparisonFile =
+                new File(testFile.getParent(), testFile.getName().replace(".java", ".out"));
         return comparisonFile;
     }
 
@@ -253,13 +257,26 @@ public class TestUtilities {
         }
     }
 
-    public static void writeDiagnostics(File file, File testFile, List<String> expected, List<String> actual, List<String> unexpected, List<String> missing, boolean usingNoMsgText, boolean testFailed) {
+    public static void writeDiagnostics(
+            File file,
+            File testFile,
+            List<String> expected,
+            List<String> actual,
+            List<String> unexpected,
+            List<String> missing,
+            boolean usingNoMsgText,
+            boolean testFailed) {
         try {
             final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
             bw.write("File: " + testFile.getAbsolutePath() + "\n");
             bw.write("TestFailed: " + testFailed + "\n");
             bw.write("Using nomsgtxt: " + usingNoMsgText + "\n");
-            bw.write("#Missing: " + missing.size() + "      #Unexpected: " + unexpected.size() + "\n");
+            bw.write(
+                    "#Missing: "
+                            + missing.size()
+                            + "      #Unexpected: "
+                            + unexpected.size()
+                            + "\n");
 
             bw.write("Expected:\n");
             bw.write(PluginUtil.join("\n", expected));
@@ -301,7 +318,11 @@ public class TestUtilities {
         }
     }
 
-    public static void writeJavacArguments(File file, Iterable<? extends JavaFileObject> files, Iterable<String> options, Iterable<String> processors) {
+    public static void writeJavacArguments(
+            File file,
+            Iterable<? extends JavaFileObject> files,
+            Iterable<String> options,
+            Iterable<String> processors) {
         try {
             final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
             bw.write("Files:\n");
@@ -317,7 +338,6 @@ public class TestUtilities {
                 bw.newLine();
             }
             bw.newLine();
-
 
             bw.write("Processors:\n");
             for (String p : processors) {

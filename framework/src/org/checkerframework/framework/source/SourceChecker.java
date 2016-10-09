@@ -5,21 +5,17 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.CFContext;
-import org.checkerframework.framework.util.CheckerMain;
-import org.checkerframework.framework.util.OptionConfiguration;
-import org.checkerframework.javacutil.AbstractTypeProcessor;
-import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorHandler;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -37,7 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -51,18 +46,20 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Log;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.AnnotatedFor;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.CheckerMain;
+import org.checkerframework.framework.util.OptionConfiguration;
+import org.checkerframework.javacutil.AbstractTypeProcessor;
+import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorHandler;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * An abstract annotation processor designed for implementing a
@@ -89,7 +86,6 @@ import com.sun.tools.javac.util.Log;
  * {@link AbstractProcessor} (or even this class) as the Checker Framework is
  * not designed for such checkers.
  */
-
 @SupportedOptions({
     // When adding a new standard option:
     // 1. Add a brief blurb here about the use case
@@ -98,7 +94,6 @@ import com.sun.tools.javac.util.Log;
     //     * introduction.tex contains an overview of all options, which
     //       should be in the same order as this source code file.
     //     * a specific section should contain a detailed discussion.
-
 
     ///
     /// Unsound checking: ignore some errors
@@ -149,7 +144,6 @@ import com.sun.tools.javac.util.Log;
     // Whether to output errors or warnings only
     // org.checkerframework.framework.source.SourceChecker.report
     "warns",
-
 
     ///
     /// Type-checking modes:  enable/disable functionality
@@ -304,10 +298,9 @@ import com.sun.tools.javac.util.Log;
 
     // Sets AnnotatedTypeFactory shouldCache to false
     "atfDoNotCache"
-
 })
-public abstract class SourceChecker
-    extends AbstractTypeProcessor implements ErrorHandler, CFContext, OptionConfiguration {
+public abstract class SourceChecker extends AbstractTypeProcessor
+        implements ErrorHandler, CFContext, OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -437,7 +430,7 @@ public abstract class SourceChecker
      * @return the {@link ProcessingEnvironment} that was supplied to this
      *         checker
      */
-    @Override   // from CFChecker
+    @Override // from CFChecker
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
     }
@@ -515,7 +508,8 @@ public abstract class SourceChecker
 
     @Override
     public AnnotationProvider getAnnotationProvider() {
-        throw new UnsupportedOperationException("getAnnotationProvider is not implemented for this class.");
+        throw new UnsupportedOperationException(
+                "getAnnotationProvider is not implemented for this class.");
     }
 
     /**
@@ -562,7 +556,8 @@ public abstract class SourceChecker
         return getPattern(patternName, options, ".");
     }
 
-    private Pattern getPattern(String patternName, Map<String, String> options, String defaultPattern) {
+    private Pattern getPattern(
+            String patternName, Map<String, String> options, String defaultPattern) {
         String pattern = "";
 
         if (options.containsKey(patternName)) {
@@ -574,8 +569,12 @@ public abstract class SourceChecker
         }
 
         if (pattern.indexOf("/") != -1) {
-            message(Kind.WARNING,
-              "The " + patternName + " property contains \"/\", which will never match a class name: " + pattern);
+            message(
+                    Kind.WARNING,
+                    "The "
+                            + patternName
+                            + " property contains \"/\", which will never match a class name: "
+                            + pattern);
         }
 
         if (pattern.equals("")) {
@@ -617,13 +616,18 @@ public abstract class SourceChecker
 
         Set<String> activeLint = new HashSet<String>();
         for (String s : lintString.split(",")) {
-            if (!this.getSupportedLintOptions().contains(s) &&
-                    !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1))) &&
-                    !s.equals("all") &&
-                    !s.equals("none") /*&&
+            if (!this.getSupportedLintOptions().contains(s)
+                    && !(s.charAt(0) == '-'
+                            && this.getSupportedLintOptions().contains(s.substring(1)))
+                    && !s.equals("all")
+                    && !s.equals("none") /*&&
                     !warnedOnLint.contains(s)*/) {
-                this.messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
-                        "Unsupported lint option: " + s + "; All options: " + this.getSupportedLintOptions());
+                this.messager.printMessage(
+                        javax.tools.Diagnostic.Kind.WARNING,
+                        "Unsupported lint option: "
+                                + s
+                                + "; All options: "
+                                + this.getSupportedLintOptions());
                 // warnedOnLint.add(s);
             }
 
@@ -650,27 +654,33 @@ public abstract class SourceChecker
             String[] split = key.split(OPTION_SEPARATOR);
 
             switch (split.length) {
-            case 1:
-                // No separator, option always active
-                activeOpts.put(key, value);
-                break;
-            case 2:
-                // Valid class-option pair
-                Class<?> clazz = this.getClass();
+                case 1:
+                    // No separator, option always active
+                    activeOpts.put(key, value);
+                    break;
+                case 2:
+                    // Valid class-option pair
+                    Class<?> clazz = this.getClass();
 
-                do {
-                    if (clazz.getCanonicalName().equals(split[0]) ||
-                            clazz.getSimpleName().equals(split[0])) {
-                        activeOpts.put(split[1], value);
-                    }
+                    do {
+                        if (clazz.getCanonicalName().equals(split[0])
+                                || clazz.getSimpleName().equals(split[0])) {
+                            activeOpts.put(split[1], value);
+                        }
 
-                    clazz = clazz.getSuperclass();
-                } while (clazz != null &&
-                        !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
-                break;
-            default:
-                ErrorReporter.errorAbort("Invalid option name: " + key +
-                        " At most one separator " + OPTION_SEPARATOR + " expected, but found " + split.length);
+                        clazz = clazz.getSuperclass();
+                    } while (clazz != null
+                            && !clazz.getName()
+                                    .equals(AbstractTypeProcessor.class.getCanonicalName()));
+                    break;
+                default:
+                    ErrorReporter.errorAbort(
+                            "Invalid option name: "
+                                    + key
+                                    + " At most one separator "
+                                    + OPTION_SEPARATOR
+                                    + " expected, but found "
+                                    + split.length);
             }
         }
         return Collections.unmodifiableMap(activeOpts);
@@ -688,7 +698,6 @@ public abstract class SourceChecker
 
         return swString.split(",");
     }
-
 
     /**
      * Exception type used only internally to abort
@@ -718,7 +727,6 @@ public abstract class SourceChecker
         throw new CheckerError(msg, new Throwable(), false);
     }
 
-
     /**
      * Log an error message and abort processing.
      * Call this method instead of raising an exception.
@@ -747,27 +755,32 @@ public abstract class SourceChecker
     private void logCheckerError(CheckerError ce) {
         if (ce.getMessage() == null) {
             final String stackTrace = formatStackTrace(ce.getStackTrace());
-            ErrorReporter.errorAbort("Null error message while logging Checker error.\nStack Trace:\n" + stackTrace);
+            ErrorReporter.errorAbort(
+                    "Null error message while logging Checker error.\nStack Trace:\n" + stackTrace);
         }
 
         StringBuilder msg = new StringBuilder(ce.getMessage());
-        if ((processingEnv == null ||
-                processingEnv.getOptions() == null ||
-                processingEnv.getOptions().containsKey("printErrorStack")) &&
-                ce.getCause() != null) {
+        if ((processingEnv == null
+                        || processingEnv.getOptions() == null
+                        || processingEnv.getOptions().containsKey("printErrorStack"))
+                && ce.getCause() != null) {
 
-            if (this.currentRoot != null &&
-                    this.currentRoot.getSourceFile() != null) {
+            if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             }
 
-            msg.append("\nException: " +
-                            ce.getCause().toString() + "; " + formatStackTrace(ce.getCause().getStackTrace()));
+            msg.append(
+                    "\nException: "
+                            + ce.getCause().toString()
+                            + "; "
+                            + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
-                msg.append("\nUnderlying Exception: " +
-                                (cause.toString() + "; " +
-                                        formatStackTrace(cause.getStackTrace())));
+                msg.append(
+                        "\nUnderlying Exception: "
+                                + (cause.toString()
+                                        + "; "
+                                        + formatStackTrace(cause.getStackTrace())));
                 cause = cause.getCause();
             }
         } else {
@@ -804,22 +817,26 @@ public abstract class SourceChecker
                 messager = processingEnv.getMessager();
                 messager.printMessage(
                         javax.tools.Diagnostic.Kind.WARNING,
-                        "You have forgotten to call super.initChecker in your " +
-                                "subclass of SourceChecker, " + this.getClass() +
-                                "! Please ensure your checker is properly initialized.");
+                        "You have forgotten to call super.initChecker in your "
+                                + "subclass of SourceChecker, "
+                                + this.getClass()
+                                + "! Please ensure your checker is properly initialized.");
             }
             if (shouldAddShutdownHook()) {
-                Runtime.getRuntime().addShutdownHook(new Thread() {
-                    @Override
-                    public void run() {
-                        shutdownHook();
-                    }
-                });
+                Runtime.getRuntime()
+                        .addShutdownHook(
+                                new Thread() {
+                                    @Override
+                                    public void run() {
+                                        shutdownHook();
+                                    }
+                                });
             }
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
-            logCheckerError(wrapThrowableAsCheckerError("SourceChecker.typeProcessingStart", t, null));
+            logCheckerError(
+                    wrapThrowableAsCheckerError("SourceChecker.typeProcessingStart", t, null));
         }
     }
 
@@ -899,21 +916,23 @@ public abstract class SourceChecker
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
         if (e == null) {
-            messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
-                    "Refusing to process empty TypeElement");
+            messager.printMessage(
+                    javax.tools.Diagnostic.Kind.ERROR, "Refusing to process empty TypeElement");
             return;
         }
         if (p == null) {
-            messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
+            messager.printMessage(
+                    javax.tools.Diagnostic.Kind.ERROR,
                     "Refusing to process empty TreePath in TypeElement: " + e);
             return;
         }
 
-        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(context);
-        if ((! warnedAboutSourceLevel) && (! source.allowTypeAnnotations())) {
-            messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
-                                  "-source " + source.name + " does not support type annotations");
+        if ((!warnedAboutSourceLevel) && (!source.allowTypeAnnotations())) {
+            messager.printMessage(
+                    javax.tools.Diagnostic.Kind.WARNING,
+                    "-source " + source.name + " does not support type annotations");
             warnedAboutSourceLevel = true;
         }
 
@@ -951,14 +970,20 @@ public abstract class SourceChecker
         }
     }
 
-    private CheckerError wrapThrowableAsCheckerError(String where, Throwable t, /*@Nullable*/ TreePath p) {
+    private CheckerError wrapThrowableAsCheckerError(
+            String where, Throwable t, /*@Nullable*/ TreePath p) {
         return new CheckerError(
-           where + ": unexpected Throwable (" +
-           t.getClass().getSimpleName() + ")" +
-           ((p == null) ? "" : " while processing " + p.getCompilationUnit().getSourceFile().getName()) +
-           (t.getMessage() == null ? "" : "; message: " + t.getMessage()),
-           t,
-           false);
+                where
+                        + ": unexpected Throwable ("
+                        + t.getClass().getSimpleName()
+                        + ")"
+                        + ((p == null)
+                                ? ""
+                                : " while processing "
+                                        + p.getCompilationUnit().getSourceFile().getName())
+                        + (t.getMessage() == null ? "" : "; message: " + t.getMessage()),
+                t,
+                false);
     }
 
     /**
@@ -1036,7 +1061,10 @@ public abstract class SourceChecker
      *             if {@code source} is neither a {@link Tree} nor an
      *             {@link Element}
      */
-    public void message(Diagnostic.Kind kind, Object source, /*@CompilerMessageKey*/ String msgKey,
+    public void message(
+            Diagnostic.Kind kind,
+            Object source,
+            /*@CompilerMessageKey*/ String msgKey,
             Object... args) {
 
         assert messages != null : "null messages";
@@ -1097,13 +1125,13 @@ public abstract class SourceChecker
             // the source file.
             final Tree tree;
             if (source instanceof Element) {
-                tree = trees.getTree( (Element) source );
+                tree = trees.getTree((Element) source);
             } else if (source instanceof Tree) {
                 tree = (Tree) source;
             } else {
                 tree = null;
             }
-            sb.append( treeToFilePositionString( tree, currentRoot, processingEnv ) );
+            sb.append(treeToFilePositionString(tree, currentRoot, processingEnv));
             sb.append(DETAILS_SEPARATOR);
 
             // (4) The human-readable error message.
@@ -1124,7 +1152,8 @@ public abstract class SourceChecker
         try {
             messageText = String.format(fmtString, args);
         } catch (Exception e) {
-            messageText = "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
+            messageText =
+                    "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
         }
 
         if (LINE_SEPARATOR != "\n") { // interned
@@ -1135,11 +1164,10 @@ public abstract class SourceChecker
         if (source instanceof Element) {
             messager.printMessage(kind, messageText, (Element) source);
         } else if (source instanceof Tree) {
-            Trees.instance(processingEnv).printMessage(kind, messageText, (Tree) source,
-                    currentRoot);
+            Trees.instance(processingEnv)
+                    .printMessage(kind, messageText, (Tree) source, currentRoot);
         } else {
-            ErrorReporter.errorAbort("invalid position source: "
-                    + source.getClass().getName());
+            ErrorReporter.errorAbort("invalid position source: " + source.getClass().getName());
         }
     }
 
@@ -1183,16 +1211,17 @@ public abstract class SourceChecker
      * @param processingEnv the current processing environment
      * @return a tuple string representing the range of characters that tree occupies in the source file
      */
-    public String treeToFilePositionString(Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
+    public String treeToFilePositionString(
+            Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
         if (tree == null) {
             return null;
         }
 
         SourcePositions sourcePositions = trees.getSourcePositions();
-        long start = sourcePositions.getStartPosition( currentRoot, tree);
-        long end   = sourcePositions.getEndPosition( currentRoot, tree );
+        long start = sourcePositions.getStartPosition(currentRoot, tree);
+        long end = sourcePositions.getEndPosition(currentRoot, tree);
 
-        return "( " + start + ", " + end  + " )";
+        return "( " + start + ", " + end + " )";
     }
 
     public static final String DETAILS_SEPARATOR = " $$ ";
@@ -1373,7 +1402,8 @@ public abstract class SourceChecker
         } else if (kindOfCode.equals("bytecode")) {
             return useUncheckedDefaultsForByteCode;
         } else {
-            ErrorReporter.errorAbort("SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
+            ErrorReporter.errorAbort(
+                    "SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
         }
         return false;
     }
@@ -1426,7 +1456,8 @@ public abstract class SourceChecker
             List<String> upstreamCheckerNames = getUpstreamCheckerNames();
 
             for (String userAnnotatedFor : userAnnotatedFors) {
-                if (CheckerMain.matchesCheckerOrSubcheckerFromList(userAnnotatedFor, upstreamCheckerNames)) {
+                if (CheckerMain.matchesCheckerOrSubcheckerFromList(
+                        userAnnotatedFor, upstreamCheckerNames)) {
                     return true;
                 }
             }
@@ -1448,10 +1479,10 @@ public abstract class SourceChecker
     public void report(final Result r, final Object src) {
 
         String errKey = r.getMessageKeys().iterator().next();
-        if (src instanceof Tree && shouldSuppressWarnings((Tree)src, errKey)) {
+        if (src instanceof Tree && shouldSuppressWarnings((Tree) src, errKey)) {
             return;
         }
-        if (src instanceof Element && shouldSuppressWarnings((Element)src, errKey)) {
+        if (src instanceof Element && shouldSuppressWarnings((Element) src, errKey)) {
             return;
         }
 
@@ -1461,10 +1492,16 @@ public abstract class SourceChecker
 
         for (Result.DiagMessage msg : r.getDiagMessages()) {
             if (r.isFailure()) {
-                this.message(hasOption("warns") ? Diagnostic.Kind.MANDATORY_WARNING : Diagnostic.Kind.ERROR,
-                        src, msg.getMessageKey(), msg.getArgs());
+                this.message(
+                        hasOption("warns")
+                                ? Diagnostic.Kind.MANDATORY_WARNING
+                                : Diagnostic.Kind.ERROR,
+                        src,
+                        msg.getMessageKey(),
+                        msg.getArgs());
             } else if (r.isWarning()) {
-                this.message(Diagnostic.Kind.MANDATORY_WARNING, src, msg.getMessageKey(), msg.getArgs());
+                this.message(
+                        Diagnostic.Kind.MANDATORY_WARNING, src, msg.getMessageKey(), msg.getArgs());
             } else {
                 this.message(Diagnostic.Kind.NOTE, src, msg.getMessageKey(), msg.getArgs());
             }
@@ -1633,7 +1670,7 @@ public abstract class SourceChecker
      */
     protected Set<String> createSupportedLintOptions() {
         /*@Nullable*/ SupportedLintOptions sl =
-            this.getClass().getAnnotation(SupportedLintOptions.class);
+                this.getClass().getAnnotation(SupportedLintOptions.class);
 
         if (sl == null) {
             return Collections.</*@NonNull*/ String>emptySet();
@@ -1642,7 +1679,7 @@ public abstract class SourceChecker
         /*@Nullable*/ String /*@Nullable*/ [] slValue = sl.value();
         assert slValue != null; /*nninvariant*/
 
-        /*@Nullable*/ String [] lintArray = slValue;
+        /*@Nullable*/ String[] lintArray = slValue;
         Set<String> lintSet = new HashSet<String>(lintArray.length);
         for (String s : lintArray) {
             lintSet.add(s);
@@ -1761,12 +1798,12 @@ public abstract class SourceChecker
             clazzPrefixes.add(clazz);
 
             SupportedOptions so = clazz.getAnnotation(SupportedOptions.class);
-            if  (so != null) {
+            if (so != null) {
                 options.addAll(expandCFOptions(clazzPrefixes, so.value()));
             }
             clazz = clazz.getSuperclass();
-        } while (clazz != null &&
-                !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
+        } while (clazz != null
+                && !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
 
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }
@@ -1819,10 +1856,11 @@ public abstract class SourceChecker
     @Override
     public final Set<String> getSupportedAnnotationTypes() {
 
-        SupportedAnnotationTypes supported = this.getClass().getAnnotation(
-                SupportedAnnotationTypes.class);
+        SupportedAnnotationTypes supported =
+                this.getClass().getAnnotation(SupportedAnnotationTypes.class);
         if (supported != null) {
-            ErrorReporter.errorAbort("@SupportedAnnotationTypes should not be written on any checker;"
+            ErrorReporter.errorAbort(
+                    "@SupportedAnnotationTypes should not be written on any checker;"
                             + " supported annotation types are inherited from SourceChecker.");
         }
         return Collections.singleton("*");
@@ -1846,8 +1884,7 @@ public abstract class SourceChecker
      * @return collection of warning keys
      */
     protected final Collection<String> getStandardSuppressWarningsKeys() {
-        SuppressWarningsKeys annotation =
-            this.getClass().getAnnotation(SuppressWarningsKeys.class);
+        SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
 
         Set<String> result = new HashSet<>();
         result.add(SUPPRESS_ALL_KEY);
@@ -1865,7 +1902,8 @@ public abstract class SourceChecker
             if (indexOfChecker == -1) {
                 indexOfChecker = className.lastIndexOf("Subchecker");
             }
-            String key = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
+            String key =
+                    (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
             result.add(key.trim().toLowerCase());
         }
 
@@ -1918,7 +1956,7 @@ public abstract class SourceChecker
             onlyUsesPattern = getOnlyUsesPattern(getOptions());
         }
         return skipUsesPattern.matcher(typeName).find()
-                || ! onlyUsesPattern.matcher(typeName).find();
+                || !onlyUsesPattern.matcher(typeName).find();
     }
 
     /**
@@ -1945,7 +1983,7 @@ public abstract class SourceChecker
         }
 
         return skipDefsPattern.matcher(qualifiedName).find()
-                || ! onlyDefsPattern.matcher(qualifiedName).find();
+                || !onlyDefsPattern.matcher(qualifiedName).find();
     }
 
     /**
@@ -1961,7 +1999,6 @@ public abstract class SourceChecker
     public final boolean shouldSkipDefs(ClassTree cls, MethodTree meth) {
         return shouldSkipDefs(cls);
     }
-
 
     /**
      * A helper function to parse a Properties file

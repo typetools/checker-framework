@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -19,7 +18,6 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.stubparser.ast.CompilationUnit;
@@ -44,7 +42,8 @@ import org.checkerframework.stubparser.ast.visitor.SimpleVoidVisitor;
  */
 public class StubUtil {
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(String className, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(
+            String className, IndexUnit indexFile) {
         int indexOfDot = className.lastIndexOf('.');
 
         if (indexOfDot == -1) {
@@ -58,7 +57,8 @@ public class StubUtil {
         final String simpleName = className.substring(indexOfDot + 1);
 
         for (CompilationUnit cu : indexFile.getCompilationUnits()) {
-            if (cu.getPackage() != null && cu.getPackage().getName().getName().equals(packageName)) {
+            if (cu.getPackage() != null
+                    && cu.getPackage().getName().getName().equals(packageName)) {
                 TypeDeclaration type = findDeclaration(simpleName, cu);
                 if (type != null) {
                     return type;
@@ -70,12 +70,15 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(TypeElement type, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(
+            TypeElement type, IndexUnit indexFile) {
         return findDeclaration(type.getQualifiedName().toString(), indexFile);
     }
 
-    /*package-scope*/ static FieldDeclaration findDeclaration(VariableElement field, IndexUnit indexFile) {
-        TypeDeclaration type = findDeclaration((TypeElement)field.getEnclosingElement(), indexFile);
+    /*package-scope*/ static FieldDeclaration findDeclaration(
+            VariableElement field, IndexUnit indexFile) {
+        TypeDeclaration type =
+                findDeclaration((TypeElement) field.getEnclosingElement(), indexFile);
         if (type == null) {
             return null;
         }
@@ -84,7 +87,7 @@ public class StubUtil {
             if (!(member instanceof FieldDeclaration)) {
                 continue;
             }
-            FieldDeclaration decl = (FieldDeclaration)member;
+            FieldDeclaration decl = (FieldDeclaration) member;
             for (VariableDeclarator var : decl.getVariables()) {
                 if (toString(var).equals(field.getSimpleName().toString())) {
                     return decl;
@@ -94,8 +97,10 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static BodyDeclaration findDeclaration(ExecutableElement method, IndexUnit indexFile) {
-        TypeDeclaration type = findDeclaration((TypeElement)method.getEnclosingElement(), indexFile);
+    /*package-scope*/ static BodyDeclaration findDeclaration(
+            ExecutableElement method, IndexUnit indexFile) {
+        TypeDeclaration type =
+                findDeclaration((TypeElement) method.getEnclosingElement(), indexFile);
         if (type == null) {
             return null;
         }
@@ -104,11 +109,11 @@ public class StubUtil {
 
         for (BodyDeclaration member : type.getMembers()) {
             if (member instanceof MethodDeclaration) {
-                if (toString((MethodDeclaration)member).equals(methodRep)) {
+                if (toString((MethodDeclaration) member).equals(methodRep)) {
                     return member;
                 }
             } else if (member instanceof ConstructorDeclaration) {
-                if (toString((ConstructorDeclaration)member).equals(methodRep)) {
+                if (toString((ConstructorDeclaration) member).equals(methodRep)) {
                     return member;
                 }
             }
@@ -116,7 +121,8 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(String simpleName, CompilationUnit cu) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(
+            String simpleName, CompilationUnit cu) {
         for (TypeDeclaration type : cu.getTypes()) {
             if (simpleName.equals(type.getName())) {
                 return type;
@@ -154,7 +160,9 @@ public class StubUtil {
         // note: constructor simple name is <init>
         sb.append(element.getSimpleName());
         sb.append("(");
-        for (Iterator<? extends VariableElement> i = element.getParameters().iterator(); i.hasNext();) {
+        for (Iterator<? extends VariableElement> i = element.getParameters().iterator();
+                i.hasNext();
+                ) {
             sb.append(standarizeType(i.next().asType()));
             if (i.hasNext()) {
                 sb.append(",");
@@ -172,9 +180,9 @@ public class StubUtil {
 
     /*package-scope*/ static String toString(Element element) {
         if (element instanceof ExecutableElement) {
-            return toString((ExecutableElement)element);
+            return toString((ExecutableElement) element);
         } else if (element instanceof VariableElement) {
-            return toString((VariableElement)element);
+            return toString((VariableElement) element);
         } else {
             return null;
         }
@@ -183,7 +191,7 @@ public class StubUtil {
     /*package-scope*/ static Pair<String, String> partitionQualifiedName(String imported) {
         String typeName = imported.substring(0, imported.lastIndexOf("."));
         String name = imported.substring(imported.lastIndexOf(".") + 1);
-        Pair<String,String> typeParts = Pair.of(typeName, name);
+        Pair<String, String> typeParts = Pair.of(typeName, name);
         return typeParts;
     }
 
@@ -195,17 +203,18 @@ public class StubUtil {
      */
     private static String standarizeType(TypeMirror type) {
         switch (type.getKind()) {
-        case ARRAY:
-            return standarizeType(((ArrayType)type).getComponentType()) + "[]";
-        case TYPEVAR:
-            return ((TypeVariable)type).asElement().getSimpleName().toString();
-        case DECLARED: {
-            return ((DeclaredType)type).asElement().getSimpleName().toString();
-        }
-        default:
-            if (type.getKind().isPrimitive()) {
-                return type.toString();
-            }
+            case ARRAY:
+                return standarizeType(((ArrayType) type).getComponentType()) + "[]";
+            case TYPEVAR:
+                return ((TypeVariable) type).asElement().getSimpleName().toString();
+            case DECLARED:
+                {
+                    return ((DeclaredType) type).asElement().getSimpleName().toString();
+                }
+            default:
+                if (type.getKind().isPrimitive()) {
+                    return type.toString();
+                }
         }
         ErrorReporter.errorAbort("StubUtil: unhandled type: " + type);
         return null; // dead code
@@ -219,6 +228,7 @@ public class StubUtil {
         }
 
         private final StringBuilder sb = new StringBuilder();
+
         public String getOutput() {
             return sb.toString();
         }
@@ -229,7 +239,7 @@ public class StubUtil {
 
             sb.append("(");
             if (n.getParameters() != null) {
-                for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext();) {
+                for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
                     Parameter p = i.next();
                     p.accept(this, arg);
 
@@ -247,7 +257,7 @@ public class StubUtil {
 
             sb.append("(");
             if (n.getParameters() != null) {
-                for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext();) {
+                for (Iterator<Parameter> i = n.getParameters().iterator(); i.hasNext(); ) {
                     Parameter p = i.next();
                     p.accept(this, arg);
 
@@ -262,7 +272,8 @@ public class StubUtil {
         @Override
         public void visit(Parameter n, Void arg) {
             if (n.getId().getArrayCount() > 0) {
-                ErrorReporter.errorAbort("StubUtil: put array brackets on the type, not the variable: " + n);
+                ErrorReporter.errorAbort(
+                        "StubUtil: put array brackets on the type, not the variable: " + n);
             }
 
             n.getType().accept(this, arg);
@@ -280,32 +291,32 @@ public class StubUtil {
         @Override
         public void visit(PrimitiveType n, Void arg) {
             switch (n.getType()) {
-            case Boolean:
-                sb.append("boolean");
-                break;
-            case Byte:
-                sb.append("byte");
-                break;
-            case Char:
-                sb.append("char");
-                break;
-            case Double:
-                sb.append("double");
-                break;
-            case Float:
-                sb.append("float");
-                break;
-            case Int:
-                sb.append("int");
-                break;
-            case Long:
-                sb.append("long");
-                break;
-            case Short:
-                sb.append("short");
-                break;
-            default:
-                ErrorReporter.errorAbort("StubUtil: unknown type: " + n.getType());
+                case Boolean:
+                    sb.append("boolean");
+                    break;
+                case Byte:
+                    sb.append("byte");
+                    break;
+                case Char:
+                    sb.append("char");
+                    break;
+                case Double:
+                    sb.append("double");
+                    break;
+                case Float:
+                    sb.append("float");
+                    break;
+                case Int:
+                    sb.append("int");
+                    break;
+                case Long:
+                    sb.append("long");
+                    break;
+                case Short:
+                    sb.append("short");
+                    break;
+                default:
+                    ErrorReporter.errorAbort("StubUtil: unknown type: " + n.getType());
             }
         }
 
@@ -338,8 +349,8 @@ public class StubUtil {
         } else {
             // If the stubFile doesn't exist, maybe it is relative to the
             // current working directory, so try that.
-            String workingDir = System.getProperty("user.dir")
-                    + System.getProperty("file.separator");
+            String workingDir =
+                    System.getProperty("user.dir") + System.getProperty("file.separator");
             stubFile = new File(workingDir + stub);
             if (stubFile.exists()) {
                 allStubFiles(stubFile, resources);
@@ -385,12 +396,14 @@ public class StubUtil {
             }
         } else if (stub.isDirectory()) {
             File[] directoryContents = stub.listFiles();
-            Arrays.sort(directoryContents, new Comparator<File>() {
-                    @Override
-                    public int compare(File o1, File o2) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                });
+            Arrays.sort(
+                    directoryContents,
+                    new Comparator<File>() {
+                        @Override
+                        public int compare(File o1, File o2) {
+                            return o1.getName().compareTo(o2.getName());
+                        }
+                    });
             for (File enclosed : directoryContents) {
                 allStubFiles(enclosed, resources);
             }

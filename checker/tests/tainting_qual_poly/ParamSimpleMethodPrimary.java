@@ -13,9 +13,11 @@ abstract class Test {
     }
 
     abstract @Tainted Integer makeTainted();
+
     abstract @Untainted Integer makeUntainted();
 
     abstract void takeTainted(@Tainted Integer o);
+
     abstract void takeUntainted(@Untainted Integer o);
 
     void test() {

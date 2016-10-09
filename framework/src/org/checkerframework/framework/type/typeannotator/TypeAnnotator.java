@@ -4,7 +4,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 
-
 /**
  * {@link TypeAnnotator} is an abstract AnnotatedTypeScanner to be
  * used with {@link ListTypeAnnotator}

@@ -3,7 +3,6 @@ package tests.aggregate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.source.AggregateChecker;
@@ -23,5 +22,4 @@ public class TestAggregateChecker extends AggregateChecker {
         checkers.add(AliasingChecker.class);
         return checkers;
     }
-
 }

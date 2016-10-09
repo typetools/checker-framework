@@ -1,12 +1,11 @@
 package org.checkerframework.framework.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TreePathCacher is a TreeScanner that creates and caches a TreePath for a target
@@ -67,6 +66,7 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
     private class Result extends Error {
         private static final long serialVersionUID = 4948452207518392627L;
         TreePath path;
+
         Result(TreePath path) {
             this.path = path;
         }

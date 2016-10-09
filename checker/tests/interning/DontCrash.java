@@ -2,9 +2,8 @@
 // org.checkerframework.checker shouldn't crash.  (Maybe they shouldn't run at all if javac
 // issues any errors?)
 // @skip-test
-import org.checkerframework.checker.interning.qual.*;
-
 import java.util.*;
+import org.checkerframework.checker.interning.qual.*;
 
 public class DontCrash {
 
@@ -18,10 +17,9 @@ public class DontCrash {
         private Map<@Interned String, @Interned String> map;
 
         void testMap() {
-            Map<@Interned String,@Interned String> mymap;
+            Map<@Interned String, @Interned String> mymap;
             mymap = theDefault.map;
-            mymap = new HashMap<@Interned String,@Interned String>(theDefault.map);
+            mymap = new HashMap<@Interned String, @Interned String>(theDefault.map);
         }
     }
-
 }

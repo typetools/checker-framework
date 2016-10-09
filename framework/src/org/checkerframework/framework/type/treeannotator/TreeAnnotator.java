@@ -1,7 +1,6 @@
 package org.checkerframework.framework.type.treeannotator;
 
 import com.sun.source.tree.MethodTree;
-
 import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -34,5 +33,4 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
     public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
         return super.visitMethod(node, p);
     }
-
 }

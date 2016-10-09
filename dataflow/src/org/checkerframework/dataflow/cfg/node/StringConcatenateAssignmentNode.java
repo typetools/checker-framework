@@ -1,12 +1,10 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import java.util.Collection;
-import java.util.LinkedList;
-
-import org.checkerframework.javacutil.InternalUtils;
-
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import java.util.Collection;
+import java.util.LinkedList;
+import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for the string concatenation compound assignment:

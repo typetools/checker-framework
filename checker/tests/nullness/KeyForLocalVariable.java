@@ -3,9 +3,9 @@
 
 // @skip-test until the issue is fixed
 
-import org.checkerframework.checker.nullness.qual.*;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+import org.checkerframework.checker.nullness.qual.*;
 
 class KeyForLocalVariable {
 
@@ -13,13 +13,13 @@ class KeyForLocalVariable {
         // There should be a warning here that m0 is not in scope
         @KeyFor("m0") String kk;
         {
-            Map<String, Integer> m0 = new HashMap<String,Integer>();
+            Map<String, Integer> m0 = new HashMap<String, Integer>();
             @SuppressWarnings("keyfor")
             @KeyFor("m0") String k = "key";
             kk = k;
         }
         {
-            Map<String, Integer> m0 = new HashMap<String,Integer>();
+            Map<String, Integer> m0 = new HashMap<String, Integer>();
             //:: error: (assignment.type.incompatible)
             @KeyFor("m0") String k2 = kk;
         }
@@ -29,5 +29,4 @@ class KeyForLocalVariable {
         // There should be a warning here that m0 is not in scope
         @KeyFor("foobar") String kk;
     }
-
 }

@@ -1,9 +1,7 @@
 package org.checkerframework.qualframework.base;
 
-import java.util.*;
-
 import com.sun.source.tree.ExpressionTree;
-
+import java.util.*;
 import org.checkerframework.qualframework.base.QualifiedTypeMirror.QualifiedExecutableType;
 
 /** Helper functions for various manipulations of {@link QualifiedTypeMirror}s.
@@ -25,6 +23,5 @@ public interface QualifiedTypes<Q> {
      * @return  the types that the method invocation arguments need to be subtype of
      */
     public List<QualifiedTypeMirror<Q>> expandVarArgs(
-            QualifiedExecutableType<Q> method,
-            List<? extends ExpressionTree> args);
+            QualifiedExecutableType<Q> method, List<? extends ExpressionTree> args);
 }

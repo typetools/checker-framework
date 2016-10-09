@@ -4,15 +4,12 @@ package org.checkerframework.dataflow.cfg.node;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-import org.checkerframework.dataflow.cfg.CFGBuilder;
-import org.checkerframework.dataflow.cfg.block.Block;
-
+import com.sun.source.tree.Tree;
 import java.util.Collection;
 import java.util.LinkedList;
-
 import javax.lang.model.type.TypeMirror;
-
-import com.sun.source.tree.Tree;
+import org.checkerframework.dataflow.cfg.CFGBuilder;
+import org.checkerframework.dataflow.cfg.block.Block;
 
 /**
  * A node in the abstract representation used for Java code inside a basic
@@ -167,5 +164,4 @@ public abstract class Node {
         }
         return transitiveOperands;
     }
-
 }

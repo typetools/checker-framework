@@ -1,9 +1,8 @@
 package tests;
 
+import java.io.File;
 import org.checkerframework.framework.test.CheckerFrameworkTest;
 import org.junit.runners.Parameterized.Parameters;
-
-import java.io.File;
 
 /**
  * JUnit tests for the Interning Checker, which tests the Interned annotation.
@@ -11,7 +10,8 @@ import java.io.File;
 public class InterningTest extends CheckerFrameworkTest {
 
     public InterningTest(File testFile) {
-        super(testFile,
+        super(
+                testFile,
                 org.checkerframework.checker.interning.InterningChecker.class,
                 "interning",
                 "-Anomsgtext");
@@ -19,6 +19,6 @@ public class InterningTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"interning", "all-systems"};
+        return new String[] {"interning", "all-systems"};
     }
 }

@@ -1,9 +1,8 @@
 package org.checkerframework.framework.type;
 
-import org.checkerframework.javacutil.ErrorReporter;
-
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SimpleTreeVisitor;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * Converts a Tree into an AnnotatedTypeMirror.  This class is abstract and provides 2 important properties
@@ -13,7 +12,8 @@ import com.sun.source.util.SimpleTreeVisitor;
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
-abstract class TypeFromTreeVisitor extends SimpleTreeVisitor<AnnotatedTypeMirror, AnnotatedTypeFactory> {
+abstract class TypeFromTreeVisitor
+        extends SimpleTreeVisitor<AnnotatedTypeMirror, AnnotatedTypeFactory> {
 
     TypeFromTreeVisitor() {}
 
@@ -24,9 +24,9 @@ abstract class TypeFromTreeVisitor extends SimpleTreeVisitor<AnnotatedTypeMirror
             return null; // dead code
         }
         ErrorReporter.errorAbort(
-            "TypeFromTree.defaultAction: conversion undefined for tree type " + node.getKind() + "\n"
-        );
+                "TypeFromTree.defaultAction: conversion undefined for tree type "
+                        + node.getKind()
+                        + "\n");
         return null; // dead code
     }
-
 }

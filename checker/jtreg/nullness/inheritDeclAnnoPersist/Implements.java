@@ -21,7 +21,6 @@ public class Implements {
         sb.append("@Override public void setg() {}\n");
         return TestWrapper.wrap(sb.toString());
     }
-
 }
 
 class TestWrapper {

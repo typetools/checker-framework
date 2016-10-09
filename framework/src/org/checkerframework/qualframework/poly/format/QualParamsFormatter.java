@@ -30,5 +30,4 @@ public interface QualParamsFormatter<Q> extends QualFormatter<QualParams<Q>> {
      *      and print invisible was false
      */
     String format(QualParams<Q> polyQual, boolean printPrimary, boolean printInvisible);
-
 }

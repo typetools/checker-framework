@@ -1,13 +1,12 @@
 package org.checkerframework.checker.tainting.classic;
 
+import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.tainting.classic.qual.PolyTainted;
 import org.checkerframework.checker.tainting.classic.qual.Tainted;
 import org.checkerframework.checker.tainting.classic.qual.Untainted;
-import org.checkerframework.checker.tainting.classic.qual.PolyTainted;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.javacutil.AnnotationUtils;
-
-import javax.lang.model.element.AnnotationMirror;
 
 public class TaintingClassicAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -21,7 +20,8 @@ public class TaintingClassicAnnotatedTypeFactory extends BaseAnnotatedTypeFactor
 
         addAliasedAnnotation(org.checkerframework.checker.tainting.qual.Tainted.class, TAINTED);
         addAliasedAnnotation(org.checkerframework.checker.tainting.qual.Untainted.class, UNTAINTED);
-        addAliasedAnnotation(org.checkerframework.checker.tainting.qual.PolyTainted.class, POLYTAINTED);
+        addAliasedAnnotation(
+                org.checkerframework.checker.tainting.qual.PolyTainted.class, POLYTAINTED);
 
         postInit();
     }
