@@ -20,12 +20,14 @@ esac
 
 binaryDir="${mydir}"/../dist
 
-# langtools bin dir for Jenkins
+# langtools build dir for Jenkins
 if [ -z "$LT_BIN" ] || [ "$LT_BIN" = "" ]; then
-   ltBinDir="${mydir}"/../../../jsr308-langtools/build/classes
+   ltBinDir="${mydir}"/../../../jsr308-langtools/build/modules
 else
    ltBinDir="$LT_BIN"
 fi
+
+ltBinDirAll="${ltBinDir}"/java.compiler/:"${ltBinDir}"/jdk.compiler/:"${ltBinDir}"/jdk.deps/:"${ltBinDir}"/jdk.javadoc/:"${ltBinDir}"/jdk.jdeps/:"${ltBinDir}"/jdk.jshell/:
 
 jdkPaths="${mydir}"/../jdk/annotated
 
@@ -50,7 +52,7 @@ done
 eval "java" \
      "-DCheckerDevelMain.cp=${buildDirs} " \
      "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \
-     "-DCheckerDevelMain.runtime.bcp=${ltBinDir} " \
+     "-DCheckerDevelMain.runtime.bcp=${ltBinDirAll} " \
      "-DCheckerDevelMain.binary=${binaryDir}" \
      "-classpath ${buildDirs} " \
      "org.checkerframework.framework.util.CheckerDevelMain" "-AprintErrorStack" ${args}
