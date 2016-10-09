@@ -33,7 +33,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             final ExpressionTree underlyingTree = node.getUnderlyingType();
 
             if (underlyingTree.getKind() == Kind.UNBOUNDED_WILDCARD) {
-                //primary annotations on unbounded wildcard types apply to both bounds
+                // primary annotations on unbounded wildcard types apply to both bounds
                 ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
                 ((AnnotatedWildcardType) type).getSuperBound().addMissingAnnotations(annos);
 
@@ -115,8 +115,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         switch (bounds.size()) {
             case 0: break;
             case 1:
-                //the first call to result.getUpperBound will appropriately initialize the bound
-                //rather than replace it, copy the bounds from bounds.get(0) to the initialized bound
+                // the first call to result.getUpperBound will appropriately initialize the bound
+                // rather than replace it, copy the bounds from bounds.get(0) to the initialized bound
                 AnnotatedTypeMerger.merge(bounds.get(0), result.getUpperBound());
                 break;
             default:
@@ -141,9 +141,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror result = f.type(node);
         assert result instanceof AnnotatedWildcardType;
 
-        //for wildcards unlike type variables there are bounds that differ in type from
-        //result.  These occur for RAW types.  In this case, use the newly created bound
-        //rather than merging into result
+        // for wildcards unlike type variables there are bounds that differ in type from
+        // result.  These occur for RAW types.  In this case, use the newly created bound
+        // rather than merging into result
         if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
             ((AnnotatedWildcardType) result).setSuperBound(bound);
 
@@ -213,8 +213,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
         AnnotatedTypeMirror type = f.type(node);
 
-        if (type.getKind() == TypeKind.TYPEVAR)
+        if (type.getKind() == TypeKind.TYPEVAR) {
             return forTypeVariable(type, f).asUse();
+        }
 
         return type;
     }
@@ -225,8 +226,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
         AnnotatedTypeMirror type = f.type(node);
 
-        if (type.getKind() == TypeKind.TYPEVAR)
+        if (type.getKind() == TypeKind.TYPEVAR) {
             return forTypeVariable(type, f).asUse();
+        }
 
         return type;
     }
@@ -236,8 +238,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                                               AnnotatedTypeFactory f) {
         AnnotatedTypeMirror type = f.type(node);
 
-        if (type.getKind() == TypeKind.TYPEVAR)
+        if (type.getKind() == TypeKind.TYPEVAR) {
             return forTypeVariable(type, f).asUse();
+        }
 
         return type;
     }
@@ -247,8 +250,9 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                                                      AnnotatedTypeFactory f) {
         AnnotatedTypeMirror type = f.type(node);
 
-        if (type.getKind() == TypeKind.TYPEVAR)
+        if (type.getKind() == TypeKind.TYPEVAR) {
             return forTypeVariable(type, f).asUse();
+        }
 
         return type;
     }

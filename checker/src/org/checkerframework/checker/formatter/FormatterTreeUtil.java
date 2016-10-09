@@ -26,10 +26,8 @@ import java.util.Locale;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.NullType;
@@ -191,7 +189,7 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Returns an error description if the format string cannot be satisfied,
+         * Returns an error description if the format string cannot be satisfied.
          * Returns null if the format string does not contain syntactic errors.
          */
         public final Result<String> isIllegalFormat() {
@@ -358,9 +356,19 @@ public class FormatterTreeUtil {
      * message as value.
      */
     public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalFormatException ex) {
+        return stringToInvalidFormatAnnotation(ex.getMessage());
+    }
+
+    /**
+     * Takes an invalid formatter string and, returns a syntax trees
+     * element that represents a {@link InvalidFormat} annotation with
+     * the invalid formatter string as value.
+     */
+    // package-private
+    AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
         AnnotationBuilder builder =
                 new AnnotationBuilder(processingEnv, InvalidFormat.class.getCanonicalName());
-        builder.setValue("value", ex.getMessage());
+        builder.setValue("value", invalidFormatString);
         return builder.build();
     }
 
@@ -389,17 +397,9 @@ public class FormatterTreeUtil {
      * and returns its value.
      */
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        @SuppressWarnings("unchecked")
-        List<? extends AnnotationValue> vals = (List<? extends AnnotationValue>)
-        AnnotationUtils.getElementValuesWithDefaults(anno).get(formatArgTypesElement).getValue();
-
-        ConversionCategory[] argTypes = new ConversionCategory[vals.size()];
-        for (int i = 0; i < vals.size(); ++i) {
-            VariableElement ve = (VariableElement) vals.get(i).getValue();
-            argTypes[i] = ConversionCategory.valueOf(ve.getSimpleName().toString());
-        }
-
-        return argTypes;
+        List<ConversionCategory> list =
+                AnnotationUtils.getElementValueEnumArray(anno, "value", ConversionCategory.class, false);
+        return list.toArray(new ConversionCategory[] {});
     }
 
     private final Class<? extends Object> typeMirrorToClass(final TypeMirror type) {

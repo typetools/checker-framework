@@ -143,9 +143,9 @@ public class UnitsRelationsDefault implements UnitsRelations {
      * Checks to see if both lhtPrefix and rhtPrefix have the same prefix as
      * specificPrefix
      *
-     * @param lhtPrefix Left hand side prefix
-     * @param rhtPrefix Right hand side prefix
-     * @param specificPrefix Specific desired prefix to match
+     * @param lhtPrefix left hand side prefix
+     * @param rhtPrefix right hand side prefix
+     * @param specificPrefix specific desired prefix to match
      * @return true if all 3 Prefix are the same, false otherwise
      */
     protected boolean bothHaveSpecificPrefix(Prefix lhtPrefix, Prefix rhtPrefix, Prefix specificPrefix) {
@@ -160,10 +160,10 @@ public class UnitsRelationsDefault implements UnitsRelations {
      * Checks to see if lht has the unit ul and if rht has the unit ur all at
      * the same time
      *
-     * @param lht Left hand annotated type
-     * @param ul Left hand unit
-     * @param rht Right hand annotated type
-     * @param ur Right hand unit
+     * @param lht left hand annotated type
+     * @param ul left hand unit
+     * @param rht right hand annotated type
+     * @param ur right hand unit
      * @return true if lht has lu and rht has ru, false otherwise
      */
     protected boolean havePairOfUnits(AnnotatedTypeMirror lht, AnnotationMirror ul, AnnotatedTypeMirror rht, AnnotationMirror ur) {
@@ -174,10 +174,10 @@ public class UnitsRelationsDefault implements UnitsRelations {
      * Checks to see if lht and rht have the pair of units u1 and u2 regardless
      * of order
      *
-     * @param lht Left hand annotated type
-     * @param u1 Unit 1
-     * @param rht Right hand annotated type
-     * @param u2 Unit 2
+     * @param lht left hand annotated type
+     * @param u1 unit 1
+     * @param rht right hand annotated type
+     * @param u2 unit 2
      * @return true if lht and rht have the pair of units u1 and u2 regardless
      *         of order, false otherwise
      */

@@ -1,8 +1,126 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.0, 1 July 2016
+
+The new Signedness Checker prevents mixing of unsigned and signed
+values and prevents meaningless operations on unsigned values.
+
+The Lock Checker expresses the annotated variable as `<self>`;
+previously it used `itself`, which may conflict with an identifier.
+
+Closed issues:
+166, 273, 358, 408, 471, 484, 594, 625, 692, 700, 701, 711, 717, 752, 756,
+759, 763, 767, 779, 783, 794, 807, 808.
+
+---------------------------------------------------------------------------
+
+Version 2.0.1, 1 June 2016
+
+We renamed method annotateImplicit to addComputedTypeAnnotations.  If you
+have implemented a checker, you need to change occurrences of
+annotateImplicit to addComputedTypeAnnotations.
+
+The Checker Framework (checker.jar) is now placed on the processorpath
+during compilation.  Previously, it was placed on the classpath.  The
+qualifiers (checker-qual.jar) remain on the classpath.  This change should
+reduce conflicts between your code and the Checker Framework.  If your code
+depends on classes in the Checker Framework, then you should add those
+classes to the classpath when you run the compiler.
+
+Closed issues:
+171, 250, 291, 523, 577, 672, 680, 688, 689, 690, 691, 695, 696, 698, 702,
+704, 705, 706, 707, 720, 721, 723, 728, 736, 738, 740.
+
+---------------------------------------------------------------------------
+
+Version 2.0.0, 2 May 2016
+
+Inference:
+
+ * The infer-and-annotate.sh script infers annotations and inserts them in
+   your source code.  This can reduce the burden of writing annotations and
+   let you get started using a type system more quickly.  See the
+   "Whole-program inference" section in the manual for details.
+
+Type systems:
+
+ * The Lock Checker has been replaced by a new implementation that provides
+   a stronger guarantee.  The old Lock Checker prevented two threads from
+   simultaneously using a given variable, but race conditions were still
+   possible due to aliases.  The new Lock Checker prevents two threads from
+   simultaneously dereferencing a given value, and thus prevents race
+   conditions.  For details, see the "Lock Checker" chapter in the manual,
+   which has been rewritten to describe the new semantics.
+
+ * The top type qualifier for the Signature String type system has been
+   renamed from @UnannotatedString to @SignatureUnknown.  You shouldn't
+   ever write this annotation, but if you perform separate compilation (for
+   instance, if you do type-checking with the Signature String Checker
+   against a library that is annotated with Signature String annotations),
+   then you need to re-compile the library.
+
+ * The IGJ, OIGJ, and Javari Checkers are no longer distributed with the
+   Checker Framework.  If you wish to use them, install version 1.9.13 of
+   the Checker Framework.  The implementations have been removed because
+   they were not being maintained.  The type systems are valuable, but the
+   type-checkers should be rewritten from scratch.
+
+Documentation improvements:
+
+ * New manual section "Tips for creating a checker" shows how to break down
+   the implementation of a type system into small, manageable pieces.
+
+ * Improved instructions for using Maven and Gradle, including for Android
+   code.
+
+Tool changes:
+
+ * The Checker Framework Live Demo webpage lets you try the Checker
+   Framework without installing it:  http://eisop.uwaterloo.ca/live/
+
+ * New command-line arguments -Acfgviz and -Averbosecfg enable better
+   debugging of the control-flow-graph generation step of type-checking.
+
+ * New command-line argument -Ainfer is used by the infer-and-annotate.sh
+   script that performs type inference.
+
+Closed issues:
+69, 86, 199, 299, 329, 421, 428, 557, 564, 573, 579, 665, 668, 669, 670, 671.
+
+---------------------------------------------------------------------------
+
+Version 1.9.13, 1 April 2016
+
+Documentation:
+ * Clarified Maven documentation about use of annotations in comments.
+ * Added FAQ about annotating fully-qualified type names.
+
+Closed issues:  438, 572, 579, 607, 624, 631.
+
+---------------------------------------------------------------------------
+
 Version 1.9.12, 1 March 2016
 
-Renamed enum DefaultLocation to TypeUseLocation
+The Checker Framework distribution contains annotated versions
+of libraries in directory checker-framework/checker/lib/.
+During type-checking, you should put these versions first on your classpath,
+to obtain more precise type-checking with fewer false positive warnings.
+
+tools.jar is no longer required to be on the classpath when using
+checker-qual.jar
+
+The Signature String Checker supports two new string representations of a
+Java type: @InternalForm and @ClassGetSimpleName.
+
+The manual documents how to run a pluggable type-checker in IntelliJ IDEA.
+
+The instructions on how to run a type-checker in Gradle have been updated to
+use the artifacts in Maven Central. Examples using the instructions have been
+added under checker-framework/checker/examples/GradleExamples/.
+
+Renamed enum DefaultLocation to TypeUseLocation.
+
+Closed issues:  130, 263, 345, 458, 559, 559, 574, 582, 596.
 
 ---------------------------------------------------------------------------
 
@@ -342,7 +460,7 @@ vm to crash immediately.
 The Lock Checker has been rewritten to support dataflow analysis.
 It can now understand conditional expressions, for example, and
 knows that "lock" is held in the body of statements like
-"if (lock.tryLock()){ ... }"
+"if (lock.tryLock()) { ... }"
 The Lock Checker chapter in the manual has been updated accordingly
 and describes the new Lock Checker features in detail.
 
@@ -1355,14 +1473,14 @@ Functionality
   Added more performance optimizations
   nullness: Added support for netbeans nullness annotations
   nullness: better semantics for redundant nullness tests
-	related to redundant tests in assertions
+    related to redundant tests in assertions
   lock: Added support for JCIP annotation in the Lock Checker
   tainting: Added support for polymorphism
   Lock Checker supports the JCIP GuardedBy annotation
 
 Bug fixes
   Fixed a crashing bug related to interaction between
-	generic types and wildcards
+    generic types and wildcards
   Fixed a bug in stub file parser related to vararg annotations
   Fixed few bugs in skeleton file generators
 

@@ -1,6 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html>
+<html>
 <head><link rel="icon" type="image/png" href="favicon-checkerframework.png" />
   <title>The Checker Framework</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -18,7 +17,7 @@ errors that appear during testing or in the field?
 </p>
 
 <p>
-The Checker Framework enhances Java’s type system to make it more powerful
+The Checker Framework enhances Java's type system to make it more powerful
 and useful. This lets software developers detect and prevent errors in
 their Java programs.  The Checker Framework includes compiler plug-ins
 ("checkers") that find bugs or verify their absence.  It also permits you
@@ -34,10 +33,9 @@ instructions and tutorial</b></a>.
 
 <ul>
   <li>
-    Download: <a href="current/checker-framework-1.9.11.zip"><!-- checker-framework-zip-version -->checker-framework-1.9.11.zip<!-- /checker-framework-zip-version --></a>
-    version
-    <!-- checker-framework-version -->1.9.11, 1 Feb 2016<!-- /checker-framework-version -->
-    (includes source, platform-independent binary, tests, and documentation)<br/>
+    Download: <a href="current/checker-framework-2.1.0.zip"><!-- checker-framework-zip-version -->checker-framework-2.1.0.zip<!-- /checker-framework-zip-version --></a>
+    (<!-- checker-framework-date -->1 Jul 2016<!-- /checker-framework-date -->);
+    includes source, platform-independent binary, tests, and documentation.<br/>
     Then, see the <a
     href="current/checker-framework-manual.html#installation"><b>installation
     instructions and tutorial</b></a>.
@@ -55,11 +53,18 @@ instructions and tutorial</b></a>.
       </li>
 
       <li>
-        <a href="current/checker-framework-manual.html#installation">Installation instructions</a>
+        <a href="current/checker-framework-manual.html#installation">Installation instructions</a><br/>
+        or, try it without installation at the
+        <a href="http://eisop.uwaterloo.ca/live/">Checker Framework Live Demo</a>
+        webpage
       </li>
 
       <li>
         <a href="tutorial/">Tutorial</a>
+      </li>
+
+      <li>
+        <a href="https://github.com/glts/safer-spring-petclinic/wiki">Nullness Checker tutorial</a>
       </li>
 
       <li>
@@ -78,30 +83,11 @@ instructions and tutorial</b></a>.
     The Checker Framework Manual contains <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#build-source">instructions on building from source</a>.
   </li>
 
-  <!-- This text appears identically at openjdk-webpage.html -->
-  <li>Inference tools automatically add annotations to your code,
-      making it even easier to start using the checkers.  You must
-      download these tools separately.
-    <ul>
-      <li>
-        To infer the <tt>@Nullable</tt> type qualifier, use <a
-        href="http://plse.cs.washington.edu/daikon/download/doc/daikon.html#AnnotateNullable">Daikon</a>
-      </li>
-      <li>
-        To infer the <code>@NonNull</code> type qualifier, use the
-        <a href="http://julia.scienze.univr.it/">Julia
-        Analyzer</a>, <a href="http://nit.gforge.inria.fr/">Nit</a>, or <a
-        href="http://jastadd.org/jastadd-tutorial-examples/non-null-types-for-java/">JastAdd</a>
-      </li>
-      <li>
-        To infer the <code>@ReadOnly</code> type qualifier, use <a
-        href="http://types.cs.washington.edu/javari/javarifier/">Javarifier</a>
-      </li>
-      <li>
-        To interactively infer any qualifier, use the <a href="https://github.com/reprogrammer/cascade">Cascade</a>
-        Eclipse plugin that guides you from error to error and suggests fixes.
-      </li>
-    </ul>
+  <!-- This text appears identically at jsr308-langtools/doc/openjdk-webpage.html -->
+  <li>
+    Inference tools automatically add annotations to your code,
+    making it even easier to start using the checkers.  The Checker Framework manual contains <a
+href="current/checker-framework-manual.html#type-inference-to-annotate">a list of inference tools</a>.
   </li>
 
   <li>Optional related tools:
@@ -114,7 +100,7 @@ instructions and tutorial</b></a>.
           the <code>.class</code> file.  The tools support both Java 5
           declaration annotations and Java 8 type annotations.
         <ul>
-          <li><a href="../annotation-file-utilities/current/annotation-tools-3.6.25.zip">annotation-tools-3.6.24.zip</a> (<!-- afu-date -->01 Feb 2016<!-- /afu-date -->)
+          <li><a href="../annotation-file-utilities/current/annotation-tools-3.6.30.zip"><!-- annotation-tools-zip-version -->annotation-tools-3.6.30.zip<!-- /annotation-tools-zip-version --></a> (<!-- afu-date -->01 Jul 2016<!-- /afu-date -->)
           </li>
           <li><a href="https://github.com/typetools/annotation-tools/">source code repository</a>
           </li>
@@ -172,6 +158,7 @@ If none of those documents answers your question, then use one of the
   <li>Checker Framework Manual (<a href="current/checker-framework-manual.pdf">PDF</a>, <a href="current/checker-framework-manual.html">HTML</a>)</li>
   <li><a href="current/checker-framework-manual.html#installation">Installation instructions</a></li>
   <li><a href="tutorial/">Tutorial</a></li>
+  <li><a href="https://github.com/glts/safer-spring-petclinic/wiki">Nullness Checker tutorial</a></li>
   <li><a href="current/checker-framework-manual.html#faq">FAQ (Frequently Asked Questions with answers)</a></li>
 </ul>
 
@@ -235,7 +222,7 @@ To submit a bug report, read these
 <hr />
 
 <p>
-Last updated: <!-- checker-framework-date -->1 Feb 2016<!-- /checker-framework-date -->
+Last updated: <!-- checker-framework-date -->1 Jul 2016<!-- /checker-framework-date -->
 </p>
 
 </body>
@@ -249,11 +236,11 @@ time-stamp-line-limit: -50
 End:
 -->
 
-<!--  LocalWords:  JCP wiki classfile OpenJDK javac var NonNull subcategory SCA Sep JastAdd OIGJ Regex ReIm ReImInfer JavaUI
+<!--  LocalWords:  JCP wiki classfile OpenJDK javac var NonNull subcategory SCA Sep JastAdd Regex ReIm ReImInfer JavaUI
  -->
 <!--  LocalWords:  classfiles const changelog JLS Metadata getSize sql BNF jsr
  -->
-<!--  LocalWords:  IGJ openjdk Inv isible isibleTypeAnnotations TypeArguments
+<!--  LocalWords:  openjdk Inv isible isibleTypeAnnotations TypeArguments
  -->
 <!--  LocalWords:  VariableDeclaratorRest MethodOrFieldRest TypeArgument Alast
  -->

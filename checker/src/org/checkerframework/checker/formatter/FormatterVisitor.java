@@ -1,15 +1,21 @@
 package org.checkerframework.checker.formatter;
-
+/*>>>
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
+*/
 import org.checkerframework.checker.formatter.FormatterTreeUtil.FormatCall;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.InvocationType;
 import org.checkerframework.checker.formatter.FormatterTreeUtil.Result;
 import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 
 /**
  * Whenever a format method invocation is found in the syntax tree,
@@ -41,12 +47,14 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                     int paraml = paramTypes.length;
                     int formatl = formatCats.length;
                     if (paraml < formatl) {
+                        // For assignments, format.missing.arguments is issued
+                        // from commonAssignmentCheck.
                         // II.1
-                        tu.failure(invc, "format.missing.arguments", formatl,paraml);
+                        tu.failure(invc, "format.missing.arguments", formatl, paraml);
                     } else {
                         if (paraml > formatl) {
                             // II.2
-                            tu.warning(invc, "format.excess.arguments", formatl,paraml);
+                            tu.warning(invc, "format.excess.arguments", formatl, paraml);
                         }
                         for (int i = 0; i < formatl; ++i) {
                             ConversionCategory formatCat = formatCats[i];
@@ -65,7 +73,7 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
                             case GENERAL:
                                 break;
                             default:
-                                if (!fc.isValidParameter(formatCat,paramType)) {
+                                if (!fc.isValidParameter(formatCat, paramType)) {
                                     // II.3
                                     tu.failure(param, "argument.type.incompatible", paramType,
                                             formatCat);
@@ -95,5 +103,33 @@ public class FormatterVisitor extends BaseTypeVisitor<FormatterAnnotatedTypeFact
             }
         }
         return super.visitMethodInvocation(node, p);
+    }
+
+    @Override
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
+
+        AnnotationMirror rhs = valueType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+        AnnotationMirror lhs = varType.getAnnotationInHierarchy(atypeFactory.UNKNOWNFORMAT);
+
+        // From the manual:
+        // It is legal to use a format string with fewer format specifiers
+        // than required, but a warning is issued.
+        // The format.missing.arguments warning is issued here for assignments.
+        // For method calls, it is issued in visitMethodInvocation.
+        if (AnnotationUtils.areSameIgnoringValues(rhs, atypeFactory.FORMAT) &&
+            AnnotationUtils.areSameIgnoringValues(lhs, atypeFactory.FORMAT)) {
+            ConversionCategory[] rhsArgTypes =
+                    atypeFactory.treeUtil.formatAnnotationToCategories(rhs);
+            ConversionCategory[] lhsArgTypes =
+                    atypeFactory.treeUtil.formatAnnotationToCategories(lhs);
+
+            if (rhsArgTypes.length < lhsArgTypes.length) {
+                checker.report(org.checkerframework.framework.source.Result.warning("format.missing.arguments",
+                        varType.toString(), valueType.toString()), valueTree);
+            }
+        }
+
     }
 }

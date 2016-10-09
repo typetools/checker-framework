@@ -3,8 +3,8 @@ package org.checkerframework.framework.qual;
 import java.lang.annotation.*;
 
 /**
- * A meta-annotation to specify all the qualifiers that the given qualifier
- * is a subtype of.  This provides a declarative way to specify the type
+ * A meta-annotation to specify all the qualifiers that the given qualifier is
+ * an immediate subtype of.  This provides a declarative way to specify the type
  * qualifier hierarchy.  (Alternatively, the hierarchy can be defined
  * procedurally by subclassing {@link org.checkerframework.framework.type.QualifierHierarchy} or
  * {@link org.checkerframework.framework.type.TypeHierarchy}.)
@@ -18,10 +18,10 @@ import java.lang.annotation.*;
  * <p>
  *
  * If a qualified type is a subtype of the same type without any qualifier,
- * then use <code>Unqualified.class</code> in place of a type qualifier
- * class.  For example, to express that <code>@Encrypted <em>C</em></code>
- * is a subtype of <code><em>C</em></code> (for every class
- * <code><em>C</em></code>), and likewise for <code>@Interned</code>, write:
+ * then use {@code Unqualified.class} in place of a type qualifier
+ * class.  For example, to express that {@code @Encrypted <em>C</em>}
+ * is a subtype of {@code <em>C</em>} (for every class
+ * {@code <em>C</em>}), and likewise for {@code @Interned}, write:
  *
  * <pre> @SubtypeOf(Unqualified.class)
  * public @interface Encrypted { }
@@ -40,12 +40,14 @@ import java.lang.annotation.*;
  * public @interface Nullable { }
  *
  * &#64;SubtypeOf( {} )
- * public @interface ReadOnly { }
+ * public @interface MaybeAliased { }
  * </pre>
  *
  * <p>
  * Together, all the @SubtypeOf meta-annotations fully describe the type
  * qualifier hierarchy.
+ * <p>
+ *
  * No @SubtypeOf meta-annotation is needed on (or can be written on) the
  * Unqualified pseudo-qualifier, whose position in the hierarchy is
  * inferred from the meta-annotations on the explicit qualifiers.

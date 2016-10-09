@@ -32,7 +32,6 @@ public class RegexQualTest extends CheckerFrameworkTest {
 
     // TODO: I want this method somewhere in ParameterizedChecker, but as
     // all these methods are static, I didn't find a fast way :-(
-    // Duplicated in OIGJTest!
     protected static List<File> filter(List<File> in) {
         List<File> out = new ArrayList<File>();
         for (File file : in) {
@@ -48,4 +47,3 @@ public class RegexQualTest extends CheckerFrameworkTest {
         return o.toString().equals("tests/regex/MatcherGroupCount.java");
     }
 }
-

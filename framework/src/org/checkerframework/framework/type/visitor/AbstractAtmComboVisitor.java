@@ -20,7 +20,7 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM> implements Atm
      * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
      * @param type2 the second AnnotatedTypeMirror parameter to the visit method called
      * @param param subtype specific parameter passed to every visit method
-     * @return An error message
+     * @return an error message
      */
     protected abstract String defaultErrorMessage(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param);
 
@@ -376,6 +376,11 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM> implements Atm
 
     @Override
     public RETURN_TYPE visitPrimitive_Primitive(AnnotatedPrimitiveType type1, AnnotatedPrimitiveType type2, PARAM param) {
+        return defaultAction(type1, type2, param);
+    }
+
+    @Override
+    public RETURN_TYPE visitPrimitive_Typevar(AnnotatedPrimitiveType type1, AnnotatedTypeVariable type2, PARAM param) {
         return defaultAction(type1, type2, param);
     }
 

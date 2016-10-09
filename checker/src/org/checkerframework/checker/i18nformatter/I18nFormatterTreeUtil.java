@@ -35,7 +35,6 @@ import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -65,14 +64,10 @@ import com.sun.source.util.SimpleTreeVisitor;
 public class I18nFormatterTreeUtil {
     public final BaseTypeChecker checker;
     public final ProcessingEnvironment processingEnv;
-    private final ExecutableElement formatArgTypesElement;
 
     public I18nFormatterTreeUtil(BaseTypeChecker checker) {
         this.checker = checker;
         this.processingEnv = checker.getProcessingEnvironment();
-        this.formatArgTypesElement = TreeUtils.getMethod(
-                org.checkerframework.checker.i18nformatter.qual.I18nFormat.class.getCanonicalName(), "value", 0,
-                processingEnv);
     }
 
     /**
@@ -84,15 +79,33 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes an exception that describes an invalid formatter string and,
+     * Takes an exception that describes an invalid formatter string and
      * returns a syntax trees element that represents a
      * {@link I18nInvalidFormat} annotation with the exception's error message
      * as value.
      */
     public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalArgumentException ex) {
+        return stringToInvalidFormatAnnotation(ex.getMessage());
+    }
+
+    /**
+     * Takes an invalid formatter string and returns a syntax trees element
+     * that represents a {@link I18nInvalidFormat} annotation with the invalid
+     * formatter string as value.
+     */
+    // package-private
+    AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, I18nInvalidFormat.class.getCanonicalName());
-        builder.setValue("value", ex.getMessage());
+        builder.setValue("value", invalidFormatString);
         return builder.build();
+    }
+
+    /**
+     * Takes a syntax tree element that represents a {@link I18nInvalidFormat} annotation,
+     * and returns its value.
+     */
+    public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
+        return "\""+AnnotationUtils.getElementValue(anno, "value", String.class, true)+"\"";
     }
 
     /**
@@ -111,17 +124,9 @@ public class I18nFormatterTreeUtil {
      * annotation, and returns its value.
      */
     public I18nConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
-        @SuppressWarnings("unchecked")
-        List<? extends AnnotationValue> vals = (List<? extends AnnotationValue>) AnnotationUtils
-                .getElementValuesWithDefaults(anno).get(formatArgTypesElement).getValue();
-
-        I18nConversionCategory[] argTypes = new I18nConversionCategory[vals.size()];
-        for (int i = 0; i < vals.size(); ++i) {
-            VariableElement ve = (VariableElement) vals.get(i).getValue();
-            argTypes[i] = I18nConversionCategory.valueOf(ve.getSimpleName().toString());
-        }
-
-        return argTypes;
+        List<I18nConversionCategory> list =
+                AnnotationUtils.getElementValueEnumArray(anno, "value", I18nConversionCategory.class, false);
+        return list.toArray(new I18nConversionCategory[] {});
     }
 
     public boolean isHasFormatCall(MethodInvocationNode node, AnnotatedTypeFactory atypeFactory) {
@@ -277,14 +282,15 @@ public class I18nFormatterTreeUtil {
                         // Invalid FormatFor invocation
                         return ;
                     }
-                    FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                                .buildFlowExprContextForUse(node, checker.getContext());
+                    FlowExpressionContext flowExprContext = FlowExpressionContext
+                                .buildContextForMethodUse(node, checker.getContext());
                     String formatforArg = AnnotationUtils.getElementValue(paramType.getAnnotation(I18nFormatFor.class)
                             , "value", String.class, false);
                     if (flowExprContext != null) {
                         try {
                             paramArg = FlowExpressionParseUtil
-                                .parse(formatforArg, flowExprContext, atypeFactory.getPath(tree));
+                                .parse(formatforArg, flowExprContext, atypeFactory.getPath(tree),
+                                        true);
                             paramIndex = flowExprContext.arguments.indexOf(paramArg);
                         } catch (FlowExpressionParseException e) {
                             // errors are reported at declaration site

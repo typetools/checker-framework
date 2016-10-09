@@ -26,7 +26,7 @@ import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
-
+import javax.lang.model.type.TypeMirror;
 
 public class ValueTransfer extends CFTransfer {
     AnnotatedTypeFactory atypefactory;
@@ -169,18 +169,30 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
         CFValue newResultValue = analysis.createSingleAnnotationValue(
                 stringVal, result.getResultValue().getType()
-                        .getUnderlyingType());
+                                 .getUnderlyingType());
         return new RegularTransferResult<>(newResultValue,
                 result.getRegularStore());
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitStringConcatenate(
-            StringConcatenateNode n, TransferInput<CFValue, CFStore> p) {
-        TransferResult<CFValue, CFStore> result = super.visitStringConcatenate(
-                n, p);
-        List<String> lefts = getStringValues(n.getLeftOperand(), p);
-        List<String> rights = getStringValues(n.getRightOperand(), p);
+    public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(StringConcatenateAssignmentNode n,
+                                                                             TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> result = super.visitStringConcatenateAssignment(n, p);
+        return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitStringConcatenate(StringConcatenateNode n,
+                                                                   TransferInput<CFValue, CFStore> p) {
+        TransferResult<CFValue, CFStore> result = super.visitStringConcatenate(n, p);
+        return stringConcatenation(n.getLeftOperand(), n.getRightOperand(), p, result);
+    }
+
+    public TransferResult<CFValue, CFStore> stringConcatenation(Node leftOperand, Node rightOperand,
+                                                                TransferInput<CFValue, CFStore> p,
+                                                                TransferResult<CFValue, CFStore> result) {
+        List<String> lefts = getStringValues(leftOperand, p);
+        List<String> rights = getStringValues(rightOperand, p);
         List<String> concat = new ArrayList<>();
         for (String left : lefts) {
             for (String right : rights) {
@@ -188,11 +200,9 @@ public class ValueTransfer extends CFTransfer {
             }
         }
         AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
-        CFValue newResultValue = analysis.createSingleAnnotationValue(
-                stringVal, result.getResultValue().getType()
-                        .getUnderlyingType());
-        return new RegularTransferResult<>(newResultValue,
-                result.getRegularStore());
+        TypeMirror underlyingType = result.getResultValue().getType().getUnderlyingType();
+        CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, underlyingType);
+        return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
     enum NumbericalBinaryOps {
@@ -542,7 +552,7 @@ public class ValueTransfer extends CFTransfer {
                 p);
         if (TypesUtils.isPrimitive(n.getLeftOperand().getType())
                 || TypesUtils.isPrimitive(n.getRightOperand().getType())) {
-            //At least one must be a primitive otherwise reference equality is used.
+            // At least one must be a primitive otherwise reference equality is used.
             List<Boolean> resultValues = calcutateBinaryComparison(
                     n.getLeftOperand(), n.getRightOperand(),
                     ComparisonOperators.EQUAL, p);

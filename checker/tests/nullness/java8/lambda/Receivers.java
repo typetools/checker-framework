@@ -1,4 +1,4 @@
-
+// @below-java8-jdk-skip-test
 // Test references to this and super in a lambda.
 
 import org.checkerframework.checker.nullness.qual.*;
@@ -28,4 +28,3 @@ class ReceiverTest {
         Supplier s = () -> this;
     }
 }
-

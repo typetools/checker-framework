@@ -29,6 +29,30 @@ to doing its normal processing.
 \end{itemize}
 
 
+\subsection{Unable to compile the Checker Framework\label{common-problems-compiling}}
+
+If you get the following error while compiling the Checker Framework itself:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+checker-framework/stubparser/dist/stubparser.jar(org/checkerframework/stubparser/ast/CompilationUnit.class):
+warning: [classfile] Signature attribute introduced in version 49.0 class files is ignored in version 46.0 class files
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\noindent
+and you have used Eclipse to compile the Checker Framework, then probably
+you are using a very old version of Eclipse.  (If you
+install Eclipse from the Ubuntu 16.04 repository, you get Eclipse version
+3.8.  Ubuntu 16.04 was released in April 2016, and Eclipse 3.8 was released
+in June 2012, with subsequent major releases in June 2013, June 2014, and
+June 2015.)
+Install the latest version of Eclipse and use it instead.
+
 
 \subsection{Unable to run the checker, or checker crashes\label{common-problems-running}}
 
@@ -240,7 +264,8 @@ correct this by being sure to use \<fork="yes"> (see
 Section~\ref{ant-task}) and/or setting the \<build.compiler> property to
 \<extJavac>.
 
-If you are building from source, you might need to rebuild the Annotation
+If you are building from source  (Section~\ref{build-source}),
+you might need to rebuild the Annotation
 File Utilities before recompiling or using the Checker Framework.
 
 
@@ -262,16 +287,19 @@ FileNotFoundException and prints out the directory name with ``\<+>''
 replaced by blanks.
 
 \item
-If you get an error
+If you get an error like the following
 
 \begin{Verbatim}
 error: scoping construct for static nested type cannot be annotated
+error: scoping construct cannot be annotated with type-use annotation
 \end{Verbatim}
 
 \noindent
 \begin{sloppypar}
 then you have probably written something like \<@Nullable java.util.List>.
-The correct syntax is \<java.util.@Nullable List>.  But, it's usually
+The correct Java syntax to write an annotation on a fully-qualified type
+name is to put the annotation on the simple name part, as in
+\<java.util.@Nullable List>.  But, it's usually
 better to add \<import java.util.List> to your source file, so that you can
 just write \<@Nullable List>.  Likewise, you must write \<Outer.@Nullable
 StaticNestedClass> rather than \<@Nullable Outer.StaticNestedClass>.
@@ -388,7 +416,7 @@ the Nullness Checker.
 
 \item
 If the compiler reports that it cannot find a method from the JDK or
-another external library, then maybe the stub/skeleton file for that class
+another external library, then maybe the stub file for that class
 is incomplete.
 
 To solve the problem, add the missing annotations to the library, as
@@ -420,7 +448,7 @@ the only one that is a subtype of every subtype of \<T extends @MyQualifier
 Object>.  The value \<null> satisfies this for the Java type system, and it
 must be made to satisfy it for the pluggable type system as well.  The
 typical way to address this is to write the meta-annotation
-\<@ImplicitFor(trees={Tree.Kind.NULL\_LITERAL})> on the definition of the
+\<@ImplicitFor(literals={LiteralKind.NULL})> on the definition of the
 bottom type qualifier.
 
 \item
@@ -515,6 +543,28 @@ Add this .jar file to your build path.
 \end{itemize}
 
 
+\subsection{Unexpected compilation output when running javac without a pluggable type-checker\label{common-problems-running-javac}}
+
+On rare occasions, javac may issue an error when compiling against the
+Checker Framework's annotated JDK that you do not get when using the
+regular JDK\@.  (Recall that the Checker Framework compiler uses the
+annotated JDK\@.)  This may occur even when you are \emph{not} running any
+annotation processor.  The error is:
+
+\begin{Verbatim}
+  unchecked method invocation: method myMethod in class C is applied to given types
+\end{Verbatim}
+
+The reason for this is that there are some wildcards in the annotated JDK
+that have been given an explicit upper bound --- they have been changed
+from, for example, \code{List<?>} to \code{List<? extends Object>}.  The
+JDK treats these two types as identical in almost all respects.  However,
+they have a different representation in bytecode.  More importantly,
+\code{List<?>} is reifiable but \code{List<? extends Object>} is not; this
+means that the compiler permits uses of the former in some locations where
+it issues a warning for the latter.  You can suppress the warning.
+
+
 \subsection{Unable to build the checker, or to run programs\label{common-problems-running-java}}
 
 An error like this
@@ -557,7 +607,8 @@ compiler, then use a normal Java compiler to compile client code that uses
 the library.
 The Checker Framework compiler puts Java 8 type annotations even in Java 7
 classfiles, for the benefit of modular type-checking.  The Checker Framework
-compiler reads these annotations in Java 7, and other compilers ignore them.
+compiler reads these annotations in Java 7, and other compilers ignore them
+(but some compilers print a warning that they are ignoring them).
 
 
 \section{How to report problems (bug reporting)\label{reporting-bugs}}
@@ -637,6 +688,16 @@ the Checker Framework, rather than an official release.
 % problems more effectively.
 
 
+\subsection{Install prerequisites\label{building-prerequisites}}
+
+You need to install several packages in order to build the Checker
+Framework.  The following command installs them for Ubuntu 16.04:
+
+\begin{Verbatim}
+sudo apt-get install --yes ant dia git hevea junit4 librsvg2-bin make mercurial openjdk-8-jdk unzip
+\end{Verbatim}
+
+
 \subsection{Obtain the source\label{building-obtain-source}}
 
 Obtain the latest source code from the version control repository:
@@ -650,6 +711,9 @@ git clone https://github.com/typetools/checker-framework.git checker-framework
 git clone https://github.com/typetools/annotation-tools.git annotation-tools
 \end{Verbatim}
 % $ to unconfuse Emacs LaTeX mode
+
+You might want to add the \<export JSR308=\$HOME/jsr308> line to your
+\<.bashrc> file.
 
 
 \subsection{Build the Type Annotations compiler\label{building-compiler}}
@@ -673,7 +737,8 @@ This needs to be an Oracle JDK.
 (The \<JAVA\_HOME> environment
 variable might already be set, because it is needed for Ant to work.)
 
-In the bash shell, the following command \emph{sometimes} works (it might
+In the bash shell, putting the following command in your \code{.bashrc} file
+\emph{sometimes} works (it might
 not because \<java> might be the version in the JDK or in the JRE):
 % Can someone give a simpler command?
 %BEGIN LATEX
@@ -810,20 +875,32 @@ an IDE such as Eclipse.
 
 \end{enumerate}
 
+
 \subsection{Build the Checker Framework Manual (this document)\label{building-manual}}
 
 \begin{enumerate}
 \item
-To build the manual you will need
-{\hevea} (\myurl{http://hevea.inria.fr/}) installed, and either
-\<rsvg-convert> or \<convert>.  If you use the Ubuntu operating system, do
-\begin{Verbatim}
-sudo apt-get install hevea librsvg2-bin
-\end{Verbatim}
+Install needed packages; see Section~\ref{building-prerequisites} for
+instructions.
+% To build the manual, you will need \LaTeX and
+% {\hevea} (\myurl{http://hevea.inria.fr/}) installed, and either
+% \<rsvg-convert> or \<convert>.
 
 \item
 Run \code{make} in the \code{checker/manual} directory to build both the PDF and HTML versions of the manual.
 \end{enumerate}
+
+
+\subsection{Enable Travis continuous integration builds\label{building-travis}}
+
+If you have forked any of the projects rather than just creating a clone,
+then we recommend that you enable Travis-CI continuous integration builds,
+so that you learn quickly of any errors that creep into your fork.
+
+Run the
+\ahref{https://docs.travis-ci.com/user/getting-started/#To-get-started-with-Travis-CI\%3A}{Travis-CI getting started directions},
+though note that the \<.travis.yml> files already exist, so only the first
+two steps may be necessary.
 
 
 \section{Publications\label{publications}\label{learning-more}}
@@ -867,6 +944,11 @@ describes inference for the Rawness Initialization Checker.
 \item[Interning (Chapter~\ref{interning-checker})]
 See the two papers about the Checker Framework, described above.
 
+\item[Locking (Chapter~\ref{lock-checker})]
+``Locking discipline inference and checking'' (ICSE 2016,
+\myurl{http://homes.cs.washington.edu/~mernst/pubs/locking-inference-checking-icse2016-abstract.html})
+describes the Lock Checker.
+
 \item[Fake enumerations (Chapter~\ref{fenum-checker})]
 See the ICSE 2011 paper about the Checker Framework, described above.
 
@@ -889,7 +971,7 @@ See the ICSE 2011 paper about the Checker Framework, described above.
 ``Verification games: Making verification fun'' (FTfJP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/verigames-ftfjp2012-abstract.html})
             describes a general inference approach that, at the time, had only been implemented for the Nullness Checker (Section~\ref{nullness-checker}).
 
-\item[IGJ and OIGJ immutability (Chapter~\ref{igj-checker})]
+\item[IGJ and OIGJ immutability (Section~\ref{igj-checker})]
 ``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{http://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
 and
 ``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
@@ -897,7 +979,7 @@ and
 For further case studies, also see the ISSTA 2008 paper about the Checker
 Framework, described above.
 
-\item[Javari immutability (Chapter~\ref{javari-checker})]
+\item[Javari immutability (Section~\ref{javari-checker})]
 ``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
             describes the Javari type system.
 For inference, see
@@ -999,31 +1081,12 @@ documentation for a detailed discussion of related work.
 
 
 
-\section{Credits, changelog, and license\label{credits}}
+\section{Credits and changelog\label{credits}}
 
 Differences from previous versions of the checkers and framework can be found
 in the \code{changelog.txt} file.  This file is included in the
 Checker Framework distribution and is also available on the web at
 \myurl{http://types.cs.washington.edu/checker-framework/current/changelog.txt}.
-
-Two different licenses apply to different parts of the Checker Framework.
-\begin{itemize}
-\item
-The Checker Framework itself is licensed under the GNU General Public License
-(GPL), version 2.  The GPL is the same license that OpenJDK is licensed
-under.  Just as compiling your code with javac does not infect your code
-with the GPL, type-checking your code with the Checker Framework does not
-infect your code with the GPL\@.  Running the Checker Framework during
-development has no effect on your intellectual property or licensing.  If
-you want to ship the Checker Framework as part of your product, then your
-product must be licensed under the GPL\@.
-\item
-The more permissive MIT License applies
-to code that you might want to include in your own
-program, such as the annotations.
-\end{itemize}
-\noindent
-For details, see file \<LICENSE.txt>.
 
 Developers who have contributed code to the Checker Framework include
 %
@@ -1031,6 +1094,7 @@ Abraham Lin,
 Anatoly Kupriyanov,
 Asumu Takikawa,
 Charlie Garrett,
+Chris Mackie,
 Colin Gordon,
 Dan Brotherston,
 Dan Brown,
@@ -1067,6 +1131,30 @@ has improved the toolset's design and implementation.
 Thanks for your help!
 
 
+\section{License\label{license}}
+
+Two different licenses apply to different parts of the Checker Framework.
+\begin{itemize}
+\item
+The Checker Framework itself is licensed under the GNU General Public License
+(GPL), version 2, with the classpath exception.
+The GPL is the same license that OpenJDK is licensed
+under.  Just as compiling your code with javac does not infect your code
+with the GPL, type-checking your code with the Checker Framework does not
+infect your code with the GPL\@.  Running the Checker Framework during
+development has no effect on your intellectual property or licensing.  If
+you want to ship the Checker Framework as part of your product, then your
+product must be licensed under the GPL\@.
+\item
+The more permissive MIT License applies
+to code that you might want to include in your own
+program, such as the annotations and run-time utility classes.
+\end{itemize}
+\noindent
+For details, see file
+\ahref{https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt}{\<LICENSE.txt>}.
+
+
 
 % LocalWords:  jsr unsetting plugins langtools zipfile cp plugin Nullness txt
 % LocalWords:  nullness classpath NonNull MyObject javac uref changelog MyEnum
@@ -1075,9 +1163,9 @@ Thanks for your help!
 %  LocalWords:  extJavac ZipFile AprintErrorStack AprintAllQualifiers Jlint
 %  LocalWords:  Telmo Correa Papi NoSuchFieldError ZipException Xlint A1
 %  LocalWords:  FileNotFoundException MyQualifier ImplicitFor A2 A3 JDKs
-%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre IGJ
+%  LocalWords:  StaticNestedClass StaticNested ConfusingAnnotation pre
 %%  LocalWords:  CHECKERFRAMEWORK currentOutgoing isCompleted ElementType
-%%  LocalWords:  EnsuresNonNull devel javacutil stubparser rsvg Regex OIGJ
+%%  LocalWords:  EnsuresNonNull devel javacutil stubparser rsvg Regex
 %%  LocalWords:  JavaUI EnerJ App CCS ReIm ReImInfer Anatoly Kupriyanov
 %%  LocalWords:  Asumu Takikawa Brotherston McArthur Luo Bayne Coblenz Lai
 %%  LocalWords:  Barros Athaydes Ren Oblak Heule Steph Trask Stalnaker

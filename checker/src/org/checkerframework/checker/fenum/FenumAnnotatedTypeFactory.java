@@ -2,7 +2,7 @@ package org.checkerframework.checker.fenum;
 
 import java.lang.annotation.Annotation;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -41,7 +41,7 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         AnnotationClassLoader loader = new AnnotationClassLoader(checker);
 
-        Set<Class<? extends Annotation>> qualSet = new HashSet<Class<? extends Annotation>>();
+        Set<Class<? extends Annotation>> qualSet = new LinkedHashSet<Class<? extends Annotation>>();
 
         // Load externally defined quals given in the -Aquals and/or -AqualDirs options
         String qualNames = checker.getOption("quals");

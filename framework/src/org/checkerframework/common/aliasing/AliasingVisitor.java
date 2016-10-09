@@ -72,7 +72,7 @@ public class AliasingVisitor extends
      * is annotated as {@literal @}LeakedToResult AND the result of the method
      * call is not being stored (the method call is a statement).
      * <p>
-     * The private method <tt>isUniqueCheck</tt> handles cases 2 and 3.
+     * The private method {@code isUniqueCheck} handles cases 2 and 3.
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -122,7 +122,7 @@ public class AliasingVisitor extends
                         isUniqueCheck(node, parentIsStatement, hasNonLeaked,
                                 hasLeakedToResult);
                     } else {
-                        //Not possible to leak reference here (case 1. from the javadoc).
+                        // Not possible to leak reference here (case 1. from the javadoc).
                     }
                 }
 
@@ -182,10 +182,8 @@ public class AliasingVisitor extends
 
     @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignement) {
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey,
-                isLocalVariableAssignement);
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
 
         // If we are visiting a pseudo-assignment, visitorLeafKind is either
         // Kind.NEW_CLASS or Kind.METHOD_INVOCATION.
@@ -271,8 +269,9 @@ public class AliasingVisitor extends
     private boolean isInUniqueConstructor(Tree tree) {
         MethodTree enclosingMethod = TreeUtils
                 .enclosingMethod(getCurrentPath());
-        if (enclosingMethod == null)
+        if (enclosingMethod == null) {
             return false; // No enclosing method.
+        }
         return TreeUtils.isConstructor(enclosingMethod)
                 && atypeFactory.getAnnotatedType(enclosingMethod)
                         .getReturnType().hasAnnotation(Unique.class);

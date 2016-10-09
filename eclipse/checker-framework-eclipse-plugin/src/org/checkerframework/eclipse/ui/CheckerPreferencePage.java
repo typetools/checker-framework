@@ -59,7 +59,7 @@ public class CheckerPreferencePage extends PreferencePage implements
     private Button optVerbose;
 
     private Text optJDKPath;
-    //private Button optAutoBuild;
+    // private Button optAutoBuild;
     private Button optWarning;
     private Button optFilenames;
     private Button optNoMsgText;
@@ -93,8 +93,8 @@ public class CheckerPreferencePage extends PreferencePage implements
         uiLayout.marginWidth = uiLayout.marginHeight = 5;
         uiGroup.setLayout(uiLayout);
 
-        //optAutoBuild = new Button(uiGroup, SWT.CHECK);
-        //optAutoBuild.setText("Automatically run type-checkers");
+        // optAutoBuild = new Button(uiGroup, SWT.CHECK);
+        // optAutoBuild.setText("Automatically run type-checkers");
 
         final Label filterLabel = new Label(uiGroup, SWT.None);
         filterLabel.setText("Regex for warning/error filter:");
@@ -191,7 +191,7 @@ public class CheckerPreferencePage extends PreferencePage implements
                 false);
         procGroup.setLayoutData(procGridData);
 
-        //argText = new Text(javacGroup, SWT.SINGLE | SWT.BORDER);
+        // argText = new Text(javacGroup, SWT.SINGLE | SWT.BORDER);
         makeCompilerParameters(tableComposite);
 
         initValues();
@@ -205,20 +205,20 @@ public class CheckerPreferencePage extends PreferencePage implements
         final Group group = new Group(tableComposite, SWT.None);
         group.setText("Checkers");
 
-        //Layout info for tableComposite's layout
+        // Layout info for tableComposite's layout
         GridData groupGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         group.setLayoutData(groupGridData);
 
-        //group's layout
+        // group's layout
         final GridLayout layout = new GridLayout();
         layout.numColumns = 2;
 
         group.setLayout(layout);
 
-        //Make Processor table
+        // Make Processor table
         procTable = new Table(group, SWT.CHECK | SWT.MULTI | SWT.BORDER);
 
-        //layout data within the group
+        // layout data within the group
         final GridData procTableData = new GridData( SWT.FILL, SWT.TOP, true, false );
         procTableData.heightHint = 200;
         procTableData.horizontalSpan = 2;
@@ -235,7 +235,7 @@ public class CheckerPreferencePage extends PreferencePage implements
             column.setText (header);
         }
 
-        //Add built-in checkers to the table
+        // Add built-in checkers to the table
         for ( final CheckerInfo checkerInfo : CheckerManager.getCheckerInfos() ) {
             addProcTableItem(checkerInfo, true);
         }
@@ -244,11 +244,11 @@ public class CheckerPreferencePage extends PreferencePage implements
             addProcTableItem(CheckerInfo.fromClassPath(className, null), false);
         }
 
-        for( final TableColumn columns : procTable.getColumns() ) {
+        for ( final TableColumn columns : procTable.getColumns() ) {
             columns.pack();
         }
 
-        //Make the add/remove controls for the table
+        // Make the add/remove controls for the table
 
         final Button addButton = new Button(group, SWT.PUSH);
         addButton.setText("Add");
@@ -281,9 +281,9 @@ public class CheckerPreferencePage extends PreferencePage implements
         removeGd.horizontalAlignment = SWT.END;
         removeButton.setLayoutData(removeGd);
 
-        //enable/disable the remove button (enabled only there are NO
-        //built-in checkers enabled and when at least 1 custom checker is
-        //selected)
+        // enable/disable the remove button (enabled only there are NO
+        // built-in checkers enabled and when at least 1 custom checker is
+        // selected)
 
         procTable.addSelectionListener(new SelectionListener() {
             public void widgetSelected(SelectionEvent event)        { setRemoveState(); }
@@ -291,11 +291,11 @@ public class CheckerPreferencePage extends PreferencePage implements
 
             private void setRemoveState() {  final TableItem [] selectedItems = procTable.getSelection();
                 boolean enabled = true;
-                if(selectedItems == null || selectedItems.length == 0) {
+                if (selectedItems == null || selectedItems.length == 0) {
                     enabled = false;
                 } else {
                     for (final TableItem ti : selectedItems) {
-                        if( !ti.getText( SOURCE.ordinal() ).equals(CUSTOM_LABEL) ) {
+                        if ( !ti.getText( SOURCE.ordinal() ).equals(CUSTOM_LABEL) ) {
                             enabled = false;
                             break;
                         }
@@ -313,20 +313,20 @@ public class CheckerPreferencePage extends PreferencePage implements
         final Group group = new Group(tableComposite, SWT.None);
         group.setText("Additional compiler parameters");
 
-        //Layout info for tableComposite's layout
+        // Layout info for tableComposite's layout
         GridData groupGridData = new GridData(SWT.FILL, SWT.FILL, true, true);
         group.setLayoutData(groupGridData);
 
-        //group's layout
+        // group's layout
         final GridLayout layout = new GridLayout();
         layout.numColumns = 2;
 
         group.setLayout(layout);
 
-        //Make Processor table
+        // Make Processor table
         optTable = new Table(group, SWT.CHECK | SWT.MULTI | SWT.BORDER);
 
-        //layout data within the group
+        // layout data within the group
         final GridData optTableData = new GridData( SWT.FILL, SWT.TOP, true, false );
         optTableData.heightHint = 100;
         optTableData.horizontalSpan = 2;
@@ -340,12 +340,12 @@ public class CheckerPreferencePage extends PreferencePage implements
         final TableColumn column = new TableColumn (optTable, SWT.NONE);
         column.setText ("Option");
 
-        //Add existing op;tions to the table
+        // Add existing op;tions to the table
         for ( final OptionLine optionInfo : getMiscParams() ) {
             addOptTableItem(optionInfo);
         }
 
-        for( final TableColumn columns : optTable.getColumns() ) {
+        for ( final TableColumn columns : optTable.getColumns() ) {
             columns.pack();
         }
 
@@ -380,9 +380,9 @@ public class CheckerPreferencePage extends PreferencePage implements
         removeGd.horizontalAlignment = SWT.END;
         removeButton.setLayoutData(removeGd);
 
-        //enable/disable the remove button (enabled only there are NO
-        //built-in checkers enabled and when at least 1 custom checker is
-        //selected)
+        // enable/disable the remove button (enabled only there are NO
+        // built-in checkers enabled and when at least 1 custom checker is
+        // selected)
 
         optTable.addSelectionListener(new SelectionListener() {
             public void widgetSelected(SelectionEvent event)        { setRemoveState(); }
@@ -409,9 +409,9 @@ public class CheckerPreferencePage extends PreferencePage implements
 
 
     private void removePTIndices(final int [] indices) {
-        for(final int index : indices) {
+        for (final int index : indices) {
             final TableItem ti = procTable.getItem(index);
-            if(! ti.getText(SOURCE.ordinal()).equals(CUSTOM_LABEL) ) {
+            if (! ti.getText(SOURCE.ordinal()).equals(CUSTOM_LABEL) ) {
                 throw new IllegalArgumentException("Cannot remove built-in checker " + ti.getText(LABEL.ordinal()));
             }
         }
@@ -424,8 +424,8 @@ public class CheckerPreferencePage extends PreferencePage implements
         int length = toSplit.length();
 
         int start = 0;
-        for(int i = 0; i < length; i++) {
-            if((Character.isUpperCase(toSplit.charAt(i)) && i != 0)) {
+        for (int i = 0; i < length; i++) {
+            if ((Character.isUpperCase(toSplit.charAt(i)) && i != 0)) {
                 tokens.add(toSplit.substring(start, i));
                 start = i;
             }
@@ -461,9 +461,9 @@ public class CheckerPreferencePage extends PreferencePage implements
         final List<String> selectedClasses = new ArrayList<String>(CheckerManager.getSelectedClasses());
         for (TableItem item : procTable.getItems()) {
             int index = 0;
-            while(index < selectedClasses.size()) {
+            while (index < selectedClasses.size()) {
 
-                if(item.getText(CLASSES.ordinal()).equals(selectedClasses.get(index))) {
+                if (item.getText(CLASSES.ordinal()).equals(selectedClasses.get(index))) {
                     item.setChecked(true);
                     selectedClasses.remove(index);
                 } else {
@@ -501,8 +501,8 @@ public class CheckerPreferencePage extends PreferencePage implements
         IPreferenceStore store = doGetPreferenceStore();
 
         List<String> selectedClasses = new ArrayList<String>();
-        for(final TableItem ti : procTable.getItems()) {
-            if(ti.getChecked()) {
+        for (final TableItem ti : procTable.getItems()) {
+            if (ti.getChecked()) {
                 selectedClasses.add(ti.getText(CLASSES.ordinal()));
             }
         }
@@ -561,9 +561,9 @@ public class CheckerPreferencePage extends PreferencePage implements
             //TODO: CHECK FOR DUPLICATES?
 
             final List<String> classesInTable = classesFromTableItems();
-            for(final String cn : classNames) {
+            for (final String cn : classNames) {
                 final CheckerInfo ci = CheckerInfo.fromClassPath(cn, null);
-                if(!classesInTable.contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
+                if (!classesInTable.contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
                     addProcTableItem(ci, false);
                 }
             }
@@ -585,7 +585,7 @@ public class CheckerPreferencePage extends PreferencePage implements
 
     private final List<String> classesFromTableItems() {
         final List<String> classes = new ArrayList<String>(procTable.getItemCount());
-        for(final TableItem ti : procTable.getItems()) {
+        for (final TableItem ti : procTable.getItems()) {
             classes.add(ti.getText( CLASSES.ordinal() ));
         }
         return classes;
@@ -593,8 +593,8 @@ public class CheckerPreferencePage extends PreferencePage implements
 
     private final List<String> customClassesFromTableItems() {
         final List<String> classes = new ArrayList<String>(procTable.getItemCount());
-        for(final TableItem ti : procTable.getItems()) {
-            if( ti.getText(SOURCE.ordinal()).equals( CUSTOM_LABEL ) ) {
+        for (final TableItem ti : procTable.getItems()) {
+            if ( ti.getText(SOURCE.ordinal()).equals( CUSTOM_LABEL ) ) {
                 classes.add(ti.getText( CLASSES.ordinal() ));
             }
         }

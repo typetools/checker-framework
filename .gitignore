@@ -38,10 +38,13 @@ checker/jdk/**/*.class
 *.pyc
 checker/build-temp
 checker/examples/**/*.class
+checker/bin-devel/check-google-java-format.py
+checker/bin-devel/fixup-google-java-format.py
+checker/bin-devel/google-java-format-1.0-all-deps.jar
+checker/bin-devel/run-google-java-format.py
 
 # manual files
 bib
-doc
 *.synctex.gz
 manual.aux
 manual.blg
@@ -80,6 +83,8 @@ dataflow/manual/dataflow.log
 dataflow/manual/dataflow.out
 dataflow/manual/dataflow.pdf
 
+checker/tests/command-line/issue618/TwoCheckers.class
+checker/tests/command-line/issue618/out.txt
 checker/tests/nullness-extra/*.class
 checker/tests/nullness-extra/compat/Out.txt
 checker/tests/nullness-extra/compat/javax/annotation/Nullable.class
@@ -92,11 +97,17 @@ checker/tests/nullness-extra/shorthand/NullnessRegexWithErrors.class
 checker/tests/nullness-extra/shorthand/Out.txt
 checker/tests/nullness-extra/issue502/Issue502.class
 checker/tests/nullness-extra/issue502/Out.txt
+checker/tests/nullness-extra/issue594/Out.txt
+checker/tests/nullness-extra/issue607/Issue607.class
+checker/tests/nullness-extra/issue607/Issue607Interface.class
+checker/tests/nullness-extra/issue607/Issue607SuperClass.class
 checker/tests/nullness/generics/*.class
 checker/tests/nullness-temp/*.java
 checker/tests/nullness-temp/*.class
 
 checker/jtreg/multipleexecutions/Main.class
+
+framework/tests/whole-program-inference/annotated/*.java
 
 tutorial/eclipse-projects.zip
 tutorial/eclipse-projects/README.txt
@@ -117,4 +128,3 @@ target/
 *.ipr
 *.iws
 *.iml
-

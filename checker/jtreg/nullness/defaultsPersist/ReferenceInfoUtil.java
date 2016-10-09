@@ -51,8 +51,10 @@ public class ReferenceInfoUtil {
         findAnnotations(cf, m, Attribute.RuntimeInvisibleTypeAnnotations, annos);
     }
 
-    // test the result of Attributes.getIndex according to expectations
-    // encoded in the method's name
+    /**
+     * Test the result of Attributes.getIndex according to expectations
+     * encoded in the method's name.
+     */
     private static void findAnnotations(ClassFile cf, String name, List<TypeAnnotation> annos) {
         int index = cf.attributes.getIndex(cf.constant_pool, name);
         if (index != -1) {
@@ -63,8 +65,10 @@ public class ReferenceInfoUtil {
         }
     }
 
-    // test the result of Attributes.getIndex according to expectations
-    // encoded in the method's name
+    /**
+     * Test the result of Attributes.getIndex according to expectations
+     * encoded in the method's name.
+     */
     private static void findAnnotations(ClassFile cf, Method m, String name, List<TypeAnnotation> annos) {
         int index = m.attributes.getIndex(cf.constant_pool, name);
         if (index != -1) {
@@ -89,8 +93,10 @@ public class ReferenceInfoUtil {
         }
     }
 
-    // test the result of Attributes.getIndex according to expectations
-    // encoded in the method's name
+    /**
+     * Test the result of Attributes.getIndex according to expectations
+     * encoded in the method's name.
+     */
     private static void findAnnotations(ClassFile cf, Field m, String name, List<TypeAnnotation> annos) {
         int index = m.attributes.getIndex(cf.constant_pool, name);
         if (index != -1) {
@@ -107,27 +113,34 @@ public class ReferenceInfoUtil {
     }
 
     private static boolean areEquals(int[] a, int[] a2) {
-        if (a==a2)
+        if (a==a2) {
             return true;
-        if (a==null || a2==null)
+        }
+        if (a==null || a2==null) {
             return false;
+        }
 
         int length = a.length;
-        if (a2.length != length)
+        if (a2.length != length) {
             return false;
+        }
 
-        for (int i=0; i<length; i++)
-            if (areEquals(a[i], a2[i]))
+        for (int i=0; i<length; i++) {
+            if (areEquals(a[i], a2[i])) {
                 return false;
+            }
+        }
 
         return true;
     }
 
     public static boolean areEquals(TypeAnnotation.Position p1, TypeAnnotation.Position p2) {
-        if (p1 == p2)
+        if (p1 == p2) {
             return true;
-        if (p1 == null || p2 == null)
+        }
+        if (p1 == null || p2 == null) {
             return false;
+        }
 
         boolean result =
                    ((p1.type == p2.type)
@@ -150,7 +163,7 @@ public class ReferenceInfoUtil {
              + "lvarLength = " + p1.lvarLength + ", " + p2.lvarLength + "\n"
              + "lvarIndex = " + p1.lvarIndex + ", " + p2.lvarIndex + "\n"
              + "bound_index = " + p1.bound_index + ", " + p2.bound_index + "\n"
-             + "paremeter_index = " + p1.parameter_index + ", " + p2.parameter_index + "\n"
+             + "parameter_index = " + p1.parameter_index + ", " + p2.parameter_index + "\n"
              + "type_index = " + p1.type_index + ", " + p2.type_index + "\n"
              + "exception_index = " + p1.exception_index + ", " + p2.exception_index + "\n";
     }
@@ -165,8 +178,9 @@ public class ReferenceInfoUtil {
             }
 
             if (properName.equals(actualName) &&
-                areEquals(expected, anno.position))
+                areEquals(expected, anno.position)) {
                 return anno;
+            }
         }
         return null;
     }

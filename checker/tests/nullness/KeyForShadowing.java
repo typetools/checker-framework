@@ -73,4 +73,5 @@ class KeyForShadowing {
         //:: error: (return.type.incompatible)
         return m0.get(k);
     }
+
 }

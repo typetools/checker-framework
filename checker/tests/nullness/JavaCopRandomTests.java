@@ -5,15 +5,15 @@ class RandomTests {
     final int b = 1;
     final int c;
 
-    RandomTests(){
+    RandomTests() {
         String s = null;
         a = 2;
     }
 
     RandomTests(String s) throws Exception{
-        //this();
+        // this();
         a = 2;
-        if (a > 1){
+        if (a > 1) {
             throw new Exception("dude");
         }
         throw new RuntimeException("dude");
@@ -22,7 +22,7 @@ class RandomTests {
     // initializer block
     {
         c = 4;
-        //throw new Exception("dude");
+        // throw new Exception("dude");
     }
 
 }

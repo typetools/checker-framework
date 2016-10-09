@@ -34,5 +34,3 @@ maven-plugin/poms - this directory contains Maven POM files for each of the
 jars that is found in the dist directory.  These POMs are used to deploy each
 jar as a Maven artifact to the
 http://types.cs.washington.edu/m2-repo/ maven repository.
-
-

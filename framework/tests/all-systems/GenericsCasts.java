@@ -1,6 +1,5 @@
 import java.util.*;
 
-// Clone of oigj/GenericsCasts
 class GenericsCasts {
   // Cast from a raw type to a generic type
   //:: warning: [unchecked] unchecked cast

@@ -28,7 +28,7 @@ import java.util.List;
  *
  * In general, AnnotatedTypeMirrors should be copied via AnnotatedTypeMirror#deepCopy and AnnotatedTypeMirror#shallowCopy.
  * AnnotatedTypeMirror#deepCopy makes use of AnnotatedTypeCopier under the covers.  However, this visitor and
- * it's subclasses can be invoked as follows:
+ * its subclasses can be invoked as follows:
  *
  * new AnnotatedTypeCopier().visit(myTypeVar);
  *
@@ -110,10 +110,10 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
 
         if (original.typeArgs != null) {
             final List<AnnotatedTypeMirror> copyTypeArgs = new ArrayList<>();
-            for (final AnnotatedTypeMirror typeArg : original.typeArgs) {
+            for (final AnnotatedTypeMirror typeArg : original.getTypeArguments()) {
                 copyTypeArgs.add(visit(typeArg, originalToCopy));
             }
-            copy.typeArgs = Collections.unmodifiableList( copyTypeArgs );
+            copy.setTypeArguments(copyTypeArgs);
         }
 
         if (original.supertypes != null) {
@@ -309,10 +309,10 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
      * If so, it returns the previously generated duplicate of that object
      * if not, it creates a duplicate of the object and stores it in the history, originalToCopy
      *
-     * @param original A reference to a type to copy.
-     * @param originalToCopy A mapping of previously encountered references to the copies made for those references
+     * @param original a reference to a type to copy
+     * @param originalToCopy a mapping of previously encountered references to the copies made for those references
      * @param <T> The type of original copy, this is a shortcut to avoid having to insert casts all over the visitor
-     * @return A copy of original
+     * @return a copy of original
      */
     @SuppressWarnings("unchecked")
     protected <T extends AnnotatedTypeMirror> T makeOrReturnCopy(
@@ -341,8 +341,8 @@ public class AnnotatedTypeCopier implements AnnotatedTypeVisitor<AnnotatedTypeMi
      * This method is called in any location in which a primary annotation would be copied from
      * source to dest.  Note, this method obeys the copyAnnotations field.  Subclasses of
      * AnnotatedTypeCopier can use this method to customize annotations before copying.
-     * @param source The type whose primary annotations are being copied
-     * @param dest A copy of source that should receive its primary annotations
+     * @param source the type whose primary annotations are being copied
+     * @param dest a copy of source that should receive its primary annotations
      */
     protected void maybeCopyPrimaryAnnotations(final AnnotatedTypeMirror source, final AnnotatedTypeMirror dest) {
         if (copyAnnotations) {

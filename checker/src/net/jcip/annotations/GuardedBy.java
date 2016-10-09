@@ -1,9 +1,7 @@
 package net.jcip.annotations;
 
 import java.lang.annotation.*;
-
 import org.checkerframework.checker.lock.qual.LockHeld;
-import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 // The JCIP annotation can be used on a field (in which case it corresponds
@@ -16,17 +14,15 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD,
-    ElementType.PARAMETER, ElementType.LOCAL_VARIABLE })
+@Target({ ElementType.METHOD, ElementType.FIELD })
 @PreconditionAnnotation(qualifier = LockHeld.class)
-@PostconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
     /**
-     * The Java expressions that need to be {@link LockHeld}.
+     * The Java expressions that need to be held.
      *
      * @see <a
-     *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
+     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
      *      of Java expressions</a>
      */
-    String[] value();
+    String[] value() default {};
 }

@@ -52,9 +52,9 @@ public enum I18nConversionCategory {
      * Use if the parameter can be of number or choice types.
      * An example of choice:
      *
-     * <pre>
-     * format("{0, choice, 0#zero|1#one|1&lt;{0, number} is more than 1}", 2)
-     * </pre>
+     * <pre>{@code
+     * format("{0, choice, 0#zero|1#one|1<{0, number} is more than 1}", 2)
+     * }</pre>
      *
      * This will print "2 is more than 1".
      *
@@ -80,8 +80,9 @@ public enum I18nConversionCategory {
         string = string.toLowerCase();
         for (I18nConversionCategory v : new I18nConversionCategory[] { DATE, NUMBER }) {
             for (String s : v.strings) {
-                if (s.equals(string))
+                if (s.equals(string)) {
                     return v;
+                }
             }
         }
         throw new IllegalArgumentException("Invalid format type.");
@@ -110,14 +111,18 @@ public enum I18nConversionCategory {
      * </blockquote>
      */
     public static I18nConversionCategory intersect(I18nConversionCategory a, I18nConversionCategory b) {
-        if (a == UNUSED)
+        if (a == UNUSED) {
             return b;
-        if (b == UNUSED)
+        }
+        if (b == UNUSED) {
             return a;
-        if (a == GENERAL)
+        }
+        if (a == GENERAL) {
             return b;
-        if (b == GENERAL)
+        }
+        if (b == GENERAL) {
             return a;
+        }
 
         Set<Class<? extends Object>> as = arrayToSet(a.types);
         Set<Class<? extends Object>> bs = arrayToSet(b.types);
@@ -130,6 +135,30 @@ public enum I18nConversionCategory {
         }
         // this should never happen
         throw new RuntimeException();
+    }
+
+    /**
+     * Returns the union of the two given I18nConversionCategories
+     *
+     * <blockquote>
+     *
+     * <pre>
+     * I18nConversionCategory.intersect(DATE, NUMBER) == DATE;
+     * </pre>
+     *
+     * </blockquote>
+     */
+    public static I18nConversionCategory union(I18nConversionCategory a, I18nConversionCategory b) {
+        if (a == UNUSED || b == UNUSED) {
+            return UNUSED;
+        }
+        if (a == GENERAL || b == GENERAL) {
+            return GENERAL;
+        }
+        if (a == DATE || b == DATE) {
+            return DATE;
+        }
+        return NUMBER;
     }
 
     /**

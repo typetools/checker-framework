@@ -25,6 +25,6 @@ public class ValueTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String [] getTestDirs() {
-        return new String[]{"value"};
+        return new String[] { "value", "all-systems" };
     }
 }

@@ -68,10 +68,3 @@ class PropertyChangeSupport {
     public void firePropertyChange(String propertyName, @FenumTop int oldValue, @FenumTop int newValue);
     public void firePropertyChange(String propertyName, @FenumTop Object oldValue, @FenumTop Object newValue);
 }
-
-
-package org.jdesktop.jdnc;
-
-class JNTable {
-  void setColumnHorizontalAlignment(String columnName, @SwingHorizontalOrientation int alignment);
-}

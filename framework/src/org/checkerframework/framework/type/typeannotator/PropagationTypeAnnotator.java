@@ -30,8 +30,8 @@ import java.util.*;
  */
 public class PropagationTypeAnnotator extends TypeAnnotator {
 
-    //The PropagationTypeAnnotator is called recursively via TypeAnnotatorUtil.eraseBoundsThenAnnotate
-    //This flag prevents infinite recursion
+    // The PropagationTypeAnnotator is called recursively via TypeAnnotatorUtil.eraseBoundsThenAnnotate.
+    // This flag prevents infinite recursion.
     private boolean pause  = false;
     private Stack<AnnotatedDeclaredType> parents = new Stack<>();
 
@@ -42,8 +42,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     @Override
     public void reset() {
         if (!pause) {
-            //when the PropagationTypeAnnotator is called recursively we don't
-            //want the visit method to reset the list of visited types
+            // when the PropagationTypeAnnotator is called recursively we don't
+            // want the visit method to reset the list of visited types
             super.reset();
         }
     }
@@ -65,7 +65,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
      * Sometimes the underlying type parameters of AnnotatedWildcardTypes are not available
      * on the wildcards themselves.  Instead, record enclosing class to find the type parameter
      * to use as a backup in visitWildcards.
-     * @param declaredType Type to record
+     * @param declaredType type to record
      */
     @Override
     public Void visitDeclared(AnnotatedDeclaredType declaredType, Void aVoid) {
@@ -112,7 +112,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
             } else if (wildcard.isExtendsBound()) {
                 propagateSuperBound(wildcardAtm, typeParam, tops);
 
-            } else { //is super bound
+            } else { // is super bound
                 propagateExtendsBound(wildcardAtm, typeParam, tops);
             }
 
@@ -136,9 +136,9 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     /** Take the primary annotations from typeParamBound and place them as primary annotations on wildcard bound */
     private void applyAnnosFromBound(final AnnotatedTypeMirror wildcardBound, final AnnotatedTypeMirror typeParamBound,
                                      final Set<? extends AnnotationMirror> tops) {
-        //Type variables do not need primary annotations.
-        //The type variable will have annotations placed on its
-        //bounds via its declaration or defaulting rules
+        // Type variables do not need primary annotations.
+        // The type variable will have annotations placed on its
+        // bounds via its declaration or defaulting rules
         if (wildcardBound.getKind() == TypeKind.TYPEVAR
          || typeParamBound.getKind() == TypeKind.TYPEVAR) {
             return;
@@ -153,7 +153,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
                         + "wildcardBound=" + wildcardBound + "\n"
                         + "typeParamBound=" + typeParamBound + "\n"
                     );
-                } //else
+                } // else
                 wildcardBound.addAnnotation(typeParamAnno);
             }
         }
@@ -170,8 +170,8 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         Integer wildcardIndex = null;
         int currentIndex = 0;
         for (AnnotatedTypeMirror typeArg : parent.getTypeArguments()) {
-            //the only cases in which the wildcard is not one of the type arguments are cases in
-            //which they should have been replaced by capture
+            // the only cases in which the wildcard is not one of the type arguments are cases in
+            // which they should have been replaced by capture
             if (typeArg == wildcard) {
                 wildcardIndex = currentIndex;
                 break;

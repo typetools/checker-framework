@@ -13,8 +13,9 @@ public class AssertAfterChecked {
       f = new Object();
     }
 
+    @EnsuresNonNull("f")
     //:: error: (contracts.postcondition.not.satisfied)
-    @EnsuresNonNull("f") void initBad() {
+    void initBad() {
     }
 
     void testInit() {
@@ -36,8 +37,9 @@ public class AssertAfterChecked {
       InitStaticField.f = new Object();
     }
 
+    @EnsuresNonNull("f")
     //:: error: (contracts.postcondition.not.satisfied)
-    @EnsuresNonNull("f") void initBad() {
+    void initBad() {
     }
 
     void testInit() {
@@ -55,8 +57,9 @@ public class AssertAfterChecked {
       InitStaticField.f = new Object();
     }
 
+    @EnsuresNonNull("InitStaticField.f")
     //:: error: (contracts.postcondition.not.satisfied)
-    @EnsuresNonNull("InitStaticField.f") void initBadE() {
+    void initBadE() {
     }
 
     void testInitE() {
@@ -72,8 +75,9 @@ public class AssertAfterChecked {
   }
 
   class TestParams {
+    @EnsuresNonNull("get(#1)")
     //:: error: (contracts.postcondition.not.satisfied)
-    @EnsuresNonNull("get(#1)") void init(final TestParams p) {
+    void init(final TestParams p) {
 
     }
 
@@ -90,8 +94,7 @@ public class AssertAfterChecked {
 
     void testInit1b() {
       init(this);
-      // TODO: the explicit this does not work :-((
-      // this.get(this).toString();
+      this.get(this).toString();
     }
 
     void testInit2(TestParams p) {
@@ -132,13 +135,15 @@ public class AssertAfterChecked {
       }
     }
 
+    @EnsuresNonNull("f")
     //:: error: (contracts.postcondition.not.satisfied)
-    @EnsuresNonNull("f") int initBad1() {
+    int initBad1() {
       return 0;
     }
 
+    @EnsuresNonNull("f")
     //:: error: (contracts.postcondition.not.satisfied)
-    @EnsuresNonNull("f") int initBad2() {
+    int initBad2() {
       if (5==5) {
         return 0;
       } else {

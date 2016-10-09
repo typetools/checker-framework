@@ -38,11 +38,11 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Case 1: type of class declaration
      */
     @Override
-    public void annotateImplicit(Element elt, AnnotatedTypeMirror type) {
+    public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         if (!type.isAnnotatedInHierarchy(LINEAR) && elt.getKind().isClass()) {
             type.addAnnotation(UNUSABLE);
         }
-        super.annotateImplicit(elt, type);
+        super.addComputedTypeAnnotations(elt, type);
     }
 
     // TODO: Re-enable flow with the new org.checkerframework.dataflow framework.
@@ -80,8 +80,9 @@ public class LinearAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * that causes the reference to be "used up".
          *
         private void markAsUnusableIfLinear(ExpressionTree node) {
-            if (!LinearVisitor.isLocalVarOrParam(node))
+            if (!LinearVisitor.isLocalVarOrParam(node)) {
                 return;
+                }
 
             Element elem = TreeUtils.elementFromUse(node);
             assert elem != null;

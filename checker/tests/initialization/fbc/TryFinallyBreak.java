@@ -7,7 +7,7 @@ class TryFinallyBreak {
         String ans = "x";
         while (this.hashCode() > 10000) {
             try {
-                ans = "foo";
+                // empty body
             }
             finally {
                 ans = null;
@@ -21,7 +21,6 @@ class TryFinallyBreak {
         String ans = "x";
         while (true) {
             try {
-                ans = "foo";
                 // Note the additional break;
                 break;
             }

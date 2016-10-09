@@ -150,7 +150,7 @@ final class ASTParser implements ASTParserConstants {
         break label_1;
       }
       in = ImportDeclaration();
-                               if(line==-1){line = in.getBeginLine(); column = in.getBeginColumn();} imports = add(imports, in);
+                               if (line==-1){line = in.getBeginLine(); column = in.getBeginColumn();} imports = add(imports, in);
     }
     label_2:
     while (true) {
@@ -160,7 +160,7 @@ final class ASTParser implements ASTParserConstants {
         break label_2;
       }
       tn = TypeDeclaration();
-                                                          if(line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn);
+                                                          if (line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn);
     }
     cu = new CompilationUnit(line == -1 ? 0 : line, column, token.endLine, token.endColumn,pakage, imports, types, getComments());
     compilationUnits.add(cu);
@@ -188,7 +188,7 @@ final class ASTParser implements ASTParserConstants {
           break label_4;
         }
         in = ImportDeclaration();
-                               if(line==-1){line = in.getBeginLine(); column = in.getBeginColumn();} imports = add(imports, in);
+                               if (line==-1){line = in.getBeginLine(); column = in.getBeginColumn();} imports = add(imports, in);
       }
       label_5:
       while (true) {
@@ -198,7 +198,7 @@ final class ASTParser implements ASTParserConstants {
           break label_5;
         }
         tn = TypeDeclaration();
-                                                          if(line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn);
+                                                          if (line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn);
       }
     cu = new CompilationUnit(line == -1 ? 0 : line, column, token.endLine, token.endColumn,pakage, imports, types, getComments());
     compilationUnits.add(cu);
@@ -247,7 +247,7 @@ final class ASTParser implements ASTParserConstants {
         break label_6;
       }
       in = ImportDeclaration();
-                               if(line==-1){line = in.getBeginLine(); column = in.getBeginColumn();} imports = add(imports, in);
+                               if (line==-1){line = in.getBeginLine(); column = in.getBeginColumn();} imports = add(imports, in);
     }
     label_7:
     while (true) {
@@ -257,7 +257,7 @@ final class ASTParser implements ASTParserConstants {
         break label_7;
       }
       tn = TypeDeclaration();
-                                                          if(line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn);
+                                                          if (line==-1){line = tn.getBeginLine(); column = tn.getBeginColumn();} types = add(types, tn);
     }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 0:
@@ -356,51 +356,51 @@ final class ASTParser implements ASTParserConstants {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case PUBLIC:
         jj_consume_token(PUBLIC);
-              modifiers = addModifier(modifiers, ModifierSet.PUBLIC, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+              modifiers = addModifier(modifiers, ModifierSet.PUBLIC, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case STATIC:
         jj_consume_token(STATIC);
-              modifiers = addModifier(modifiers, ModifierSet.STATIC, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+              modifiers = addModifier(modifiers, ModifierSet.STATIC, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case PROTECTED:
         jj_consume_token(PROTECTED);
-                 modifiers = addModifier(modifiers, ModifierSet.PROTECTED, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+                 modifiers = addModifier(modifiers, ModifierSet.PROTECTED, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case PRIVATE:
         jj_consume_token(PRIVATE);
-               modifiers = addModifier(modifiers, ModifierSet.PRIVATE, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+               modifiers = addModifier(modifiers, ModifierSet.PRIVATE, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case FINAL:
         jj_consume_token(FINAL);
-             modifiers = addModifier(modifiers, ModifierSet.FINAL, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+             modifiers = addModifier(modifiers, ModifierSet.FINAL, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case ABSTRACT:
         jj_consume_token(ABSTRACT);
-                modifiers = addModifier(modifiers, ModifierSet.ABSTRACT, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+                modifiers = addModifier(modifiers, ModifierSet.ABSTRACT, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case SYNCHRONIZED:
         jj_consume_token(SYNCHRONIZED);
-                    modifiers = addModifier(modifiers, ModifierSet.SYNCHRONIZED, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+                    modifiers = addModifier(modifiers, ModifierSet.SYNCHRONIZED, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case NATIVE:
         jj_consume_token(NATIVE);
-              modifiers = addModifier(modifiers, ModifierSet.NATIVE, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+              modifiers = addModifier(modifiers, ModifierSet.NATIVE, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case TRANSIENT:
         jj_consume_token(TRANSIENT);
-                 modifiers = addModifier(modifiers, ModifierSet.TRANSIENT, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+                 modifiers = addModifier(modifiers, ModifierSet.TRANSIENT, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case VOLATILE:
         jj_consume_token(VOLATILE);
-                modifiers = addModifier(modifiers, ModifierSet.VOLATILE, token); if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+                modifiers = addModifier(modifiers, ModifierSet.VOLATILE, token); if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case STRICTFP:
         jj_consume_token(STRICTFP);
-                modifiers = addModifier(modifiers, ModifierSet.STRICTFP, token);  if(beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
+                modifiers = addModifier(modifiers, ModifierSet.STRICTFP, token);  if (beginLine==-1) {beginLine=token.beginLine; beginColumn=token.beginColumn;}
         break;
       case AT:
         ann = Annotation();
-                        annotations = add(annotations, ann); if(beginLine==-1) {beginLine=ann.getBeginLine(); beginColumn=ann.getBeginColumn();}
+                        annotations = add(annotations, ann); if (beginLine==-1) {beginLine=ann.getBeginLine(); beginColumn=ann.getBeginColumn();}
         break;
       default:
         jj_la1[9] = jj_gen;
@@ -542,8 +542,9 @@ final class ASTParser implements ASTParserConstants {
       cit = ClassOrInterfaceType();
                                         ret.add(cit); extendsMoreThanOne = true;
     }
-      if (extendsMoreThanOne && !isInterface)
+      if (extendsMoreThanOne && !isInterface) {
          throwParseException(token, "A class cannot extend more than one other class");
+      }
      {if (true) return ret;}
     throw new Error("Missing return statement in function");
   }
@@ -568,8 +569,9 @@ final class ASTParser implements ASTParserConstants {
       cit = ClassOrInterfaceType();
                                         ret.add(cit);
     }
-      if (isInterface)
+      if (isInterface) {
          throwParseException(token, "An interface cannot implement other interfaces");
+      }
      {if (true) return ret;}
     throw new Error("Missing return statement in function");
   }
@@ -699,10 +701,10 @@ final class ASTParser implements ASTParserConstants {
         break label_14;
       }
       ann = Annotation();
-                         annotations = add(annotations, ann); if(line==-1){line=ann.getBeginLine(); column=ann.getBeginColumn();}
+                         annotations = add(annotations, ann); if (line==-1){line=ann.getBeginLine(); column=ann.getBeginColumn();}
     }
     jj_consume_token(IDENTIFIER);
-                 name = token.image; if(line==-1){line=token.beginLine; column=token.beginColumn;}
+                 name = token.image; if (line==-1){line=token.beginLine; column=token.beginColumn;}
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LPAREN:
       args = Arguments();
@@ -850,8 +852,9 @@ final class ASTParser implements ASTParserConstants {
     pushJavadoc();
     if (jj_2_10(2)) {
       ret = InitializerDeclaration();
-             if (isInterface)
+             if (isInterface) {
                 throwParseException(token, "An interface cannot have initializers");
+             }
     } else {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case ABSTRACT:
@@ -1137,7 +1140,7 @@ final class ASTParser implements ASTParserConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LT:
       typeParameters = TypeParameters();
-                                        int[] lineCol=(int[])typeParameters.remove(0); if(line==-1){ line=lineCol[0]; column=lineCol[1];}
+                                        int[] lineCol=(int[])typeParameters.remove(0); if (line==-1){ line=lineCol[0]; column=lineCol[1];}
       break;
     default:
       jj_la1[39] = jj_gen;
@@ -1145,7 +1148,7 @@ final class ASTParser implements ASTParserConstants {
     }
     annotations = Annotationsopt();
     type = UnResultType();
-                          if(line==-1){line=type.getBeginLine(); column=type.getBeginColumn();}
+                          if (line==-1){line=type.getBeginLine(); column=type.getBeginColumn();}
     jj_consume_token(IDENTIFIER);
                  name = token.image;
     parameters = FormalParameters();
@@ -1265,7 +1268,7 @@ final class ASTParser implements ASTParserConstants {
     id = VariableDeclaratorId();
     int line = modifier.beginLine;
     int column = modifier.beginColumn;
-    if(line==-1){ line=type.getBeginLine(); column=type.getBeginColumn(); }
+    if (line==-1){ line=type.getBeginLine(); column=type.getBeginColumn(); }
     type.setAnnotations(modifier.annotations);
     {if (true) return new Parameter(line, column, token.endLine, token.endColumn, modifier.modifiers, null, type, isVarArg, id);}
     throw new Error("Missing return statement in function");
@@ -1288,14 +1291,14 @@ final class ASTParser implements ASTParserConstants {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case LT:
       typeParameters = TypeParameters();
-                                        int[] lineCol=(int[])typeParameters.remove(0); if(line==-1){ line=lineCol[0]; column=lineCol[1];}
+                                        int[] lineCol=(int[])typeParameters.remove(0); if (line==-1){ line=lineCol[0]; column=lineCol[1];}
       break;
     default:
       jj_la1[45] = jj_gen;
       ;
     }
     jj_consume_token(IDENTIFIER);
-                 name = token.image; if(line==-1){line=token.beginLine; column=token.beginColumn;}
+                 name = token.image; if (line==-1){line=token.beginLine; column=token.beginColumn;}
     parameters = FormalParameters();
     receiverAnnotations = Annotationsopt();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1496,7 +1499,7 @@ final class ASTParser implements ASTParserConstants {
       ;
     }
     block = Block();
-                                                                                                    if(line==-1){line=block.getBeginLine(); column=block.getBeginColumn();}
+                                                                                                    if (line==-1){line=block.getBeginLine(); column=block.getBeginColumn();}
     {if (true) return new InitializerDeclaration(line, column, token.endLine, token.endColumn,popJavadoc(), isStatic, block);}
     throw new Error("Missing return statement in function");
   }
@@ -2514,7 +2517,7 @@ final class ASTParser implements ASTParserConstants {
         throw new ParseException();
       }
       ret = UnaryExpression();
-                 if(op == UnaryExpr.Operator.negative) {
+                 if (op == UnaryExpr.Operator.negative) {
                         if (ret instanceof IntegerLiteralExpr && ((IntegerLiteralExpr)ret).isMinValue()) {
                                 ret = new IntegerLiteralMinValueExpr(line, column, token.endLine, token.endColumn);
                         } else if (ret instanceof LongLiteralExpr && ((LongLiteralExpr)ret).isMinValue()) {
@@ -3075,7 +3078,7 @@ final class ASTParser implements ASTParserConstants {
         int line;
         int column;
     jj_consume_token(NEW);
-          if(scope==null) {line=token.beginLine; column=token.beginColumn;} else {line=scope.getBeginLine(); column=scope.getBeginColumn();}
+          if (scope==null) {line=token.beginLine; column=token.beginColumn;} else {line=scope.getBeginLine(); column=scope.getBeginColumn();}
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case BOOLEAN:
     case BYTE:
@@ -3431,7 +3434,7 @@ final class ASTParser implements ASTParserConstants {
     }
     int line = modifier.beginLine;
     int column = modifier.beginColumn;
-    if(line==-1) {line=type.getBeginLine(); column=type.getBeginColumn(); }
+    if (line==-1) {line=type.getBeginLine(); column=type.getBeginColumn(); }
     type.setAnnotations(modifier.annotations);
     {if (true) return new VariableDeclarationExpr(line, column, token.endLine, token.endColumn, modifier.modifiers, null, type, vars);}
     throw new Error("Missing return statement in function");
@@ -4537,371 +4540,371 @@ final class ASTParser implements ASTParserConstants {
   private boolean jj_2_1(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_1(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(0, xla); }
   }
 
   private boolean jj_2_2(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_2(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(1, xla); }
   }
 
   private boolean jj_2_3(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_3(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(2, xla); }
   }
 
   private boolean jj_2_4(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_4(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(3, xla); }
   }
 
   private boolean jj_2_5(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_5(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(4, xla); }
   }
 
   private boolean jj_2_6(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_6(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(5, xla); }
   }
 
   private boolean jj_2_7(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_7(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(6, xla); }
   }
 
   private boolean jj_2_8(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_8(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(7, xla); }
   }
 
   private boolean jj_2_9(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_9(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(8, xla); }
   }
 
   private boolean jj_2_10(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_10(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(9, xla); }
   }
 
   private boolean jj_2_11(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_11(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(10, xla); }
   }
 
   private boolean jj_2_12(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_12(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(11, xla); }
   }
 
   private boolean jj_2_13(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_13(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(12, xla); }
   }
 
   private boolean jj_2_14(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_14(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(13, xla); }
   }
 
   private boolean jj_2_15(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_15(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(14, xla); }
   }
 
   private boolean jj_2_16(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_16(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(15, xla); }
   }
 
   private boolean jj_2_17(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_17(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(16, xla); }
   }
 
   private boolean jj_2_18(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_18(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(17, xla); }
   }
 
   private boolean jj_2_19(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_19(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(18, xla); }
   }
 
   private boolean jj_2_20(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_20(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(19, xla); }
   }
 
   private boolean jj_2_21(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_21(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(20, xla); }
   }
 
   private boolean jj_2_22(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_22(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(21, xla); }
   }
 
   private boolean jj_2_23(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_23(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(22, xla); }
   }
 
   private boolean jj_2_24(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_24(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(23, xla); }
   }
 
   private boolean jj_2_25(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_25(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(24, xla); }
   }
 
   private boolean jj_2_26(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_26(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(25, xla); }
   }
 
   private boolean jj_2_27(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_27(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(26, xla); }
   }
 
   private boolean jj_2_28(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_28(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(27, xla); }
   }
 
   private boolean jj_2_29(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_29(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(28, xla); }
   }
 
   private boolean jj_2_30(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_30(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(29, xla); }
   }
 
   private boolean jj_2_31(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_31(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(30, xla); }
   }
 
   private boolean jj_2_32(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_32(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(31, xla); }
   }
 
   private boolean jj_2_33(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_33(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(32, xla); }
   }
 
   private boolean jj_2_34(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_34(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(33, xla); }
   }
 
   private boolean jj_2_35(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_35(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(34, xla); }
   }
 
   private boolean jj_2_36(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_36(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(35, xla); }
   }
 
   private boolean jj_2_37(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_37(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(36, xla); }
   }
 
   private boolean jj_2_38(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_38(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(37, xla); }
   }
 
   private boolean jj_2_39(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_39(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(38, xla); }
   }
 
   private boolean jj_2_40(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_40(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(39, xla); }
   }
 
   private boolean jj_2_41(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_41(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(40, xla); }
   }
 
   private boolean jj_2_42(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_42(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(41, xla); }
   }
 
   private boolean jj_2_43(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_43(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(42, xla); }
   }
 
   private boolean jj_2_44(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_44(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(43, xla); }
   }
 
   private boolean jj_2_45(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_45(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(44, xla); }
   }
 
   private boolean jj_2_46(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_46(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(45, xla); }
   }
 
   private boolean jj_2_47(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_47(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(46, xla); }
   }
 
   private boolean jj_2_48(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_48(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(47, xla); }
   }
 
   private boolean jj_2_49(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_49(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(48, xla); }
   }
 
   private boolean jj_2_50(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_50(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(49, xla); }
   }
 
   private boolean jj_2_51(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_51(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(50, xla); }
   }
 
   private boolean jj_2_52(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_52(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(51, xla); }
   }
 
   private boolean jj_2_53(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_53(); }
-    catch(LookaheadSuccess ls) { return true; }
+    catch (LookaheadSuccess ls) { return true; }
     finally { jj_save(52, xla); }
   }
 
@@ -8218,7 +8221,7 @@ final class ASTParser implements ASTParserConstants {
   }
   /** Constructor with InputStream and supplied encoding */
   public ASTParser(java.io.InputStream stream, String encoding) {
-    try { jj_input_stream = new JavaCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
+    try { jj_input_stream = new JavaCharStream(stream, encoding, 1, 1); } catch (java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source = new ASTParserTokenManager(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -8233,7 +8236,7 @@ final class ASTParser implements ASTParserConstants {
   }
   /** Reinitialise. */
   public void ReInit(java.io.InputStream stream, String encoding) {
-    try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
+    try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch (java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source.ReInit(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -8352,9 +8355,9 @@ final class ASTParser implements ASTParserConstants {
   }
 
   private int jj_ntk() {
-    if ((jj_nt=token.next) == null)
+    if ((jj_nt=token.next) == null) {
       return (jj_ntk = (token.next=token_source.getNextToken()).kind);
-    else
+    } else
       return (jj_ntk = jj_nt.kind);
   }
 
@@ -8509,7 +8512,7 @@ final class ASTParser implements ASTParserConstants {
         }
         p = p.next;
       } while (p != null);
-      } catch(LookaheadSuccess ls) { }
+      } catch (LookaheadSuccess ls) { }
     }
     jj_rescan = false;
   }

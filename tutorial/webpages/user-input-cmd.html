@@ -1,6 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
   <meta name="generator" content=
   "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
@@ -99,6 +98,10 @@
       <div id="regexexample">
         <h4>1. The RegexExample program</h4>
 
+        <p>If you have not already done so, download
+          <a href="../sourcefiles.zip">the source files</a> for the tutorial.
+        </p>
+
         <p>
         The <a href="../src/RegexExample.java">RegexExample.java</a>
         program is called with two arguments: a regular expression and a
@@ -162,19 +165,12 @@ RegexExample.java:13: error: [argument.type.incompatible] incompatible types in 
                                       ^
   found   : String
   required: @Regex String
-RegexExample.java:18: error: [group.count.invalid] invalid groups parameter 1. Only 0 groups are guaranteed to exist for mat.
-                System.out.println("Group 1: " + mat.group(1));
-                                                           ^
-2 errors
+1 errors
 </pre>
 
         <p>The "incompatible types" warning indicates that variable
         <code>regex</code> is not of type <code>@Regex String</code> which
         is required for strings passed to <a href="http://docs.oracle.com/javase/8/docs/api/java/util/regex/Pattern.html#compile-java.lang.String-"><code>Pattern.compile()</code></a>.</p>
-
-        <p>The "group.count.invalid" warning indicates that no groups are
-        guaranteed to exist at run time, which is required for a Matcher
-        <code>mat</code> in order to call <a href="http://docs.oracle.com/javase/8/docs/api/java/util/regex/Matcher.html#group-int-"><code>mat.group(1)</code></a>.</p>
       </div>
 
       <div id="validate">
@@ -199,11 +195,11 @@ import org.checkerframework.checker.regex.RegexUtil;
         After variable <code>regex</code> is defined but before it is
         used, add</p>
 <pre>
-	if (!RegexUtil.isRegex(regex, 1)) {
-	    System.out.println("Input is not a regular expression \"" + regex
-		    + "\": " + RegexUtil.regexException(regex).getMessage());
-	    System.exit(1);
-	}
+    if (!RegexUtil.isRegex(regex, 1)) {
+        System.out.println("Input is not a regular expression \"" + regex
+            + "\": " + RegexUtil.regexException(regex).getMessage());
+        System.exit(1);
+    }
 </pre>
       </div>
 
@@ -230,8 +226,8 @@ Input is not a regular expression "[01]?[d-([0123]?d)-d{4}+": Illegal character 
 
         <p>(If this issues an error</p>
         <pre>Exception in thread "main" java.lang.UnsupportedClassVersionError: RegexExample : Unsupported major.minor version 52.0</pre>
-        <p>, then <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#javac-installation">change the <tt>javacheck</tt>
-        alias</a> to pass the <tt>-source 7 -target 7</tt> command-line
+        <p>, then <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#javac-installation">change the <code>javacheck</code>
+        alias</a> to pass the <code>-source 7 -target 7</code> command-line
         arguments and <a href="#run2">rerun the javacheck command</a>.)</p>
 
         <p>For a full discussion of the Regex Checker, please see the <a href=

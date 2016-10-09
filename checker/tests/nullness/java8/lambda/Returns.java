@@ -1,4 +1,3 @@
-
 import org.checkerframework.checker.nullness.qual.*;
 
 // The return of a lambda is a lambda
@@ -22,8 +21,10 @@ class MetaReturn {
 
     //:: error: (dereference.of.nullable)
     ConsumerSupplier t1 = () -> (s) -> s.toString();
-    //:: error: (dereference.of.nullable)
-    ConsumerSupplier t2 = () -> { return (String s) -> {s.toString();}; };
+    ConsumerSupplier t2 = () -> { return (String s) -> {
+            //:: error: (dereference.of.nullable)
+            s.toString();
+        }; };
 
     SupplierSupplier t3 = () ->
         {
@@ -36,4 +37,3 @@ class MetaReturn {
             return ""::toString;
         };
 }
-

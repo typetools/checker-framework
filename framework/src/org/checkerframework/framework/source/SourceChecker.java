@@ -191,18 +191,23 @@ import com.sun.tools.javac.util.Log;
     // to be output.
     "resolveReflection",
 
+    // Whether to use .jaif files whole-program inference
+    "infer",
 
     ///
     /// Stub libraries
     ///
 
     // Additional stub files to use
-    // org.checkerframework.framework.type.AnnotatedTypeFactory.buildIndexTypes()
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "stubs",
     // Whether to print warnings about types/members in a stub file
     // that were not found on the class path
     // org.checkerframework.framework.stub.StubParser.warnIfNotFound
     "stubWarnIfNotFound",
+    // Whether to print warnings about stub files that overwrite annotations
+    // from bytecode.
+    "stubWarnIfOverwritesBytecode",
 
     ///
     /// Debugging
@@ -240,7 +245,7 @@ import com.sun.tools.javac.util.Log;
     /// Stub and JDK libraries
 
     // Ignore the standard jdk.astub file; primarily for testing or debugging.
-    // org.checkerframework.framework.type.AnnotatedTypeFactory.buildIndexTypes()
+    // org.checkerframework.framework.type.AnnotatedTypeFactory.parseStubFiles()
     "ignorejdkastub",
 
     // Whether to check that the annotated JDK is correctly provided
@@ -263,16 +268,42 @@ import com.sun.tools.javac.util.Log;
 
     /// Miscellaneous debugging options
 
-    // Directory for .dot files generated from the CFG
-    // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.analyze
+    // Mechanism to visualize the control flow graph (CFG).
+    // The argument is a sequence of values or key-value pairs.
+    // The first argument has to be the fully-qualified name of the
+    // org.checkerframework.dataflow.cfg.CFGVisualizer implementation
+    // that should be used. The remaining values or key-value pairs are
+    // passed to CFGVisualizer.init.
+    // For example:
+    //    -Acfgviz=MyViz,a,b=c,d
+    // instantiates class MyViz and calls CFGVisualizer.init
+    // with {"a" -> true, "b" -> "c", "d" -> true}.
+    "cfgviz",
+
+    // Directory for .dot files generated from the CFG visualization in
+    // org.checkerframework.dataflow.cfg.DOTCFGVisualizer
+    // as initialized by
+    // org.checkerframework.framework.type.GenericAnnotatedTypeFactory.createCFGVisualizer()
+    // -Aflowdotdir=xyz
+    // is short-hand for
+    // -Acfgviz=org.checkerframework.dataflow.cfg.DOTCFGVisualizer,outdir=xyz
     "flowdotdir",
 
-    // Enable additional output in the flow .dot files.
+    // Enable additional output in the CFG visualization.
+    // -Averbosecfg
+    // is short-hand for
+    // -Acfgviz=MyClass,verbose
     "verbosecfg",
 
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
+
+    // Set the cache size for caches in AnnotatedTypeFactory
+    "atfCacheSize",
+
+    // Sets AnnotatedTypeFactory shouldCache to false
+    "atfDoNotCache"
 
 })
 public abstract class SourceChecker
@@ -420,6 +451,10 @@ public abstract class SourceChecker
         this.parentChecker = parentChecker;
     }
 
+    /**
+     * Return a list containing this checker name and all checkers it is a
+     * part of (that is, checkers that called it).
+     */
     public List<String> getUpstreamCheckerNames() {
         if (upstreamCheckerNames == null) {
             upstreamCheckerNames = new ArrayList<String>();
@@ -663,7 +698,7 @@ public abstract class SourceChecker
      */
     @SuppressWarnings("serial")
     public static class CheckerError extends RuntimeException {
-        // Whether this error is caused by a user error, e.g. incorrect command-line arguments.
+        /** Whether this error is caused by a user error, e.g. incorrect command-line arguments. */
         public final boolean userError;
 
         public CheckerError(String msg, Throwable cause, boolean userError) {
@@ -676,7 +711,7 @@ public abstract class SourceChecker
      * Log an error message and abort processing.
      * Call this method instead of raising an exception.
      *
-     * @param msg The error message to log.
+     * @param msg the error message to log
      */
     @Override
     public void errorAbort(String msg) {
@@ -688,8 +723,8 @@ public abstract class SourceChecker
      * Log an error message and abort processing.
      * Call this method instead of raising an exception.
      *
-     * @param msg The error message to log.
-     * @param cause The original error cause.
+     * @param msg the error message to log
+     * @param cause the original error cause
      */
     @Override
     public void errorAbort(String msg, Throwable cause) {
@@ -703,7 +738,7 @@ public abstract class SourceChecker
      * In contrast to {@link SourceChecker#errorAbort(String)} this method
      * presents a more user-friendly output.
      *
-     * @param msg The error message to log.
+     * @param msg the error message to log
      */
     public void userErrorAbort(String msg) {
         throw new CheckerError(msg, new Throwable(), true);
@@ -816,7 +851,7 @@ public abstract class SourceChecker
      * added as a shutdownHook of the JVM.
      */
     protected boolean shouldAddShutdownHook() {
-        return getOptions().containsKey("resourceStats");
+        return hasOption("resourceStats");
     }
 
     /**
@@ -824,7 +859,7 @@ public abstract class SourceChecker
      * Checkers can override this method to customize the behavior.
      */
     protected void shutdownHook() {
-        if (getOptions().containsKey("resourceStats")) {
+        if (hasOption("resourceStats")) {
             // Check for the "resourceStats" option and don't call shouldAddShutdownHook
             // to allow subclasses to override shouldXXX and shutdownHook and simply
             // call the super implementations.
@@ -1125,9 +1160,9 @@ public abstract class SourceChecker
      * Localized messages should be raised using
      * {@link SourceChecker#message(Diagnostic.Kind, Object, String, Object...)}.
      *
-     * @param kind The kind of message to print.
-     * @param msg The message text.
-     * @param args Optional arguments to substitute in the message.
+     * @param kind the kind of message to print
+     * @param msg the message text
+     * @param args optional arguments to substitute in the message.
      *
      * @see SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
      */
@@ -1143,10 +1178,10 @@ public abstract class SourceChecker
      * For the given tree, compute the source positions for that tree.  Return a "tuple" like string
      * (e.g. "( 1, 200 )" ) that contains the start and end position of the tree in the current compilation unit.
      *
-     * @param tree Tree to locate within the current compilation unit
-     * @param currentRoot The current compilation unit
-     * @param processingEnv The current processing environment
-     * @return A tuple string representing the range of characters that tree occupies in the source file
+     * @param tree tree to locate within the current compilation unit
+     * @param currentRoot the current compilation unit
+     * @param processingEnv the current processing environment
+     * @return a tuple string representing the range of characters that tree occupies in the source file
      */
     public String treeToFilePositionString(Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
         if (tree == null) {
@@ -1174,7 +1209,7 @@ public abstract class SourceChecker
      * <ol>
      * <li>{@code "suppress-key"}, where suppress-key is a supported warnings
      * key, as specified by {@link #getSuppressWarningsKeys()}
-     * (e.g., {@code "nullness"} for Nullness, {@code "igj"} for IGJ)</li>
+     * (e.g., {@code "nullness"} for Nullness, {@code "regex"} for Regex)</li>
      *
      * <li>{@code "suppress-key:error-key}, where the suppress-key
      * is as above, and error-key is a prefix of the errors
@@ -1254,7 +1289,9 @@ public abstract class SourceChecker
      *         it is contained by a declaration with an appropriately-valued
      *         {@literal @}SuppressWarnings annotation; false otherwise
      */
-    private boolean shouldSuppressWarnings(Tree tree, String errKey) {
+    // Public so it can be called from a few places in
+    // org.checkerframework.framework.flow.CFAbstractTransfer
+    public boolean shouldSuppressWarnings(Tree tree, String errKey) {
 
         // Don't suppress warnings if this checker provides no key to do so.
         Collection<String> checkerKeys = this.getSuppressWarningsKeys();
@@ -1647,7 +1684,7 @@ public abstract class SourceChecker
 
     /**
      * Return all active options for this checker.
-     * @return all active options for this checker.
+     * @return all active options for this checker
      */
     @Override
     public Map<String, String> getOptions() {
@@ -1662,8 +1699,8 @@ public abstract class SourceChecker
      * Note that {@link #getOption(String)} can still return null even
      * if hasOption is true: this happens e.g. for -Amyopt
      *
-     * @param name The option name to check
-     * @return True if the option name was provided, false otherwise.
+     * @param name the option name to check
+     * @return true if the option name was provided, false otherwise
      */
     // TODO I would like to rename getLintOption to hasLintOption
     @Override
@@ -1739,8 +1776,8 @@ public abstract class SourceChecker
      * each class name from {@code classPrefixes} to {@code options},
      * separated by OPTION_SEPARATOR.
      *
-     * @param clazzPrefixes The classes to prefix
-     * @param options The option names
+     * @param clazzPrefixes the classes to prefix
+     * @param options the option names
      * @return the possible combinations that should be supported
      */
     protected Collection<String> expandCFOptions(
@@ -1792,7 +1829,7 @@ public abstract class SourceChecker
     }
 
     /**
-     * @return String keys that a checker honors for suppressing warnings
+     * @return string keys that a checker honors for suppressing warnings
      *         and errors that it issues.  Each such key suppresses all
      *         warnings issued by the checker.
      *
@@ -1806,7 +1843,7 @@ public abstract class SourceChecker
      * Determine the standard set of suppress warning keys usable for any checker.
      *
      * @see #getSuppressWarningsKeys()
-     * @return Collection of warning keys
+     * @return collection of warning keys
      */
     protected final Collection<String> getStandardSuppressWarningsKeys() {
         SuppressWarningsKeys annotation =

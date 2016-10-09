@@ -14,8 +14,7 @@ class Test1 {
         y.toString();
     }
 
-    @MonotonicNonNull
-    private String x;
+    private @MonotonicNonNull String x;
 
     void test() {
         if (x == null) {
@@ -27,8 +26,7 @@ class Test1 {
 
 class Test2 {
 
-    @MonotonicNonNull
-    private String x;
+    private @MonotonicNonNull String x;
 
     void setX(String x) {
         this.x = x;
@@ -44,8 +42,7 @@ class Test2 {
 
 class Test3 {
 
-    @MonotonicNonNull
-    private String x;
+    private @MonotonicNonNull String x;
 
     @EnsuresNonNull("#1")
     void setX(final String x) {

@@ -12,20 +12,20 @@ public interface AnnotatedTypeFormatter {
      * Formats type into a String.  Uses an implementation specific default for
      * printing "invisible annotations"
      * @see org.checkerframework.framework.qual.InvisibleQualifier
-     * @param type The type to be converted
-     * @return A string representation of type
+     * @param type the type to be converted
+     * @return a string representation of type
      */
     @SideEffectFree
     public String format(AnnotatedTypeMirror type);
 
     /**
      * Formats type into a String.
-     * @param type The type to be converted
-     * @param printInvisibles whether or not to print invisible annotations
+     * @param type the type to be converted
+     * @param printVerbose whether or not to print verbosely
      * @see org.checkerframework.framework.qual.InvisibleQualifier
-     * @return A string representation of type
+     * @return a string representation of type
      */
     @SideEffectFree
-    public String format(AnnotatedTypeMirror type, boolean printInvisibles);
+    public String format(AnnotatedTypeMirror type, boolean printVerbose);
 
 }

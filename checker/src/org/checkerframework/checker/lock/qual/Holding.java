@@ -6,32 +6,33 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.PostconditionAnnotation;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
- * Indicates a method pre and postcondition: the method expects the
- * specified expressions to be @LockHeld when the annotated method
- * is invoked. It is also expected for the specified expressions
- * to be @LockHeld when exiting the annotated method.
+ * Indicates a method precondition: the specified expressions must be held
+ * when the annotated method is invoked.
+ * <p>
  *
- * The possible annotation parameter values are explained in {@link GuardedBy}.
+ * The argument is a string or set of strings that indicates the expression(s) that must be held,
+ * using the <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">syntax
+ * of Java expressions</a> described in the manual.
+ * The expressions evaluate to an intrinsic (built-in, synchronization)
+ * monitor, or an explicit {@link java.util.concurrent.locks.Lock}.
  *
  * @see GuardedBy
- * @see HoldingOnEntry
  * @checker_framework.manual #lock-checker Lock Checker
+ * @checker_framework.manual #lock-examples-holding Example use of @Holding
  */
 @Documented
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.RUNTIME)
 @PreconditionAnnotation(qualifier = LockHeld.class)
-@PostconditionAnnotation(qualifier = LockHeld.class)
 public @interface Holding {
     /**
-     * The Java expressions that need to be {@link LockHeld}.
+     * The Java expressions that need to be held.
      *
      * @see <a
-     *      href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
+     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
      *      of Java expressions</a>
      */
     String[] value();

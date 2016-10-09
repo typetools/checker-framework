@@ -28,13 +28,13 @@ import com.sun.source.tree.Tree;
  * regular type system.  Namely, the nullness of the returned array
  * component depends on the receiver type argument.  So
  *
- * <pre>
- *     Collection&lt;@NonNull String&gt; c1 = ...;
+ * <pre>{@code
+ *     Collection<@NonNull String> c1 = ...;
  *     c1.toArray();    // returns @NonNull Object []
  *
- *     Collection&lt;@Nullable String&gt; c2 = ...;
+ *     Collection<@Nullable String> c2 = ...;
  *     c2.toArray();    // returns @Nullable Object []
- * </pre>
+ * }</pre>
  *
  * In the case of {@link Collection#toArray(Object[])
  * Collection.toArray(T[])}, the type of the returned array depends on the
@@ -110,8 +110,9 @@ public class CollectionToArrayHeuristics {
 
             // TODO: we need a mechanism to prevent nullable collections
             // from inserting null elements into a nonnull arrays
-            if (!receiver)
+            if (!receiver) {
                 setComponentNullness(false, method.getParameterTypes().get(0));
+            }
         }
     }
 
@@ -138,20 +139,23 @@ public class CollectionToArrayHeuristics {
      * elements
      */
     private boolean isHandledArrayCreation(Tree argument, String receiver) {
-        if (argument.getKind() != Tree.Kind.NEW_ARRAY)
+        if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
             return false;
+        }
         NewArrayTree newArr = (NewArrayTree)argument;
 
         // case 1: empty array initializer
-        if (newArr.getInitializers() != null)
+        if (newArr.getInitializers() != null) {
             return newArr.getInitializers().isEmpty();
+        }
 
         assert !newArr.getDimensions().isEmpty();
         Tree dimension = newArr.getDimensions().get(newArr.getDimensions().size() - 1);
 
         // case 2: 0-length array creation
-        if (dimension.toString().equals("0"))
+        if (dimension.toString().equals("0")) {
             return true;
+        }
 
         // case 3: size()-length array creation
         if (TreeUtils.isMethodInvocation(dimension, size, processingEnv)) {
@@ -171,12 +175,12 @@ public class CollectionToArrayHeuristics {
     private boolean isNonNullReceiver(MethodInvocationTree tree) {
         // check receiver
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
-        AnnotatedDeclaredType collection = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(processingEnv.getTypeUtils(), atypeFactory, receiver, collectionType);
-        assert collection != null;
+        AnnotatedDeclaredType collection = AnnotatedTypes.asSuper(atypeFactory, receiver, collectionType);
 
         if (collection.getTypeArguments().isEmpty()
-            || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL))
+            || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL)) {
             return false;
+        }
         return true;
     }
 
@@ -187,10 +191,11 @@ public class CollectionToArrayHeuristics {
      */
     // This method is quite sloppy, but works most of the time
     private String receiver(Tree tree) {
-        if (tree.getKind() == Tree.Kind.MEMBER_SELECT)
+        if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
             return ((MemberSelectTree)tree).getExpression().toString();
-        else
+        } else {
             return "this";
+        }
     }
 
 }

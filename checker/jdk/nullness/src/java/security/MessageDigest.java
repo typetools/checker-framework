@@ -122,6 +122,7 @@ public abstract class MessageDigest extends MessageDigestSpi {
      * Java Cryptography Architecture Standard Algorithm Name Documentation</a>
      * for information about standard algorithm names.
      */
+
     protected MessageDigest(String algorithm) {
         this.algorithm = algorithm;
     }

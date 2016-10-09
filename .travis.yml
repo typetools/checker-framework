@@ -35,14 +35,14 @@ addons:
 
 ## Enable this when you wish to see JUnit reports.
 ## Disable to minimize use of Amazon S3.
-addons:
-  artifacts:
-    paths:
-      - $(ls checker/build/reports/* | tr "\n" ":")
-      - $(ls framework/build/reports/* | tr "\n" ":")
-      - $(find -name 'hs_err_pid*.log' | tr "\n" ":")
-    s3_region: "us-west-2"
-    # debug: true
+# addons:
+#   artifacts:
+#     paths:
+#       - $(ls checker/build/reports/* | tr "\n" ":")
+#       - $(ls framework/build/reports/* | tr "\n" ":")
+#       - $(find -name 'hs_err_pid*.log' | tr "\n" ":")
+#     s3_region: "us-west-2"
+#     # debug: true
 
 jdk:
   - oraclejdk8
@@ -50,21 +50,18 @@ jdk:
   - openjdk7
   # openjdk8 is not a legal option: - openjdk8
 
-## Disable so that we are not notified of build failures in forks.
-## Use Travis default: send mail to author and committer of breaking commit.
-# notifications:
-#   email:
-#     - checker-framework-dev@googlegroups.com 
-
 after_success:
   - |
       if [[ ($TRAVIS_BRANCH == master) &&
             ($TRAVIS_PULL_REQUEST == false) &&
             ( (! $TRAVIS_JOB_NUMBER == *.*) || ($TRAVIS_JOB_NUMBER == *.1) ) ]] ; then
         curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
-#        sh trigger-travis.sh typetools checker-framework-demos $TRAVISTOKEN
+#        sh trigger-travis.sh eisop checker-framework-demos $TRAVISTOKEN
         sh trigger-travis.sh eisop checker-framework-inference $TRAVISTOKEN
-#        sh trigger-travis.sh typetools daikon-typecheck $TRAVISTOKEN
-#        sh trigger-travis.sh typetools plume-lib-typecheck $TRAVISTOKEN
-#        sh trigger-travis.sh typetools sparta $TRAVISTOKEN
+#        sh trigger-travis.sh typetests daikon-typecheck $TRAVISTOKEN
+#        sh trigger-travis.sh typetests plume-lib-typecheck $TRAVISTOKEN
+#        sh trigger-travis.sh eisop sparta $TRAVISTOKEN
       fi
+
+git:
+  depth: 3

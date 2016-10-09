@@ -1,6 +1,5 @@
 package org.checkerframework.framework.util.typeinference;
 
-import com.sun.source.tree.LambdaExpressionTree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -35,7 +34,9 @@ import javax.lang.model.util.Types;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -56,8 +57,8 @@ public class TypeArgInferenceUtil {
     /**
      * Takes an expression tree that must be either a MethodInovcationTree or a NewClassTree (constructor invocation)
      * and returns the arguments to its formal parameters.  An IllegalArgumentException will be thrown if it is neither
-     * @param expression A MethodInvocationTree or a NewClassTree
-     * @return The list of arguments to Expression
+     * @param expression a MethodInvocationTree or a NewClassTree
+     * @return the list of arguments to Expression
      */
     public static List<? extends ExpressionTree> expressionToArgTrees(final ExpressionTree expression) {
         final List<? extends ExpressionTree> argTrees;
@@ -143,35 +144,12 @@ public class TypeArgInferenceUtil {
             MethodInvocationTree methodInvocation = (MethodInvocationTree)assignmentContext;
             // TODO move to getAssignmentContext
             if (methodInvocation.getMethodSelect() instanceof MemberSelectTree
-                    && ((MemberSelectTree)methodInvocation.getMethodSelect()).getExpression() == path.getLeaf())
+                    && ((MemberSelectTree)methodInvocation.getMethodSelect()).getExpression() == path.getLeaf()) {
                 return null;
+            }
             ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(methodInvocation);
-            AnnotatedExecutableType method = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, methodElt);
-            int treeIndex = -1;
-            for (int i = 0; i < method.getParameterTypes().size(); ++i) {
-                if (TreeUtils.skipParens(methodInvocation.getArguments().get(i)) == path.getLeaf()) {
-                    treeIndex = i;
-                    break;
-                }
-            }
-
-            if (treeIndex == -1) {
-                return null;
-            }
-
-            final AnnotatedTypeMirror paramType = method.getParameterTypes().get(treeIndex);
-
-            //Examples like this:
-            // <T> T outMethod()
-            // <U> void inMethod(U u);
-            // inMethod(outMethod())
-            // would require solving the constraints for both type argument inferences simultaneously
-            if (paramType == null || containsUninferredTypeParameter(paramType, method)) {
-                return null;
-            }
-
-            return paramType;
+            return assignedToExecutable(atypeFactory, path, methodElt, receiver, methodInvocation.getArguments());
         } else if (assignmentContext instanceof NewArrayTree) {
             //TODO: I left the previous implementation below, it definitely caused infinite loops if you
             //TODO: called it from places like the TreeAnnotator
@@ -187,24 +165,9 @@ public class TypeArgInferenceUtil {
             // This need to be basically like MethodTree
             NewClassTree newClassTree = (NewClassTree) assignmentContext;
             ExecutableElement constructorElt = InternalUtils.constructor(newClassTree);
-            AnnotatedTypeMirror receiver = atypeFactory.getAnnotatedType(newClassTree.getIdentifier());
-            AnnotatedExecutableType constructor = AnnotatedTypes.asMemberOf(types, atypeFactory, receiver, constructorElt);
-            int treeIndex = -1;
-            for (int i = 0; i < constructor.getParameterTypes().size(); ++i) {
-                if (TreeUtils.skipParens(newClassTree.getArguments().get(i)) == path.getLeaf()) {
-                    treeIndex = i;
-                    break;
-                }
-            }
-
-            assert treeIndex != -1 :  "Could not find path in NewClassTre."
-                    + "treePath=" + path.toString() + "\n"
-                    + "methodInvocation=" + newClassTree;
-            if (treeIndex == -1) {
-                return null;
-            }
-
-            return constructor.getParameterTypes().get(treeIndex);
+            AnnotatedTypeMirror receiver = atypeFactory.fromNewClass(newClassTree);
+            return assignedToExecutable(atypeFactory, path, constructorElt, receiver,
+                    newClassTree.getArguments());
         } else if (assignmentContext instanceof ReturnTree) {
             HashSet<Kind> kinds = new HashSet<>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
             Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
@@ -218,23 +181,115 @@ public class TypeArgInferenceUtil {
             }
 
         } else if (assignmentContext instanceof VariableTree) {
-            if (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>) {
-                final GenericAnnotatedTypeFactory<?,?,?,?> gatf = ((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory);
-                boolean oldFlow = gatf.getUseFlow();
-                gatf.setUseFlow(false);
-                final AnnotatedTypeMirror type = gatf.getAnnotatedType(assignmentContext);
-                gatf.setUseFlow(oldFlow);
-                return type;
-
-            } else {
-                return atypeFactory.getAnnotatedType(assignmentContext);
-            }
+            return assignedToVariable(atypeFactory, assignmentContext);
 
         }
 
         ErrorReporter.errorAbort("AnnotatedTypes.assignedTo: shouldn't be here!");
         return null; // dead code
     }
+
+    private static AnnotatedTypeMirror assignedToExecutable(AnnotatedTypeFactory atypeFactory,
+                                                            TreePath path, ExecutableElement methodElt,
+                                                            AnnotatedTypeMirror receiver,
+                                                            List<? extends ExpressionTree> arguments) {
+        AnnotatedExecutableType method =
+                AnnotatedTypes.asMemberOf(atypeFactory.getContext().getTypeUtils(), atypeFactory, receiver, methodElt);
+        int treeIndex = -1;
+        for (int i = 0; i < arguments.size(); ++i) {
+            ExpressionTree argumentTree = arguments.get(i);
+            if (isArgument(path, argumentTree)) {
+                treeIndex = i;
+                break;
+            }
+        }
+        assert treeIndex != -1 :  "Could not find path in MethodInvocationTree.\n"
+                                  + "treePath=" + path.toString();
+        final AnnotatedTypeMirror paramType;
+        if (treeIndex >= method.getParameterTypes().size() && methodElt.isVarArgs()) {
+            paramType = method.getParameterTypes().get( method.getParameterTypes().size() -1);
+        } else {
+            paramType = method.getParameterTypes().get(treeIndex);
+        }
+
+        // Examples like this:
+        // <T> T outMethod()
+        // <U> void inMethod(U u);
+        // inMethod(outMethod())
+        // would require solving the constraints for both type argument inferences simultaneously
+        if (paramType == null || containsUninferredTypeParameter(paramType, method)) {
+            return null;
+        }
+
+        return paramType;
+    }
+
+    /**
+     * Returns whether argumentTree is the tree at the leaf of path.
+     * if tree is a conditional expression, isArgument is called recursively on the true
+     * and false expressions.
+     */
+    private static boolean isArgument(TreePath path, ExpressionTree argumentTree) {
+        argumentTree = TreeUtils.skipParens(argumentTree);
+        if (argumentTree == path.getLeaf()) {
+            return true;
+        } else if (argumentTree.getKind() == Kind.CONDITIONAL_EXPRESSION) {
+            ConditionalExpressionTree conditionalExpressionTree = (ConditionalExpressionTree) argumentTree;
+            return isArgument(path, conditionalExpressionTree.getTrueExpression())
+                   || isArgument(path, conditionalExpressionTree.getFalseExpression());
+        }
+        return false;
+    }
+
+    /**
+     * If the variable's type is a type variable, return getAnnotatedTypeLhsNoTypeVarDefault(tree).
+     * Rational:
+     *
+     * For example:
+     * <pre>{@code
+     * <S> S bar () {...}
+     *
+     * <T> T foo(T p) {
+     *     T local = bar();
+     *     return local;
+     *   }
+     * }</pre>
+     * During type argument inference of {@code bar}, the assignment context is  {@code local}.
+     * If the local variable default is used, then the type of assignment context type is
+     * {@code @Nullable T} and the type argument inferred for {@code bar()} is {@code @Nullable T}.  And an
+     * incompatible types in return error is issued.
+     * <p>
+     * If instead, the local variable default is not applied, then the assignment context type
+     * is {@code T} (with lower bound {@code @NonNull Void} and upper bound {@code @Nullable Object}) and the type
+     * argument inferred for {@code bar()} is {@code T}.  During dataflow, the type of {@code local} is refined to
+     * {@code T} and the return is legal.
+     * <p>
+     * If the assignment context type was a declared type, for example:
+     * <pre>{@code
+     * <S> S bar () {...}
+     * Object foo() {
+     *     Object local = bar();
+     *     return local;
+     * }
+     * }</pre>
+     *
+     * The local variable default must be used or else the assignment context type is missing an annotation.
+     * So, an incompatible types in return error is issued in the above code.  We could improve type argument
+     * inference in this case and by using the lower bound of {@code S}  instead of the local variable default.
+     *
+     * @param atypeFactory AnnotatedTypeFactory
+     * @param assignmentContext VariableTree
+     * @return AnnotatedTypeMirror of Assignment context
+     */
+    public static AnnotatedTypeMirror assignedToVariable(AnnotatedTypeFactory atypeFactory, Tree assignmentContext) {
+        if (atypeFactory instanceof GenericAnnotatedTypeFactory<?,?,?,?>) {
+            final GenericAnnotatedTypeFactory<?,?,?,?> gatf = ((GenericAnnotatedTypeFactory<?,?,?,?>) atypeFactory);
+            return gatf.getAnnotatedTypeLhsNoTypeVarDefault(assignmentContext);
+        } else {
+            return atypeFactory.getAnnotatedType(assignmentContext);
+        }
+    }
+
 
     /**
      * @return true if the type contains a use of a type variable from methodType
@@ -248,7 +303,7 @@ public class TypeArgInferenceUtil {
             typeVars.add(getUnannotatedTypeVariable(annotatedTypeVar));
         }
 
-        //note NULL values creep in because the underlying visitor uses them in various places
+        // note NULL values creep in because the underlying visitor uses them in various places
         final Boolean result = type.accept(new TypeVariableFinder(), typeVars);
         return result != null && result;
     }
@@ -275,8 +330,9 @@ public class TypeArgInferenceUtil {
 
         @Override
         protected Boolean scan(Iterable<? extends AnnotatedTypeMirror> types, List<TypeVariable> typeVars) {
-            if (types == null)
+            if (types == null) {
                 return false;
+            }
             Boolean result = false;
             Boolean first = true;
             for (AnnotatedTypeMirror type : types) {
@@ -315,8 +371,8 @@ public class TypeArgInferenceUtil {
      */
     private final static TypeVariableSubstitutor substitutor = new TypeVariableSubstitutor();
 
-    //Substituter requires an input map that the substitute methods build.  We just reuse the same map rather than
-    //recreate it each time.
+    // Substituter requires an input map that the substitute methods build.  We just reuse the same map rather than
+    // recreate it each time.
     private final static Map<TypeVariable, AnnotatedTypeMirror> substituteMap = new HashMap<>(5);
 
     /**

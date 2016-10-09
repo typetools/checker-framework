@@ -27,7 +27,7 @@ public class CheckerManager {
     }
 
     public static List<CheckerInfo> getCheckerInfos() {
-    	return CheckerInfo.getCheckers();
+        return CheckerInfo.getCheckers();
     }
 
     /**
@@ -45,7 +45,7 @@ public class CheckerManager {
             final String trimmedProc = processor.trim();
             if (pathToChecker.containsKey(trimmedProc)) {
                 final String qualsPath = pathToChecker.get(trimmedProc).getQualsPath();
-                if(qualsPath != null) {
+                if (qualsPath != null) {
                     selected.add(pathToChecker.get(trimmedProc).getQualsPath());
                 }
             }
@@ -62,7 +62,7 @@ public class CheckerManager {
         final IPreferenceStore store = getPrefStore();
         final String storedItems = store.getString(CheckerPreferences.PREF_CHECKER_CUSTOM_CLASSES);
 
-        if(storedItems != null && !storedItems.equals("")) {
+        if (storedItems != null && !storedItems.equals("")) {
             return storedItems.split(",");
         }
 
@@ -82,7 +82,7 @@ public class CheckerManager {
         final IPreferenceStore store = getPrefStore();
 
         String toStore = "";
-        if(!selectedClasses.isEmpty()) {
+        if (!selectedClasses.isEmpty()) {
             toStore = PluginUtil.join(";", selectedClasses);
         }
 
@@ -92,7 +92,7 @@ public class CheckerManager {
     public static List<String> getSelectedClasses() {
         final IPreferenceStore store = getPrefStore();
         String selectedStr = store.getString(CheckerPreferences.PREF_CHECKER_SELECTED_CHECKERS);
-        if(selectedStr == null || selectedStr.trim().isEmpty()) {
+        if (selectedStr == null || selectedStr.trim().isEmpty()) {
             return new ArrayList<String>();
         }
 

@@ -5,9 +5,7 @@ import org.checkerframework.checker.formatter.FormatterChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.guieffect.GuiEffectChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
-import org.checkerframework.checker.igj.IGJChecker;
 import org.checkerframework.checker.interning.InterningChecker;
-import org.checkerframework.checker.javari.JavariChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
@@ -16,6 +14,7 @@ import org.checkerframework.checker.regex.RegexChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
 import org.checkerframework.checker.tainting.TaintingChecker;
 import org.checkerframework.checker.units.UnitsChecker;
+import org.checkerframework.checker.signedness.SignednessChecker;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.common.value.ValueChecker;
@@ -131,6 +130,14 @@ public class CheckerActions
         }
     }
 
+    public static class SignednessAction extends RunCheckerAction
+    {
+        public SignednessAction()
+        {
+            super(SignednessChecker.class.getCanonicalName());
+        }
+    }
+
     public static class ConstantValueAction extends RunCheckerAction
     {
         public ConstantValueAction()
@@ -152,22 +159,6 @@ public class CheckerActions
         public LinearAction()
         {
             super(LinearChecker.class.getCanonicalName());
-        }
-    }
-
-    public static class IGJAction extends RunCheckerAction
-    {
-        public IGJAction()
-        {
-            super(IGJChecker.class.getCanonicalName());
-        }
-    }
-
-    public static class JavariAction extends RunCheckerAction
-    {
-        public JavariAction()
-        {
-            super(JavariChecker.class.getCanonicalName());
         }
     }
 
@@ -198,10 +189,10 @@ public class CheckerActions
 
     public static class SingleCustomAction extends RunCheckerAction
     {
-    	public SingleCustomAction()
-    	{
-    		useSingleCustom = true;
-    		usePrefs = false;
-    	}
+        public SingleCustomAction()
+        {
+            useSingleCustom = true;
+            usePrefs = false;
+        }
     }
 }

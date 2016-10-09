@@ -17,6 +17,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -88,11 +89,12 @@ public class AnnotationClassLoader {
      */
     protected final ProcessingEnvironment processingEnv;
 
-    // Stores the resource URL of the qual directory of a checker class
+    /** The resource URL of the qual directory of a checker class */
     private final URL resourceURL;
 
-    // Stores set of the loaded annotation classes
-    private final Set<Class<? extends Annotation>> loadedAnnotations;
+    /** The loaded annotation classes.  Call {@link #getLoadedAnnotationClasses} rather than using
+     * this field directly as it may be null. */
+    private Set<Class<? extends Annotation>> loadedAnnotations;
 
     /**
      * Constructor for loading annotations defined for a checker.
@@ -120,8 +122,10 @@ public class AnnotationClassLoader {
         // to the list
         fullyQualifiedPackageNameSegments.addAll(Arrays.asList(Pattern.compile(Character.toString(DOT), Pattern.LITERAL).split(packageName)));
 
-        // create the data structure to hold all loaded annotation classes
-        loadedAnnotations = new LinkedHashSet<Class<? extends Annotation>>();
+        // Only load annotations if requested.  This avoids issuing an error
+        // if the qual package contains an annotation that is not a qualifier,
+        // but the checker does not try to use it as a qualifier.
+        loadedAnnotations = null;
 
         ClassLoader applicationClassloader = getAppClassLoader();
 
@@ -141,9 +145,6 @@ public class AnnotationClassLoader {
             // qual directory
             resourceURL = getURLFromClasspaths();
         }
-
-        // load the annotation classes using reflective lookup
-        loadBundledAnnotationClasses();
     }
 
     /**
@@ -370,10 +371,9 @@ public class AnnotationClassLoader {
      * environment variables, and by examining the classloader to see what paths
      * it has access to
      *
-     * The classpaths will be obtained in the order of: 1) boot classpaths (set
-     * using -bootclasspath -Xbootclasspath or -J-Xbootclasspath) 2) extension
-     * paths (from java.ext.dirs) 3) classpaths (set in CLASSPATH, or through
-     * -classpath and -cp) 4) paths accessible and examined by the classloader
+     * The classpaths will be obtained in the order of: 1) extension
+     * paths (from java.ext.dirs) 2) classpaths (set in CLASSPATH, or through
+     * -classpath and -cp) 3) paths accessible and examined by the classloader
      *
      * In each of these paths, the order of the paths as specified in the
      * command line options or environment variables will be the order returned
@@ -383,9 +383,6 @@ public class AnnotationClassLoader {
      */
     private final Set<String> getClasspaths() {
         Set<String> paths = new LinkedHashSet<String>();
-
-        // add all paths in Xbootclasspath
-        paths.addAll(Arrays.asList(System.getProperty("sun.boot.class.path").split(":")));
 
         // add all extension paths
         paths.addAll(Arrays.asList(System.getProperty("java.ext.dirs").split(":")));
@@ -471,7 +468,7 @@ public class AnnotationClassLoader {
      * Gets the set of the loaded annotation classes. Note that the returned set
      * from this method is mutable. This method is intended to be called within
      * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()
-     * createSupportedTypeQualifiers()} (or it's helper methods) to help define
+     * createSupportedTypeQualifiers()} (or its helper methods) to help define
      * the set of supported qualifiers.
      * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()
      * createSupportedTypeQualifiers()} must return an immutable set, and it is
@@ -482,52 +479,47 @@ public class AnnotationClassLoader {
      * @return the set of loaded annotation classes
      */
     public final Set<Class<? extends Annotation>> getLoadedAnnotationClasses() {
-        return loadedAnnotations;
-    }
-
-    /**
-     * Loads type annotations located in the qual directory of a checker
-     * (referenced by the resourceURL) via reflective annotation class name
-     * lookup.
-     */
-    private final void loadBundledAnnotationClasses() {
-        if (resourceURL == null) {
-            // if there's no resourceURL, then there's nothing we can load
-            return;
-        }
-
-        // retrieve the fully qualified class names of the annotations
-        Set<String> annotationNames = null;
-
-        // see whether the resource URL has a protocol of jar or file
-        if (resourceURL.getProtocol().equals("jar")) {
-            // if the checker class file is contained within a jar, then the
-            // resource URL for the qual directory will have the protocol
-            // "jar". This means the whole checker is loaded as a jar file.
-
-            // open up that jar file and extract annotation class names
-            try {
-                JarURLConnection connection = (JarURLConnection) resourceURL.openConnection();
-                JarFile jarFile = connection.getJarFile();
-
-                // get class names inside the jar file within the particular
-                // package
-                annotationNames = getBundledAnnotationNamesFromJar(jarFile);
-            } catch (IOException e) {
-                ErrorReporter.errorAbort("AnnotatedTypeLoader: cannot open the Jar file " + resourceURL.getFile());
+        if (loadedAnnotations == null) {
+            loadedAnnotations = new LinkedHashSet<Class<? extends Annotation>>();
+            if (resourceURL == null) {
+                // if there's no resourceURL, then there's nothing we can load
+                return loadedAnnotations;
             }
-        } else if (resourceURL.getProtocol().equals("file")) {
-            // if the checker class file is found within the file system itself
-            // within some directory (usually development build directories),
-            // then process the package as a file directory in the file system
-            // and load the annotations contained in the qual directory
 
-            // open up the directory
-            File packageDir = new File(resourceURL.getFile());
-            annotationNames = getAnnotationNamesFromDirectory(packageName + DOT, resourceURL.getFile(), packageDir, CLASS_SUFFIX);
+            // retrieve the fully qualified class names of the annotations
+            Set<String> annotationNames = null;
+
+            // see whether the resource URL has a protocol of jar or file
+            if (resourceURL.getProtocol().equals("jar")) {
+                // if the checker class file is contained within a jar, then the
+                // resource URL for the qual directory will have the protocol
+                // "jar". This means the whole checker is loaded as a jar file.
+
+                // open up that jar file and extract annotation class names
+                try {
+                    JarURLConnection connection = (JarURLConnection) resourceURL.openConnection();
+                    JarFile jarFile = connection.getJarFile();
+
+                    // get class names inside the jar file within the particular
+                    // package
+                    annotationNames = getBundledAnnotationNamesFromJar(jarFile);
+                } catch (IOException e) {
+                    ErrorReporter.errorAbort("AnnotatedTypeLoader: cannot open the Jar file " + resourceURL.getFile());
+                }
+            } else if (resourceURL.getProtocol().equals("file")) {
+                // if the checker class file is found within the file system itself
+                // within some directory (usually development build directories),
+                // then process the package as a file directory in the file system
+                // and load the annotations contained in the qual directory
+
+                // open up the directory
+                File packageDir = new File(resourceURL.getFile());
+                annotationNames = getAnnotationNamesFromDirectory(packageName + DOT, resourceURL.getFile(), packageDir, CLASS_SUFFIX);
+            }
+
+            loadedAnnotations.addAll(loadAnnotationClasses(annotationNames));
         }
-
-        loadedAnnotations.addAll(loadAnnotationClasses(annotationNames));
+        return loadedAnnotations;
     }
 
     /**
@@ -582,7 +574,7 @@ public class AnnotationClassLoader {
         } catch (ClassNotFoundException e) {
             checker.userErrorAbort(checker.getClass().getSimpleName() + ": could not load class for annotation: " + annoName + "; ensure that your classpath is correct");
         } catch (ClassCastException e) {
-            checker.userErrorAbort(checker.getClass().getSimpleName() + ": the loaded class: " + annoName + " is not an annotation, ensure it is defined correctly");
+            checker.userErrorAbort(checker.getClass().getSimpleName() + ": class " + annoName + " is not an annotation");
         }
         return null;
     }
@@ -615,7 +607,7 @@ public class AnnotationClassLoader {
      * @param fileExtension a file extension suffix that a file must have to be
      *            considered an annotation file, normally either
      *            {@link #CLASS_SUFFIX} or {@link #JAVA_SUFFIX} is passed in as
-     *            it's value.
+     *            its value.
      * @return a set of strings where each string is the fully qualified class
      *         name of an annotation in the root directory or its
      *         sub-directories
@@ -624,7 +616,14 @@ public class AnnotationClassLoader {
         Set<String> results = new LinkedHashSet<String>();
 
         // check every file and directory within the current directory
-        for (File file : currentDirectory.listFiles()) {
+        File[] directoryContents = currentDirectory.listFiles();
+        Arrays.sort(directoryContents, new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (File file : directoryContents) {
             if (file.isFile()) {
                 // Full file name, including path to file
                 String fullFileName = file.getAbsolutePath();
@@ -674,7 +673,7 @@ public class AnnotationClassLoader {
 
         try {
             // load the class
-            cls = Class.forName(fullyQualifiedClassName);
+            cls = Class.forName(fullyQualifiedClassName, true, getAppClassLoader());
         } catch (ClassNotFoundException e) {
             // do nothing: projects can have annotation class files and regular
             // source files located within the same directory, and as such when
@@ -688,7 +687,7 @@ public class AnnotationClassLoader {
             // retrieve the set of ElementTypes in the @Target
             // meta-annotation and check to see if this annotation is
             // supported for automatic loading
-            if (AnnotatedTypes.hasTypeQualifierElementTypes(cls.getAnnotation(Target.class).value())) {
+            if (AnnotatedTypes.hasTypeQualifierElementTypes(cls.getAnnotation(Target.class).value(), cls)) {
                 // if it is supported, then subclass it as an Annotation
                 // class
                 Class<? extends Annotation> annoClass = cls.asSubclass(Annotation.class);
@@ -707,7 +706,7 @@ public class AnnotationClassLoader {
      * Loads a set of annotations indicated by fullyQualifiedAnnoNames.
      *
      * @param fullyQualifiedAnnoNames a set of strings where each string is a single
-     *            annotation class's fully qualified name.
+     *            annotation class's fully qualified name
      * @return a set of loaded annotation classes.
      *
      * @see #loadAnnotationClass(String)
@@ -738,12 +737,12 @@ public class AnnotationClassLoader {
      * @return true if the annotation is supported, false if it isn't
      */
     protected boolean isSupportedAnnotationClass(final Class<? extends Annotation> annoClass) {
-        if (loadedAnnotations.contains(annoClass)) {
+        if (getLoadedAnnotationClasses().contains(annoClass)) {
             // if it has already been checked before, return true
             return true;
         } else {
             // The standard way to see if an annotation is supported is to build
-            // it's annotation mirror if there's no problems building the
+            // its annotation mirror if there's no problems building the
             // mirror, then it is supported
             AnnotationBuilder builder = new AnnotationBuilder(processingEnv, annoClass);
             AnnotationMirror annoMirroResult = builder.build();

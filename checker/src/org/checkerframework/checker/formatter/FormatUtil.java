@@ -53,7 +53,7 @@ public class FormatUtil {
 
         for (int i = 0; i < cc.length; i++) {
             if (cc[i] != fcc[i]) {
-                throw new IllegalFormatConversionCategoryException(cc[i],fcc[i]);
+                throw new IllegalFormatConversionCategoryException(cc[i], fcc[i]);
             }
         }
 
@@ -64,7 +64,8 @@ public class FormatUtil {
      * Throws an exception if the format is not syntactically valid.
      */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
-        String.format(format, (Object[])null);
+        @SuppressWarnings("unused")
+        String unused = String.format(format, (Object[])null);
     }
 
     /**
@@ -149,7 +150,7 @@ public class FormatUtil {
             case 'n':
                 break;
             default:
-                cs.add(new Conversion(c,indexFromFormat(m)));
+                cs.add(new Conversion(c, indexFromFormat(m)));
             }
         }
         return cs.toArray(new Conversion[cs.size()]);
@@ -165,7 +166,7 @@ public class FormatUtil {
          * Constructs an instance of this class with the actual argument length and
          * the expected one.
          */
-        public ExcessiveOrMissingFormatArgumentException(int expected,int found) {
+        public ExcessiveOrMissingFormatArgumentException(int expected, int found) {
             super("-");
             this.expected = expected;
             this.found = found;

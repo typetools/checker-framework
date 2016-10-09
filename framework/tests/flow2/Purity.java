@@ -20,9 +20,9 @@ class Purity {
 
     // class with a pure constructor
     private static class PureClass {
+        @Pure
         //:: warning: (purity.deterministic.constructor)
-        @Pure public PureClass() {
-        }
+        public PureClass() {}
     }
 
     // class with a side-effect-free constructor
@@ -40,16 +40,16 @@ class Purity {
         return "";
     }
 
+    @Pure
     //:: warning: (purity.deterministic.void.method)
-    @Pure void t1() {
-    }
+    void t1() {}
 
     @SideEffectFree void t1b() {
     }
 
+    @Deterministic
     //:: warning: (purity.deterministic.void.method)
-    @Deterministic void t1c() {
-    }
+    void t1c() {}
 
     @Pure String t2() {
         return "";
@@ -225,4 +225,3 @@ class Purity {
      }
 
 }
-

@@ -20,12 +20,12 @@ import java.lang.annotation.*;
  *
  * You can declare this behavior in the following way:
  *
- * <pre><code>
+ * <pre>{@code
  * class Table {
  *   private @Unused(when=LocalToThread.class) final Lock lock;
  *   ...
  * }
- * </code></pre>
+ * }</pre>
  *
  * The checker for {@code @LocalToThread} would issue an error for the following code:
  *

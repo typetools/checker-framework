@@ -30,13 +30,6 @@ import java.util.regex.Pattern;
  *     org.checkerframework.framework.util.PluginUtil
  *
  * These files MUST be IDENTICAL after the package descriptor.
- *
- * If you change this file be sure to copy the exact file (including this comment,
- * but excluding the package line) to the other projects.  During release this file
- * and all its copies will be diffed (excluding any line starting with "package ")
- *
- * There is a script at checker-framework/release/syncPluginUtil.sh
- * that syncs these files programatically.
  */
 public class PluginUtil {
 
@@ -66,8 +59,8 @@ public class PluginUtil {
      * Takes a list of files and writes it as a "File of file names" (i.e. a file with one filepath on each line)
      * to the destination file, overwriting the destination file if it exists.  Note the filepath used is the
      * absolute filepath
-     * @param destination The fofn file we are writing.  This file will contain newline separated list of absolute file paths
-     * @param files The files to write to the destination file
+     * @param destination the fofn file we are writing.  This file will contain newline separated list of absolute file paths
+     * @param files the files to write to the destination file
      */
     public static void writeFofn(final File destination, final List<File> files) throws IOException {
         final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
@@ -87,8 +80,8 @@ public class PluginUtil {
      * Takes a list of files and writes it as a "File of file names" (i.e. a file with one filepath on each line)
      * to the destination file, overwriting the destination file if it exists.  Note the filepath used is the
      * absolute filepath
-     * @param destination The fofn file we are writing.  This file will contain newline separated list of absolute file paths
-     * @param files The files to write to the destination file
+     * @param destination the fofn file we are writing.  This file will contain newline separated list of absolute file paths
+     * @param files the files to write to the destination file
      */
     public static void writeFofn(final File destination, final File ... files) throws IOException {
         writeFofn(destination, Arrays.asList(files));
@@ -104,20 +97,28 @@ public class PluginUtil {
         return tmpFile;
     }
 
-    public static File writeTmpArgFile(final String prefix, final String suffix, final boolean deleteOnExit,
+    /**
+     * Write the strings to a temporary file.
+     * @param deleteOnExit if true, delete the file on program exit
+     */
+    public static File writeTmpFile(final String prefix, final String suffix, final boolean deleteOnExit,
                                        final List<String> args) throws IOException {
         final File tmpFile = File.createTempFile(prefix, suffix);
         if (deleteOnExit) {
             tmpFile.deleteOnExit();
         }
-        writeArgFile(tmpFile, args);
+        writeFile(tmpFile, args);
         return tmpFile;
     }
 
-    public static void writeArgFile(final File destination, final List<String> args) throws IOException {
+    /** Write the strings to the file, one per line. */
+    public static void writeFile(final File destination, final List<String> contents) throws IOException {
         final BufferedWriter bw = new BufferedWriter(new FileWriter(destination));
         try {
-            bw.write(join(" ", args));
+            for (String line : contents) {
+                bw.write(line);
+                bw.newLine();
+            }
             bw.flush();
         } finally {
             bw.close();
@@ -125,7 +126,8 @@ public class PluginUtil {
     }
 
 
-    public static List<String> readArgFile(final File argFile) throws IOException {
+    /** Return a list of Strings, one per line of the file. */
+    public static List<String> readFile(final File argFile) throws IOException {
         final BufferedReader br = new BufferedReader(new FileReader(argFile));
         String line;
 
@@ -158,8 +160,9 @@ public class PluginUtil {
 
         boolean isntFirst = false;
         for (Object value : values) {
-            if (isntFirst)
+            if (isntFirst) {
                 sb.append(delimiter);
+            }
             sb.append(value);
             isntFirst = true;
         }
@@ -264,8 +267,8 @@ public class PluginUtil {
 
     /**
      * Any options found in props to the cmd list
-     * @param cmd    A list to which the options should be added
-     * @param props  The map of checker properties too search for options in
+     * @param cmd    a list to which the options should be added
+     * @param props  the map of checker properties too search for options in
      */
     private static void addOptions(final List<String> cmd, Map<CheckerProp,Object> props) {
         for (CheckerProp cp : CheckerProp.values()) {
@@ -280,7 +283,7 @@ public class PluginUtil {
 
     public static File writeTmpCpFile(final String prefix, final boolean deleteOnExit,
                                       final String classpath) throws IOException {
-        return writeTmpArgFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", wrapArg(classpath)));
+        return writeTmpFile(prefix, ".classpath", deleteOnExit, Arrays.asList("-classpath", wrapArg(classpath)));
     }
 
     public static boolean isWindows() {
@@ -456,7 +459,7 @@ public class PluginUtil {
     /**
      * Determine the version of the JRE that we are currently running and select a jdkX where
      * X is the version of Java that is being run (e.g. 6, 7, ...)
-     * @return The jdkX where X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return the jdkX where X is the version of Java that is being run (e.g. 6, 7, ...)
      */
     public static String getJdkJarPrefix() {
         final int jreVersion = getJreVersion();
@@ -474,7 +477,7 @@ public class PluginUtil {
     /**
      * Determine the version of the JRE that we are currently running and select a jdkX.jar where
      * X is the version of Java that is being run (e.g. 6, 7, ...)
-     * @return The jdkX.jar where X is the version of Java that is being run (e.g. 6, 7, ...)
+     * @return the jdkX.jar where X is the version of Java that is being run (e.g. 6, 7, ...)
      */
     public static String getJdkJarName() {
         final String fileName = getJdkJarPrefix() + ".jar";

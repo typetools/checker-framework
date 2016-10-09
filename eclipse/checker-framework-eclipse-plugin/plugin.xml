@@ -4,9 +4,9 @@
 <plugin>
   <extension point="org.eclipse.ui.preferencePages">
     <page id="org.checkerframework.eclipse.prefs.CheckerPreferences"
- 	  name="Checker Framework"
+       name="Checker Framework"
       class="org.checkerframework.eclipse.ui.CheckerPreferencePage">
-   	</page>
+       </page>
   </extension>
 
   <extension point="org.eclipse.core.runtime.preferences">
@@ -16,9 +16,9 @@
 <!--
   <extension
     id="buildnature"
-   	name="%extension.name"
-   	point="org.eclipse.core.resources.natures">
-   	<runtime>
+       name="%extension.name"
+       point="org.eclipse.core.resources.natures">
+       <runtime>
       <run class="checkers.eclipse.natures.CheckerBuildNature"/>
     </runtime>
     <builder id="checkers.eclipse.checkerbuilder"/>
@@ -41,9 +41,9 @@
     id="checker.framework.eclipse.plugin.marker"
     name="%extension.name.1"
     point="org.eclipse.core.resources.markers">
-	<super type="org.eclipse.core.resources.problemmarker"/>
-	<super type="org.eclipse.core.resources.textmarker"/>
-	<persistent value="true"/>
+    <super type="org.eclipse.core.resources.problemmarker"/>
+    <super type="org.eclipse.core.resources.textmarker"/>
+    <persistent value="true"/>
   </extension>
 
   <!--extension
@@ -166,6 +166,11 @@
             label="Units Checker"
             style="push">
            </command>
+           <command
+            commandId="checkers.eclipse.runsignednesschecker"
+            label="Signedness Checker"
+            style="push">
+           </command>
           <command
             commandId="checkers.eclipse.runconstantvaluechecker"
             label="Constant Value Checker"
@@ -182,16 +187,6 @@
             style="push">
           </command>
           <command
-            commandId="checkers.eclipse.runigj"
-            label="IGJ Checker"
-            style="push">
-          </command>
-          <command
-            commandId="checkers.eclipse.runjavari"
-            label="Javari Checker"
-            style="push">
-          </command>
-          <command
             commandId="checkers.eclipse.runsubtypingchecker"
             label="Subtyping Checker"
             style="push">
@@ -203,15 +198,15 @@
         </dynamic>
         <visibleWhen checkEnabled="false">
           <with variable="activeMenuSelection">
-          	<!--<or>-->
-	            <iterate>
-	              <adapt type="org.eclipse.jdt.internal.core.JavaElement">
-	              </adapt>
-	            </iterate>
-	            <!--<iterate>
-	              <adapt type="org.eclipse.core.resources.IProject">
-	              </adapt> TODO: IS THIS OK TRY CHECKING WHOLE PROJECT
-	            </iterate>-->
+              <!--<or>-->
+                <iterate>
+                  <adapt type="org.eclipse.jdt.internal.core.JavaElement">
+                  </adapt>
+                </iterate>
+                <!--<iterate>
+                  <adapt type="org.eclipse.core.resources.IProject">
+                  </adapt> TODO: IS THIS OK TRY CHECKING WHOLE PROJECT
+                </iterate>-->
             <!--</or>-->
           </with>
         </visibleWhen>
@@ -301,6 +296,12 @@
     </command>
     <command
       categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$signednessAction"
+      id="checkers.eclipse.runsignednesschecker"
+      name="Run Signedness Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$ConstantValueAction"
       id="checkers.eclipse.runconstantvaluechecker"
       name="Run Constant Value Checker">
@@ -316,18 +317,6 @@
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$LinearAction"
       id="checkers.eclipse.runlinear"
       name="Run Linear Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$IGJAction"
-      id="checkers.eclipse.runigj"
-      name="Run IGJ Checker">
-    </command>
-    <command
-      categoryId="checkers.eclipse.category"
-      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$JavariAction"
-      id="checkers.eclipse.runjavari"
-      name="Run Javari Checker">
     </command>
     <command
       categoryId="checkers.eclipse.category"

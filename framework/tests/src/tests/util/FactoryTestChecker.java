@@ -46,8 +46,8 @@ import com.sun.tools.javac.tree.JCTree;
  * </ul>
  *
  * The specified types are allowed to use simple names (e.g.,
- * <i>List&lt;String&gt;</i>), instead of fully qualified names (e.g.,
- * <i>java.util.List&lt;java.lang.String&gt;</i>).
+ * {@code List<String>}), instead of fully qualified names (e.g.,
+ * {@code java.util.List<java.lang.String>}).
  *
  * Example:
  *
@@ -148,26 +148,30 @@ public class FactoryTestChecker extends BaseTypeChecker {
                 Matcher fulltreeMatcher = fulltreePattern.matcher(line);
                 if (prevsubtreeMatcher.matches()) {
                     String treeString = prevsubtreeMatcher.group(1).trim();
-                    if (treeString.endsWith(";"))
+                    if (treeString.endsWith(";")) {
                         treeString = treeString.substring(0, treeString.length() - 1);
+                    }
                     TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber() + 1);
                     expected.put(treeSpec, canonizeTypeString(prevsubtreeMatcher.group(2)));
                 } else if (prevfulltreeMatcher.matches()) {
                     String treeString = reader.readLine().trim();
-                    if (treeString.endsWith(";"))
+                    if (treeString.endsWith(";")) {
                         treeString = treeString.substring(0, treeString.length() - 1);
+                    }
                     TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber());
                     expected.put(treeSpec, canonizeTypeString(prevfulltreeMatcher.group(1)));
                 } else if (subtreeMatcher.matches()) {
                     String treeString = subtreeMatcher.group(2).trim();
-                    if (treeString.endsWith(";"))
+                    if (treeString.endsWith(";")) {
                         treeString = treeString.substring(0, treeString.length() - 1);
+                    }
                     TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber());
                     expected.put(treeSpec, canonizeTypeString(subtreeMatcher.group(3)));
                 } else if (fulltreeMatcher.matches()) {
                     String treeString = fulltreeMatcher.group(1).trim();
-                    if (treeString.endsWith(";"))
+                    if (treeString.endsWith(";")) {
                         treeString = treeString.substring(0, treeString.length() - 1);
+                    }
                     TreeSpec treeSpec = new TreeSpec(treeString.trim(), reader.getLineNumber());
                     expected.put(treeSpec, canonizeTypeString(fulltreeMatcher.group(2)));
                 }

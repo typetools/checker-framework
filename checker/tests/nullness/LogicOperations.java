@@ -3,13 +3,15 @@ import org.checkerframework.checker.nullness.qual.*;
 
 class LogicOperations {
   void andTrueClause(@Nullable Object a) {
-    if (a != null && helper())
+    if (a != null && helper()) {
       a.toString();
+    }
   }
 
   void andTrueClauseReverse(@Nullable Object a) {
-    if (helper() && a != null)
+    if (helper() && a != null) {
       a.toString();
+    }
   }
 
   void oneAndComplement(@Nullable Object a) {

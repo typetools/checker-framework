@@ -24,9 +24,9 @@ public interface AnnotationProvider {
             Class<? extends Annotation> anno);
 
     /**
-     * Return the annotation on <code>tree</code> that has the class
-     * <code>target</code>. If no annotation for the given target class exists,
-     * the result is <code>null</code>
+     * Return the annotation on {@code tree} that has the class
+     * {@code target}. If no annotation for the given target class exists,
+     * the result is {@code null}
      *
      * @param tree
      *            The tree of which the annotation is returned

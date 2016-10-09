@@ -9,15 +9,13 @@ class Overflows {
     }
     static void bytes() {
         byte max = Byte.MAX_VALUE;
-        @IntVal(-128)
         //:: warning: (cast.unsafe)
-        byte maxPlus1 = (byte) (max + 1);
+        @IntVal(-128) byte maxPlus1 = (byte) (max + 1);
     }
     static void shorts() {
         short max = Short.MAX_VALUE;
-        @IntVal(-32768)
         //:: warning: (cast.unsafe)
-        short maxPlus1 = (short) (max + 1);
+        @IntVal(-32768) short maxPlus1 = (short) (max + 1);
     }
     static void longs() {
         long max = Long.MAX_VALUE;

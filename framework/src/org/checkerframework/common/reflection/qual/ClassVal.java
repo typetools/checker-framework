@@ -23,4 +23,3 @@ public @interface ClassVal {
      * of the class that this Class object represents. */
     String[] value();
 }
-

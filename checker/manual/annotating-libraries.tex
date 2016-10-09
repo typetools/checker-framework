@@ -1,53 +1,14 @@
 \htmlhr
 \chapter{Annotating libraries\label{annotating-libraries}}
 
-%% TODO: reinstate this once the checker/lib/ directory contains content.
-% The Checker Framework distribution contains annotated versions of popular
-% libraries in directory \<checker-framework/checker/lib/>.
-% These currently include
-% % Keep this list in sync with file ../lib/README .
-%   \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL}
-%   (versions 5.2 and 6.0 pre-release),
-%   \href{https://github.com/google/guava/}{Google Guava},
-%   and
-%   \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
-% %% Todo: this should be done automatically for the user.
-% During type-checking you should put the annotated version of the library on
-% your classpath.  (This is done automatically for the JDK; you don't have to
-% do anything special for it.)
-% When running your code, you can use either the annotated
-% library or the regular distributed version of the library --- they
-% behave identically at run time.
-% Some projects, such as
-%   \href{http://plse.cs.washington.edu/daikon/}{Daikon}
-%   and
-%   \href{http://mernst.github.io/plume-lib/}{plume-lib},
-% are already distributed in annotated form by their maintainers;
-% over time, this should become more common, reducing the need for the
-% Checker Framework to include annotated versions of them.
-
-%% Extra detail about the
-% \section{Using distributed annotated JDKs\label{skeleton-using}\label{skeleton}}
-%
-% The Checker Framework distribution contains two
-% annotated JDKs at the paths \<checker/dist/jdk7.jar> and
-% \<checker/dist/jdk8.jar>.
-% The \<javac> that is distributed with the Checker Framework and the command
-% \code{java -jar \$CHECKERFRAMEWORK/checker/dist/checker.jar} both use the appropriate \<jdk7.jar> or \<jdk8.jar>
-% based on the version of Java used to run them.
-%
-% The annotated JDKs should \emph{not} be in your classpath at run time, only
-% at compile time; and they are automatically added to your classpath at
-% compile time.
-
-
 If your code uses a library that does \emph{not} contain type annotations,
 then the type-checker has no way to know the library's behavior.
 The type-checker
 makes conservative assumptions about unannotated bytecode:  it assumes that
 every method parameter has the bottom type annotation and that every method
 return type has the top type annotation (see
-Section~\ref{defaults-classfile} for details and an example).
+Section~\ref{defaults-classfile} for details, an example, and how to
+override this conservative behavior).
 These conservative library
 annotations invariably lead to checker warnings.
 This chapter describes how to eliminate
@@ -68,6 +29,50 @@ Framework analyzes all, and only, the source code that is passed to it.
 The Checker Framework is a plug-in to the javac compiler, and it never
 analyzes code that is not being compiled, though it does look up
 annotations in the class files for code that was previously compiled.)
+
+
+\section{Using annotated libraries from the Checker Framework distribution\label{annotated-libraries-using}}
+
+The Checker Framework distribution contains annotated versions of popular
+libraries in directory \<checker-framework/checker/lib/>.
+These currently include
+% Keep this list in sync with file ../lib/README .
+\begin{itemize}
+\item \<bcel.jar>:
+  \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons BCEL} version 5.2
+\item \<commons-bcel-6.0.jar>:
+  \href{https://commons.apache.org/proper/commons-bcel/}{Apache Commons
+    BCEL} version 6.0 pre-release
+\item \<guava-19.0.jar>:
+  \href{https://github.com/google/guava/}{Google Guava}
+\item \<java-getopt-1.0.14.jar>:
+  \href{https://github.com/arenn/java-getopt}{GNU getopt Java port}.
+\end{itemize}
+
+%% Todo: this should be done automatically for the user.
+During type-checking, you should put the annotated version of the library on
+your classpath.  (The annotated JDK is automatically put on your classpath;
+you don't have to
+do anything special for it.)
+When doing ordinary compilation or while running your code,
+you can use either the annotated
+library or the regular distributed version of the library --- they
+behave identically.
+
+Some projects, such as
+  \href{http://plse.cs.washington.edu/daikon/}{Daikon}
+  and
+  \href{http://mernst.github.io/plume-lib/}{plume-lib},
+are already distributed in annotated form by their maintainers;
+over time, this should become more common, reducing the need for the
+Checker Framework to include annotated versions of libraries.
+
+
+\section{Creating an annotated library\label{annotated-libraries-creating}}
+
+This section describes how to create an annotated library.
+If you annotate a new library, please inform the Checker Framework
+developers so that they can include it in the Checker Framework distribution.
 
 You make the library's annotations known to the checkers by writing
 annotations in a copy of the library's source code (or in a ``stub
@@ -114,22 +119,20 @@ Given the library annotations, you have two options:
 \end{enumerate}
 
 
-% It uses both of the above mechanisms.  The
-% Nullness, Javari, IGJ, and Interning Checkers use the annotated JDKs
-% (Section~\ref{skeleton}), and all other checkers use stub files
-% (Section~\ref{stub}).
-
 If you write any library annotations,
 please share them so that they
 can be distributed with the Checker Framework.
 Sharing your annotations is useful even if the library is only partially
 annotated.
+However, as noted in Section~\ref{get-started-with-legacy-code}, it is
+best to annotate an entire class at a time.
+You may find type inference tools (\chapterpageref{type-inference-to-annotate}) helpful
+when getting started, but you should always examine their results.
 %% This text does not feel so relevant.
 % You can determine the correct annotations for a library either
 % automatically by running an inference tool, or manually by reading the
 % documentation.  Presently, automated type inference tools are available for the
-% Nullness (Section~\ref{nullness-inference}) and Javari
-% (Section~\ref{javari-inference}) type systems.
+% Nullness (Section~\ref{nullness-inference}) type system.
 
 
 \section{Compiling partially-annotated libraries\label{compiling-libraries}}
@@ -155,8 +158,7 @@ You use \<@AnnotatedFor> to indicate which classes you have annotated.
 
 
 
-\subsection{The \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line
-argument\label{AuseDefaultsForUncheckedCodesource}}
+\subsection{The \<-AuseDefaultsForUncheckedCode=source,bytecode> command-line argument\label{AuseDefaultsForUncheckedCodesource}}
 
 \begin{sloppypar}
 When compiling a library that is not fully annotated, use command-line
@@ -180,6 +182,9 @@ defaults and type-checking warnings are issued.
 may be passed to the \<-processor> command-line argument:  the
 fully-qualified class name for the checker, or a shorthand for built-in
 checkers (see Section~\ref{shorthand-for-checkers}).
+Writing \<@AnnotatedFor> on a class doesn't necessarily mean that you wrote
+any annotations, but that the user examined the source code and verified
+that all appropriate annotations are present.
 
 \begin{sloppypar}
 Whenever you compile a class using the Checker Framework, including when
@@ -236,7 +241,7 @@ partially-annotated library.
   The reason to run every type-checker is to verify
   the annotations you wrote, and to use appropriate defaults for all
   unannotated type uses.
-  The reason to include the contents of \<checker-qual.jar> is so that 
+  The reason to include the contents of \<checker-qual.jar> is so that
   the resulting \<.jar> file can be used whether or not the Checker Framework
   is being run.
 
@@ -308,9 +313,6 @@ version of \code{java.lang.String}.  You don't need to repeat these steps
 to handle \code{java.lang.String} for the Interning Checker,
 but you might do something similar for a different class and/or checker.
 
-% First, you must install the skeleton class generator
-% (Section~\ref{skeleton-installing}).
-
 
 \subsection{Using a stub file\label{stub-using}}
 
@@ -346,6 +348,14 @@ then the annotation from the last declaration is used.
 % The Checker Framework automatically imports all the stub files named
 % \code{library.astub} found in the classpath.
 
+If both bytecode and a stub file provide information for the same
+element, the stub file information is used. In particular, an
+un-annotated type variable in a stub file is used instead of
+annotations on a type variable in bytecode.
+This feature allows stub files to change the effective annotations in
+all possible situations.
+Use the \<-AstubWarnIfOverwritesBytecode> command-line option to get a
+warning whenever a stub file overwrites bytecode annotations.
 
 
 \subsection{Stub file format\label{stub-format}}
@@ -522,7 +532,7 @@ if an entry could not be found.
 \subsection{Troubleshooting stub libraries\label{stub-troubleshooting}}
 
 
-\subsubsection{Type-checking does not yield the expected results}
+\subsubsection{Type-checking does not yield the expected results\label{stub-troubleshooting-type-checking-results}}
 
 By default, the stub parser silently ignores
 annotations on unknown classes and methods.
@@ -537,13 +547,17 @@ The \<@NoStubParserWarning> annotation on a package or type in a stub file
 overrides the \<-AstubWarnIfNotFound> command-line option, and no warning
 will be issued.
 
+Use command-line option
+\<-AstubWarnIfOverwritesBytecode> to warn whenever some element of a
+stub file overwrites annotations contained in bytecode.
+
 Use command-line option \<-AstubDebug> to output debugging messages while
 parsing stub files, including about unknown classes, methods, and
 annotations.  This overrides the \<@NoStubParserWarning> annotation.
 
 
 
-\subsubsection{Problems parsing stub libraries}
+\subsubsection{Problems parsing stub libraries\label{stub-troubleshooting-parsing}}
 
 When using command-line option \<-AstubWarnIfNotFound>,
 an error is issued if a stub file has a typo or the API method does not
@@ -638,54 +652,6 @@ If these limitations are a problem, then you should insert annotations
 in the library's \<.class> files instead.
 
 
-% Label "skeleton" is for old links from the Javarifier manual, to prevent
-% them from being broken links.
-
-
-% Skeleton classes are inferior to stub classes for two reasons.  First,
-% skeleton files must be on the classpath during compilation but must
-% \emph{not} be on the classpath during execution; this is inconvenient and
-% error-prone.  Second, the skeleton files contain incorrect values for
-% certain static final fields.  These incorrect values can lead to
-% run-time problems unless the Java code is re-compiled without the skeleton
-% classes after type-checking is complete.
-
-
-
-% \section{Installing the skeleton class generator\label{skeleton-installing}}
-%
-% Source code for the skeleton class generator tool is included in the
-% Checker Framework
-% distribution, but because the tool has additional dependencies, the provided
-% build script does not build the tool by default.
-%
-% Follow these steps to install the skeleton class generator:
-%
-% \begin{enumerate}
-%
-% \item
-%   Install the annotation file utilities, using the instructions at
-%   \myurl{http://types.cs.washington.edu/annotation-file-utilities/}.
-%   Per those instructions, the \code{annotation-file-utilities.jar} file
-%   should be on your classpath.
-%
-% % TODO This item should become optional; tell people to install the AFU in
-% % the right place.
-% \item
-%   Update the \code{build.properties} file in the Checker Framework distribution so
-%   that the \code{annotation-utils.lib} property specifies the location of
-%   the \code{annotation-file-utilities.jar} library.
-%
-% \item
-%   Build the skeleton class generator tool by running \code{ant
-%     skeleton-util dist} in the \code{checker} directory.  This updates the
-%   \code{checker.jar} file to contain the skeleton class generator.
-%   \code{checker.jar} should already be on your classpath (see
-%   Section~\ref{installation}).
-%
-% \end{enumerate}
-
-
 \section{Troubleshooting/debugging annotated libraries\label{libraries-troubleshooting}}
 
 Sometimes, it may seem that a checker is treating a library as unannotated
@@ -706,13 +672,13 @@ read whether the library's annotations are parsed.
 
 % LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
-% LocalWords:  IGJ's jdk Astubs skipUses astub AskipUses toArray IGJ JDK6
+% LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
-% LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java
+% LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java pre
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
-%%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs
+%%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel
 %%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1
-%%  LocalWords:  TypeSystem2 TypeSystem3
+%%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode

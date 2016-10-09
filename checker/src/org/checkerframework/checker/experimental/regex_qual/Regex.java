@@ -31,7 +31,7 @@ public abstract class Regex {
 
     public static class PartialRegex extends Regex {
 
-        // The string value that is not a valid regex.
+        /** The string value that is not a valid regex. */
         private final String partialValue;
 
         public PartialRegex(String partialValue) {
@@ -72,7 +72,7 @@ public abstract class Regex {
 
     public static class RegexVal extends Regex {
 
-        // The number of regex groups available.
+        /** The number of regex groups available. */
         private final int count;
 
         public RegexVal(int count) {

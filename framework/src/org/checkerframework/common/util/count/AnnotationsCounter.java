@@ -28,10 +28,11 @@ public class AnnotationsCounter extends AbstractProcessor {
     final Map<Name, Integer> annotationCount = new HashMap<Name, Integer>();
 
     protected void incrementCount(Name annoName) {
-        if (!annotationCount.containsKey(annoName))
+        if (!annotationCount.containsKey(annoName)) {
             annotationCount.put(annoName, 2);
-        else
+        } else {
             annotationCount.put(annoName, annotationCount.get(annoName) + 1);
+        }
     }
 
     @Override

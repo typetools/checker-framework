@@ -48,30 +48,30 @@ public interface QualifiedTypeFactory<Q> {
     QualifiedTypes<Q> getQualifiedTypes();
 
     /**
-     * Hook for customizing the behavior of <code>directSuperTypes</code>.
+     * Hook for customizing the behavior of {@code directSuperTypes}.
      *
      * @param subtype
-     *      the target of the <code>directSuperTypes</code> call
+     *      the target of the {@code directSuperTypes} call
      * @param supertypes
      *      the supertypes produced by the default
-     *      <code>directSuperTypes</code> implementation
+     *      {@code directSuperTypes} implementation
      * @return
-     *      a copy of <code>supertypes</code> after applying checker-specific
+     *      a copy of {@code supertypes} after applying checker-specific
      *      adjustments
      */
     List<QualifiedTypeMirror<Q>> postDirectSuperTypes(QualifiedTypeMirror<Q> subtype, List<? extends QualifiedTypeMirror<Q>> supertypes);
 
-    /** Hook for customizing the behavior of <code>asMemberOf</code>.
+    /** Hook for customizing the behavior of {@code asMemberOf}.
      *
      * @param memberType
      *      the type of the element being accessed, according to the default
-     *      <code>asMemberOf</code> implementation
+     *      {@code asMemberOf} implementation
      * @param receiverType
      *      the type of the object instance whose element is being accessed
      * @param memberElement
      *      the element being accessed
      * @return
-     *      a copy of <code>memberType</code> after applying checker-specific
+     *      a copy of {@code memberType} after applying checker-specific
      *      adjustments
      */
     QualifiedTypeMirror<Q> postAsMemberOf(QualifiedTypeMirror<Q> memberType, QualifiedTypeMirror<Q> receiverType, Element memberElement);
@@ -107,14 +107,14 @@ public interface QualifiedTypeFactory<Q> {
     /**
      * Create the {@link Analysis} to configure dataflow.
      *
-     * @param fieldValues The initial field values
-     * @return The {@link QualAnalysis} to use
+     * @param fieldValues the initial field values
+     * @return the {@link QualAnalysis} to use
      */
     QualAnalysis<Q> createFlowAnalysis(List<Pair<VariableElement, QualValue<Q>>> fieldValues);
 
     /**
-     * @param node The @{@link Tree} to look up the {@link TreePath} for
-     * @return The {@link TreePath}
+     * @param node the @{@link Tree} to look up the {@link TreePath} for
+     * @return the {@link TreePath}
      */
     TreePath getPath(Tree node);
 
@@ -129,7 +129,7 @@ public interface QualifiedTypeFactory<Q> {
      *  <li> MemberSelectTree
      * </ul>
      *
-     * @param expression The expression for which to determine the receiver type
+     * @param expression the expression for which to determine the receiver type
      * @return  the type of the receiver of this expression
      */
     QualifiedTypeMirror<Q> getReceiverType(ExpressionTree expression);
@@ -138,8 +138,8 @@ public interface QualifiedTypeFactory<Q> {
      * Get an {@link ExtendedTypeMirror} for an {@link Element} that has all the Annotations
      * that were located on the element in source code or in stub files.
      *
-     * @param element The {@link Element}
-     * @return The {@link ExtendedTypeMirror}
+     * @param element the {@link Element}
+     * @return the {@link ExtendedTypeMirror}
      */
     ExtendedTypeMirror getDecoratedElement(Element element);
 

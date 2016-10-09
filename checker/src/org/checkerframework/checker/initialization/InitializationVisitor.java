@@ -18,13 +18,10 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -40,13 +37,13 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
@@ -94,7 +91,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
 
     @Override
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
-            AnnotatedExecutableType constructor, Tree src) {
+            AnnotatedExecutableType constructor, NewClassTree src) {
         // receiver annotations for constructors are forbidden, therefore no
         // check is necessary
         // TODO: nested constructors can have receivers!
@@ -130,43 +127,6 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
                     checker.report(Result.failure(err, varTree), varTree);
                     return; // prevent issuing another errow about subtyping
                 }
-                // for field access on the current object, make sure that we don't
-                // allow invalid assignments. that is, even though reading this.f in a
-                // constructor yields @Nullable (or similar for other typesystems),
-                // it is not allowed to write @Nullable to a @NonNull field.
-                // This is done by first getting the type as usual (var), and then
-                // again not using the postAsMember method (which takes care of
-                // transforming the type of o.f for a free receiver to @Nullable)
-                // (var2). Then, we take the child annotation from var2 and use it
-                // for var.
-                AnnotatedTypeMirror var = atypeFactory.getAnnotatedType(lhs);
-                boolean old = atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER;
-                atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = true;
-                boolean old2 = atypeFactory.shouldReadCache;
-                atypeFactory.shouldReadCache = false;
-                AnnotatedTypeMirror var2 = atypeFactory.getAnnotatedType(lhs);
-                atypeFactory.HACK_DONT_CALL_POST_AS_MEMBER = old;
-                atypeFactory.shouldReadCache = old2;
-
-                final AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
-
-                // AnnotatedTypeMerger.merge requires that the first two arguments have the
-                // same TypeKind.
-                if (var.getKind() != var2.getKind() &&
-                        var2.getKind() == TypeKind.DECLARED) {
-                    switch (var.getKind()) {
-                    case WILDCARD:
-                        var = ((AnnotatedWildcardType) var).getExtendsBound();
-                        break;
-                    default:
-                        ErrorReporter.errorAbort("Unexpected comparison between " + var + " and " + var2);
-                    }
-                }
-                AnnotatedTypeMerger.merge(var2, var, invariantAnno);
-
-                checkAssignability(var, varTree);
-                commonAssignmentCheck(var, valueExp, errorKey, false);
-                return;
             }
         }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
@@ -369,7 +329,7 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
     @Override
     public Void visitMethod(MethodTree node, Void p) {
         if (TreeUtils.isConstructor(node)) {
-            Collection<? extends AnnotationMirror> returnTypeAnnotations = getExplicitReturnTypeAnnotations(node);
+            Collection<? extends AnnotationMirror> returnTypeAnnotations = AnnotationUtils.getExplicitAnnotationsOnConstructorResult(node);
             // check for invalid constructor return type
             for (Class<? extends Annotation> c : atypeFactory.getInvalidConstructorReturnTypeAnnotations()) {
                 for (AnnotationMirror a : returnTypeAnnotations) {
@@ -470,10 +430,4 @@ public class InitializationVisitor<Factory extends InitializationAnnotatedTypeFa
         }
     }
 
-    public Set<AnnotationMirror> getExplicitReturnTypeAnnotations(MethodTree node) {
-        AnnotatedTypeMirror t = atypeFactory.fromMember(node);
-        assert t instanceof AnnotatedExecutableType;
-        AnnotatedExecutableType type = (AnnotatedExecutableType) t;
-        return type.getReturnType().getAnnotations();
-    }
 }

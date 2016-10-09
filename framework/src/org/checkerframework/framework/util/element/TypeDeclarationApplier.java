@@ -44,7 +44,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
     public static int SUPERCLASS_INDEX = -1;
 
     /**
-     * @return True if type is an annotated declared type and element is a ClassSymbol
+     * @return true if type is an annotated declared type and element is a ClassSymbol
      */
     public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
         return type instanceof AnnotatedDeclaredType &&
@@ -89,7 +89,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      * While more than just annotations on extends or implements clause are annotated by this
      * class, only these annotations are passed to handleTargeted (as they are the only in the annotatedTargets
      * list).  See extractAndApply for type parameters
-     * @param extendsAndImplementsAnnos Annotations with a TargetType of CLASS_EXTENDS
+     * @param extendsAndImplementsAnnos annotations with a TargetType of CLASS_EXTENDS
      */
     @Override
     protected void handleTargeted(List<Attribute.TypeCompound> extendsAndImplementsAnnos ) {
@@ -106,7 +106,7 @@ public class TypeDeclarationApplier extends TargetedElementAnnotationApplier {
      */
     @Override
     public void extractAndApply() {
-        //ensures that we check that there only valid target types on this class, there are no "targeted" locations
+        // ensures that we check that there only valid target types on this class, there are no "targeted" locations
         super.extractAndApply();
 
         // Annotate raw types //TODO: ASK WERNER WHAT THIS MIGHT MEAN?  WHAT ACTUALLY GOES HERE?

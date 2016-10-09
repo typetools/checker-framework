@@ -1,13 +1,15 @@
+changelog.txt
+README.html
+LICENSE.txt
 checker/bin/**
 checker/dist/**
+checker/lib/**
 checker/manual/manual.html
 checker/manual/manual.pdf
 checker/manual/*.svg
 checker/manual/manual001.png
-checker/examples/IGJExample.java
 checker/examples/InterningExample.java
 checker/examples/InterningExampleWithWarnings.java
-checker/examples/JavariExample.java
 checker/examples/NullnessExample.java
 checker/examples/NullnessExampleWithWarnings.java
 checker/examples/NullnessReleaseTests.java
@@ -22,3 +24,4 @@ checker/examples/units-extension/README
 checker/examples/MavenExample/pom.xml
 checker/examples/MavenExample/README
 checker/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java
+tutorial/**

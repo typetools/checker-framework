@@ -17,6 +17,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -87,10 +88,20 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    public void annotateImplicit(Element element, AnnotatedTypeMirror type) {
-        if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element))
+    public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+        Element element = InternalUtils.symbol(tree);
+        if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element)) {
             type.addAnnotation(INTERNED);
-        super.annotateImplicit(element, type);
+        }
+        super.addComputedTypeAnnotations(tree, type, useFlow);
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
+        if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element)) {
+            type.addAnnotation(INTERNED);
+        }
+        super.addComputedTypeAnnotations(element, type);
     }
 
     /**
@@ -161,7 +172,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Unbox type and replace any interning type annotatiosn with @Interned since all
+     * Unbox type and replace any interning type annotations with @Interned since all
      * all primitives can safely use ==. See case 4 in the class comments.
      */
     @Override

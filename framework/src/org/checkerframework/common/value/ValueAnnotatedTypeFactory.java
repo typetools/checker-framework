@@ -70,7 +70,7 @@ import com.sun.source.tree.UnaryTree;
  */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected final AnnotationMirror  UNKNOWNVAL,BOTTOMVAL;
+    protected final AnnotationMirror UNKNOWNVAL, BOTTOMVAL;
     /** The maximum number of values allowed in an annotation's array */
     protected static final int MAX_VALUES = 10;
     protected Set<String> coveredClassStrings;
@@ -339,10 +339,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then
                 // the LUB is
                 // UnknownVal
-                if (!(AnnotationUtils.areSameByClass(a1, IntVal.class)
-                        || AnnotationUtils.areSameByClass(a1, DoubleVal.class)
-                        || AnnotationUtils.areSameByClass(a2, IntVal.class)
-                        || AnnotationUtils.areSameByClass(a2, DoubleVal.class))) {
+                if (!((AnnotationUtils.areSameByClass(a1, IntVal.class)
+                       || AnnotationUtils.areSameByClass(a1, DoubleVal.class))
+                      && (AnnotationUtils.areSameByClass(a2, IntVal.class)
+                            || AnnotationUtils.areSameByClass(a2, DoubleVal.class)))) {
                     return UNKNOWNVAL;
                 } else {
                     // At this point one of them must be a DoubleVal and one an
@@ -505,7 +505,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        private void handleInitalizers(List<? extends ExpressionTree> initializers,AnnotatedArrayType type) {
+        private void handleInitalizers(List<? extends ExpressionTree> initializers, AnnotatedArrayType type) {
 
             List<Integer> array = new ArrayList<>();
             array.add(initializers.size());
@@ -565,8 +565,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
                 i++;
             }
-            if (allLiterals)
+            if (allLiterals) {
                 return new String(bytes);
+            }
             // If any part of the initialize isn't know,
             // the stringval isn't known.
             return null;
@@ -588,8 +589,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     allLiterals = false;
                 }
             }
-            if (allLiterals)
+            if (allLiterals) {
                 return stringVal;
+            }
             // If any part of the initialize isn't know,
             // the stringval isn't known.
             return null;
@@ -711,7 +713,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<?> receiverValues;
 
                 if (receiver != null && !ElementUtils.isStatic(TreeUtils.elementFromUse(tree))) {
-                    receiverValues = getValues(receiver,receiver.getUnderlyingType());
+                    receiverValues = getValues(receiver, receiver.getUnderlyingType());
                     if (receiverValues.isEmpty()) {
                         // values aren't known, so don't try to evaluate the
                         // method
@@ -793,8 +795,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         String fieldName = tree.getIdentifier().toString();
                         value = evalutator.evaluateStaticFieldAccess(classname,
                                 fieldName, tree);
-                        if (value != null)
+                        if (value != null) {
                             type.replaceAnnotation(resultAnnotationHandler(type.getUnderlyingType(), Collections.singletonList(value), tree));
+                        }
                         return null;
                     }
                 }
@@ -843,7 +846,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Class<?> resultClass = ValueCheckerUtils.getClassFromType(resultType);
 
             // For some reason null is included in the list of values,
-            // so remove it so that it does not cause a NPE else where.
+            // so remove it so that it does not cause a NPE elsewhere.
             results.remove(null);
             if (results.size() == 0) {
                 return UNKNOWNVAL;

@@ -4,7 +4,7 @@
 
 CTSYM ?= $(JAVA_HOME)/lib/ct.sym
 
-CHECKER_DIRS = nullness igj javari
+CHECKER_DIRS = nullness lock
 
 all: clean classes
 # Extracts unannotated .class files from $(CTSYM)
@@ -28,23 +28,12 @@ ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class')
 # These, and only these, need to be extracted from $(CTSYM).
 ANNOTATED_CLASSES = \
 	$(patsubst nullness/build/%.class,annotated/%.class, \
-	  $(patsubst igj/build/%.class,annotated/%.class, \
-	    $(patsubst javari/build/%.class,annotated/%.class, \
-		  $(ANNOTATED_CLASSES_BY_DIR))))
-
-# Javarifier seems to only check the first .jar it gets on the
-# -soot-classpath (which will be this one), so if these are missing from
-# it, Javarifier issues the error "Missing stub for class
-# java.lang.annotation.Annotation".
-JAVARIFIER_REQUIRED = \
-	annotated/java/lang/annotation/Annotation.class \
-	annotated/java/lang/annotation/Documented.class \
-	annotated/java/lang/annotation/Retention.class \
-	annotated/java/lang/annotation/Target.class
+      $(patsubst lock/build/%.class,annotated/%.class, \
+        $(ANNOTATED_CLASSES_BY_DIR)))
 
 # Extract from $(CTSYM) an unannotated version of every file that will
 # eventually get any annotation.
-unmodified: $(ANNOTATED_CLASSES) $(JAVARIFIER_REQUIRED)
+unmodified: $(ANNOTATED_CLASSES)
 
 # Delegates
 clean: $(addsuffix .clean, $(CHECKER_DIRS))

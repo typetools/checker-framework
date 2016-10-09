@@ -2,22 +2,18 @@ package org.checkerframework.framework.flow;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.dataflow.analysis.Analysis;
-import org.checkerframework.dataflow.cfg.CFGDOTVisualizer;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -87,7 +83,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
         typeHierarchy = factory.getTypeHierarchy();
         this.atypeFactory = factory;
         this.checker = checker;
-        transferFunction = createTransferFunction();
+        this.transferFunction = createTransferFunction();
         this.fieldValues = fieldValues;
     }
 
@@ -96,24 +92,24 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     }
 
     /**
-     * @return The transfer function to be used by the analysis.
+     * @return the transfer function to be used by the analysis
      */
     public T createTransferFunction() {
         return atypeFactory.createFlowTransferFunction(this);
     }
 
     /**
-     * @return An empty store of the appropriate type.
+     * @return an empty store of the appropriate type
      */
     public abstract S createEmptyStore(boolean sequentialSemantics);
 
     /**
-     * @return An identical copy of the store {@code s}.
+     * @return an identical copy of the store {@code s}.
      */
     public abstract S createCopiedStore(S s);
 
     /**
-     * @return An abstract value containing the given annotated {@code type}.
+     * @return an abstract value containing the given annotated {@code type}.
      */
     public abstract /*@Nullable*/ V createAbstractValue(AnnotatedTypeMirror type);
 
@@ -124,7 +120,8 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
      */
     public CFValue defaultCreateAbstractValue(
             CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        if (!AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
+        if (type instanceof AnnotatedNoType
+                || !AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
             // If the type is not valid, we return null, which is the same as
             // 'no information'.
             return null;
@@ -141,19 +138,10 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
     }
 
     /**
-     * Print a DOT graph of the CFG and analysis info for inspection.
+     * Perform a visualization of the CFG and analysis info for inspection.
      */
-    public void outputToDotFile(String outputFile, boolean verbose) {
-        String s = CFGDOTVisualizer.visualize(cfg, cfg.getEntryBlock(), this, verbose);
-
-        try {
-            FileWriter fstream = new FileWriter(outputFile);
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write(s);
-            out.close();
-        } catch (IOException e) {
-            ErrorReporter.errorAbort("Error creating dot file: " + outputFile + "; ensure the path is valid", e);
-        }
+    public void visualizeCFG() {
+        atypeFactory.getCFGVisualizer().visualize(cfg, cfg.getEntryBlock(), this);
     }
 
     /**
@@ -181,7 +169,7 @@ public abstract class CFAbstractAnalysis<V extends CFAbstractValue<V>,
             AnnotatedArrayType a = (AnnotatedArrayType) type;
             makeTop(a.getComponentType(), tops);
         } else if (kind == TypeKind.TYPEVAR) {
-            //just set the primary to top, this will override the upper/lower bounds
+            // just set the primary to top, this will override the upper/lower bounds
 
         } else if (kind == TypeKind.WILDCARD) {
             AnnotatedWildcardType a = (AnnotatedWildcardType) type;

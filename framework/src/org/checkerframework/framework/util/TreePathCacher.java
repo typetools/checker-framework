@@ -21,12 +21,14 @@ import com.sun.source.util.TreeScanner;
 public class TreePathCacher extends TreeScanner<TreePath, Tree> {
 
     private final Map<Tree, TreePath> foundPaths = new HashMap<>();
-    // The TreePath of the previous tree scanned.
-    // It is always set back to null after a scan has completed.
+    /**
+     * The TreePath of the previous tree scanned.
+     * It is always set back to null after a scan has completed.
+     */
     private TreePath path;
 
     /**
-     * @param target The tree to search for
+     * @param target the tree to search for
      * @return true if the tree is cached
      */
     public boolean isCached(Tree target) {
@@ -39,9 +41,9 @@ public class TreePathCacher extends TreeScanner<TreePath, Tree> {
      * This method uses try/catch and the Result Error for control flow to
      * stop the superclass from scanning other subtrees when target is found.
      *
-     * @param root The compilation unit to search in
-     * @param target The target tree to look for
-     * @return The TreePath corresponding to target,
+     * @param root the compilation unit to search in
+     * @param target the target tree to look for
+     * @return the TreePath corresponding to target,
      *  or null if target is not found in the compilation root
      */
     public TreePath getPath(CompilationUnitTree root, Tree target) {

@@ -28,7 +28,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
     };
 
     /**
-     * @return True if this is a variable declaration including fields an enum constants
+     * @return true if this is a variable declaration including fields an enum constants
      */
     public static boolean accepts(final AnnotatedTypeMirror typeMirror, final Element element) {
         return contains(element.getKind(), acceptedKinds) || element.getKind().isField();
@@ -49,7 +49,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
     @Override
     protected TargetType[] validTargets() {
         return new TargetType []{
-                NEW, CAST, INSTANCEOF, METHOD_INVOCATION_TYPE_ARGUMENT,CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
+                NEW, CAST, INSTANCEOF, METHOD_INVOCATION_TYPE_ARGUMENT, CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT,
                 METHOD_REFERENCE, CONSTRUCTOR_REFERENCE, METHOD_REFERENCE_TYPE_ARGUMENT,
                 CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT
         };

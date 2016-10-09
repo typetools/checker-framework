@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-
 import net.eyde.personalblog.beans.BlogProperty;
 import net.eyde.personalblog.beans.Comment;
 import net.eyde.personalblog.beans.Post;
@@ -13,11 +12,9 @@ import net.eyde.personalblog.beans.Referrer;
 import net.sf.hibernate.Session;
 import net.sf.hibernate.SessionFactory;
 import net.sf.hibernate.cfg.Configuration;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.checkerframework.checker.tainting.qual.Untainted;
-
 
 /**
  *
@@ -36,7 +33,7 @@ public class PersonalBlogService {
     public static final String INSTALLATION_STATE = "installation_state";
     public static final String STATE_UNDEFINED = "undefined";
     public static final String STATE_NO_HIBERNATE_FILE = "no_hibernate_file";
-    public static final String STATE_DATABASE_OFF= "database_off";
+    public static final String STATE_DATABASE_OFF = "database_off";
     public static final String STATE_HIBERNATE_FILE_INVALID = "hibernate_file_invalid";
     public static final String STATE_TABLES_NOT_CREATED = "tables_not_created_yet";
     public static final String STATE_MISSING_PROPERTIES = "missing_properties";
@@ -80,19 +77,19 @@ public class PersonalBlogService {
     SimpleDateFormat qf = new SimpleDateFormat("yyyy-MM-dd", myLocale);
     SimpleDateFormat monthNav = new SimpleDateFormat("yyyyMM", myLocale);
 
-
     /**
      * Constructor for PersonalBlogService.
      */
-    protected PersonalBlogService(Properties conn)
-        throws InitializationException {
+    protected PersonalBlogService(Properties conn) throws InitializationException {
         log.debug("initialization - constructor");
 
         try {
-            cfg = new Configuration().addClass(Post.class)
-                                     .addClass(Comment.class)
-                                     .addClass(Referrer.class)
-                                     .addClass(BlogProperty.class);
+            cfg =
+                    new Configuration()
+                            .addClass(Post.class)
+                            .addClass(Comment.class)
+                            .addClass(Referrer.class)
+                            .addClass(BlogProperty.class);
 
             if (conn != null) {
                 cfg.setProperties(conn);
@@ -101,7 +98,7 @@ public class PersonalBlogService {
                 pm = new PropertyManager();
             }
 
-            //I want to take it out of here, for these
+            // I want to take it out of here, for these
             sf = cfg.buildSessionFactory();
         } catch (Exception e) {
             log.error("Error initializing PersonalBlog Service", e);
@@ -116,8 +113,7 @@ public class PersonalBlogService {
     public static PersonalBlogService getInstance() throws ServiceException {
         if (service == null) {
             try {
-                log.debug(
-                    "Initializing PersonalBlog Service (WITHOUT CONNECTION PARMS)");
+                log.debug("Initializing PersonalBlog Service (WITHOUT CONNECTION PARMS)");
                 service = new PersonalBlogService(null);
             } catch (ServiceException e) {
                 log.error("Error getting instance of PersonalBlog Service", e);
@@ -129,12 +125,10 @@ public class PersonalBlogService {
         return service;
     }
 
-    public static PersonalBlogService getInstance(Properties conn)
-        throws ServiceException {
+    public static PersonalBlogService getInstance(Properties conn) throws ServiceException {
         if (service == null) {
             try {
-                log.debug(
-                    "Initializing PersonalBlog Service (WITH CONNECTION PARMS)");
+                log.debug("Initializing PersonalBlog Service (WITH CONNECTION PARMS)");
                 service = new PersonalBlogService(conn);
             } catch (Exception e) {
                 log.error("Error getting instance of PersonalBlog Service", e);
@@ -157,10 +151,12 @@ public class PersonalBlogService {
         /*@SuppressWarnings("tainting")*/
         String startdate = (/*@Untainted*/ String) qf.format(cal.getTime());
 
-        posts = executeQuery(
-                    "from post in class net.eyde.personalblog.beans.Post " +
-                    "where post.created > '" + startdate +
-                    "' order by post.created desc");
+        posts =
+                executeQuery(
+                        "from post in class net.eyde.personalblog.beans.Post "
+                                + "where post.created > '"
+                                + startdate
+                                + "' order by post.created desc");
 
         return posts;
     }
@@ -168,10 +164,12 @@ public class PersonalBlogService {
     public List<?> getPostsByCategory(String category) throws ServiceException {
         List<?> posts = null;
 
-        posts = executeQuery(
-                    "from post in class net.eyde.personalblog.beans.Post " +
-                    "where post.category like '%" + category +
-                    "%' order by post.created desc");
+        posts =
+                executeQuery(
+                        "from post in class net.eyde.personalblog.beans.Post "
+                                + "where post.category like '%"
+                                + category
+                                + "%' order by post.created desc");
 
         return posts;
     }

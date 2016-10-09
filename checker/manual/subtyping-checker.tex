@@ -48,14 +48,14 @@ type system through the \code{-Aquals} option, using a comma-no-space-separated
 notation:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.common.subtyping.SubtypingChecker \ttbs
         -Aquals=\textit{myModule.qual.MyQual},\textit{myModule.qual.OtherQual} MyFile.java ...
 \end{alltt}
 
 The annotations listed in \code{-Aquals} must be accessible to
 the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac bootclasspath)
+already be compiled (and, typically, be on the javac classpath)
 before you run the Subtyping Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
@@ -65,7 +65,7 @@ annotations in the custom type system through the \code{-AqualDirs} option,
 using a colon-no-space-separated notation. For example:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.common.subtyping.SubtypingChecker \ttbs
         -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java
 \end{alltt}
@@ -106,25 +106,26 @@ type system, follow three steps.
 \item
 Define two annotations for the \code{Encrypted} and \code{PossiblyUnencrypted} qualifiers:
 
-\begin{Verbatim}
+% alltt because it uses \textit
+\begin{alltt}
 package \textit{myModule}.qual;
 
 import org.checkerframework.framework.qual.*;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * Denotes that the representation of an object is encrypted.
  */
 @SubtypeOf(PossiblyUnencrypted.class)
-@ImplicitFor(trees = { Kind.NULL_LITERAL })
+@ImplicitFor(literal= { LiteralKind.NULL })
 @DefaultFor({TypeUseLocation.LOWER_BOUND})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface Encrypted {}
-\end{Verbatim}
+\end{alltt}
 
-\begin{Verbatim}
+% alltt because it uses \textit
+\begin{alltt}
 package \textit{myModule}.qual;
 
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
@@ -139,7 +140,7 @@ import java.lang.annotation.Target;
 @SubtypeOf({})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface PossiblyUnencrypted {}
-\end{Verbatim}
+\end{alltt}
 
 Note that all custom annotations must have the
 \<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
@@ -158,7 +159,7 @@ processor path (set via the \<-processorpath> command-line option to javac).
   Write \code{@Encrypted} annotations in your program (say, in file
   \code{YourProgram.java}):
 
-\begin{Verbatim}
+\begin{alltt}
 import \textit{myModule}.qual.Encrypted;
 
 ...
@@ -183,7 +184,7 @@ void sendPassword() {
     String password = getUserPassword();
     sendOverInternet(password);
 }
-\end{Verbatim}
+\end{alltt}
 
 You may also need to add \code{@SuppressWarnings} annotations to the
 \code{encrypt} and \code{decrypt} methods.  Analyzing them is beyond the
@@ -211,7 +212,7 @@ that contain the qualifiers using the \code{-AqualDirs} option, and add
 the directories to the boot classpath, for example:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.common.subtyping.SubtypingChecker \ttbs
         -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} YourProgram.java
 \end{alltt}

@@ -1,0 +1,436 @@
+import org.checkerframework.checker.interning.qual.*;
+
+package sun.awt;
+public class AppContext {
+     public static final @Interned String DISPOSED_PROPERTY_NAME = "disposed";
+     public static final @Interned String GUI_DISPOSED = "guidisposed";
+}
+package sun.awt;
+public class SunToolkit {
+     public static final @Interned String DESKTOPFONTHINTS = "awt.font.desktophints";
+}
+package sun.font;
+public class SunFontManager {
+     public static final @Interned String lucidaFontName = "Lucida Sans Regular";
+}
+package sun.java2d.loops;
+public class Blit {
+     public static final @Interned String methodSignature = "Blit(...)".toString();
+}
+package sun.java2d.loops;
+public class BlitBg {
+     public static final @Interned String methodSignature = "BlitBg(...)".toString();
+}
+package sun.java2d.loops;
+public class CompositeType {
+     public static final @Interned String DESC_ANY      = "Any CompositeContext";
+     public static final @Interned String DESC_XOR      = "XOR mode";
+     public static final @Interned String DESC_CLEAR     = "Porter-Duff Clear";
+     public static final @Interned String DESC_SRC       = "Porter-Duff Src";
+     public static final @Interned String DESC_DST       = "Porter-Duff Dst";
+     public static final @Interned String DESC_SRC_OVER  = "Porter-Duff Src Over Dst";
+     public static final @Interned String DESC_DST_OVER  = "Porter-Duff Dst Over Src";
+     public static final @Interned String DESC_SRC_IN    = "Porter-Duff Src In Dst";
+     public static final @Interned String DESC_DST_IN    = "Porter-Duff Dst In Src";
+     public static final @Interned String DESC_SRC_OUT   = "Porter-Duff Src HeldOutBy Dst";
+     public static final @Interned String DESC_DST_OUT   = "Porter-Duff Dst HeldOutBy Src";
+     public static final @Interned String DESC_SRC_ATOP  = "Porter-Duff Src Atop Dst";
+     public static final @Interned String DESC_DST_ATOP  = "Porter-Duff Dst Atop Src";
+     public static final @Interned String DESC_ALPHA_XOR = "Porter-Duff Xor";
+     public static final @Interned String DESC_ANY_ALPHA = "Any AlphaComposite Rule";
+}
+package sun.java2d.loops;
+public class MaskBlit {
+     public static final @Interned String methodSignature = "MaskBlit(...)".toString();
+}
+package sun.java2d.loops;
+public class MaskFill {
+     public static final @Interned String methodSignature = "MaskFill(...)".toString();
+}
+package sun.java2d.loops;
+public class ScaledBlit {
+     public static final @Interned String methodSignature = "ScaledBlit(...)".toString();
+}
+package sun.java2d.loops;
+public class SurfaceType {
+     public static final @Interned String DESC_ANY_INT = "Any Discrete Integer";
+     public static final @Interned String DESC_ANY_SHORT = "Any Discrete Short";
+     public static final @Interned String DESC_ANY_BYTE = "Any Discrete Byte";
+     public static final @Interned String DESC_ANY_3BYTE = "Any 3 Byte Component";
+     public static final @Interned String DESC_ANY_4BYTE = "Any 4 Byte Component";
+     public static final @Interned String DESC_ANY_INT_DCM = "Any Integer DCM";
+     public static final @Interned String DESC_INT_RGBx = "Integer RGBx";
+     public static final @Interned String DESC_INT_BGRx = "Integer BGRx";
+     public static final @Interned String DESC_3BYTE_RGB = "3 Byte RGB";
+     public static final @Interned String DESC_INT_ARGB_BM     = "Int ARGB (Bitmask)";
+     public static final @Interned String DESC_BYTE_INDEXED_BM = "8-bit Indexed (Bitmask)";
+     public static final @Interned String DESC_INDEX8_GRAY  = "8-bit Palettized Gray";
+     public static final @Interned String DESC_INDEX12_GRAY = "12-bit Palettized Gray";
+     public static final @Interned String DESC_ANY_PAINT      = "Paint Object";
+     public static final @Interned String DESC_ANY_COLOR      = "Single Color";
+     public static final @Interned String DESC_OPAQUE_COLOR   = "Opaque Color";
+}
+package sun.jkernel;
+public class BackgroundDownloader {
+     public static final @Interned String BACKGROUND_DOWNLOAD_PROPERTY = "kernel.background.download";
+     public static final @Interned String PID_PATH = "tmp" + File.separator + "background.pid";
+}
+package sun.jkernel;
+public class DownloadManager {
+     public static final @Interned String KERNEL_DEBUG_PROPERTY = "kernel.debug";
+     public static final @Interned String KERNEL_NOMERGE_PROPERTY = "kernel.nomerge";
+     public static final @Interned String RESOURCE_URL = "internal-resource/";
+     public static final @Interned String REQUESTED_BUNDLES_PATH;
+     public static final @Interned String JAR_PATH_PROPERTY = "jarpath";
+     public static final @Interned String SIZE_PROPERTY = "size";
+     public static final @Interned String DEPENDENCIES_PROPERTY = "dependencies";
+     public static final @Interned String INSTALL_PROPERTY = "install";
+}
+package sun.jvmstat.perfdata.monitor.protocol.local;
+public class PerfDataFile {
+     public static final @Interned String dirNamePrefix = "hsperfdata_";
+     public static final @Interned String userDirNamePattern = "hsperfdata_\\S*";
+     public static final @Interned String fileNamePattern = "^[0-9]+$";
+}
+package sun.management.jmxremote;
+public class ConnectorBootstrap {
+         public static final @Interned String PORT = "0";
+         public static final @Interned String CONFIG_FILE_NAME = "management.properties";
+         public static final @Interned String USE_SSL = "true";
+         public static final @Interned String USE_LOCAL_ONLY = "true";
+         public static final @Interned String USE_REGISTRY_SSL = "false";
+         public static final @Interned String USE_AUTHENTICATION = "true";
+         public static final @Interned String PASSWORD_FILE_NAME = "jmxremote.password";
+         public static final @Interned String ACCESS_FILE_NAME = "jmxremote.access";
+         public static final @Interned String SSL_NEED_CLIENT_AUTH = "false";
+}
+package sun.management.snmp;
+public class AdaptorBootstrap {
+         public static final @Interned String PORT="161";
+         public static final @Interned String CONFIG_FILE_NAME="management.properties";
+         public static final @Interned String TRAP_PORT="162";
+         public static final @Interned String USE_ACL="true";
+         public static final @Interned String ACL_FILE_NAME="snmp.acl";
+         public static final @Interned String BIND_ADDRESS="localhost";
+         public static final @Interned String PORT="com.sun.management.snmp.port";
+}
+package sun.misc;
+public class JarIndex {
+     public static final @Interned String INDEX_NAME = "META-INF/INDEX.LIST";
+}
+package sun.rmi.rmic.newrmic;
+public class Constants {
+     public static final @Interned String REMOTE = "java.rmi.Remote";
+     public static final @Interned String EXCEPTION = "java.lang.Exception";
+     public static final @Interned String REMOTE_EXCEPTION = "java.rmi.RemoteException";
+     public static final @Interned String RUNTIME_EXCEPTION = "java.lang.RuntimeException";
+}
+package sun.security.krb5;
+public class PrincipalName {
+     public static final @Interned String TGS_DEFAULT_SRV_NAME = "krbtgt";
+     public static final @Interned String NAME_COMPONENT_SEPARATOR_STR = "/";
+     public static final @Interned String NAME_REALM_SEPARATOR_STR = "@";
+     public static final @Interned String REALM_COMPONENT_SEPARATOR_STR = ".";
+}
+package sun.security.pkcs11.wrapper;
+public class Constants {
+     public static final @Interned String INDENT = "  ";
+}
+package sun.security.pkcs;
+public class PKCS9Attribute {
+     public static final @Interned String EMAIL_ADDRESS_STR = "EmailAddress";
+     public static final @Interned String UNSTRUCTURED_NAME_STR = "UnstructuredName";
+     public static final @Interned String CONTENT_TYPE_STR = "ContentType";
+     public static final @Interned String MESSAGE_DIGEST_STR = "MessageDigest";
+     public static final @Interned String SIGNING_TIME_STR = "SigningTime";
+     public static final @Interned String COUNTERSIGNATURE_STR = "Countersignature";
+     public static final @Interned String CHALLENGE_PASSWORD_STR = "ChallengePassword";
+     public static final @Interned String UNSTRUCTURED_ADDRESS_STR = "UnstructuredAddress";
+     public static final @Interned String ISSUER_SERIALNUMBER_STR = "IssuerAndSerialNumber";
+     public static final @Interned String EXTENSION_REQUEST_STR = "ExtensionRequest";
+     public static final @Interned String SMIME_CAPABILITY_STR = "SMIMECapability";
+     public static final @Interned String SIGNING_CERTIFICATE_STR = "SigningCertificate";
+}
+package sun.security.provider;
+public class PolicyParser {
+     public static final @Interned String REPLACE_NAME = "PolicyParser.REPLACE_NAME";
+         public static final @Interned String WILDCARD_CLASS = "WILDCARD_PRINCIPAL_CLASS";
+         public static final @Interned String WILDCARD_NAME = "WILDCARD_PRINCIPAL_NAME";
+}
+package sun.security.provider;
+public class X509Factory {
+     public static final @Interned String BEGIN_CERT = "-----BEGIN CERTIFICATE-----";
+     public static final @Interned String END_CERT = "-----END CERTIFICATE-----";
+}
+package sun.security.util;
+public class ManifestDigester {
+     public static final @Interned String MF_MAIN_ATTRS = "Manifest-Main-Attributes";
+}
+package sun.security.util;
+public class SecurityConstants {
+     public static final @Interned String FILE_DELETE_ACTION = "delete";
+     public static final @Interned String FILE_EXECUTE_ACTION = "execute";
+     public static final @Interned String FILE_READ_ACTION = "read";
+     public static final @Interned String FILE_WRITE_ACTION = "write";
+     public static final @Interned String FILE_READLINK_ACTION = "readlink";
+     public static final @Interned String SOCKET_RESOLVE_ACTION = "resolve";
+     public static final @Interned String SOCKET_CONNECT_ACTION = "connect";
+     public static final @Interned String SOCKET_LISTEN_ACTION = "listen";
+     public static final @Interned String SOCKET_ACCEPT_ACTION = "accept";
+     public static final @Interned String SOCKET_CONNECT_ACCEPT_ACTION = "connect,accept";
+     public static final @Interned String PROPERTY_RW_ACTION = "read,write";
+     public static final @Interned String PROPERTY_READ_ACTION = "read";
+     public static final @Interned String PROPERTY_WRITE_ACTION = "write";
+}
+package sun.security.x509;
+public class AuthorityInfoAccessExtension {
+     public static final @Interned String NAME = "AuthorityInfoAccess";
+     public static final @Interned String DESCRIPTIONS = "descriptions";
+}
+package sun.security.x509;
+public class AuthorityKeyIdentifierExtension {
+     public static final @Interned String NAME = "AuthorityKeyIdentifier";
+     public static final @Interned String KEY_ID = "key_id";
+     public static final @Interned String AUTH_NAME = "auth_name";
+     public static final @Interned String SERIAL_NUMBER = "serial_number";
+}
+package sun.security.x509;
+public class BasicConstraintsExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.BasicConstraints";
+     public static final @Interned String NAME = "BasicConstraints";
+     public static final @Interned String IS_CA = "is_ca";
+     public static final @Interned String PATH_LEN = "path_len";
+}
+package sun.security.x509;
+public class CRLDistributionPointsExtension {
+     public static final @Interned String NAME = "CRLDistributionPoints";
+     public static final @Interned String POINTS = "points";
+}
+package sun.security.x509;
+public class CRLNumberExtension {
+     public static final @Interned String NAME = "CRLNumber";
+     public static final @Interned String NUMBER = "value";
+}
+package sun.security.x509;
+public class CRLReasonCodeExtension {
+     public static final @Interned String NAME = "CRLReasonCode";
+     public static final @Interned String REASON = "reason";
+}
+package sun.security.x509;
+public class CertificateAlgorithmId {
+     public static final @Interned String IDENT = "x509.info.algorithmID";
+     public static final @Interned String NAME = "algorithmID";
+     public static final @Interned String ALGORITHM = "algorithm";
+}
+package sun.security.x509;
+public class CertificateExtensions {
+     public static final @Interned String IDENT = "x509.info.extensions";
+     public static final @Interned String NAME = "extensions";
+}
+package sun.security.x509;
+public class CertificateIssuerExtension {
+     public static final @Interned String NAME = "CertificateIssuer";
+     public static final @Interned String ISSUER = "issuer";
+}
+package sun.security.x509;
+public class CertificateIssuerName {
+     public static final @Interned String IDENT = "x509.info.issuer";
+     public static final @Interned String NAME = "issuer";
+     public static final @Interned String DN_NAME = "dname";
+     public static final @Interned String DN_PRINCIPAL = "x500principal";
+}
+package sun.security.x509;
+public class CertificateIssuerUniqueIdentity {
+     public static final @Interned String IDENT = "x509.info.issuerID";
+     public static final @Interned String NAME = "issuerID";
+     public static final @Interned String ID = "id";
+}
+package sun.security.x509;
+public class CertificatePoliciesExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.CertificatePolicies";
+     public static final @Interned String NAME = "CertificatePolicies";
+     public static final @Interned String POLICIES = "policies";
+}
+package sun.security.x509;
+public class CertificateSerialNumber {
+     public static final @Interned String IDENT = "x509.info.serialNumber";
+     public static final @Interned String NAME = "serialNumber";
+     public static final @Interned String NUMBER = "number";
+}
+package sun.security.x509;
+public class CertificateSubjectName {
+     public static final @Interned String IDENT = "x509.info.subject";
+     public static final @Interned String NAME = "subject";
+     public static final @Interned String DN_NAME = "dname";
+     public static final @Interned String DN_PRINCIPAL = "x500principal";
+}
+package sun.security.x509;
+public class CertificateSubjectUniqueIdentity {
+     public static final @Interned String IDENT = "x509.info.subjectID";
+     public static final @Interned String NAME = "subjectID";
+     public static final @Interned String ID = "id";
+}
+package sun.security.x509;
+public class CertificateValidity {
+     public static final @Interned String IDENT = "x509.info.validity";
+     public static final @Interned String NAME = "validity";
+     public static final @Interned String NOT_BEFORE = "notBefore";
+     public static final @Interned String NOT_AFTER = "notAfter";
+}
+package sun.security.x509;
+public class CertificateVersion {
+     public static final @Interned String IDENT = "x509.info.version";
+     public static final @Interned String NAME = "version";
+     public static final @Interned String VERSION = "number";
+}
+package sun.security.x509;
+public class CertificateX509Key {
+     public static final @Interned String IDENT = "x509.info.key";
+     public static final @Interned String NAME = "key";
+     public static final @Interned String KEY = "value";
+}
+package sun.security.x509;
+public class DeltaCRLIndicatorExtension {
+     public static final @Interned String NAME = "DeltaCRLIndicator";
+}
+package sun.security.x509;
+public class ExtendedKeyUsageExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.ExtendedKeyUsage";
+     public static final @Interned String NAME = "ExtendedKeyUsage";
+     public static final @Interned String USAGES = "usages";
+}
+package sun.security.x509;
+public class FreshestCRLExtension {
+     public static final @Interned String NAME = "FreshestCRL";
+}
+package sun.security.x509;
+public class InhibitAnyPolicyExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.InhibitAnyPolicy";
+     public static final @Interned String NAME = "InhibitAnyPolicy";
+     public static final @Interned String SKIP_CERTS = "skip_certs";
+}
+package sun.security.x509;
+public class InvalidityDateExtension {
+     public static final @Interned String NAME = "InvalidityDate";
+     public static final @Interned String DATE = "date";
+}
+package sun.security.x509;
+public class IssuerAlternativeNameExtension {
+     public static final @Interned String NAME = "IssuerAlternativeName";
+     public static final @Interned String ISSUER_NAME = "issuer_name";
+}
+package sun.security.x509;
+public class IssuingDistributionPointExtension {
+     public static final @Interned String NAME = "IssuingDistributionPoint";
+     public static final @Interned String POINT = "point";
+     public static final @Interned String REASONS = "reasons";
+     public static final @Interned String ONLY_USER_CERTS = "only_user_certs";
+     public static final @Interned String ONLY_CA_CERTS = "only_ca_certs";
+     public static final @Interned String ONLY_ATTRIBUTE_CERTS = "only_attribute_certs";
+     public static final @Interned String INDIRECT_CRL = "indirect_crl";
+}
+package sun.security.x509;
+public class KeyUsageExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.KeyUsage";
+     public static final @Interned String NAME = "KeyUsage";
+     public static final @Interned String DIGITAL_SIGNATURE = "digital_signature";
+     public static final @Interned String NON_REPUDIATION = "non_repudiation";
+     public static final @Interned String KEY_ENCIPHERMENT = "key_encipherment";
+     public static final @Interned String DATA_ENCIPHERMENT = "data_encipherment";
+     public static final @Interned String KEY_AGREEMENT = "key_agreement";
+     public static final @Interned String KEY_CERTSIGN = "key_certsign";
+     public static final @Interned String CRL_SIGN = "crl_sign";
+     public static final @Interned String ENCIPHER_ONLY = "encipher_only";
+     public static final @Interned String DECIPHER_ONLY = "decipher_only";
+}
+package sun.security.x509;
+public class NameConstraintsExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.NameConstraints";
+     public static final @Interned String NAME = "NameConstraints";
+     public static final @Interned String PERMITTED_SUBTREES = "permitted_subtrees";
+     public static final @Interned String EXCLUDED_SUBTREES = "excluded_subtrees";
+}
+package sun.security.x509;
+public class NetscapeCertTypeExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.NetscapeCertType";
+     public static final @Interned String NAME = "NetscapeCertType";
+     public static final @Interned String SSL_CLIENT = "ssl_client";
+     public static final @Interned String SSL_SERVER = "ssl_server";
+     public static final @Interned String S_MIME = "s_mime";
+     public static final @Interned String OBJECT_SIGNING = "object_signing";
+     public static final @Interned String SSL_CA = "ssl_ca";
+     public static final @Interned String S_MIME_CA = "s_mime_ca";
+     public static final @Interned String OBJECT_SIGNING_CA = "object_signing_ca";
+}
+package sun.security.x509;
+public class OCSPNoCheckExtension {
+     public static final @Interned String NAME = "OCSPNoCheck";
+}
+package sun.security.x509;
+public class PolicyConstraintsExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.PolicyConstraints";
+     public static final @Interned String NAME = "PolicyConstraints";
+     public static final @Interned String REQUIRE = "require";
+     public static final @Interned String INHIBIT = "inhibit";
+}
+package sun.security.x509;
+public class PolicyInformation {
+     public static final @Interned String NAME       = "PolicyInformation";
+     public static final @Interned String ID         = "id";
+     public static final @Interned String QUALIFIERS = "qualifiers";
+}
+package sun.security.x509;
+public class PolicyMappingsExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.PolicyMappings";
+     public static final @Interned String NAME = "PolicyMappings";
+     public static final @Interned String MAP = "map";
+}
+package sun.security.x509;
+public class PrivateKeyUsageExtension {
+     public static final @Interned String IDENT = "x509.info.extensions.PrivateKeyUsage";
+     public static final @Interned String NAME = "PrivateKeyUsage";
+     public static final @Interned String NOT_BEFORE = "not_before";
+     public static final @Interned String NOT_AFTER = "not_after";
+}
+package sun.security.x509;
+public class ReasonFlags {
+     public static final @Interned String UNUSED = "unused";
+     public static final @Interned String KEY_COMPROMISE = "key_compromise";
+     public static final @Interned String CA_COMPROMISE = "ca_compromise";
+     public static final @Interned String AFFILIATION_CHANGED = "affiliation_changed";
+     public static final @Interned String SUPERSEDED = "superseded";
+     public static final @Interned String CERTIFICATE_HOLD = "certificate_hold";
+     public static final @Interned String PRIVILEGE_WITHDRAWN = "privilege_withdrawn";
+     public static final @Interned String AA_COMPROMISE = "aa_compromise";
+}
+package sun.security.x509;
+public class SubjectAlternativeNameExtension {
+     public static final @Interned String NAME = "SubjectAlternativeName";
+     public static final @Interned String SUBJECT_NAME = "subject_name";
+}
+package sun.security.x509;
+public class SubjectInfoAccessExtension {
+     public static final @Interned String NAME = "SubjectInfoAccess";
+     public static final @Interned String DESCRIPTIONS = "descriptions";
+}
+package sun.security.x509;
+public class SubjectKeyIdentifierExtension {
+     public static final @Interned String NAME = "SubjectKeyIdentifier";
+     public static final @Interned String KEY_ID = "key_id";
+}
+package sun.security.x509;
+public class X509CertImpl {
+     public static final @Interned String NAME = "x509";
+     public static final @Interned String ALG_ID = "algorithm";
+     public static final @Interned String SIGNATURE = "signature";
+     public static final @Interned String SIGNED_CERT = "signed_cert";
+}
+package sun.security.x509;
+public class X509CertInfo {
+     public static final @Interned String IDENT = "x509.info";
+     public static final @Interned String NAME = "info";
+}
+package sun.util.calendar;
+public class ZoneInfoFile {
+     public static final @Interned String  JAVAZM_FILE_NAME = "ZoneInfoMappings";
+}

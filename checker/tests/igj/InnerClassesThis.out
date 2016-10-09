@@ -1,7 +1,0 @@
-InnerClassThis.java:20: error: (argument.type.incompatible)
-InnerClassThis.java:21: error: (argument.type.incompatible)
-InnerClassThis.java:22: error: (argument.type.incompatible)
-InnerClassThis.java:25: error: (argument.type.incompatible)
-InnerClassThis.java:27: error: (argument.type.incompatible)
-InnerClassThis.java:28: error: (argument.type.incompatible)
-InnerClassThis.java:53: error: (assignability.invalid)

@@ -34,8 +34,9 @@ public @Interned class InternedClass {
     // Equals method (used only by interning; clients should use ==)
     @org.checkerframework.dataflow.qual.Pure
     public boolean equals(Object other) {
-        if (! (other instanceof InternedClass))
+        if (! (other instanceof InternedClass)) {
             return false;
+        }
         return value == ((InternedClass) other).value;
     }
 
@@ -44,8 +45,9 @@ public @Interned class InternedClass {
         new HashMap<InternedClass, @Interned InternedClass>();
     @SuppressWarnings("interning")
     public @Interned InternedClass intern() /*Uninterned*/ {
-        if (!pool.containsKey(this))
+        if (!pool.containsKey(this)) {
             pool.put(this, (@Interned InternedClass)this);
+        }
         return pool.get(this);
     }
 
@@ -131,8 +133,9 @@ public @Interned class InternedClass {
         Vector<Class<?>> v = new Vector<Class<?>>();
         while (true) {
             //:: warning: (unnecessary.equals)
-            if (c.getSuperclass().equals((new Object()).getClass()))
+            if (c.getSuperclass().equals((new Object()).getClass())) {
                 break;
+            }
             c = c.getSuperclass();
             v.addElement(c);
         }

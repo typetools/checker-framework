@@ -73,12 +73,13 @@ public class StubGenerator {
     }
 
     /**
-     * Generate the skeleton file for all the classes within the provided
+     * Generate the stub file for all the classes within the provided
      * package.
      */
-    public void skeletonFromField(Element elt) {
-        if (!(elt.getKind() == ElementKind.FIELD))
+    public void stubFromField(Element elt) {
+        if (!(elt.getKind() == ElementKind.FIELD)) {
             return;
+        }
 
         String pkg = ElementUtils.getVerboseName((ElementUtils
                 .enclosingPackage(elt)));
@@ -93,10 +94,10 @@ public class StubGenerator {
     }
 
     /**
-     * Generate the skeleton file for all the classes within the provided
+     * Generate the stub file for all the classes within the provided
      * package.
      */
-    public void skeletonFromPackage(PackageElement packageElement) {
+    public void stubFromPackage(PackageElement packageElement) {
         currentPackage = packageElement.getQualifiedName().toString();
 
         indent();
@@ -114,12 +115,13 @@ public class StubGenerator {
     }
 
     /**
-     * Generate the skeleton file for all the classes within the provided
+     * Generate the stub file for all the classes within the provided
      * package.
      */
-    public void skeletonFromMethod(Element elt) {
-        if (!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD))
+    public void stubFromMethod(Element elt) {
+        if (!(elt.getKind() == ElementKind.CONSTRUCTOR || elt.getKind() == ElementKind.METHOD)) {
             return;
+        }
 
         String newPackage = ElementUtils.getVerboseName(ElementUtils
                 .enclosingPackage(elt));
@@ -134,12 +136,12 @@ public class StubGenerator {
     }
 
     /**
-     * Generate the skeleton file for provided class.  The generated file
+     * Generate the stub file for provided class.  The generated file
      * includes the package name.
      */
-    public void skeletonFromType(TypeElement typeElement) {
+    public void stubFromType(TypeElement typeElement) {
 
-        // only output skeleton for classes or interfaces.  not enums
+        // only output stub for classes or interfaces.  not enums
         if (typeElement.getKind() != ElementKind.CLASS
                 && typeElement.getKind() != ElementKind.INTERFACE)
             return;
@@ -162,7 +164,7 @@ public class StubGenerator {
 
         String className = fullClassName.substring(fullClassName
                 //+1 because currentPackage doesn't include
-                //the . between the package name and the classname
+                // the . between the package name and the classname
                 .indexOf(currentPackage) + currentPackage.length()+1);
 
         int index = className.lastIndexOf('.');
@@ -188,12 +190,13 @@ public class StubGenerator {
         List<TypeElement> innerClass = new ArrayList<TypeElement>();
 
         indent();
-        if (typeElement.getKind() == ElementKind.INTERFACE)
+        if (typeElement.getKind() == ElementKind.INTERFACE) {
             out.print("interface");
-        else if (typeElement.getKind() == ElementKind.CLASS)
+        } else if (typeElement.getKind() == ElementKind.CLASS) {
             out.print("class");
-        else
+        } else {
             return;
+        }
 
         out.print(' ');
         if (outerClass != null) {
@@ -234,7 +237,7 @@ public class StubGenerator {
         out.println("}");
 
         for (TypeElement element: innerClass) {
-            printClass(element,typeElement.getSimpleName().toString());
+            printClass(element, typeElement.getSimpleName().toString());
         }
 
     }
@@ -247,8 +250,9 @@ public class StubGenerator {
      */
     private void printTypeMembers(List<? extends Element> members, List<TypeElement> innerClass) {
         for (Element element : members) {
-            if (isPublicOrProtected(element))
-                printMember(element,innerClass);
+            if (isPublicOrProtected(element)) {
+                printMember(element, innerClass);
+            }
         }
     }
 
@@ -256,12 +260,13 @@ public class StubGenerator {
      * Helper method that outputs the declaration of the member
      */
     private void printMember(Element member, List<TypeElement> innerClass) {
-        if (member.getKind().isField())
+        if (member.getKind().isField()) {
             printFieldDecl((VariableElement)member);
-        else if (member instanceof ExecutableElement)
+        } else if (member instanceof ExecutableElement) {
             printMethodDecl((ExecutableElement)member);
-        else if (member instanceof TypeElement)
+        } else if (member instanceof TypeElement) {
             innerClass.add((TypeElement) member);
+        }
     }
 
     /**
@@ -277,12 +282,15 @@ public class StubGenerator {
 
         indent();
         // if protected, indicate that, but not public
-        if (field.getModifiers().contains(Modifier.PROTECTED))
+        if (field.getModifiers().contains(Modifier.PROTECTED)) {
             out.print("protected ");
-        if (field.getModifiers().contains(Modifier.STATIC))
+        }
+        if (field.getModifiers().contains(Modifier.STATIC)) {
             out.print("static ");
-        if (field.getModifiers().contains(Modifier.FINAL))
+        }
+        if (field.getModifiers().contains(Modifier.FINAL)) {
             out.print("final ");
+        }
 
         out.print(formatType(field.asType()));
 
@@ -299,10 +307,12 @@ public class StubGenerator {
     private void printMethodDecl(ExecutableElement method) {
         indent();
         // if protected, indicate that, but not public
-        if (method.getModifiers().contains(Modifier.PROTECTED))
+        if (method.getModifiers().contains(Modifier.PROTECTED)) {
             out.print("protected ");
-        if (method.getModifiers().contains(Modifier.STATIC))
+        }
+        if (method.getModifiers().contains(Modifier.STATIC)) {
             out.print("static ");
+        }
 
         // print Generic arguments
         if (!method.getTypeParameters().isEmpty()) {
@@ -347,15 +357,10 @@ public class StubGenerator {
 
     /**
      * Return a string representation of the list in the form of
-     * <code>
-     *    item1, item2, item3, ...
-     * </code>
+     * {@code item1, item2, item3, ...}
      *
      * instead of the default representation,
-     * <code>
-     *    [item1, item2, item3, ...]
-     * </code>
-     *
+     * {@code [item1, item2, item3, ...]}
      */
     private String formatList(List<?> lst) {
         StringBuilder sb = new StringBuilder();
@@ -404,12 +409,13 @@ public class StubGenerator {
 
         StubGenerator generator = new StubGenerator();
 
-        if (env.getElementUtils().getPackageElement(args[0]) != null)
-            generator.skeletonFromPackage(env.getElementUtils().getPackageElement(args[0]));
-        else if (env.getElementUtils().getTypeElement(args[0]) != null)
-            generator.skeletonFromType(env.getElementUtils().getTypeElement(args[0]));
-        else
+        if (env.getElementUtils().getPackageElement(args[0]) != null) {
+            generator.stubFromPackage(env.getElementUtils().getPackageElement(args[0]));
+        } else if (env.getElementUtils().getTypeElement(args[0]) != null) {
+            generator.stubFromType(env.getElementUtils().getTypeElement(args[0]));
+        } else {
             error("Couldn't find a package or a class named " + args[0]);
+        }
     }
 
     private static void error(String string) {

@@ -17,8 +17,8 @@ public class GenericsBoundsRange<@Regex(3) T extends @Regex(1) String> {
             matcher.group(0);
             matcher.group(1);
 
-            //T has at least 1 group so the above 2 group calls are good
-            //however, T MAY or MAY NOT have 2 or 3 groups, so issue an error
+            // T has at least 1 group so the above 2 group calls are good
+            // however, T MAY or MAY NOT have 2 or 3 groups, so issue an error
 
             //:: error: (group.count.invalid)
             matcher.group(2);
@@ -26,16 +26,16 @@ public class GenericsBoundsRange<@Regex(3) T extends @Regex(1) String> {
             //:: error: (group.count.invalid)
             matcher.group(3);
 
-            //T definitely does not have 4 groups, issue an error
+            // T definitely does not have 4 groups, issue an error
 
             //:: error: (group.count.invalid)
             matcher.group(4);
         }
     }
 
-    //Bounds used to not actually be bounds but instead exactly the lower bound
-    //so line below would fail because the argument could only be Regex(0).  So this
-    //tests BaseTypeValidator.checkTypeArguments range checking
+    // Bounds used to not actually be bounds but instead exactly the lower bound
+    // so line below would fail because the argument could only be Regex(0).  So this
+    // tests BaseTypeValidator.checkTypeArguments range checking
     public void method(GenericsBoundsRange<@Regex(2) String> gbr) {
     }
 }

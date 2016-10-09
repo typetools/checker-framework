@@ -51,7 +51,7 @@ public class TestUtilities {
         File [] dirs = new File[dirNames.length];
 
         int i = 0;
-        for(String dirName : dirNames) {
+        for (String dirName : dirNames) {
             dirs[i] = new File(parent, dirName);
             i += 1;
         }
@@ -86,10 +86,12 @@ public class TestUtilities {
      * Returns all the java files that are descendants of the given directory
      */
     public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
-        if (!directory.exists())
+        if (!directory.exists()) {
             throw new IllegalArgumentException("directory does not exist: " + directory);
-        if (!directory.isDirectory())
+        }
+        if (!directory.isDirectory()) {
             throw new IllegalArgumentException("found file instead of directory: " + directory);
+        }
 
         List<File> javaFiles = new ArrayList<File>();
 
@@ -101,10 +103,11 @@ public class TestUtilities {
             }
         });
         for (File file : in) {
-            if (file.isDirectory())
+            if (file.isDirectory()) {
                 javaFiles.addAll(deeplyEnclosedJavaTestFiles(file));
-            else if (isJavaTestFile(file))
+            } else if (isJavaTestFile(file)) {
                 javaFiles.add(file);
+            }
         }
 
         return javaFiles;
@@ -115,8 +118,9 @@ public class TestUtilities {
     }
 
     public static boolean isJavaTestFile(File file) {
-        if (!isJavaFile(file))
+        if (!isJavaFile(file)) {
             return false;
+        }
 
         // We could implement special filtering based on directory names,
         // but I prefer using @below-java8-jdk-skip-test
@@ -301,14 +305,14 @@ public class TestUtilities {
         try {
             final BufferedWriter bw = new BufferedWriter(new FileWriter(file, true));
             bw.write("Files:\n");
-            for(JavaFileObject f : files) {
+            for (JavaFileObject f : files) {
                 bw.write("    " + f.getName());
                 bw.newLine();
             }
             bw.newLine();
 
             bw.write("Options:\n");
-            for(String o : options) {
+            for (String o : options) {
                 bw.write("    " + o);
                 bw.newLine();
             }
@@ -316,7 +320,7 @@ public class TestUtilities {
 
 
             bw.write("Processors:\n");
-            for(String p : processors) {
+            for (String p : processors) {
                 bw.write("    " + p);
                 bw.newLine();
             }

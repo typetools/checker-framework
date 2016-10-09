@@ -64,7 +64,7 @@ public abstract class CheckerFrameworkTest {
     protected final String checkerName;
 
     /** The path, relative to currentDir/test to the directory containing test inputs. */
-    protected final String checkerDir;
+    protected final String testDir;
 
     /** Extra options to pass to javac when running the checker. */
     protected final List<String> checkerOptions;
@@ -73,15 +73,15 @@ public abstract class CheckerFrameworkTest {
      * Creates a new checker test.
      *
      * @param checker the class for the checker to use
-     * @param checkerDir the path to the directory of test inputs
+     * @param testDir the path to the directory of test inputs
      * @param checkerOptions options to pass to the compiler when running tests
      */
     public CheckerFrameworkTest(File testFile,
                                 Class<? extends AbstractProcessor> checker,
-                                String checkerDir, String... checkerOptions) {
+                                String testDir, String... checkerOptions) {
         this.testFile = testFile;
         this.checkerName = checker.getName();
-        this.checkerDir = "tests" + File.separator + checkerDir;
+        this.testDir = "tests" + File.separator + testDir;
         this.checkerOptions = Arrays.asList(checkerOptions);
     }
 
@@ -89,7 +89,7 @@ public abstract class CheckerFrameworkTest {
     public void run() {
         boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
         List<String> customizedOptions = customizeOptions(Collections.unmodifiableList(checkerOptions));
-        TestConfiguration config = buildDefaultConfiguration(checkerDir, testFile, checkerName, customizedOptions,
+        TestConfiguration config = buildDefaultConfiguration(testDir, testFile, checkerName, customizedOptions,
                                                              shouldEmitDebugInfo);
         TypecheckResult testResult = new TypecheckExecutor().runTest(config);
         TestUtilities.assertResultsAreValid(testResult);
@@ -104,10 +104,10 @@ public abstract class CheckerFrameworkTest {
      * If you want to specify the same command-line option for all tests of
      * a particular checker, then pass it to the {@link #CheckerFrameworkTest}
      * constructor.
-     * 
-     * @param previousOptions The options specified in the constructor of the test
+     *
+     * @param previousOptions the options specified in the constructor of the test
      *                        previousOptions is unmodifiable
-     * @return A new list of options or the original passed through
+     * @return a new list of options or the original passed through
      */
     public List<String> customizeOptions(List<String> previousOptions) {
         return previousOptions;

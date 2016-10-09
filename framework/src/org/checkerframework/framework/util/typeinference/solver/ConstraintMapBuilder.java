@@ -93,8 +93,8 @@ public class ConstraintMapBuilder {
                                 uAnnos.add(tAnno);
 
                             } else {
-                                //This tells us nothing, they both should be equal but either way
-                                //we gain no information if both type vars have annotations
+                                // This tells us nothing, they both should be equal but either way
+                                // we gain no information if both type vars have annotations
                             }
                         }
                     }
@@ -160,7 +160,7 @@ public class ConstraintMapBuilder {
         }
     }
 
-    public void addToTypeRelationship(TypeVariable target, AnnotatedTypeMirror type,ConstraintMap result,
+    public void addToTypeRelationship(TypeVariable target, AnnotatedTypeMirror type, ConstraintMap result,
                                       TUConstraint constraint, Set<AnnotationMirror> hierarchies) {
         if (constraint instanceof TIsU) {
             result.addTypeEqualities(target, type, hierarchies);

@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public interface TestConfiguration {
     /**
-     * @return A list of source files a CheckerFrameworkTest should be run over.  These source files
+     * @return a list of source files a CheckerFrameworkTest should be run over.  These source files
      *         will be passed to Javac when the test is run.  These are NOT JUnit tests.
      */
     List<File> getTestSourceFiles();
@@ -29,14 +29,14 @@ public interface TestConfiguration {
      *
      * It is preferred that users write the errors in the test files and not in diagnostic files.
      *
-     * @return A List of diagnostic files containing the error/warning messages expected to be
+     * @return a List of diagnostic files containing the error/warning messages expected to be
      *         output when Javac is run on the files returned by getTestSourceFiles.  Return an
      *         empty list if these messages were specified within the source files.
      */
     List<File> getDiagnosticFiles();
 
     /**
-     * @return A list of annotation processors (Checkers) passed to the Javac compiler
+     * @return a list of annotation processors (Checkers) passed to the Javac compiler
      */
     List<String> getProcessors();
 
@@ -54,13 +54,13 @@ public interface TestConfiguration {
      *     )
      * }
      *
-     * @return A Map representing all command line options to Javac other than source files and processors
+     * @return a Map representing all command line options to Javac other than source files and processors
      */
     Map<String, String> getOptions();
 
 
     /**
-     * @return The map returned getOptions but flattened into a list.
+     * @return the map returned getOptions but flattened into a list.
      * The entries will be added as followed:
      *         List(key1, value1, key2, value2, ..., keyN, valueN)
      *         If a value is NULL then it will not appear in the list.

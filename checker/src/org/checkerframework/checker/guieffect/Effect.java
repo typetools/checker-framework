@@ -26,7 +26,7 @@ public final class Effect {
     }
 
     public static Effect min(Effect l, Effect r) {
-        if (LE(l,r)) {
+        if (LE(l, r)) {
             return l;
         } else {
             return r;
@@ -60,10 +60,11 @@ public final class Effect {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Effect)
+        if (o instanceof Effect) {
             return this.equals((Effect)o);
-        else
+        } else {
             return super.equals(o);
+        }
     }
 
     @Pure

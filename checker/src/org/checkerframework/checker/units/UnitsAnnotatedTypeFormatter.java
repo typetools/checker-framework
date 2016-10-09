@@ -43,7 +43,7 @@ public class UnitsAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
         }
     }
 
-    // format the error printout of any units qualifier that uses Prefix.one
+    /** Format the error printout of any units qualifier that uses Prefix.one. */
     protected static class UnitsAnnotationFormatter extends DefaultAnnotationFormatter {
         protected final BaseTypeChecker checker;
         protected final Elements elements;

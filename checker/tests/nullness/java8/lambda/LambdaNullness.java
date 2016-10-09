@@ -59,8 +59,9 @@ class LambdaNullness {
        if (true) return 12;
        else {
          int result = 15;
-         for (int i = 1; i < 10; i++)
+         for (int i = 1; i < 10; i++) {
            result *= i;
+         }
          //:: error: (return.type.incompatible)
          return null;
        }
@@ -70,8 +71,9 @@ class LambdaNullness {
     Function<@Nullable Integer, Integer> f7 = (@Nullable Integer x) -> 1;
 
     // Single declared-type parameter
-    //:: error: (lambda.param.type.incompatible)
-    Function<@Nullable String, String> f9 = (@NonNull String x) -> { return x + ""; };
+    Function<@Nullable String, String> f9 =
+        //:: error: (lambda.param.type.incompatible)
+        (@NonNull String x) -> { return x + ""; };
     // Single inferred-type parameter
     Function<@NonNull Integer, Integer> f10 = (x) -> x+1;
     // Parentheses optional for single

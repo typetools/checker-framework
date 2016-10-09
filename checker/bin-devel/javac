@@ -7,7 +7,7 @@
 # This script loads the .class files found in the
 # build directory before it uses any jar files so
 # that a user does not have to repackage the whole
-# project to debug changes.
+# project (that is, create .jar files) to debug changes.
 
 # When editing, keep this file in sync with javac-debug in this directory.
 
@@ -32,9 +32,10 @@ ltBinDirAll="${ltBinDir}"/java.compiler/:"${ltBinDir}"/jdk.compiler/:"${ltBinDir
 jdkPaths="${mydir}"/../jdk/annotated
 
 cfDir="${mydir}"/../..
+annoToolsDir="${cfDir}"/../annotation-tools
 # Put "checker" last, as "ant bindist" puts other projects
 # into the checker/build directory.
-buildDirs="${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build
+buildDirs="${annoToolsDir}"/scene-lib/bin:"${annoToolsDir}"/annotation-file-utilities/annotation-file-utilities.jar:"${cfDir}"/dataflow/build:"${cfDir}"/javacutil/build:"${cfDir}"/stubparser/build:"${cfDir}"/framework/build:"${cfDir}"/checker/build
 
 ## Preserve quoting and spaces in arguments, which would otherwise be lost
 ## due to being passed through the shell twice.

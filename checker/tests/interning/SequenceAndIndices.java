@@ -9,15 +9,15 @@ import org.checkerframework.dataflow.qual.Pure;
  * end indices, to represent a subsequence.  Requires that the
  * sequence be interned.  Used for interning the repeated finding
  * of subsequences on the same sequence.
- **/
+ */
 public final class SequenceAndIndices<T extends @Interned Object> {
   public T seq;
   public int start;
   public int end;
 
   /**
-   * @param seqpar An interned array
-   **/
+   * @param seqpar an interned array
+   */
   public SequenceAndIndices (T seqpar, int start, int end) {
     this.seq = seqpar;
     seq = seqpar;

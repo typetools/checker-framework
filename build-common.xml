@@ -22,7 +22,7 @@
 
     <property environment="env"/>
     <tstamp>
-        <format property="timestamp" pattern="yy-MM-dd-hh-mm-ss-SS" />
+        <format property="timestamp" pattern="yy-MM-dd-HH-mm-ss-SS" />
     </tstamp>
     <!-- Prevent printing a literal ${env.BUILD_NUMBER} if it's not in env-->
     <property name="env.EXECUTOR_NUMBER" value="" />
@@ -74,7 +74,7 @@
         <mkdir dir="${dejavuDir}"/>
         <touch file="${dejavuDir}/dejavu.css"/>
 
-	<condition property="compiler.exists">
+        <condition property="compiler.exists">
             <or>
                 <istrue value="${compiler.exists.jsr308}"/>
                 <istrue value="${compiler.exists.java8}"/>
@@ -103,6 +103,8 @@ points to version ${build.version} of the 'javac.jar' library."/>
             <jvmarg line="-Xbootclasspath/p:${javac.lib}:${javadoc.lib}"/>
             -->
             <arg value="-g"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-d ${build}"/>

@@ -16,6 +16,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 
 /**
  * Converts a field or methods tree tree into an AnnotatedTypeMirror
@@ -27,10 +28,13 @@ class TypeFromMemberVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitVariable(VariableTree node,
                                              AnnotatedTypeFactory f) {
-        AnnotatedTypeMirror result = f.fromTypeTree(node.getType());
-        result.clearAnnotations();
-        Element elt = TreeUtils.elementFromDeclaration(node);
+        // Create the ATM and add non-primary annotations
+        // (node.getType() does not include primary annotations, those are in
+        // node.getModifier()
+        AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(f, node.getType());
 
+        // Add primary annotations
+        Element elt = TreeUtils.elementFromDeclaration(node);
         ElementAnnotationApplier.apply(result, elt, f);
         inferLambdaParamAnnotations(f, result, elt);
         return result;

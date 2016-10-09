@@ -90,8 +90,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
      * This method has to be called for every explicit or implicit use of a type,
      * most cases are simply covered by the type validator.
      *
-     * @param node The tree for error reporting only.
-     * @param member The element from which to start looking.
+     * @param node the tree for error reporting only
+     * @param member the element from which to start looking
      */
     private void checkReportUse(Tree node, Element member) {
         Element loop = member;
@@ -129,7 +129,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         // this.atypeFactory.getDeclAnnotation(member, ReportInherit.class) != null;
 
         // Check whether any superclass/interface had the ReportInherit annotation.
-        List<TypeElement> suptypes = ElementUtils.getSuperTypes(member);
+        List<TypeElement> suptypes = ElementUtils.getSuperTypes(elements, member);
         for (TypeElement sup : suptypes) {
             report = this.atypeFactory.getDeclAnnotation(sup, ReportInherit.class) != null;
             if (report) {
@@ -249,7 +249,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         }
         if (!report) {
             // Check whether any superclass/interface had the ReportCreation annotation.
-            List<TypeElement> suptypes = ElementUtils.getSuperTypes((TypeElement)member);
+            List<TypeElement> suptypes = ElementUtils.getSuperTypes(elements, (TypeElement)member);
             for (TypeElement sup : suptypes) {
                 report = this.atypeFactory.getDeclAnnotation(sup, ReportCreation.class) != null;
                 if (report) {

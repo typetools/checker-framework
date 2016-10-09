@@ -16,4 +16,3 @@ public class CastTypeVariable {
         return possValue;
     }
 }
-

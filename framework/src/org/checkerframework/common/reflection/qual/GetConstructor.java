@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 /**
  * Annotation for methods of the form:
  * <br>
- * <code>{@link MethodVal}(classname=c, methodname="&lt;init&gt;", params=p)
- * Constructor&lt;T&gt; method(Class&lt;c&gt; this, Object... params)</code>
+ * {@code {@link MethodVal}(classname=c, methodname="<init>", params=p)
+ * Constructor<T> method(Class<c> this, Object... params)}
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

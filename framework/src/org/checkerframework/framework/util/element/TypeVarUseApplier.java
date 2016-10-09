@@ -8,6 +8,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import static org.checkerframework.framework.util.element.ElementAnnotationUtil.addAnnotationsFromElement;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.annotateViaTypeAnnoPosition;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.contains;
 import static org.checkerframework.framework.util.element.ElementAnnotationUtil.getTypeAtLocation;
@@ -42,7 +43,7 @@ public class TypeVarUseApplier {
     };
 
     /**
-     * @return True if type is an AnnotatedTypeVariable, or an AnnotatedArrayType with a type variable component,
+     * @return true if type is an AnnotatedTypeVariable, or an AnnotatedArrayType with a type variable component,
      *         and the element is not a TYPE_PARAMETER
      */
     public static boolean accepts(AnnotatedTypeMirror type, Element element) {
@@ -104,16 +105,17 @@ public class TypeVarUseApplier {
      * then applies the explicit annotations written on the type variable
      */
     public void extractAndApply() {
+        addAnnotationsFromElement(typeVariable, useElem.getAnnotationMirrors());
 
-        //apply declaration annotations
+        // apply declaration annotations
         ElementAnnotationApplier.apply(typeVariable, declarationElem, typeFactory);
 
         final List<Attribute.TypeCompound> annotations = getAnnotations( useElem, declarationElem );
 
         final List<Attribute.TypeCompound> typeVarAnnotations;
         if (arrayType != null) {
-            //if the outer-most type is an array type then we want to ensure the outer annotations
-            //are not applied as the type variables primary annotation
+            // if the outer-most type is an array type then we want to ensure the outer annotations
+            // are not applied as the type variables primary annotation
             typeVarAnnotations = removeComponentAnnotations(arrayType, annotations);
             annotateViaTypeAnnoPosition(arrayType, annotations);
 
@@ -192,14 +194,14 @@ public class TypeVarUseApplier {
                         "Unhandled element kind " + useElem.getKind() +
                         "useElem ( " + useElem + " ) "                +
                         "declarationElem ( " + declarationElem + " ) ");
-                annotations = null; //dead code
+                annotations = null; // dead code
         }
 
         return annotations;
     }
 
     /**
-     * @return Annotations on an element that apply to variable declarations
+     * @return annotations on an element that apply to variable declarations
      */
     private static List<Attribute.TypeCompound> getVariableAnnos(final Element variableElem) {
         final VarSymbol varSymbol = (VarSymbol) variableElem;
@@ -227,7 +229,7 @@ public class TypeVarUseApplier {
      * Currently, the metadata for storing annotations (i.e. the Attribute.TypeCompounds) is null for binary-only
      * parameters and type parameters.  However, it is present on the method.  So in order to ensure that we correctly
      * retrieve the annotations we need to index from the method and retrieve the annotations from its metadata.
-     * @return A list of annotations that were found on METHOD_FORMAL_PARAMETERS that match the parameter index
+     * @return a list of annotations that were found on METHOD_FORMAL_PARAMETERS that match the parameter index
      * of the input element in the parent methods formal parameter list
      */
     private static List<Attribute.TypeCompound> getParameterAnnos(final Element paramElem) {
@@ -255,7 +257,7 @@ public class TypeVarUseApplier {
     }
 
     /**
-     * @return The annotations on the return type of the input ExecutableElement
+     * @return the annotations on the return type of the input ExecutableElement
      */
     private static List<Attribute.TypeCompound> getReturnAnnos(final Element methodElem) {
         if (!(methodElem instanceof ExecutableElement)) {
@@ -275,4 +277,3 @@ public class TypeVarUseApplier {
         return result;
     }
 }
-

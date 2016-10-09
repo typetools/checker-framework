@@ -40,7 +40,8 @@ class AnnotatedForTest
      }
 
 
-     @AnnotatedFor("subtyping") // This method is @AnnotatedFor("subtyping") so it can cause errors to be issued by calling other methods.
+  // This method is @AnnotatedFor("subtyping") so it can cause errors to be issued by calling other methods.
+     @AnnotatedFor("subtyping")
      void method1() {
         // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since @SuperQual is annotated with @DefaultQualifierInHierarchy.
         @SuperQual Object o1 = annotatedMethod(new Object());
@@ -121,26 +122,30 @@ class AnnotatedForTest
         return new Object();
     }
 
-    @AnnotatedFor({"nullness", "subtyping"}) // Annotated for more than one type system
+    // Annotated for more than one type system
+    @AnnotatedFor({"nullness", "subtyping"})
     void method4() {
        //:: error: (assignment.type.incompatible)
        @SubQual Object o2 = new @SuperQual Object();
     }
 
-    @AnnotatedFor("SubtypingChecker") // Different way of writing the checker name
+    // Different way of writing the checker name
+    @AnnotatedFor("SubtypingChecker")
     void method5() {
        //:: error: (assignment.type.incompatible)
        @SubQual Object o2 = new @SuperQual Object();
     }
 
-    @AnnotatedFor("org.checkerframework.common.subtyping.SubtypingChecker") // Different way of writing the checker name
+    // Different way of writing the checker name
+    @AnnotatedFor("org.checkerframework.common.subtyping.SubtypingChecker")
     void method6() {
        //:: error: (assignment.type.incompatible)
        @SubQual Object o2 = new @SuperQual Object();
     }
 
+    // Every method in this class should issue warnings for subtyping even if it's not marked with @AnnotatedFor, unless it's marked with @SuppressWarnings.
     @AnnotatedFor("subtyping")
-    class annotatedClass { // Every method in this class should issue warnings for subtyping even if it's not marked with AnnotatedFor, unless it's marked with SuppressWarnings.
+    class annotatedClass {
         // Test annotated class initializer
         // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since @SuperQual is annotated with @DefaultQualifierInHierarchy.
         @SuperQual Object o1 = annotatedMethod(new Object());

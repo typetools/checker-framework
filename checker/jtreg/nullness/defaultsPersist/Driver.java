@@ -45,10 +45,12 @@ public class Driver {
         // Find methods
         for (Method method : clazz.getMethods()) {
             List<Pair<String, TypeAnnotation.Position>> expected = expectedOf(method);
-            if (expected == null)
+            if (expected == null) {
                 continue;
-            if (method.getReturnType() != String.class)
+            }
+            if (method.getReturnType() != String.class) {
                 throw new IllegalArgumentException("Test method needs to return a string: " + method);
+            }
             String testClass = PersistUtil.testClassOf(method);
 
             try {
@@ -72,22 +74,25 @@ public class Driver {
 
         out.flush();
 
-        if (failed != 0)
+        if (failed != 0) {
             throw new RuntimeException(failed + " tests failed");
+        }
     }
 
     private List<Pair<String, TypeAnnotation.Position>> expectedOf(Method m) {
         TADescription ta = m.getAnnotation(TADescription.class);
         TADescriptions tas = m.getAnnotation(TADescriptions.class);
 
-        if (ta == null && tas == null)
+        if (ta == null && tas == null) {
             return null;
+        }
 
         List<Pair<String, TypeAnnotation.Position>> result =
                 new ArrayList<>();
 
-        if (ta != null)
+        if (ta != null) {
             result.add(expectedOf(ta));
+        }
 
         if (tas != null) {
             for (TADescription a : tas.value()) {
@@ -103,22 +108,30 @@ public class Driver {
 
         TypeAnnotation.Position p = new TypeAnnotation.Position();
         p.type = d.type();
-        if (d.offset() != NOT_SET)
+        if (d.offset() != NOT_SET) {
             p.offset = d.offset();
-        if (d.lvarOffset().length != 0)
+        }
+        if (d.lvarOffset().length != 0) {
             p.lvarOffset = d.lvarOffset();
-        if (d.lvarLength().length != 0)
+        }
+        if (d.lvarLength().length != 0) {
             p.lvarLength = d.lvarLength();
-        if (d.lvarIndex().length != 0)
+        }
+        if (d.lvarIndex().length != 0) {
             p.lvarIndex = d.lvarIndex();
-        if (d.boundIndex() != NOT_SET)
+        }
+        if (d.boundIndex() != NOT_SET) {
             p.bound_index = d.boundIndex();
-        if (d.paramIndex() != NOT_SET)
+        }
+        if (d.paramIndex() != NOT_SET) {
             p.parameter_index = d.paramIndex();
-        if (d.typeIndex() != NOT_SET)
+        }
+        if (d.typeIndex() != NOT_SET) {
             p.type_index = d.typeIndex();
-        if (d.exceptionIndex() != NOT_SET)
+        }
+        if (d.exceptionIndex() != NOT_SET) {
             p.exception_index = d.exceptionIndex();
+        }
         if (d.genericLocation().length != 0) {
             p.location = TypeAnnotation.Position.getTypePathFromBinary(wrapIntArray(d.genericLocation()));
         }
@@ -128,8 +141,9 @@ public class Driver {
 
     private List<Integer> wrapIntArray(int[] ints) {
         List<Integer> list = new ArrayList<Integer>(ints.length);
-        for (int i : ints)
+        for (int i : ints) {
             list.add(i);
+        }
         return list;
     }
 
@@ -160,4 +174,3 @@ public class Driver {
 @interface TADescriptions {
     TADescription[] value() default {};
 }
-

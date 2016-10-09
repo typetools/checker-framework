@@ -185,9 +185,9 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
              * Returns the QualifiedTypeMirror that is the result of the binary operation represented by tree.
              * Handles concatenation of Regex and PolyRegex qualifiers.
              *
-             * @param tree A BinaryTree or a CompoundAssignmentTree
-             * @param lRegexParam The qualifier of the left hand side of the expression
-             * @param rRegexParam The qualifier of the right hand side of the expression
+             * @param tree a BinaryTree or a CompoundAssignmentTree
+             * @param lRegexParam the qualifier of the left hand side of the expression
+             * @param rRegexParam the qualifier of the right hand side of the expression
              * @return result if operation is not a string concatenation or compound assignment. Otherwise
              *          a copy of result with the new qualifier applied is returned.
              */
@@ -257,7 +257,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
     /**
      * Check to see if the result of the operation is polymorphic.
      *
-     * @return the polymorphic PolyQual if the result should be polymorphic, otherwise return null.
+     * @return the polymorphic PolyQual if the result should be polymorphic, otherwise return null
      */
     private PolyQual<Regex> checkPoly(PolyQual<Regex> lPrimary, PolyQual<Regex> rPrimary, Regex lRegex, Regex rRegex) {
         if (isPolyRegex(lPrimary) && isPolyRegex(rPrimary)) {
@@ -288,7 +288,7 @@ public class RegexQualifiedTypeFactory extends QualifierParameterTypeFactory<Reg
      * We cannot directly use RegexUtil, because it uses type annotations
      * which cannot be used in IDEs (yet).
      */
-    /*@SuppressWarnings("purity")*/ // the checker cannot prove that the method is pure, but it is
+    @SuppressWarnings("purity") // the checker cannot prove that the method is pure, but it is
     /*@org.checkerframework.dataflow.qual.Pure*/
     private static boolean isRegex(String s) {
         try {

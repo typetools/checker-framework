@@ -60,7 +60,7 @@ import com.sun.source.tree.WhileLoopTree;
 public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedTypeFactory,
         NullnessValue, NullnessStore> {
     // Error message keys
-    private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
+    // private static final /*@CompilerMessageKey*/ String ASSIGNMENT_TYPE_INCOMPATIBLE = "assignment.type.incompatible";
     private static final /*@CompilerMessageKey*/ String UNBOXING_OF_NULLABLE = "unboxing.of.nullable";
     private static final /*@CompilerMessageKey*/ String KNOWN_NONNULL = "known.nonnull";
     private static final /*@CompilerMessageKey*/ String LOCKING_NULLABLE = "locking.nullable";
@@ -195,33 +195,26 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
                 return;
             }
         }
-
-        if (TreeUtils.isFieldAccess(varTree)) {
-            AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedType(valueExp);
-            // special case writing to NonNull field for free/unc receivers
-            // cast is safe, because varTree is a field
-            AnnotatedTypeMirror annos = atypeFactory.getDeclaredAndDefaultedAnnotatedType(varTree);
-            // receiverType is null for static field accesses
-            AnnotatedTypeMirror receiverType = atypeFactory.getReceiverType((ExpressionTree) varTree);
-            if (receiverType != null
-                    && (atypeFactory.isFree(receiverType) || atypeFactory.isUnclassified(receiverType))) {
-                if (annos.hasEffectiveAnnotation(NONNULL)
-                        && !valueType.hasEffectiveAnnotation(NONNULL)) {
-                    checker.report(Result.failure(ASSIGNMENT_TYPE_INCOMPATIBLE,
-                            valueType.toString(),
-                            annos.toString()), varTree);
-                }
-            }
-        }
         super.commonAssignmentCheck(varTree, valueExp, errorKey);
     }
 
+    @Override
+    protected void commonAssignmentCheck(AnnotatedTypeMirror varType, ExpressionTree valueExp,
+                                         /*@CompilerMessageKey*/ String errorKey) {
+        // Use the valueExp as the context because data flow will have a value for that tree.
+        // It might not have a value for the var tree.  This is sound because
+        // if data flow has determined @PolyNull is @Nullable at the RHS, then
+        // it is also @Nullable for the LHS.
+        atypeFactory.replacePolyQualifier(varType, valueExp);
+        super.commonAssignmentCheck(varType, valueExp, errorKey);
+    }
     /** Case 1: Check for null dereferencing */
     @Override
     public Void visitMemberSelect(MemberSelectTree node, Void p) {
         boolean isType = node.getExpression().getKind() == Kind.PARAMETERIZED_TYPE;
-        if (!TreeUtils.isSelfAccess(node) && !isType)
+        if (!TreeUtils.isSelfAccess(node) && !isType) {
             checkForNullability(node.getExpression(), DEREFERENCE_OF_NULLABLE);
+        }
         return super.visitMemberSelect(node, p);
     }
 
@@ -345,8 +338,7 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
 
         if (checker.hasOption("assumeAssertionsAreEnabled") || CFCFGBuilder.assumeAssertionsActivatedForAssertTree(checker, node)) {
             doVisitAssert = true;
-        }
-        else if (checker.hasOption("assumeAssertionsAreDisabled")) {
+        } else if (checker.hasOption("assumeAssertionsAreDisabled")) {
             doVisitAssert = false;
         }
 
@@ -455,8 +447,9 @@ public class NullnessVisitor extends InitializationVisitor<NullnessAnnotatedType
     private void checkForNullability(ExpressionTree tree,
             /*@CompilerMessageKey*/ String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
-        if (!type.hasEffectiveAnnotation(NONNULL))
+        if (!type.hasEffectiveAnnotation(NONNULL)) {
             checker.report(Result.failure(errMsg, tree), tree);
+        }
     }
 
     @Override

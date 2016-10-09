@@ -30,15 +30,15 @@ import com.sun.tools.javac.util.Context;
  *
  * For testing, you need to do the following:
  * 1. Run the Checker on the source file like any checker:
- *    <pre><code>
+ *    <pre>{@code
  *      java -processor org.checkerframework.common.util.debug.TypeOutputtingChecker [source-file]
- *    </code></pre>
+ *    }</pre>
  *
  * 2. Run the Checker on the bytecode, by simply running the main and passing
  *    the qualified name, e.g.
- *    <pre><code>
+ *    <pre>{@code
  *      java org.checkerframework.common.util.debug.TypeOutputtingChecker [qualified-name]
- *    </code></pre>
+ *    }</pre>
  *
  * 3. Apply a simple diff on the two outputs
  *
@@ -127,8 +127,9 @@ public class TypeOutputtingChecker extends BaseTypeChecker {
 
         // output fields and methods
         for (Element enclosedElt : typeElt.getEnclosedElements()) {
-            if (enclosedElt instanceof TypeElement)
+            if (enclosedElt instanceof TypeElement) {
                 printClassType((TypeElement)enclosedElt, atypeFactory);
+            }
             if (!enclosedElt.getKind().isField()
                     && !(enclosedElt instanceof ExecutableElement))
                 continue;

@@ -4,8 +4,8 @@ import org.checkerframework.javacutil.ErrorReporter;
 
 import java.util.*;
 
-/** A map of qualifier parameters.  A <code>QualParams</code> object maps
- * qualifier parameter names to <code>Wildcard</code> objects.
+/** A map of qualifier parameters.  A {@code QualParams} object maps
+ * qualifier parameter names to {@code Wildcard} objects.
  */
 public class QualParams<Q> implements Map<String, Wildcard<Q>> {
     private Map<String, Wildcard<Q>> map;
@@ -45,8 +45,9 @@ public class QualParams<Q> implements Map<String, Wildcard<Q>> {
      */
     /*
     public QualParams<Q> capture() {
-        if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom())
+        if (this == QualParams.<Q>getTop() || this == QualParams.<Q>getBottom()) {
             return this;
+            }
 
         Map<String, Wildcard<Q>> newMap = new HashMap<>();
         for (String k : this.map.keySet()) {

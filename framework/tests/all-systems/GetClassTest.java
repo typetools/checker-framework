@@ -1,13 +1,10 @@
 class GetClassTest {
 
-    //See AnntoatedTypeFactory.adaptGetClassReturnTypeToReceiver
+    // See AnnotatedTypeFactory.adaptGetClassReturnTypeToReceiver
 
-    //I believe the issue is with Javari's postTreeAnnotator
-    //normal type systems propagate the annotations from T in the
-    // declaration of Class<T> but Javari does NOT
-    @SuppressWarnings("javari")
     void context() {
         Integer i = 4;
+        i.getClass();
         Class<?> a = i.getClass();
         Class<? extends Object> b = i.getClass();
         Class<? extends Integer> c = i.getClass();

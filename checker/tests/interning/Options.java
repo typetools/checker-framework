@@ -29,19 +29,20 @@ class Options {
     List<String> arg_list = new ArrayList<String>();
     String arg = "";
     char active_quote = 0;
-    //for (int ii = 0; ii < args.length(); ii++) {
+    // for (int ii = 0; ii < args.length(); ii++) {
       char ch = args.charAt(0);
       // arg = arg + ch;
 
-      //if ((ch == '\'') || (ch == '"')) {
+      // if ((ch == '\'') || (ch == '"')) {
         arg += ch;
       //}
     //}
     //:: error: (assignment.type.incompatible)
     @Interned String arg2 = arg;
 
-    if (!arg.equals(""))
+    if (!arg.equals("")) {
       arg_list.add(arg);
+    }
 
     String[] argsArray = arg_list.toArray(new String[arg_list.size()]);
     return null;
@@ -69,8 +70,9 @@ class Options {
         arg = "";
         while ((ii < args.length()) && Character.isWhitespace(args.charAt(ii)))
           ii++;
-        if (ii < args.length())
+        if (ii < args.length()) {
           ii--;
+        }
       } else { // must be part of current argument
         arg += ch;
       }
@@ -78,8 +80,9 @@ class Options {
     //:: error: (assignment.type.incompatible)
     @Interned String arg2 = arg;
 
-    if (!arg.equals (""))
+    if (!arg.equals ("")) {
       arg_list.add (arg);
+    }
 
     String[] argsArray = arg_list.toArray (new String[arg_list.size()]);
     return null;

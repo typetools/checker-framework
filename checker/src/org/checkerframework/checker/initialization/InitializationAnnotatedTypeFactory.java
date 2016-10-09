@@ -26,6 +26,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -33,7 +34,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -77,8 +78,30 @@ public abstract class InitializationAnnotatedTypeFactory<
         Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
     extends GenericAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
-    /** Annotation constants */
-    protected final AnnotationMirror COMMITTED, FREE, FBCBOTTOM, NOT_ONLY_COMMITTED, UNCLASSIFIED;
+    /**
+     * {@link UnknownInitialization} or {@link Raw}
+     */
+    protected final AnnotationMirror UNCLASSIFIED;
+
+    /**
+     * {@link Initialized} or {@link NonRaw}
+     */
+    protected final AnnotationMirror COMMITTED;
+
+    /**
+     *{@link  UnderInitialization} or null
+     */
+    protected final AnnotationMirror FREE;
+
+    /**
+     * {@link NotOnlyInitialized} or null
+     */
+    protected final AnnotationMirror NOT_ONLY_COMMITTED;
+
+    /**
+     * {@link FBCBottom} or {@link NonRaw}
+     */
+    protected final AnnotationMirror FBCBOTTOM;
 
     /**
      * Should the initialization type system be FBC? If not, the rawness type
@@ -94,7 +117,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
         this.useFbc = useFbc;
 
-        Set<Class<? extends Annotation>> tempInitAnnos = new HashSet<>();
+        Set<Class<? extends Annotation>> tempInitAnnos = new LinkedHashSet<>();
 
         if (useFbc) {
             COMMITTED = AnnotationUtils.fromClass(elements, Initialized.class);
@@ -143,8 +166,8 @@ public abstract class InitializationAnnotatedTypeFactory<
      */
 
     /**
-     * @return The list of annotations that is forbidden for the constructor
-     *         return type.
+     * @return the list of annotations that is forbidden for the constructor
+     *         return type
      */
     public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
         return getInitializationAnnotations();
@@ -152,7 +175,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /**
      * Returns the annotation that makes up the invariant of this commitment
-     * type system, such as <tt>@NonNull</tt>.
+     * type system, such as {@code @NonNull}.
      */
     public abstract AnnotationMirror getFieldInvariantAnnotation();
 
@@ -304,8 +327,9 @@ public abstract class InitializationAnnotatedTypeFactory<
             return true;
         }
         for (Tree member : classTree.getMembers()) {
-            if (!member.getKind().equals(Tree.Kind.VARIABLE))
+            if (!member.getKind().equals(Tree.Kind.VARIABLE)) {
                 continue;
+            }
             VariableTree var = (VariableTree) member;
             VariableElement varElt = TreeUtils.elementFromDeclaration(var);
             // var is not committed-only
@@ -319,8 +343,6 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
         return true;
     }
-
-    protected boolean HACK_DONT_CALL_POST_AS_MEMBER = false;
 
     /**
      * {@inheritDoc}
@@ -336,14 +358,28 @@ public abstract class InitializationAnnotatedTypeFactory<
             AnnotatedTypeMirror owner, Element element) {
         super.postAsMemberOf(type, owner, element);
 
-        if (!HACK_DONT_CALL_POST_AS_MEMBER) {
-            if (element.getKind().isField()) {
-                Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
-                AnnotatedTypeMirror fieldAnnotations = getAnnotatedType(element);
-                computeFieldAccessType(type, declaredFieldAnnotations, owner,
-                        fieldAnnotations, element);
-            }
+        if (element.getKind().isField()) {
+            Collection<? extends AnnotationMirror> declaredFieldAnnotations = getDeclAnnotations(element);
+            AnnotatedTypeMirror fieldAnnotations = getAnnotatedType(element);
+            computeFieldAccessType(type, declaredFieldAnnotations, owner, fieldAnnotations, element);
         }
+    }
+
+    /**
+     * Controls which hierarchies' qualifiers are changed based on the
+     * receiver type and the declared annotations for a field.
+     * @see #computeFieldAccessType
+     * @see #getAnnotatedTypeLhs(Tree)
+     */
+    private boolean computingAnnotatedTypeMirrorOfLHS = false;
+
+    @Override
+    public AnnotatedTypeMirror getAnnotatedTypeLhs(Tree lhsTree) {
+        boolean oldComputingAnnotatedTypeMirrorOfLHS = computingAnnotatedTypeMirrorOfLHS;
+        computingAnnotatedTypeMirrorOfLHS = true;
+        AnnotatedTypeMirror result = super.getAnnotatedTypeLhs(lhsTree);
+        computingAnnotatedTypeMirrorOfLHS = oldComputingAnnotatedTypeMirrorOfLHS;
+        return result;
     }
 
     @Override
@@ -518,11 +554,12 @@ public abstract class InitializationAnnotatedTypeFactory<
 
         AnnotationMirror unused = getDeclAnnotation(
                 TreeUtils.elementFromDeclaration(field), Unused.class);
-        if (unused == null)
+        if (unused == null) {
             return false;
+        }
 
         Name when = AnnotationUtils.getElementValueClassName(unused, "when",
-                false);
+                                                             false);
         for (AnnotationMirror anno : receiverAnnos) {
             Name annoName = ((TypeElement) anno.getAnnotationType().asElement())
                     .getQualifiedName();
@@ -543,8 +580,7 @@ public abstract class InitializationAnnotatedTypeFactory<
 
     /**
      * Determine the type of a field access (implicit or explicit) based on the
-     * receiver type and the declared annotations for the field
-     * (committed-only).
+     * receiver type and the declared annotations for the field.
      *
      * @param type
      *            Type of the field access expression.
@@ -574,8 +610,18 @@ public abstract class InitializationAnnotatedTypeFactory<
                     .asType();
             boolean isInitializedForFrame = isInitializedForFrame(receiverType, fieldDeclarationType);
             if (isInitializedForFrame) {
-                type.replaceAnnotation(qualHierarchy.getTopAnnotation(UNCLASSIFIED));
+                // The receiver is initialized for this frame.
+                // Change the type of the field to @UnknownInitialization or @Raw so that
+                // anything can be assigned to this field.
+                type.replaceAnnotation(UNCLASSIFIED);
+            } else if (computingAnnotatedTypeMirrorOfLHS) {
+                // The receiver is not initialized for this frame, but the type of a lhs is being computed.
+                // Change the type of the field to @UnknownInitialization or @Raw so that
+                // anything can be assigned to this field.
+                type.replaceAnnotation(UNCLASSIFIED);
             } else {
+                // The receiver is not initialized for this frame and the type being computed is not a LHS.
+                // Replace all annotations with the top annotation for that hierarchy.
                 type.clearAnnotations();
                 type.addAnnotations(qualHierarchy.getTopAnnotations());
             }
@@ -794,9 +840,8 @@ public abstract class InitializationAnnotatedTypeFactory<
             } else if (types.isSubtype(b, a)) {
                 return a;
             }
-            assert false : "not fully implemented yet";
-            return TypesUtils.typeFromClass(processingEnv.getTypeUtils(),
-                    processingEnv.getElementUtils(), Object.class);
+
+            return InternalUtils.leastUpperBound(processingEnv, a, b);
         }
 
         @Override

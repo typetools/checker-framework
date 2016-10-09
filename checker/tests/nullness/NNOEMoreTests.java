@@ -13,8 +13,9 @@ class NNOEMoreTests {
       nullable.toString();
     }
 
+    @RequiresNonNull("xxx")
     //:: error: (flowexpr.parse.error)
-    @RequiresNonNull("xxx") void test2() {
+    void test2() {
       //:: error: (dereference.of.nullable)
       nullable.toString();
     }

@@ -53,10 +53,11 @@ import com.sun.source.tree.Tree;
 public class I18nFormatterAnnotatedTypeFactory extends
         GenericAnnotatedTypeFactory<CFValue, CFStore, I18nFormatterTransfer, I18nFormatterAnalysis> {
 
-    private final AnnotationMirror I18NFORMAT;
-    private final AnnotationMirror I18NINVALIDFORMAT;
-    private final AnnotationMirror I18NFORMATBOTTOM;
-    private final AnnotationMirror I18NFORMATFOR;
+    protected final AnnotationMirror I18NUNKNOWNFORMAT;
+    protected final AnnotationMirror I18NFORMAT;
+    protected final AnnotationMirror I18NINVALIDFORMAT;
+    protected final AnnotationMirror I18NFORMATBOTTOM;
+    protected final AnnotationMirror I18NFORMATFOR;
 
     public final Map<String, String> translations;
 
@@ -65,6 +66,7 @@ public class I18nFormatterAnnotatedTypeFactory extends
     public I18nFormatterAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
 
+        I18NUNKNOWNFORMAT = AnnotationUtils.fromClass(elements, I18nUnknownFormat.class);
         I18NFORMAT = AnnotationUtils.fromClass(elements, I18nFormat.class);
         I18NINVALIDFORMAT = AnnotationUtils.fromClass(elements, I18nInvalidFormat.class);
         I18NFORMATBOTTOM = AnnotationUtils.fromClass(elements, I18nFormatBottom.class);
@@ -265,6 +267,119 @@ public class I18nFormatterAnnotatedTypeFactory extends
             }
 
             return super.isSubtype(rhs, lhs);
+        }
+
+        @Override
+        public AnnotationMirror leastUpperBound(AnnotationMirror anno1,
+                AnnotationMirror anno2) {
+            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMATBOTTOM)) {
+                return anno2;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno2, I18NFORMATBOTTOM)) {
+                return anno1;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMAT) &&
+                AnnotationUtils.areSameIgnoringValues(anno2, I18NFORMAT)) {
+                I18nConversionCategory[] shorterArgTypesList =
+                        treeUtil.formatAnnotationToCategories(anno1);
+                I18nConversionCategory[] longerArgTypesList =
+                        treeUtil.formatAnnotationToCategories(anno2);
+                if (shorterArgTypesList.length > longerArgTypesList.length) {
+                    I18nConversionCategory[] temp = longerArgTypesList;
+                    longerArgTypesList = shorterArgTypesList;
+                    shorterArgTypesList = temp;
+                }
+
+                // From the manual:
+                // It is legal to use a format string with fewer format specifiers
+                // than required, but a warning is issued.
+
+                I18nConversionCategory[] resultArgTypes =
+                        new I18nConversionCategory[longerArgTypesList.length];
+
+                for (int i = 0; i < shorterArgTypesList.length; ++i) {
+                    resultArgTypes[i] = I18nConversionCategory.intersect(shorterArgTypesList[i], longerArgTypesList[i]);
+                }
+                for (int i = shorterArgTypesList.length; i < longerArgTypesList.length; ++i) {
+                    resultArgTypes[i] = longerArgTypesList[i];
+                }
+                return treeUtil.categoriesToFormatAnnotation(resultArgTypes);
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NINVALIDFORMAT) &&
+                AnnotationUtils.areSameIgnoringValues(anno2, I18NINVALIDFORMAT)) {
+                assert !anno1.getElementValues().isEmpty();
+                assert !anno2.getElementValues().isEmpty();
+
+                if (AnnotationUtils.areSame(anno1, anno2)) {
+                    return anno1;
+                }
+
+                return treeUtil.stringToInvalidFormatAnnotation(
+                        "(" + treeUtil.invalidFormatAnnotationToErrorMessage(anno1) + " or " +
+                              treeUtil.invalidFormatAnnotationToErrorMessage(anno2) + ")");
+            }
+
+            // All @I18nFormatFor annotations are unrelated by subtyping.
+            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMATFOR) &&
+                AnnotationUtils.areSame(anno1, anno2)) {
+                return anno1;
+            }
+
+            return I18NUNKNOWNFORMAT;
+        }
+
+        @Override
+        public AnnotationMirror greatestLowerBound(AnnotationMirror anno1,
+                AnnotationMirror anno2) {
+            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NUNKNOWNFORMAT)) {
+                return anno2;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno2, I18NUNKNOWNFORMAT)) {
+                return anno1;
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMAT) &&
+                AnnotationUtils.areSameIgnoringValues(anno2, I18NFORMAT)) {
+                I18nConversionCategory[] anno1ArgTypes =
+                        treeUtil.formatAnnotationToCategories(anno1);
+                I18nConversionCategory[] anno2ArgTypes =
+                        treeUtil.formatAnnotationToCategories(anno2);
+
+                // From the manual:
+                // It is legal to use a format string with fewer format specifiers
+                // than required, but a warning is issued.
+                int length = anno1ArgTypes.length;
+                if (anno2ArgTypes.length < length) {
+                    length = anno2ArgTypes.length;
+                }
+
+                I18nConversionCategory[] anno3ArgTypes =
+                        new I18nConversionCategory[length];
+
+                for (int i = 0; i < length; ++i) {
+                    anno3ArgTypes[i] = I18nConversionCategory.union(anno1ArgTypes[i], anno2ArgTypes[i]);
+                }
+                return treeUtil.categoriesToFormatAnnotation(anno3ArgTypes);
+            }
+            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NINVALIDFORMAT) &&
+                AnnotationUtils.areSameIgnoringValues(anno2, I18NINVALIDFORMAT)) {
+                assert !anno1.getElementValues().isEmpty();
+                assert !anno2.getElementValues().isEmpty();
+
+                if (AnnotationUtils.areSame(anno1, anno2)) {
+                    return anno1;
+                }
+
+                return treeUtil.stringToInvalidFormatAnnotation(
+                        "(" + treeUtil.invalidFormatAnnotationToErrorMessage(anno1) + " and " +
+                              treeUtil.invalidFormatAnnotationToErrorMessage(anno2) + ")");
+            }
+            // All @I18nFormatFor annotations are unrelated by subtyping.
+            if (AnnotationUtils.areSameIgnoringValues(anno1, I18NFORMATFOR) &&
+                AnnotationUtils.areSame(anno1, anno2)) {
+                return anno1;
+            }
+
+            return I18NFORMATBOTTOM;
         }
     }
 }

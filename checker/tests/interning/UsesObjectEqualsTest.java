@@ -14,16 +14,18 @@ public class UsesObjectEqualsTest {
 
     class B2 extends A {}
 
-    //changed to inherited, no (superclass.annotated) warning
+    // changed to inherited, no (superclass.annotated) warning
     class C extends A {}
 
     class D {}
 
+    @UsesObjectEquals
     //:: error: (superclass.notannotated)
-    @UsesObjectEquals class E extends D {}
+    class E extends D {}
 
+    @UsesObjectEquals
     //:: error: (overrides.equals)
-    @UsesObjectEquals class TestEquals {
+    class TestEquals {
 
         @org.checkerframework.dataflow.qual.Pure
         public boolean equals(Object o) {

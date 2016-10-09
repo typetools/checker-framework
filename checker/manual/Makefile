@@ -20,11 +20,10 @@ propkey-checker.tex \
 signature-checker.tex \
 guieffect-checker.tex \
 units-checker.tex \
+signedness-checker.tex \
 constant-value-checker.tex \
 aliasing-checker.tex \
 linear-checker.tex \
-igj-checker.tex \
-javari-checker.tex \
 reflection-checker.tex \
 reflection-inference-rules.tex \
 subtyping-checker.tex \
@@ -33,22 +32,20 @@ typestate-checker.tex \
 generics.tex \
 advanced-features.tex \
 warnings.tex \
+inference.tex \
 annotating-libraries.tex \
 creating-a-checker.tex \
 external-tools.tex \
 faq.tex \
 troubleshooting.tex
 
-all: doc manual.pdf manual.html
+all: manual.pdf manual.html
 
 .PHONY: figures-all
 figures-all:
 	${MAKE} -C figures all
 
-doc:
-	ln -sf ../doc doc
-
-manual.pdf: bib-update figures-all
+manual.pdf: bib-update figures-all check-labels
 	pdflatex manual.tex
 	bibtex manual
 	pdflatex manual.tex
@@ -75,6 +72,11 @@ CFLogo.png: logo/Logo/CFLogo.png
 favicon-checkerframework.png: logo/Checkmark/CFCheckmark_favicon.png
 	cp -p $< $@
 
+# Ensure that every section of the manual has a \label{} command.
+.PHONY: check-labels
+check-labels:
+	if grep -n --perl-regexp "\\\\((sub)*section|paragraph){[^#](?!.*\\\\label.*}})" *.tex ; then false ; else true ; fi
+
 export BIBINPUTS = $BIBINPUTS:.:bib
 bib:
 ifdef PLUMEBIB
@@ -92,7 +94,7 @@ endif
 
 # Leaves manual.html, and .svg files that it references.
 clean:
-	@\rm -f doc *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc
+	@\rm -f *.aux *.blg *.dvi *.haux *.htoc *.idx *.ilg *.ind *.log *.out *.pdf *.ps *.toc
 
 very_clean: clean
 	@\rm manual.html CFLogo.png

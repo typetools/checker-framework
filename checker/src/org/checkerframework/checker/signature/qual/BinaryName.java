@@ -24,11 +24,16 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * <p>
  *
  * Binary names and {@linkplain FullyQualifiedName fully qualified names} are the
- * same for top-level classes and only differ by a '$' vs. '.' for inner classes.
+ * same for top-level classes and only differ by '$' vs. '.' for inner classes.
+ * <p>
+ *
+ * The binary name should not be confused with the {@linkplain InternalForm
+ * internal form}, which is a variant of the binary name that actually
+ * appears in the class file.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */
-@SubtypeOf(UnannotatedString.class)
-@ImplicitFor(stringPatterns="^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_][A-Za-z_0-9]*)?(\\[\\])*$")
+@SubtypeOf(SignatureUnknown.class)
+@ImplicitFor(stringPatterns="^[A-Za-z_][A-Za-z_0-9]*(\\.[A-Za-z_][A-Za-z_0-9]*)*(\\$[A-Za-z_0-9]+)*(\\[\\])*$")
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 public @interface BinaryName {}

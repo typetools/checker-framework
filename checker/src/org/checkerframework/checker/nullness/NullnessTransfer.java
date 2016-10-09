@@ -15,6 +15,7 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.InstanceOfNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -173,6 +174,16 @@ public class NullnessTransfer extends
     }
 
     @Override
+    public TransferResult<NullnessValue, NullnessStore> visitInstanceOf(
+            InstanceOfNode n, TransferInput<NullnessValue, NullnessStore> p) {
+        TransferResult<NullnessValue, NullnessStore> result = super.visitInstanceOf(n, p);
+        NullnessStore thenStore = result.getThenStore();
+        NullnessStore elseStore = result.getElseStore();
+        makeNonNull(thenStore, n.getOperand());
+        return new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+    }
+
+    @Override
     public TransferResult<NullnessValue, NullnessStore> visitMethodAccess(
             MethodAccessNode n, TransferInput<NullnessValue, NullnessStore> p) {
         TransferResult<NullnessValue, NullnessStore> result = super
@@ -243,16 +254,15 @@ public class NullnessTransfer extends
             TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
 
             if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
+                Node receiver = n.getTarget().getReceiver();
+                Receiver internalReceiver = FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver);
 
-                FlowExpressionContext flowExprContext = FlowExpressionParseUtil
-                        .buildFlowExprContextForUse(n, analysis.getTypeFactory().getContext());
-
-                String mapName = flowExprContext.receiver.toString();
-                AnnotationMirror am = keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName); // @KeyFor(mapName)
+                String mapName = internalReceiver.toString();
+                AnnotationMirror keyForMapName = keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName);
 
                 AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
 
-                if (type != null && keyForTypeFactory.keyForValuesSubtypeCheck(am, type, tree, n)) {
+                if (type != null && keyForTypeFactory.keyForValuesSubtypeCheck(keyForMapName, type, tree, n)) {
                     makeNonNull(result, n);
 
                     NullnessValue oldResultValue = result.getResultValue();

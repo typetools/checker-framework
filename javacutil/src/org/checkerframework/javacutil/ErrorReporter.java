@@ -21,13 +21,30 @@ public class ErrorReporter {
      * Log an error message and abort processing.
      * Call this method instead of raising an exception.
      *
-     * @param msg The error message to log.
+     * @param msg the error message to log
      */
     public static void errorAbort(String msg) {
         if (handler != null) {
             handler.errorAbort(msg);
         } else {
             throw new RuntimeException(msg, new Throwable());
+        }
+    }
+
+    /**
+     * Log an error message use {@link String#format(String, Object...)}}
+     * and abort processing.
+     * Call this method instead of raising an exception.
+     *
+     * @param format A format string
+     * @param args Arguments to the format string
+     */
+    public static void errorAbort(String format, Object... args) {
+        String formattedMsg = String.format(format, args);
+        if (handler != null) {
+            handler.errorAbort(formattedMsg);
+        } else {
+            throw new RuntimeException(formattedMsg, new Throwable());
         }
     }
 

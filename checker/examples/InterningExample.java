@@ -10,7 +10,7 @@ import java.util.*;
  * Also see {@link InterningExampleWithWarnings}, an example of incorrect use
  * of the Interned type annotation.  See the Interning Checker documentation
  * for larger examples of annotated code.
- **/
+ */
 public class InterningExample {
 
   public void example() {
@@ -21,8 +21,9 @@ public class InterningExample {
     @Interned String foo = "foo";
     @Interned String bar = "bar";
 
-    if (foo == bar)
+    if (foo == bar) {
         System.out.println("foo == bar");
+    }
 
   }
 

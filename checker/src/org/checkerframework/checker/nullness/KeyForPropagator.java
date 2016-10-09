@@ -26,22 +26,22 @@ import javax.lang.model.util.Types;
  */
 public class KeyForPropagator {
     public static enum PropagationDirection {
-        //transfer FROM the super type to the subtype
+        // transfer FROM the super type to the subtype
         TO_SUBTYPE,
 
-        //transfer FROM the subtype to the supertype
+        // transfer FROM the subtype to the supertype
         TO_SUPERTYPE,
 
-        //first execute TO_SUBTYPE then TO_SUPERTYPE, if TO_SUBTYPE actually transfers
-        //an annotation for a particular type T then T will not be affected by the
-        //TO_SUPERTYPE transfer because it will already have a KeyFor annotation
+        // first execute TO_SUBTYPE then TO_SUPERTYPE, if TO_SUBTYPE actually transfers
+        // an annotation for a particular type T then T will not be affected by the
+        // TO_SUPERTYPE transfer because it will already have a KeyFor annotation
         BOTH
     }
 
 
-    //The top type of the KeyFor hierarchy, this class will replace @UnknownKeyFor annotations
-    //it will also add annotations when they are misisng for types that require primary annotation
-    // (i.e. not TypeVars, Wildcards, Intersections, or Unions)
+    // The top type of the KeyFor hierarchy, this class will replace @UnknownKeyFor annotations.
+    // It will also add annotations when they are misisng for types that require primary annotation
+    // (i.e. not TypeVars, Wildcards, Intersections, or Unions).
     private final AnnotationMirror UNKNOWN_KEYFOR;
 
     public KeyForPropagator(AnnotationMirror unknownKeyfor) {
@@ -82,15 +82,15 @@ public class KeyForPropagator {
         final TypeElement supertypeElement = (TypeElement) supertype.getUnderlyingType().asElement();
         final Types types = typeFactory.getProcessingEnv().getTypeUtils();
 
-        //Note: The right hand side of this or expression will cover raw types
+        // Note: The right hand side of this or expression will cover raw types
         if (subtype.getTypeArguments().isEmpty()) {
             return;
-        } //else
+        } // else
 
-        //this can happen for two reasons:
+        // this can happen for two reasons:
         // 1) the subclass introduced NEW type arguments when the superclass had none
         // 2) the supertype was RAW.
-        //In either case, there is no reason to propagate
+        // In either case, there is no reason to propagate
         if (supertype.getTypeArguments().isEmpty()) {
             return;
         }
@@ -123,7 +123,7 @@ public class KeyForPropagator {
                     break;
 
                 case BOTH:
-                    //note if they both have an annotation nothing will happen
+                    // note if they both have an annotation nothing will happen
                     merger.visit(subtypeArg, supertypeArg);
                     merger.visit(supertypeArg, subtypeArg);
                     break;

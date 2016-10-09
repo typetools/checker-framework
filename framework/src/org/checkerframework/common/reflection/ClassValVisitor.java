@@ -67,18 +67,16 @@ class ClassNameValidator extends BaseTypeValidator {
      * A string is a legal binary name if it has the following form:
      * ((Java identifier)\.)*(Java identifier)([])*
      * https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1
-     * @param className String to check
+     * @param className string to check
      * @return true if className is a legal class name
      */
     private boolean isLegalClassName(String className) {
-        String regex = "([^\\.\\[\\]](\\.[^\\.\\[\\]])*)*(\\[\\])*";
-        Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(className);
-        if (!m.matches()) {
+        int lastBracket = className.lastIndexOf("]");
+        if (lastBracket != -1 && lastBracket != className.length()-1) {
             return false;
         }
-        className = m.group(1);
-        String[] identifiers = className.split(".");
+        className = className.replaceAll("\\[\\]","");
+        String[] identifiers = className.split("(\\.)");
         for (String identifier : identifiers) {
             if (!isJavaIdentifier(identifier)) {
                 return false;

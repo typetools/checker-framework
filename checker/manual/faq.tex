@@ -29,6 +29,7 @@ the answers, or other questions to include here.
 \\ \ref{faq-annotate-existing-program}: How do I get started annotating an existing program?
 \\ \ref{faq-first-checker}: Which checker should I start with?
 \\ \ref{faq-typequals-vs-subtypes}: Should I use pluggable types or Java subtypes?
+\\ \ref{faq-checker-framework-dev}: How can I join the checker-framework-dev mailing list?
 
 \faqtocpara{\ref{faq-usability-section}: Usability of pluggable type-checking}
 \\ \ref{faq-ease-of-use}: Are type annotations easy to read and write?
@@ -53,6 +54,8 @@ the answers, or other questions to include here.
 \\ \ref{faq-varargs-syntax-meaning}: What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?
 \\ \ref{faq-type-qualifier-on-class-declaration}: What is the meaning of a type qualifier at a class declaration?
 \\ \ref{faq-no-annotation-on-types-and-declarations}: Why shouldn't a qualifier apply to both types and declarations?
+\\ \ref{faq-annotate-fully-qualified-name}: How do I annotate a
+fully-qualified type name?
 
 \faqtocpara{\ref{faq-semantics-section}: Semantics of type annotations}
 \\ \ref{faq-list-map-nonnull-typeargs}: Why are the type parameters to \<List> and \<Map> annotated as \<@NonNull>?
@@ -168,14 +171,11 @@ use it.  You will be the best judge of this for your own code, of course.
 
 The \ahrefloc{linear-checker}{Linear Checker} (see
 \chapterpageref{linear-checker}) has not been extensively tested.
-The
-\ahrefloc{igj-checker}{IGJ Checker} (see \chapterpageref{igj-checker}),
-\ahrefloc{javari-checker}{Javari Checker} (see
-\chapterpageref{javari-checker}), and some of the third-party checkers (see
+Some of the third-party checkers (see
 \chapterpageref{third-party-checkers})
 have known bugs that limit their
-usability.  (Report the ones that affect you, and the Checker Framework
-developers will prioritize fixing them.)
+usability.  (Report the ones that affect you, so the developers
+will prioritize fixing them.)
 
 
 \subsection{Should I use pluggable types or Java subtypes?\label{faq-typequals-vs-subtypes}}
@@ -221,9 +221,7 @@ Type annotations can be applied to primitives and to final classes such as
 
 \item[Richer semantics and new supertypes]
 Type qualifiers permit you to remove operations, with a compile-time
-guarantee.  An example is that an immutable version of a type prohibits
-calling mutator methods
-(see Chapters~\ref{igj-checker} and~\ref{javari-checker}).  More
+guarantee.  More
 generally, type qualifiers permit creating a new supertype, not just a
 subtype, of an existing Java type.
 
@@ -259,6 +257,24 @@ Java type-checker would reject.  Here are a few examples.
   subtypes in all locations.
 
 \end{description}
+
+\subsection{How can I join the checker-framework-dev mailing list?\label{faq-checker-framework-dev}}
+
+The \code{checker-framework-dev@googlegroups.com} mailing list is for
+Checker Framework developers.  Anyone is welcome to
+\href{https://groups.google.com/forum/#!forum/checker-framework-dev}{join
+  \code{checker-framework-dev}}, after they have had several pull requests
+accepted.
+
+Anyone is welcome to send mail to the
+\code{checker-framework-dev@googlegroups.com} mailing list --- for
+implementation details it is generally a better place for discussions than
+the general \code{checker-framework-discuss@googlegroups.com} mailing list,
+which is for user-focused discussions.
+
+Anyone is welcome to
+\href{https://groups.google.com/forum/#!forum/checker-framework-discuss}{join
+  \code{checker-framework-discuss@googlegroups.com}} and send mail to it.
 
 
 \section{Usability of pluggable type-checking\label{faq-usability-section}}
@@ -319,9 +335,6 @@ to be written.  Figure 1 of the paper
 \item
     1 annotation per 1736 lines for interning annotations (\<@Interned>)
     % (/ 224048 129)
-\item
-    1 annotation per 27 lines for immutability annotations (IGJ type system)
-    % (/ (+ 6236 18159 30507 8691 59221 26828) (+ 315 1125 1386 384 1815 450))
 \end{itemize}
 
 % ICSE 2011 paper says:
@@ -648,7 +661,7 @@ transition to a newer tool that conforms to the Java specification.
 \subsection{What is the meaning of varargs annotations such as \<@English String @NonEmpty~...>?\label{faq-varargs-syntax-meaning}}
 
 Varargs annotations are treated similarly to array annotations.
-(A way to remember this is that 
+(A way to remember this is that
 when you write a varargs formal parameter such as
 \<void method(String... x) \ttlcb\ttrcb>, the Java compiler generates a
 method that takes an array of strings; whenever your source code calls the
@@ -733,11 +746,33 @@ question.
 
 Another example of a type-and-declaration annotation that represents poor
 design is JCIP's \<@GuardedBy> annotation~\cite{Goetz2006}.  As discussed
-in Section~\ref{jcip-annotations}, it means two different things when
+in Section~\ref{lock-jcip-annotations}, it means two different things when
 applied to a field or a method.  To reduce confusion and increase
 expressiveness, the Lock Checker (see Chapter~\ref{lock-checker}) uses the
 \<@Holding> annotation for one of these meanings, rather than overloading
 \<@GuardedBy> with two distinct meanings.
+
+
+\subsection{How do I annotate a fully-qualified type name?\label{faq-annotate-fully-qualified-name}}
+
+If you write a fully-qualified type name in your program, then the Java
+language requires you to write a type annotation on the simple name part,
+such as
+\begin{Verbatim}
+  entity.hibernate. @Nullable User x;
+\end{Verbatim}
+
+If you try to write the type annotation before the entire fully-qualified
+name, such as
+\begin{Verbatim}
+  @Nullable entity.hibernate.User x;  // illegal Java syntax
+\end{Verbatim}
+\noindent
+then you will get an error like one of the following:
+\begin{Verbatim}
+error: scoping construct for static nested type cannot be annotated
+error: scoping construct cannot be annotated with type-use annotation
+\end{Verbatim}
 
 
 \section{Semantics of type annotations\label{faq-semantics-section}}
@@ -1111,7 +1146,7 @@ checker-framework-dev@googlegroups.com so we can update the manual.)
 
 \subsection{How does pluggable type-checking compare with JML?\label{faq-jml}}
 
-\href{http://www.cs.ucf.edu/~leavens/JML/}{JML}, the Java Modeling
+\href{http://www.eecs.ucf.edu/~leavens/JML//index.shtml}{JML}, the Java Modeling
 Language~\cite{LeavensBR2006:JML}, is a language for writing formal
 specifications.
 
@@ -1196,12 +1231,12 @@ be used with previous versions of the Java language via the
 annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 
 
-% LocalWords:  IGJ toolset AbstractCollection ConcurrentHashMap NullnessUtils
+% LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtils
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject
 %  LocalWords:  multithreading myfield Regex NonEmpty Xmaxerrs Xmaxwarns
-%  LocalWords:  igj javari MonotonicNonNull EnsuresNonNull myFieldName pre
+%  LocalWords:  MonotonicNonNull EnsuresNonNull myFieldName pre
 %  LocalWords:  m1 m2 RequiresNonNull AconcurrentSemantics MyQual plugin
 %  LocalWords:  MyClass MyMoreRestrictiveQual TOPTYPEANNO DEFAULTANNO api
 %%  LocalWords:  OtherClass Goetz antipattern subclassed varargs

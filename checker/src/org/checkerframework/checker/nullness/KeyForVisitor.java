@@ -33,12 +33,11 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
 
     @Override
     protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey,
-            boolean isLocalVariableAssignement) {
+            AnnotatedTypeMirror valueType, Tree valueTree, /*@CompilerMessageKey*/ String errorKey) {
 
         atypeFactory.keyForCanonicalizeValues(varType, valueType, getCurrentPath());
 
-        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey, isLocalVariableAssignement);
+        super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
     /**
@@ -122,10 +121,8 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
      * will not.  Canonicalize it now.
      */
     protected boolean checkConstructorInvocation(AnnotatedDeclaredType expectedReturnType,
-                                                 AnnotatedExecutableType constructor, Tree src) {
-
-        NewClassTree invocation = (NewClassTree) src;
-        atypeFactory.canonicalizeForViewpointAdaptation(invocation, expectedReturnType);
-        return super.checkConstructorInvocation(expectedReturnType, constructor, invocation);
+                                                 AnnotatedExecutableType constructor, NewClassTree src) {
+        atypeFactory.canonicalizeForViewpointAdaptation(src, expectedReturnType);
+        return super.checkConstructorInvocation(expectedReturnType, constructor, src);
     }
 }

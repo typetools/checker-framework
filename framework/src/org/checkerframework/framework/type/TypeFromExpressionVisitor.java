@@ -3,11 +3,11 @@ package org.checkerframework.framework.type;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ConstructorReturnUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
@@ -31,6 +31,7 @@ import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberReferenceTree;
@@ -106,34 +107,29 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     public AnnotatedTypeMirror visitConditionalExpression(
             ConditionalExpressionTree node, AnnotatedTypeFactory f) {
 
+        // The Java type of a conditional expression is generally the LUB of the boxed types
+        // of the true and false expressions, but with a few exceptions. See JLS 15.25.
+        // So, use the type of the ConditionalExpressionTree instead of InternalUtils#leastUpperBound
+        AnnotatedTypeMirror alub = f.type(node);
+
         AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
         AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
 
-        //here
-        if (trueType.equals(falseType))
+        if (trueType.getKind() == TypeKind.NULL) {
+            AnnotatedTypeMirror falseTypeAsLub = AnnotatedTypes.asSuper(f, falseType, alub);
+            return AnnotatedTypes.lubWithNull((AnnotatedNullType) trueType, falseTypeAsLub, f);
+        } else if (falseType.getKind() == TypeKind.NULL) {
+            AnnotatedTypeMirror trueTypeAsLub = AnnotatedTypes.asSuper(f, trueType, alub);
+            return AnnotatedTypes.lubWithNull((AnnotatedNullType) falseType, trueTypeAsLub, f);
+        }
+
+        if (trueType.equals(falseType)) {
             return trueType;
-
-        // TODO: We would want this:
-        /*
-        AnnotatedTypeMirror alub = f.type(node);
-        trueType = f.atypes.asSuper(trueType, alub);
-        falseType = f.atypes.asSuper(falseType, alub);
-        */
-
-        // instead of:
-        AnnotatedTypeMirror alub = f.type(node);
-        AnnotatedTypeMirror assuper;
-        assuper = AnnotatedTypes.asSuper(f.types, f, trueType, alub);
-        if (assuper != null) {
-            trueType = assuper;
         }
-        assuper = AnnotatedTypes.asSuper(f.types, f, falseType, alub);
-        if (assuper != null) {
-            falseType = assuper;
-        }
-        // however, asSuper returns null for compound types,
-        // e.g. see Ternary test case for Nullness Checker.
-        // TODO: Can we adapt asSuper to handle those correctly?
+
+
+        trueType = AnnotatedTypes.asSuper(f, trueType, alub);
+        falseType = AnnotatedTypes.asSuper(f, falseType, alub);
 
         if (trueType.equals(falseType)) {
             return trueType;
@@ -194,6 +190,8 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             case INTERFACE: // o instanceof MyClass.InnerInterface
             case ANNOTATION_TYPE:
                 return f.fromElement(elt);
+            default:
+                // Fall-through.
         }
 
         if (node.getIdentifier().contentEquals("this")) {
@@ -208,7 +206,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
             }
         }
         ErrorReporter.errorAbort("TypeFromExpressionVisitor.visitMemberSelect unexpected element or type: " + node.toString());
-        return null; //dead code
+        return null; // dead code
     }
 
     @Override
@@ -272,19 +270,24 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     }
 
     /**
-     * The type of a NewClassTree is the type of the Identifier
-     * plus any explicit annotations (including polymorphic qualifiers)
-     * on the constructor.
+     * Creates an AnnotatedDeclaredType for the NewClassTree and adds, for each hierarchy, one of:
+     * <ul>
+     *   <li>an explicit annotation on the new class expression ({@code new @HERE MyClass()} ), or</li>
+     *   <li>an explicit annotation on the declaration of the class ({@code @HERE class MyClass {}} ), or</li>
+     *   <li>an explicit annotation on the declaration of the constructor ({@code @HERE public MyClass() {}} ), or</li>
+     *   <li>no annotation for a this hierarchy.</li>
+     * </ul>
      *
-     * @param node the NewClassTree
+     * @param node NewClassTree
      * @param f the type factory
-     * @return the type of the new class
+     * @return AnnotatedDeclaredType of {@code node}
      */
     @Override
     public AnnotatedTypeMirror visitNewClass(NewClassTree node,
                                              AnnotatedTypeFactory f) {
         // constructorFromUse return type has implicits
-        // so use fromNewClass which does diamond inference but does not do any implicits
+        // so use fromNewClass which does diamond inference and only
+        // contains explicit annotations and those inherited from the class declaration
         AnnotatedDeclaredType type = f.fromNewClass(node);
 
         // Enum constructors lead to trouble.
@@ -299,7 +302,7 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         // Therefore, ensure to only add the qualifiers that are explicitly on
         // the constructor, but then take the possibly substituted qualifier.
         AnnotatedExecutableType ex = f.constructorFromUse(node).first;
-        ConstructorReturnUtil.keepOnlyExplicitConstructorAnnotations(f, type, ex);
+        AnnotatedTypes.copyOnlyExplicitConstructorAnnotations(f, type, ex);
 
         return type;
     }
@@ -356,10 +359,10 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
         AnnotatedTypeMirror result = f.type(node);
         assert result instanceof AnnotatedWildcardType;
 
-        //the first time getSuperBound/getExtendsBound is called the bound of this wildcard will be
-        //appropriately initialized where for the type of node, instead of replacing that bound
-        //we merge the annotations onto the initialized bound
-        //This ensures that the structure of the wildcard will match that created by BoundsInitializer/createType
+        // the first time getSuperBound/getExtendsBound is called the bound of this wildcard will be
+        // appropriately initialized where for the type of node, instead of replacing that bound
+        // we merge the annotations onto the initialized bound
+        // This ensures that the structure of the wildcard will match that created by BoundsInitializer/createType
         if (node.getKind() == Tree.Kind.SUPER_WILDCARD) {
             AnnotatedTypeMerger.merge(bound, ((AnnotatedWildcardType) result).getSuperBound());
 
@@ -386,6 +389,12 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
     @Override
     public AnnotatedTypeMirror visitParameterizedType(ParameterizedTypeTree node, AnnotatedTypeFactory f) {
+        return f.fromTypeTree(node);
+    }
+
+    @Override
+    public AnnotatedTypeMirror visitIntersectionType(IntersectionTypeTree node,
+                                                     AnnotatedTypeFactory f) {
         return f.fromTypeTree(node);
     }
 }

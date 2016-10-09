@@ -34,7 +34,8 @@ all: load-from-dir-test load-from-jar-test
 demo1:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	-J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR):$(PROJECTDIR) \
+	-J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR) \
+	-classpath $(PROJECTDIR) \
 	-processor org.checkerframework.common.aliasing.AliasingChecker \
 	-Anomsgtext \
 	-AprintErrorStack \
@@ -45,7 +46,8 @@ demo1:
 demo2:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	-J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR):$(PROJECTDIR) \
+	-J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR) \
+	-classpath :$(PROJECTDIR) \
 	-processor org.checkerframework.common.aliasing.AliasingChecker \
 	-Anomsgtext \
 	-AprintErrorStack \
@@ -57,23 +59,25 @@ demo2:
 # loads from build directories
 load-from-dir-test:
 	-$(JAVAC) \
-	-J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR):$(PROJECTDIR) \
+	-J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR) \
+	-classpath $(PROJECTDIR) \
 	-processor org.checkerframework.common.aliasing.AliasingChecker \
 	-Anomsgtext \
 	-AprintErrorStack \
 	-Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	LoaderTest.java > Out.txt 2>&1
-	diff -u Out.txt Expected.txt
+	diff -u Expected.txt Out.txt
 	-rm Out.txt
 
 # loads from framework.jar
 load-from-jar-test:
 	-$(JAVAC) \
-	-J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR):$(PROJECTDIR) \
+	-J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR) \
+	-classpath $(PROJECTDIR) \
 	-processor org.checkerframework.common.aliasing.AliasingChecker \
 	-Anomsgtext \
 	-AprintErrorStack \
 	-Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
 	LoaderTest.java > Out.txt 2>&1
-	diff -u Out.txt Expected.txt
+	diff -u Expected.txt Out.txt
 	-rm Out.txt

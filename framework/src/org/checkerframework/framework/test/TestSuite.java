@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  *
- * <p>TestSuite runs a test class once for each set of parameters returned by its method marked with {@code @Parameter}</p>
+ * <p>TestSuite runs a test class once for each set of parameters returned by its method marked with {@code @Parameters}</p>
  * <p>To use:<br>
  *  Annotated your test class with {@code @RunWith(TestSuite.class)}<br>
  *  Create a parameters method by annotating a public static method with {@code @Parameters}.  This method
@@ -36,6 +36,13 @@ public class TestSuite extends Suite {
     @Target(ElementType.METHOD)
     public @interface Name {}
 
+    private final ArrayList<Runner> runners = new ArrayList<Runner>();
+
+    @Override
+    protected List<Runner> getChildren() {
+        return runners;
+    }
+
     /**
      * Only called reflectively. Do not use programmatically.
      */
@@ -43,18 +50,11 @@ public class TestSuite extends Suite {
         super(klass, Collections.<Runner>emptyList());
         final TestClass testClass = getTestClass();
         final Class<?> javaTestClass = testClass.getJavaClass();
-        final List<Object[]> parametersList= getParametersList(testClass);
+        final List<Object[]> parametersList = getParametersList(testClass);
 
         for (Object [] parameters : parametersList) {
             runners.add(new PerParameterSetTestRunner(javaTestClass, parameters));
         }
-    }
-
-    private final ArrayList<Runner> runners = new ArrayList<Runner>();
-
-    @Override
-    protected List<Runner> getChildren() {
-        return runners;
     }
 
     /** Returns a list of one-element arrays, each containing a Java File. */
@@ -63,8 +63,8 @@ public class TestSuite extends Suite {
         FrameworkMethod method = getParametersMethod(klass);
 
         List<File> javaFiles;
-        //We will have either a method getTesDirs which returns String [] or getTestFiles
-        //which returns List<Object []> or getParametersMethod would fail
+        // We will have either a method getTestDirs which returns String [] or getTestFiles
+        // which returns List<Object []> or getParametersMethod would fail
         if (method.getReturnType().isArray()) {
             String [] dirs = (String[]) method.invokeExplosively(null);
             javaFiles = TestUtilities.findNestedJavaTestFiles(dirs);
@@ -82,7 +82,7 @@ public class TestSuite extends Suite {
         return argumentLists;
     }
 
-    /** Returns method annotated @Parameter, typically the getTestDirs or getTestFiles method. */
+    /** Returns method annotated @Parameters, typically the getTestDirs or getTestFiles method. */
     private FrameworkMethod getParametersMethod(TestClass testClass) {
         final List<FrameworkMethod> parameterMethods = testClass.getAnnotatedMethods(Parameters.class);
         if (parameterMethods.size() != 1) {
@@ -105,9 +105,9 @@ public class TestSuite extends Suite {
             throw new RuntimeException("Exactly one of the following methods should be declared:\n"
                                      + requiredFormsMessage + "\n"
                                      + "testClass=" + testClass.getName() + "\n"
-                                     + "paremeterMethods=" + methods.toString()
+                                     + "parameterMethods=" + methods.toString()
             );
-        } //else
+        } // else
 
         FrameworkMethod method = parameterMethods.get(0);
 
@@ -117,7 +117,7 @@ public class TestSuite extends Suite {
             case "getTestDirs":
                 if (returnType.isArray()) {
                     if (!returnType.getComponentType().equals(String.class)) {
-                        throw new RuntimeException("Component type of getTestFiles must be java.lang.String, found "
+                        throw new RuntimeException("Component type of getTestDirs must be java.lang.String, found "
                                                   + returnType.getComponentType().getCanonicalName()
                         );
                     }
@@ -125,8 +125,8 @@ public class TestSuite extends Suite {
                 break;
 
             case "getTestFiles":
-                //we'll force people to return a List for now but enforcing exactl List<File> or a
-                //subtype thereof is not easy
+                // we'll force people to return a List for now but enforcing exactl List<File> or a
+                // subtype thereof is not easy
                 if (!returnType.getCanonicalName().equals(List.class.getCanonicalName())) {
                     throw new RuntimeException("getTestFiles must return a List<File>, found "
                                               + returnType.toString()
@@ -138,7 +138,7 @@ public class TestSuite extends Suite {
                 throw new RuntimeException("Exactly one of the following methods should be declared:\n"
                         + requiredFormsMessage + "\n"
                         + "testClass=" + testClass.getName() + "\n"
-                        + "paremeterMethods=" + method.toString()
+                        + "parameterMethods=" + method.toString()
                 );
 
         }

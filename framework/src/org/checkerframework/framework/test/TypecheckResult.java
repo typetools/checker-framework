@@ -68,7 +68,7 @@ public class TypecheckResult {
     public List<String> getErrorHeaders() {
         List<String> errorHeaders = new ArrayList<>();
 
-        //none of these should be true if the test didn't fail
+        // none of these should be true if the test didn't fail
         if (testFailed) {
             if (compilationResult.compiledWithoutError() && !expectedDiagnostics.isEmpty()) {
                 errorHeaders.add("The test run was expected to issue errors/warnings, but it did not.");
@@ -79,9 +79,11 @@ public class TypecheckResult {
 
             List<Diagnostic<? extends JavaFileObject>> actualDiagnostics = getActualDiagnostics();
             if (!unexpectedDiagnostics.isEmpty() || !missingDiagnostics.isEmpty()) {
+                int numExpected = expectedDiagnostics.size();
+                int numFound = numExpected - missingDiagnostics.size();
                 errorHeaders.add(
-                    actualDiagnostics.size() + " out of " + expectedDiagnostics.size() + " expected diagnostics "
-                  + (actualDiagnostics.size() == 1 ? "was" : "were") + " found."
+                    numFound + " out of " + numExpected + " expected diagnostics "
+                  + (numFound == 1 ? "was" : "were") + " found."
                 );
             }
 

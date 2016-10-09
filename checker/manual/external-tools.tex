@@ -11,6 +11,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item Ant (Section~\ref{ant-task})
 \item Maven (Section~\ref{maven})
 \item Gradle (Section~\ref{gradle})
+\item Android plugin for Gradle (Section~\ref{android-gradle})
 \item IntelliJ IDEA (Section~\ref{intellij})
 \item Eclipse (Section~\ref{eclipse})
 \item tIDE (Section~\ref{tide})
@@ -26,9 +27,6 @@ inform us via the
   list} or
 \href{https://github.com/typetools/checker-framework/issues}{issue tracker} so
 we can add it to this manual.
-
-This chapter also discusses type inference tools (see
-Section~\ref{type-inference-tools}).
 
 All examples in this chapter are in the public domain, with no copyright nor
 licensing restrictions.
@@ -48,14 +46,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-1.9.11/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.1.0/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.0
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -66,7 +64,7 @@ use the last one.
     with two small differences:  it includes the Checker Framework jar file
     on its classpath, and it recognizes type annotations in comments (see
     Section~\ref{annotations-in-comments}).
-    
+
   \item
     \begin{sloppypar}
     Option 2:
@@ -80,7 +78,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -88,7 +86,7 @@ use the last one.
     indicate:
 
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.0
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
 \end{Verbatim}
 
@@ -114,11 +112,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-1.9.11
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.0
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-1.9.11\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.1.0\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -140,7 +138,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-1.9.11
+  javac 1.8.0-jsr308-2.1.0
 \end{Verbatim}
 
 
@@ -311,19 +309,29 @@ If you use the \href{http://maven.apache.org/}{Maven} tool,
 then you can enable Checker Framework checkers by following the
 instructions below.
 
-These instructions use the artifacts from
-\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven Central}.
+See the directory \code{examples/MavenExample/} for examples of the use of
+Maven build files that run a checker.  These examples can be used to verify that
+Maven is correctly downloading the Checker Framework from
+\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
+  Central} and executing it.
 
-See the demonstration \code{examples/MavenExample/} for an example of the use of
-these instructions in a Maven project.  This example can be used to verify that
-Maven is correctly downloading and executing the Checker Framework on your machine.
+There are two general ways you can configure your Maven buildfile,
+corresponding to the two ways to run the Checker Framework:
+\begin{itemize}
+\item
+  Use the Type Annotations compiler.  You need to use this if you write
+  annotations in comments (see Section~\ref{annotations-in-comments}).
+\item
+  Use the standard Java 8 compiler.
+\end{itemize}
 
 Please note that the \<-AoutputArgsToFile> command-line option
 (see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
 (see Section~\ref{shorthand-for-checkers}) are not available when
 following these instructions.  Both these features are available only when a checker is
 launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
-is run.  These instructions bypass \<checker.jar> and cause the compiler to run a
+is run.  The Gradle instructions in this section
+bypass \<checker.jar> and cause the compiler to run a
 checker as an annotation processor directly.
 
 \begin{enumerate}
@@ -347,7 +355,7 @@ checker as an annotation processor directly.
             <artifactId>checker</artifactId>
             <version>\ReleaseVersion{}</version>
         </dependency>
-        <!-- The type annotations compiler - uncomment if using Java 7 -->
+        <!-- The type annotations compiler - uncomment if desired -->
         <!-- <dependency>
             <groupId>org.checkerframework</groupId>
             <artifactId>compiler</artifactId>
@@ -363,7 +371,7 @@ checker as an annotation processor directly.
 \end{alltt}
 
 \item Use Maven properties to hold the locations of the
-  annotated JDK and, if using Java 7, the type annotations compiler.  Both were declared as Maven dependencies above.
+  annotated JDK and (if using annotations in comments), the type annotations compiler.  Both were declared as Maven dependencies above.
 To set the value of these properties automatically, use the Maven Dependency plugin.
 
 First, create the properties in the \code{properties} section of the POM:
@@ -373,8 +381,7 @@ First, create the properties in the \code{properties} section of the POM:
     <!-- These properties will be set by the Maven Dependency plugin -->
     <!-- Change to jdk7 if using Java 7 -->
     <annotatedJdk>$\{org.checkerframework:jdk8:jar\}</annotatedJdk>
-    <!-- The type annotations compiler is required if using Java 7. -->
-    <!-- Uncomment the following line if using Java 7. -->
+    <!-- Uncomment to use the type annotations compiler. -->
     <!-- <typeAnnotationsJavac>$\{org.checkerframework:compiler:jar\}</typeAnnotationsJavac> -->
 </properties>
 \end{alltt}
@@ -422,7 +429,7 @@ For example, to use the \code{org.checkerframework.checker.nullness.NullnessChec
             <compilerArgs>
                 <!-- location of the annotated JDK, which comes from a Maven dependency -->
                 <arg>-Xbootclasspath/p:$\{annotatedJdk\}</arg>
-                <!-- Uncomment the following line if using Java 7. -->
+                <!-- Uncomment the following line to use the type annotations compiler. -->
                 <!-- <arg>-J-Xbootclasspath/p:$\{typeAnnotationsJavac\}</arg> -->
             </compilerArgs>
         </configuration>
@@ -435,53 +442,257 @@ Now, building with Maven should run the checkers during compilation.
 Notice that using this approach, no external setup is necessary,
 so your Maven build should be reproducible on any server.
 
-If you want to allow Maven to compile your code without running the checkers, you may
-want to move the declarations above to within a Maven profile, so that the checkers
-would only run if the profile was enabled.
+If you want to allow Maven to compile your code without running the
+checkers, you may want to move the declarations above to within a Maven
+profile, so that the checkers run only if the profile was enabled.
 
 \end{enumerate}
 
 
 \section{Gradle\label{gradle}}
 
-% This information came from:
-% http://jira.codehaus.org/browse/GRADLE-342
-% http://docs.codehaus.org/display/GRADLE/Gradle+0.8+Breaking+Changes
+If you use \href{http://gradle.org/}{Gradle},
+then you can run a checker by following the instructions below.
 
-If you fork the compilation task, \href{http://gradle.org/}{Gradle}
-lets you specify the executable to compile java programs.
+These instructions can be used with Java 7 or Java 8.  If using Java 7, then
+type annotations should be placed in comments as explained in
+Section~\ref{annotations-in-comments}.
 
-To specify the appropriate executable, set
-\code{options.fork = true} and
-\code{compile.options.fork.executable = "\$CHECKERFRAMEWORK/checker/bin/javac"}
+See the directory \code{examples/GradleExamples/} for examples of Gradle
+build files that run a checker.  You can use these examples to verify that
+Gradle is correctly downloading the Checker Framework from
+\href{http://search.maven.org/#search\%7Cga\%7C1\%7Corg.checkerframework}{Maven
+  Central} and executing it.
 
-To specify command-line arguments, set
-\code{compile.options.compilerArgs}.  Here is a possible example:
+\begin{enumerate}
+
+\item Indicate which version of Java you are using.  We recommend the
+  following code, but you can also hard-code the \<ext.targetJavaVersion>
+  property.
+
+\begin{mysmall}
+\begin{Verbatim}
+ext.targetJavaVersion = JavaVersion.current().isJava7() ? JavaVersion.VERSION_1_7 : JavaVersion.VERSION_1_8
+\end{Verbatim}
+\end{mysmall}
+
+\item Use the Maven Central repository:
 
 \begin{Verbatim}
-allprojects {
-  tasks.withType(JavaCompile).all { JavaCompile compile ->
-    compile.options.debug = true
-    compile.options.compilerArgs = [
-      '-version',
-      '-implicit:class',
-      '-processor', 'org.checkerframework.checker.nullness.NullnessChecker'
-    ]
-    options.fork = true
-    options.forkOptions.executable = "$CHECKERFRAMEWORK/checker/bin/javac"
-  }
+repositories {
+  ... existing repositories...
+  mavenCentral()
 }
 \end{Verbatim}
 
-% extra $ to unconfuse Emacs's LaTeX mode
+\item Add dependency configurations for the annotated JDK, \<checker.jar>, and the Type Annotations compiler:
+
+\begin{mysmall}
+\begin{Verbatim}
+configurations {
+    ... existing configurations ...
+    if (targetJavaVersion.isJava7()) {
+        checkerFrameworkJavac {
+            description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+        }
+    }
+    checkerFrameworkAnnotatedJDK {
+       description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+    }
+    checkerFramework {
+       description = 'The Checker Framework: custom pluggable types for Java'
+    }
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item Declare the Checker Framework dependencies:
+
+\begin{Verbatim}
+dependencies {
+    ... existing dependencies...
+    ext.checkerFrameworkVersion = '2.1.0'
+    ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
+    checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
+
+    if (targetJavaVersion.isJava7()) {
+        checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
+    }
+    checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+    compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+}
+\end{Verbatim}
+
+\item Direct all tasks of type \<JavaCompile> to use the desired checkers:
+
+\begin{mysmall}
+\begin{Verbatim}
+allprojects {
+    tasks.withType(JavaCompile).all { JavaCompile compile ->
+        compile.options.compilerArgs = [
+                '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+                '-processorpath', "${configurations.checkerFramework.asPath}",
+                // uncomment to turn Checker Framework errors into warnings
+                // '-Awarns',
+                "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+        ]
+        if (targetJavaVersion.isJava7()) {
+            compile.options.compilerArgs += ['-source', '7', '-target', '7']
+            options.fork = true
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
+        }
+    }
+}
+\end{Verbatim}
+\end{mysmall}
+\end{enumerate}
+
+\section{Android plugin for Gradle\label{android-gradle}}
+
+If you use the
+\href{https://developer.android.com/studio/build/index.html}{Android plugin for Gradle},
+then you can run a checker by following the instructions below.
+
+These instructions can be used with Java 7 or Java 8.  Because Android does not
+support type annotations, they must be placed in comments as explained in
+Section~\ref{annotations-in-comments}.
+
+\begin{enumerate}
+
+\item Use the Maven Central repository:
+
+\begin{Verbatim}
+repositories {
+  ... existing repositories...
+  mavenCentral()
+}
+\end{Verbatim}
+
+\item Add dependency configurations for the annotated JDK, \<checker.jar>, and the Type Annotations compiler:
+
+\begin{mysmall}
+\begin{Verbatim}
+configurations {
+    ... existing configurations ...
+    checkerFrameworkJavac {
+        description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+    }
+    checkerFrameworkAnnotatedJDK {
+       description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+    }
+    checkerFramework {
+       description = 'The Checker Framework: custom pluggable types for Java'
+    }
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item Declare the Checker Framework dependencies:
+
+\begin{mysmall}
+\begin{Verbatim}
+dependencies {
+    ... existing dependencies...
+    ext.checkerFrameworkVersion = '2.1.0'
+    ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
+    checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
+    checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
+    checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+    compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item Direct all tasks of type \<JavaCompile> to use the desired checkers, when the \<typecheck> project property is set:
+
+\begin{mysmall}
+\begin{Verbatim}
+def typecheck = project.properties['typecheck'] ?: false
+allprojects {
+if (typecheck) {
+    gradle.projectsEvaluated {
+        tasks.withType(JavaCompile).all { JavaCompile compile ->
+        compile.options.compilerArgs = [
+                '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+                '-processorpath', "${configurations.checkerFramework.asPath}",
+                // uncomment to turn Checker Framework errors into warnings
+                //'-Awarns',
+                "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+        ]
+            compile.options.compilerArgs += ['-source', '7', '-target', '7']
+            options.bootClasspath = System.getProperty("sun.boot.class.path") + ":" + options.bootClasspath
+            options.bootClasspath = "${configurations.checkerFrameworkJavac.asPath}:" + ":" + options.bootClasspath
+            options.fork = true
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
+        }
+    }
+}
+}
+\end{Verbatim}
+\end{mysmall}
+
+\item Run the checkers:
+
+\begin{Verbatim}
+gradle compileReleaseJavaWithJavac -Ptypecheck=true
+\end{Verbatim}
+\end{enumerate}
 
 
 \section{IntelliJ IDEA\label{intellij}}
 
-IntelliJ IDEA (Maia release)
-\href{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}{supports}
-the Type Annotations (JSR-308) syntax.
-See \url{http://blogs.jetbrains.com/idea/2009/07/type-annotations-jsr-308-support/}.
+% The following method has been tested with IntelliJ IDEA 15.0.3.
+
+To run a checker within IntelliJ:
+
+\begin{enumerate}
+
+\item
+  Set the language level for your project to 8.  To do so, go to the
+  ``Project Structure'' menu via (File>Project Structure) or
+  (Ctrl-Alt-Shift-S), and set the ``Project language level'' field in the
+  ``Project'' sub-menu to 8.
+
+  Note: under MacOS, the menu is ``Preferences'' rather than ``Project Structure''.
+
+\item
+  Add the Checker Framework libraries.  In this same ``Project Structure''
+  menu, navigate to the ``Libraries'' sub-menu.  Click on the green ``+'' that
+  appears in this menu, select ``Java'' in the resulting pop-down menu,
+  select \<CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
+  and click ``OK''. Repeat this step for
+  \<CHECKERFRAMEWORK/checker/dist/javac.jar>.
+
+\item
+  Add the annotated JDK library.
+  Go to the ``Settings'' menu via (File>Settings) or (Ctrl-Alt-S) and
+  navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
+  Deployment>Compiler>Java Compiler).  Add the following to the field
+  ``Additional command line parameters'':
+  \<-Xbootclasspath/p:CHECKERFRAMEWORK/checker/dist/jdk8.jar>
+
+\item
+  Create an annotation profile and specify which checkers to run.
+  Directly under the ``Java Compiler'' sub-menu is the ``Annotation
+  Processors'' sub-menu. Navigate here and click on the green ``+'' to create
+  a new Annotation Processor profile. Select the modules you would like to
+  use checkers with from under the ``Default'' profile and move them to your
+  new profile via the button directly right of the ``-'' button.
+
+  Now select your new profile and check the ``Enable annotation processing''
+  option. Select the ``Processor path'' radio button and enter
+  \<CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
+  of it. To add a checker to be run during compilation, click on the green
+  ``+'' in the ``Processor FQ Name'' section and write that checker's
+  fully-qualified name
+  (\<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>) in
+  the resulting text field, and press the ``ENTER'' key.
+  % Without the ENTER key, the setting won't be saved.
+
+\end{enumerate}
+
+Now, when you compile your code, the checker will be run.
+
 
 \section{Eclipse\label{eclipse}}
 
@@ -547,7 +758,7 @@ The website contains instructions for installing and using the plugin.
 % and supports all checkers that are distributed with the Checker Framework.
 
 
-\subsection{Troubleshooting Eclipse}
+\subsection{Troubleshooting Eclipse\label{eclipse-troubleshooting}}
 
 Eclipse issues an ``Unhandled Token in @SuppressWarnings'' warning if you
 write a \<@SuppressWarnings> annotation containing a string that does not
@@ -570,16 +781,19 @@ comments (see Section~\ref{annotations-in-comments}).
 \section{tIDE\label{tide}}
 
 \begin{sloppypar}
-tIDE, an open-source Java IDE, supports the Checker Framework.  See its
-documentation at \myurl{http://tide.olympe.in/}.
+tIDE, an open-source Java IDE, supports the Checker Framework.
+You can download it from \myurl{https://sites.google.com/site/tidejava/}.
+% This, and http://tide.olympe-network.com/, are failing as of June 2016.
+% See its documentation at \myurl{http://tide.olympe.in/}.
 \end{sloppypar}
 
 
-\section{Type inference tools\label{type-inference-tools}}
-
-\subsection{Varieties of type inference\label{type-inference-varieties}}
+\section{Type inference tools\label{type-inference-varieties}}
 
 There are two different tasks that are commonly called ``type inference''.
+You are probably interested in type inference to annotate a program's
+source code; see Section~\ref{type-inference-to-annotate}.  This section
+expalins the two different varieties of type inference.
 
 \begin{enumerate}
 \item
@@ -662,28 +876,6 @@ programmer does not have to write any qualifiers
 inside the body of a method.
 
 
-\subsection{Type inference to annotate a program\label{type-inference-to-annotate}}
-
-This section lists tools that take a program and output a set of
-annotations for it.
-
-Section~\ref{nullness-inference} lists several tools that infer
-annotations for the Nullness Checker.
-
-Section~\ref{javari-inference} lists a tool that infers
-annotations for the Javari Checker, which detects mutation errors.
-
-\href{https://github.com/reprogrammer/cascade/}{Cascade}~\cite{VakilianPEJ2014}
-is an Eclipse plugin that implements interactive type qualifier inference.
-Cascade is interactive rather than fully-automated:  it makes it easier for
-a developer to insert annotations.
-Cascade starts with an unannotated program and runs a type-checker.  For each
-warning it suggests multiple fixes, the developer chooses a fix, and
-Cascade applies it.  Cascade works with any checker built on the Checker
-Framework.
-You can find installation instructions and a video tutorial at \url{https://github.com/reprogrammer/cascade}.
-
-
 % LocalWords:  jsr plugin Warski xml buildfile tIDE java Awarns pom lifecycle
 % LocalWords:  IntelliJ Maia newdir classpath Unconfuse nullness Gradle
 % LocalWords:  compilerArgs Xbootclasspath JSR308 jsr308 jsr308javac mvn
@@ -692,5 +884,5 @@ You can find installation instructions and a video tutorial at \url{https://gith
 %%  LocalWords:  artifactId quals failOnError ejc CHECKERFRAMEWORK
 %%  LocalWords:  javacheck checkerframework MavenExample org arg
 %%  LocalWords:  AoutputArgsToFile qual jdk7 jdk8 annotatedJdk Unhandled
-%%  LocalWords:  annotationProcessors annotationProcessor
-%%  LocalWords:  typeAnnotationsJavac
+%%  LocalWords:  annotationProcessors annotationProcessor JavaCompile
+%%  LocalWords:  typeAnnotationsJavac targetJavaVersion GradleExamples

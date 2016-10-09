@@ -3,6 +3,7 @@ package org.checkerframework.framework.util.typeinference;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
@@ -46,7 +47,6 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 
@@ -111,11 +111,11 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     @Override
     public void adaptMethodType(AnnotatedTypeFactory typeFactory, ExpressionTree invocation, AnnotatedExecutableType methodType) {
-        //do nothing
+        // do nothing
     }
     // TODO: THIS IS A BIG VIOLATION OF Single Responsibility and SHOULD BE FIXED, IT IS SOLELY HERE
     // TODO: AS A TEMPORARY KLUDGE BEFORE A RELEASE/SPARTA ENGAGEMENT
-    // TODO: TypeArgumentInference should only have an infer method (it's sole responsibility)
+    // TODO: TypeArgumentInference should only have an infer method (its sole responsibility)
     // TODO: Subclasses should NOT be able to call adaptMethodType and getArgumentTypes (getArgumentTypes should be inlined)
     protected List<AnnotatedTypeMirror> getArgumentTypes(final ExpressionTree expression,
                                                          final AnnotatedTypeFactory typeFactory) {
@@ -217,23 +217,23 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                                                          final Set<TypeVariable> targets) {
 
         //1.  Step 1 - Build up argument constraints
-        //The AFConstraints for arguments are used also in the
+        // The AFConstraints for arguments are used also in the
         Set<AFConstraint> afArgumentConstraints = createArgumentAFConstraints(typeFactory, argumentTypes, methodType, targets);
 
         //2. Step 2 - Solve the constraints.
         Pair<InferenceResult, InferenceResult> argInference = inferFromArguments(typeFactory, afArgumentConstraints, targets);
 
-        final InferenceResult fromArgEqualities = argInference.first;  //result 2.a
-        final InferenceResult fromArgSubandSupers = argInference.second; //result 2.b
+        final InferenceResult fromArgEqualities = argInference.first;  // result 2.a
+        final InferenceResult fromArgSubandSupers = argInference.second; // result 2.b
 
         clampToLowerBound(fromArgSubandSupers, methodType.getTypeVariables(), typeFactory);
 
-        //if this method invocation's has a return type and it is assigned/pseudo-assigned to
-        //a variable, assignedTo is the type of that variable
+        // if this method invocation's has a return type and it is assigned/pseudo-assigned to
+        // a variable, assignedTo is the type of that variable
         if (assignedTo == null) {
             fromArgEqualities.mergeSubordinate(fromArgSubandSupers);
             return fromArgEqualities.toAtmMap();
-        } //else
+        } // else
 
         final AnnotatedTypeMirror declaredReturnType = methodType.getReturnType();
         final AnnotatedTypeMirror boxedReturnType;
@@ -258,13 +258,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             // Step 5 - Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
             fromArgEqualities.mergeSubordinate(combinedSupertypesAndAssignment);
 
-            //if we don't have a result for all type arguments
-            //Step 6 - Infer the type arguments from the greatest-lower-bounds of all "subtype" constraints
+            // if we don't have a result for all type arguments
+            // Step 6 - Infer the type arguments from the greatest-lower-bounds of all "subtype" constraints
             if (!fromArguments.isComplete(targets)) {
                 InferenceResult fromAssignment = inferFromAssignment(assignedTo, boxedReturnType, methodType, afArgumentConstraints,
                         fromArguments, targets, typeFactory);
 
-                //Step 7 - Merge the argument and the assignment constraints
+                // Step 7 - Merge the argument and the assignment constraints
                 fromArguments.mergeSubordinate(fromAssignment);
             }
 
@@ -286,13 +286,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *   <@Initialized T extends @Initialized Object> void id(T t) { return t; }
      *   id(null);
      *
-     *   //The invocation of id will result in a type argument with primary annotations of @FBCBottom @Nullable
-     *   //but this is below the lower bound of T in the initialization hierarchy so instead replace
+     *   // The invocation of id will result in a type argument with primary annotations of @FBCBottom @Nullable
+     *   // but this is below the lower bound of T in the initialization hierarchy so instead replace
      *   //@FBCBottom with @Initialized
      *
-     *   //This should happen ONLY with supertype constraints because raising the primary annotation would still
-     *   //be valid for these constraints (since we just LUB the arguments involved) but would violate any
-     *   //equality constraints
+     *   // This should happen ONLY with supertype constraints because raising the primary annotation would still
+     *   // be valid for these constraints (since we just LUB the arguments involved) but would violate any
+     *   // equality constraints
      * }
      *
      * TODO: NOTE WE ONLY DO THIS FOR InferredType results for now but we should probably include targest as well
@@ -309,10 +309,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (AnnotatedTypeVariable targetDecl : targetDeclarations ) {
             InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
             if (inferred != null && inferred instanceof InferredType) {
-                final AnnotatedTypeMirror lowerBoundAsArgument =
-                        AnnotatedTypes.asSuper(types, typeFactory, targetDecl.getLowerBound(), ((InferredType) inferred).type);
-
-
+                final AnnotatedTypeMirror lowerBoundAsArgument = targetDecl.getLowerBound();
                 for (AnnotationMirror top : tops) {
                     final AnnotationMirror lowerBoundAnno = lowerBoundAsArgument.getEffectiveAnnotationInHierarchy(top);
                     final AnnotationMirror argAnno = ((InferredType) inferred).type.getEffectiveAnnotationInHierarchy(top);
@@ -445,8 +442,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (AnnotatedTypeVariable typeParam : methodType.getTypeVariables()) {
             final TypeVariable target = typeParam.getUnderlyingType();
             final AnnotatedTypeMirror inferredType = inferredArgs.get(target);
-            //for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is the lower bound
-            //for all uninferred types Tu: Tu >> Bi and Lu >> Tu
+            // for all inferred types Ti:  Ti >> Bi where Bi is upper bound and Ti << Li where Li is the lower bound
+            // for all uninferred types Tu: Tu >> Bi and Lu >> Tu
             if (inferredType != null) {
                 assignmentAfs.add(new A2F(inferredType, typeParam.getUpperBound()));
                 assignmentAfs.add(new F2A(typeParam.getLowerBound(), inferredType));
@@ -545,8 +542,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * For any types we have not inferred, use a wildcard with the bounds from the original type parameter.
-     * For any types we have inferred to be an AnnotatedNullType, create a wildcard but apply the primary
-     * annotations from that AnnotatedNullType.
      */
     private void handleUninferredTypeVariables(AnnotatedTypeFactory typeFactory, AnnotatedExecutableType methodType,
                                                Set<TypeVariable> targets, Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
@@ -556,13 +551,9 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             if (targets.contains(TypeAnnotationUtils.unannotatedType((Type) typeVar))) {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
 
-                if (inferredType == null || inferredType.getKind() == TypeKind.NULL) {
+                if (inferredType == null) {
                     AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
                     inferredArgs.put(atv.getUnderlyingType(), dummy);
-
-                    if (inferredType != null) { //then the type kind must be TypeKind.NULL
-                        dummy.replaceAnnotations(inferredType.getAnnotations());
-                    }
                 }
             }
         }

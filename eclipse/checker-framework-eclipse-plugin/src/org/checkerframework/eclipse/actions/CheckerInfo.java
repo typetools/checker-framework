@@ -1,10 +1,10 @@
 package org.checkerframework.eclipse.actions;
 
 import org.checkerframework.checker.guieffect.GuiEffectChecker;
-import org.checkerframework.checker.igj.IGJChecker;
 import org.checkerframework.checker.propkey.PropertyKeyChecker;
 import org.checkerframework.checker.signature.SignatureChecker;
 import org.checkerframework.checker.units.UnitsChecker;
+import org.checkerframework.checker.signedness.SignednessChecker;
 import org.checkerframework.common.aliasing.AliasingChecker;
 import org.checkerframework.common.subtyping.SubtypingChecker;
 import org.checkerframework.common.value.ValueChecker;
@@ -18,7 +18,6 @@ import org.checkerframework.checker.formatter.FormatterChecker;
 import org.checkerframework.checker.i18nformatter.I18nFormatterChecker;
 import org.checkerframework.checker.i18n.I18nChecker;
 import org.checkerframework.checker.interning.InterningChecker;
-import org.checkerframework.checker.javari.JavariChecker;
 import org.checkerframework.checker.linear.LinearChecker;
 import org.checkerframework.checker.lock.LockChecker;
 import org.checkerframework.checker.nullness.NullnessChecker;
@@ -47,8 +46,8 @@ public class CheckerInfo
         int length = toSplit.length();
 
         int start = 0;
-        for(int i = 0; i < length; i++) {
-            if((Character.isUpperCase(toSplit.charAt(i)) && i != 0)) {
+        for (int i = 0; i < length; i++) {
+            if ((Character.isUpperCase(toSplit.charAt(i)) && i != 0)) {
                 tokens.add(toSplit.substring(start, i));
                 start = i;
             }
@@ -59,7 +58,7 @@ public class CheckerInfo
     }
 
     private static void initCheckers() {
-        if(checkers == null) {
+        if (checkers == null) {
 
             final List<CheckerInfo> checkerList = Arrays.asList(
                 new CheckerInfo("Nullness Checker",  NullnessChecker.class),
@@ -79,13 +78,12 @@ public class CheckerInfo
 
                 new CheckerInfo("GUI Effect Checker", GuiEffectChecker.class),
                 new CheckerInfo("Units Checker",      UnitsChecker.class),
+                new CheckerInfo("Signedness Checker", SignednessChecker.class),
 
                 new CheckerInfo("Constant Value Checker", ValueChecker.class),
                 new CheckerInfo("Aliasing Checker",      AliasingChecker.class),
                 new CheckerInfo("Linear Checker",     LinearChecker.class),
 
-                new CheckerInfo("IGJ Immutability Checker",    IGJChecker.class),
-                new CheckerInfo("Javari Immutability Checker", JavariChecker.class),
                 new CheckerInfo("Subtyping Checker",           SubtypingChecker.class, null)
             );
 
@@ -119,7 +117,7 @@ public class CheckerInfo
         final String className = PluginUtil.join(" ", splitAtUppercase(pathTokens[pathTokens.length - 1]));
             str += "className = " + className;
             return new CheckerInfo(className, classPath, qualsPath);
-        } catch(Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(str, e);
         }
 

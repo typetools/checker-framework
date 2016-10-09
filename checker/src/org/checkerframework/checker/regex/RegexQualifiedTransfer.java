@@ -4,6 +4,7 @@ import org.checkerframework.checker.experimental.regex_qual.Regex;
 import org.checkerframework.checker.experimental.regex_qual.Regex.RegexVal;
 import org.checkerframework.checker.regex.classic.RegexTransfer;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
@@ -84,8 +85,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
     /**
      * Handle invocations of isRegex and asRegex on RegexUtil.
      *
-     * @param n The method invocation.
-     * @param method The method element.
+     * @param n the method invocation
+     * @param method the method element
      * @param resultIn the input {@link org.checkerframework.dataflow.analysis.TransferResult}
      * @return the possibly refined output {@link org.checkerframework.dataflow.analysis.TransferResult}
      */
@@ -101,17 +102,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
             QualStore<QualParams<Regex>> elseStore = thenStore.copy();
             ConditionalTransferResult<QualValue<QualParams<Regex>>, QualStore<QualParams<Regex>>> newResult =
                     new ConditionalTransferResult<>(resultIn.getResultValue(), thenStore, elseStore);
-            FlowExpressionContext context = FlowExpressionParseUtil.buildFlowExprContextForUse(n,
-                    analysis.getContext());
-            Receiver firstParam;
-            try {
-                // TODO: is this the easiest way to do this?
-                firstParam = FlowExpressionParseUtil.parse("#1", context,
-                        analysis.getContext().getTypeFactory().getPath(n.getTree()));
-            } catch (FlowExpressionParseException e) {
-                firstParam = null;
-                assert false;
-            }
+            Receiver firstParam =
+                    FlowExpressions.internalReprOf(analysis.getContext().getAnnotationProvider(), n.getArgument(0));
 
             // add annotation with correct group count (if possible,
             // regex annotation without count otherwise)
@@ -137,8 +129,8 @@ public class RegexQualifiedTransfer extends QualTransfer<QualParams<Regex>> {
 
     /** Determine the int value of the given Node.
      *
-     * @param num Input Node.
-     * @return The int value of num. 0 if num is not an int literal.
+     * @param num input Node
+     * @return the int value of num. 0 if num is not an int literal.
      */
 
     private int determineIntValue(Node num) {

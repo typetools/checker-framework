@@ -1,7 +1,6 @@
 // Test case for issue 557:
 // https://github.com/typetools/checker-framework/issues/557
 // @below-java8-jdk-skip-test
-// @skip-test
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -33,6 +32,15 @@ class Issue557a {
 
     MyOpt<String> opt2() {
       return MyOpt.empty();
+    }
+
+    MyOpt<String> opt3(boolean flag) {
+      return flag ? MyOpt.of("Hello") : (flag ? MyOpt.empty() : MyOpt.empty());
+    }
+    void foo(MyOpt<String> param) {
+    }
+    void callFoo(boolean flag) {
+      foo(flag ? MyOpt.of("Hello") : (flag ? MyOpt.empty() : MyOpt.empty()));
     }
 }
 

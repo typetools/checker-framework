@@ -1,0 +1,62 @@
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+assert (JavaVersion.current().isJava7() || JavaVersion.current().isJava8Compatible())
+
+
+// Indicates the version of Java to which the source and class files should conform
+// If set to JavaVersion.VERSION_1_7 then type annotations must be in comments.
+ext.targetJavaVersion = JavaVersion.current().isJava7() ? JavaVersion.VERSION_1_7 : JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+}
+
+
+configurations {
+    if (targetJavaVersion.isJava7()) {
+        checkerFrameworkJavac {
+            description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+        }
+    }
+    checkerFrameworkAnnotatedJDK {
+       description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
+    }
+    checkerFramework {
+       description = 'The Checker Framework: custom pluggable types for Java'
+    }
+}
+
+dependencies {
+    ext.checkerFrameworkVersion = '2.1.0'
+    ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
+    checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
+
+    if (targetJavaVersion.isJava7()) {
+        checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
+    }
+    checkerFramework "org.checkerframework:checker:${checkerFrameworkVersion}"
+    compile "org.checkerframework:checker-qual:${checkerFrameworkVersion}"
+
+    compile 'org.apache.commons:commons-lang3:3.1'
+
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+}
+
+allprojects {
+    tasks.withType(JavaCompile).all { JavaCompile compile ->
+        compile.options.compilerArgs = [
+                '-processor', 'org.checkerframework.checker.nullness.NullnessChecker',
+                '-processorpath', "${configurations.checkerFramework.asPath}",
+                // uncomment to turn Checker Framework errors into warnings
+                //'-Awarns',
+                "-Xbootclasspath/p:${configurations.checkerFrameworkAnnotatedJDK.asPath}"
+        ]
+        if (targetJavaVersion.isJava7()) {
+            compile.options.compilerArgs += ['-source', '7', '-target', '7']
+            options.fork = true
+            options.forkOptions.jvmArgs += ["-Xbootclasspath/p:${configurations.checkerFrameworkJavac.asPath}"]
+        }
+    }
+}

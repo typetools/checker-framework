@@ -30,7 +30,7 @@ class Test {
         s+=0x1a;
         s+=0b11010;
         //TODO: this should pass
-        //compound assignments have not been implemented.
+        // compound assignments have not been implemented.
         //:: error: (assignment.type.incompatible)
         @StringVal("helloa11.01.020truenull2626") String all = s;
 

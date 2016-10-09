@@ -40,8 +40,7 @@ public class JavacRunner implements CheckersRunner
     public static final String JAVAC_LOCATION = "lib/javac.jar";
     public static final String JDK_LOCATION = "lib/jdk.jar";
     public static final List<String> IMPLICIT_ARGS = Arrays.asList(
-            "checkers.nullness.quals.*", "checkers.igj.quals.*",
-            "checkers.javari.quals.*", "checkers.interning.quals.*");
+            "checkers.nullness.quals.*", "checkers.interning.quals.*");
 
     private final Iterable<String> fileNames;
     private final Iterable<String> processors;
@@ -49,7 +48,7 @@ public class JavacRunner implements CheckersRunner
     private final DiagnosticCollector<JavaFileObject> collector;
     private final boolean hasQuals;
 
-    public JavacRunner(String[] fileNames, String[] processors, String classpath,boolean hasQuals)
+    public JavacRunner(String[] fileNames, String[] processors, String classpath, boolean hasQuals)
     {
         this.collector = new DiagnosticCollector<JavaFileObject>();
         this.fileNames = Arrays.asList(fileNames);
@@ -78,7 +77,7 @@ public class JavacRunner implements CheckersRunner
         // The following code uses the compiler's internal APIs, which are
         // volatile. (see warning in JavacTool source)
         JavacTool tool = JavacTool.create();
-        JavacFileManager manager = null; //tool.getStandardFileManager(collector, null, null);
+        JavacFileManager manager = null; // tool.getStandardFileManager(collector, null, null);
 
         Iterable<? extends JavaFileObject> fileObjs = manager.getJavaFileObjectsFromStrings(fileNames);
 
@@ -105,7 +104,7 @@ public class JavacRunner implements CheckersRunner
         {
             opts.add("-Xbootclasspath/p:" + getLocation(JAVAC_LOCATION) + ":"
                     + getLocation(JDK_LOCATION) + ":");
-        }catch (IOException e)
+        } catch (IOException e)
         {
             CheckerPlugin.logException(e, e.getMessage());
         }
@@ -210,11 +209,11 @@ public class JavacRunner implements CheckersRunner
         List<JavacError> javacErrors = new ArrayList<JavacError>();
         for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics)
         {
-        	if(diagnostic.getSource() != null) {
-        		javacErrors.add(new JavacError(diagnostic));
-        	} else {//TODO: TEST PRINTING THIS TO THE CONSOLE
-        		System.out.println("No source for diagnostic at: " + diagnostic.getLineNumber() + " Message " + diagnostic.getMessage(null));
-        	}
+            if (diagnostic.getSource() != null) {
+                javacErrors.add(new JavacError(diagnostic));
+            } else {//TODO: TEST PRINTING THIS TO THE CONSOLE
+                System.out.println("No source for diagnostic at: " + diagnostic.getLineNumber() + " Message " + diagnostic.getMessage(null));
+            }
         }
         return javacErrors;
     }

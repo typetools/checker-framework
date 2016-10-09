@@ -20,7 +20,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
  * Note that {@link QualifierHierarchyAdapter.Implementation} is the actual
  * {@link MultiGraphQualifierHierarchy} implementation, not {@link
  * QualifierHierarchyAdapter}.  To construct an instance, call:
- * <code>new QualifierHierarchyAdapter(underlying, converter).createImplementation(factory)</code>.
+ * {@code new QualifierHierarchyAdapter(underlying, converter).createImplementation(factory)}.
  */
 /* We need this 'Implementation' silliness because MultiGraphQualifierHierarchy
  * calls some of its own methods from inside the constructor.  The call to the
@@ -103,7 +103,7 @@ class QualifierHierarchyAdapter<Q> {
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
 
             // Dataflow and Propagation tree annotator will sometimes call this method
-            // with ATMs that do not have a qualifier(@Key) yet. In that case we must
+            // with ATMs that do not have a qualifier(@QualifierKey) yet. In that case we must
             // do the conversion here.
             Q rhsQual = getOrCreateQualifier(rhs);
             Q lhsQual = getOrCreateQualifier(lhs);
@@ -116,8 +116,8 @@ class QualifierHierarchyAdapter<Q> {
         }
 
         /**
-         * This method looks up the qualifier for AnnotatedTypeMirror using its @Key
-         * annotation. If no @Key annotation is present, converter is used to
+         * This method looks up the qualifier for AnnotatedTypeMirror using its @QualifierKey
+         * annotation. If no @QualifierKey annotation is present, converter is used to
          * create a qualifier based on the annotation on mirror.
          *
          * @param mirror the AnnotationMirror to create a qualifier from

@@ -42,15 +42,17 @@ public class FlowInterning {
         arg = "";
         while ((ii < args.length()) && Character.isWhitespace(args.charAt(ii)))
           ii++;
-        if (ii < args.length())
+        if (ii < args.length()) {
           ii--;
+        }
       } else { // must be part of current argument
         arg += ch;
       }
     }
     // Interning Checker should NOT suggest == here.
-    if (!arg.equals (""))
+    if (!arg.equals ("")) {
       arg_list.add (arg);
+    }
 
     String[] argsArray = arg_list.toArray (new String[arg_list.size()]);
     return argsArray;

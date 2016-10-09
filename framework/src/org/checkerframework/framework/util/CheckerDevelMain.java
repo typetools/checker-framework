@@ -69,7 +69,7 @@ public class CheckerDevelMain extends CheckerMain {
     }
 
     @Override
-    public void addMainArgs(final List<String> args) {
+    public void addMainToArgs(final List<String> args) {
         args.add("com.sun.tools.javac.Main");
     }
 

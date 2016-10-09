@@ -10,6 +10,7 @@ import javax.annotation.processing.SupportedOptions;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.common.subtyping.SubtypingChecker;
+import org.checkerframework.framework.qual.StubFiles;
 
 /**
  * The main checker class for the Fake Enum Checker.
@@ -30,6 +31,7 @@ import org.checkerframework.common.subtyping.SubtypingChecker;
  * @author wmdietl
  * @checker_framework.manual #fenum-checker Fake Enum Checker
  */
+@StubFiles("jdnc.astub")
 @SupportedOptions( { "quals", "qualDirs" } )
 public class FenumChecker extends BaseTypeChecker {
 
@@ -46,13 +48,15 @@ public class FenumChecker extends BaseTypeChecker {
     @Override
     public Collection<String> getSuppressWarningsKeys() {
         Set<Class<? extends Annotation>> annos = ((BaseTypeVisitor<?>)visitor).getTypeFactory().getSupportedTypeQualifiers();
-        if (annos.isEmpty())
+        if (annos.isEmpty()) {
             return super.getSuppressWarningsKeys();
+        }
 
         Set<String> swKeys = new HashSet<>();
         swKeys.add(SUPPRESS_ALL_KEY);
-        for (Class<? extends Annotation> anno : annos)
+        for (Class<? extends Annotation> anno : annos) {
             swKeys.add(anno.getSimpleName().toLowerCase());
+        }
 
         return swKeys;
     }

@@ -451,7 +451,8 @@ to unsoundly allow non-null array components.
 
 When you perform a run-time check for nullness, such as \<if (x != null)
 ...>, then the Nullness Checker refines the type of \<x> to
-\<@NonNull> within the scope of the test.  For more details, see
+\<@NonNull>.  The refinement lasts until the end of the scope of the test
+or until \<x> may be side-effected.  For more details, see
 Section~\ref{type-refinement}.
 
 
@@ -512,7 +513,7 @@ Section~\ref{null-defaults}) your code uses.  You only need one of these tools.
   If your code uses the Nullable default, use one of these tools:
 \begin{itemize}
 \item
-  \href{http://julia.scienze.univr.it/}{Julia analyzer},
+  \href{http://www.juliasoft.com/eng}{Julia analyzer},
 \item
   \href{http://nit.gforge.inria.fr}{Nit: Nullability Inference Tool},
 \item
@@ -822,9 +823,9 @@ powerful analysis that can warn you about more null pointer errors in your
 code.
 
 If your code is already annotated with a different nullness
-annotation, you can reuse that effort.  The Checker Framework comes with
-cleanroom re-implementations of annotations from other tools.  It treats
-them exactly as if you had written the corresponding annotation from the
+annotation, the Checker Framework can type-check your code.
+It treats annotations from other tools
+exactly as if you had written the corresponding annotation from the
 Nullness Checker, as described in Figure~\ref{fig-nullness-refactoring}.
 
 
@@ -915,13 +916,6 @@ $\Rightarrow$
 % \end{enumerate}
 
 
-Alternately, the Checker Framework can process those other annotations (as
-well as its own, if they also appear in your program).  The Checker
-Framework has its own definition of the annotations on the left side of
-Figure~\ref{fig-nullness-refactoring}, so that they can be used as type
-qualifiers.  The Checker Framework interprets them according to the right
-side of Figure~\ref{fig-nullness-refactoring}.
-
 The Checker Framework may issue more or fewer errors than another tool.
 This is expected, since each tool uses a different analysis.  Remember that
 the Checker Framework aims at soundness:  it aims to never miss a possible
@@ -929,10 +923,11 @@ null dereference, while at the same time limiting false reports.  Also,
 note FindBugs's non-standard meaning for \<@Nullable>
 (Section~\ref{findbugs-nullable}).
 
-Because some of the names are the same (\<NonNull>, \<Nullable>), you can
-import at most one of the annotations with
-conflicting names; the other(s) must be written out fully rather than
-imported.
+Java permits you to import at most one annotation of a given name.  For
+example, if you use both \<android.annotation.NonNull> and
+\<lombok.NonNull> in your source code, then you must write at least one of
+them in fully-qualified form, as \<@android.annotation.NonNull> rather than
+as \<@NonNull>.
 
 Note that some older tools interpret array and varargs declarations
 inconsistently with the Java specification.  For example, they might
@@ -1510,7 +1505,7 @@ consider a doubly linked list:
     void insert(@Nullable T data) {
       this.sentinel.insertAfter(data);
     }
-    
+
     public static void main() {
       List<Integer> l = new List<Integer>();
       l.insert(1);
@@ -1554,7 +1549,7 @@ consider a doubly linked list:
   }
 \end{Verbatim}
 
-% \paragraph{Example}
+% \paragraph{Example\label{initialization-example}}
 %
 % As another example, consider the following 12 declarations, where class A
 % extends Object and class B extends A:
@@ -2301,10 +2296,10 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
 % LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
-% LocalWords:  nonnull EnsuresNonNull ReadOnly arg orElse isPresent
+% LocalWords:  nonnull EnsuresNonNull arg orElse isPresent
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
-% LocalWords:  typeofthis nraB nrbB rO nroO nroB IGJ containsKey enum
+% LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum
 % LocalWords:  JUnit's field1 field2 superclasses Foo C1 C2 PolyRaw
 % LocalWords:  NullnessChecker redundantNullComparison instanceof
 % LocalWords:  noInitForMonotonicNonNull UnknownInitialization isArray
