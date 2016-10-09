@@ -96,13 +96,10 @@
               failonerror="true"
               classpath="${javac.lib}:${javacutil.lib}"
               classname="com.sun.tools.javac.Main">
+            <!-- Option no longer exists in JDK 9.
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            -->
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
-            <arg value="-source"/>
-            <arg value="7"/>
-            <arg value="-target"/>
-            <arg value="7"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}"/>

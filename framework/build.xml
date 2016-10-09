@@ -158,13 +158,10 @@
               failonerror="true"
               classpath="${javac.lib}:${stubparser.lib}:${javacutil.lib}:${dataflow.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
+            <!-- Option no longer exists in JDK 9.
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            -->
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
-            <arg value="-source"/>
-            <arg value="7"/>
-            <arg value="-target"/>
-            <arg value="7"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}"/>
@@ -259,13 +256,10 @@
               failonerror="true"
               classpath="${javac.lib}:${junit.lib}:${hamcrest.lib}:${build}:${javacutil.lib}:${dataflow.lib}"
               classname="com.sun.tools.javac.Main">
+            <!-- Option no longer exists in JDK 9.
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+	    -->
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
-            <arg value="-source"/>
-            <arg value="7"/>
-            <arg value="-target"/>
-            <arg value="7"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${tests}"/>
@@ -283,7 +277,9 @@
                dir="${basedir}"
                printsummary="false"
                haltonfailure="${halt.on.test.failure}">
+            <!-- Option no longer exists in JDK 9.
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            -->
             <jvmarg line="-ea"/>
             <jvmarg line="-Dorg.checkerframework.common.reflection.debug=false"/>
 
@@ -327,7 +323,9 @@
              dir="${basedir}"
              printsummary="false"
              haltonfailure="${halt.on.test.failure}">
+          <!-- Option no longer exists in JDK 9.
           <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+          -->
           <jvmarg line="-ea"/>
 
           <classpath>
@@ -590,7 +588,10 @@
                     samevm="@{samevm}" verbose="@{verbose}"
                     failonerror="false" resultproperty="jtreg.@{name}.result"
                     javacoptions="-g"
+                    vmoptions="${coverage.options} @{jpda.jvmargs}">
+                    <!-- Option no longer exists in JDK 9.
                     vmoptions="${coverage.options} -Xbootclasspath/p:${coverage.classpath}:${build}:${checkers.classpath} @{jpda.jvmargs}">
+                    -->
                     <arg line="@{keywords}"/>
                     <arg line="@{options}"/>
                     <arg line="@{tests}"/>
@@ -631,13 +632,10 @@
               failonerror="true"
               classpath="${javac.lib}:${framework.lib}:${junit.lib}:${hamcrest.lib}"
               classname="com.sun.tools.javac.Main">
+            <!-- Option no longer exists in JDK 9.
             <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            -->
             <arg value="-g"/>
-            <!-- Make sure we only have Java 7 source code and generate Java 7 bytecode. -->
-            <arg value="-source"/>
-            <arg value="7"/>
-            <arg value="-target"/>
-            <arg value="7"/>
             <!-- To not get a warning about bootstrap classpath -->
             <arg value="-Xlint:-options"/>
             <arg line="-sourcepath ${src}:${checker-jdk}"/>
