@@ -240,8 +240,7 @@ public class JavaSource2CFGDOT {
         // effect used to be:
         // compilePolicy = CompilePolicy.ATTR_ONLY;
 
-        JavacFileManager fileManager = (JavacFileManager) context
-                .get(JavaFileManager.class);
+        JavacFileManager fileManager = (JavacFileManager) context.get(JavaFileManager.class);
 
         JavaFileObject l =
                 fileManager.getJavaFileObjectsFromStrings(List.of(file)).iterator().next();

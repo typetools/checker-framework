@@ -1,16 +1,5 @@
 package org.checkerframework.javacutil;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
@@ -63,9 +52,17 @@ public class Resolver {
 
     static {
         try {
-            FIND_METHOD = Resolve.class.getDeclaredMethod("findMethod",
-                    Env.class, Type.class, Name.class, List.class, List.class,
-                    boolean.class, boolean.class);
+            FIND_METHOD =
+                    Resolve.class
+                            .getDeclaredMethod(
+                                    "findMethod",
+                                    Env.class,
+                                    Type.class,
+                                    Name.class,
+                                    List.class,
+                                    List.class,
+                                    boolean.class,
+                                    boolean.class);
             FIND_METHOD.setAccessible(true);
 
             FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
@@ -75,14 +72,24 @@ public class Resolver {
                     Resolve.class.getDeclaredMethod("findIdent", Env.class, Name.class, int.class);
             FIND_IDENT.setAccessible(true);
 
-            FIND_IDENT_IN_TYPE = Resolve.class.getDeclaredMethod(
-                    "findIdentInType", Env.class, Type.class, Name.class,
-                    KindSelector.class);
+            FIND_IDENT_IN_TYPE =
+                    Resolve.class
+                            .getDeclaredMethod(
+                                    "findIdentInType",
+                                    Env.class,
+                                    Type.class,
+                                    Name.class,
+                                    KindSelector.class);
             FIND_IDENT_IN_TYPE.setAccessible(true);
 
-            FIND_IDENT_IN_PACKAGE = Resolve.class.getDeclaredMethod(
-                    "findIdentInPackage", Env.class, TypeSymbol.class, Name.class,
-                    KindSelector.class);
+            FIND_IDENT_IN_PACKAGE =
+                    Resolve.class
+                            .getDeclaredMethod(
+                                    "findIdentInPackage",
+                                    Env.class,
+                                    TypeSymbol.class,
+                                    Name.class,
+                                    KindSelector.class);
             FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
             FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);
@@ -173,8 +180,13 @@ public class Resolver {
         try {
             JavacScope scope = (JavacScope) trees.getScope(path);
             Env<AttrContext> env = scope.getEnv();
-            Element res = wrapInvocationOnResolveInstance(FIND_IDENT_IN_TYPE, env, type,
-                    names.fromString(name), Kinds.KindSelector.VAR);
+            Element res =
+                    wrapInvocationOnResolveInstance(
+                            FIND_IDENT_IN_TYPE,
+                            env,
+                            type,
+                            names.fromString(name),
+                            Kinds.KindSelector.VAR);
 
             if (res.getKind() == ElementKind.FIELD) {
                 return (VariableElement) res;

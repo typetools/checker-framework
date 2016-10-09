@@ -60,7 +60,7 @@ public class Boxing {
         Boolean b1 = null;
         boolean b2 = true;
         //:: error: (unboxing.of.nullable) :: error: (compound.assignment.type.incompatible)
-        b2 &= b1;     // invalid
+        b2 &= b1; // invalid
     }
 
     void randomValidStringOperations() {

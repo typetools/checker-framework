@@ -1,37 +1,5 @@
 package org.checkerframework.framework.util.typeinference;
 
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.TypeVariableSubstitutor;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypeAnnotationUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.Types;
-
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
@@ -48,6 +16,35 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.Types;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.TypeVariableSubstitutor;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
  * Miscellaneous utilities to help in type argument inference.
@@ -100,9 +97,11 @@ public class TypeArgInferenceUtil {
      * Given a set of type variables for which we are inferring a type, returns true if type is
      * a use of a type variable in the list of targetTypeVars.
      */
-    public static boolean isATarget(final AnnotatedTypeMirror type, final Set<TypeVariable> targetTypeVars) {
-        return type.getKind() == TypeKind.TYPEVAR &&
-                targetTypeVars.contains(getUnannotatedTypeVariable((AnnotatedTypeVariable) type));
+    public static boolean isATarget(
+            final AnnotatedTypeMirror type, final Set<TypeVariable> targetTypeVars) {
+        return type.getKind() == TypeKind.TYPEVAR
+                && targetTypeVars.contains(
+                        getUnannotatedTypeVariable((AnnotatedTypeVariable) type));
     }
 
     /**
@@ -406,10 +405,12 @@ public class TypeArgInferenceUtil {
      *          normal substitution rules (@see TypeVariableSubstitutor)
      * Return the copy
      */
-    public static AnnotatedTypeMirror substitute(Map<TypeVariable, AnnotatedTypeMirror> substitutions,
-                                                 final AnnotatedTypeMirror toModify) {
-        final AnnotatedTypeMirror substitution = substitutions
-                .get(TypeAnnotationUtils.unannotatedType((Type) toModify.getUnderlyingType()));
+    public static AnnotatedTypeMirror substitute(
+            Map<TypeVariable, AnnotatedTypeMirror> substitutions,
+            final AnnotatedTypeMirror toModify) {
+        final AnnotatedTypeMirror substitution =
+                substitutions.get(
+                        TypeAnnotationUtils.unannotatedType((Type) toModify.getUnderlyingType()));
         if (substitution != null) {
             return substitution.deepCopy();
         }

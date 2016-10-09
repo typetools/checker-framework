@@ -493,7 +493,7 @@ public class PluginUtil {
      */
     public static int getJreVersion() {
         final Pattern oldVersionPattern = Pattern.compile("^\\d\\.(\\d+)\\..*$");
-        final String  jreVersionStr = System.getProperty("java.version");
+        final String jreVersionStr = System.getProperty("java.version");
         final Matcher oldVersionMatcher = oldVersionPattern.matcher(jreVersionStr);
 
         final int version;
@@ -507,7 +507,8 @@ public class PluginUtil {
             if (newVersionMatcher.matches()) {
                 version = Integer.parseInt(newVersionMatcher.group(1));
             } else {
-                throw new RuntimeException("Could not determine version from property java.version=" + jreVersionStr);
+                throw new RuntimeException(
+                        "Could not determine version from property java.version=" + jreVersionStr);
             }
         }
 
@@ -522,8 +523,7 @@ public class PluginUtil {
     public static String getJdkJarPrefix() {
         final int jreVersion = getJreVersion();
         final String prefix;
-        if (jreVersion <= 6 ||
-                jreVersion > 9) {
+        if (jreVersion <= 6 || jreVersion > 9) {
             throw new AssertionError("Unsupported JRE version: " + jreVersion);
         } else {
             prefix = "jdk" + jreVersion;

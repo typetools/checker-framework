@@ -77,8 +77,8 @@ public class TypeAnnotationUtils {
         return isSameTAPositionExceptTreePos(p1, p2) && p1.pos == p2.pos;
     }
 
-    public static boolean isSameTAPositionExceptTreePos(TypeAnnotationPosition p1,
-                                           TypeAnnotationPosition p2) {
+    public static boolean isSameTAPositionExceptTreePos(
+            TypeAnnotationPosition p1, TypeAnnotationPosition p2) {
         boolean eiequal = false;
         try {
             Field ei = TypeAnnotationPosition.class.getDeclaredField("exception_index");
@@ -89,19 +89,19 @@ public class TypeAnnotationUtils {
         } catch (NoSuchFieldException | SecurityException | IllegalAccessException e) {
             return false;
         }
-        if (eiequal &&
-                p1.isValidOffset == p2.isValidOffset &&
-                p1.bound_index == p2.bound_index &&
-                p1.exception_index == p2.exception_index &&
-                p1.location.equals(p2.location) &&
-                Arrays.equals(p1.lvarIndex, p2.lvarIndex) &&
-                Arrays.equals(p1.lvarLength, p2.lvarLength) &&
-                Arrays.equals(p1.lvarOffset, p2.lvarOffset) &&
-                p1.offset == p2.offset &&
-                p1.onLambda == p2.onLambda &&
-                p1.parameter_index == p2.parameter_index &&
-                p1.type == p2.type &&
-                p1.type_index == p2.type_index) {
+        if (eiequal
+                && p1.isValidOffset == p2.isValidOffset
+                && p1.bound_index == p2.bound_index
+                && p1.exception_index == p2.exception_index
+                && p1.location.equals(p2.location)
+                && Arrays.equals(p1.lvarIndex, p2.lvarIndex)
+                && Arrays.equals(p1.lvarLength, p2.lvarLength)
+                && Arrays.equals(p1.lvarOffset, p2.lvarOffset)
+                && p1.offset == p2.offset
+                && p1.onLambda == p2.onLambda
+                && p1.parameter_index == p2.parameter_index
+                && p1.type == p2.type
+                && p1.type_index == p2.type_index) {
             return true;
         }
         return false;
@@ -741,7 +741,10 @@ public class TypeAnnotationUtils {
                     }
 
                     @Override
-                    public TypeAnnotationPosition call9() throws InstantiationException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException, InvocationTargetException, NoSuchMethodException {
+                    public TypeAnnotationPosition call9()
+                            throws InstantiationException, IllegalArgumentException,
+                                    IllegalAccessException, NoSuchFieldException, SecurityException,
+                                    InvocationTargetException, NoSuchMethodException {
                         return copyTAPosition9(tapos);
                     }
                 });
@@ -774,12 +777,30 @@ public class TypeAnnotationUtils {
         return res;
     }
 
-    private static TypeAnnotationPosition copyTAPosition9(TypeAnnotationPosition tapos) throws InstantiationException, IllegalAccessException, IllegalArgumentException, NoSuchFieldException, SecurityException, InvocationTargetException, NoSuchMethodException {
-        Constructor<TypeAnnotationPosition> c = TypeAnnotationPosition.class.getDeclaredConstructor(TargetType.class, int.class, int.class, JCLambda.class, int.class, int.class, com.sun.tools.javac.util.List.class);
+    private static TypeAnnotationPosition copyTAPosition9(TypeAnnotationPosition tapos)
+            throws InstantiationException, IllegalAccessException, IllegalArgumentException,
+                    NoSuchFieldException, SecurityException, InvocationTargetException,
+                    NoSuchMethodException {
+        Constructor<TypeAnnotationPosition> c =
+                TypeAnnotationPosition.class
+                        .getDeclaredConstructor(
+                                TargetType.class,
+                                int.class,
+                                int.class,
+                                JCLambda.class,
+                                int.class,
+                                int.class,
+                                com.sun.tools.javac.util.List.class);
         c.setAccessible(true);
         TypeAnnotationPosition res =
-                c.newInstance(tapos.type, tapos.pos, tapos.parameter_index,
-                        tapos.onLambda, tapos.type_index, tapos.bound_index, List.from(tapos.location));
+                c.newInstance(
+                        tapos.type,
+                        tapos.pos,
+                        tapos.parameter_index,
+                        tapos.onLambda,
+                        tapos.type_index,
+                        tapos.bound_index,
+                        List.from(tapos.location));
         res.isValidOffset = tapos.isValidOffset;
         Field ei = TypeAnnotationPosition.class.getDeclaredField("exception_index");
         ei.setAccessible(true);
@@ -810,9 +831,11 @@ public class TypeAnnotationUtils {
                     }
 
                     @Override
-                    public Type call9() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-                        Method m = Type.class
-                                .getDeclaredMethod("typeNoMetadata");
+                    public Type call9()
+                            throws IllegalAccessException, IllegalArgumentException,
+                                    InvocationTargetException, NoSuchMethodException,
+                                    SecurityException {
+                        Method m = Type.class.getDeclaredMethod("typeNoMetadata");
                         m.setAccessible(true);
                         return (Type) m.invoke(in);
                     }
