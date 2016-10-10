@@ -15,6 +15,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item IntelliJ IDEA (Section~\ref{intellij})
 \item Eclipse (Section~\ref{eclipse})
 \item tIDE (Section~\ref{tide})
+\item NetBeans (Section~\ref{netbeans})
 \end{itemize}
 
 If your build system or IDE is not listed above, you should customize how
@@ -792,6 +793,29 @@ You can download it from \myurl{https://sites.google.com/site/tidejava/}.
 % This, and http://tide.olympe-network.com/, are failing as of June 2016.
 % See its documentation at \myurl{http://tide.olympe.in/}.
 \end{sloppypar}
+
+
+\section{NetBeans\label{netbeans}}
+
+To run a checker within NetBeans:
+
+\begin{enumerate}
+\item 
+Add the Checker Framework libraries to your project's library. To do so, 
+right click on the project in the Projects panel, and select ``Properties'' in the
+drop-down menu. Then, in the ``Project Properties'' window, navigate to the ``Libraries''
+tab and click the ``Add JAR/Folder'' button on the right, browse and select 
+\<$CHECKERFRAMEWORK/checker/dist/checker.jar>.
+\item
+Enable annotation processor underlining in the editor. Go to ``Build>Compiling'' and check
+the box ``Enable Annotation Processing,'' and under that, ``Enable Annotation Processing in Editor.''
+\item
+Add the checker to run, by clicking ``Add'' next to the box labeled ``Annotation Processors'' and enter
+the fully qualified name of the checker (for example, \<org.checkerframework.checker.nullness.NullnessChecker>)
+and click ``OK'' to add.
+\end{enumerate}
+The selected checker should be run on the project either on a save (if Compile on Save is enabled), 
+or when the project is built, and annotation processor output will appear in the editor. 
 
 
 \section{Type inference tools\label{type-inference-varieties}}
