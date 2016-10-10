@@ -6,6 +6,8 @@ In bytecode, type variable upper bounds of type Object may or may not have
 been explicitly written.  The Checker Framework now assumes they were not
 written explicitly in source code and defaults them as implicit upper bounds.
 
+The manual describes how to run a checker within the NetBeans IDE.
+
 ---------------------------------------------------------------------------
 
 Version 2.1.4, 3 October 2016
