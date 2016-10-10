@@ -6,7 +6,7 @@ import org.checkerframework.framework.qual.*;
 
 /**
  * The bottom type for the Upper Bound type system.
- * Programmers should rarely write this type.
+ * Programmers should not need to write this type.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
