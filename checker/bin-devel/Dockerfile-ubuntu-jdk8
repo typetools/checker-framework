@@ -10,7 +10,9 @@ MAINTAINER Michael Ernst <mernst@cs.washington.edu>
 #  * Do not run "apt-get upgrade"; instead get upstream to update.
 RUN apt-get -qqy update && apt-get -qqy install \
   ant \
+  cpp \
   git \
+  gradle \
   make \
   mercurial \
   unzip \
