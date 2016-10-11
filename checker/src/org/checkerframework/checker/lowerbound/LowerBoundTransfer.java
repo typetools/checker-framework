@@ -112,8 +112,11 @@ public class LowerBoundTransfer extends CFTransfer {
     // The ATF (Annotated Type Factory).
     private LowerBoundAnnotatedTypeFactory aTypeFactory;
 
+    private CFAnalysis analysis;
+
     public LowerBoundTransfer(CFAnalysis analysis) {
         super(analysis);
+        this.analysis = analysis;
         aTypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         // Initialize qualifiers.
         GTEN1 = aTypeFactory.GTEN1;
@@ -136,15 +139,12 @@ public class LowerBoundTransfer extends CFTransfer {
         public ConditionalTransferResult<CFValue, CFStore> newResult;
 
         public RefinementInfo(
-                TransferResult<CFValue, CFStore> result,
-                TransferInput<CFValue, CFStore> in,
-                Node r,
-                Node l) {
+                TransferResult<CFValue, CFStore> result, CFAnalysis analysis, Node r, Node l) {
             right = r;
             left = l;
 
-            rightType = in.getValueOfSubNode(right).getType();
-            leftType = in.getValueOfSubNode(left).getType();
+            rightType = analysis.getValue(right).getType();
+            leftType = analysis.getValue(left).getType();
 
             thenStore = result.getRegularStore();
             elseStore = thenStore.copy();
@@ -159,7 +159,7 @@ public class LowerBoundTransfer extends CFTransfer {
             GreaterThanNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThan(node, in);
         RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+                new RefinementInfo(result, analysis, node.getRightOperand(), node.getLeftOperand());
 
         // Refine the then branch.
         refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -176,7 +176,7 @@ public class LowerBoundTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(node, in);
 
         RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+                new RefinementInfo(result, analysis, node.getRightOperand(), node.getLeftOperand());
 
         // Refine the then branch.
         refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -193,7 +193,7 @@ public class LowerBoundTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(node, in);
 
         RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+                new RefinementInfo(result, analysis, node.getRightOperand(), node.getLeftOperand());
 
         // Refine the then branch. A <= is just a flipped >=.
         refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
@@ -209,7 +209,7 @@ public class LowerBoundTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> result = super.visitLessThan(node, in);
 
         RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+                new RefinementInfo(result, analysis, node.getRightOperand(), node.getLeftOperand());
 
         // Refine the then branch. A < is just a flipped >.
         refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
@@ -221,51 +221,38 @@ public class LowerBoundTransfer extends CFTransfer {
 
     @Override
     protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
-            TransferResult<CFValue, CFStore> in,
+            TransferResult<CFValue, CFStore> result,
             Node firstNode,
             Node secondNode,
             CFValue firstValue,
             CFValue secondValue,
             boolean notEqualTo) {
-        // FIXME: move logic from visitEqualTo and visitNotEqualTo to here.
-        // Eliminate the overrides of those methods. See Suzanne's email.
-        return in;
-    }
 
-    @Override
-    public TransferResult<CFValue, CFStore> visitEqualTo(
-            EqualToNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitEqualTo(node, in);
+        if (notEqualTo) {
+            /* != is equivalent to == and implemented the same way, but we
+             * !have information about the else branch (i.e. when they are
+             * !equal).
+             */
 
-        RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+            RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
-        /*  In an ==, we only can make conclusions about the then
-         *  branch (i.e. when they are, actually, equal). In that
-         *  case, we essentially want to refine them to the more
-         *  precise of the two types, which we accomplish by refining
-         *  each as if it were greater than or equal to the other.
-         */
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
-        return rfi.newResult;
-    }
+            refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+            refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
+            return rfi.newResult;
+        } else {
+            /*  In an ==, we only can make conclusions about the then
+             *  branch (i.e. when they are, actually, equal). In that
+             *  case, we essentially want to refine them to the more
+             *  precise of the two types, which we accomplish by refining
+             *  each as if it were greater than or equal to the other.
+             */
 
-    @Override
-    public TransferResult<CFValue, CFStore> visitNotEqual(
-            NotEqualNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitNotEqual(node, in);
+            RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
-        RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
-
-        /* != is equivalent to == and implemented the same way, but we
-         * !have information about the else branch (i.e. when they are
-         * !equal).
-         */
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
-        return rfi.newResult;
+            refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+            refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
+            return rfi.newResult;
+        }
     }
 
     /**

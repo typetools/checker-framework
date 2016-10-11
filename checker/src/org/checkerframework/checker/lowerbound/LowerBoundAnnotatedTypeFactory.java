@@ -302,6 +302,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case REMAINDER:
                     addAnnotationForRemainder(left, right, type);
                     break;
+                case AND:
+                    addAnnotationForAnd(left, right, type);
+                    break;
+                case RIGHT_SHIFT:
+                    addAnnotationForRightShift(left, right, type);
+                    break;
                 default:
                     break;
             }
@@ -656,5 +662,40 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.addAnnotation(UNKNOWN);
             return;
         }
+    }
+
+    /**
+     *  Handles shifts.
+     *  * &gt;&gt; NonNegative &rarr; NonNegative
+     */
+    private void addAnnotationForRightShift(
+            ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+        AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+        AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
+        if (leftType.hasAnnotation(NN) || leftType.hasAnnotation(POS)) {
+            if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
+                type.addAnnotation(NN);
+                return;
+            }
+        }
+        type.addAnnotation(UNKNOWN);
+        return;
+    }
+
+    /**
+     *  Handles masking.
+     *  Particularly, handles the following cases:
+     *  * &amp; NonNegative &rarr; NonNegative
+     */
+    private void addAnnotationForAnd(
+            ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+        AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
+        if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
+            type.addAnnotation(NN);
+            return;
+        }
+
+        type.addAnnotation(UNKNOWN);
+        return;
     }
 }

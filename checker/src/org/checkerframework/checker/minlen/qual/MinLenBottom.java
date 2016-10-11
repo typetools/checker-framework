@@ -5,7 +5,9 @@ import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- *  The bottom type for MinLen. Assigned to null, etc.
+ *  The bottom type for the MinLen type system.
+ *
+ * @checker_framework.manual #index-checker Index Checker
  */
 @SubtypeOf(MinLen.class)
 @Retention(RetentionPolicy.RUNTIME)

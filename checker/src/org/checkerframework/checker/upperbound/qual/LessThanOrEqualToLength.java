@@ -5,10 +5,11 @@ import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.framework.qual.*;
 
 /**
- *  Indicates that whatever is annotated with this type is less than the
- *  length of the listed arrays
+ *  Indicates that the expression annotated with this type qualifier is less than
+ *  or equal to the length of the listed arrays.
  *
- *  */
+ * @checker_framework.manual #index-checker Index Checker
+ */
 @SubtypeOf(UpperBoundUnknown.class)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
