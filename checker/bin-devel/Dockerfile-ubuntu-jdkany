@@ -15,7 +15,9 @@ RUN apt-get -qqy update && apt-get -qqy install \
 && add-apt-repository ppa:openjdk-r/ppa \
 && apt-get -qqy update && apt-get -qqy install \
   ant \
+  cpp \
   git \
+  gradle \
   make \
   mercurial \
   unzip \
