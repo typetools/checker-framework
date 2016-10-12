@@ -2,6 +2,7 @@ package org.checkerframework.checker.minlen;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -20,19 +21,21 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     protected MinLenAnalysis analysis;
     protected static MinLenAnnotatedTypeFactory atypeFactory;
     protected final ProcessingEnvironment env;
+    protected final ExecutableElement listAdd;
 
     public MinLenTransfer(MinLenAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
         atypeFactory = (MinLenAnnotatedTypeFactory) analysis.getTypeFactory();
         this.env = MinLenAnnotatedTypeFactory.env;
+        this.listAdd = TreeUtils.getMethod("java.util.List", "add", 0, env);
     }
 
     @Override
     public TransferResult<MinLenValue, MinLenStore> visitMethodInvocation(MethodInvocationNode node, TransferInput<MinLenValue, MinLenStore> in) {
         TransferResult<MinLenValue, MinLenStore> result = super.visitMethodInvocation(node, in);
         Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget().getReceiver());
-        if (TreeUtils.isMethodInvocation(node.getTree(), TreeUtils.getMethod("java.util.List", "add", 0, env), env)) {
+        if (TreeUtils.isMethodInvocation(node.getTree(), listAdd, env)) {
             AnnotatedTypeMirror ATM = atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
             AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
             int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
