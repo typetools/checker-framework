@@ -2,12 +2,16 @@ package org.checkerframework.checker.minlen;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -17,6 +21,7 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -28,12 +33,17 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  *  The MinLen checker is responsible for annotating arrays with their
  *  minimum lengths. It is meant to be run by the upper bound checker.
  */
-public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class MinLenAnnotatedTypeFactory
+        extends GenericAnnotatedTypeFactory<
+                MinLenValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
+
+    protected static ProcessingEnvironment env;
 
     /**
      * Provides a way to query the Constant Value Checker, which computes the
@@ -44,6 +54,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public MinLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
+        env = checker.getProcessingEnvironment();
         this.postInit();
     }
 
@@ -254,7 +265,20 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    private AnnotationMirror createMinLen(int val) {
+    protected static int getMinLenValue(AnnotationMirror annotation) {
+        if (annotation == null || AnnotationUtils.areSameByClass(annotation, MinLenBottom.class)) {
+            return -1;
+        }
+        ExecutableElement valueMethod =
+                TreeUtils.getMethod(
+                        "org.checkerframework.checker.minlen.qual.MinLen", "value", 0, env);
+        return (int)
+                AnnotationUtils.getElementValuesWithDefaults(annotation)
+                        .get(valueMethod)
+                        .getValue();
+    }
+
+    protected AnnotationMirror createMinLen(int val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", val);
         return builder.build();
