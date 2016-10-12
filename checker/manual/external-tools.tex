@@ -803,8 +803,11 @@ To run a checker within NetBeans:
 Add the Checker Framework libraries to your project's library. To do so, 
 right click on the project in the Projects panel, and select ``Properties'' in the
 drop-down menu. Then, in the ``Project Properties'' window, navigate to the ``Libraries''
-tab and click the ``Add JAR/Folder'' button on the right, browse and select 
-\<$CHECKERFRAMEWORK/checker/dist/checker.jar>.
+tab.
+\item
+Add \<checker-qual.jar>  to the compile-time libraries. To do so, select the ``Compile'' tab, click the ``Add JAR/Folder'' button on the right and browse to add \<$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
+\item
+Add \<checker.jar> to the processor-path libraries. To do so, select the ``Processor'' tab, click the ``Add JAR/Folder'' button on the right and browse to add \<$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
 \item
 Enable annotation processor underlining in the editor. Go to ``Build>Compiling'' and check
 the box ``Enable Annotation Processing,'' and under that, ``Enable Annotation Processing in Editor.''
