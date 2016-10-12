@@ -23,6 +23,7 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -40,7 +41,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *  The MinLen checker is responsible for annotating arrays with their
  *  minimum lengths. It is meant to be run by the upper bound checker.
  */
-public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class MinLenAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<MinLenValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
     
     protected static ProcessingEnvironment env;
     
@@ -200,7 +201,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(new MinLenTypeAnnotator(this), super.createTypeAnnotator());
     }
-
+    
     protected class MinLenTypeAnnotator extends TypeAnnotator {
 
         public MinLenTypeAnnotator(MinLenAnnotatedTypeFactory atf) {
@@ -263,21 +264,9 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitNewArray(tree, type);
         }
         
-        @Override
-        public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-
-            ExecutableElement ListAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
-            ExecutableElement ListAdd2 = TreeUtils.getMethod("java.util.List", "add", 2, env);
-            if (TreeUtils.isMethodInvocation(tree, ListAdd, env) || TreeUtils.isMethodInvocation(tree, ListAdd2, env)) {
-                int value = getMinLenValue(type.getAnnotation(MinLen.class));
-                type.replaceAnnotation(createMinLen(value + 1));
-            }
-            return super.visitMethodInvocation(tree, type);
-        }
-        
     }
 
-    private static int getMinLenValue(AnnotationMirror annotation) {
+    protected static int getMinLenValue(AnnotationMirror annotation) {
         if (annotation == null || AnnotationUtils.areSameByClass(annotation, MinLenBottom.class)){
             return -1;
         }
@@ -285,7 +274,7 @@ public class MinLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return (int) AnnotationUtils.getElementValuesWithDefaults(annotation).get(valueMethod).getValue();
     }
     
-    private AnnotationMirror createMinLen(int val) {
+    protected AnnotationMirror createMinLen(int val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", val);
         return builder.build();
