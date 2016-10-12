@@ -21,7 +21,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
  * <p>
  *
  * Please note that using this class introduces a Runtime dependency.
- * This means that if you need to distribute (or link to) the Checker
+ * This means that you need to distribute (or link to) the Checker
  * Framework, along with your binaries.
  *
  * To eliminate this dependency, you can simply copy this class into your
