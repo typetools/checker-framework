@@ -798,24 +798,24 @@ You can download it from \myurl{https://sites.google.com/site/tidejava/}.
 \section{NetBeans\label{netbeans}}
 
 
-There are two approaches to running a checker in Netbeans, via modifying the project properties, or via a custom ant target. 
+There are two approaches to running a checker in Netbeans, via modifying the project properties, or via a custom ant target.
 
 
 \subsection {Adding a checker via the project properties\label{netbeans-project-properties}}
 
 \begin{enumerate}
-\item 
-Add the Checker Framework libraries to your project's library. First, 
+\item
+Add the Checker Framework libraries to your project's library. First,
 right click on the project in the Projects panel, and select ``Properties'' in the
 drop-down menu. Then, in the ``Project Properties'' window, navigate to the ``Libraries''
-tab. 
+tab.
 \item
-Add \<checker-qual.jar>  to the compile-time libraries. To do so, 
-select the ``Compile'' tab, click the ``Add JAR/Folder'' button on the 
+Add \<checker-qual.jar>  to the compile-time libraries. To do so,
+select the ``Compile'' tab, click the ``Add JAR/Folder'' button on the
 right and browse to add \<$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
 \item
-Add \<checker.jar> to the processor-path libraries. To do so, select 
-the ``Processor'' tab, click the ``Add JAR/Folder'' button on 
+Add \<checker.jar> to the processor-path libraries. To do so, select
+the ``Processor'' tab, click the ``Add JAR/Folder'' button on
 the right and browse to add \<$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
 \item
 Enable annotation processor underlining in the editor. Go to ``Build>Compiling'' and check
@@ -825,8 +825,8 @@ Add the checker to run, by clicking ``Add'' next to the box labeled ``Annotation
 the fully qualified name of the checker (for example, \<org.checkerframework.checker.nullness.NullnessChecker>)
 and click ``OK'' to add.
 \end{enumerate}
-The selected checker should be run on the project either on a save (if Compile on Save is enabled), 
-or when the project is built, and annotation processor output will appear in the editor. 
+The selected checker should be run on the project either on a save (if Compile on Save is enabled),
+or when the project is built, and annotation processor output will appear in the editor.
 
 
 \subsection {Adding a checker via an ant target\label{netbeans-ant-target}}
@@ -861,9 +861,9 @@ Set the \code{jsr308javac} property:
 %END LATEX
 
 \item
-Overwrite the \code{-init-macrodef-javac-with-processors} target to 
-use \code{jsr308.javac} instead of \code{javac} and to run the checker. 
-In this example, a nullness checker is run: 
+Overwrite the \code{-init-macrodef-javac-with-processors} target to
+use \code{jsr308.javac} instead of \code{javac} and to run the checker.
+In this example, a nullness checker is run:
 
 %BEGIN LATEX
 \begin{smaller}
@@ -918,8 +918,8 @@ In this example, a nullness checker is run:
 \end{smaller}
 %END LATEX
 
-When Build and Clean Project is used, the output of the checker will now appear 
-in the build console. However, annotation processor output will not appear in the editor. 
+When Build and Clean Project is used, the output of the checker will now appear
+in the build console. However, annotation processor output will not appear in the editor.
 
 \end{enumerate}
 
