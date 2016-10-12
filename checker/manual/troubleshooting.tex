@@ -989,24 +989,6 @@ See the ICSE 2011 paper about the Checker Framework, described above.
 ``Verification games: Making verification fun'' (FTfJP 2012, \myurl{http://homes.cs.washington.edu/~mernst/pubs/verigames-ftfjp2012-abstract.html})
             describes a general inference approach that, at the time, had only been implemented for the Nullness Checker (Section~\ref{nullness-checker}).
 
-\item[IGJ and OIGJ immutability (Section~\ref{igj-checker})]
-``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{http://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
-and
-``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
-            describe the IGJ and OIGJ immutability type systems.
-For further case studies, also see the ISSTA 2008 paper about the Checker
-Framework, described above.
-
-\item[Javari immutability (Section~\ref{javari-checker})]
-``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
-            describes the Javari type system.
-For inference, see
-``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
-and
-``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{http://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
-For further case studies, also see the ISSTA 2008 paper about the Checker
-Framework, described above.
-
 \item[Thread locality (Section~\ref{loci-thread-locality-checker})]
 ``Loci: Simple thread-locality for Java''~\cite{WrigstadPMZV2009} (ECOOP 2009,
 \myurl{http://janvitek.org/pubs/ecoop09.pdf})
@@ -1025,6 +1007,24 @@ Another implementation of Universe Types and \href{http://www.cs.rpi.edu/~huangw
 \item[Information flow and tainting (Section~\ref{sparta-checker})]
 ``Collaborative Verification of Information Flow
 for a High-Assurance App Store''~\cite{ErnstJMDPRKBBHVW2014} (CCS 2014, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infoflow-ccs2014.pdf}) describes the SPARTA information flow type system.
+
+\item[IGJ and OIGJ immutability (Section~\ref{igj-checker})]
+``Object and reference immutability using Java generics''~\cite{ZibinPAAKE2007} (ESEC/FSE 2007, \myurl{http://homes.cs.washington.edu/~mernst/pubs/immutability-generics-fse2007-abstract.html})
+and
+``Ownership and immutability in generic Java''~\cite{ZibinPLAE2010} (OOPSLA 2010, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ownership-immutability-oopsla2010-abstract.html})
+            describe the IGJ and OIGJ immutability type systems.
+For further case studies, also see the ISSTA 2008 paper about the Checker
+Framework, described above.
+
+\item[Javari immutability (Section~\ref{javari-checker})]
+``Javari: Adding reference immutability to Java''~\cite{TschantzE2005} (OOPSLA 2005, \myurl{http://homes.cs.washington.edu/~mernst/pubs/ref-immutability-oopsla2005-abstract.html})
+            describes the Javari type system.
+For inference, see
+``Inference of reference immutability''~\cite{QuinonezTE2008} (ECOOP 2008, \myurl{http://homes.cs.washington.edu/~mernst/pubs/infer-refimmutability-ecoop2008-abstract.html})
+and
+``Parameter reference immutability: Formal definition, inference tool, and comparison''~\cite{ArtziQKE2009} (J.ASE 2009, \myurl{http://homes.cs.washington.edu/~mernst/pubs/mutability-jase2009-abstract.html}).
+For further case studies, also see the ISSTA 2008 paper about the Checker
+Framework, described above.
 
 \item[ReIm immutability]
 % TODO:  (Section~\ref{reim-checker})
@@ -1093,10 +1093,14 @@ well-tested program in daily use.  The Checker Framework tool found 8
 nullness errors (that is, null pointer dereferences).  None of the other
 tools found any errors.
 
+Another alternative is to use an IDE tool such as those built into Eclipse
+or IntelliJ\@.  They are bug-finding tools that give up on precision,
+soundness, or both.
+For a more detailed comparison to Eclipse, see Section~\ref{faq-eclipse}.
+
 Also see the
 \href{http://types.cs.washington.edu/jsr308/}{JSR 308}~\cite{JSR308-2008-09-12}
-documentation for a detailed discussion of related work.
-
+documentation for another discussion of related work.
 
 
 \section{Credits and changelog\label{credits}}

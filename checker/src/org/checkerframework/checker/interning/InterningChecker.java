@@ -21,7 +21,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
  *
  * @checker_framework.manual #interning-checker Interning Checker
  */
-@StubFiles({"apache-bcel.astub", "com-sun.astub", "org-jcp.astub", "org-xml.astub", "sun.astub"})
+@StubFiles({"com-sun.astub", "org-jcp.astub", "org-xml.astub", "sun.astub"})
 @SupportedLintOptions({"dotequals"})
 @SupportedOptions({"checkclass"})
 public final class InterningChecker extends BaseTypeChecker {}

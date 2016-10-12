@@ -4,16 +4,24 @@ package org.checkerframework.checker.lock;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
+import java.util.ArrayList;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.lock.LockAnnotatedTypeFactory.SideEffectAnnotation;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ArrayAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.cfg.CFGVisualizer;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /*
  * The Lock Store behaves like CFAbstractStore but requires the ability
@@ -62,34 +70,65 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
      * This is only done for @LockPossiblyHeld. This is not sound for other type qualifiers.
      */
     public void insertLockPossiblyHeld(FlowExpressions.Receiver r) {
-        CFValue value =
-                analysis.createSingleAnnotationValue(atypeFactory.LOCKPOSSIBLYHELD, r.getType());
-        assert value != null;
-
         if (r.containsUnknown()) {
             // Expressions containing unknown expressions are not stored.
             return;
         }
         if (r instanceof FlowExpressions.LocalVariable) {
             FlowExpressions.LocalVariable localVar = (FlowExpressions.LocalVariable) r;
+            CFValue current = localVariableValues.get(localVar);
+            CFValue value = changeLockAnnoToTop(r, current);
             localVariableValues.put(localVar, value);
         } else if (r instanceof FlowExpressions.FieldAccess) {
             FlowExpressions.FieldAccess fieldAcc = (FlowExpressions.FieldAccess) r;
+            CFValue current = fieldValues.get(fieldAcc);
+            CFValue value = changeLockAnnoToTop(r, current);
             fieldValues.put(fieldAcc, value);
         } else if (r instanceof FlowExpressions.MethodCall) {
             FlowExpressions.MethodCall method = (FlowExpressions.MethodCall) r;
+            CFValue current = methodValues.get(method);
+            CFValue value = changeLockAnnoToTop(r, current);
             methodValues.put(method, value);
         } else if (r instanceof FlowExpressions.ArrayAccess) {
             FlowExpressions.ArrayAccess arrayAccess = (ArrayAccess) r;
+            CFValue current = arrayValues.get(arrayAccess);
+            CFValue value = changeLockAnnoToTop(r, current);
             arrayValues.put(arrayAccess, value);
         } else if (r instanceof FlowExpressions.ThisReference) {
-            thisValue = value;
+            thisValue = changeLockAnnoToTop(r, thisValue);
         } else if (r instanceof FlowExpressions.ClassName) {
             FlowExpressions.ClassName className = (FlowExpressions.ClassName) r;
+            CFValue current = classValues.get(className);
+            CFValue value = changeLockAnnoToTop(r, current);
             classValues.put(className, value);
         } else {
             // No other types of expressions need to be stored.
         }
+    }
+
+    /**
+     * Makes a new CFValue with the same annotations as currentValue except that the annotation
+     * in the LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null,
+     * then a new value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown
+     */
+    private CFValue changeLockAnnoToTop(Receiver r, CFValue currentValue) {
+        if (currentValue == null) {
+            Set<AnnotationMirror> set = AnnotationUtils.createAnnotationSet();
+            set.add(atypeFactory.GUARDEDBYUNKNOWN);
+            set.add(atypeFactory.LOCKPOSSIBLYHELD);
+            return analysis.createAbstractValue(set, r.getType());
+        }
+
+        QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+        Set<AnnotationMirror> currentSet = currentValue.getAnnotations();
+        AnnotationMirror gb =
+                hierarchy.findAnnotationInHierarchy(currentSet, atypeFactory.GUARDEDBYUNKNOWN);
+        Set<AnnotationMirror> newSet = AnnotationUtils.createAnnotationSet();
+        newSet.add(atypeFactory.LOCKPOSSIBLYHELD);
+        if (gb != null) {
+            newSet.add(gb);
+        }
+        return analysis.createAbstractValue(newSet, currentValue.getUnderlyingType());
     }
 
     public void setInConstructorOrInitializer() {
@@ -145,36 +184,29 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         super.updateForMethodCall(n, atypeFactory, val);
         ExecutableElement method = n.getTarget().getMethod();
         if (!isSideEffectFree(atypeFactory, method)) {
-            // Fields are always modifiable as far as the Lock Checker is concerned, even if they are final.
-            fieldValues.clear();
+            // After the call to super.updateForMethodCall, only final fields are left in
+            // fieldValues (if the method called is side-effecting). For the LockPossiblyHeld
+            // hierarchy, even a final field might be locked or unlocked by a side-effecting
+            // method.  So, final fields must be set to @LockPossiblyHeld, but the annotation in
+            // the GuardedBy hierarchy should not be changed.
+            for (FieldAccess field : new ArrayList<>(fieldValues.keySet())) {
+                fieldValues.put(field, changeLockAnnoToTop(field, fieldValues.get(field)));
+            }
 
-            // Necessary because a method could unlock a lock that is a local variable, e.g.:
-            // void foo() {
-            //     ReentrantLock lock = new ReentrantLock();
-            //     lock.lock();
-            //     unlockMyLock(lock);
-            // }
-            localVariableValues.clear();
-            // TODO: This is too conservative. Clear only the values for the local variables that could be affected.
+            // Local variables could also be unlocked via an alias
+            for (LocalVariable var : new ArrayList<>(localVariableValues.keySet())) {
+                CFValue newValue = changeLockAnnoToTop(var, localVariableValues.get(var));
+                localVariableValues.put(var, newValue);
+            }
         }
     }
 
     boolean hasLockHeld(CFValue value) {
-        AnnotatedTypeMirror type = value.getType();
-        if (type == null) {
-            return false;
-        }
-
-        return type.hasAnnotation(atypeFactory.LOCKHELD);
+        return AnnotationUtils.containsSame(value.getAnnotations(), atypeFactory.LOCKHELD);
     }
 
     boolean hasLockPossiblyHeld(CFValue value) {
-        AnnotatedTypeMirror type = value.getType();
-        if (type == null) {
-            return false;
-        }
-
-        return type.hasAnnotation(atypeFactory.LOCKPOSSIBLYHELD);
+        return AnnotationUtils.containsSame(value.getAnnotations(), atypeFactory.LOCKPOSSIBLYHELD);
     }
 
     @Override

@@ -34,7 +34,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.qualframework.qual.QualifierKey;
 
 /**
  * WholeProgramInferenceScenes is an implementation of
@@ -75,10 +74,6 @@ import org.checkerframework.qualframework.qual.QualifierKey;
  *   <li>The inferred has the @InvisibleQualifier meta-annotation.</li>
  *   <li>The resulting type would be defaulted or implicited &mdash; that is, if
  *       omitting it has the same effect as writing it.</li>
- *   <li>Special case: The
- *       {@link QualifierKey}
- *       won't be written into .jaif. (This will probably change once we support
- *       type-checkers that use a CheckerAdapter.)</li>
  * </ol>
  *  @author pbsf
  */
