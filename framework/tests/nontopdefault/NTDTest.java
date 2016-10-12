@@ -1,0 +1,45 @@
+import tests.nontopdefault.qual.*;
+
+/* Hierarchy:
+ *    NTDTop (default for local variables, implicit upper bound, and receiver)
+ *    /     \
+ * NTDSide  NTDMiddle (default in hierarchy, default for exceptions and resource variables)
+ *   \       /
+ *   NTDBottom (default for implicit and explicit lower bounds, implicit for null literal and Void.class)
+ */
+
+// Because classes and interfaces are by default NTDMiddle, a single override is defined in the
+// Visitor which allows references of NTDMiddle class to be declared. The problem here exists even
+// if the override is removed.
+
+// Problem: @DefaultFor TypeUseLocation.RECEIVER is not applied to inner class constructor
+// receivers. The inner class constructor receivers currently take on the default qualifier of
+// the hierarchy. All other methods take on the default qualifier set by TypeUseLocation.RECEIVER.
+
+// @skip-test
+
+class NTDConstructorReceiverTest {
+    // default method receiver is @NTDTop
+    void DefaultMethodReceiver() {
+        // this line produces a methodref.receiver.bound.invalid error, but it shouldn't if the
+        // receiver for inner class constructors are properly applied
+        Demand<InnerDefaultReceiver> constructorReference = InnerDefaultReceiver::new;
+
+        // this line does not as the receiver is explicitly declared to be @NTDTop
+        Demand<InnerExplicitReceiver> constructorReference2 = InnerExplicitReceiver::new;
+    }
+
+    class InnerDefaultReceiver {
+        // takes on the default receiver for inner class constructor methods
+        InnerDefaultReceiver(NTDConstructorReceiverTest NTDConstructorReceiverTest.this) {}
+    }
+
+    class InnerExplicitReceiver {
+        // explicitly set the receiver to be @NTDTop
+        InnerExplicitReceiver(@NTDTop NTDConstructorReceiverTest NTDConstructorReceiverTest.this) {}
+    }
+}
+
+interface Demand<R> {
+    R supply();
+}
