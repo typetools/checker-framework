@@ -8,6 +8,5 @@ public class MinLenValue extends CFAbstractValue<MinLenValue> {
 
     public MinLenValue(CFAbstractAnalysis<MinLenValue, ?, ?> analysis, AnnotatedTypeMirror type) {
         super(analysis, type);
-
     }
 }

@@ -9,11 +9,9 @@ import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -41,10 +39,12 @@ import org.checkerframework.javacutil.TreeUtils;
  *  The MinLen checker is responsible for annotating arrays with their
  *  minimum lengths. It is meant to be run by the upper bound checker.
  */
-public class MinLenAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<MinLenValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
-    
+public class MinLenAnnotatedTypeFactory
+        extends GenericAnnotatedTypeFactory<
+                MinLenValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
+
     protected static ProcessingEnvironment env;
-    
+
     /**
      * Provides a way to query the Constant Value Checker, which computes the
      * values of expressions known at compile time (constant prop + folding).
@@ -201,7 +201,7 @@ public class MinLenAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<MinL
     protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(new MinLenTypeAnnotator(this), super.createTypeAnnotator());
     }
-    
+
     protected class MinLenTypeAnnotator extends TypeAnnotator {
 
         public MinLenTypeAnnotator(MinLenAnnotatedTypeFactory atf) {
@@ -263,17 +263,21 @@ public class MinLenAnnotatedTypeFactory extends GenericAnnotatedTypeFactory<MinL
 
             return super.visitNewArray(tree, type);
         }
-        
     }
 
     protected static int getMinLenValue(AnnotationMirror annotation) {
-        if (annotation == null || AnnotationUtils.areSameByClass(annotation, MinLenBottom.class)){
+        if (annotation == null || AnnotationUtils.areSameByClass(annotation, MinLenBottom.class)) {
             return -1;
         }
-        ExecutableElement valueMethod = TreeUtils.getMethod("org.checkerframework.checker.minlen.qual.MinLen", "value", 0, env);
-        return (int) AnnotationUtils.getElementValuesWithDefaults(annotation).get(valueMethod).getValue();
+        ExecutableElement valueMethod =
+                TreeUtils.getMethod(
+                        "org.checkerframework.checker.minlen.qual.MinLen", "value", 0, env);
+        return (int)
+                AnnotationUtils.getElementValuesWithDefaults(annotation)
+                        .get(valueMethod)
+                        .getValue();
     }
-    
+
     protected AnnotationMirror createMinLen(int val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", val);

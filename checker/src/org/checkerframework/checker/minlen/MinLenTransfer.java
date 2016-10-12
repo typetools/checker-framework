@@ -1,9 +1,9 @@
 package org.checkerframework.checker.minlen;
 
+import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
-
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -28,15 +28,19 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         this.analysis = analysis;
         atypeFactory = (MinLenAnnotatedTypeFactory) analysis.getTypeFactory();
         this.env = MinLenAnnotatedTypeFactory.env;
-        this.listAdd = TreeUtils.getMethod("java.util.List", "add", 0, env);
+        this.listAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
     }
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitMethodInvocation(MethodInvocationNode node, TransferInput<MinLenValue, MinLenStore> in) {
+    public TransferResult<MinLenValue, MinLenStore> visitMethodInvocation(
+            MethodInvocationNode node, TransferInput<MinLenValue, MinLenStore> in) {
         TransferResult<MinLenValue, MinLenStore> result = super.visitMethodInvocation(node, in);
-        Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getTarget().getReceiver());
+        Receiver rec =
+                FlowExpressions.internalReprOf(
+                        analysis.getTypeFactory(), node.getTarget().getReceiver());
         if (TreeUtils.isMethodInvocation(node.getTree(), listAdd, env)) {
-            AnnotatedTypeMirror ATM = atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
+            AnnotatedTypeMirror ATM =
+                    atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
             AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
             int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
             result.getRegularStore().insertValue(rec, atypeFactory.createMinLen(value + 1));

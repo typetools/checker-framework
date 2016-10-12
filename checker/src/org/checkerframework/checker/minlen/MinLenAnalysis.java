@@ -11,14 +11,15 @@ import org.checkerframework.javacutil.Pair;
 
 // subclasses the base analysis to use our Transfers instead of the deafaults
 
-public class  MinLenAnalysis extends CFAbstractAnalysis<MinLenValue, MinLenStore, MinLenTransfer> {
+public class MinLenAnalysis extends CFAbstractAnalysis<MinLenValue, MinLenStore, MinLenTransfer> {
     MinLenAnnotatedTypeFactory atypeFactory;
 
-    public MinLenAnalysis(BaseTypeChecker checker,
+    public MinLenAnalysis(
+            BaseTypeChecker checker,
             MinLenAnnotatedTypeFactory factory,
             List<Pair<VariableElement, MinLenValue>> fieldValues) {
         super(checker, factory, fieldValues);
-        this.atypeFactory = (MinLenAnnotatedTypeFactory)super.atypeFactory;
+        this.atypeFactory = (MinLenAnnotatedTypeFactory) super.atypeFactory;
     }
 
     //overrides the superclass method to return our transfers
