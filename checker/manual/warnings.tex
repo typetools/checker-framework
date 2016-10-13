@@ -373,7 +373,7 @@ that the assertion always succeeds at run time.
 
 
 Sometimes methods such as
-\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} are used
+\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} are used
 instead of assertions.  Just as for assertions, you can treat them as
 debugging aids or as documentation.
 If you know that a particular codebase uses
@@ -382,7 +382,7 @@ facts that are guaranteed to be true (that is, these assertions will never
 fail at run time), then you can suppress
 warnings related to it.
 Annotate its definition just as
-\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} is annotated (see the
+\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} is annotated (see the
 source code for the Checker Framework).
 % TODO:
 % For an assert statement, XXXXX.
@@ -983,5 +983,5 @@ annotations, and not to write them in comments.
 %%  LocalWords:  PolyNullType MonotonicNonNullType KeyForType NullableDecl
 %%  LocalWords:  NonNullDecl PolyNullDecl MonotonicNonNullDecl KeyForDecl
 %%  LocalWords:  refactored AassumeAssertionsAreEnabled assertNotNull
-%%  LocalWords:  AassumeAssertionsAreDisabled NullnessUtils checkNotNull
+%%  LocalWords:  AassumeAssertionsAreDisabled NullnessUtil checkNotNull
 %%  LocalWords:  ElementType AuseSafeDefaultsForUnannotatedSourceCode
