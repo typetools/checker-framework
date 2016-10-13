@@ -8,7 +8,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 /**
- * Utilities class for the Nullness Checker.
+ * Utility class for the Nullness Checker.
  * <p>
  *
  * To avoid the need to write the NullnessUtil class name, do:
@@ -20,7 +20,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
  * <b>Runtime Dependency</b>
  * <p>
  *
- * Please note that using this class introduces a Runtime dependency.
+ * Please note that using this class introduces a runtime dependency.
  * This means that you need to distribute (or link to) the Checker
  * Framework, along with your binaries.
  *

@@ -13,8 +13,8 @@ import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
 /**
- * Utilities class for the Nullness Checker, providing methods similar
- * to java.util.Optional.
+ * Utility class for the Nullness Checker, providing methods similar
+ * to {@link java.util.Optional}.
  * <p>
  *
  * To avoid the need to write the Opt class name, do:
@@ -26,7 +26,7 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
  * <b>Runtime Dependency</b>
  * <p>
  *
- * Please note that using this class introduces a Runtime dependency.
+ * Please note that using this class introduces a runtime dependency.
  * This means that you need to distribute (or link to) the Checker
  * Framework, along with your binaries.
  *
