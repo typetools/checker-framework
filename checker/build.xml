@@ -379,6 +379,7 @@
                 <include name="org/checkerframework/**/qual/*.java"/>
                 <include name="**/FormatUtil.java"/>
                 <include name="**/NullnessUtil.java"/>
+                <include name="**/Opt.java"/>
                 <include name="**/RegexUtil.java"/>
                 <include name="**/UnitsTools.java"/>
                 <include name="**/SignednessUtil.java"/>
