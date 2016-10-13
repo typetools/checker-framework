@@ -58,7 +58,7 @@ public final class Opt {
      * @see java.util.Optional#isPresent()
      */
     @EnsuresNonNullIf(expression = "#1", result = true)
-    public boolean isPresent(/*@Nullable*/ Object primary) {
+    public static boolean isPresent(/*@Nullable*/ Object primary) {
         return primary != null;
     }
 
