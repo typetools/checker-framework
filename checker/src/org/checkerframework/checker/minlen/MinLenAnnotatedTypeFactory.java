@@ -265,19 +265,6 @@ public class MinLenAnnotatedTypeFactory
         }
     }
 
-    protected static int getMinLenValue(AnnotationMirror annotation) {
-        if (annotation == null || AnnotationUtils.areSameByClass(annotation, MinLenBottom.class)) {
-            return -1;
-        }
-        ExecutableElement valueMethod =
-                TreeUtils.getMethod(
-                        "org.checkerframework.checker.minlen.qual.MinLen", "value", 0, env);
-        return (int)
-                AnnotationUtils.getElementValuesWithDefaults(annotation)
-                        .get(valueMethod)
-                        .getValue();
-    }
-
     protected AnnotationMirror createMinLen(int val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", val);
