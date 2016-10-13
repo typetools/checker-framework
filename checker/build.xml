@@ -46,7 +46,18 @@
         <contains string="${java.version}" substring="1.9"/>
     </condition>
 
-    <!-- Used to have:
+    <condition property="jdk7orlower">
+        <equals arg1="${jdkName}" arg2="jdk7.jar" />
+    </condition>
+
+    <condition property="jdk8orhigher">
+        <or>
+            <equals arg1="${jdkName}" arg2="jdk8.jar" />
+            <equals arg1="${jdkName}" arg2="jdk9.jar" />
+        </or>
+    </condition>
+
+   <!-- Used to have:
            depends="touch-jdk"
          When is that truly necessary? -->
     <target name="prep" depends="prep-all"
@@ -138,6 +149,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
+            <exclude name="org/checkerframework/checker/nullness/Opt.java" if="${jdk7orlower}"/>
             <exclude name="**/package-info.java"/>
         </fileset>
 
@@ -203,6 +215,7 @@
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
+                    <exclude name="org/checkerframework/checker/nullness/Opt.java" if="${jdk7orlower}"/>
                 </fileset>
                 <!-- Recompile dependent projects with annotations-in-comments
                      enabled, in order to get classes with qualified types. -->
@@ -379,7 +392,7 @@
                 <include name="org/checkerframework/**/qual/*.java"/>
                 <include name="**/FormatUtil.java"/>
                 <include name="**/NullnessUtil.java"/>
-                <include name="**/Opt.java"/>
+                <include name="**/Opt.java" if="${jdk8orhigher}"/>
                 <include name="**/RegexUtil.java"/>
                 <include name="**/UnitsTools.java"/>
                 <include name="**/SignednessUtil.java"/>
@@ -1200,6 +1213,7 @@ So, use our own archived version.
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
+                    <exclude name="org/checkerframework/checker/nullness/Opt.java" if="${jdk7orlower}"/>
                     <exclude name=""/>
                 </fileset>
                 <fileset dir="${javacutil.loc}/${src}">
