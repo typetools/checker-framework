@@ -7,6 +7,7 @@ import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -31,29 +32,27 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         this.listAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
     }
 
-    /*
-        @Override
-        public TransferResult<MinLenValue, MinLenStore> visitMethodInvocation(
-                MethodInvocationNode node, TransferInput<MinLenValue, MinLenStore> in) {
-            TransferResult<MinLenValue, MinLenStore> result = super.visitMethodInvocation(node, in);
-            Receiver rec =
-                    FlowExpressions.internalReprOf(
-                            analysis.getTypeFactory(), node.getTarget().getReceiver());
-            if (TreeUtils.isMethodInvocation(node.getTree(), listAdd, env)) {
-                System.out.println("listAdd");
-    		System.out.println(result.getRegularStore());
-    		System.out.println("rec:" + rec);
-                AnnotatedTypeMirror ATM =
-                        atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
-                AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
-    		System.out.println(anno);
-                int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
-    	    System.out.println(value);
-                result.getRegularStore().insertValue(rec, atypeFactory.createMinLen(value + 1));
-            }
-    	System.out.println("Result:");
-    	System.out.println(result.getRegularStore());
-            return result;
+    @Override
+    public TransferResult<MinLenValue, MinLenStore> visitMethodInvocation(
+            MethodInvocationNode node, TransferInput<MinLenValue, MinLenStore> in) {
+        TransferResult<MinLenValue, MinLenStore> result = super.visitMethodInvocation(node, in);
+        Receiver rec =
+                FlowExpressions.internalReprOf(
+                        analysis.getTypeFactory(), node.getTarget().getReceiver());
+        MinLenStore store = result.getRegularStore();
+        if (TreeUtils.isMethodInvocation(node.getTree(), listAdd, env)) {
+            AnnotatedTypeMirror ATM =
+                    atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
+            AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
+            int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
+            AnnotationMirror AM = atypeFactory.createMinLen(value + 1);
+            store.clearValue(rec);
+            store.insertValue(rec, AM);
+            RegularTransferResult<MinLenValue, MinLenStore> newResult =
+                    new RegularTransferResult<MinLenValue, MinLenStore>(
+                            result.getResultValue(), store);
+            return newResult;
         }
-    */
+        return result;
+    }
 }
