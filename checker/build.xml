@@ -289,7 +289,8 @@
             <package name="org.checkerframework.checker.*"/>
 
             <fileset dir="${checker.loc}/${src}">
-                <include name="${checker.jdk8orhigher.sources}" if="${jdk8orhigher}"/>
+                <include name="**/*.java"/>
+                <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
             </fileset>
 
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
