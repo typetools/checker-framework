@@ -71,17 +71,19 @@ public class MinLenStore extends CFAbstractStore<MinLenValue, MinLenStore> {
         MinLenValue value = this.getValue(rec);
         AnnotatedTypeMirror atm = value.getType();
         if (atm.hasAnnotation(MinLen.class)) {
-	        if (isClear) {
-	            MinLenValue val =
-	                    analysis.createSingleAnnotationValue(factory.createMinLen(0), rec.getType());
-	            replace.put(rec, val);
-	        } else {
-	            int length = MinLenAnnotatedTypeFactory.getMinLenValue(atm.getAnnotation(MinLen.class));
-	            MinLenValue val =
-	                    analysis.createSingleAnnotationValue(
-	                            factory.createMinLen(Math.max(length - 1, 0)), rec.getType());
-	            replace.put(rec, val);
-	        }
+            if (isClear) {
+                MinLenValue val =
+                        analysis.createSingleAnnotationValue(
+                                factory.createMinLen(0), rec.getType());
+                replace.put(rec, val);
+            } else {
+                int length =
+                        MinLenAnnotatedTypeFactory.getMinLenValue(atm.getAnnotation(MinLen.class));
+                MinLenValue val =
+                        analysis.createSingleAnnotationValue(
+                                factory.createMinLen(Math.max(length - 1, 0)), rec.getType());
+                replace.put(rec, val);
+            }
         }
     }
 
