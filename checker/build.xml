@@ -33,31 +33,6 @@
     -->
     <property name="LT_BIN" value=""/>
 
-    <condition property="jdkName" value="jdk7.jar">
-        <contains string="${java.version}" substring="1.7"/>
-    </condition>
-
-    <condition property="jdkName" value="jdk8.jar">
-        <contains string="${java.version}" substring="1.8"/>
-    </condition>
-
-    <!-- TODO: raise an error if no supported version found. -->
-    <condition property="jdkName" value="jdk9.jar" else="UNSUPPORTED">
-        <contains string="${java.version}" substring="1.9"/>
-    </condition>
-
-    <condition property="jdk7orlower">
-        <equals arg1="${jdkName}" arg2="jdk7.jar" />
-    </condition>
-
-    <condition property="jdk8orhigher">
-        <or>
-            <equals arg1="${jdkName}" arg2="jdk8.jar" />
-            <equals arg1="${jdkName}" arg2="jdk9.jar" />
-        </or>
-    </condition>
-
-    <property name="jdk8orhigherSources" value="org/checkerframework/checker/nullness/Opt.java" />
 
     <!-- Used to have:
            depends="touch-jdk"
@@ -151,7 +126,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
-            <exclude name="${jdk8orhigherSources}" if="${jdk7orlower}"/>
+            <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
             <exclude name="**/package-info.java"/>
         </fileset>
 
@@ -218,7 +193,7 @@
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
                     <!-- TODO: we actually want to build these sources with a Java 8 compiler. -->
-                    <exclude name="${jdk8orhigherSources}" if="${jdk7orlower}"/>
+                    <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
                 </fileset>
                 <!-- Recompile dependent projects with annotations-in-comments
                      enabled, in order to get classes with qualified types. -->
@@ -314,7 +289,7 @@
             <package name="org.checkerframework.checker.*"/>
 
             <fileset dir="${checker.loc}/${src}">
-                <include name="${jdk8orhigherSources}" if="${jdk8orhigher}"/>
+                <include name="${checker.jdk8orhigher.sources}" if="${jdk8orhigher}"/>
             </fileset>
 
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
@@ -403,7 +378,7 @@
                 <include name="**/UnitsTools.java"/>
                 <include name="**/SignednessUtil.java"/>
                 <include name="**/I18nFormatUtil.java"/>
-                <include name="${jdk8orhigherSources}" if="${jdk8orhigher}"/>
+                <include name="${checker.jdk8orhigher.sources}" if="${jdk8orhigher}"/>
             </fileset>
             <fileset dir="${dataflow.loc}/${src}">
                 <include name="org/checkerframework/**/qual/*.java"/>
@@ -1220,7 +1195,7 @@ So, use our own archived version.
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="${jdk8orhigherSources}" if="${jdk7orlower}"/>
+                    <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
                     <exclude name=""/>
                 </fileset>
                 <fileset dir="${javacutil.loc}/${src}">
