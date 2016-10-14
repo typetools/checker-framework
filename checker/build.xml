@@ -57,7 +57,9 @@
         </or>
     </condition>
 
-   <!-- Used to have:
+    <property name="jdk8orhigherSources" value="org/checkerframework/checker/nullness/Opt.java" />
+
+    <!-- Used to have:
            depends="touch-jdk"
          When is that truly necessary? -->
     <target name="prep" depends="prep-all"
@@ -149,7 +151,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
-            <exclude name="org/checkerframework/checker/nullness/Opt.java" if="${jdk7orlower}"/>
+            <exclude name="${jdk8orhigherSources}" if="${jdk7orlower}"/>
             <exclude name="**/package-info.java"/>
         </fileset>
 
@@ -215,7 +217,7 @@
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="org/checkerframework/checker/nullness/Opt.java" if="${jdk7orlower}"/>
+                    <exclude name="${jdk8orhigherSources}" if="${jdk7orlower}"/>
                 </fileset>
                 <!-- Recompile dependent projects with annotations-in-comments
                      enabled, in order to get classes with qualified types. -->
@@ -292,7 +294,7 @@
         <!-- With Ant 1.9.4 or later, add to each javadoc task:
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+        <javadoc sourcepath="${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
                  destdir="${api.doc}"
                  private="${javadoc.private}"
                  encoding="UTF-8"
@@ -309,6 +311,10 @@
             <package name="org.checkerframework.framework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
+
+            <fileset dir="${checker.loc}/${src}">
+                <include name="${jdk8orhigherSources}" if="${jdk8orhigher}"/>
+            </fileset>
 
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
             <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
@@ -392,11 +398,11 @@
                 <include name="org/checkerframework/**/qual/*.java"/>
                 <include name="**/FormatUtil.java"/>
                 <include name="**/NullnessUtil.java"/>
-                <include name="**/Opt.java" if="${jdk8orhigher}"/>
                 <include name="**/RegexUtil.java"/>
                 <include name="**/UnitsTools.java"/>
                 <include name="**/SignednessUtil.java"/>
                 <include name="**/I18nFormatUtil.java"/>
+                <include name="${jdk8orhigherSources}" if="${jdk8orhigher}"/>
             </fileset>
             <fileset dir="${dataflow.loc}/${src}">
                 <include name="org/checkerframework/**/qual/*.java"/>
@@ -1213,7 +1219,7 @@ So, use our own archived version.
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
-                    <exclude name="org/checkerframework/checker/nullness/Opt.java" if="${jdk7orlower}"/>
+                    <exclude name="${jdk8orhigherSources}" if="${jdk7orlower}"/>
                     <exclude name=""/>
                 </fileset>
                 <fileset dir="${javacutil.loc}/${src}">
