@@ -217,6 +217,7 @@
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
+                    <!-- TODO: we actually want to build these sources with a Java 8 compiler. -->
                     <exclude name="${jdk8orhigherSources}" if="${jdk7orlower}"/>
                 </fileset>
                 <!-- Recompile dependent projects with annotations-in-comments
