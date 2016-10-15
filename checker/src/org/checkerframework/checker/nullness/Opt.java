@@ -67,7 +67,7 @@ public final class Opt {
      * @see java.util.Optional#ifPresent(Consumer)
      */
     public static <T extends /*@Nullable*/ Object> void ifPresent(
-            T primary, Consumer</*@NonNull*/ ? super T> consumer) {
+            T primary, Consumer</*@NonNull*/ ? super /*@NonNull*/ T> consumer) {
         if (primary != null) {
             consumer.accept(primary);
         }
@@ -79,7 +79,7 @@ public final class Opt {
      * @see java.util.Optional#filter(Predicate)
      */
     public static <T extends /*@Nullable*/ Object> /*@Nullable*/ T filter(
-            T primary, Predicate</*@NonNull*/ ? super T> predicate) {
+            T primary, Predicate</*@NonNull*/ ? super /*@NonNull*/ T> predicate) {
         if (primary == null) {
             return null;
         } else {
@@ -93,7 +93,8 @@ public final class Opt {
      * @see java.util.Optional#map(Function)
      */
     public static <T extends /*@Nullable*/ Object, U extends /*@Nullable*/ Object>
-            /*@Nullable*/ U map(T primary, Function</*@NonNull*/ ? super T, ? extends U> mapper) {
+            /*@Nullable*/ U map(
+            T primary, Function</*@NonNull*/ ? super /*@NonNull*/ T, ? extends U> mapper) {
         if (primary == null) {
             return null;
         } else {
