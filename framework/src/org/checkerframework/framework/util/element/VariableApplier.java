@@ -90,6 +90,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
         annotateViaTypeAnnoPosition(type, targeted);
     }
 
+    @Override
     public void extractAndApply() {
         // Add declaration annotations to the local variable type
         addAnnotationsFromElement(type, varSymbol.getAnnotationMirrors());

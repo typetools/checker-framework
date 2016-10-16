@@ -156,14 +156,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Void p) {
-            replaceWithUnknownValIfTooManyValues((AnnotatedTypeMirror) type);
+            replaceWithUnknownValIfTooManyValues(type);
 
             return super.visitPrimitive(type, p);
         }
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-            replaceWithUnknownValIfTooManyValues((AnnotatedTypeMirror) type);
+            replaceWithUnknownValIfTooManyValues(type);
 
             return super.visitDeclared(type, p);
         }
