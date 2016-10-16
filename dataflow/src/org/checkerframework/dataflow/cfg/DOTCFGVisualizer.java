@@ -58,6 +58,7 @@ public class DOTCFGVisualizer<
     /** Mapping from class/method representation to generated dot file. */
     protected Map<String, String> generated;
 
+    @Override
     public void init(Map<String, Object> args) {
         this.outdir = (String) args.get("outdir");
         {
@@ -83,6 +84,7 @@ public class DOTCFGVisualizer<
     /**
      * {@inheritDoc}
      */
+    @Override
     public /*@Nullable*/ Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, /*@Nullable*/ Analysis<A, S, T> analysis) {
 
