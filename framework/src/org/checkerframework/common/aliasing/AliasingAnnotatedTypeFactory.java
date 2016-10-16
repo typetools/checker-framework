@@ -57,7 +57,7 @@ public class AliasingAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return ret;
     }
 
-    protected class AliasingTreeAnnotator extends TreeAnnotator {
+    protected static class AliasingTreeAnnotator extends TreeAnnotator {
 
         public AliasingTreeAnnotator(AliasingAnnotatedTypeFactory atypeFactory) {
             super(atypeFactory);

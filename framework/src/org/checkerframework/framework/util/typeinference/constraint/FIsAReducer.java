@@ -68,7 +68,7 @@ public class FIsAReducer implements AFReducer {
      *  and applies these rules to the components.  However, only one step is taken at a time (i.e. this
      *  is not a scanner)
      */
-    class FIsAReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFConstraint>> {
+    private class FIsAReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFConstraint>> {
         @Override
         protected String defaultErrorMessage(
                 AnnotatedTypeMirror argument,

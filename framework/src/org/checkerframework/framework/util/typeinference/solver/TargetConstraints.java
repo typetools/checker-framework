@@ -41,7 +41,7 @@ public class TargetConstraints {
         this.subtypes = new Subtypes();
     }
 
-    protected class Equalities {
+    protected static class Equalities {
         // Map( hierarchy top -> exact annotation in hierarchy)
         public Map<AnnotationMirror, AnnotationMirror> primaries = new LinkedHashMap<>();
 
@@ -61,7 +61,7 @@ public class TargetConstraints {
     }
 
     // remember these are constraint in which target is the supertype
-    protected class Supertypes {
+    protected static class Supertypes {
         // Map( hierarchy top -> annotations that are subtypes to target in hierarchy)
         public Map<AnnotationMirror, Set<AnnotationMirror>> primaries = new LinkedHashMap<>();
 
@@ -81,7 +81,7 @@ public class TargetConstraints {
     }
 
     // remember these are constraint in which target is the subtype
-    protected class Subtypes {
+    protected static class Subtypes {
         // Map( hierarchy top -> annotations that are supertypes to target in hierarchy)
         public Map<AnnotationMirror, Set<AnnotationMirror>> primaries = new LinkedHashMap<>();
 
