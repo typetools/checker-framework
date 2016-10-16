@@ -1359,6 +1359,7 @@ So, use our own archived version.
             <compilerclasspath>
               <pathelement location="${errorprone.lib}"/>
             </compilerclasspath>
+            <compilerarg line="-Xmaxwarns 1000"/>
         </javac>
     </target>
 
