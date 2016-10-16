@@ -21,12 +21,10 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -149,7 +147,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             return false;
         }
 
-        CFAbstractValue<?> other = (CFAbstractValue) obj;
+        CFAbstractValue<?> other = (CFAbstractValue<?>) obj;
         if (!analysis.getTypes().isSameType(this.getUnderlyingType(), other.getUnderlyingType())) {
             return false;
         }
@@ -229,9 +227,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     private class MostSpecificVisitor extends AnnotationSetAndTypeMirrorVisitor {
         boolean error = false;
-        TypeMirror backupTypeMirror;
+        // TypeMirror backupTypeMirror;
         Set<AnnotationMirror> backupSet;
-        AnnotatedTypeVariable backupAtv;
+        // AnnotatedTypeVariable backupAtv;
         Set<AnnotationMirror> mostSpecific;
 
         public MostSpecificVisitor(
@@ -246,11 +244,11 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
             this.mostSpecific = mostSpecific;
             if (backup != null) {
                 this.backupSet = backup.getAnnotations();
-                this.backupTypeMirror = backup.getUnderlyingType();
-                this.backupAtv = getEffectTypeVar(backupTypeMirror);
+                // this.backupTypeMirror = backup.getUnderlyingType();
+                // this.backupAtv = getEffectTypeVar(backupTypeMirror);
             } else {
-                this.backupAtv = null;
-                this.backupTypeMirror = null;
+                // this.backupAtv = null;
+                // this.backupTypeMirror = null;
                 this.backupSet = null;
             }
         }
