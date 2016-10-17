@@ -143,14 +143,21 @@ public class LowerBoundTransfer extends CFTransfer {
             right = r;
             left = l;
 
-            rightType = analysis.getValue(right).getType();
-            leftType = analysis.getValue(left).getType();
+	    if (analysis.getValue(right) == null || analysis.getValue(left) == null) {
+		leftType = null;
+		rightType = null;
+		newResult = new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+	    } else {
+		
+		rightType = analysis.getValue(right).getType();
+		leftType = analysis.getValue(left).getType();
 
-            thenStore = result.getRegularStore();
-            elseStore = thenStore.copy();
+		thenStore = result.getRegularStore();
+		elseStore = thenStore.copy();
 
-            newResult =
+		newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+	    }
         }
     }
 
@@ -268,6 +275,11 @@ public class LowerBoundTransfer extends CFTransfer {
             Node right,
             AnnotatedTypeMirror rightType,
             CFStore store) {
+
+	if (rightType == null || leftType == null) {
+	    return;
+	}
+	
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
         /* We don't want to overwrite a more precise type, so we don't modify
          * the left's type if it's already known to be positive.
@@ -298,6 +310,10 @@ public class LowerBoundTransfer extends CFTransfer {
             Node right,
             AnnotatedTypeMirror rightType,
             CFStore store) {
+	if (rightType == null || leftType == null) {
+	    return;
+	}
+	
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
         /* We are effectively calling GLB(right, left) here, but we're
          * doing it manually because of the need to modify things
