@@ -12,6 +12,7 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
  *  This is so that the order of subcheckers is tested.
  */
 public class CompoundChecker extends BaseTypeChecker {
+    @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
         LinkedHashSet<Class<? extends BaseTypeChecker>> subcheckers = new LinkedHashSet<>();
         subcheckers.addAll(super.getImmediateSubcheckerClasses());

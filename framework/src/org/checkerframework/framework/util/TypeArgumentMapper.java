@@ -61,7 +61,7 @@ public class TypeArgumentMapper {
         Set<Pair<Integer, Integer>> result = new HashSet<>();
         if (subtype.equals(supertype)) {
             for (int i = 0; i < subtype.getTypeParameters().size(); i++) {
-                result.add(Pair.of(new Integer(i), new Integer(i)));
+                result.add(Pair.of(Integer.valueOf(i), Integer.valueOf(i)));
             }
 
         } else {
@@ -95,7 +95,7 @@ public class TypeArgumentMapper {
 
         List<? extends TypeParameterElement> params = typeElement.getTypeParameters();
         for (int i = 0; i < params.size(); i++) {
-            result.put(params.get(i), new Integer(i));
+            result.put(params.get(i), Integer.valueOf(i));
         }
 
         return result;

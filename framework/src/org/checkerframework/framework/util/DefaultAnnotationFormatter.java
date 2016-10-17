@@ -31,6 +31,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
      * @param printInvisible whether or not to print "invisible" annotation mirrors
      * @return the list of annotations converted to a String
      */
+    @Override
     @SideEffectFree
     public String formatAnnotationString(
             Collection<? extends AnnotationMirror> annos, boolean printInvisible) {
@@ -54,6 +55,7 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
      * @param anno the annotation mirror to convert
      * @return the string representation of a single AnnotationMirror, without showing full package names
      */
+    @Override
     @SideEffectFree
     public String formatAnnotationMirror(AnnotationMirror anno) {
         StringBuilder sb = new StringBuilder();
