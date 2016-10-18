@@ -167,7 +167,7 @@ public class PerFileSuite extends Suite {
     /**
      * Runs the test class for the set of parameters passed in the constructor.
      */
-    private class PerParameterSetTestRunner extends BlockJUnit4ClassRunner {
+    private static class PerParameterSetTestRunner extends BlockJUnit4ClassRunner {
         private final Object[] parameters;
 
         PerParameterSetTestRunner(Class<?> type, Object[] parameters) throws InitializationError {

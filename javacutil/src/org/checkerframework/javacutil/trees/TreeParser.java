@@ -133,7 +133,7 @@ public class TreeParser {
         return tree;
     }
 
-    class ParseError extends RuntimeException {
+    private static class ParseError extends RuntimeException {
         private static final long serialVersionUID = 1887754619522101929L;
 
         ParseError(Throwable cause) {

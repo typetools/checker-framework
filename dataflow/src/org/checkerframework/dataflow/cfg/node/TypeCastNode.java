@@ -30,6 +30,7 @@ public class TypeCastNode extends Node {
         return operand;
     }
 
+    @Override
     public TypeMirror getType() {
         return type;
     }

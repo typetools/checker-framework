@@ -35,6 +35,7 @@ public class NarrowingConversionNode extends Node {
         return operand;
     }
 
+    @Override
     public TypeMirror getType() {
         return type;
     }

@@ -895,9 +895,10 @@ public class QualifierDefaults {
                             if (scope != null
                                     && scope.getKind() == ElementKind.PARAMETER
                                     && t == type
-                                    && "this".equals(scope.getSimpleName())) {
+                                    && scope.getSimpleName().contentEquals("this")) {
                                 // TODO: comparison against "this" is ugly, won't work
                                 // for all possible names for receiver parameter.
+                                // Comparison to Names._this might be a bit faster.
                                 addAnnotation(t, qual);
                             } else if (scope != null
                                     && (scope.getKind() == ElementKind.METHOD)

@@ -1328,9 +1328,9 @@ So, use our own archived version.
 
     <target name="-errorprone.download" depends="errorprone.check" unless="errorprone.exists">
       <get
-        src="https://github.com/google/error-prone/archive/v2.0.9.tar.gz"
-        dest="${errorprone.home}/../error-prone-2.0.9.tar.gz" />
-      <untar src="${errorprone.home}/../error-prone-2.0.9.tar.gz"
+        src="https://github.com/google/error-prone/archive/v${errorprone.version}.tar.gz"
+        dest="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz" />
+      <untar src="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz"
         dest="${errorprone.home}/../"
         compression="gzip" />
 
@@ -1357,6 +1357,7 @@ So, use our own archived version.
             <compilerclasspath>
               <pathelement location="${errorprone.lib}"/>
             </compilerclasspath>
+            <compilerarg line="-Xmaxwarns 1000"/>
         </javac>
     </target>
 

@@ -78,6 +78,7 @@ public class TestDiagnostic {
      * Equality is compared without isFixable/omitParentheses
      * @return true if this and otherObj are equal according to lineNumber, kind, and message
      */
+    @Override
     public boolean equals(Object otherObj) {
         if (otherObj == null || !otherObj.getClass().equals(TestDiagnostic.class)) {
             return false;
@@ -90,6 +91,7 @@ public class TestDiagnostic {
                 && other.filename.equals(this.filename);
     }
 
+    @Override
     public int hashCode() {
         return 331
                 * ((int) lineNumber)
@@ -101,6 +103,7 @@ public class TestDiagnostic {
     /**
      * @return a representation of this diagnostic as if it appeared in a diagnostics file
      */
+    @Override
     public String toString() {
         if (omitParentheses) {
             return filename + ":" + lineNumber + ": " + kind.parseString + ": " + message;

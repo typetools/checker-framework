@@ -271,6 +271,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
         }
     }
 
+    @Override
     public boolean hasNext() {
         if (closed) {
             return false;
@@ -291,6 +292,7 @@ public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
                 "Cannot remove elements using JavaDiagnosticFileReader.");
     }
 
+    @Override
     public TestDiagnosticLine next() {
         try {
             init();

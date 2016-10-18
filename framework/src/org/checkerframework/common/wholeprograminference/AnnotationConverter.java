@@ -105,8 +105,7 @@ public class AnnotationConverter {
             }
             Type elemType = ((ArrayType) ((Array) defaultValue).type).elemtype;
             try {
-                return new ArrayAFT(
-                        (ScalarAFT) BasicAFT.forType(Class.forName(elemType.toString())));
+                return new ArrayAFT(BasicAFT.forType(Class.forName(elemType.toString())));
             } catch (ClassNotFoundException e) {
                 ErrorReporter.errorAbort(e.getMessage());
             }

@@ -124,6 +124,7 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
      * canonicalized before this point (in constructorFromUse).  However, the expectedReturnType
      * will not.  Canonicalize it now.
      */
+    @Override
     protected boolean checkConstructorInvocation(
             AnnotatedDeclaredType expectedReturnType,
             AnnotatedExecutableType constructor,

@@ -3521,7 +3521,7 @@ public class CFGBuilder {
                 // Declare and initialize the loop index variable
                 TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
 
-                LiteralTree zero = treeBuilder.buildLiteral(new Integer(0));
+                LiteralTree zero = treeBuilder.buildLiteral(Integer.valueOf(0));
                 handleArtificialTree(zero);
 
                 VariableTree indexVariable =

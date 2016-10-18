@@ -364,7 +364,7 @@ class SupertypeFinder {
          * the annotations on type {@code MyList<T>}.  To keep them in-sync, we substitute out the copy of T
          * with the same reference to T that is on {@code MyList<T>}
          */
-        private class TypeParamReplacer
+        private static class TypeParamReplacer
                 extends AnnotatedTypeScanner<Void, Map<TypeParameterElement, AnnotatedTypeMirror>> {
             private final Types types;
 
