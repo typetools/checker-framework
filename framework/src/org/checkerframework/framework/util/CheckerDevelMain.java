@@ -61,8 +61,9 @@ public class CheckerDevelMain extends CheckerMain {
 
         // The location that checker.jar would be in if we have built it
         final File checkersLoc = new File(binDir, "checker.jar");
-        ArrayList<String> alargs = new ArrayList<>(args.length);
+        ArrayList<String> alargs = new ArrayList<>(args.length + 1);
         alargs.addAll(Arrays.asList(args));
+        alargs.add("-J-ea");
         final CheckerDevelMain program = new CheckerDevelMain(checkersLoc, alargs);
         final int exitStatus = program.invokeCompiler();
         System.exit(exitStatus);

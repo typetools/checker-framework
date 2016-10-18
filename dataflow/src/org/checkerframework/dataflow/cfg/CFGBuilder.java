@@ -2600,16 +2600,24 @@ public class CFGBuilder {
          *            the ClassTree enclosing the field access
          * @return the receiver of the field access
          */
-        private Node getReceiver(Tree tree, ClassTree classTree) {
+        private Node getReceiver(ExpressionTree tree, ClassTree classTree) {
             assert TreeUtils.isFieldAccess(tree) || TreeUtils.isMethodAccess(tree);
             if (tree.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
                 MemberSelectTree mtree = (MemberSelectTree) tree;
                 return scan(mtree.getExpression(), null);
             } else {
-                TypeMirror classType = InternalUtils.typeOf(classTree);
-                Node node = new ImplicitThisLiteralNode(classType);
-                extendWithNode(node);
-                return node;
+                Element ele = TreeUtils.elementFromUse(tree);
+                TypeElement declaringClass = ElementUtils.enclosingClass(ele);
+                TypeMirror type = ElementUtils.getType(declaringClass);
+                if (ElementUtils.isStatic(ele)) {
+                    Node node = new ClassNameNode(type, declaringClass);
+                    extendWithNode(node);
+                    return node;
+                } else {
+                    Node node = new ImplicitThisLiteralNode(type);
+                    extendWithNode(node);
+                    return node;
+                }
             }
         }
 
@@ -3513,7 +3521,7 @@ public class CFGBuilder {
                 // Declare and initialize the loop index variable
                 TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
 
-                LiteralTree zero = treeBuilder.buildLiteral(new Integer(0));
+                LiteralTree zero = treeBuilder.buildLiteral(Integer.valueOf(0));
                 handleArtificialTree(zero);
 
                 VariableTree indexVariable =

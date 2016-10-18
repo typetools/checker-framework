@@ -15,6 +15,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item IntelliJ IDEA (Section~\ref{intellij})
 \item Eclipse (Section~\ref{eclipse})
 \item tIDE (Section~\ref{tide})
+\item NetBeans (Section~\ref{netbeans})
 \end{itemize}
 
 If your build system or IDE is not listed above, you should customize how
@@ -46,14 +47,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-2.1.1/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.1.4/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.4
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -78,7 +79,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.4
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -86,7 +87,7 @@ use the last one.
     indicate:
 
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.4
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
 \end{Verbatim}
 
@@ -112,11 +113,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.4
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.1.1\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.1.4\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -138,7 +139,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-2.1.1
+  javac 1.8.0-jsr308-2.1.4
 \end{Verbatim}
 
 
@@ -493,7 +494,7 @@ configurations {
     ... existing configurations ...
     if (targetJavaVersion.isJava7()) {
         checkerFrameworkJavac {
-            description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+            description = 'a customization of the OpenJDK javac compiler with additional support for type annotations'
         }
     }
     checkerFrameworkAnnotatedJDK {
@@ -511,7 +512,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.1.1'
+    ext.checkerFrameworkVersion = '2.1.4'
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
 
@@ -575,7 +576,7 @@ repositories {
 configurations {
     ... existing configurations ...
     checkerFrameworkJavac {
-        description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+        description = 'a customization of the OpenJDK javac compiler with additional support for type annotations'
     }
     checkerFrameworkAnnotatedJDK {
        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
@@ -593,7 +594,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.1.1'
+    ext.checkerFrameworkVersion = '2.1.4'
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
     checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
@@ -718,7 +719,8 @@ and type annotations.
 Even in a version of Eclipse that supports Java 8's type annotations, you
 still need to run the Checker Framework via Ant or via the plug-in, rather
 than by supplying the \<-processor> command-line option to the ejc
-compiler.  The reason is that the Checker Framework is built upon javac,
+compiler, which is also known as eclipsec.
+The reason is that the Checker Framework is built upon javac,
 and ejc represents the Java program differently.  (If both javac and ejc
 implemented JSR 198~\cite{JSR198}, then it would be possible to build
 a type-checking plug-in that works with both compilers.)
@@ -791,6 +793,29 @@ You can download it from \myurl{https://sites.google.com/site/tidejava/}.
 % This, and http://tide.olympe-network.com/, are failing as of June 2016.
 % See its documentation at \myurl{http://tide.olympe.in/}.
 \end{sloppypar}
+
+
+\section{NetBeans\label{netbeans}}
+
+To run a checker within NetBeans:
+
+\begin{enumerate}
+\item
+Add the Checker Framework libraries to your project's library. To do so,
+right click on the project in the Projects panel, and select ``Properties'' in the
+drop-down menu. Then, in the ``Project Properties'' window, navigate to the ``Libraries''
+tab and click the ``Add JAR/Folder'' button on the right, browse and select
+\<\$CHECKERFRAMEWORK/checker/dist/checker.jar>.
+\item
+Enable annotation processor underlining in the editor. Go to ``Build>Compiling'' and check
+the box ``Enable Annotation Processing,'' and under that, ``Enable Annotation Processing in Editor.''
+\item
+Add the checker to run, by clicking ``Add'' next to the box labeled ``Annotation Processors'' and enter
+the fully qualified name of the checker (for example, \<org.checkerframework.checker.nullness.NullnessChecker>)
+and click ``OK'' to add.
+\end{enumerate}
+The selected checker should be run on the project either on a save (if Compile on Save is enabled),
+or when the project is built, and annotation processor output will appear in the editor.
 
 
 \section{Type inference tools\label{type-inference-varieties}}

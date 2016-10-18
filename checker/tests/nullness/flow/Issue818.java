@@ -1,8 +1,6 @@
 // Test case for Issue #818
 // https://github.com/typetools/checker-framework/issues/818
 
-// @skip-test
-
 import org.checkerframework.checker.nullness.qual.*;
 
 class Issue818 {

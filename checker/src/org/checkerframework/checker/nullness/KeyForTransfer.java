@@ -85,7 +85,10 @@ public class KeyForTransfer extends CFTransfer {
                 final CFValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
                 if (previousKeyValue != null) {
                     final AnnotationMirror prevAm =
-                            previousKeyValue.getType().getAnnotationInHierarchy(KEYFOR);
+                            atypeFactory
+                                    .getQualifierHierarchy()
+                                    .findAnnotationInHierarchy(
+                                            previousKeyValue.getAnnotations(), UNKNOWNKEYFOR);
                     if (prevAm != null && AnnotationUtils.areSameByClass(prevAm, KeyFor.class)) {
                         keyForMaps.addAll(getKeys(prevAm));
                     }

@@ -5,9 +5,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Represents a mapping from an Annotation to a TypeUseLocation it should be applied to during defaulting.
- * The Comparable ordering of this class first tests location then tests annotation ordering (via
- * {@link org.checkerframework.javacutil.AnnotationUtils}).
+ * Represents a mapping from an Annotation to a TypeUseLocation it should be applied to during
+ * defaulting.  The Comparable ordering of this class first tests location then tests annotation
+ * ordering (via {@link org.checkerframework.javacutil.AnnotationUtils}).
  *
  * It also has a handy toString method that is useful for debugging.
  */

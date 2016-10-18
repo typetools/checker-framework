@@ -43,7 +43,7 @@ public class A2FReducer implements AFReducer {
      *    b) reduced to a simpler constraint or set of constraints - in this case, the new constraint
      *    or set of constraints is added to newConstraints
      */
-    class A2FReducingVisitor extends AFReducingVisitor {
+    private static class A2FReducingVisitor extends AFReducingVisitor {
 
         public A2FReducingVisitor(AnnotatedTypeFactory typeFactory) {
             super(A2F.class, typeFactory);

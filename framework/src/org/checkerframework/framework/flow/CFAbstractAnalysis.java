@@ -11,13 +11,11 @@ import org.checkerframework.dataflow.analysis.Analysis;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNoType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
-import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.Pair;
 
 /*>>>
@@ -110,24 +108,40 @@ public abstract class CFAbstractAnalysis<
     public abstract S createCopiedStore(S s);
 
     /**
+     * Creates an abstract value from the annotated type mirror.  The value contains the set of
+     * primary annotations on the type; unless, the type is an AnnotatedWildcardType.  In that
+     * case, the annotations in the created value are the primary annotations on the
+     * extends bound.  See {@link CFAbstractValue} for an explanation.
      * @return an abstract value containing the given annotated {@code type}.
      */
-    public abstract /*@Nullable*/ V createAbstractValue(AnnotatedTypeMirror type);
+    public /*@Nullable*/ V createAbstractValue(AnnotatedTypeMirror type) {
+        Set<AnnotationMirror> annos;
+        if (type.getKind() == TypeKind.WILDCARD) {
+            annos = ((AnnotatedWildcardType) type).getExtendsBound().getAnnotations();
+        } else {
+            annos = type.getAnnotations();
+        }
+        return createAbstractValue(annos, type.getUnderlyingType());
+    }
 
     /**
-     * Default implementation for
-     * {@link #createAbstractValue(AnnotatedTypeMirror)} that takes care of
-     * invalid types.
+     * @return an abstract value containing the given {@code annotations}
+     * and {@code underlyingType}.
+     */
+    public abstract /*@Nullable*/ V createAbstractValue(
+            Set<AnnotationMirror> annotations, TypeMirror underlyingType);
+
+    /**
+     * Default implementation for {@link #createAbstractValue(Set, TypeMirror)}
      */
     public CFValue defaultCreateAbstractValue(
-            CFAbstractAnalysis<CFValue, ?, ?> analysis, AnnotatedTypeMirror type) {
-        if (type instanceof AnnotatedNoType
-                || !AnnotatedTypes.isValidType(qualifierHierarchy, type)) {
-            // If the type is not valid, we return null, which is the same as
-            // 'no information'.
+            CFAbstractAnalysis<CFValue, ?, ?> analysis,
+            Set<AnnotationMirror> annotations,
+            TypeMirror underlyingType) {
+        if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
             return null;
         }
-        return new CFValue(analysis, type);
+        return new CFValue(analysis, annotations, underlyingType);
     }
 
     public TypeHierarchy getTypeHierarchy() {
@@ -152,39 +166,13 @@ public abstract class CFAbstractAnalysis<
      * underlying type is {@link Object}.
      */
     public V createSingleAnnotationValue(AnnotationMirror anno, TypeMirror underlyingType) {
-        AnnotatedTypeMirror type =
-                AnnotatedTypeMirror.createType(underlyingType, getTypeFactory(), false);
-        Set<? extends AnnotationMirror> tops =
-                getTypeFactory().getQualifierHierarchy().getTopAnnotations();
-        makeTop(type, tops);
-        type.replaceAnnotation(anno);
-        return createAbstractValue(type);
-    }
-
-    /**
-     * Adds top as the annotation on all locations of a given type.
-     */
-    private void makeTop(AnnotatedTypeMirror type, Set<? extends AnnotationMirror> tops) {
-        TypeKind kind = type.getKind();
-        if (kind == TypeKind.ARRAY) {
-            AnnotatedArrayType a = (AnnotatedArrayType) type;
-            makeTop(a.getComponentType(), tops);
-        } else if (kind == TypeKind.TYPEVAR) {
-            // just set the primary to top, this will override the upper/lower bounds
-
-        } else if (kind == TypeKind.WILDCARD) {
-            AnnotatedWildcardType a = (AnnotatedWildcardType) type;
-            a.addAnnotations(tops);
-            makeTop(a.getExtendsBound(), tops);
-            if (a.getSuperBound() != null) {
-                makeTop(a.getSuperBound(), tops);
-            }
-        }
-
-        if (kind != TypeKind.WILDCARD) {
-            // don't set top annotations, because [] is top
-            type.addAnnotations(tops);
-        }
+        QualifierHierarchy hierarchy = getTypeFactory().getQualifierHierarchy();
+        Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+        annos.addAll(hierarchy.getTopAnnotations());
+        AnnotationMirror f = hierarchy.findAnnotationInSameHierarchy(annos, anno);
+        annos.remove(f);
+        annos.add(anno);
+        return createAbstractValue(annos, underlyingType);
     }
 
     /**

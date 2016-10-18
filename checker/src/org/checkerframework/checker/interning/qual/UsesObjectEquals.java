@@ -6,7 +6,6 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.interning.InterningChecker;
 
 /**
  * Class declaration to indicate the class does not override
@@ -20,9 +19,9 @@ import org.checkerframework.checker.interning.InterningChecker;
  * most commonly written on a direct subclass of {@code Object}.
  * <p>
  *
- * This annotation is associated with the {@link InterningChecker}.
+ * This annotation is associated with the {@link org.checkerframework.checker.interning.InterningChecker}.
  *
- * @see InterningChecker
+ * @see org.checkerframework.checker.interning.InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */
 @Documented

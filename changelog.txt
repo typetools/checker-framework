@@ -1,5 +1,37 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.5, 1 November 2016
+
+In bytecode, type variable upper bounds of type Object may or may not have
+been explicitly written.  The Checker Framework now assumes they were not
+written explicitly in source code and defaults them as implicit upper bounds.
+
+The manual describes how to run a checker within the NetBeans IDE.
+
+---------------------------------------------------------------------------
+
+Version 2.1.4, 3 October 2016
+
+Closed issues:
+885, 886, 919.
+
+---------------------------------------------------------------------------
+
+Version 2.1.3, 16 September 2016
+
+Closed issues:
+122, 488, 495, 580, 618, 647, 713, 764, 818, 872, 893, 894, 901, 902, 903,
+905, 913.
+
+---------------------------------------------------------------------------
+
+Version 2.1.2, 1 September 2016
+
+Closed issues:
+182, 367, 712, 811, 846, 857, 858, 863, 870, 871, 878, 883, 888.
+
+---------------------------------------------------------------------------
+
 Version 2.1.1, 1 August 2016
 
 The codebase conforms to a consistent coding style, which is enforced by

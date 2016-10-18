@@ -23,7 +23,7 @@ jdk.jar:
 # Helper
 
 # All class files that contain an annotation, by directory
-ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class')
+ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class' | sort)
 # All class files that contain some annotation, possibly with duplicates.
 # These, and only these, need to be extracted from $(CTSYM).
 ANNOTATED_CLASSES = \

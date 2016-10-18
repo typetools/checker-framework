@@ -97,16 +97,16 @@ def stage_maven_artifacts_in_maven_central(new_checker_version):
                             CHECKER_SOURCE, CHECKER_JAVADOC,
                             pgp_user, pgp_passphrase)
 
-    # checker.jar is a superset of checker-qual.jar, so use the same source/javadoc jars
+    # checker.jar is a superset of checker-qual.jar, so use the same javadoc jar
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_QUAL_RELEASE_POM, CHECKER_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_QUAL_SOURCE),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 
-    # checker.jar is a superset of checker-compat-qual.jar, so use the same source/javadoc jars
+    # checker.jar is a superset of checker-compat-qual.jar, so use the same javadoc jar
     mvn_sign_and_deploy_all(SONATYPE_OSS_URL, SONATYPE_STAGING_REPO_ID, CHECKER_COMPAT_QUAL_RELEASE_POM,
                             CHECKER_COMPAT_QUAL,
-                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_SOURCE),
+                            os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_COMPAT_QUAL_SOURCE),
                             os.path.join(MAVEN_RELEASE_DIR, mvn_dist, CHECKER_JAVADOC),
                             pgp_user, pgp_passphrase)
 

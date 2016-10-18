@@ -97,6 +97,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     public Void visitVariable(VariableTree node, Void p) { // visit a variable declaration
         // A user may not annotate a primitive type, a boxed primitive type or a String
         // with any qualifier from the @GuardedBy hierarchy.
+        // They are immutable, so there is no need to guard them.
 
         TypeMirror tm = InternalUtils.typeOf(node);
 
@@ -108,7 +109,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                     || atm.hasExplicitAnnotationRelaxed(atypeFactory.GUARDEDBY)
                     || atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYUNKNOWN)
                     || atm.hasExplicitAnnotation(atypeFactory.GUARDEDBYBOTTOM)) {
-                checker.report(Result.failure("primitive.type.guardedby"), node);
+                checker.report(Result.failure("immutable.type.guardedby"), node);
             }
         }
 
@@ -178,7 +179,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
                 }
             }
 
-            if (!issueGSwithMRLWarning) { // Skip this loop if it is already known that the warning must be issued.
+            if (!issueGSwithMRLWarning) { // Skip this loop if we have already decided to issue the warning.
                 for (VariableTree vt : node.getParameters()) {
                     if (atypeFactory
                             .getAnnotatedType(vt)
@@ -1124,7 +1125,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues an error if a GuardSatisfied annotation is found in a location other than a method return type, receiver or parameter.
+     * Issues an error if a GuardSatisfied annotation is found in a location other than a method return type or parameter (including the receiver).
      * @param annotationTree AnnotationTree used for error reporting and to help determine that an array parameter has no GuardSatisfied
      * annotations except on the array type
      */

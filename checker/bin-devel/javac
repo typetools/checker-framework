@@ -59,6 +59,7 @@ done
 #     "-DCheckerDevelMain.verbose=TRUE" \
 
 eval "java" \
+     "-ea " \
      "-DCheckerDevelMain.cp=${buildDirs} " \
      "-DCheckerDevelMain.pp=${buildDirs} " \
      "-DCheckerDevelMain.compile.bcp=${jdkPaths} " \

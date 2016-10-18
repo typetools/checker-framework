@@ -86,6 +86,7 @@ public class ImmutableTestConfiguration implements TestConfiguration {
         return shouldEmitDebugInfo;
     }
 
+    @Override
     public String toString() {
         return "TestConfigurationBuilder:\n"
                 + "testSourceFiles="

@@ -3,6 +3,8 @@ package org.checkerframework.checker.signedness;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
+import java.lang.annotation.Annotation;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.signedness.qual.UnknownSignedness;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -41,6 +43,11 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         UNKNOWN_SIGNEDNESS = AnnotationUtils.fromClass(elements, UnknownSignedness.class);
 
         postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithoutPolyAll();
     }
 
     /**

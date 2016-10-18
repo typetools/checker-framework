@@ -185,21 +185,6 @@ Pattern p = Pattern.compile(regex);
 \label{fig-regex-util-example}
 \end{figure}
 
-\subsection{Qualifier Parameters\label{regex-qual-params}}
-The Regex Checker supports qualifier parameters.
-See Section~\ref{qualifier-parameters} for more details on qualifier parameters.
-
-\begin{sloppypar}
-The qualifier parameter system currently
-% (as of December 2015)
-incurs a 50\%
-performance penalty. If this is unacceptable you can run the original Regex
-Checker by passing the
-\code{-processor org.checkerframework.checker.regex.classic.RegexClassicChecker}
-command-line option to javac.
-\end{sloppypar}
-
-
 \subsection{Suppressing warnings\label{regex-suppressing-warnings}}
 
 If you are positive that a particular string that is being used as a
