@@ -143,7 +143,7 @@ public class PerDirectorySuite extends Suite {
     /**
      * Runs the test class for the set of javaFiles passed in the constructor.
      */
-    private class PerParameterSetTestRunner extends BlockJUnit4ClassRunner {
+    private static class PerParameterSetTestRunner extends BlockJUnit4ClassRunner {
         private final List<File> javaFiles;
 
         PerParameterSetTestRunner(Class<?> type, List<File> javaFiles) throws InitializationError {

@@ -155,6 +155,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return n1.equals(n2);
     }
 
+    @Override
     public Boolean visit(CompilationUnit n1, Node arg) {
         CompilationUnit n2 = (CompilationUnit) arg;
 
@@ -177,6 +178,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(PackageDeclaration n1, Node arg) {
         PackageDeclaration n2 = (PackageDeclaration) arg;
 
@@ -191,6 +193,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ImportDeclaration n1, Node arg) {
         ImportDeclaration n2 = (ImportDeclaration) arg;
 
@@ -201,6 +204,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(TypeParameter n1, Node arg) {
         TypeParameter n2 = (TypeParameter) arg;
 
@@ -219,6 +223,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(LineComment n1, Node arg) {
         LineComment n2 = (LineComment) arg;
 
@@ -229,6 +234,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(BlockComment n1, Node arg) {
         BlockComment n2 = (BlockComment) arg;
 
@@ -239,6 +245,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ClassOrInterfaceDeclaration n1, Node arg) {
         ClassOrInterfaceDeclaration n2 = (ClassOrInterfaceDeclaration) arg;
 
@@ -279,6 +286,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(EnumDeclaration n1, Node arg) {
         EnumDeclaration n2 = (EnumDeclaration) arg;
 
@@ -311,10 +319,12 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(EmptyTypeDeclaration n1, Node arg) {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(EnumConstantDeclaration n1, Node arg) {
         EnumConstantDeclaration n2 = (EnumConstantDeclaration) arg;
 
@@ -339,6 +349,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(AnnotationDeclaration n1, Node arg) {
         AnnotationDeclaration n2 = (AnnotationDeclaration) arg;
 
@@ -363,6 +374,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(AnnotationMemberDeclaration n1, Node arg) {
         AnnotationMemberDeclaration n2 = (AnnotationMemberDeclaration) arg;
 
@@ -391,6 +403,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(FieldDeclaration n1, Node arg) {
         FieldDeclaration n2 = (FieldDeclaration) arg;
 
@@ -415,6 +428,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(VariableDeclarator n1, Node arg) {
         VariableDeclarator n2 = (VariableDeclarator) arg;
 
@@ -429,6 +443,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(VariableDeclaratorId n1, Node arg) {
         VariableDeclaratorId n2 = (VariableDeclaratorId) arg;
 
@@ -443,6 +458,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ConstructorDeclaration n1, Node arg) {
         ConstructorDeclaration n2 = (ConstructorDeclaration) arg;
 
@@ -479,6 +495,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(MethodDeclaration n1, Node arg) {
         MethodDeclaration n2 = (MethodDeclaration) arg;
 
@@ -523,6 +540,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(Parameter n1, Node arg) {
         Parameter n2 = (Parameter) arg;
 
@@ -545,10 +563,12 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(EmptyMemberDeclaration n1, Node arg) {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(InitializerDeclaration n1, Node arg) {
         InitializerDeclaration n2 = (InitializerDeclaration) arg;
 
@@ -563,6 +583,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(JavadocComment n1, Node arg) {
         JavadocComment n2 = (JavadocComment) arg;
 
@@ -573,6 +594,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ClassOrInterfaceType n1, Node arg) {
         ClassOrInterfaceType n2 = (ClassOrInterfaceType) arg;
 
@@ -591,6 +613,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(PrimitiveType n1, Node arg) {
         PrimitiveType n2 = (PrimitiveType) arg;
 
@@ -601,6 +624,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ReferenceType n1, Node arg) {
         ReferenceType n2 = (ReferenceType) arg;
 
@@ -615,10 +639,12 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(VoidType n1, Node arg) {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(WildcardType n1, Node arg) {
         WildcardType n2 = (WildcardType) arg;
 
@@ -633,6 +659,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ArrayAccessExpr n1, Node arg) {
         ArrayAccessExpr n2 = (ArrayAccessExpr) arg;
 
@@ -647,6 +674,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ArrayCreationExpr n1, Node arg) {
         ArrayCreationExpr n2 = (ArrayCreationExpr) arg;
 
@@ -669,6 +697,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ArrayInitializerExpr n1, Node arg) {
         ArrayInitializerExpr n2 = (ArrayInitializerExpr) arg;
 
@@ -679,6 +708,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(AssignExpr n1, Node arg) {
         AssignExpr n2 = (AssignExpr) arg;
 
@@ -697,6 +727,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(BinaryExpr n1, Node arg) {
         BinaryExpr n2 = (BinaryExpr) arg;
 
@@ -715,6 +746,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(CastExpr n1, Node arg) {
         CastExpr n2 = (CastExpr) arg;
 
@@ -729,6 +761,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ClassExpr n1, Node arg) {
         ClassExpr n2 = (ClassExpr) arg;
 
@@ -739,6 +772,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ConditionalExpr n1, Node arg) {
         ConditionalExpr n2 = (ConditionalExpr) arg;
 
@@ -757,6 +791,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(EnclosedExpr n1, Node arg) {
         EnclosedExpr n2 = (EnclosedExpr) arg;
 
@@ -767,6 +802,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(FieldAccessExpr n1, Node arg) {
         FieldAccessExpr n2 = (FieldAccessExpr) arg;
 
@@ -785,6 +821,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(InstanceOfExpr n1, Node arg) {
         InstanceOfExpr n2 = (InstanceOfExpr) arg;
 
@@ -799,6 +836,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(StringLiteralExpr n1, Node arg) {
         StringLiteralExpr n2 = (StringLiteralExpr) arg;
 
@@ -809,6 +847,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(IntegerLiteralExpr n1, Node arg) {
         IntegerLiteralExpr n2 = (IntegerLiteralExpr) arg;
 
@@ -819,6 +858,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(LongLiteralExpr n1, Node arg) {
         LongLiteralExpr n2 = (LongLiteralExpr) arg;
 
@@ -829,6 +869,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(IntegerLiteralMinValueExpr n1, Node arg) {
         IntegerLiteralMinValueExpr n2 = (IntegerLiteralMinValueExpr) arg;
 
@@ -839,6 +880,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(LongLiteralMinValueExpr n1, Node arg) {
         LongLiteralMinValueExpr n2 = (LongLiteralMinValueExpr) arg;
 
@@ -849,6 +891,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(CharLiteralExpr n1, Node arg) {
         CharLiteralExpr n2 = (CharLiteralExpr) arg;
 
@@ -859,6 +902,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(DoubleLiteralExpr n1, Node arg) {
         DoubleLiteralExpr n2 = (DoubleLiteralExpr) arg;
 
@@ -869,6 +913,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(BooleanLiteralExpr n1, Node arg) {
         BooleanLiteralExpr n2 = (BooleanLiteralExpr) arg;
 
@@ -879,10 +924,12 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(NullLiteralExpr n1, Node arg) {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(MethodCallExpr n1, Node arg) {
         MethodCallExpr n2 = (MethodCallExpr) arg;
 
@@ -905,6 +952,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(NameExpr n1, Node arg) {
         NameExpr n2 = (NameExpr) arg;
 
@@ -915,6 +963,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ObjectCreationExpr n1, Node arg) {
         ObjectCreationExpr n2 = (ObjectCreationExpr) arg;
 
@@ -941,6 +990,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(QualifiedNameExpr n1, Node arg) {
         QualifiedNameExpr n2 = (QualifiedNameExpr) arg;
 
@@ -955,6 +1005,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ThisExpr n1, Node arg) {
         ThisExpr n2 = (ThisExpr) arg;
 
@@ -965,6 +1016,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(SuperExpr n1, Node arg) {
         SuperExpr n2 = (SuperExpr) arg;
 
@@ -975,6 +1027,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(UnaryExpr n1, Node arg) {
         UnaryExpr n2 = (UnaryExpr) arg;
 
@@ -989,6 +1042,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(VariableDeclarationExpr n1, Node arg) {
         VariableDeclarationExpr n2 = (VariableDeclarationExpr) arg;
 
@@ -1011,6 +1065,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(MarkerAnnotationExpr n1, Node arg) {
         MarkerAnnotationExpr n2 = (MarkerAnnotationExpr) arg;
 
@@ -1021,6 +1076,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(SingleMemberAnnotationExpr n1, Node arg) {
         SingleMemberAnnotationExpr n2 = (SingleMemberAnnotationExpr) arg;
 
@@ -1035,6 +1091,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(NormalAnnotationExpr n1, Node arg) {
         NormalAnnotationExpr n2 = (NormalAnnotationExpr) arg;
 
@@ -1049,6 +1106,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(MemberValuePair n1, Node arg) {
         MemberValuePair n2 = (MemberValuePair) arg;
 
@@ -1063,6 +1121,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ExplicitConstructorInvocationStmt n1, Node arg) {
         ExplicitConstructorInvocationStmt n2 = (ExplicitConstructorInvocationStmt) arg;
 
@@ -1081,6 +1140,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(TypeDeclarationStmt n1, Node arg) {
         TypeDeclarationStmt n2 = (TypeDeclarationStmt) arg;
 
@@ -1091,6 +1151,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(AssertStmt n1, Node arg) {
         AssertStmt n2 = (AssertStmt) arg;
 
@@ -1105,6 +1166,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(BlockStmt n1, Node arg) {
         BlockStmt n2 = (BlockStmt) arg;
 
@@ -1115,6 +1177,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(LabeledStmt n1, Node arg) {
         LabeledStmt n2 = (LabeledStmt) arg;
 
@@ -1125,10 +1188,12 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(EmptyStmt n1, Node arg) {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ExpressionStmt n1, Node arg) {
         ExpressionStmt n2 = (ExpressionStmt) arg;
 
@@ -1139,6 +1204,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(SwitchStmt n1, Node arg) {
         SwitchStmt n2 = (SwitchStmt) arg;
 
@@ -1153,6 +1219,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(SwitchEntryStmt n1, Node arg) {
         SwitchEntryStmt n2 = (SwitchEntryStmt) arg;
 
@@ -1167,6 +1234,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(BreakStmt n1, Node arg) {
         BreakStmt n2 = (BreakStmt) arg;
 
@@ -1177,6 +1245,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ReturnStmt n1, Node arg) {
         ReturnStmt n2 = (ReturnStmt) arg;
 
@@ -1187,6 +1256,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(IfStmt n1, Node arg) {
         IfStmt n2 = (IfStmt) arg;
 
@@ -1205,6 +1275,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(WhileStmt n1, Node arg) {
         WhileStmt n2 = (WhileStmt) arg;
 
@@ -1219,6 +1290,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ContinueStmt n1, Node arg) {
         ContinueStmt n2 = (ContinueStmt) arg;
 
@@ -1229,6 +1301,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(DoStmt n1, Node arg) {
         DoStmt n2 = (DoStmt) arg;
 
@@ -1243,6 +1316,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ForeachStmt n1, Node arg) {
         ForeachStmt n2 = (ForeachStmt) arg;
 
@@ -1261,6 +1335,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ForStmt n1, Node arg) {
         ForStmt n2 = (ForStmt) arg;
 
@@ -1283,6 +1358,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(ThrowStmt n1, Node arg) {
         ThrowStmt n2 = (ThrowStmt) arg;
 
@@ -1293,6 +1369,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(SynchronizedStmt n1, Node arg) {
         SynchronizedStmt n2 = (SynchronizedStmt) arg;
 
@@ -1307,6 +1384,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(TryStmt n1, Node arg) {
         TryStmt n2 = (TryStmt) arg;
 
@@ -1325,6 +1403,7 @@ public class EqualsVisitor implements GenericVisitor<Boolean, Node> {
         return Boolean.TRUE;
     }
 
+    @Override
     public Boolean visit(CatchClause n1, Node arg) {
         CatchClause n2 = (CatchClause) arg;
 

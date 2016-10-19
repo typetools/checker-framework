@@ -436,7 +436,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected List<String> upstreamCheckerNames = null;
 
     @Override
-    public final void init(ProcessingEnvironment env) {
+    public final synchronized void init(ProcessingEnvironment env) {
         super.init(env);
         // The processingEnvironment field will also be set by the superclass' init method.
         // This is used to trigger AggregateChecker's setProcessingEnvironment.

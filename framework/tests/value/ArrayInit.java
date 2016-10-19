@@ -62,4 +62,8 @@ class ArrayInit {
     }
 
     public void vargs(Object @ArrayLen(0) ... ints) {}
+
+    public void nullableArrays() {
+        Object @ArrayLen(2) [] @ArrayLen(1) [] o = new Object[][] {new Object[] {null}, null};
+    }
 }

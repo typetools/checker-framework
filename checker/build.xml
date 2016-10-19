@@ -22,10 +22,6 @@
 
     <property environment="env"/>
 
-    <property name="JAVA_7_HOME" value="${env.JAVA_7_HOME}" />
-    <property name="JAVA_8_HOME" value="${env.JAVA_8_HOME}" />
-    <property name="JAVA_9_HOME" value="${env.JAVA_9_HOME}" />
-
     <!--
          NOTE LT_BIN IN THE NEXT FEW TARGETS IS SOLELY FOR bin-devel/javac and Jenkins.
          The original path to the langtools dir does not work on Jenkins.
@@ -1330,9 +1326,9 @@ So, use our own archived version.
 
     <target name="-errorprone.download" depends="errorprone.check" unless="errorprone.exists">
       <get
-        src="https://github.com/google/error-prone/archive/v2.0.9.tar.gz"
-        dest="${errorprone.home}/../error-prone-2.0.9.tar.gz" />
-      <untar src="${errorprone.home}/../error-prone-2.0.9.tar.gz"
+        src="https://github.com/google/error-prone/archive/v${errorprone.version}.tar.gz"
+        dest="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz" />
+      <untar src="${errorprone.home}/../error-prone-${errorprone.version}.tar.gz"
         dest="${errorprone.home}/../"
         compression="gzip" />
 
@@ -1359,6 +1355,7 @@ So, use our own archived version.
             <compilerclasspath>
               <pathelement location="${errorprone.lib}"/>
             </compilerclasspath>
+            <compilerarg line="-Xmaxwarns 1000"/>
         </javac>
     </target>
 
@@ -1389,25 +1386,25 @@ So, use our own archived version.
     </target>
 
     <target name="all.jdks.jar" description="Build jdkX.jar using JAVA_X_HOME (with X in 7, 8, and 9)">
-        <fail unless="JAVA_7_HOME" message="Property &quot;JAVA_7_HOME&quot; needs to be set!"/>
-        <fail unless="JAVA_8_HOME" message="Property &quot;JAVA_8_HOME&quot; needs to be set!"/>
-        <fail unless="JAVA_9_HOME" message="Property &quot;JAVA_9_HOME&quot; needs to be set!"/>
+        <fail unless="env.JAVA_7_HOME" message="Environment variable &quot;JAVA_7_HOME&quot; needs to be set!"/>
+        <fail unless="env.JAVA_8_HOME" message="Environment variable &quot;JAVA_8_HOME&quot; needs to be set!"/>
+        <!--<fail unless="env.JAVA_9_HOME" message="Environment variable  &quot;JAVA_9_HOME&quot; needs to be set!"/>-->
 
         <exec executable="ant" failonerror="true">
             <arg line="jdk.jar"/>
-            <env key="JAVA_HOME"  value="${JAVA_7_HOME}"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_7_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
         <exec executable="ant" failonerror="true">
             <arg line="jdk.jar"/>
-            <env key="JAVA_HOME"  value="${JAVA_8_HOME}"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
             <env key="LT_BIN" value="${LT_BIN}"/>
         </exec>
 
         <!--<exec executable="ant" failonerror="true">
             <arg line="jdk.jar"/>
-            <env key="JAVA_HOME"  value="${JAVA_9_HOME}"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_9_HOME}"/>
         </exec>-->
 
     </target>

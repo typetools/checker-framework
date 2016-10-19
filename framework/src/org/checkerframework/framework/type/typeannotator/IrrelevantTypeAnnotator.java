@@ -2,8 +2,6 @@ package org.checkerframework.framework.type.typeannotator;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -83,6 +81,8 @@ public class IrrelevantTypeAnnotator extends TypeAnnotator {
             case PACKAGE:
             case VOID:
                 return super.scan(type, aVoid);
+            default:
+                // go on
         }
 
         Types types = typeFactory.getContext().getTypeUtils();

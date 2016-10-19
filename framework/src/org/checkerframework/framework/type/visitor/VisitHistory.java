@@ -66,7 +66,7 @@ public class VisitHistory {
      * Visit represents a pair of types that have been added to the history.  See class note for
      * VisitHistory (at the top of this file)
      */
-    private class Visit {
+    private static class Visit {
         public final AnnotatedTypeMirror type1;
         public final AnnotatedTypeMirror type2;
 

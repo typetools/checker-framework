@@ -606,7 +606,7 @@ welcome it as a contribution to the Checker Framework.
 Some checkers have library methods that you can explicitly insert in your
 source code.
 Examples include the Nullness Checker's
-\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} method (see
+\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} method (see
 Section~\ref{suppressing-warnings-with-assertions}) and the Regex Checker's
 \<RegexUtil> class (see Section~\ref{regexutil-methods}).
 But, it would be better to have more general support that does not require
@@ -1219,7 +1219,7 @@ Eclipse handles only nullness properties and is not extensible, whereas the
 Checker Framework comes with over 20 type-checkers (for a list,
 see~\chapterpageref{introduction}) and is extensible to more properties.
 
-There are also some benefits to Eclipse's Null Analysis.
+There are also some benefits to Eclipse's null analysis.
 It is faster than the Checker Framework, in part because it is less featureful.
 It is built into Eclipse, so you do not have to download and install a
 separate Eclipse plugin as you do for the Checker Framework (see
@@ -1228,6 +1228,42 @@ Its IDE integration is tighter and slicker.
 
 (If you know of other differences, please let us know at
 checker-framework-dev@googlegroups.com so we can update the manual.)
+
+
+\subsection{How does the Checker Framework compare with the JDK's \<Optional> type?\label{faq-eclipse}}
+
+JDK 8 introduced the \sunjavadoc{java/util/Optional.html}{\code{Optional}}
+class, a container that is either empty or contains a non-null value.
+
+\<Optional> has numerous problems without countervailing benefits.
+\<Optional> does not make your code more correct or robust. There is a real
+problem that \<Optional> tries to solve, but you are better off using a
+regular possibly-null Java reference and the Nullness Checker
+(see~\chapterpageref{nullness-checker}), rather than using Optional.
+
+The \<Optional> class does \emph{not} solve the problem of null pointer
+exceptions.  Changing your code to use the \<Optional> class has these effects:
+
+\begin{itemize}
+\item
+It transforms a \<NullPointerException> into a \<NoSuchElementException>,
+which still crashes your program.
+\item
+It creates new problems that were not a danger before.
+\item
+It clutters your code.
+\item
+It adds both space and time overheads.
+\item
+It does not address important sources of null pointer exceptions, such as
+partially-initialized objects and calls to \<Map.get>.
+\end{itemize}
+
+See the article
+\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
+  is better than Java's \<Optional> class''} for more details and
+explanation of the
+\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html#benefits-of-nullable}{benefits of \<@Nullable> over \<Optional>}.
 
 
 \subsection{How does pluggable type-checking compare with JML?\label{faq-jml}}
@@ -1319,7 +1355,7 @@ annotations-in-comments feature (Section~\ref{annotations-in-comments}).
 
 \subsection{Is there a type-checker for managing checked and unchecked exceptions?\label{faq-checked-exceptions}}
 
-It is possible to annotate exceptions, and any type-checker built on the
+It is possible to annotate exception types, and any type-checker built on the
 Checker Framework enforces that type annotations are consistent between
 \<throw> statements and \<catch> clauses that might catch them.
 
@@ -1333,7 +1369,7 @@ effects.  The GUI Effect Checker (\chapterpageref{guieffect-checker}) is a
 type-and-effect system that is distributed with the Checker Framework.
 
 
-% LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtils
+% LocalWords:  toolset AbstractCollection ConcurrentHashMap NullnessUtil
 % LocalWords:  castNonNull createWidget backporting JCIP's GuardedBy Awarns PMD
 % LocalWords:  ElementType nullness bytecodes Jlint Hashtable SuppressWarnings
 %  LocalWords:  RegexUtil compareTo myA requiresB nullable java myobject

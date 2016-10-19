@@ -15,7 +15,6 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.AnnotatedType;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
@@ -418,9 +417,9 @@ public class InternalUtils {
     }
 
     /**
-     * Obtain the class loader for {@code clazz}, if that is not available then the system class loader
-     * will be returned
-     * @param clazz
+     * Obtain the class loader for {@code clazz}.
+     * If that is not available, return the system class loader.
+     * @param clazz the class whose class loader to find
      * @return the class loader used to {@code clazz}, or the system
      *         class loader, or null if both are unavailable
      */
