@@ -1,11 +1,9 @@
 package tests.nontopdefault;
 
 import com.sun.source.tree.Tree;
-import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.javacutil.AnnotationUtils;
 import tests.nontopdefault.qual.NTDBottom;
 import tests.nontopdefault.qual.NTDMiddle;
 
@@ -13,9 +11,6 @@ public class NTDVisitor extends BaseTypeVisitor<NTDAnnotatedTypeFactory> {
     public NTDVisitor(BaseTypeChecker checker) {
         super(checker);
     }
-
-    protected final AnnotationMirror MIDDLE =
-            AnnotationUtils.fromClass(atypeFactory.getElementUtils(), NTDMiddle.class);
 
     // Allow references to be declared using any NTD type except NTDBottom.
     @Override

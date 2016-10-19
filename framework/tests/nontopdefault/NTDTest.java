@@ -1,12 +1,7 @@
-import tests.nontopdefault.qual.*;
+// Testcase for Issue 948:
+// https://github.com/typetools/checker-framework/issues/948
 
-/* Hierarchy:
- *    NTDTop (default for local variables, implicit upper bound, and receiver)
- *    /     \
- * NTDSide  NTDMiddle (default in hierarchy, default for exceptions and resource variables)
- *   \       /
- *   NTDBottom (default for implicit and explicit lower bounds, implicit for null literal and Void.class)
- */
+import tests.nontopdefault.qual.*;
 
 // Because classes and interfaces are by default NTDMiddle, a single override is defined in the
 // Visitor which allows references of NTDMiddle class to be declared. The problem here exists even
