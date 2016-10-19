@@ -316,6 +316,7 @@ public class LowerBoundTransfer extends CFTransfer {
             Node right,
             Set<AnnotationMirror> rightType,
             CFStore store) {
+
         if (rightType == null || leftType == null) {
             return;
         }
