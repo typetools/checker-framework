@@ -1,16 +1,13 @@
 package org.checkerframework.checker.nullness;
 
-/*>>>
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
-*/
-
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * Utility class for the Nullness Checker, providing every method in
@@ -46,7 +43,7 @@ public final class Opt {
      * If primary is non-null, returns it, otherwise throws NoSuchElementException.
      * @see java.util.Optional#get()
      */
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T get(T primary) {
+    public static <T> @NonNull T get(T primary) {
         if (primary == null) {
             throw new NoSuchElementException("No value present");
         }
@@ -58,7 +55,7 @@ public final class Opt {
      * @see java.util.Optional#isPresent()
      */
     @EnsuresNonNullIf(expression = "#1", result = true)
-    public static boolean isPresent(/*@Nullable*/ Object primary) {
+    public static boolean isPresent(@Nullable Object primary) {
         return primary != null;
     }
 
@@ -66,8 +63,7 @@ public final class Opt {
      * If primary is non-null, invoke the specified consumer with the value, otherwise do nothing.
      * @see java.util.Optional#ifPresent(Consumer)
      */
-    public static <T extends /*@Nullable*/ Object> void ifPresent(
-            T primary, Consumer</*@NonNull*/ ? super /*@NonNull*/ T> consumer) {
+    public static <T> void ifPresent(T primary, Consumer<@NonNull ? super @NonNull T> consumer) {
         if (primary != null) {
             consumer.accept(primary);
         }
@@ -78,8 +74,8 @@ public final class Opt {
      * If primary is null or its non-null value does not match the predicate, return null.
      * @see java.util.Optional#filter(Predicate)
      */
-    public static <T extends /*@Nullable*/ Object> /*@Nullable*/ T filter(
-            T primary, Predicate</*@NonNull*/ ? super /*@NonNull*/ T> predicate) {
+    public static <T> @Nullable T filter(
+            T primary, Predicate<@NonNull ? super @NonNull T> predicate) {
         if (primary == null) {
             return null;
         } else {
@@ -92,9 +88,8 @@ public final class Opt {
      * If primary is null, return null.
      * @see java.util.Optional#map(Function)
      */
-    public static <T extends /*@Nullable*/ Object, U extends /*@Nullable*/ Object>
-            /*@Nullable*/ U map(
-            T primary, Function</*@NonNull*/ ? super /*@NonNull*/ T, ? extends U> mapper) {
+    public static <T, U> @Nullable U map(
+            T primary, Function<@NonNull ? super @NonNull T, ? extends U> mapper) {
         if (primary == null) {
             return null;
         } else {
@@ -109,8 +104,7 @@ public final class Opt {
      * If primary is null, return other.
      * @see java.util.Optional#orElse(Object)
      */
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T orElse(
-            T primary, /*@NonNull*/ T other) {
+    public static <T> @NonNull T orElse(T primary, @NonNull T other) {
         return primary != null ? primary : other;
     }
 
@@ -119,8 +113,7 @@ public final class Opt {
      * If primary is null, invoke {@code other} and return the result of that invocation.
      * @see java.util.Optional#orElseGet(Supplier)
      */
-    public static <T extends /*@Nullable*/ Object> /*@NonNull*/ T orElseGet(
-            T primary, Supplier<? extends /*@NonNull*/ T> other) {
+    public static <T> @NonNull T orElseGet(T primary, Supplier<? extends @NonNull T> other) {
         return primary != null ? primary : other.get();
     }
 
@@ -129,9 +122,8 @@ public final class Opt {
      * If primary is null, return an exception to be created by the provided supplier.
      * @see java.util.Optional#orElseThrow(Supplier)
      */
-    public static <T extends /*@Nullable*/ Object, X extends /*@NonNull*/ Throwable>
-            /*@NonNull*/ T orElseThrow(
-            T primary, Supplier<? extends /*@NonNull*/ X> exceptionSupplier) throws X {
+    public static <T, X extends @NonNull Throwable> @NonNull T orElseThrow(
+            T primary, Supplier<? extends @NonNull X> exceptionSupplier) throws X {
         if (primary != null) {
             return primary;
         } else {
