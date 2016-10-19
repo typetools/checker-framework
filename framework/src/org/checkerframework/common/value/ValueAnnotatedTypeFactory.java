@@ -424,8 +424,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<List<Integer>> summarylengths = new ArrayList<>();
 
             for (ExpressionTree init : initializers) {
-                AnnotatedArrayType subArrayType = (AnnotatedArrayType) getAnnotatedType(init);
-                AnnotatedTypeMirror componentType = subArrayType;
+                AnnotatedTypeMirror componentType = getAnnotatedType(init);
                 int count = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
                     AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
