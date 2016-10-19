@@ -5,6 +5,8 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -75,19 +77,33 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             return result;
         } else if (TreeUtils.isMethodInvocation(node.getTree(), arrayAsList, env)) {
             Node arg = node.getArgument(0);
+            int value = 0;
             if (arg instanceof ArrayCreationNode) {
                 ArrayCreationNode aNode = (ArrayCreationNode) arg;
-                arg = aNode.getInitializer(0);
+                List<Node> args = aNode.getInitializers();
+                // if there is only one argument which is an array that subclasses an object array (so Not primitive component)
+                // then the size of that array is the size of the array.asList
+                // otherwise it is treated as varargs and the resulting list's size is the number of arguments
+                if (args.size() == 1
+                        && args.get(0).getType().getKind().equals(TypeKind.ARRAY)
+                        && !((ArrayType) args.get(0).getType())
+                                .getComponentType()
+                                .getKind()
+                                .isPrimitive()) {
+                    if (args.get(0).getTree() == null) {
+                        return result;
+                    }
+                    AnnotatedTypeMirror ATM = atypeFactory.getAnnotatedType(args.get(0).getTree());
+                    AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
+                    value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
+                } else {
+                    value = args.size();
+                }
             }
-            if (arg.getTree() == null) {
-                return result;
-            }
-            AnnotatedTypeMirror ATM = atypeFactory.getAnnotatedType(arg.getTree());
-            AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
-            int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
-            AnnotationMirror AM = atypeFactory.createMinLen(value + 1);
+            AnnotationMirror AM = atypeFactory.createMinLen(value);
             result.setResultValue(analysis.createSingleAnnotationValue(AM, node.getType()));
         }
+
         return result;
     }
 }
