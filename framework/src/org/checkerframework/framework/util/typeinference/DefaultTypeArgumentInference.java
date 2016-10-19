@@ -106,15 +106,28 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs =
                 infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
 
-        handleUninferredTypeVariables(methodType, targets, inferredArgs);
-
         handleNullTypeArguments(
                 typeFactory, methodElem, methodType, argTypes, assignedTo, targets, inferredArgs);
+
+        handleUninferredTypeVariables(methodType, targets, inferredArgs);
 
         return inferredArgs;
     }
 
-    protected void handleNullTypeArguments(
+    /**
+     * If one of the inferredArgs are NullType, then re-run inference ignoring null method
+     * arguments. Then lub the result of the second inference with the NullType and put the new
+     * result back into inferredArgs.
+     *
+     * @param typeFactory type factory
+     * @param methodElem element of the method
+     * @param methodType annotated type of the method
+     * @param argTypes annotated types of arguments to the method
+     * @param assignedTo annotated type to which the result of the method invocation is assigned
+     * @param targets set of type variables to infer
+     * @param inferredArgs map of type variables to the annotated types of their type arguments.
+     */
+    private void handleNullTypeArguments(
             AnnotatedTypeFactory typeFactory,
             ExecutableElement methodElem,
             AnnotatedExecutableType methodType,
@@ -130,7 +143,12 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             TypeVariable typeVar = atv.getUnderlyingType();
             AnnotatedTypeMirror result = inferredArgs.get(typeVar);
-            if (result.getKind() == TypeKind.NULL) {
+            if (result == null) {
+                AnnotatedTypeMirror withoutNullResult = inferredArgsWithOutNull.get(typeVar);
+                if (withoutNullResult != null) {
+                    inferredArgs.put(typeVar, withoutNullResult);
+                }
+            } else if (result.getKind() == TypeKind.NULL) {
                 AnnotatedTypeMirror withoutNullResult = inferredArgsWithOutNull.get(typeVar);
                 if (withoutNullResult == null) {
                     // withoutNullResult is null when the only constraint on a type argument is
@@ -420,6 +438,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * does not involve a type parameter to be inferred.  Reduce the remaining constraints so that Fi = Tj
      * where Tj is a type parameter with an argument to be inferred.
      * Return the resulting constraint set.
+     *
+     * @param typeFactory AnnotatedTypeFactory
+     * @param argTypes list of annotated types corresponding to the arguments to the method
+     * @param methodType annotated type of the method
+     * @param targets type variables to be inferred
+     * @param useNullArguments whether or not null method arguments should be considered
+     * @return a set of argument constraints
      */
     protected Set<AFConstraint> createArgumentAFConstraints(
             final AnnotatedTypeFactory typeFactory,
