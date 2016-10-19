@@ -660,9 +660,9 @@ To run a checker within IntelliJ:
   Add the Checker Framework libraries.  In this same ``Project Structure''
   menu, navigate to the ``Libraries'' sub-menu.  Click on the green ``+'' that
   appears in this menu, select ``Java'' in the resulting pop-down menu,
-  select \<CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
+  select \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
   and click ``OK''. Repeat this step for
-  \<CHECKERFRAMEWORK/checker/dist/javac.jar>.
+  \<\$CHECKERFRAMEWORK/checker/dist/javac.jar>.
 
 \item
   Add the annotated JDK library.
@@ -670,7 +670,7 @@ To run a checker within IntelliJ:
   navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
   Deployment>Compiler>Java Compiler).  Add the following to the field
   ``Additional command line parameters'':
-  \<-Xbootclasspath/p:CHECKERFRAMEWORK/checker/dist/jdk8.jar>
+  \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>
 
 \item
   Create an annotation profile and specify which checkers to run.
@@ -682,7 +682,7 @@ To run a checker within IntelliJ:
 
   Now select your new profile and check the ``Enable annotation processing''
   option. Select the ``Processor path'' radio button and enter
-  \<CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
+  \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
   of it. To add a checker to be run during compilation, click on the green
   ``+'' in the ``Processor FQ Name'' section and write that checker's
   fully-qualified name
@@ -811,11 +811,11 @@ tab.
 \item
 Add \<checker-qual.jar>  to the compile-time libraries. To do so,
 select the ``Compile'' tab, click the ``Add JAR/Folder'' button on the
-right and browse to add \<$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
+right and browse to add \<\$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
 \item
 Add \<checker.jar> to the processor-path libraries. To do so, select
 the ``Processor'' tab, click the ``Add JAR/Folder'' button on
-the right and browse to add \<$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
+the right and browse to add \<\$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
 \item
 Enable annotation processor underlining in the editor. Go to ``Build>Compiling'' and check
 the box ``Enable Annotation Processing,'' and under that, ``Enable Annotation Processing in Editor.''
@@ -867,6 +867,7 @@ In this example, a nullness checker is run:
 %BEGIN LATEX
 \begin{smaller}
 %END LATEX
+\begin{Verbatim}
 	<target depends="-init-ap-cmdline-properties" if="ap.supported.internal" name="-init-macrodef-javac-with-processors">
 			<echo message = "${checkerframework}"/>
 			<macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
@@ -913,12 +914,14 @@ In this example, a nullness checker is run:
 		</target>
 	  <target name="-post-jar">
 	</target>
+\end{Verbatim}
 %BEGIN LATEX
 \end{smaller}
 %END LATEX
 
-When Build and Clean Project is used, the output of the checker will now appear
-in the build console. However, annotation processor output will not appear in the editor.
+When Build and Clean Project is used, the output of the checker will
+now appear in the build console. However, annotation processor output
+will not appear in the editor.
 
 \end{enumerate}
 
