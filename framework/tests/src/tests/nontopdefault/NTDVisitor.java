@@ -12,7 +12,8 @@ public class NTDVisitor extends BaseTypeVisitor<NTDAnnotatedTypeFactory> {
         super(checker);
     }
 
-    // Allow references to be declared using any NTD type except NTDBottom.
+    // Because classes and interfaces are by default NTDMiddle, an override is defined here which
+    // allows references to be declared using any NDT type except NTDBottom.
     @Override
     public boolean isValidUse(
             AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {

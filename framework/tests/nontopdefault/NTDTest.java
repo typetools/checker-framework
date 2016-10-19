@@ -3,10 +3,6 @@
 
 import tests.nontopdefault.qual.*;
 
-// Because classes and interfaces are by default NTDMiddle, a single override is defined in the
-// Visitor which allows references of NTDMiddle class to be declared. The problem here exists even
-// if the override is removed.
-
 // Problem: @DefaultFor TypeUseLocation.RECEIVER is not applied to inner class constructor
 // receivers. The inner class constructor receivers currently take on the default qualifier of
 // the hierarchy. All other methods take on the default qualifier set by TypeUseLocation.RECEIVER.
