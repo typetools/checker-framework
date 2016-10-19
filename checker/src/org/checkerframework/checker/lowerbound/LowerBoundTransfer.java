@@ -1,5 +1,6 @@
 package org.checkerframework.checker.lowerbound;
 
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
 import org.checkerframework.checker.lowerbound.qual.LowerBoundUnknown;
@@ -22,6 +23,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  *  Implements the refinement rules described in lowerbound_rules.txt.
@@ -134,7 +136,7 @@ public class LowerBoundTransfer extends CFTransfer {
      */
     private class RefinementInfo {
         public Node left, right;
-        public AnnotatedTypeMirror leftType, rightType;
+        public Set<AnnotationMirror> leftType, rightType;
         public CFStore thenStore, elseStore;
         public ConditionalTransferResult<CFValue, CFStore> newResult;
 
@@ -143,21 +145,24 @@ public class LowerBoundTransfer extends CFTransfer {
             right = r;
             left = l;
 
-	    if (analysis.getValue(right) == null || analysis.getValue(left) == null) {
-		leftType = null;
-		rightType = null;
-		newResult = new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-	    } else {
-		
-		rightType = analysis.getValue(right).getType();
-		leftType = analysis.getValue(left).getType();
+            if (analysis.getValue(right) == null || analysis.getValue(left) == null) {
+                leftType = null;
+                rightType = null;
+                newResult =
+                        new ConditionalTransferResult<>(
+                                result.getResultValue(), thenStore, elseStore);
+            } else {
 
-		thenStore = result.getRegularStore();
-		elseStore = thenStore.copy();
+                rightType = analysis.getValue(right).getAnnotations();
+                leftType = analysis.getValue(left).getAnnotations();
 
-		newResult =
-                    new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
-	    }
+                thenStore = result.getRegularStore();
+                elseStore = thenStore.copy();
+
+                newResult =
+                        new ConditionalTransferResult<>(
+                                result.getResultValue(), thenStore, elseStore);
+            }
         }
     }
 
@@ -271,28 +276,29 @@ public class LowerBoundTransfer extends CFTransfer {
      */
     private void refineGT(
             Node left,
-            AnnotatedTypeMirror leftType,
+            Set<AnnotationMirror> leftType,
             Node right,
-            AnnotatedTypeMirror rightType,
+            Set<AnnotationMirror> rightType,
             CFStore store) {
 
-	if (rightType == null || leftType == null) {
-	    return;
-	}
-	
+        if (rightType == null || leftType == null) {
+            return;
+        }
+
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
         /* We don't want to overwrite a more precise type, so we don't modify
          * the left's type if it's already known to be positive.
          */
-        if (rightType.hasAnnotation(GTEN1) && !leftType.hasAnnotation(POS)) {
+        if (AnnotationUtils.containsSame(rightType, GTEN1)
+                && !AnnotationUtils.containsSame(leftType, POS)) {
             store.insertValue(leftRec, NN);
             return;
         }
-        if (rightType.hasAnnotation(NN)) {
+        if (AnnotationUtils.containsSame(rightType, NN)) {
             store.insertValue(leftRec, POS);
             return;
         }
-        if (rightType.hasAnnotation(POS)) {
+        if (AnnotationUtils.containsSame(rightType, POS)) {
             store.insertValue(leftRec, POS);
             return;
         }
@@ -306,34 +312,34 @@ public class LowerBoundTransfer extends CFTransfer {
      */
     private void refineGTE(
             Node left,
-            AnnotatedTypeMirror leftType,
+            Set<AnnotationMirror> leftType,
             Node right,
-            AnnotatedTypeMirror rightType,
+            Set<AnnotationMirror> rightType,
             CFStore store) {
-	if (rightType == null || leftType == null) {
-	    return;
-	}
-	
+        if (rightType == null || leftType == null) {
+            return;
+        }
+
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
         /* We are effectively calling GLB(right, left) here, but we're
          * doing it manually because of the need to modify things
          * directly.
          */
-        if (rightType.hasAnnotation(POS)) {
+        if (AnnotationUtils.containsSame(rightType, POS)) {
             store.insertValue(leftRec, POS);
             return;
         }
-        if (leftType.hasAnnotation(POS)) {
+        if (AnnotationUtils.containsSame(leftType, POS)) {
             return;
         }
-        if (rightType.hasAnnotation(NN)) {
+        if (AnnotationUtils.containsSame(rightType, NN)) {
             store.insertValue(leftRec, NN);
             return;
         }
-        if (leftType.hasAnnotation(NN)) {
+        if (AnnotationUtils.containsSame(leftType, NN)) {
             return;
         }
-        if (rightType.hasAnnotation(GTEN1)) {
+        if (AnnotationUtils.containsSame(rightType, GTEN1)) {
             store.insertValue(leftRec, GTEN1);
             return;
         }

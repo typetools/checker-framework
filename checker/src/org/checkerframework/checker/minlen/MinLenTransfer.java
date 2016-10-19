@@ -30,4 +30,32 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         this.env = MinLenAnnotatedTypeFactory.env;
         this.listAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
     }
+    /*
+       private void refineGT(
+    		  Node left,
+    		  AnnotatedTypeMirror leftType,
+    		  Node right,
+    		  AnnotatedTypeMirror rightType,
+    		  MinLenStore store) {
+    FieldAccessNode fi = null;
+    // We only care about length. This will miss an expression which
+    // include an array length (like "a.length + 1"), but that's okay
+    // for now.
+    // FIXME: Joe: List support will be needed here too.
+    if (left instanceof FieldAccessNode) {
+        fi = (FieldAccessNode)left;
+    } else if (right instanceof FieldAccessNode) {
+        fi = (FieldAccessNode)right;
+    } else {
+        return null;
+    }
+    if (fi.getFieldName().equals("length")
+                   && fi.getReceiver().getType().getKind() == TypeKind.ARRAY) {
+        // At this point, MinLen needs to invoke the constant value checker
+        // to find out if it knows anything about what the length is being
+        // compared to. If so, we can do something.
+        return;
+    }
+    }*/
+
 }
