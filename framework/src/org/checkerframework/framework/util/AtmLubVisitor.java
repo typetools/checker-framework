@@ -74,7 +74,6 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
      * @param nullType  type to lub
      * @param otherType other type to lub
      * @param lub       type of lub
-     * @return the lub of {@code nullType} and {@code otherType}
      */
     private void lubWithNull(
             AnnotatedNullType nullType, AnnotatedTypeMirror otherType, AnnotatedTypeMirror lub) {
