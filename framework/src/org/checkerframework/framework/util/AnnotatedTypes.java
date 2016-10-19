@@ -648,7 +648,7 @@ public class AnnotatedTypes {
             AnnotatedTypeMirror type1,
             AnnotatedTypeMirror type2,
             TypeMirror lubTypeMirror) {
-        return new LubVisitor(atypeFactory).lub(type1, type2, lubTypeMirror);
+        return new AtmLubVisitor(atypeFactory).lub(type1, type2, lubTypeMirror);
     }
 
     /**
