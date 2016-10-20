@@ -37,6 +37,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.Pair;
 
 /**
  * This class stores annotations for fields, method return types, and method
@@ -58,10 +59,10 @@ import org.checkerframework.javacutil.ErrorReporter;
 public class WholeProgramInferenceScenesHelper {
 
     /**
-     * Maps a TypeUseLocation to a set of names of annotations that should
-     * not be added to .jaif files for that location.
+     * Maps the content of an ATypeElement and its TypeUseLocation to a set of
+     * names of annotations that should not be added to .jaif files for that location.
      */
-    private final Map<TypeUseLocation, Set<String>> annosToIgnore = new HashMap<>();
+    private final Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore = new HashMap<>();
 
     /**
      * Directory where .jaif files will be written to and read from.
@@ -248,13 +249,13 @@ public class WholeProgramInferenceScenesHelper {
      */
     private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
         Set<Annotation> annosToRemove = new HashSet<>();
-        Set<String> annosToIgnoreForLocation = annosToIgnore.get(loc);
+        Set<String> annosToIgnoreForLocation = annosToIgnore.get(Pair.of(typeEl.toString(), loc));
         if (annosToIgnoreForLocation == null) {
             // No annotations to ignore for that position.
             return;
         }
         for (Annotation anno : typeEl.tlAnnotationsHere) {
-            if (annosToIgnoreForLocation.contains(anno.def().name)) {
+            if (annosToIgnoreForLocation.contains(anno.def().toString())) {
                 annosToRemove.add(anno);
             }
         }
@@ -383,11 +384,11 @@ public class WholeProgramInferenceScenesHelper {
         ImplicitFor implicitFor = elt.getAnnotation(ImplicitFor.class);
         if (implicitFor != null) {
             TypeKind[] types = implicitFor.types();
+            TypeKind atmKind = atm.getUnderlyingType().getKind();
             for (TypeKind tk : types) {
-                if (tk == atm.getKind()) {
-                    return true;
-                }
+                if (tk == atmKind) return true;
             }
+            // TODO: Handle implicitFor.literals()
 
             try {
                 Class<?>[] names = implicitFor.typeNames();
@@ -509,18 +510,7 @@ public class WholeProgramInferenceScenesHelper {
         // Only update the ATypeElement if there are no explicit annotations
         if (curATM.getExplicitAnnotations().size() == 0) {
             for (AnnotationMirror am : newATM.getAnnotations()) {
-                Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
-                if (anno != null) {
-                    if (shouldIgnore(am, defLoc, atf, newATM)) {
-                        Set<String> annosIgnored = annosToIgnore.get(defLoc);
-                        if (annosIgnored == null) {
-                            annosIgnored = new HashSet<>();
-                            annosToIgnore.put(defLoc, annosIgnored);
-                        }
-                        annosIgnored.add(anno.def().name);
-                    }
-                    typeToUpdate.tlAnnotationsHere.add(anno);
-                }
+                addAnnotationsToATypeElement(newATM, atf, typeToUpdate, defLoc, am);
             }
         } else if (curATM.getKind() == TypeKind.TYPEVAR) {
             // getExplicitAnnotations will be non-empty for type vars whose bounds are explicitly annotated.
@@ -532,18 +522,7 @@ public class WholeProgramInferenceScenesHelper {
                     // in the same hierarchy.
                     break;
                 }
-                Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
-                if (anno != null) {
-                    if (shouldIgnore(am, defLoc, atf, newATM)) {
-                        Set<String> annosIgnored = annosToIgnore.get(defLoc);
-                        if (annosIgnored == null) {
-                            annosIgnored = new HashSet<>();
-                            annosToIgnore.put(defLoc, annosIgnored);
-                        }
-                        annosIgnored.add(anno.def().name);
-                    }
-                    typeToUpdate.tlAnnotationsHere.add(anno);
-                }
+                addAnnotationsToATypeElement(newATM, atf, typeToUpdate, defLoc, am);
             }
         }
 
@@ -561,6 +540,24 @@ public class WholeProgramInferenceScenesHelper {
                                             Collections.nCopies(2 * idx, 0)))),
                     idx + 1,
                     defLoc);
+        }
+    }
+
+    private void addAnnotationsToATypeElement(AnnotatedTypeMirror newATM, AnnotatedTypeFactory atf,
+            ATypeElement typeToUpdate, TypeUseLocation defLoc,
+            AnnotationMirror am) {
+        Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
+        if (anno != null) {
+            typeToUpdate.tlAnnotationsHere.add(anno);
+            if (shouldIgnore(am, defLoc, atf, newATM)) {
+                Pair<String, TypeUseLocation> key = Pair.of(typeToUpdate.toString(), defLoc);
+                Set<String> annosIgnored = annosToIgnore.get(key);
+                if (annosIgnored == null) {
+                    annosIgnored = new HashSet<>();
+                    annosToIgnore.put(key, annosIgnored);
+                }
+                annosIgnored.add(anno.def().toString());
+            }
         }
     }
 }
