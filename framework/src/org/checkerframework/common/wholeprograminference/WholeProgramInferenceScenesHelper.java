@@ -543,8 +543,11 @@ public class WholeProgramInferenceScenesHelper {
         }
     }
 
-    private void addAnnotationsToATypeElement(AnnotatedTypeMirror newATM, AnnotatedTypeFactory atf,
-            ATypeElement typeToUpdate, TypeUseLocation defLoc,
+    private void addAnnotationsToATypeElement(
+            AnnotatedTypeMirror newATM,
+            AnnotatedTypeFactory atf,
+            ATypeElement typeToUpdate,
+            TypeUseLocation defLoc,
             AnnotationMirror am) {
         Annotation anno = AnnotationConverter.annotationMirrorToAnnotation(am);
         if (anno != null) {
