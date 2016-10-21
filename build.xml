@@ -232,15 +232,14 @@
   <!-- <property name="run-gjf-website-dir" value="http://homes.cs.washington.edu/~mernst"/> -->
   <property name="run-gjf-website-dir" value="https://raw.githubusercontent.com/mernst/plume-lib/master/bin"/>
 
-  <!--  Used as the value to maxparallel for Ant task that used it.
-        Limits the number of source files passed.  -1 means unlimited.
-        If "Argument list too long" is issued, set this property in local.properties
-        to some postive value.  Start with 4096, and try smaller numbers
-        until the "Argument list too long" error disappears.  (We don't
-        always set maxparallel to, say, 1000 because setting maxparallel
-        slows down formatting.)
-   -->
-  <property name="maxparallel" value="-1"/>
+  <condition property="isMac">
+    <os family="mac" />
+  </condition>
+  <!-- Avoids "Argument list too long" message.  You can also set
+       this property in file local.properties. -->
+  <condition property="maxparallel" value="1000" else="-1">
+    <isset property="isMac"/>
+  </condition>
   <target name="reformat"
           description="Reformat Java code">
     <get src="${run-gjf-website-dir}/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" maxtime="60"/>
