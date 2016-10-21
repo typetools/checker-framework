@@ -492,6 +492,13 @@
         </antcall>
     </target>
 
+    <target name="nontopdefault-tests" depends="jar,build-tests"
+            description="Run tests for the NonTopDefault Checker ">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NonTopDefaultTest"/>
+        </antcall>
+    </target>
+
     <target name="reflection-tests" depends="jar,build-tests"
             description="Run tests for reflection resolution">
         <antcall target="-run-tests">

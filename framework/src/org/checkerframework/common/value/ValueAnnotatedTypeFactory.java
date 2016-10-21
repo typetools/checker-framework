@@ -445,7 +445,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotatedTypeMirror componentType = type.getComponentType();
             int i = 0;
-            while (componentType.getKind() == TypeKind.ARRAY) {
+            while (componentType.getKind() == TypeKind.ARRAY && i < summarylengths.size()) {
                 componentType.addAnnotation(createArrayLenAnnotation(summarylengths.get(i)));
                 componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 i++;
