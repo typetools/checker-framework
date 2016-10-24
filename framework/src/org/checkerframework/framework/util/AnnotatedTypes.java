@@ -283,11 +283,6 @@ public class AnnotatedTypes {
             case UNION:
             case DECLARED:
                 return substituteTypeVariables(types, atypeFactory, of, member, memberType);
-            case NULL:
-                // For example:
-                // <T> T foo(T p) {}
-                // foo(null).toString();
-                return memberType;
             default:
                 ErrorReporter.errorAbort("asMemberOf called on unexpected type.\nt: " + of);
                 return memberType; // dead code
