@@ -22,6 +22,7 @@
 
     <property environment="env"/>
 
+    <!-- Whether or not java8 sources should be compiled even though jdk7orlower is used.-->
     <condition property="should-force-compile-java8">
         <and>
             <istrue value="${jdk7orlower}"/>
