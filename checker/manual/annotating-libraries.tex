@@ -31,7 +31,7 @@ analyzes code that is not being compiled, though it does look up
 annotations in the class files for code that was previously compiled.)
 
 
-\section{Using annotated libraries from the Checker Framework distribution\label{annotated-libraries-using}}
+\subsection{Using annotated libraries from the Checker Framework distribution\label{annotated-libraries-using}}
 
 The Checker Framework distribution contains annotated versions of popular
 libraries in directory \<checker-framework/checker/lib/>.
@@ -133,6 +133,57 @@ when getting started, but you should always examine their results.
 % automatically by running an inference tool, or manually by reading the
 % documentation.  Presently, automated type inference tools are available for the
 % Nullness (Section~\ref{nullness-inference}) type system.
+
+
+\subsection{Annotating the JDK when developing from the Checker Framework source\label{annotating-jdk}}
+\begin{enumerate}
+\item
+Get Java 7 Source code (Must be version 7)
+\begin{enumerate}
+\item Download JDK7 from oracle
+\item Open the downloaded tar (tar -xvzf)
+\item Unzip the contatined src.zip (resulting in folders: com, java, javax, launcher, org)
+\end{enumerate}
+
+\item
+Set Up Checker Framework (replace [mychecker] with the name of your checker)
+\begin{enumerate}
+\item Add a folder \<\$>JSR308/checker-framework/checker/jdk/[mychecker]
+
+
+\item In  \<\$>JSR308/checker-framework/checker/jdk/[mychecker] add a symbolic link to   \newline
+\<\$>JSR308/checker-framework/checker/jdk/MakeFile (like the ones in lock and nullness)
+
+
+\item Add(in 2 places) [mychecker] to \<\$>JSR308/checker-framework/checker/jdk/MakeFile
+
+Line: ''CHECKER\<\_>DIRS = nullness lock'' etc \newline
+	Becomes: ''CHECKER\<\_>DIRS = nullness lock [mychecker]'' etc \newline
+
+
+Line: ANNOTATED\<\_>CLASSES = \ \newline
+	\<\$>(patsubst nullness/build/\<\%>.class,annotated/\<\%>.class, \ \newline
+      \<\$>(patsubst lock/build/\<\%>.class,annotated/\<\%>.class, \ \newline
+          \<\$>(ANNOTATED\<\_>CLASSES\<\_>BY\<\_>DIR))) \newline \newline
+	Becomes:ANNOTATED\<\_>CLASSES = \ \newline
+	\<\$>(patsubst nullness/build/\<\%>.class,annotated/\<\%>.class, \ \newline
+     \<\$>(patsubst lock/build/\<\%>.class,annotated/\<\%>.class, \ \newline
+     \<\$>(patsubst [mychecker]/build/\<\%>.class,annotated/\<\%>.class, \ \newline
+        \<\$>(ANNOTATED\<\_>CLASSES\<\_>BY\<\_>DIR))))\newline \newline
+Don't forget to add another closing paren!
+\end{enumerate}
+
+\item
+Add your Annotated Files \newline
+	As you add annotations to the jdk copy annotated files into the folder \<\$>JSR308/checker-framework/checker/jdk/[mychecker]/src
+	In an identical directory structure as the jdk, look in nullness for an example \newline
+	
+	\textbf{Always fully annotated every class you add!}
+
+\item
+Build the checker \newline
+	Run ant in the \<\$>JSR308/checker-framework/checker to apply your new annotated jdk.
+\end{enumerate}
 
 
 \section{Compiling partially-annotated libraries\label{compiling-libraries}}
