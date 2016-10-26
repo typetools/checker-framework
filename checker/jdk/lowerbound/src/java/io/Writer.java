@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 1996, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1996, 2005, Oracle and/or its affiliates. All rights reserved.
  * ORACLE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  *
  *
@@ -58,7 +58,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable {
     /**
      * Size of writeBuffer, must be >= 1
      */
-    private static final int WRITE_BUFFER_SIZE = 1024;
+    private final int writeBufferSize = 1024;
 
     /**
      * The object used to synchronize operations on this stream.  For
@@ -108,7 +108,7 @@ public abstract class Writer implements Appendable, Closeable, Flushable {
     public void write(@NonNegative int c) throws IOException {
         synchronized (lock) {
             if (writeBuffer == null){
-                writeBuffer = new char[WRITE_BUFFER_SIZE];
+                writeBuffer = new char[writeBufferSize];
             }
             writeBuffer[0] = (char) c;
             write(writeBuffer, 0, 1);
@@ -181,9 +181,9 @@ public abstract class Writer implements Appendable, Closeable, Flushable {
     public void write(String str, @NonNegative int off, @NonNegative int len) throws IOException {
         synchronized (lock) {
             char cbuf[];
-            if (len <= WRITE_BUFFER_SIZE) {
+            if (len <= writeBufferSize) {
                 if (writeBuffer == null) {
-                    writeBuffer = new char[WRITE_BUFFER_SIZE];
+                    writeBuffer = new char[writeBufferSize];
                 }
                 cbuf = writeBuffer;
             } else {    // Don't permanently allocate very large buffers.
