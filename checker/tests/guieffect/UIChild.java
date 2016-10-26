@@ -28,11 +28,11 @@ public class UIChild extends UIParent {
 
     @UIEffect
     @PolyUIEffect
-    //:: error: (annotations.conflicts)
+    //:: error: (annotations.conflicts) :: error: (polymorphism.invalid)
     public void doubleAnnot2() {}
 
     @PolyUIEffect
     @SafeEffect
-    //:: error: (annotations.conflicts)
+    //:: error: (annotations.conflicts) :: error: (polymorphism.invalid)
     public void doubleAnnot3() {}
 }
