@@ -1238,7 +1238,7 @@ public class Collections {
                 public boolean hasPrevious() {return i.hasPrevious();}
                 public E previous()          {return i.previous();}
                 public @NonNegative int nextIndex()       {return i.nextIndex();}
-                public @GTENegativeOne previousIndex()   {return i.previousIndex();}
+                public @GTENegativeOne int previousIndex()   {return i.previousIndex();}
 
                 public void remove() {
                     throw new UnsupportedOperationException();
@@ -2545,7 +2545,7 @@ public class Collections {
                 public boolean hasPrevious() { return i.hasPrevious(); }
                 public E previous()          { return i.previous(); }
                 public @NonNegative int nextIndex()       { return i.nextIndex(); }
-                public @GTENegativeOne previousIndex()   { return i.previousIndex(); }
+                public @GTENegativeOne int previousIndex()   { return i.previousIndex(); }
                 public void remove()         {        i.remove(); }
 
                 public void set(E e) {
@@ -3057,7 +3057,7 @@ public class Collections {
         public boolean hasPrevious() { return false; }
         public E previous() { throw new NoSuchElementException(); }
         public @NonNegative int nextIndex()     { return 0; }
-        public @GTENegativeOne previousIndex() { return -1; }
+        public @GTENegativeOne int previousIndex() { return -1; }
         public void set(E e) { throw new IllegalStateException(); }
         public void add(E e) { throw new UnsupportedOperationException(); }
     }
