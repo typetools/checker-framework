@@ -99,7 +99,7 @@ public class Collections {
     private static final int ROTATE_THRESHOLD         =  100;
     private static final int COPY_THRESHOLD           =   10;
     private static final int REPLACEALL_THRESHOLD     =   11;
-    private static final @GTENegativeOne int indexOfSUBLIST_THRESHOLD =   35;
+    private static final int INDEXOFSUBLIST_THRESHOLD =   35;
 
     /**
      * Sorts the specified list into ascending order, according to the
