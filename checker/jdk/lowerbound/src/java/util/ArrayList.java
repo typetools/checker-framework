@@ -25,11 +25,8 @@
 
 package java.util;
 
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
-
 import org.checkerframework.checker.lowerbound.qual.*;
+
 
 /**
  * Resizable-array implementation of the <tt>List</tt> interface.  Implements
@@ -72,9 +69,9 @@ import org.checkerframework.checker.lowerbound.qual.*;
  * unsynchronized access to the list:<pre>
  *   List list = Collections.synchronizedList(new ArrayList(...));</pre>
  *
- * <p><a name="fail-fast">
+ * <p><a name="fail-fast"/>
  * The iterators returned by this class's {@link #iterator() iterator} and
- * {@link #listIterator(int) listIterator} methods are <em>fail-fast</em>:</a>
+ * {@link #listIterator(int) listIterator} methods are <em>fail-fast</em>:
  * if the list is structurally modified at any time after the iterator is
  * created, in any way except through the iterator's own
  * {@link ListIterator#remove() remove} or
@@ -108,7 +105,7 @@ import org.checkerframework.checker.lowerbound.qual.*;
 public class ArrayList<E> extends AbstractList<E>
         implements List<E>, RandomAccess, Cloneable, java.io.Serializable
 {
-    private static final @Positive long serialVersionUID = 8683452581122892189L;
+    private static final long serialVersionUID = 8683452581122892189L;
 
     /**
      * Default initial capacity.
@@ -121,19 +118,12 @@ public class ArrayList<E> extends AbstractList<E>
     private static final Object[] EMPTY_ELEMENTDATA = {};
 
     /**
-     * Shared empty array instance used for default sized empty instances. We
-     * distinguish this from EMPTY_ELEMENTDATA to know how much to inflate when
-     * first element is added.
-     */
-    private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
-
-    /**
      * The array buffer into which the elements of the ArrayList are stored.
      * The capacity of the ArrayList is the length of this array buffer. Any
-     * empty ArrayList with elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA
-     * will be expanded to DEFAULT_CAPACITY when the first element is added.
+     * empty ArrayList with elementData == EMPTY_ELEMENTDATA will be expanded to
+     * DEFAULT_CAPACITY when the first element is added.
      */
-    transient Object[] elementData; // non-private to simplify nested class access
+    private transient Object[] elementData;
 
     /**
      * The size of the ArrayList (the number of elements it contains).
@@ -150,21 +140,19 @@ public class ArrayList<E> extends AbstractList<E>
      *         is negative
      */
     public ArrayList(@NonNegative int initialCapacity) {
-        if (initialCapacity > 0) {
-            this.elementData = new Object[initialCapacity];
-        } else if (initialCapacity == 0) {
-            this.elementData = EMPTY_ELEMENTDATA;
-        } else {
+        super();
+        if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal Capacity: "+
                                                initialCapacity);
-        }
+        this.elementData = new Object[initialCapacity];
     }
 
     /**
      * Constructs an empty list with an initial capacity of ten.
      */
     public ArrayList() {
-        this.elementData = DEFAULTCAPACITY_EMPTY_ELEMENTDATA;
+        super();
+        this.elementData = EMPTY_ELEMENTDATA;
     }
 
     /**
@@ -177,14 +165,10 @@ public class ArrayList<E> extends AbstractList<E>
      */
     public ArrayList(Collection<? extends E> c) {
         elementData = c.toArray();
-        if ((size = elementData.length) != 0) {
-            // c.toArray might (incorrectly) not return Object[] (see 6260652)
-            if (elementData.getClass() != Object[].class)
-                elementData = Arrays.copyOf(elementData, size, Object[].class);
-        } else {
-            // replace with empty array.
-            this.elementData = EMPTY_ELEMENTDATA;
-        }
+        size = elementData.length;
+        // c.toArray might (incorrectly) not return Object[] (see 6260652)
+        if (elementData.getClass() != Object[].class)
+            elementData = Arrays.copyOf(elementData, size, Object[].class);
     }
 
     /**
@@ -195,9 +179,7 @@ public class ArrayList<E> extends AbstractList<E>
     public void trimToSize() {
         modCount++;
         if (size < elementData.length) {
-            elementData = (size == 0)
-              ? EMPTY_ELEMENTDATA
-              : Arrays.copyOf(elementData, size);
+            elementData = Arrays.copyOf(elementData, size);
         }
     }
 
@@ -209,11 +191,11 @@ public class ArrayList<E> extends AbstractList<E>
      * @param   minCapacity   the desired minimum capacity
      */
     public void ensureCapacity(int minCapacity) {
-        int minExpand = (elementData != DEFAULTCAPACITY_EMPTY_ELEMENTDATA)
-            // any size if not default element table
+        int minExpand = (elementData != EMPTY_ELEMENTDATA)
+            // any size if real element table
             ? 0
-            // larger than default for default empty table. It's already
-            // supposed to be at default size.
+            // larger than default for empty table. It's already supposed to be
+            // at default size.
             : DEFAULT_CAPACITY;
 
         if (minCapacity > minExpand) {
@@ -222,7 +204,7 @@ public class ArrayList<E> extends AbstractList<E>
     }
 
     private void ensureCapacityInternal(int minCapacity) {
-        if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
+        if (elementData == EMPTY_ELEMENTDATA) {
             minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
         }
 
@@ -350,13 +332,14 @@ public class ArrayList<E> extends AbstractList<E>
      */
     public Object clone() {
         try {
-            ArrayList<?> v = (ArrayList<?>) super.clone();
+            @SuppressWarnings("unchecked")
+                ArrayList<E> v = (ArrayList<E>) super.clone();
             v.elementData = Arrays.copyOf(elementData, size);
             v.modCount = 0;
             return v;
         } catch (CloneNotSupportedException e) {
             // this shouldn't happen, since we are Cloneable
-            throw new InternalError(e);
+            throw new InternalError();
         }
     }
 
@@ -650,7 +633,7 @@ public class ArrayList<E> extends AbstractList<E>
      * negative: It is always used immediately prior to an array access,
      * which throws an ArrayIndexOutOfBoundsException if index is negative.
      */
-    private void rangeCheck(int index) {
+    private void rangeCheck(@NonNegative int index) {
         if (index >= size)
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
@@ -658,7 +641,7 @@ public class ArrayList<E> extends AbstractList<E>
     /**
      * A version of rangeCheck used by add and addAll.
      */
-    private void rangeCheckForAdd(int index) {
+    private void rangeCheckForAdd(@NonNegative int index) {
         if (index > size || index < 0)
             throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
     }
@@ -668,7 +651,7 @@ public class ArrayList<E> extends AbstractList<E>
      * Of the many possible refactorings of the error handling code,
      * this "outlining" performs best with both server and client VMs.
      */
-    private String outOfBoundsMsg(int index) {
+    private String outOfBoundsMsg(@NonNegative int index) {
         return "Index: "+index+", Size: "+size;
     }
 
@@ -688,7 +671,6 @@ public class ArrayList<E> extends AbstractList<E>
      * @see Collection#contains(Object)
      */
     public boolean removeAll(Collection<?> c) {
-        Objects.requireNonNull(c);
         return batchRemove(c, false);
     }
 
@@ -709,7 +691,6 @@ public class ArrayList<E> extends AbstractList<E>
      * @see Collection#contains(Object)
      */
     public boolean retainAll(Collection<?> c) {
-        Objects.requireNonNull(c);
         return batchRemove(c, true);
     }
 
@@ -876,28 +857,6 @@ public class ArrayList<E> extends AbstractList<E>
             }
         }
 
-        @Override
-        @SuppressWarnings("unchecked")
-        public void forEachRemaining(Consumer<? super E> consumer) {
-            Objects.requireNonNull(consumer);
-            final int size = ArrayList.this.size;
-            int i = cursor;
-            if (i >= size) {
-                return;
-            }
-            final Object[] elementData = ArrayList.this.elementData;
-            if (i >= elementData.length) {
-                throw new ConcurrentModificationException();
-            }
-            while (i != size && modCount == expectedModCount) {
-                consumer.accept((E) elementData[i++]);
-            }
-            // update once at end of iteration to reduce heap write traffic
-            cursor = i;
-            lastRet = i - 1;
-            checkForComodification();
-        }
-
         final void checkForComodification() {
             if (modCount != expectedModCount)
                 throw new ConcurrentModificationException();
@@ -908,7 +867,7 @@ public class ArrayList<E> extends AbstractList<E>
      * An optimized version of AbstractList.ListItr
      */
     private class ListItr extends Itr implements ListIterator<E> {
-        ListItr(int index) {
+        ListItr(@NonNegative int index) {
             super();
             cursor = index;
         }
@@ -999,7 +958,7 @@ public class ArrayList<E> extends AbstractList<E>
         return new SubList(this, 0, fromIndex, toIndex);
     }
 
-    static void subListRangeCheck(int fromIndex, int toIndex, int size) {
+    static void subListRangeCheck(@NonNegative int fromIndex, @NonNegative int toIndex, @NonNegative int size) {
         if (fromIndex < 0)
             throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
         if (toIndex > size)
@@ -1016,7 +975,7 @@ public class ArrayList<E> extends AbstractList<E>
         int size;
 
         SubList(AbstractList<E> parent,
-        		@NonNegative int offset, @NonNegative int fromIndex, @NonNegative int toIndex) {
+                @NonNegative int offset, @NonNegative int fromIndex, @NonNegative int toIndex) {
             this.parent = parent;
             this.parentOffset = fromIndex;
             this.offset = offset + fromIndex;
@@ -1133,26 +1092,6 @@ public class ArrayList<E> extends AbstractList<E>
                     return (E) elementData[offset + (lastRet = i)];
                 }
 
-                @SuppressWarnings("unchecked")
-                public void forEachRemaining(Consumer<? super E> consumer) {
-                    Objects.requireNonNull(consumer);
-                    final int size = SubList.this.size;
-                    int i = cursor;
-                    if (i >= size) {
-                        return;
-                    }
-                    final Object[] elementData = ArrayList.this.elementData;
-                    if (offset + i >= elementData.length) {
-                        throw new ConcurrentModificationException();
-                    }
-                    while (i != size && modCount == expectedModCount) {
-                        consumer.accept((E) elementData[offset + (i++)]);
-                    }
-                    // update once at end of iteration to reduce heap write traffic
-                    lastRet = cursor = i;
-                    checkForComodification();
-                }
-
                 public @NonNegative int nextIndex() {
                     return cursor;
                 }
@@ -1214,17 +1153,17 @@ public class ArrayList<E> extends AbstractList<E>
             return new SubList(this, offset, fromIndex, toIndex);
         }
 
-        private void rangeCheck(int index) {
+        private void rangeCheck(@NonNegative int index) {
             if (index < 0 || index >= this.size)
                 throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
         }
 
-        private void rangeCheckForAdd(int index) {
+        private void rangeCheckForAdd(@NonNegative int index) {
             if (index < 0 || index > this.size)
                 throw new IndexOutOfBoundsException(outOfBoundsMsg(index));
         }
 
-        private String outOfBoundsMsg(int index) {
+        private String outOfBoundsMsg(@NonNegative int index) {
             return "Index: "+index+", Size: "+this.size;
         }
 
@@ -1232,231 +1171,5 @@ public class ArrayList<E> extends AbstractList<E>
             if (ArrayList.this.modCount != this.modCount)
                 throw new ConcurrentModificationException();
         }
-
-        public Spliterator<E> spliterator() {
-            checkForComodification();
-            return new ArrayListSpliterator<E>(ArrayList.this, offset,
-                                               offset + this.size, this.modCount);
-        }
-    }
-
-    @Override
-    public void forEach(Consumer<? super E> action) {
-        Objects.requireNonNull(action);
-        final int expectedModCount = modCount;
-        @SuppressWarnings("unchecked")
-        final E[] elementData = (E[]) this.elementData;
-        final int size = this.size;
-        for (int i=0; modCount == expectedModCount && i < size; i++) {
-            action.accept(elementData[i]);
-        }
-        if (modCount != expectedModCount) {
-            throw new ConcurrentModificationException();
-        }
-    }
-
-    /**
-     * Creates a <em><a href="Spliterator.html#binding">late-binding</a></em>
-     * and <em>fail-fast</em> {@link Spliterator} over the elements in this
-     * list.
-     *
-     * <p>The {@code Spliterator} reports {@link Spliterator#SIZED},
-     * {@link Spliterator#SUBSIZED}, and {@link Spliterator#ORDERED}.
-     * Overriding implementations should document the reporting of additional
-     * characteristic values.
-     *
-     * @return a {@code Spliterator} over the elements in this list
-     * @since 1.8
-     */
-    @Override
-    public Spliterator<E> spliterator() {
-        return new ArrayListSpliterator<>(this, 0, -1, 0);
-    }
-
-    /** Index-based split-by-two, lazily initialized Spliterator */
-    static final class ArrayListSpliterator<E> implements Spliterator<E> {
-
-        /*
-         * If ArrayLists were immutable, or structurally immutable (no
-         * adds, removes, etc), we could implement their spliterators
-         * with Arrays.spliterator. Instead we detect as much
-         * interference during traversal as practical without
-         * sacrificing much performance. We rely primarily on
-         * modCounts. These are not guaranteed to detect concurrency
-         * violations, and are sometimes overly conservative about
-         * within-thread interference, but detect enough problems to
-         * be worthwhile in practice. To carry this out, we (1) lazily
-         * initialize fence and expectedModCount until the latest
-         * point that we need to commit to the state we are checking
-         * against; thus improving precision.  (This doesn't apply to
-         * SubLists, that create spliterators with current non-lazy
-         * values).  (2) We perform only a single
-         * ConcurrentModificationException check at the end of forEach
-         * (the most performance-sensitive method). When using forEach
-         * (as opposed to iterators), we can normally only detect
-         * interference after actions, not before. Further
-         * CME-triggering checks apply to all other possible
-         * violations of assumptions for example null or too-small
-         * elementData array given its size(), that could only have
-         * occurred due to interference.  This allows the inner loop
-         * of forEach to run without any further checks, and
-         * simplifies lambda-resolution. While this does entail a
-         * number of checks, note that in the common case of
-         * list.stream().forEach(a), no checks or other computation
-         * occur anywhere other than inside forEach itself.  The other
-         * less-often-used methods cannot take advantage of most of
-         * these streamlinings.
-         */
-
-        private final ArrayList<E> list;
-        private @NonNegative int index; // current index, modified on advance/split
-        private @GTENegativeOne int fence; // -1 until used; then one past last index
-        private int expectedModCount; // initialized when fence set
-
-        /** Create new spliterator covering the given  range */
-        ArrayListSpliterator(ArrayList<E> list, @NonNegative int origin, @NonNegative int fence,
-                             int expectedModCount) {
-            this.list = list; // OK if null unless traversed
-            this.index = origin;
-            this.fence = fence;
-            this.expectedModCount = expectedModCount;
-        }
-
-        private int getFence() { // initialize fence to size on first use
-            int hi; // (a specialized variant appears in method forEach)
-            ArrayList<E> lst;
-            if ((hi = fence) < 0) {
-                if ((lst = list) == null)
-                    hi = fence = 0;
-                else {
-                    expectedModCount = lst.modCount;
-                    hi = fence = lst.size;
-                }
-            }
-            return hi;
-        }
-
-        public ArrayListSpliterator<E> trySplit() {
-            int hi = getFence(), lo = index, mid = (lo + hi) >>> 1;
-            return (lo >= mid) ? null : // divide range in half unless too small
-                new ArrayListSpliterator<E>(list, lo, index = mid,
-                                            expectedModCount);
-        }
-
-        public boolean tryAdvance(Consumer<? super E> action) {
-            if (action == null)
-                throw new NullPointerException();
-            int hi = getFence(), i = index;
-            if (i < hi) {
-                index = i + 1;
-                @SuppressWarnings("unchecked") E e = (E)list.elementData[i];
-                action.accept(e);
-                if (list.modCount != expectedModCount)
-                    throw new ConcurrentModificationException();
-                return true;
-            }
-            return false;
-        }
-
-        public void forEachRemaining(Consumer<? super E> action) {
-            int i, hi, mc; // hoist accesses and checks from loop
-            ArrayList<E> lst; Object[] a;
-            if (action == null)
-                throw new NullPointerException();
-            if ((lst = list) != null && (a = lst.elementData) != null) {
-                if ((hi = fence) < 0) {
-                    mc = lst.modCount;
-                    hi = lst.size;
-                }
-                else
-                    mc = expectedModCount;
-                if ((i = index) >= 0 && (index = hi) <= a.length) {
-                    for (; i < hi; ++i) {
-                        @SuppressWarnings("unchecked") E e = (E) a[i];
-                        action.accept(e);
-                    }
-                    if (lst.modCount == mc)
-                        return;
-                }
-            }
-            throw new ConcurrentModificationException();
-        }
-
-        public long estimateSize() {
-            return (long) (getFence() - index);
-        }
-
-        public int characteristics() {
-            return Spliterator.ORDERED | Spliterator.SIZED | Spliterator.SUBSIZED;
-        }
-    }
-
-    @Override
-    public boolean removeIf(Predicate<? super E> filter) {
-        Objects.requireNonNull(filter);
-        // figure out which elements are to be removed
-        // any exception thrown from the filter predicate at this stage
-        // will leave the collection unmodified
-        int removeCount = 0;
-        final BitSet removeSet = new BitSet(size);
-        final int expectedModCount = modCount;
-        final int size = this.size;
-        for (int i=0; modCount == expectedModCount && i < size; i++) {
-            @SuppressWarnings("unchecked")
-            final E element = (E) elementData[i];
-            if (filter.test(element)) {
-                removeSet.set(i);
-                removeCount++;
-            }
-        }
-        if (modCount != expectedModCount) {
-            throw new ConcurrentModificationException();
-        }
-
-        // shift surviving elements left over the spaces left by removed elements
-        final boolean anyToRemove = removeCount > 0;
-        if (anyToRemove) {
-            final int newSize = size - removeCount;
-            for (int i=0, j=0; (i < size) && (j < newSize); i++, j++) {
-                i = removeSet.nextClearBit(i);
-                elementData[j] = elementData[i];
-            }
-            for (int k=newSize; k < size; k++) {
-                elementData[k] = null;  // Let gc do its work
-            }
-            this.size = newSize;
-            if (modCount != expectedModCount) {
-                throw new ConcurrentModificationException();
-            }
-            modCount++;
-        }
-
-        return anyToRemove;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void replaceAll(UnaryOperator<E> operator) {
-        Objects.requireNonNull(operator);
-        final int expectedModCount = modCount;
-        final int size = this.size;
-        for (int i=0; modCount == expectedModCount && i < size; i++) {
-            elementData[i] = operator.apply((E) elementData[i]);
-        }
-        if (modCount != expectedModCount) {
-            throw new ConcurrentModificationException();
-        }
-        modCount++;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public void sort(Comparator<? super E> c) {
-        final int expectedModCount = modCount;
-        Arrays.sort((E[]) elementData, 0, size, c);
-        if (modCount != expectedModCount) {
-            throw new ConcurrentModificationException();
-        }
-        modCount++;
     }
 }
