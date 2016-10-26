@@ -660,9 +660,9 @@ To run a checker within IntelliJ:
   Add the Checker Framework libraries.  In this same ``Project Structure''
   menu, navigate to the ``Libraries'' sub-menu.  Click on the green ``+'' that
   appears in this menu, select ``Java'' in the resulting pop-down menu,
-  select \<CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
+  select \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
   and click ``OK''. Repeat this step for
-  \<CHECKERFRAMEWORK/checker/dist/javac.jar>.
+  \<\$CHECKERFRAMEWORK/checker/dist/javac.jar>.
 
 \item
   Add the annotated JDK library.
@@ -670,7 +670,7 @@ To run a checker within IntelliJ:
   navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
   Deployment>Compiler>Java Compiler).  Add the following to the field
   ``Additional command line parameters'':
-  \<-Xbootclasspath/p:CHECKERFRAMEWORK/checker/dist/jdk8.jar>
+  \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>
 
 \item
   Create an annotation profile and specify which checkers to run.
@@ -682,7 +682,7 @@ To run a checker within IntelliJ:
 
   Now select your new profile and check the ``Enable annotation processing''
   option. Select the ``Processor path'' radio button and enter
-  \<CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
+  \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
   of it. To add a checker to be run during compilation, click on the green
   ``+'' in the ``Processor FQ Name'' section and write that checker's
   fully-qualified name
@@ -797,25 +797,152 @@ You can download it from \myurl{https://sites.google.com/site/tidejava/}.
 
 \section{NetBeans\label{netbeans}}
 
-To run a checker within NetBeans:
+There are two approaches to running a checker in Netbeans:  via modifying the project properties, or via a custom ant target.
+
+
+\subsection{Adding a checker via the project properties\label{netbeans-project-properties}}
 
 \begin{enumerate}
 \item
-Add the Checker Framework libraries to your project's library. To do so,
-right click on the project in the Projects panel, and select ``Properties'' in the
-drop-down menu. Then, in the ``Project Properties'' window, navigate to the ``Libraries''
-tab and click the ``Add JAR/Folder'' button on the right, browse and select
-\<\$CHECKERFRAMEWORK/checker/dist/checker.jar>.
+  Add the Checker Framework libraries to your project's
+  library. First, right click on the project in the Projects panel,
+  and select ``Properties'' in the drop-down menu. Then, in the
+  ``Project Properties'' window, navigate to the ``Libraries'' tab.
+
 \item
-Enable annotation processor underlining in the editor. Go to ``Build>Compiling'' and check
-the box ``Enable Annotation Processing,'' and under that, ``Enable Annotation Processing in Editor.''
+  Add \<checker-qual.jar> to the compile-time libraries. To do so,
+  select the ``Compile'' tab, click the ``Add JAR/Folder'' button on
+  the right and browse to
+  add \<\$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
+
 \item
-Add the checker to run, by clicking ``Add'' next to the box labeled ``Annotation Processors'' and enter
-the fully qualified name of the checker (for example, \<org.checkerframework.checker.nullness.NullnessChecker>)
-and click ``OK'' to add.
+  Add \<checker.jar> to the processor-path libraries. To do so, select
+  the ``Processor'' tab, click the ``Add JAR/Folder'' button on the
+  right and browse to
+  add \<\$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
+
+\item
+  Enable annotation processor underlining in the editor. Go to
+  ``Build>Compiling'' and check the box ``Enable Annotation
+  Processing,'' and under that, ``Enable Annotation Processing in
+  Editor.''
+
+\item
+  Add the checker to run, by clicking ``Add'' next to the box labeled
+  ``Annotation Processors'' and enter the fully qualified name of the
+  checker (for
+  example, \<org.checkerframework.checker.nullness.NullnessChecker>)
+  and click ``OK'' to add.
 \end{enumerate}
-The selected checker should be run on the project either on a save (if Compile on Save is enabled),
-or when the project is built, and annotation processor output will appear in the editor.
+
+The selected checker should be run on the project either on a save (if
+Compile on Save is enabled), or when the project is built, and
+annotation processor output will appear in the editor.
+
+
+\subsection {Adding a checker via an ant target\label{netbeans-ant-target}}
+
+\begin{enumerate}
+\item
+Set the \code{jsr308javac} property:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <property environment="env"/>
+
+  <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
+
+  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
+  <condition property="cfJavac" value="javac.bat" else="javac">
+      <os family="windows" />
+  </condition>
+
+  <presetdef name="jsr308.javac">
+    <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
+      <!-- JSR-308-related compiler arguments -->
+      <compilerarg value="-version"/>
+      <compilerarg value="-implicit:class"/>
+    </javac>
+  </presetdef>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\item
+Override the \code{-init-macrodef-javac-with-processors} target to
+use \code{jsr308.javac} instead of \code{javac} and to run the checker.
+In this example, a nullness checker is run:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <target depends="-init-ap-cmdline-properties" if="ap.supported.internal"
+        name="-init-macrodef-javac-with-processors">
+    <echo message = "${checkerframework}"/>
+    <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
+        <attribute default="${src.dir}" name="srcdir"/>
+        <attribute default="${build.classes.dir}" name="destdir"/>
+        <attribute default="${javac.classpath}" name="classpath"/>
+        <attribute default="${javac.processorpath}" name="processorpath"/>
+        <attribute default="${build.generated.sources.dir}/ap-source-output" name="apgeneratedsrcdir"/>
+        <attribute default="${includes}" name="includes"/>
+        <attribute default="${excludes}" name="excludes"/>
+        <attribute default="${javac.debug}" name="debug"/>
+        <attribute default="${empty.dir}" name="sourcepath"/>
+        <attribute default="${empty.dir}" name="gensrcdir"/>
+        <element name="customize" optional="true"/>
+        <sequential>
+            <property location="${build.dir}/empty" name="empty.dir"/>
+            <mkdir dir="${empty.dir}"/>
+            <mkdir dir="@{apgeneratedsrcdir}"/>
+            <jsr308.javac debug="@{debug}" deprecation="${javac.deprecation}"
+                    destdir="@{destdir}" encoding="${source.encoding}"
+                    excludes="@{excludes}" fork="${javac.fork}"
+                    includeantruntime="false" includes="@{includes}"
+                    source="${javac.source}" sourcepath="@{sourcepath}"
+                    srcdir="@{srcdir}" target="${javac.target}"
+                    tempdir="${java.io.tmpdir}">
+		<src>
+                    <dirset dir="@{gensrcdir}" erroronmissingdir="false">
+                        <include name="*"/>
+                    </dirset>
+                </src>
+                <classpath>
+                    <path path="@{classpath}"/>
+                </classpath>
+                <compilerarg line="${endorsed.classpath.cmd.line.arg}"/>
+                <compilerarg line="${javac.profile.cmd.line.arg}"/>
+                <compilerarg line="${javac.compilerargs}"/>
+                <compilerarg value="-processorpath"/>
+                <compilerarg path="@{processorpath}:${empty.dir}"/>
+                <compilerarg line="${ap.processors.internal}"/>
+                <compilerarg line="${annotation.processing.processor.options}"/>
+                <compilerarg value="-s"/>
+                <compilerarg path="@{apgeneratedsrcdir}"/>
+                <compilerarg line="${ap.proc.none.internal}"/>
+                <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
+                <compilerarg line="-Xmaxerrs 10000"/>
+                <customize/>
+            </jsr308.javac>
+        </sequential>
+    </macrodef>
+  </target>
+  <target name="-post-jar">
+  </target>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+When Build and Clean Project is used, the output of the checker will
+now appear in the build console. However, annotation processor output
+will not appear in the editor.
+
+\end{enumerate}
 
 
 \section{Type inference tools\label{type-inference-varieties}}
