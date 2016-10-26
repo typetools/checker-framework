@@ -118,7 +118,7 @@ public interface List<E> extends Collection<E> {
      *
      * @return the number of elements in this list
      */
-    @NonNegatvie int size();
+    @NonNegative int size();
 
     /**
      * Returns <tt>true</tt> if this list contains no elements.
@@ -332,7 +332,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt; size()</tt>)
      */
-    boolean addAll(@NonNegatvie int index, Collection<? extends E> c);
+    boolean addAll(@NonNegative int index, Collection<? extends E> c);
 
     /**
      * Removes from this list all of its elements that are contained in the
@@ -434,7 +434,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E get(@NonNegatvie int index);
+    E get(@NonNegative int index);
 
     /**
      * Replaces the element at the specified position in this list with the
@@ -454,7 +454,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E set(@NonNegatvie int index, E element);
+    E set(@NonNegative int index, E element);
 
     /**
      * Inserts the specified element at the specified position in this list
@@ -475,7 +475,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt; size()</tt>)
      */
-    void add(@NonNegatvie int index, E element);
+    void add(@NonNegative int index, E element);
 
     /**
      * Removes the element at the specified position in this list (optional
@@ -490,7 +490,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
      */
-    E remove(@NonNegatvie int index);
+    E remove(@NonNegative int index);
 
 
     // Search Operations
@@ -560,7 +560,7 @@ public interface List<E> extends Collection<E> {
      * @throws IndexOutOfBoundsException if the index is out of range
      *         ({@code index < 0 || index > size()})
      */
-    ListIterator<E> listIterator(@NonNegatvie int index);
+    ListIterator<E> listIterator(@NonNegative int index);
 
     // View
 
@@ -598,5 +598,5 @@ public interface List<E> extends Collection<E> {
      *         (<tt>fromIndex &lt; 0 || toIndex &gt; size ||
      *         fromIndex &gt; toIndex</tt>)
      */
-    List<E> subList(@NonNegatvie int fromIndex, @NonNegatvie int toIndex);
+    List<E> subList(@NonNegative int fromIndex, @NonNegative int toIndex);
 }
