@@ -1346,7 +1346,7 @@ public class Collections {
                 public boolean hasPrevious() {return i.hasPrevious();}
                 public E previous()          {return i.previous();}
                 public @NonNegative int nextIndex()       {return i.nextIndex();}
-                public @GTENegativeOne previousIndex()   {return i.previousIndex();}
+                public @GTENegativeOne int previousIndex()   {return i.previousIndex();}
 
                 public void remove() {
                     throw new UnsupportedOperationException();
