@@ -34,7 +34,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
     private final AnnotatedTypeFactory atypeFactory;
     private final QualifierHierarchy qualifierHierarchy;
-    private VisitHistory visitHistory = new VisitHistory();
+    private final VisitHistory visitHistory = new VisitHistory();
 
     AtmLubVisitor(AnnotatedTypeFactory atypeFactory) {
         this.atypeFactory = atypeFactory;
@@ -48,7 +48,6 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
      **/
     AnnotatedTypeMirror lub(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, TypeMirror lubJavaType) {
-        visitHistory = new VisitHistory();
         AnnotatedTypeMirror lub = AnnotatedTypeMirror.createType(lubJavaType, atypeFactory, false);
 
         if (type1.getKind() == TypeKind.NULL) {
@@ -64,6 +63,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         AnnotatedTypeMirror type2AsLub = AnnotatedTypes.asSuper(atypeFactory, type2, lub);
 
         visit(type1AsLub, type2AsLub, lub);
+        visitHistory.clear();
         return lub;
     }
 
