@@ -12,8 +12,5 @@ import org.checkerframework.framework.qual.*;
 @SubtypeOf(MinLen.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-@ImplicitFor(
-    literals = {LiteralKind.NULL},
-    typeNames = {java.lang.Void.class}
-)
+@ImplicitFor(literals = {LiteralKind.NULL})
 public @interface MinLenBottom {}
