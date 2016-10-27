@@ -2,6 +2,11 @@
 
 Version 2.1.5, 1 November 2016
 
+The new class org.checkerframework.checker.nullness.Opt provides every
+method in Java 8's java.util.Optional class, but written for possibly-null
+references rather than for the Optional type.  This can shorten code that
+manipulates possibly-null references.
+
 In bytecode, type variable upper bounds of type Object may or may not have
 been explicitly written.  The Checker Framework now assumes they were not
 written explicitly in source code and defaults them as implicit upper bounds.

@@ -1,5 +1,5 @@
 // Test case for issue #951:
-// https://github.com/typetools/checker-framework/issues/948
+// https://github.com/typetools/checker-framework/issues/951
 
 // @skip-test until the issue is fixed
 
