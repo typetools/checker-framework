@@ -251,7 +251,7 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             }
             Integer currentMinLen =
                     AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
-            if (newMinLen < currentMinLen) {
+            if (newMinLen > currentMinLen) {
                 store.insertValue(rec, atypeFactory.createMinLen(newMinLen));
                 return;
             }
