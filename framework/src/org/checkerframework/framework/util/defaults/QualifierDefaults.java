@@ -199,6 +199,20 @@ public class QualifierDefaults {
     }
 
     /**
+     * Check that a default with TypeUseLocation OTHERWISE or ALL is specified.
+     *
+     * @return whether we found a Default with location OTHERWISE or ALL
+     */
+    public boolean hasDefaultsForCheckedCode() {
+        for (Default def : checkedCodeDefaults) {
+            if (def.location == TypeUseLocation.OTHERWISE || def.location == TypeUseLocation.ALL) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Add standard unchecked defaults that do not conflict with previously added defaults.
      * @param tops AnnotationMirrors that are top
      * @param bottoms AnnotationMirrors that are bottom
