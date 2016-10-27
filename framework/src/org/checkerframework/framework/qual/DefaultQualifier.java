@@ -22,12 +22,12 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  * annotation is explicitly written.
  * (The default is not applied to the "parametric locations":  class
  * declarations, type parameter declarations, and type parameter uses.)
- * If multiple DefaultQualifier annotations are in scope, the innermost one
+ * If multiple {@code DefaultQualifier} annotations are in scope, the innermost one
  * takes precedence.
  * DefaultQualifier takes precedence over {@link DefaultQualifierInHierarchy}.
  * <p>
  *
- * If you wish to write multiple @DefaultQualifier annotations (for
+ * If you wish to write multiple {@code @DefaultQualifier} annotations (for
  * unrelated type systems, or with different {@code locations} fields) at
  * the same location, use {@link DefaultQualifiers}.
  *

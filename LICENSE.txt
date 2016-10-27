@@ -9,7 +9,7 @@ A few parts of the Checker Framework have more permissive licenses.
    Framework that you might want to include with your own program use the
    MIT License.  This is the checker-qual.jar file and all the files that
    appear in it:  every file in a qual/ directory, plus utility files such
-   as NullnessUtils.java, RegexUtil.java, SignednessUtil.java, etc.
+   as NullnessUtil.java, RegexUtil.java, SignednessUtil.java, etc.
    In addition, the cleanroom implementations of third-party annotations,
    which the Checker Framework recognizes as aliases for its own
    annotations, are licensed under the MIT License.

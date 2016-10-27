@@ -3429,7 +3429,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 //   SubConsumer s = ...;
                 //   ConsumeStr stringConsumer = (someCondition) ? s : System.out::println;
                 AnnotatedTypeMirror conditionalType =
-                        AnnotatedTypes.leastUpperBound(processingEnv, this, trueType, falseType);
+                        AnnotatedTypes.leastUpperBound(this, trueType, falseType);
                 assertFunctionalInterface(
                         javacTypes,
                         (Type) conditionalType.getUnderlyingType(),

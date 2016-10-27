@@ -1,4 +1,4 @@
-// See checker/tests/nullness/InferNullType.java for test that verifies correct Nullness Checker errors
+// Version of framework/tests/all-systems/InferNullType.java with expected Nullness Checker warnings
 class InferNullType {
 
     <T extends Object> T toInfer(T input) {
@@ -18,7 +18,7 @@ class InferNullType {
     }
 
     void x() {
-        @SuppressWarnings("nullness:type.argument.type.incompatible")
+        //:: error: (type.argument.type.incompatible)
         Object m = toInfer(null);
         Object m2 = toInfer2(null);
 
@@ -26,11 +26,11 @@ class InferNullType {
         Object m4 = toInfer3(1, null);
         Object m5 = toInfer3(null, 1);
 
-        @SuppressWarnings("nullness:type.argument.type.incompatible")
+        //:: error: (type.argument.type.incompatible)
         Object m6 = toInfer4(null, null);
-        @SuppressWarnings("nullness:type.argument.type.incompatible")
+        //:: error: (type.argument.type.incompatible)
         Object m7 = toInfer4(1, null);
-        @SuppressWarnings("nullness:type.argument.type.incompatible")
+        //:: error: (type.argument.type.incompatible)
         Object m8 = toInfer4(null, 1);
     }
 }

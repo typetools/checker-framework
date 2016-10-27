@@ -20,8 +20,10 @@ import java.lang.annotation.Target;
  * SideEffectFree} method call intervenes).  For example,
  * the following code never suffers a null pointer
  * exception, so the Nullness Checker need not issue a warning:
- * <pre>{@code       if (x.myDeterministicMethod() != null) {
- * x.myDeterministicMethod().hashCode();
+ * <pre>
+ * {@code
+ * if (x.myDeterministicMethod() != null) {
+ *   x.myDeterministicMethod().hashCode();
  * }}</pre>
  * <p>
  * Note that {@code @Deterministic} guarantees that the result is
@@ -46,16 +48,16 @@ import java.lang.annotation.Target;
  * newly created objects and using these objects (or some property thereof)
  * to change their return value.  For instance, the following method must be
  * forbidden.
- * <pre>{@code
- * &#64;Deterministic
+ * <pre>
+ *{@code @Deterministic
  * int f() {
- * try {
- * int b = 0;
- * int a = 1/b;
- * } catch (Throwable t) {
- * return t.hashCode();
- * }
- * return 0;
+ *   try {
+ *     int b = 0;
+ *     int a = 1/b;
+ *   } catch (Throwable t) {
+ *     return t.hashCode();
+ *   }
+ *   return 0;
  * }
  * }</pre>
  * </ol>

@@ -39,6 +39,32 @@
     <property name="compiler.version.goal.java9"
               value="javac 1.9.0"/>
 
+
+    <condition property="jdkName" value="jdk7.jar">
+        <contains string="${java.version}" substring="1.7"/>
+    </condition>
+
+    <condition property="jdkName" value="jdk8.jar">
+        <contains string="${java.version}" substring="1.8"/>
+    </condition>
+
+    <!-- TODO: raise an error if no supported version found. -->
+    <condition property="jdkName" value="jdk9.jar" else="UNSUPPORTED">
+        <contains string="${java.version}" substring="1.9"/>
+    </condition>
+
+    <condition property="jdk7orlower">
+        <equals arg1="${jdkName}" arg2="jdk7.jar" />
+    </condition>
+
+    <condition property="jdk8orhigher">
+        <or>
+            <equals arg1="${jdkName}" arg2="jdk8.jar" />
+            <equals arg1="${jdkName}" arg2="jdk9.jar" />
+        </or>
+    </condition>
+
+
     <target name="prep-all"
             description="Perform preparation useful for all projects">
         <java fork="true"

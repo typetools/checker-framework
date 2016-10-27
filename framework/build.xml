@@ -209,7 +209,7 @@
         <!-- With Ant 1.9.4 or later, add
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}"
                  destdir="${api.doc}"
                  private="${javadoc.private}"
                  encoding="UTF-8"
@@ -225,6 +225,11 @@
             <package name="org.checkerframework.framework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
+
+            <fileset dir="${checker.loc}/${src}">
+                <include name="**/*.java"/>
+                <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
+            </fileset>
 
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
             <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
@@ -489,6 +494,13 @@
             description="Run tests for the MethodVal Checker ">
         <antcall target="-run-tests">
             <param name="param" value="tests.MethodValTest"/>
+        </antcall>
+    </target>
+
+    <target name="nontopdefault-tests" depends="jar,build-tests"
+            description="Run tests for the NonTopDefault Checker ">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NonTopDefaultTest"/>
         </antcall>
     </target>
 
