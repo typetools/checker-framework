@@ -55,6 +55,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         MinLenStore store = result.getRegularStore();
         if (TreeUtils.isMethodInvocation(node.getTree(), listAdd, env)
                 || TreeUtils.isMethodInvocation(node.getTree(), listAdd2, env)) {
+            if (node.getTarget().getReceiver().getTree() == null) {
+                return result;
+            }
             AnnotatedTypeMirror ATM =
                     atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
             AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
@@ -68,6 +71,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             return newResult;
         } else if (TreeUtils.isMethodInvocation(node.getTree(), listToArray, env)
                 || TreeUtils.isMethodInvocation(node.getTree(), listToArray1, env)) {
+            if (node.getTarget().getReceiver().getTree() == null) {
+                return result;
+            }
             AnnotatedTypeMirror ATM =
                     atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
             AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
