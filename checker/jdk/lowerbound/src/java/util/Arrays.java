@@ -469,10 +469,10 @@ public class Arrays {
      *         {@link Comparable} contract
      */
     public static void sort(Object[] a) {
-        if (LegacyMergeSort.userRequested)
-            legacyMergeSort(a);
-        else
-            ComparableTimSort.sort(a);
+//        if (LegacyMergeSort.userRequested)
+//            legacyMergeSort(a);
+//        else
+//            ComparableTimSort.sort(a);
     }
 
     /** To be removed in a future release. */
@@ -534,10 +534,10 @@ public class Arrays {
      *         integers).
      */
     public static void sort(Object[] a, @NonNegative int fromIndex, @NonNegative int toIndex) {
-        if (LegacyMergeSort.userRequested)
-            legacyMergeSort(a, fromIndex, toIndex);
-        else
-            ComparableTimSort.sort(a, fromIndex, toIndex);
+//        if (LegacyMergeSort.userRequested)
+//            legacyMergeSort(a, fromIndex, toIndex);
+//        else
+//            ComparableTimSort.sort(a, fromIndex, toIndex);
     }
 
     /** To be removed in a future release. */
@@ -656,10 +656,10 @@ public class Arrays {
      *         found to violate the {@link Comparator} contract
      */
     public static <T> void sort(T[] a, Comparator<? super T> c) {
-        if (LegacyMergeSort.userRequested)
-            legacyMergeSort(a, c);
-        else
-            TimSort.sort(a, c);
+//        if (LegacyMergeSort.userRequested)
+//            legacyMergeSort(a, c);
+//        else
+//            TimSort.sort(a, c);
     }
 
     /** To be removed in a future release. */
@@ -724,10 +724,10 @@ public class Arrays {
      */
     public static <T> void sort(T[] a, @NonNegative int fromIndex, @NonNegative int toIndex,
                                 Comparator<? super T> c) {
-        if (LegacyMergeSort.userRequested)
-            legacyMergeSort(a, fromIndex, toIndex, c);
-        else
-            TimSort.sort(a, fromIndex, toIndex, c);
+//        if (LegacyMergeSort.userRequested)
+//            legacyMergeSort(a, fromIndex, toIndex, c);
+//        else
+//            TimSort.sort(a, fromIndex, toIndex, c);
     }
 
     /** To be removed in a future release. */
