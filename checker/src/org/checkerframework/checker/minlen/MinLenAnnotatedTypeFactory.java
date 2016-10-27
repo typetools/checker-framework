@@ -65,6 +65,13 @@ public class MinLenAnnotatedTypeFactory
     }
 
     /**
+     *  Returns the value type associated with the given ExpressionTree.
+     */
+    public AnnotatedTypeMirror valueTypeFromTree(Tree tree) {
+        return valueAnnotatedTypeFactory.getAnnotatedType(tree);
+    }
+
+    /**
      * Finds the minimum value in a value type. If there is no information
      * (such as when the list is empty or null), returns null. Otherwise,
      * returns the smallest element in the list of possible values.
@@ -265,13 +272,13 @@ public class MinLenAnnotatedTypeFactory
         }
     }
 
-    protected AnnotationMirror createMinLen(int val) {
+    public AnnotationMirror createMinLen(int val) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", val);
         return builder.build();
     }
 
-    private AnnotationMirror createMinLenBottom() {
+    public AnnotationMirror createMinLenBottom() {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLenBottom.class);
         return builder.build();
     }
