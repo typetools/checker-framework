@@ -52,7 +52,10 @@ See Section~\ref{fenum-annotations} for descriptions of how to
 introduce both types of fenums. The type qualifiers in gray
 (\code{@FenumTop}, \code{@FenumUnqualified}, and \code{@FenumBottom})
 should never be written in
-source code; they are used internally by the type system.}
+source code; they are used internally by the type system.
+\<@FenumUnqualified is the default qualifier for unannotated types, except
+for upper bounds which default to \<@FenumTop>.
+}
 \label{fig-fenum-hierarchy}
 \end{figure}
 
