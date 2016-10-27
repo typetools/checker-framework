@@ -139,57 +139,46 @@ when getting started, but you should always examine their results.
 
 When you create a new checker, you need to also supply annotations for
 parts of the JDK, either as stub files or as source code that will be
-compiled and its annotations inserted into the compiled JDK\@.  This
+compiled and its annotations inserted into the JDK\@.  This
 section describes the latter approach.
 
 \begin{enumerate}
 \item
-Get Java 7 Source code (Must be version 7)
+Get Java 7 source code (must be version 7)
 \begin{enumerate}
 \item Download JDK7 from oracle
 \item Open the downloaded tar (\<tar -xvzf>)
-\item Unzip the contatined \<src.zip> (resulting in folders: com, java, javax, launcher, org)
+\item Unzip the contained \<src.zip> (resulting in folders: \<com/>, \<java/>, \<javax/>, \<launcher/>, \<org/>)
 \end{enumerate}
 
 \item
-Set Up Checker Framework (replace \textit{mychecker} with the name of your checker)
+Set up the Checker Framework (replace \textit{mychecker} with the name of your checker)
 \begin{enumerate}
-\item Add a folder \<\$JSR308/checker-framework/checker/jdk/\textit{mychecker}> 
+\item \<mkdir \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
+  \<cd \$JSR308/checker-framework/checker/jdk/\textit{mychecker}/> \\
+  \<ln -s ../Makefile.jdk Makefile>
 
-\item In  \<\$JSR308/checker-framework/checker/jdk/\textit{mychecker}> add a symbolic link to   \newline
-\<\$JSR308/checker-framework/checker/jdk/MakeFile> (like the ones in lock and nullness)
-
-
-\item Add \textit{mychecker} to \<\$JSR308/checker-framework/checker/jdk/MakeFile> in the following 2 places:
-\begin{verbatim}
-Line: ''CHECKER_DIRS = nullness lock'' etc
-Becomes: ''CHECKER_DIRS = nullness lock mychecker '' etc 
-
-Line: ANNOTATED_CLASSES = \
-	$(patsubst nullness/build/%.class,annotated/%.class, \ 
-      $(patsubst lock/build/%.class,annotated/%.class, \ 
-          $(ANNOTATED_CLASSES_BY_DIR)))
-Becomes:ANNOTATED_CLASSES = \
-	$(patsubst nullness/build/%.class,annotated/%.class, \
-     $(patsubst lock/build/%.class,annotated/%.class, \
-     $(patsubst mychecker/build/%.class,annotated/%.class, \
-        $(ANNOTATED_CLASSES_BY_DIR))))
-\end{verbatim}
-
-Don't forget to add another closing paren!
+\item Add \textit{mychecker} to
+  \<\$JSR308/checker-framework/checker/jdk/MakeFile> in the  definition of
+  \<CHECKER\_DIRS> and in the definition of \<ANNOTATED\_CLASSES> (don't forget
+  to add a closing parenthesis at the end of the definition of \<ANNOTATED\_CLASSES>!).
 
 \end{enumerate}
 
 \item
-Add your Annotated Files \newline
-	As you add annotations to the jdk copy annotated files into the folder \<\$JSR308/checker-framework/checker/jdk/\textit{mychecker}/src>
-	In an identical directory structure as the jdk, look in nullness for an example \newline
+For each file you want to annotated, copy the JDK version into the
+directory
+\<\$JSR308/checker-framework/checker/jdk/\textit{mychecker}/src/>, using
+the same directory structure as the JDK\@.
 	
-	\textbf{Always fully annotated every class you add!}
+\textbf{Whenever you add a file, fully annotate it!}  (Don't add a file
+with partial annotations, because then other people won't know whether a
+particular method is unannotated because you didn't get to it yet or
+because you considered it and decided that it didn't need any annotations.)
 
 \item
-Build the checker \newline
-	Run \<ant> in the \<\$JSR308/checker-framework/checker> to apply your new annotated jdk.
+Build the annotated JDK: 
+	run \<ant> in \<\$JSR308/checker-framework/checker>
 \end{enumerate}
 
 
@@ -730,13 +719,15 @@ read whether the library's annotations are parsed.
 
 % LocalWords:  plugin utils util dist RuntimeException NonNull TODO AFU enum
 % LocalWords:  sourcepath Nullness javac classpath src quals pathSeparator JDKs
-% LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6
+% LocalWords:  jdk Astubs skipUses astub AskipUses toArray JDK6 xvzf javax
 % LocalWords:  CollectionToArrayHeuristics BaseTypeVisitor Xbootclasspath
 % LocalWords:  Interning's UsesObjectEquals Anocheckjdk AonlyUses java pre
 %  LocalWords:  Aignorejdkastub AstubWarnIfNotFound AstubDebug jdk6 jdk7
 %  LocalWords:  enableForgroundNdefPush XDTA debugJSR308 BCEL getopt jdk8
 %%  LocalWords:  NoStubParserWarning CHECKERFRAMEWORK AnnotatedFor regex
 %%  LocalWords:  AuseConservativeDefaultsForUnannotatedCode buildfile qual
-%%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel
-%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1
-%%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode
+%%  LocalWords:  AprintUnannotatedMethods checkername AskipDefs bcel mkdir
+%%  LocalWords:  AuseSafeDefaultsForUnannotatedSourceCode TypeSystem1 cd
+%%  LocalWords:  TypeSystem2 TypeSystem3 AuseDefaultsForUncheckedCode ln
+%  LocalWords:  mychecker DIRS README TypeSystem un debugJSR
+%  LocalWords:  AstubWarnIfOverwritesBytecode
