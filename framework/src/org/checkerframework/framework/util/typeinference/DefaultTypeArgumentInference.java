@@ -156,11 +156,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                     withoutNullResult = atv.getUpperBound().deepCopy();
                 }
                 AnnotatedTypeMirror lub =
-                        AnnotatedTypes.leastUpperBound(
-                                typeFactory.getProcessingEnv(),
-                                typeFactory,
-                                withoutNullResult,
-                                result);
+                        AnnotatedTypes.leastUpperBound(typeFactory, withoutNullResult, result);
                 inferredArgs.put(typeVar, lub);
             }
         }

@@ -41,6 +41,10 @@ public class VisitHistory {
         this.visited = new HashSet<>();
     }
 
+    public void clear() {
+        visited.clear();
+    }
+
     /**
      * Add a visit for type1 and type2.
      */
