@@ -1,11 +1,14 @@
 \htmlhr
-\chapter{Fake Enum Checker for type aliases and typedefs\label{fenum-checker}}
+\chapter{Fake Enum Checker for fake enumerations\label{fenum-checker}}
 
 The Fake Enum Checker, or Fenum Checker, enables you to define a type alias
 or typedef, in which two different sets of values have the same
 representation (the same Java type) but are not allowed to be used
-interchangeably.
-One common use for this is the
+interchangeably.  It is also possible to create a typedef using the
+Subtyping Checker (\chapterpageref{subtyping-checker}), and that approach
+is sometimes more appropriate.
+
+One common use for the Fake Enum Checker is the
 \emph{fake enumeration pattern} (Section~\ref{fenum-pattern}).  For
 example, consider this code adapted from Android's
 \href{https://developer.android.com/reference/android/support/annotation/IntDef.html}{\code{IntDef}}
