@@ -8,11 +8,16 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.minlen.qual.MinLen;
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
@@ -37,7 +42,171 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         this.listAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
     }
 
+    /**
+     *  This struct contains all of the information that the refinement
+     *  functions need. It's called by each node function (i.e. greater
+     *  than node, less than node, etc.) and then the results are passed
+     *  to the refinement function in whatever order is appropriate for
+     *  that node. Its constructor contains all of its logic.
+     *  I originally wrote this for LowerBoundTransfer but I'm duplicating it
+     *  here since I need it again...maybe it should live elsewhere and be
+     *  shared? I don't know where though.
+     */
+    private class RefinementInfo {
+        public Node left, right;
+        public Set<AnnotationMirror> leftType, rightType;
+        public MinLenStore thenStore, elseStore;
+        public ConditionalTransferResult<MinLenValue, MinLenStore> newResult;
+
+        public RefinementInfo(
+                TransferResult<MinLenValue, MinLenStore> result,
+                TransferInput<MinLenValue, MinLenStore> in,
+                Node r,
+                Node l) {
+            right = r;
+            left = l;
+
+            rightType = in.getValueOfSubNode(right).getAnnotations();
+            leftType = in.getValueOfSubNode(left).getAnnotations();
+
+            thenStore = result.getRegularStore();
+            elseStore = thenStore.copy();
+
+            newResult =
+                    new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
+        }
+    }
+
+    // So I actually just ended up copying these from Lower Bound Transfer too.
+    // The only parts that are actually different are the definitions of
+    // refineGT and refineGTE, and the handling of equals and not equals. The
+    // code for the visitGreaterThan, visitLessThan, etc., are all identical to
+    // their LBC counterparts.
+
+    @Override
+    public TransferResult<MinLenValue, MinLenStore> visitGreaterThan(
+            GreaterThanNode node, TransferInput<MinLenValue, MinLenStore> in) {
+        TransferResult<MinLenValue, MinLenStore> result = super.visitGreaterThan(node, in);
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+
+        // Refine the then branch.
+        refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+
+        // Refine the else branch, which is the inverse of the then branch.
+        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
+
+        return rfi.newResult;
+    }
+
+    @Override
+    public TransferResult<MinLenValue, MinLenStore> visitGreaterThanOrEqual(
+            GreaterThanOrEqualNode node, TransferInput<MinLenValue, MinLenStore> in) {
+        TransferResult<MinLenValue, MinLenStore> result = super.visitGreaterThanOrEqual(node, in);
+
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+
+        // Refine the then branch.
+        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+
+        // Refine the else branch.
+        refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
+
+        return rfi.newResult;
+    }
+
+    @Override
+    public TransferResult<MinLenValue, MinLenStore> visitLessThanOrEqual(
+            LessThanOrEqualNode node, TransferInput<MinLenValue, MinLenStore> in) {
+        TransferResult<MinLenValue, MinLenStore> result = super.visitLessThanOrEqual(node, in);
+
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+
+        // Refine the then branch. A <= is just a flipped >=.
+        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
+
+        // Refine the else branch.
+        refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+        return rfi.newResult;
+    }
+
+    @Override
+    public TransferResult<MinLenValue, MinLenStore> visitLessThan(
+            LessThanNode node, TransferInput<MinLenValue, MinLenStore> in) {
+        TransferResult<MinLenValue, MinLenStore> result = super.visitLessThan(node, in);
+
+        RefinementInfo rfi =
+                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+
+        // Refine the then branch. A < is just a flipped >.
+        refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
+
+        // Refine the else branch.
+        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+        return rfi.newResult;
+    }
+
     private void refineGT(
+            Node left,
+            Set<AnnotationMirror> leftType,
+            Node right,
+            Set<AnnotationMirror> rightType,
+            MinLenStore store) {
+        FieldAccessNode fi = null;
+        Tree tree = null;
+        Receiver rec = null;
+        Set<AnnotationMirror> type = null;
+        // We only care about length. This will miss an expression which
+        // include an array length (like "a.length + 1"), but that's okay
+        // for now.
+        // FIXME: Joe: List support will be needed here too.
+
+        if (left instanceof FieldAccessNode) {
+            fi = (FieldAccessNode) left;
+            tree = right.getTree();
+            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), fi.getReceiver());
+            type = leftType;
+        } else if (right instanceof FieldAccessNode) {
+            fi = (FieldAccessNode) right;
+            tree = left.getTree();
+            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), fi.getReceiver());
+            type = rightType;
+        } else {
+            return;
+        }
+
+        if (fi == null || tree == null || rec == null || type == null) {
+            return;
+        }
+
+        if (fi.getFieldName().equals("length")
+                && fi.getReceiver().getType().getKind() == TypeKind.ARRAY) {
+            // At this point, MinLen needs to invoke the constant value checker
+            // to find out if it knows anything about what the length is being
+            // compared to. If so, we can do something.
+
+            int newMinLen = atypeFactory.minLenFromValueType(atypeFactory.valueTypeFromTree(tree));
+
+            AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(type, MinLen.class);
+            if (!AnnotationUtils.hasElementValue(anno, "value")) {
+                return;
+            }
+
+            Integer currentMinLen =
+                    AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
+
+            if (newMinLen + 1 > currentMinLen) {
+                store.insertValue(rec, atypeFactory.createMinLen(newMinLen + 1));
+                return;
+            }
+
+            return;
+        }
+    }
+
+    private void refineGTE(
             Node left,
             Set<AnnotationMirror> leftType,
             Node right,
@@ -54,12 +223,12 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         if (left instanceof FieldAccessNode) {
             fi = (FieldAccessNode) left;
             tree = right.getTree();
-            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
+            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), fi.getReceiver());
             type = leftType;
         } else if (right instanceof FieldAccessNode) {
             fi = (FieldAccessNode) right;
             tree = left.getTree();
-            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), fi.getReceiver());
             type = rightType;
         } else {
             return;
