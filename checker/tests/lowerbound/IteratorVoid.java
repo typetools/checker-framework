@@ -12,5 +12,4 @@ public class IteratorVoid<T> {
     private void setnext1() {
         next1 = itor1.hasNext() ? itor1.next() : null;
     }
-
 }
