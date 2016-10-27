@@ -247,22 +247,19 @@ Creating a new type makes your code easier to understand by conveying the
 intended use of each variable.  It also prevents errors that come from
 using the wrong type or from mixing incompatible types in an operation.
 
-If you want to create a type alias or typedef, you have two options.
-Which one you choose depends on which operations you wish your new type to support.
+If you want to create a type alias or typedef, you have two options:  using
+the Fake Enum Checker (\chapterpageref{fenum-checker}) or using the
+Subtyping Checker.
 
-\begin{itemize}
-\item
-  Use the Fake Enum Checker (\chapterpageref{fenum-checker}) if you wish to
-  prevent all operations on the elements of the new type.  Suppose you
-  create a new fenum type \<CompassDirection> with \<int> values \<NORTH>,
-  \<SOUTH>, \<EAST>, and \<WEST>.  The operation \<NORTH + SOUTH> should be
-  illegal.
+The Fake Enum Checker builds in a set of assumptions.  If those fit your
+use case, then it's easiest to use the Fake Enum Checker (though you can
+achieve them using the Subtyping Checker).  The Fake Enum Checker forbids
+mixing of fenums of different types, or fenums and unannotated types.  For
+instance, binary operations other than string concatenations are forbidden,
+such as \<NORTH+1>, \<NORTH+MONDAY>, and \<NORTH==MONDAY>.  However,
+\<NORTH+SOUTH> is permitted.
 
-\item
-  Use the Subtyping Checker if you wish to permit operations on elements of
-  the new type.  By default, the Subtyping Checker does not forbid any
-  operations.
-\end{itemize}
+By default, the Subtyping Checker does not forbid any operations.
 
 If you choose to use the Subtyping Checker, then you have an additional
 design choice to make about the type system.  In the general case, your
