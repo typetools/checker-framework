@@ -59,7 +59,7 @@ import org.checkerframework.javacutil.Pair;
 public class WholeProgramInferenceScenesHelper {
 
     /**
-     * Maps the content of an ATypeElement and its TypeUseLocation to a set of
+     * Maps the string representation of an ATypeElement and its TypeUseLocation to a set of
      * names of annotations that should not be added to .jaif files for that location.
      */
     private final Map<Pair<String, TypeUseLocation>, Set<String>> annosToIgnore = new HashMap<>();
