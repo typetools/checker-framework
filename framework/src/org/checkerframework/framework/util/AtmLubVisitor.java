@@ -51,12 +51,10 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         AnnotatedTypeMirror lub = AnnotatedTypeMirror.createType(lubJavaType, atypeFactory, false);
 
         if (type1.getKind() == TypeKind.NULL) {
-            lubWithNull((AnnotatedNullType) type1, type2, lub);
-            return lub;
+            return lubWithNull((AnnotatedNullType) type1, type2, lub);
         }
         if (type2.getKind() == TypeKind.NULL) {
-            lubWithNull((AnnotatedNullType) type2, type1, lub);
-            return lub;
+            return lubWithNull((AnnotatedNullType) type2, type1, lub);
         }
 
         AnnotatedTypeMirror type1AsLub = AnnotatedTypes.asSuper(atypeFactory, type1, lub);
@@ -67,18 +65,11 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         return lub;
     }
 
-    /**
-     * Computes the leastUpperBound of an AnnotatedNullType and another AnnotatedTypeMirror by
-     * modifying lub.
-     *
-     * @param nullType  type to lub
-     * @param otherType other type to lub
-     * @param lub       type of lub
-     */
-    private void lubWithNull(
+    private AnnotatedTypeMirror lubWithNull(
             AnnotatedNullType nullType, AnnotatedTypeMirror otherType, AnnotatedTypeMirror lub) {
 
         AnnotatedTypeMirror otherAsLub = AnnotatedTypes.asSuper(atypeFactory, otherType, lub);
+        lub = otherAsLub.deepCopy();
 
         if (otherAsLub.getKind() != TypeKind.TYPEVAR && otherAsLub.getKind() != TypeKind.WILDCARD) {
             for (AnnotationMirror nullAnno : nullType.getAnnotations()) {
@@ -86,7 +77,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
                 AnnotationMirror lubAnno = qualifierHierarchy.leastUpperBound(nullAnno, otherAnno);
                 lub.replaceAnnotation(lubAnno);
             }
-            return;
+            return lub;
         }
 
         // LUB(@N null, T), where T's upper bound is @U and T's lower bound is @L
@@ -107,6 +98,7 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
                 lub.replaceAnnotation(upperBound);
             } // else @N <: @L <: @U
         }
+        return lub;
     }
 
     /**
