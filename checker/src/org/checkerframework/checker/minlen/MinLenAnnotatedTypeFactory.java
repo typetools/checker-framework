@@ -9,6 +9,7 @@ import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -112,12 +113,25 @@ public class MinLenAnnotatedTypeFactory
      * MinLen(2) vs MinLen(3).
      */
     private final class MinLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
+
+        Set<? extends AnnotationMirror> minLenTops = null;
+
         /**
          * @param factory
          *            MultiGraphFactory to use to construct this
          */
         public MinLenQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
+        }
+
+        @Override
+        public Set<? extends AnnotationMirror> getTopAnnotations() {
+            if (minLenTops == null) {
+                Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
+                tops.add(createMinLen(0));
+                minLenTops = Collections.unmodifiableSet(tops);
+            }
+            return minLenTops;
         }
 
         @Override
@@ -177,10 +191,10 @@ public class MinLenAnnotatedTypeFactory
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameByClass(lhs, MinLenBottom.class)) {
-                return false;
-            } else if (AnnotationUtils.areSameByClass(rhs, MinLenBottom.class)) {
+            if (AnnotationUtils.areSameByClass(rhs, MinLenBottom.class)) {
                 return true;
+            } else if (AnnotationUtils.areSameByClass(lhs, MinLenBottom.class)) {
+                return false;
             } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
                 // Implies both are MinLen since that's the only other type.
                 // But we're going to check anyway to make sure they both have
