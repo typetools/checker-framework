@@ -41,8 +41,10 @@ public class KeyForTransfer extends CFTransfer {
 
     /*
      * Provided that m is of a type that implements interface java.util.Map:
-     * -Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
-     * -Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
+     * <ul>
+     * <li>Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
+     * <li>Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
+     * </ul>
      */
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(

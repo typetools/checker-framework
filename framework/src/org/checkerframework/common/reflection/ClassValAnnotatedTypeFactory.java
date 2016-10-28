@@ -203,9 +203,11 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Implements these type inference rules:
+     * <pre>
      * C.class:             @ClassVal(fully qualified name of C)
      * Class.forName(name): @ClassVal("name")
      * exp.getClass():      @ClassBound(fully qualified classname of exp)
+     * </pre>
      */
     protected class ClassValTreeAnnotator extends TreeAnnotator {
 

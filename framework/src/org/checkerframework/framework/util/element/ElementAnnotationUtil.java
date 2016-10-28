@@ -138,31 +138,37 @@ public class ElementAnnotationUtil {
      *
      * Wildcard annotations are applied as follows:
      *
-     * a) If an Annotation is in front of a extends or super bounded wildcard,
+     * <ul>
+     * <li>a) If an Annotation is in front of a extends or super bounded wildcard,
      * it applies to the bound that is NOT explicitly present. e.g.
      * <pre>{@code
-     * <@A ? extends Object> - @A is placed on the super bound (Void)
-     * <@B ? super CharSequence> - @B is placed on the extends bound (probably Object)
+     * <@A ? extends Object> -- @A is placed on the super bound (Void)
+     * <@B ? super CharSequence> -- @B is placed on the extends bound (probably Object)
      * }</pre>
      *
-     * b) If an Annotation is on a bound, it applies to that bound.  E.g.
+     * <li>b) If an Annotation is on a bound, it applies to that bound.  E.g.
      * <pre>{@code
-     * <? extends @A Object> - @A is placed on the extends bound (Object)
-     * <? super @B CharSequence> - @B is placed on the super bound (CharSequence)
+     * <? extends @A Object> -- @A is placed on the extends bound (Object)
+     * <? super @B CharSequence> -- @B is placed on the super bound (CharSequence)
      * }</pre>
      *
-     * c) If an Annotation is on an unbounded wildcard there are two subcases.
-     *    c.1 The user wrote the annotation explicitly - these annotations apply to both bounds
+     * <li>c) If an Annotation is on an unbounded wildcard there are two subcases.
+     *
+     *   <ul>
+     *    <li>c.1 The user wrote the annotation explicitly -- these annotations apply to both bounds
      *    e.g. the user wrote
      * <pre>{@code
-     *    <@C ?> - the annotation is placed on the extends/super bounds
+     *    <@C ?> -- the annotation is placed on the extends/super bounds
      * }</pre>
      *
-     *    c.2 Previous calls to getAnnotatedType have annotated this wildcard with BOTH bounds
+     *    <li>c.2 Previous calls to getAnnotatedType have annotated this wildcard with BOTH bounds
      *    e.g. the user wrote {@code <?>} but the checker framework added {@code <@C ? extends @D Object>}
-     *         to the corresponding element
-     *    {@code <?>} - @C is placed on the lower bound and @D is placed on the upper bound
+     *         to the corresponding element.
+     * <pre>{@code <?> -- @C is placed on the lower bound and @D is placed on the upper bound
      *          This case is treated just like annotations in cases a/b.
+     * }</pre>
+     *   </ul>
+     * </ul>
      *
      */
     private static final class WildcardBoundAnnos {

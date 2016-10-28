@@ -57,16 +57,14 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
      * Checks that if a method call is being invoked inside a constructor with
      * result type {@literal @}Unique, it must not leak the "this" reference.
      * There are 3 ways to make sure that this is not happening:
-     * <p>
-     * 1. "this" is not an argument of the method call.
-     * <p>
-     * 2. "this" is an argument of the method call, but the respective parameter
+     * <ol>
+     * <li>{@code this} is not an argument of the method call.
+     * <li>{@code this} is an argument of the method call, but the respective parameter
      * is annotated as {@literal @}NonLeaked.
-     * <p>
-     * 3. "this" is an argument of the method call, but the respective parameter
+     * <li>{@code this} is an argument of the method call, but the respective parameter
      * is annotated as {@literal @}LeakedToResult AND the result of the method
      * call is not being stored (the method call is a statement).
-     * <p>
+     * </ol>
      * The private method {@code isUniqueCheck} handles cases 2 and 3.
      */
     @Override

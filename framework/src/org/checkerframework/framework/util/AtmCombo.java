@@ -76,15 +76,17 @@ enum AtmKind {
  * to execute AtmComboVisitor, which is a visitor of all possible combinations of AnnotatedTypeMirror
  * subclasses.
  *
- * e.g.:
+ * For example:
+ * <pre>{@code
  * switch (AtmCombo.valueOf(atm1, atm2)) {
  *     case WILDCARD_WILDCARD:
  *     case TYPEVAR_TYPEVAR:
  *         doSomething(atm1, atm2);
  *         break;
  * }
+ * }</pre>
  *
- * see also AtmCombo.accept
+ * @see AtmCombo#accept
  *
  */
 public enum AtmCombo {

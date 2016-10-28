@@ -60,9 +60,11 @@ import org.checkerframework.javacutil.AnnotationProvider;
  * By default, only the annotations explicitly written by the user are emitted.
  * To view the default and effective annotations in a class that are associated
  * with a checker, the fully qualified name of the checker needs to be passed
- * as '-Achecker=' argument, e.g.
- * <p>{@code javac -processor SignaturePrinter
- *         -Achecker=org.checkerframework.checker.nullness.NullnessChecker JavaFile.java}
+ * as {@code -Achecker=} argument, e.g.
+ * <pre>{@code
+ *   javac -processor SignaturePrinter
+ *         -Achecker=org.checkerframework.checker.nullness.NullnessChecker JavaFile.java
+ * }</pre>
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedAnnotationTypes("*")

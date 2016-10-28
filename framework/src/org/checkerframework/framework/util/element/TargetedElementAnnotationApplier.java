@@ -131,7 +131,7 @@ abstract class TargetedElementAnnotationApplier {
      * Separate the input annotations into a Map of TargetClass (TARGETED, VALID, INVALID) to the annotations
      * that fall into each of those categories.
      * @param typeCompounds annotations to sift through, should be those returned by getRawTypeAttributes
-     * @return a {@literal Map<TargetClass -> Annotations>.}
+     * @return a {@literal Map<TargetClass &rArr; Annotations>.}
      */
     protected Map<TargetClass, List<Attribute.TypeCompound>> sift(
             final Iterable<Attribute.TypeCompound> typeCompounds) {

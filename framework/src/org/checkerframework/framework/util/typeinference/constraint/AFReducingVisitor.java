@@ -23,9 +23,11 @@ import org.checkerframework.javacutil.TypesUtils;
  * Takes a single step in reducing a AFConstraint.
  *
  * The visit method will determine if the given constraint should either:
- *    a) be discarded - in this case, the visitor just returns
- *    b) reduced to a simpler constraint or set of constraints - in this case, the new constraint
+ * <ul>
+ *    <li> be discarded - in this case, the visitor just returns
+ *    <li> reduced to a simpler constraint or set of constraints - in this case, the new constraint
  *    or set of constraints is added to newConstraints
+ * </ul>
  *
  *  Sprinkled throughout this class are comments of the form:
  *

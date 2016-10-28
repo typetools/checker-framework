@@ -13,8 +13,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
  * then it creates an InferredValue to represent this inference.
  *
  * There are subclasses to represent two cases:
- *   a) The target was inferred to be an AnnotatedTypeMirror
- *   b) The target was inferred to be equal to another target
+ * <ul>
+ *   <li> The target was inferred to be an AnnotatedTypeMirror
+ *   <li> The target was inferred to be equal to another target
+ * </ul>
  */
 public class InferredValue {
     /**

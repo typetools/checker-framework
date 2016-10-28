@@ -306,7 +306,7 @@ public class TypeAnnotationUtils {
 
     /**
      * Use the SourceVersion to decide whether to call the Java 8 or Java 9 version.
-     * Catch all exceptions and abort if one occurs - the reflection code should
+     * Catch all exceptions and abort if one occurs -- the reflection code should
      * never break once fully debugged.
      *
      * @param tc the TAPCall abstraction to encapsulate two methods
