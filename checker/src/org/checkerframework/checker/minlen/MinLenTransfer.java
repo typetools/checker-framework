@@ -229,7 +229,17 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             // to find out if it knows anything about what the length is being
             // compared to. If so, we can do something.
 
-            int newMinLen = atypeFactory.minLenFromValueType(atypeFactory.valueTypeFromTree(tree));
+            AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
+
+            if (valueType == null) {
+                return;
+            }
+
+            Integer newMinLen = atypeFactory.minLenFromValueType(valueType);
+
+            if (newMinLen == null) {
+                return;
+            }
 
             // We must be comparing against zero here; otherwise, we should be using
             // refineGTE.
@@ -288,7 +298,17 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             // to find out if it knows anything about what the length is being
             // compared to. If so, we can do something.
 
-            int newMinLen = atypeFactory.minLenFromValueType(atypeFactory.valueTypeFromTree(tree));
+            AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
+
+            if (valueType == null) {
+                return;
+            }
+
+            Integer newMinLen = atypeFactory.minLenFromValueType(valueType);
+
+            if (newMinLen == null) {
+                return;
+            }
 
             AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(type, MinLen.class);
             if (!AnnotationUtils.hasElementValue(anno, "value")) {
@@ -344,7 +364,18 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             // At this point, MinLen needs to invoke the constant value checker
             // to find out if it knows anything about what the length is being
             // compared to. If so, we can do something.
-            int newMinLen = atypeFactory.minLenFromValueType(atypeFactory.valueTypeFromTree(tree));
+
+            AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
+
+            if (valueType == null) {
+                return;
+            }
+
+            Integer newMinLen = atypeFactory.minLenFromValueType(valueType);
+
+            if (newMinLen == null) {
+                return;
+            }
 
             AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(type, MinLen.class);
             if (!AnnotationUtils.hasElementValue(anno, "value")) {
