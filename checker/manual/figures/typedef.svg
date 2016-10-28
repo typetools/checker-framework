@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="10.5cm"
+   height="4.5cm"
+   viewBox="619 259 402 165"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="subtyping.svg">
+  <metadata
+     id="metadata80">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs78" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1057"
+     inkscape:window-height="861"
+     id="namedview76"
+     showgrid="false"
+     inkscape:zoom="2.4808677"
+     inkscape:cx="186.02362"
+     inkscape:cy="79.724409"
+     inkscape:window-x="125"
+     inkscape:window-y="158"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <g
+     id="g4">
+    <rect
+       style="fill: #ffffff"
+       x="620"
+       y="320"
+       width="160"
+       height="42"
+       id="rect6" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="620"
+       y="320"
+       width="160"
+       height="42"
+       id="rect8" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="700"
+       y="345.85001"
+       id="text10">
+      <tspan
+         x="700"
+         y="345.85001"
+         id="tspan12">@MyType</tspan>
+    </text>
+  </g>
+  <g
+     id="g14">
+    <rect
+       style="fill: #ffffff"
+       x="860"
+       y="320"
+       width="160"
+       height="42"
+       id="rect16" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="860"
+       y="320"
+       width="160"
+       height="42"
+       id="rect18" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="940"
+       y="345.85001"
+       id="text20">
+      <tspan
+         x="940"
+         y="345.85001"
+         id="tspan22">@NotMyType</tspan>
+    </text>
+  </g>
+  <g
+     id="g24">
+    <rect
+       style="fill: #ffffff"
+       x="740"
+       y="260"
+       width="160"
+       height="42"
+       id="rect26" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="740"
+       y="260"
+       width="160"
+       height="42"
+       id="rect28" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="820"
+       y="285.85001"
+       id="text30">
+      <tspan
+         x="820"
+         y="285.85001"
+         id="tspan32">@MyTypeUnknown</tspan>
+    </text>
+  </g>
+  <g
+     id="g34">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="700"
+       y1="320"
+       x2="805.166"
+       y2="304.225"
+       id="line36" />
+    <polygon
+       style="fill: #000000"
+       points="806.204,311.148 819.011,302.148 804.128,297.303 "
+       id="polygon38" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="806.204,311.148 819.011,302.148 804.128,297.303 "
+       id="polygon40" />
+  </g>
+  <g
+     id="g42">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="940"
+       y1="320"
+       x2="834.834"
+       y2="304.225"
+       id="line44" />
+    <polygon
+       style="fill: #000000"
+       points="835.872,297.303 820.989,302.148 833.796,311.148 "
+       id="polygon46" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="835.872,297.303 820.989,302.148 833.796,311.148 "
+       id="polygon48" />
+  </g>
+  <g
+     id="g50">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="820"
+       y1="380"
+       x2="714.834"
+       y2="364.225"
+       id="line52" />
+    <polygon
+       style="fill: #000000"
+       points="715.872,357.303 700.989,362.148 713.796,371.148 "
+       id="polygon54" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="715.872,357.303 700.989,362.148 713.796,371.148 "
+       id="polygon56" />
+  </g>
+  <g
+     id="g58">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="820"
+       y1="380"
+       x2="925.166"
+       y2="364.225"
+       id="line60" />
+    <polygon
+       style="fill: #000000"
+       points="926.204,371.148 939.011,362.148 924.128,357.303 "
+       id="polygon62" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="926.204,371.148 939.011,362.148 924.128,357.303 "
+       id="polygon64" />
+  </g>
+  <g
+     id="g66">
+    <rect
+       style="fill: #ffffff"
+       x="740"
+       y="380"
+       width="160"
+       height="42"
+       id="rect68" />
+    <rect
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x="740"
+       y="380"
+       width="160"
+       height="42"
+       id="rect70" />
+    <text
+       font-size="16"
+       style="font-style:normal;font-weight:normal;font-size:16px;font-family:'courier new';text-anchor:middle;fill:#000000"
+       x="820"
+       y="405.85001"
+       id="text72">
+      <tspan
+         x="820"
+         y="405.85001"
+         id="tspan74">@MyTypeBottom</tspan>
+    </text>
+  </g>
+</svg>
