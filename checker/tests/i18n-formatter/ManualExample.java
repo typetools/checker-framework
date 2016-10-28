@@ -33,7 +33,7 @@ public class ManualExample {
 
         //:: error: (assignment.type.incompatible)
         f = "{0, number} {1, number}"; // error: NUMBER is stronger (more restrictive) than DATE
-        //:: error: (i18nformat.excess.arguments)
+        //:: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
         f = "{0} {1} {2}"; // error: too many arguments
     }
 }

@@ -1,6 +1,5 @@
 This directory contains the SVG files used for the diagrams in the Checker
-Framework manual.  The HTML manual uses the SVGs directly.  (Every modern
-browser supports SVG; see http://caniuse.com/#feat=svg.)  The PDF manual
+Framework manual.  The HTML manual uses the SVGs directly.  The PDF manual
 uses PDF conversions of each SVG.
 
 SVG can be edited using a variety of tools, such as Inkscape, Visio, and

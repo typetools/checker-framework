@@ -22,6 +22,14 @@
 
     <property environment="env"/>
 
+    <!-- Whether or not java8 sources should be compiled even though jdk7orlower is used.-->
+    <condition property="should-force-compile-java8">
+        <and>
+            <istrue value="${jdk7orlower}"/>
+            <isset property="env.JAVA_8_HOME"/>
+        </and>
+    </condition>
+
     <!--
          NOTE LT_BIN IN THE NEXT FEW TARGETS IS SOLELY FOR bin-devel/javac and Jenkins.
          The original path to the langtools dir does not work on Jenkins.
@@ -29,18 +37,6 @@
     -->
     <property name="LT_BIN" value=""/>
 
-    <condition property="jdkName" value="jdk7.jar">
-        <contains string="${java.version}" substring="1.7"/>
-    </condition>
-
-    <condition property="jdkName" value="jdk8.jar">
-        <contains string="${java.version}" substring="1.8"/>
-    </condition>
-
-    <!-- TODO: raise an error if no supported version found. -->
-    <condition property="jdkName" value="jdk9.jar" else="UNSUPPORTED">
-        <contains string="${java.version}" substring="1.9"/>
-    </condition>
 
     <!-- Used to have:
            depends="touch-jdk"
@@ -134,6 +130,7 @@
             description="Set properties: filesets and build.uptodate">
         <fileset id="src.files" dir="${src}">
             <include name="**/*.java"/>
+            <exclude name="${checker.jdk8orhigher.sources}"/>
             <exclude name="**/package-info.java"/>
         </fileset>
 
@@ -199,6 +196,7 @@
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
+                    <exclude name="${checker.jdk8orhigher.sources}"/>
                 </fileset>
                 <!-- Recompile dependent projects with annotations-in-comments
                      enabled, in order to get classes with qualified types. -->
@@ -247,6 +245,7 @@
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
+        <antcall target="-compile-java8"/>
         <!--
         Touch doesn't work on a directory, so can't do:
            <touch file="${build}"/>
@@ -254,6 +253,20 @@
         -->
         <touch file="${build}/.timestamp"/>
         <delete file="${build}/.timestamp"/>
+    </target>
+
+    <target name="-compile-java8" depends="-force-compile-java8"
+            description="Compiles java 8 sources if JAVA_8_HOME is set or javac is already java8">
+        <antcall target="compile-java8-sources">
+            <param name="java8-output" value="${build}"/>
+        </antcall>
+    </target>
+    <target name="-force-compile-java8" if="should-force-compile-java8">
+        <exec executable="ant" failonerror="true">
+            <arg line="compile-java8-sources"/>
+            <arg line="-Djava8-output=${build}"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
+        </exec>
     </target>
 
     <!-- TODO: add a type-checking target that doesn't use
@@ -275,7 +288,7 @@
         <!-- With Ant 1.9.4 or later, add to each javadoc task:
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+        <javadoc sourcepath="${javacutil.loc}/${src}:${dataflow.loc}/${src}:${stubparser.loc}/${src}:${framework.loc}/${src}:${annotation-file-utilities.loc}/${src}"
                  destdir="${api.doc}"
                  private="${javadoc.private}"
                  encoding="UTF-8"
@@ -293,6 +306,11 @@
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
 
+            <fileset dir="${checker.loc}/${src}">
+                <include name="**/*.java"/>
+                <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
+            </fileset>
+
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
             <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
             <taglet name="org.checkerframework.javacutil.dist.ManualTaglet"
@@ -306,7 +324,19 @@
         </exec>
     </target>
 
-    <target name="javadoc.jar" depends="javadoc" description="Create jar of all javadoc documentation">
+    <target name="javadoc-java8" depends="-javadoc-force-java8, -javadoc-java8"
+            description="Build the Javadoc using JAVA_8_HOME."/>
+
+    <target name="-javadoc-force-java8" if="${should-force-compile-java8}">
+        <exec executable="ant" failonerror="true">
+            <arg line="javadoc"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
+        </exec>
+    </target>
+    <target name="-javadoc-java8" if="${jdk8orhigher}" depends="javadoc"/>
+
+
+    <target name="javadoc.jar" depends="javadoc-java8" description="Create jar of all javadoc documentation">
         <jar destfile="${checker.javadoc.lib}" basedir="${api.doc}"></jar>
     </target>
 
@@ -358,13 +388,11 @@
         </jar>
     </target>
 
-
     <!-- This creates checker-qual.jar and checker-qual-source.jar-->
     <target name="checker-qual-jar"
             description="Create checker-qual.jar file for annotations">
         <property name="checker-qual-sources-tmp" value="${tmpdir}/checker-qual-sources"/>
         <property name="checker-qual-classes-tmp" value="${tmpdir}/checker-qual-classes"/>
-
         <mkdir dir="${checker-qual-sources-tmp}"/>
         <mkdir dir="${checker-qual-classes-tmp}"/>
 
@@ -379,6 +407,7 @@
                 <include name="**/UnitsTools.java"/>
                 <include name="**/SignednessUtil.java"/>
                 <include name="**/I18nFormatUtil.java"/>
+                <exclude name="${checker.jdk8orhigher.sources}"/>
             </fileset>
             <fileset dir="${dataflow.loc}/${src}">
                 <include name="org/checkerframework/**/qual/*.java"/>
@@ -421,6 +450,17 @@
         </java>
         <delete file="${tmpdir}/srcfiles-checker.txt"/>
 
+        <!-- Compile and copy Java 8 sources -->
+        <copy todir="${checker-qual-sources-tmp}">
+            <!-- Copying like this removes the $CHECKERFRAMEWORK/checker/src portion of the file
+            names so that the top level directory is org.-->
+            <fileset dir="${checker.loc}/${src}">
+                <include name="${checker.jdk8orhigher.sources}"/>
+            </fileset>
+        </copy>
+        <antcall target="-checker-qual-java8"/>
+
+        <!--Jar classes and source files-->
         <jar destfile="${checker.qual.lib}" basedir="${checker-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
@@ -436,6 +476,43 @@
         </jar>
         <delete dir="${checker-qual-sources-tmp}" failonerror="false"/>
         <delete dir="${checker-qual-classes-tmp}" failonerror="false"/>
+    </target>
+
+    <target name="-checker-qual-java8" depends="-force-checker-qual-java8">
+        <antcall target="compile-java8-sources">
+            <param name="java8-output" value="${checker-qual-classes-tmp}"/>
+        </antcall>
+    </target>
+    <target name="-force-checker-qual-java8" if="${should-force-compile-java8}">
+        <exec executable="ant" failonerror="true">
+            <arg line="compile-java8-sources"/>
+            <arg line="-Djava8-output=${checker-qual-classes-tmp}"/>
+            <env key="JAVA_HOME"  value="${env.JAVA_8_HOME}"/>
+        </exec>
+    </target>
+
+    <target name="compile-java8-sources" if="jdk8orhigher"
+            description="Compile Java 8 classes if JAVA_8_HOME exists">
+        <java fork="true"
+              failonerror="true"
+              classname="com.sun.tools.javac.Main"
+              classpath="${java8-output}">
+            <jvmarg line="-Xbootclasspath/p:${javac.lib}"/>
+            <arg value="-g"/>
+            <arg value="-source"/>
+            <arg value="8"/>
+            <arg value="-target"/>
+            <arg value="8"/>
+            <arg value="-encoding"/>
+            <arg value="utf-8"/>
+            <!-- To not get a warning about bootstrap classpath -->
+            <arg value="-Xlint:-options"/>
+            <arg line="-d ${java8-output}"/>
+            <arg line="${checker.loc}/${src}/${checker.jdk8orhigher.sources}"/>
+            <arg line="-XDTA:noannotationsincomments"/>
+            <arg line="-Xlint"/>
+            <arg line="-Werror"/>
+        </java>
     </target>
 
     <!-- This creates checker-compat-qual.jar and checker-compat-qual-source.jar-->
@@ -1216,6 +1293,7 @@ So, use our own archived version.
             <path>
                 <fileset dir="${src}">
                     <include name="**/*.java"/>
+                    <exclude name="${checker.jdk8orhigher.sources}"/>
                     <exclude name=""/>
                 </fileset>
                 <fileset dir="${javacutil.loc}/${src}">

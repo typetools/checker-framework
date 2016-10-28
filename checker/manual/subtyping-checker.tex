@@ -142,8 +142,8 @@ public @interface PossiblyUnencrypted \{\}
 \end{alltt}
 
 Note that all custom annotations must have the
-\<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
-\ref{define-type-qualifiers}.
+\<@Target({ElementType.TYPE\_USE})> meta-annotation.
+See Section~\ref{define-type-qualifiers}.
 
 Don't forget to compile these classes:
 
@@ -234,8 +234,111 @@ commands:
 Also, see the example project in the \<checker/examples/subtyping-extension> directory.
 
 
+\section{Type aliases and typedefs\label{subtyping-type-alias}}
+
+A type alias or typedef is a type that shares the same representation as
+another type but is conceptually distinct from it.  For example, some
+strings in your program may be street addresses; others may be passwords;
+and so on.  You wish to indicate, for each string, which one it is, and to
+avoid mixing up the different types of strings.  Likewise, you could
+distinguish integers that are offsets from those that are absolute values.
+
+Creating a new type makes your code easier to understand by conveying the
+intended use of each variable.  It also prevents errors that come from
+using the wrong type or from mixing incompatible types in an operation.
+
+If you want to create a type alias or typedef, you have two options:  using
+the Fake Enum Checker (\chapterpageref{fenum-checker}) or using the
+Subtyping Checker.
+
+The Fake Enum Checker builds in a set of assumptions.  If those fit your
+use case, then it's easiest to use the Fake Enum Checker (though you can
+achieve them using the Subtyping Checker).  The Fake Enum Checker forbids
+mixing of fenums of different types, or fenums and unannotated types.  For
+instance, binary operations other than string concatenations are forbidden,
+such as \<NORTH+1>, \<NORTH+MONDAY>, and \<NORTH==MONDAY>.  However,
+\<NORTH+SOUTH> is permitted.
+
+By default, the Subtyping Checker does not forbid any operations.
+
+If you choose to use the Subtyping Checker, then you have an additional
+design choice to make about the type system.  In the general case, your
+type system will look something like Figure~\ref{fig-typedef-hierarchy}.
+
+\begin{figure}
+\includeimage{typedef}{3.5cm}
+\caption{Type system for a type alias or typedef type system.
+  The type system designer may choose to omit some of these types, but
+  this is the general case.
+  The type system designer's choice of defaults affects the interpretation
+  of unannotated code, which affects the guarantees given for unannotated code.
+  \label{fig-typedef-hierarchy}}
+\end{figure}
+
+References whose type is \<@MyType> are known to store only values from
+your new type.  There is no such guarantee for \<@MyTypeUnknown> and
+\<@NotMyType>, but those types mean different things.  An expression of type
+\<@NotMyType> is guaranteed never to evaluate to a value of your new type.
+An expression of type \<@MyTypeUnknown> may evaluate to any value ---
+including values of your new type and values not of your new type.
+(\<@MyTypeBottom> is the type of \<null> and can be ignored for this
+discussion.)
+
+A key choice for the type system designer is which type is the default.
+That is, if a programmer does not write \<@MyType> on a given type use,
+should that type use be interpreted as \<@MyTypeUnknown> or as
+\<@NotMyType>?
+
+\begin{itemize}
+\item
+If unannotated types are interpreted as \<@NotMyType>, then the type system
+enforces very strong separation between your new type and all other types.
+Values of your type will never mix with values of other types.  If you
+don't see \<@MyType> written explicitly on a type, you will know that
+it does not contain values of your type.
+
+\item
+If unannotated types are interpreted as \<@MyTypeUnknown>, then
+a generic, unannotated type may contain a value of your new type.
+In this case, \<@NotMyType> does not need to exist, and \<@MyTypeBottom>
+may or may not exist in your type system.
+\end{itemize}
+
+A downside of the stronger guarantee that comes from using \<@NotMyType> as
+the default is the need to write additional annotations.
+For example, if \<@NotMyType> is the default, this code does not typecheck:
+
+\begin{Verbatim}
+void method(Object o) { ... }
+<U> void use(List<U> list) {
+  method(list.get(0));
+}
+\end{Verbatim}
+
+Because (implicit) upper bounds are interpreted as the top type (see
+Section~\ref{generics-defaults}), this is interpreted as
+
+\begin{Verbatim}
+void method(@NotMyType Object o) { ... }
+<@U extends @MyTypeUnknown Object> void use(List<U> list) {
+  // type error: list.get(0) has type @MyTypeUnknown, method expects @NotMyType
+  method(list.get(0));
+}
+\end{Verbatim}
+
+To make the code type-check, it is necessary to write an explicit
+annotation, either to restrict \<use>'s argument or to expand \<method>'s
+parameter type.
+
+
+
+
 % LocalWords:  TODO ImplicitFor Aquals sourcepath java NonNull AqualDirs
 % LocalWords:  CharSequence classpath nullness quals SuppressWarnings classfile
-% LocalWords:  uncapitalized processorpath Warski MyFile YourProgram
-%%  LocalWords:  bootclasspath PossiblyUnencrypted myProject myLibrary
-%%  LocalWords:  ElementType myqualpath sendOverInternet
+% LocalWords:  uncapitalized processorpath Warski MyFile YourProgram qual
+%%  LocalWords:  bootclasspath PossiblyUnencrypted myProject myLibrary msg
+%%  LocalWords:  ElementType myqualpath sendOverInternet myModule typedefs
+%%  LocalWords:  SubtypeOf LiteralKind DefaultFor TypeUseLocation fenum
+%%  LocalWords:  DefaultQualifierInHierarchy sendText sendPassword MyType
+%  LocalWords:  getUserPassword CompassDirection MyTypeUnknown NotMyType
+%  LocalWords:  MyTypeBottom typecheck

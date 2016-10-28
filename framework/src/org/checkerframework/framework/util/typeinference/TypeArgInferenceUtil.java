@@ -437,9 +437,7 @@ public class TypeArgInferenceUtil {
                     nextType = typeFactory.getBoxedType((AnnotatedPrimitiveType) nextType);
                 }
             }
-            lubType =
-                    AnnotatedTypes.leastUpperBound(
-                            typeFactory.getProcessingEnv(), typeFactory, lubType, nextType);
+            lubType = AnnotatedTypes.leastUpperBound(typeFactory, lubType, nextType);
         }
 
         return lubType;

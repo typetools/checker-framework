@@ -1116,9 +1116,9 @@ class ChapterExamples {
     void testItselfNonFinalLock() {
         final @GuardedBy("<self>.nonFinalLock") MyClassContainingALock m =
                 new MyClassContainingALock();
-        //:: error: (lock.expression.not.final)
+        //:: error: (lock.expression.not.final) :: error: (contracts.precondition.not.satisfied.field)
         m.field = new Object();
-        //:: error: (lock.expression.not.final)
+        //:: error: (lock.expression.not.final) :: error: (contracts.precondition.not.satisfied.field)
         m.nonFinalLock.lock();
         //:: error: (lock.expression.not.final)
         m.field = new Object();
