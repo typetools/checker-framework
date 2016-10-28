@@ -1467,6 +1467,24 @@ required parsing of the option.
 % TODO: describe -ANullnessChecker_option=value mechanism.
 
 
+\section{Annotated JDK\label{writing-a-checker-annotated-jdk}}
+
+You will need to supply annotations for relevant parts of the JDK;
+otherwise, your type-checker may produce spurious warnings for code that
+uses the JDK.  As described in Section~\ref{annotated-libraries-creating},
+there are two general ways to supply an annotated library:  in Java files
+that will be compiled to \<.class> files, or as stub files (partial Java source files).
+
+To supply an annotated JDK that will be compiled, see Section~\ref{annotating-jdk}.
+
+To supply an annotated JDK as a stub file, create a file \<jdk.astub> in
+the checker's main source directory.  It will be automatically used by the
+checker.
+You can also supply \<.astub> files in that directory for other libraries.
+You should list them in a
+\refqualclass{framework/qual}{StubFiles} annotation on the checker's main
+class, so that they will also be automatically used.
+
 
 \section{Testing framework\label{testing-framework}}
 
