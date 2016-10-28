@@ -8,20 +8,20 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 /**
- * Utilities class for the Nullness Checker.
+ * Utility class for the Nullness Checker.
  * <p>
  *
- * To avoid the need to write the NullnessUtils class name, do:
- * <pre>import static org.checkerframework.checker.nullness.NullnessUtils.castNonNull;</pre>
+ * To avoid the need to write the NullnessUtil class name, do:
+ * <pre>import static org.checkerframework.checker.nullness.NullnessUtil.castNonNull;</pre>
  * or
- * <pre>import static org.checkerframework.checker.nullness.NullnessUtils.*;</pre>
+ * <pre>import static org.checkerframework.checker.nullness.NullnessUtil.*;</pre>
  * <p>
  *
  * <b>Runtime Dependency</b>
  * <p>
  *
- * Please note that using this class introduces a Runtime dependency.
- * This means that if you need to distribute (or link to) the Checker
+ * Please note that using this class introduces a runtime dependency.
+ * This means that you need to distribute (or link to) the Checker
  * Framework, along with your binaries.
  *
  * To eliminate this dependency, you can simply copy this class into your
@@ -30,9 +30,9 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 // Nullness utilities are trusted regarding nullness.
 // Casts look redundant if Nullness Checker is not run.
 @SuppressWarnings({"nullness", "cast"})
-public final class NullnessUtils {
+public final class NullnessUtil {
 
-    private NullnessUtils() {
+    private NullnessUtil() {
         throw new AssertionError("shouldn't be instantiated");
     }
 

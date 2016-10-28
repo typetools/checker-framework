@@ -417,9 +417,9 @@ public class InternalUtils {
     }
 
     /**
-     * Obtain the class loader for {@code clazz}, if that is not available then the system class loader
-     * will be returned
-     * @param clazz
+     * Obtain the class loader for {@code clazz}.
+     * If that is not available, return the system class loader.
+     * @param clazz the class whose class loader to find
      * @return the class loader used to {@code clazz}, or the system
      *         class loader, or null if both are unavailable
      */

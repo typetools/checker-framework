@@ -52,7 +52,7 @@ public class ConversionCategory {
 
         @I18nFormat({I18nConversionCategory.DATE}) String s13 = "{0, date} {0, date}";
 
-        //:: error: (i18nformat.excess.arguments)
+        //:: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
         @I18nFormat({I18nConversionCategory.GENERAL}) String b1 = "{1}";
 
         //:: error: (assignment.type.incompatible)
@@ -64,7 +64,7 @@ public class ConversionCategory {
         //:: error: (assignment.type.incompatible)
         @I18nFormat({I18nConversionCategory.GENERAL}) String b4 = "{0, date}";
 
-        //:: error: (i18nformat.excess.arguments)
+        //:: error: (i18nformat.excess.arguments) :: error: (assignment.type.incompatible)
         @I18nFormat({I18nConversionCategory.DATE}) String b5 = "{0, date} {1, date}";
 
         //:: warning: (i18nformat.missing.arguments)

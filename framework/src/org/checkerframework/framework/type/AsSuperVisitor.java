@@ -56,10 +56,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             return (T) type.deepCopy();
         }
 
-        // This visitor modifies superType and may return type, so pass it copies so that it that
+        // This visitor modifies superType and may return type, so pass it copies so that the
         // parameters to asSuper are not changed and a copy is returned.
         AnnotatedTypeMirror copyType = type.deepCopy();
-        AnnotatedTypeMirror copySuperType = superType.deepCopy(false);
+        AnnotatedTypeMirror copySuperType = superType.deepCopy();
         AnnotatedTypeMirror result = visit(copyType, copySuperType, null);
 
         if (result == null) {
@@ -201,7 +201,11 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     private AnnotatedTypeMirror asSuperLowerBound(
             AnnotatedTypeMirror type, Void p, AnnotatedTypeMirror lowerBound) {
         if (lowerBound.getKind() == TypeKind.NULL) {
-            return copyPrimaryAnnos(type, lowerBound);
+            Set<AnnotationMirror> typeLowerBound =
+                    AnnotatedTypes.findEffectiveLowerBoundAnnotations(
+                            annotatedTypeFactory.getQualifierHierarchy(), type);
+            lowerBound.replaceAnnotations(typeLowerBound);
+            return lowerBound;
         }
         lowerBound = visit(type, lowerBound, p);
         return lowerBound;
@@ -598,15 +602,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitTypevar_Typevar(
             AnnotatedTypeVariable type, AnnotatedTypeVariable superType, Void p) {
-        if (type.getLowerBound().getKind() == TypeKind.NULL
-                && !(superType.getLowerBound().getKind() == TypeKind.NULL)) {
-            ErrorReporter.errorAbort(
-                    "AsSuperVisitor visitTypevar_Typevar: can't call asSuper on a type var with a"
-                            + " lower bound and one without.\nType: %s\nsuperType: %s",
-                    type,
-                    superType);
-            return null; // dead code
-        }
 
         AnnotatedTypeMirror upperBound = visit(type.getUpperBound(), superType.getUpperBound(), p);
         superType.setUpperBound(upperBound);
@@ -615,6 +610,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (type.getLowerBound().getKind() == TypeKind.NULL
                 && superType.getLowerBound().getKind() == TypeKind.NULL) {
             lowerBound = copyPrimaryAnnos(type.getLowerBound(), superType.getLowerBound());
+        } else if (type.getLowerBound().getKind() == TypeKind.NULL) {
+            lowerBound = visit(type, superType.getLowerBound(), p);
         } else {
             lowerBound = asSuperTypevarLowerBound(type.getLowerBound(), superType, p);
         }
@@ -632,16 +629,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitTypevar_Wildcard(
             AnnotatedTypeVariable type, AnnotatedWildcardType superType, Void p) {
-        if (type.getLowerBound().getKind() == TypeKind.NULL
-                && !(superType.getSuperBound().getKind() == TypeKind.NULL)) {
-            ErrorReporter.errorAbort(
-                    "AsSuperVisitor visitTypevar_Wildcard: can't call asSuper on a type var with a "
-                            + "lower bound and a wildcard without.\nType: %s\nsuperType: %s",
-                    type,
-                    superType);
-            return null; // dead code
-        }
-
         AnnotatedTypeMirror upperBound =
                 visit(type.getUpperBound(), superType.getExtendsBound(), p);
         superType.setExtendsBound(upperBound);
@@ -650,6 +637,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (type.getLowerBound().getKind() == TypeKind.NULL
                 && superType.getSuperBound().getKind() == TypeKind.NULL) {
             lowerBound = copyPrimaryAnnos(type.getLowerBound(), superType.getSuperBound());
+        } else if (type.getLowerBound().getKind() == TypeKind.NULL) {
+            lowerBound = visit(type, superType.getSuperBound(), p);
         } else {
             lowerBound = asSuperWildcardLowerBound(type.getLowerBound(), superType, p);
         }
@@ -743,16 +732,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitWildcard_Typevar(
             AnnotatedWildcardType type, AnnotatedTypeVariable superType, Void p) {
-        if (type.getSuperBound().getKind() == TypeKind.NULL
-                && !(superType.getLowerBound().getKind() == TypeKind.NULL)) {
-            ErrorReporter.errorAbort(
-                    "AsSuperVisitor visitWildcard_Typevar: can't call asSuper on a type var with a "
-                            + "lower bound and a wildcard without.\nType: %s\nsuperType: %s",
-                    type,
-                    superType);
-            return null; // dead code
-        }
-
         AnnotatedTypeMirror upperBound =
                 visit(type.getExtendsBound(), superType.getUpperBound(), p);
         superType.setUpperBound(upperBound);
@@ -761,6 +740,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (type.getSuperBound().getKind() == TypeKind.NULL
                 && superType.getLowerBound().getKind() == TypeKind.NULL) {
             lowerBound = copyPrimaryAnnos(type.getSuperBound(), superType.getLowerBound());
+        } else if (type.getSuperBound().getKind() == TypeKind.NULL) {
+            lowerBound = visit(type, superType.getLowerBound(), p);
         } else {
             lowerBound = asSuperTypevarLowerBound(type.getSuperBound(), superType, p);
         }
@@ -778,18 +759,6 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitWildcard_Wildcard(
             AnnotatedWildcardType type, AnnotatedWildcardType superType, Void p) {
-        if (type.getSuperBound().getKind() == TypeKind.NULL
-                && !(superType.getSuperBound().getKind() == TypeKind.NULL)) {
-            AnnotatedTypeMirror lowerbound =
-                    visit(type.getExtendsBound(), superType.getSuperBound(), p);
-            superType.setSuperBound(lowerbound);
-
-            AnnotatedTypeMirror upperbound = superType.getExtendsBound();
-            copyPrimaryAnnos(type, upperbound);
-            superType.setExtendsBound(upperbound);
-            return copyPrimaryAnnos(type, superType);
-        }
-
         AnnotatedTypeMirror upperBound =
                 visit(type.getExtendsBound(), superType.getExtendsBound(), p);
         superType.setExtendsBound(upperBound);
@@ -798,6 +767,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (type.getSuperBound().getKind() == TypeKind.NULL
                 && superType.getSuperBound().getKind() == TypeKind.NULL) {
             lowerBound = copyPrimaryAnnos(type.getSuperBound(), superType.getSuperBound());
+        } else if (type.getSuperBound().getKind() == TypeKind.NULL) {
+            lowerBound = visit(type, superType.getSuperBound(), p);
         } else {
             lowerBound = asSuperWildcardLowerBound(type.getSuperBound(), superType, p);
         }

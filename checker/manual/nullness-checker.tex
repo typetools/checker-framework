@@ -593,7 +593,7 @@ an \<assert> message (see Section~\ref{assumeassertion}).
 If you need to suppress a warning within an expression, then
 sometimes writing an assertion is not convenient.  In such a case,
 you can suppress warnings by writing a call to the
-\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} method.
+\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} method.
 The rest of this section discusses the \<castNonNull> method.
 
 The Nullness Checker considers both the return value, and also the
@@ -1109,6 +1109,11 @@ See the article
   is better than Java's \<Optional> class''} for more details and
 explanation of the
 \href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html#benefits-of-nullable}{benefits of \<@Nullable> over \<Optional>}.
+
+The \<Optional> class provides utility routines to reduce clutter when
+using \<Optional>.  The Nullness Checker provides an
+\refclass{checker/nullness}{Opt} class that provides all the same methods,
+but written for regular possibly-null Java references.
 
 
 \section{Initialization Checker\label{initialization-checker}}
@@ -2313,7 +2318,7 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  Daikon JastAdd javac DefaultQualifier boolean MyEnumType NonRaw
 % LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor MonotonicNonNull
 % LocalWords:  inferencer Nonnull CheckForNull UnknownNullness rawtypes de ch
-% LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
+% LocalWords:  castNonNull NullnessUtil assertNotNull codebases checkNotNull
 % LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
 % LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
