@@ -8,13 +8,13 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * If you run:
- * gradle build
+ * <pre>gradle build</pre>
  *
  * The build for this project should fail with a warning for the line:
- * @NonNull Object nn = nullable;
+ * <pre>@NonNull Object nn = nullable;</pre>
  *
  * And this line:
- * list.add(null);
+ * <pre>list.add(null);</pre>
  */
 public class GradleExample {
 
