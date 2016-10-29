@@ -436,7 +436,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     protected List<String> upstreamCheckerNames = null;
 
     @Override
-    public final void init(ProcessingEnvironment env) {
+    public final synchronized void init(ProcessingEnvironment env) {
         super.init(env);
         // The processingEnvironment field will also be set by the superclass' init method.
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
@@ -875,8 +875,6 @@ public abstract class SourceChecker extends AbstractTypeProcessor
         this.visitor = createSourceVisitor();
 
         // TODO: hack to clear out static caches.
-        // When the {@link org.checkerframework.qualframework.util.QualifierContext}
-        // gets used by all utilities, this shouldn't be an issue anymore.
         AnnotationUtils.clear();
     }
 

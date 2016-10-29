@@ -19,6 +19,10 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 //@ImplicitFor(literals = {LiteralKind.NULL},
 //	     typeNames = {java.lang.Void.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@ImplicitFor(
+    literals = {LiteralKind.NULL},
+    typeNames = {java.lang.Void.class}
+)
 //@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})
 //@DefaultFor({TypeUseLocation.LOWER_BOUND})
 public @interface Positive {}

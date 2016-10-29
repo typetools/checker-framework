@@ -76,7 +76,7 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
         return new ReportAnnotatedTypeFactory(checker);
     }
 
-    class ReportAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+    private static class ReportAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         public ReportAnnotatedTypeFactory(BaseTypeChecker checker) {
             super(checker);

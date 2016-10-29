@@ -68,6 +68,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.MonotonicQualifier;
+import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -77,6 +78,7 @@ import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator;
+import org.checkerframework.framework.type.typeannotator.IrrelevantTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
@@ -259,8 +261,14 @@ public abstract class GenericAnnotatedTypeFactory<
      * Returns a {@link TreeAnnotator} that adds annotations to a type based
      * on the contents of a tree.
      *
-     * Subclasses may override this method to specify a more appropriate
-     * {@link TreeAnnotator}.
+     * Subclasses may override this method to specify a more appropriate {@link TreeAnnotator}.
+     * The default tree annotator is a {@link ListTreeAnnotator}
+     * of the following:
+     * <ol>
+     *   <li> {@link PropagationTreeAnnotator}: Propagates annotations from subtrees.
+     *   <li> {@link ImplicitsTreeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *  meta-annotations
+     * </ol>
      *
      * @return a tree annotator
      */
@@ -274,12 +282,34 @@ public abstract class GenericAnnotatedTypeFactory<
      * {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
      * that adds annotations to a type based on the content of the type itself.
      *
+     * Subclass may override this method.  The default type annotator is a {@link ListTypeAnnotator}
+     * of the following:
+     * <ol>
+     *   <li> {@link IrrelevantTypeAnnotator}: Adds top to types not listed in
+     *  the {@link RelevantJavaTypes} annotation on the checker
+     *   <li> {@link PropagationTypeAnnotator}: Propagates annotation onto wildcards
+     *   <li> {@link ImplicitsTypeAnnotator}: Adds annotations based on {@link ImplicitFor}
+     *  meta-annotations
+     * </ol>
+     *
      * @return a type annotator
      */
     protected TypeAnnotator createTypeAnnotator() {
+        List<TypeAnnotator> typeAnnotators = new ArrayList<>();
+        RelevantJavaTypes relevantJavaTypes =
+                checker.getClass().getAnnotation(RelevantJavaTypes.class);
+        if (relevantJavaTypes != null) {
+            Class<?>[] classes = relevantJavaTypes.value();
+            // Must be first in order to annotated all irrelevant types that are not explicilty
+            // annotated.
+            typeAnnotators.add(
+                    new IrrelevantTypeAnnotator(
+                            this, getQualifierHierarchy().getTopAnnotations(), classes));
+        }
+        typeAnnotators.add(new PropagationTypeAnnotator(this));
         implicitsTypeAnnotator = new ImplicitsTypeAnnotator(this);
-
-        return new ListTypeAnnotator(new PropagationTypeAnnotator(this), implicitsTypeAnnotator);
+        typeAnnotators.add(implicitsTypeAnnotator);
+        return new ListTypeAnnotator(typeAnnotators);
     }
 
     protected void addTypeNameImplicit(Class<?> clazz, AnnotationMirror implicitAnno) {
@@ -395,7 +425,11 @@ public abstract class GenericAnnotatedTypeFactory<
     protected final QualifierDefaults createQualifierDefaults() {
         QualifierDefaults defs = new QualifierDefaults(elements, this);
         addCheckedCodeDefaults(defs);
+        addCheckedStandardDefaults(defs);
         addUncheckedCodeDefaults(defs);
+        addUncheckedStandardDefaults(defs);
+        checkForDefaultQualifierInHierarchy(defs);
+
         return defs;
     }
 
@@ -479,17 +513,15 @@ public abstract class GenericAnnotatedTypeFactory<
         AnnotationMirror unqualified = AnnotationUtils.fromClass(elements, Unqualified.class);
         if (!foundOtherwise && this.isSupportedQualifier(unqualified)) {
             defs.addCheckedCodeDefault(unqualified, TypeUseLocation.OTHERWISE);
-            foundOtherwise = true;
         }
+    }
 
-        if (!foundOtherwise) {
-            ErrorReporter.errorAbort(
-                    "GenericAnnotatedTypeFactory.createQualifierDefaults: "
-                            + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
-                            + "Every checker must specify a default qualifier. "
-                            + getSortedQualifierNames());
-        }
-
+    /**
+     * Adds the standard CLIMB defaults that do not conflict with previously added defaults.
+     *
+     * @param defs {@link QualifierDefaults} object to which defaults are added
+     */
+    protected void addCheckedStandardDefaults(QualifierDefaults defs) {
         if (this.everUseFlow) {
             Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
             Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
@@ -534,9 +566,32 @@ public abstract class GenericAnnotatedTypeFactory<
                         AnnotationUtils.fromClass(elements, annotation), TypeUseLocation.OTHERWISE);
             }
         }
+    }
+
+    /**
+     * Adds standard unchecked defaults that do not conflict with previously added defaults.
+     *
+     * @param defs {@link QualifierDefaults} object to which defaults are added
+     */
+    protected void addUncheckedStandardDefaults(QualifierDefaults defs) {
         Set<? extends AnnotationMirror> tops = this.qualHierarchy.getTopAnnotations();
         Set<? extends AnnotationMirror> bottoms = this.qualHierarchy.getBottomAnnotations();
         defs.addUncheckedStandardDefaults(tops, bottoms);
+    }
+
+    /**
+     * Check that a default qualifier (in at least one hierarchy) has been set and issue an error if not.
+     *
+     * @param defs {@link QualifierDefaults} object to which defaults are added
+     */
+    protected void checkForDefaultQualifierInHierarchy(QualifierDefaults defs) {
+        if (!defs.hasDefaultsForCheckedCode()) {
+            ErrorReporter.errorAbort(
+                    "GenericAnnotatedTypeFactory.createQualifierDefaults: "
+                            + "@DefaultQualifierInHierarchy or @DefaultFor(TypeUseLocation.OTHERWISE) not found. "
+                            + "Every checker must specify a default qualifier. "
+                            + getSortedQualifierNames());
+        }
 
         // Don't require @DefaultQualifierInHierarchyInUncheckedCode or an
         // unchecked default for TypeUseLocation.OTHERWISE.
@@ -1188,8 +1243,9 @@ public abstract class GenericAnnotatedTypeFactory<
      * Applies the annotations inferred by the org.checkerframework.dataflow analysis to the type {@code type}.
      */
     protected void applyInferredAnnotations(AnnotatedTypeMirror type, Value as) {
-        new DefaultInferredTypesApplier()
-                .applyInferredType(getQualifierHierarchy(), type, as.getType());
+        DefaultInferredTypesApplier applier =
+                new DefaultInferredTypesApplier(getQualifierHierarchy(), this);
+        applier.applyInferredType(type, as.getAnnotations(), as.getUnderlyingType());
     }
 
     @Override

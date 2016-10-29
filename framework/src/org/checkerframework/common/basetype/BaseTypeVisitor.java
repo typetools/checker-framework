@@ -618,10 +618,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     // check anything
                 } else {
                     CFAbstractValue<?> value = exitStore.getValue(expr);
-                    AnnotationMirror inferredAnno =
-                            value == null
-                                    ? null
-                                    : value.getType().getAnnotationInHierarchy(annotation);
+                    AnnotationMirror inferredAnno = null;
+                    if (value != null) {
+                        QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                        Set<AnnotationMirror> annos = value.getAnnotations();
+                        inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+                    }
                     if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
                         checker.report(
                                 Result.failure(
@@ -774,8 +776,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (!(retVal == null || retVal == result)) {
                 continue;
             }
-            AnnotationMirror inferredAnno =
-                    value == null ? null : value.getType().getAnnotationInHierarchy(annotation);
+            AnnotationMirror inferredAnno = null;
+            if (value != null) {
+                QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                Set<AnnotationMirror> annos = value.getAnnotations();
+                inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+            }
+
             if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
                 checker.report(
                         Result.failure(
@@ -1061,11 +1068,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 CFAbstractValue<?> value = store.getValue(expr);
 
                 AnnotationMirror inferredAnno = null;
-
                 if (value != null) {
-                    inferredAnno = value.getType().getAnnotationInHierarchy(anno);
+                    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                    Set<AnnotationMirror> annos = value.getAnnotations();
+                    inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
                 }
-
                 if (!checkContract(expr, anno, inferredAnno, store)) {
                     checker.report(
                             Result.failure(

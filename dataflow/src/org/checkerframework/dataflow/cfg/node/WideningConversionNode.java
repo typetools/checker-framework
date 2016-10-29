@@ -35,6 +35,7 @@ public class WideningConversionNode extends Node {
         return operand;
     }
 
+    @Override
     public TypeMirror getType() {
         return type;
     }

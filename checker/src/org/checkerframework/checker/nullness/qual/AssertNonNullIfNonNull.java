@@ -5,7 +5,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.nullness.NullnessChecker;
 
 /**
  * Indicates that if the method returns a non-null value, then the value
@@ -38,7 +37,7 @@ import org.checkerframework.checker.nullness.NullnessChecker;
  *
  * @see NonNull
  * @see PolyNull
- * @see NullnessChecker
+ * @see org.checkerframework.checker.nullness.NullnessChecker
  * @checker_framework.manual #nullness-checker Nullness Checker
  */
 @Documented

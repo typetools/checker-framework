@@ -302,7 +302,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final static int DEFAULT_CACHE_SIZE = 300;
 
     /** Mapping from a Tree to its annotated type; implicits have been applied. */
-    private final Map<Tree, AnnotatedTypeMirror> treeCache;
+    private final Map<Tree, AnnotatedTypeMirror> classAndMethodTreeCache;
 
     /**
      * Mapping from a Tree to its annotated type; before implicits are applied,
@@ -355,12 +355,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.shouldCache = !checker.hasOption("atfDoNotCache");
         if (shouldCache) {
             int cacheSize = getCacheSize();
-            this.treeCache = CollectionUtils.createLRUCache(cacheSize);
+            this.classAndMethodTreeCache = CollectionUtils.createLRUCache(cacheSize);
             this.fromTreeCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementCache = CollectionUtils.createLRUCache(cacheSize);
             this.elementToTreeCache = CollectionUtils.createLRUCache(cacheSize);
         } else {
-            this.treeCache = null;
+            this.classAndMethodTreeCache = null;
             this.fromTreeCache = null;
             this.elementCache = null;
             this.elementToTreeCache = null;
@@ -521,15 +521,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         this.root = root;
         treePathCache.clear();
         pathHack.clear();
-
-        // There is no need to clear the following caches, they
-        // are all limited by CACHE_SIZE.
-        /*
-        treeCache.clear();
-        fromTreeCache.clear();
-        elementCache.clear();
+        // Clear the caches with trees because once the compilation unit changes,
+        // the trees may be modified and lose type arguments.
         elementToTreeCache.clear();
-        */
+        fromTreeCache.clear();
+        classAndMethodTreeCache.clear();
+
+        // There is no need to clear the following cache, it is limited by cache size and it
+        // contents won't change between compilation units.
+        // elementCache.clear();
     }
 
     @SideEffectFree
@@ -1001,8 +1001,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort("AnnotatedTypeFactory.getAnnotatedType: null tree");
             return null; // dead code
         }
-        if (shouldCache && treeCache.containsKey(tree)) {
-            return treeCache.get(tree).deepCopy();
+        if (shouldCache && classAndMethodTreeCache.containsKey(tree)) {
+            return classAndMethodTreeCache.get(tree).deepCopy();
         }
 
         AnnotatedTypeMirror type;
@@ -1025,7 +1025,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         if (TreeUtils.isClassTree(tree) || tree.getKind() == Tree.Kind.METHOD) {
             // Don't cache VARIABLE
             if (shouldCache) {
-                treeCache.put(tree, type.deepCopy());
+                classAndMethodTreeCache.put(tree, type.deepCopy());
             }
         } else {
             // No caching otherwise
@@ -2903,7 +2903,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns true if the element is from byte code
+     * Returns true if the element is from bytecode
      * and the if the element did not appear in a stub file
      * (Currently only works for methods, constructors, and fields)
      */
@@ -3429,7 +3429,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                 //   SubConsumer s = ...;
                 //   ConsumeStr stringConsumer = (someCondition) ? s : System.out::println;
                 AnnotatedTypeMirror conditionalType =
-                        AnnotatedTypes.leastUpperBound(processingEnv, this, trueType, falseType);
+                        AnnotatedTypes.leastUpperBound(this, trueType, falseType);
                 assertFunctionalInterface(
                         javacTypes,
                         (Type) conditionalType.getUnderlyingType(),

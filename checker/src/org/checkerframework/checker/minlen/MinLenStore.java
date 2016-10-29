@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -17,6 +19,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 public class MinLenStore extends CFAbstractStore<MinLenValue, MinLenStore> {
 
@@ -69,8 +72,8 @@ public class MinLenStore extends CFAbstractStore<MinLenValue, MinLenStore> {
             AnnotatedTypeFactory atypeFactory) {
         MinLenAnnotatedTypeFactory factory = (MinLenAnnotatedTypeFactory) atypeFactory;
         MinLenValue value = this.getValue(rec);
-        AnnotatedTypeMirror atm = value.getType();
-        if (atm.hasAnnotation(MinLen.class)) {
+        Set<AnnotationMirror> atm = value.getAnnotations();
+        if (AnnotationUtils.containsSameByClass(atm, MinLen.class)) {
             if (isClear) {
                 MinLenValue val =
                         analysis.createSingleAnnotationValue(
@@ -78,7 +81,8 @@ public class MinLenStore extends CFAbstractStore<MinLenValue, MinLenStore> {
                 replace.put(rec, val);
             } else {
                 int length =
-                        MinLenAnnotatedTypeFactory.getMinLenValue(atm.getAnnotation(MinLen.class));
+                        MinLenAnnotatedTypeFactory.getMinLenValue(
+                                AnnotationUtils.getAnnotationByClass(atm, MinLen.class));
                 MinLenValue val =
                         analysis.createSingleAnnotationValue(
                                 factory.createMinLen(Math.max(length - 1, 0)), rec.getType());

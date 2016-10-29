@@ -516,6 +516,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         }
     }
 
+    @Override
     protected boolean shouldAddShutdownHook() {
         if (super.shouldAddShutdownHook() || getTypeFactory().getCFGVisualizer() != null) {
             return true;
@@ -528,6 +529,7 @@ public abstract class BaseTypeChecker extends SourceChecker implements BaseTypeC
         return false;
     }
 
+    @Override
     protected void shutdownHook() {
         super.shutdownHook();
 

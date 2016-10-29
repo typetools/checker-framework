@@ -6,7 +6,6 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.framework.util.defaults.QualifierDefaults;
 
 /**
  * Indicates that the annotated qualifier is the default qualifier in the
@@ -16,7 +15,7 @@ import org.checkerframework.framework.util.defaults.QualifierDefaults;
  *
  * Other defaults can be specified for a checker via the {@link DefaultFor} meta-annotation, which
  * takes precedence over {@code DefaultQualifierInHierarchy}, or via
- * {@link org.checkerframework.framework.type.GenericAnnotatedTypeFactory#addCheckedCodeDefaults(QualifierDefaults)}.
+ * {@link org.checkerframework.framework.type.GenericAnnotatedTypeFactory#addCheckedCodeDefaults(org.checkerframework.framework.util.defaults.QualifierDefaults)}.
  * <p>
  *
  * The {@link DefaultQualifier} annotation, which targets Java code elements,

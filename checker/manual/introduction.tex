@@ -33,7 +33,7 @@ The Checker Framework comes with checkers for specific types of errors:
   (see \chapterpageref{index-checker})
 \item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
-  patterns (see \chapterpageref{fenum-checker})
+  patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
 \item
   \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
@@ -211,7 +211,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-2.1.1.zip}
+  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-2.1.4.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -668,8 +668,7 @@ Type-checking modes:  enable/disable functionality
   errors when running type-checking in the future; see
   Section~\ref{whole-program-inference}.
 \item \<-AshowSuppressWarningKeys>
-  With each warning, show all possible keys to suppress that warning;
-  see Section~\ref{suppresswarnings-command-line}.
+  With each warning, show all possible keys to suppress that warning.
 \end{itemize}
 
 Partially-annotated libraries
@@ -1007,9 +1006,9 @@ libraries that your code uses.
 The checker infers annotations for local variables (see
 Section~\ref{type-refinement}).  Usually, you only need to annotate fields
 and method signatures.  After doing those, you can add annotations inside
-method bodies if the checker is unable to infer the correct annotation, if
-you need to suppress a warning (see Section~\ref{suppressing-warnings}),
-etc.
+method bodies if the checker is unable to infer the correct annotation.
+% or if
+% you need to suppress a warning (see Section~\ref{suppressing-warnings}).
 
 
 \subsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
@@ -1055,7 +1054,7 @@ as \code{@Nullable} would suppress such warnings, which is undesirable.
 % library methods; if the method is type-checked, then the type-checker
 % warnings will lead you to leave the formal parameter as the default, which
 % means \<@NonNull>.
-If a method can possibly throw exception because its parameter
+If a method can possibly throw an exception because its parameter
 is \<null>, then that parameter's type should be \<@NonNull>, which
 guarantees that the type-checker will issue a warning for every client
 use that has the potential to cause an exception.  Don't write

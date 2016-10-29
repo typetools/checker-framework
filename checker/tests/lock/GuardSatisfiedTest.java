@@ -279,8 +279,7 @@ class Foo {
     }
 
     void m3(@GuardSatisfied Foo f) {
-        // TODO: Fix: This should error with method.invocation.invalid but it gets swallowed and only method.guarantee.violated is output.
-        //:: error: (method.guarantee.violated)
+        //:: error: (method.guarantee.violated) :: error: (method.invocation.invalid)
         f.m1();
     }
 

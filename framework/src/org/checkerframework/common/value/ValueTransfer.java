@@ -17,7 +17,35 @@ import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.*;
+import org.checkerframework.dataflow.cfg.node.BitwiseAndNode;
+import org.checkerframework.dataflow.cfg.node.BitwiseComplementNode;
+import org.checkerframework.dataflow.cfg.node.BitwiseOrNode;
+import org.checkerframework.dataflow.cfg.node.BitwiseXorNode;
+import org.checkerframework.dataflow.cfg.node.ConditionalAndNode;
+import org.checkerframework.dataflow.cfg.node.ConditionalNotNode;
+import org.checkerframework.dataflow.cfg.node.ConditionalOrNode;
+import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.FloatingDivisionNode;
+import org.checkerframework.dataflow.cfg.node.FloatingRemainderNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.IntegerDivisionNode;
+import org.checkerframework.dataflow.cfg.node.IntegerRemainderNode;
+import org.checkerframework.dataflow.cfg.node.LeftShiftNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.NumericalAdditionNode;
+import org.checkerframework.dataflow.cfg.node.NumericalMinusNode;
+import org.checkerframework.dataflow.cfg.node.NumericalMultiplicationNode;
+import org.checkerframework.dataflow.cfg.node.NumericalPlusNode;
+import org.checkerframework.dataflow.cfg.node.NumericalSubtractionNode;
+import org.checkerframework.dataflow.cfg.node.SignedRightShiftNode;
+import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
+import org.checkerframework.dataflow.cfg.node.StringConcatenateNode;
+import org.checkerframework.dataflow.cfg.node.StringConversionNode;
+import org.checkerframework.dataflow.cfg.node.UnsignedRightShiftNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -37,22 +65,23 @@ public class ValueTransfer extends CFTransfer {
     private List<String> getStringValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
         // @StringVal, @BottomVal, @UnknownVal
-        AnnotationMirror numberAnno = value.getType().getAnnotation(StringVal.class);
+        AnnotationMirror numberAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), StringVal.class);
         if (numberAnno != null) {
             return AnnotationUtils.getElementValueArray(numberAnno, "value", String.class, true);
         }
-        numberAnno = value.getType().getAnnotation(UnknownVal.class);
+        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), UnknownVal.class);
         if (numberAnno != null) {
             return new ArrayList<String>();
         }
-        numberAnno = value.getType().getAnnotation(BottomVal.class);
+        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BottomVal.class);
         if (numberAnno != null) {
             return Collections.singletonList("null");
         }
 
         //@IntVal, @DoubleVal, @BoolVal (have to be converted to string)
         List<? extends Object> values;
-        numberAnno = value.getType().getAnnotation(BoolVal.class);
+        numberAnno = AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
         if (numberAnno != null) {
             values = getBooleanValues(subNode, p);
         } else if (subNode.getType().getKind() == TypeKind.CHAR) {
@@ -71,23 +100,27 @@ public class ValueTransfer extends CFTransfer {
 
     private List<Boolean> getBooleanValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        AnnotationMirror intAnno = value.getType().getAnnotation(BoolVal.class);
+        AnnotationMirror intAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), BoolVal.class);
         return ValueAnnotatedTypeFactory.getBooleanValues(intAnno);
     }
 
     private List<Character> getCharValues(Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        AnnotationMirror intAnno = value.getType().getAnnotation(IntVal.class);
+        AnnotationMirror intAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
         return ValueAnnotatedTypeFactory.getCharValues(intAnno);
     }
 
     private List<? extends Number> getNumericalValues(
             Node subNode, TransferInput<CFValue, CFStore> p) {
         CFValue value = p.getValueOfSubNode(subNode);
-        AnnotationMirror numberAnno = value.getType().getAnnotation(IntVal.class);
+        AnnotationMirror numberAnno =
+                AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntVal.class);
         List<? extends Number> values;
         if (numberAnno == null) {
-            numberAnno = value.getType().getAnnotation(DoubleVal.class);
+            numberAnno =
+                    AnnotationUtils.getAnnotationByClass(value.getAnnotations(), DoubleVal.class);
             if (numberAnno != null) {
                 values =
                         AnnotationUtils.getElementValueArray(
@@ -142,7 +175,7 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror stringVal = createNumberAnnotationMirror(resultValues);
         CFValue newResultValue =
                 analysis.createSingleAnnotationValue(
-                        stringVal, result.getResultValue().getType().getUnderlyingType());
+                        stringVal, result.getResultValue().getUnderlyingType());
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
@@ -151,7 +184,7 @@ public class ValueTransfer extends CFTransfer {
         AnnotationMirror stringVal = createBooleanAnnotationMirror(resultValues);
         CFValue newResultValue =
                 analysis.createSingleAnnotationValue(
-                        stringVal, result.getResultValue().getType().getUnderlyingType());
+                        stringVal, result.getResultValue().getUnderlyingType());
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }
 
@@ -183,7 +216,7 @@ public class ValueTransfer extends CFTransfer {
             }
         }
         AnnotationMirror stringVal = createStringValAnnotationMirror(concat);
-        TypeMirror underlyingType = result.getResultValue().getType().getUnderlyingType();
+        TypeMirror underlyingType = result.getResultValue().getUnderlyingType();
         CFValue newResultValue = analysis.createSingleAnnotationValue(stringVal, underlyingType);
         return new RegularTransferResult<>(newResultValue, result.getRegularStore());
     }

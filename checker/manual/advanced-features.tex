@@ -206,10 +206,8 @@ rules are used in order, until one applies.
 
 The end-user programmer specifies a default qualifier by writing the \refqualclass{framework/qual}{DefaultQualifier}
 annotation on a package, class, method, or variable declaration.  The
-argument to \refqualclass{framework/qual}{DefaultQualifier} is the \code{String}
-name of an annotation.  It may be a short name like \code{"NonNull"}, if an
-appropriate import statement exists.  Otherwise, it should be
-fully-qualified, like \code{"org.checkerframework.checker.nullness.qual.NonNull"}.
+argument to \refqualclass{framework/qual}{DefaultQualifier} is the \code{Class}
+name of an annotation.
 The optional second argument indicates where the default
 applies.  If the second argument is omitted, the specified annotation is
 the default in all locations.  See the Javadoc of \refclass{framework/qual}{DefaultQualifier} for details.
@@ -798,7 +796,7 @@ Type systems that cannot support a run-time test are:
   \chapterpageref{initialization-checker})
 \item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
-  patterns (see \chapterpageref{fenum-checker})
+  patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
 \item
   \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})

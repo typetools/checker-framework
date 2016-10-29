@@ -218,12 +218,10 @@ public abstract class CFAbstractTransfer<
      *         from {@code annotatedValue}.
      */
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
-        if (annotatedValue == null) return null;
-        GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
-                analysis.atypeFactory;
-        AnnotatedTypeMirror at = AnnotatedTypeMirror.createType(type, factory, false);
-        at.replaceAnnotations(annotatedValue.getType().getAnnotations());
-        return analysis.createAbstractValue(at);
+        if (annotatedValue == null) {
+            return null;
+        }
+        return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
     }
 
     private S fixedInitialStore = null;

@@ -52,7 +52,7 @@ public class F2AReducer implements AFReducer {
      *  These are excerpts from the JLS, if you search for them you will find the corresponding
      *  JLS description of the case being covered.
      */
-    class F2AReducingVisitor extends AFReducingVisitor {
+    private static class F2AReducingVisitor extends AFReducingVisitor {
 
         public F2AReducingVisitor(AnnotatedTypeFactory typeFactory) {
             super(F2A.class, typeFactory);

@@ -21,11 +21,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
  */
 @SubtypeOf({FenumTop.class})
 @DefaultQualifierInHierarchy
-@DefaultFor({
-    TypeUseLocation.IMPLICIT_UPPER_BOUND,
-    TypeUseLocation.IMPLICIT_LOWER_BOUND,
-    TypeUseLocation.EXCEPTION_PARAMETER
-})
+@DefaultFor(TypeUseLocation.EXCEPTION_PARAMETER)
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({}) // empty target prevents programmers from writing this in a program

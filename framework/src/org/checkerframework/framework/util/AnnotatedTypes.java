@@ -41,7 +41,6 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import org.checkerframework.framework.flow.util.LubTypeVariableAnnotator;
 import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -49,7 +48,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AsSuperVisitor;
@@ -283,11 +281,6 @@ public class AnnotatedTypes {
             case UNION:
             case DECLARED:
                 return substituteTypeVariables(types, atypeFactory, of, member, memberType);
-            case NULL:
-                // For example:
-                // <T> T foo(T p) {}
-                // foo(null).toString();
-                return memberType;
             default:
                 ErrorReporter.errorAbort("asMemberOf called on unexpected type.\nt: " + of);
                 return memberType; // dead code
@@ -603,581 +596,55 @@ public class AnnotatedTypes {
                     .inferTypeArgs(atypeFactory, expr, elt, preType);
         }
     }
-
-    private static Set<TypeMirror> wildcards =
-            Collections.newSetFromMap(new IdentityHashMap<TypeMirror, Boolean>());
-    // TODO: compare to leastUpperBound method that is in comments further
-    // below and see how to incorporate the logic.
-    // Also see CFAbstractValue for other methods that should be in
-    // a better location.
+    /**
+     * @deprecated Use {@link #leastUpperBound(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}
+     */
+    @Deprecated
     public static AnnotatedTypeMirror leastUpperBound(
             ProcessingEnvironment processingEnv,
             AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror a,
-            AnnotatedTypeMirror b) {
-        List<AnnotatedTypeMirror> list = new ArrayList<>(2);
-        list.add(a);
-        list.add(b);
-        // It would be nice to use the following
-        // return leastUpperBound(processingEnv, atypeFactory, list);
-        // see commented-out version below.
-        TypeMirror lubType =
+            AnnotatedTypeMirror type1,
+            AnnotatedTypeMirror type2) {
+        return leastUpperBound(atypeFactory, type1, type2);
+    }
+
+    /**
+     * Returns the lub of two annotated types.
+     * @param atypeFactory AnnotatedTypeFactory
+     * @param type1 annotated type
+     * @param type2 annotated type
+     * @return the lub of type1 and type2
+     */
+    public static AnnotatedTypeMirror leastUpperBound(
+            AnnotatedTypeFactory atypeFactory,
+            AnnotatedTypeMirror type1,
+            AnnotatedTypeMirror type2) {
+        TypeMirror lub =
                 InternalUtils.leastUpperBound(
-                        processingEnv, a.getUnderlyingType(), b.getUnderlyingType());
-        AnnotatedTypeMirror res = AnnotatedTypeMirror.createType(lubType, atypeFactory, false);
-
-        if (a.getKind() == TypeKind.NULL) {
-            return lubWithNull((AnnotatedNullType) a, b, atypeFactory);
-        } else if (b.getKind() == TypeKind.NULL) {
-            return lubWithNull((AnnotatedNullType) b, a, atypeFactory);
-        }
-
-        wildcards.clear();
-        annotateAsLub(processingEnv, atypeFactory, res, list);
-        wildcards.clear();
-        return res;
+                        atypeFactory.getProcessingEnv(),
+                        type1.getUnderlyingType(),
+                        type2.getUnderlyingType());
+        return leastUpperBound(atypeFactory, type1, type2, lub);
     }
 
     /**
-     * Returns the leastUpperBound of an AnnotatedNullType and another AnnotatedTypeMirror
+     * Returns the lub, whose underlying type is {@code lubTypeMirror} of two annotated types.
      *
-     * @param nullType type to lub
-     * @param otherType other type to lub
-     * @param factory AnnotatedTypeFactory to lub with
-     * @return the lub of {@code nullType} and {@code otherType}
+     * @param atypeFactory AnnotatedTypeFactory
+     * @param type1 annotated type whose underlying type must be a subtype or convertible to
+     *              lubTypeMirror
+     * @param type2 annotated type whose underlying type must be a subtype or convertible to
+     *              lubTypeMirror
+     * @param lubTypeMirror underlying type of the returned lub
+     * @return the lub of type1 and type2 with underlying type lubTypeMirror
      */
-    public static AnnotatedTypeMirror lubWithNull(
-            AnnotatedNullType nullType,
-            AnnotatedTypeMirror otherType,
-            AnnotatedTypeFactory factory) {
-        AnnotatedTypeMirror lub = otherType.deepCopy();
-        if (otherType.getKind() != TypeKind.TYPEVAR && otherType.getKind() != TypeKind.WILDCARD) {
-            for (AnnotationMirror nullAnno : nullType.getAnnotations()) {
-                AnnotationMirror otherAnno = lub.getAnnotationInHierarchy(nullAnno);
-                AnnotationMirror lubAnno =
-                        factory.getQualifierHierarchy().leastUpperBound(nullAnno, otherAnno);
-                lub.replaceAnnotation(lubAnno);
-            }
-            return lub;
-        }
-
-        // LUB(@N null, T), where T's upper bound is @U and T's lower bound is @L
-        // if @L <: @U <: @N && @N != @U then LUB(@N null, T) = @N T
-        // if @L <: @N <:@U && @N != @L  then LUB(@N null, T) = @U T
-        // if @N <: @L <: @U             then LUB(@N null, T) =    T
-        Set<AnnotationMirror> lowerBounds =
-                findEffectiveLowerBoundAnnotations(factory.getQualifierHierarchy(), otherType);
-        for (AnnotationMirror lowerBound : lowerBounds) {
-            AnnotationMirror nullAnno = nullType.getAnnotationInHierarchy(lowerBound);
-            AnnotationMirror upperBound = otherType.getEffectiveAnnotationInHierarchy(lowerBound);
-            if (factory.getQualifierHierarchy().isSubtype(upperBound, nullAnno)
-                    && !factory.getQualifierHierarchy().isSubtype(nullAnno, upperBound)) {
-                // @L <: @U <: @N && @N != @U
-                lub.replaceAnnotation(nullAnno);
-            } else if (factory.getQualifierHierarchy().isSubtype(lowerBound, nullAnno)
-                    && !factory.getQualifierHierarchy().isSubtype(nullAnno, lowerBound)) {
-                // @L <: @N <:@U && @N != @L
-                lub.replaceAnnotation(upperBound);
-            } // else @N <: @L <: @U
-        }
-        return lub;
-    }
-
-    /* TODO: Add version that takes arbitrary number of arguments.
-     * At the moment, InternalUtils.leastUpperBound only exists for two arguments.
-    public static AnnotatedTypeMirror leastUpperBound(ProcessingEnvironment processingEnv, AnnotatedTypeFactory atypeFactory,
-            Collection<AnnotatedTypeMirror> types) {
-        com.sun.tools.javac.util.List<Type> utypes = com.sun.tools.javac.util.List.nil();
-        for (AnnotatedTypeMirror atm : types) {
-            utypes = utypes.append((Type) atm.getUnderlyingType());
-        }
-        JavacProcessingEnvironment javacEnv = (JavacProcessingEnvironment) processingEnv;
-        com.sun.tools.javac.code.Types jctypes = com.sun.tools.javac.code.Types.instance(javacEnv.getContext());
-        // jctypes.lub doesn't do the special handling of NULL that we have in InternalUtils.leastUpperBound
-        // Add that tu InternalUtils and use it here. Using the jctypes version crashes.
-        TypeMirror lubType = jctypes.lub(utypes);
-        AnnotatedTypeMirror res = AnnotatedTypeMirror.createType(lubType, atypeFactory, false);
-        annotateAsLub(processingEnv, atypeFactory, res, types);
-        return res;
-    }
-    */
-
-    /**
-     * Annotate the lub type as if it is the least upper bound of the rest of
-     * the types.  This is a useful method for finding conditional expression
-     * types.
-     *
-     * All the types need to be subtypes of lub.
-     *
-     * @param lub   the type to be the least upper bound
-     * @param types the type arguments
-     */
-    public static void annotateAsLub(
-            ProcessingEnvironment processingEnv,
+    public static AnnotatedTypeMirror leastUpperBound(
             AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror lub,
-            Collection<AnnotatedTypeMirror> types) {
-        Elements elements = processingEnv.getElementUtils();
-
-        // Is it anonymous?
-        if (lub.getKind() == TypeKind.INTERSECTION) {
-            // Find the intersect types
-            AnnotatedIntersectionType adt = (AnnotatedIntersectionType) lub;
-
-            for (AnnotatedDeclaredType adts : adt.directSuperTypes()) {
-                ArrayList<AnnotatedTypeMirror> subtypes = new ArrayList<>(types.size());
-                for (AnnotatedTypeMirror type : types) {
-                    subtypes.add(asSuper(atypeFactory, type, adts));
-                }
-                if (subtypes.size() > 0) {
-                    adts.clearAnnotations();
-                }
-
-                addAnnotations(elements, atypeFactory, adts, subtypes);
-                ArrayList<AnnotatedTypeMirror> adtslist = new ArrayList<AnnotatedTypeMirror>();
-                adtslist.add(adts);
-                addAnnotations(elements, atypeFactory, lub, adtslist);
-            }
-        } else {
-            ArrayList<AnnotatedTypeMirror> subtypes = new ArrayList<>(types.size());
-
-            // TODO: This code needs some more serious thought.
-            if (lub.getKind() == TypeKind.WILDCARD) {
-                subtypes.add(lub.deepCopy());
-            } else {
-                for (AnnotatedTypeMirror type : types) {
-                    if (type == null) {
-                        continue;
-                    }
-                    if (type.getKind() == TypeKind.NULL && lub.getKind() == TypeKind.NULL) {
-                        subtypes.add(type.deepCopy());
-                    } else if (type.getKind() == TypeKind.NULL) {
-                        AnnotatedTypeMirror copy = lub.deepCopy();
-                        copy.addAnnotations(type.getAnnotations());
-                        subtypes.add(copy);
-                    } else {
-                        subtypes.add(asSuper(atypeFactory, type, lub));
-                    }
-                }
-            }
-            if (subtypes.size() > 0) {
-                if (!findEffectiveAnnotations(atypeFactory.getQualifierHierarchy(), lub)
-                        .isEmpty()) {
-                    // I believe the only place this can happen is within recursive types and
-                    // if we already have annotations than the type has been visited
-                    return;
-                }
-            }
-
-            if (lub.getKind() == TypeKind.TYPEVAR) {
-                //TODO: TERRIBLE HACK UNTIL WE FIX LUB
-                final AnnotatedTypeVariable lubAtv = (AnnotatedTypeVariable) lub;
-                final List<AnnotatedTypeVariable> subtypesAsTvs =
-                        LubTypeVariableAnnotator.getSubtypesAsTypevars(lubAtv, subtypes);
-
-                if (subtypesAsTvs != null) {
-                    LubTypeVariableAnnotator.annotateTypeVarAsLub(
-                            lubAtv, subtypesAsTvs, atypeFactory);
-                } else {
-                    addAnnotations(elements, atypeFactory, lub, subtypes);
-                }
-
-            } else {
-                addAnnotations(elements, atypeFactory, lub, subtypes);
-            }
-        }
+            AnnotatedTypeMirror type1,
+            AnnotatedTypeMirror type2,
+            TypeMirror lubTypeMirror) {
+        return new AtmLubVisitor(atypeFactory).lub(type1, type2, lubTypeMirror);
     }
-
-    /**
-     * Add the 'intersection' of the types provided to alub.  This is a similar
-     * method to the one provided
-     * TODO: the above sentence should be finished somehow...
-     */
-    private static void addAnnotations(
-            Elements elements,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror alub,
-            ArrayList<AnnotatedTypeMirror> types) {
-        Set<AnnotatedTypeMirror> visited =
-                Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>());
-        addAnnotationsImpl(elements, atypeFactory, alub, visited, types);
-    }
-
-    private static void addAnnotationsImpl(
-            Elements elements,
-            AnnotatedTypeFactory atypeFactory,
-            AnnotatedTypeMirror alub,
-            Set<AnnotatedTypeMirror> visited,
-            ArrayList<AnnotatedTypeMirror> types) {
-        // System.out.println("AnnotatedTypes.addAnnotationsImpl: alub: " + alub +
-        //        "\n   visited: " + visited +
-        //        "\n   types: " + types);
-
-        final AnnotatedTypeMirror origalub = alub;
-        boolean shouldAnnoOrig = false;
-        Set<AnnotationMirror> putOnOrig = AnnotationUtils.createAnnotationSet();
-
-        // get rid of wildcards and type variables
-        if (alub.getKind() == TypeKind.WILDCARD) {
-            final QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
-            //TODO: TYPEVAR handling of LUB doesn't make much sense, as a stop gap for unannotated
-            //TODO: LOWER/UPPER bounds we'll glb the annotations and add them to the lower bound
-            //TODO: this will not handle component annotations if we have compound types as the
-            //TODO: lower bound (which for type variables would only happen on a capture)
-            Set<? extends AnnotationMirror> lowerBounds =
-                    new HashSet<>(qualifierHierarchy.getTopAnnotations().size());
-            for (AnnotatedTypeMirror type : types) {
-
-                final Set<? extends AnnotationMirror> annos =
-                        findEffectiveLowerBoundAnnotations(qualifierHierarchy, type);
-                if (lowerBounds.isEmpty()) {
-                    lowerBounds = annos;
-                } else if (!annos.isEmpty()) {
-                    // For some reason this algorithm sometimes adds the lub itself
-                    // into the list of type which may lead to an empty annos set.
-                    lowerBounds = qualifierHierarchy.greatestLowerBounds(lowerBounds, annos);
-                }
-            }
-
-            ((AnnotatedWildcardType) alub).getSuperBound().replaceAnnotations(lowerBounds);
-
-            //TODO: AGAIN, ALL LUB CODE SHOULD BE EXTRACTED OUT TO ITS OWN CLASS OR THE TYPE HIERARCHY
-            //TODO: AND REWRITTEN
-            boolean allWildcards = true;
-            for (int i = 0; i < types.size() && allWildcards; i++) {
-                if (types.get(i).getKind() != TypeKind.WILDCARD) {
-                    allWildcards = false;
-                }
-            }
-
-            if (allWildcards) {
-                if (wildcards.contains(alub.getUnderlyingType())) {
-                    return;
-                }
-                wildcards.add(alub.getUnderlyingType());
-                final List<AnnotatedTypeMirror> upperBounds = new ArrayList<>(types.size());
-                for (final AnnotatedTypeMirror type : types) {
-                    upperBounds.add(((AnnotatedWildcardType) type).getExtendsBound());
-                }
-
-                alub = ((AnnotatedWildcardType) alub).getExtendsBound();
-
-                annotateAsLub(atypeFactory.getProcessingEnv(), atypeFactory, alub, upperBounds);
-                return;
-
-            } else {
-                // old behavior
-                alub = ((AnnotatedWildcardType) alub).getExtendsBound();
-            }
-
-            // TODO using the getEffective versions copies objects, losing side-effects.
-        }
-        while (alub.getKind() == TypeKind.TYPEVAR) {
-            //TODO: TYPEVAR handling of LUB doesn't make much sense, as a stop gap for unannotated
-            //TODO: LOWER/UPPER bounds we'll glb the annotations and add them to the lower bound
-            //TODO: this will not handle component annotations if we have compound types as the
-            //TODO: lower bound (which for type variables would only happen on a capture)
-            Set<? extends AnnotationMirror> glb =
-                    glbAll(atypeFactory.getQualifierHierarchy(), types);
-            ((AnnotatedTypeVariable) alub).getLowerBound().replaceAnnotations(glb);
-            alub = ((AnnotatedTypeVariable) alub).getUpperBound();
-        }
-
-        if (visited.contains(alub)) {
-            return;
-        }
-        visited.add(alub);
-
-        for (int i = 0; i < types.size(); ++i) {
-            final AnnotatedTypeMirror typei = types.get(i);
-
-            if (!(typei.getAnnotations().isEmpty()
-                    || bottomsOnly(elements, atypeFactory, typei.getAnnotations()))) {
-                shouldAnnoOrig = true;
-            }
-
-            if (typei.getKind() == TypeKind.WILDCARD) {
-                putOnOrig.addAll(typei.getAnnotations());
-                AnnotatedWildcardType wildcard = (AnnotatedWildcardType) typei;
-                if (wildcard.getExtendsBound() != null) {
-                    types.set(i, wildcard.getExtendsBound().deepCopy());
-                } else if (wildcard.getSuperBound() != null) {
-                    types.set(i, wildcard.getSuperBound().deepCopy());
-                }
-            }
-            if (typei.getKind() == TypeKind.TYPEVAR) {
-                putOnOrig.addAll(typei.getAnnotations());
-                AnnotatedTypeVariable typevar = (AnnotatedTypeVariable) types.get(i);
-                if (typevar.getUpperBound() != null) {
-                    types.set(i, typevar.getUpperBound());
-                } else if (typevar.getLowerBound() != null) {
-                    types.set(i, typevar.getLowerBound());
-                }
-            }
-        }
-
-        Collection<? extends AnnotationMirror> unification = Collections.emptySet();
-
-        boolean isFirst = true;
-        for (AnnotatedTypeMirror type : types) {
-            if (type.getAnnotations().isEmpty()) {
-                continue;
-            }
-            // TODO: unification fails with an empty set of annotations.
-            // Why are they sometimes empty, e.g. in the FlowNegation test case.
-
-            if (isFirst) {
-                unification = type.getAnnotations();
-            } else {
-                unification =
-                        atypeFactory
-                                .getQualifierHierarchy()
-                                .leastUpperBounds(unification, type.getAnnotations());
-            }
-            isFirst = false;
-        }
-
-        // Remove a previously existing unqualified annotation on the type.
-        alub.replaceAnnotations(unification);
-
-        if (alub.getKind() == TypeKind.DECLARED) {
-            AnnotatedDeclaredType adt = (AnnotatedDeclaredType) alub;
-
-            for (int i = 0; i < adt.getTypeArguments().size(); ++i) {
-                AnnotatedTypeMirror adtArg = adt.getTypeArguments().get(i);
-                ArrayList<AnnotatedTypeMirror> dTypesArg = new ArrayList<>();
-                for (int j = 0; j < types.size(); ++j) {
-                    if (types.get(j).getKind() == TypeKind.DECLARED) {
-                        AnnotatedDeclaredType adtypej = (AnnotatedDeclaredType) types.get(j);
-                        if (adtypej.getTypeArguments().size() == adt.getTypeArguments().size()) {
-                            dTypesArg.add(adtypej.getTypeArguments().get(i));
-                        } else {
-                            // TODO: actually not just the number of type arguments should match, but
-                            // the base types should be equal. See test case framework/GenericTest1
-                            // for when this test fails.
-                        }
-                    }
-                }
-
-                //TODO: If we have a list of raw types, or null/raw types this code can create an empty set of
-                //TODO: type arguments (dTypesArg) below.  This will then cause an exception.
-                //TODO: To test this: make the conditional always true and run the nullness checker on
-                //TODO: jdk/nullness/src/java/lang/ref/ReferenceQueue.java
-                //TODO: I think this will only happen when we "fix-up" the lub type with a wildcard
-                //TODO: in which case, the type annotator will add the annotation from the bound of
-                //TODO: the type parameter for which the wildcard is an argument and we will NOT have an
-                //TODO: unannotated type.  That said, we might want to just call that here to ensure
-                //TODO: that when this is called in places that are not followed by annotate implicit
-                //TODO: the type is fully annotated
-                if (!dTypesArg.isEmpty()) {
-                    addAnnotationsImpl(elements, atypeFactory, adtArg, visited, dTypesArg);
-                }
-            }
-        } else if (alub.getKind() == TypeKind.ARRAY) {
-            AnnotatedArrayType aat = (AnnotatedArrayType) alub;
-
-            ArrayList<AnnotatedTypeMirror> compTypes = new ArrayList<>();
-            for (AnnotatedTypeMirror atype : types) {
-                if (atype.getKind() == TypeKind.ARRAY) {
-                    compTypes.add(((AnnotatedArrayType) atype).getComponentType());
-                }
-            }
-
-            if (aat.getComponentType().getKind() == TypeKind.TYPEVAR) {
-                //TODO: TERRIBLE HACK UNTIL WE FIX LUB
-                final AnnotatedTypeVariable lubAtv = (AnnotatedTypeVariable) aat.getComponentType();
-                final List<AnnotatedTypeVariable> subtypesAsTvs =
-                        LubTypeVariableAnnotator.getSubtypesAsTypevars(lubAtv, compTypes);
-
-                if (subtypesAsTvs != null) {
-                    LubTypeVariableAnnotator.annotateTypeVarAsLub(
-                            lubAtv, subtypesAsTvs, atypeFactory);
-                } else {
-                    addAnnotationsImpl(
-                            elements, atypeFactory, aat.getComponentType(), visited, compTypes);
-                }
-            } else {
-                addAnnotationsImpl(
-                        elements, atypeFactory, aat.getComponentType(), visited, compTypes);
-            }
-        }
-        if (alub != origalub && shouldAnnoOrig) {
-            // These two are not the same if origalub is a wildcard or type variable.
-            // In that case, add the found annotations to the type variable also.
-            // Do not put the annotations inferred for the declared type
-            // on a type variable/wildcard.
-            // origalub.replaceAnnotations(alub.getAnnotations());
-            // Instead, keep track of the annotations that originally
-            // existed on the type variable, stored in putOnOrig, and
-            // put them back on now.
-            origalub.replaceAnnotations(putOnOrig);
-        }
-    }
-
-    /*
-     * Return true if all the qualifiers are bottom qualifiers. Allow fewer
-     * qualifiers to be present, which can happen for type variables and
-     * wildcards.
-     */
-    private static boolean bottomsOnly(
-            Elements elements,
-            AnnotatedTypeFactory atypeFactory,
-            Set<AnnotationMirror> annotations) {
-        Set<AnnotationMirror> bots = AnnotationUtils.createAnnotationSet();
-        bots.addAll(atypeFactory.getQualifierHierarchy().getBottomAnnotations());
-
-        for (AnnotationMirror am : annotations) {
-            if (!bots.remove(am)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /* TODO: This least upper bound computation was originally
-     * in org.checkerframework.framework.flow.CFAbstractValue<V>.
-     * It should be checked to make sure the implementation here is consistent.
-     * Afterwards it can be removed.
-     *
-     * Computes and returns the least upper bound of two
-     * {@link AnnotatedTypeMirror}.
-     *
-     * <p>
-     * TODO: The code in this method is rather similar to
-     * {@link CFAbstractValue#mostSpecific(CFAbstractValue, CFAbstractValue)}.
-     * Can code be reused?
-    public AnnotatedTypeMirror leastUpperBound(AnnotatedTypeMirror type,
-            AnnotatedTypeMirror otherType) {
-        GenericAnnotatedTypeFactory<V, ?, ?, ?> factory = analysis.getTypeFactory();
-        ProcessingEnvironment processingEnv = factory.getProcessingEnv();
-        QualifierHierarchy qualifierHierarchy = factory.getQualifierHierarchy();
-
-        AnnotatedTypeMirror lubAnnotatedType;
-
-        if (type.getKind() == TypeKind.ARRAY
-                && otherType.getKind() == TypeKind.ARRAY) {
-            // for arrays, we have:
-            // lub(@A1 A @A2[],@B1 B @B2[]) = lub(@A1 A, @B1 B) lub(@A2,@B2) []
-            AnnotatedArrayType a = (AnnotatedArrayType) type;
-            AnnotatedArrayType b = (AnnotatedArrayType) otherType;
-            AnnotatedTypeMirror componentLub = leastUpperBound(
-                    a.getComponentType(), b.getComponentType());
-            if (componentLub.getUnderlyingType().getKind() == TypeKind.NONE) {
-                // If the components do not have an upper bound, then Object
-                // is still an upper bound of the array types.
-                Elements elements = analysis.getEnv().getElementUtils();
-                TypeMirror underlyingType = elements.getTypeElement(
-                        "java.lang.Object").asType();
-                lubAnnotatedType = AnnotatedTypeMirror.createType(
-                        underlyingType, factory, false);
-            } else {
-                TypeMirror underlyingType = TypesUtils.createArrayType(
-                        analysis.getTypes(), componentLub.getUnderlyingType());
-                lubAnnotatedType = AnnotatedTypeMirror.createType(
-                        underlyingType, factory, false);
-                AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
-                aLubAnnotatedType.setComponentType(componentLub);
-            }
-        } else {
-            TypeMirror lubType = InternalUtils.leastUpperBound(processingEnv,
-                    type.getUnderlyingType(), otherType.getUnderlyingType());
-            lubAnnotatedType = AnnotatedTypeMirror.createType(lubType, factory, false);
-        }
-
-        Set<AnnotationMirror> annos1;
-        Set<AnnotationMirror> annos2;
-        if (QualifierHierarchy.canHaveEmptyAnnotationSet(lubAnnotatedType)) {
-            annos1 = type.getAnnotations();
-            annos2 = otherType.getAnnotations();
-        } else {
-            annos1 = type.getEffectiveAnnotations();
-            annos2 = otherType.getEffectiveAnnotations();
-        }
-
-        lubAnnotatedType.addAnnotations(qualifierHierarchy.leastUpperBounds(
-                type, otherType, annos1, annos2));
-
-        TypeKind kind = lubAnnotatedType.getKind();
-        if (kind == TypeKind.WILDCARD) {
-            AnnotatedWildcardType wLubAnnotatedType = (AnnotatedWildcardType) lubAnnotatedType;
-            AnnotatedTypeMirror extendsBound = wLubAnnotatedType
-                    .getExtendsBound();
-            extendsBound.clearAnnotations();
-            Collection<AnnotationMirror> extendsBound1 = getUpperBound(type);
-            Collection<AnnotationMirror> extendsBound2 = getUpperBound(otherType);
-            extendsBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
-                    extendsBound1, extendsBound2));
-        } else if (kind == TypeKind.TYPEVAR) {
-            AnnotatedTypeVariable tLubAnnotatedType = (AnnotatedTypeVariable) lubAnnotatedType;
-            AnnotatedTypeMirror upperBound = tLubAnnotatedType.getUpperBound();
-            Collection<AnnotationMirror> upperBound1 = getUpperBound(type);
-            Collection<AnnotationMirror> upperBound2 = getUpperBound(otherType);
-
-            // TODO: how is it possible that uppBound1 or 2 does not have any
-            // annotations?
-            if (upperBound1.size() != 0 && upperBound2.size() != 0) {
-                upperBound.clearAnnotations();
-                upperBound.addAnnotations(qualifierHierarchy.leastUpperBounds(
-                        upperBound1, upperBound2));
-            }
-
-            // if only one of the input types were type variables, then we want
-            // the effective annotations and take the lub of them
-            if (type.getKind() != TypeKind.TYPEVAR || otherType.getKind() != TypeKind.TYPEVAR) {
-                // TODO Why the special treatment for NULL?
-                if (otherType.getKind() == TypeKind.NULL) {
-                    // TODO Why the flipping between the two?
-                    if (type.getKind() != TypeKind.TYPEVAR) {
-                        AnnotatedTypeMirror tmp = otherType;
-                        otherType = type;
-                        type = tmp;
-                    }
-                    // Do these hold?
-                    // assert type.getKind() == TypeKind.TYPEVAR ||
-                    //        type.getKind() == TypeKind.WILDCARD : "Unexpected type: " + type;
-                    // assert otherType.getKind() != TypeKind.TYPEVAR : "Unexpected type variable: " + otherType;
-
-                    lubAnnotatedType.clearAnnotations();
-                    lubAnnotatedType.addAnnotations(type.getAnnotations());
-                    for (AnnotationMirror top : qualifierHierarchy.getTopAnnotations()) {
-                        AnnotationMirror o = otherType.findAnnotationInHierarchy(top);
-                        assert o != null : "null should have all annotations.";
-                        if (AnnotationUtils.areSame(o,
-                                qualifierHierarchy.getBottomAnnotation(top))) {
-                            // if the annotation on 'null' is the bottom
-                            // annotation, take whatever is present on the type
-                            // variable (even if it is nothing)...
-                            // (already done)
-                        } else {
-                            // ... otherwise, take the LUB of the effective
-                            // annotations.
-                            lubAnnotatedType.replaceAnnotation(
-                                    qualifierHierarchy.leastUpperBound(o,
-                                            type.getEffectiveAnnotationInHierarchy(top)));
-                        }
-                    }
-                }
-            }
-        } else if (kind == TypeKind.ARRAY
-                && !(type.getKind() == TypeKind.ARRAY && otherType.getKind() == TypeKind.ARRAY)) {
-            AnnotatedArrayType aLubAnnotatedType = (AnnotatedArrayType) lubAnnotatedType;
-            // lub(a,b) is an array, but not both a and b are arrays -> either a
-            // or b must be the null type.
-            AnnotatedArrayType array;
-            if (type.getKind() == TypeKind.ARRAY) {
-                assert otherType.getKind() == TypeKind.NULL;
-                array = (AnnotatedArrayType) type;
-            } else {
-                assert otherType.getKind() == TypeKind.ARRAY;
-                assert type.getKind() == TypeKind.NULL;
-                array = (AnnotatedArrayType) otherType;
-            }
-            // copy over annotations
-            copyArrayComponentAnnotations(array, aLubAnnotatedType);
-        }
-        return lubAnnotatedType;
-    }
-    */
 
     /**
      * Returns the method parameters for the invoked method, with the same number
@@ -1832,42 +1299,6 @@ public class AnnotatedTypes {
         }
 
         return source.getAnnotations();
-    }
-
-    /**
-     * @return the greatest lower bound of the primary annotations on the input types
-     */
-    private static Set<? extends AnnotationMirror> glbAll(
-            final QualifierHierarchy qualifierHierarchy,
-            final Collection<AnnotatedTypeMirror> types) {
-        final Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
-        Map<AnnotationMirror, AnnotationMirror> intermediate =
-                AnnotationUtils.createAnnotationMap();
-
-        if (types.size() == 0) {
-            return result;
-        }
-
-        final Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
-
-        for (AnnotatedTypeMirror type : types) {
-            for (AnnotationMirror top : tops) {
-                final AnnotationMirror newAnno = type.getAnnotationInHierarchy(top);
-                final AnnotationMirror prevGlb = intermediate.get(top);
-                if (newAnno == null) {
-                    continue;
-                } // else
-                if (prevGlb == null) {
-                    intermediate.put(top, newAnno);
-                } else {
-                    intermediate.put(top, qualifierHierarchy.greatestLowerBound(newAnno, prevGlb));
-                }
-            }
-        }
-
-        result.addAll(intermediate.values());
-
-        return result;
     }
 
     private static AnnotationMirror glbOfBoundsInHierarchy(

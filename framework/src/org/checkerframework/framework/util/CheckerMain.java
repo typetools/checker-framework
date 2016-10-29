@@ -234,13 +234,14 @@ public class CheckerMain {
     }
 
     /**
-     * Find all args that match the given pattern and extract their index 1 group.  Add all the index 1 groups to the
-     * returned list.   Remove all matching args from the input args list.
+     * Find all args that match the given pattern and extract their index 1 group.
+     * Add all the index 1 groups to the returned list.
+     * Remove all matching args from the input args list.
      * @param pattern      a pattern with at least one matching group
      * @param allowEmpties whether or not to add empty group(1) matches to the returned list
      * @param args         the arguments to extract from
-     * @return a list of arguments from the first group that matched the pattern for each input args or the empty list
-     *         if there were none
+     * @return a list of arguments from the first group that matched the pattern for each input args
+     *         or the empty list if there were none
      */
     protected static List<String> extractOptWithPattern(
             final Pattern pattern, boolean allowEmpties, final List<String> args) {

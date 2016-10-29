@@ -42,9 +42,9 @@ class Constructors {
 
         //:: error: (assignment.type.incompatible)
         @H1S2 @H2S1 Constructors e1 = new Constructors(p);
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (constructor.invocation.invalid)
         @H1S2 @H2S1 Constructors e2 = new @H1S2 @H2S2 Constructors(p);
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (constructor.invocation.invalid)
         @H1S2 @H2S1 Constructors e3 = new @H1S2 Constructors(p);
 
         //:: error: (constructor.invocation.invalid)

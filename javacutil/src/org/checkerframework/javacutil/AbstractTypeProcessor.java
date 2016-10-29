@@ -111,7 +111,7 @@ public abstract class AbstractTypeProcessor extends AbstractProcessor {
      * Register a TaskListener that will get called after FLOW.
      */
     @Override
-    public void init(ProcessingEnvironment env) {
+    public synchronized void init(ProcessingEnvironment env) {
         super.init(env);
         JavacTask.instance(env).addTaskListener(listener);
         Context ctx = ((JavacProcessingEnvironment) processingEnv).getContext();

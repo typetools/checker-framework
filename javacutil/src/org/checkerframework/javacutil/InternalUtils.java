@@ -15,7 +15,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.AnnotatedType;
+import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
@@ -240,10 +240,17 @@ public class InternalUtils {
      * Returns whether a TypeVariable represents a captured type.
      */
     public static boolean isCaptured(TypeVariable typeVar) {
-        if (typeVar instanceof AnnotatedType) {
-            return ((Type.TypeVar) ((Type.AnnotatedType) typeVar).unannotatedType()).isCaptured();
+        return ((Type.TypeVar) ((Type) typeVar).unannotatedType()).isCaptured();
+    }
+
+    /**
+     * If typeVar is a captured wildcard, returns that wildcard; otherwise returns null.
+     */
+    public static WildcardType getCapturedWildcard(TypeVariable typeVar) {
+        if (isCaptured(typeVar)) {
+            return ((CapturedType) ((Type) typeVar).unannotatedType()).wildcard;
         }
-        return ((Type.TypeVar) typeVar).isCaptured();
+        return null;
     }
 
     /**
@@ -407,5 +414,17 @@ public class InternalUtils {
 
     public static TypeElement getTypeElement(TypeMirror type) {
         return (TypeElement) ((Type) type).tsym;
+    }
+
+    /**
+     * Obtain the class loader for {@code clazz}.
+     * If that is not available, return the system class loader.
+     * @param clazz the class whose class loader to find
+     * @return the class loader used to {@code clazz}, or the system
+     *         class loader, or null if both are unavailable
+     */
+    public static ClassLoader getClassLoaderForClass(Class<? extends Object> clazz) {
+        ClassLoader classLoader = clazz.getClassLoader();
+        return classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader;
     }
 }

@@ -2,6 +2,7 @@ package tests;
 
 import java.io.File;
 import java.util.List;
+import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
@@ -23,7 +24,8 @@ public class ValueTest extends CheckerFrameworkPerDirectoryTest {
                 org.checkerframework.common.value.ValueChecker.class,
                 "value",
                 "-Anomsgtext",
-                "-Astubs=statically-executable.astub");
+                "-Astubs=statically-executable.astub",
+                "-A" + ValueChecker.REPORT_EVAL_WARNS);
     }
 
     @Parameters

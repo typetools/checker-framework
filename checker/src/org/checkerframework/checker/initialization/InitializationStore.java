@@ -60,7 +60,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
                 (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
-        for (AnnotationMirror a : value.getType().getAnnotations()) {
+        for (AnnotationMirror a : value.getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
                 if (r instanceof FieldAccess) {
                     FieldAccess fa = (FieldAccess) r;
