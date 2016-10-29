@@ -41,11 +41,13 @@ public class ConstraintMapBuilder {
      * primary annotation in the initialization hierarchy.
      *
      * Note, constraints come in 2 forms:
-     *   a) between a target and a concrete AnnotatedTypeMirror.
-     *   E.g., As seen above (@NonNull Ti = @NonNull @Initialized String)
+     * <ul>
+     *   <li> between a target and a concrete AnnotatedTypeMirror.
+     *   E.g., As seen above {@code (@NonNull Ti = @NonNull @Initialized String)}
      *
-     *   b) between two targets
-     *   E.g., (@NonNull Ti = Tj)
+     *   <li> between two targets
+     *   E.g., {@code (@NonNull Ti = Tj)}
+     * </ul>
      */
     public ConstraintMap build(
             Set<TypeVariable> targets,

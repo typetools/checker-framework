@@ -17,10 +17,13 @@ import org.checkerframework.framework.util.typeinference.solver.TargetConstraint
  * ConstraintMap holds simplified versions of the TUConstraints for ALL type variable for which
  * we are inferring an argument.  The ConstraintMap is edited on the fly as the various solvers
  * work (unlike the AF/TU Constraints which are immutable).
- * This really consists of 2 things:
- *    a) a Map({@code target -> constraints for target})
- *    b) Methods to easily build up the constraints in the map
- *    c) A getter for the constraints of individual targets.
+ *
+ * This really consists of these things:
+ * <ol>
+ *    <li> a Map({@code target &rArr; constraints for target})
+ *    <li> Methods to easily build up the constraints in the map
+ *    <li> A getter for the constraints of individual targets.
+ * </ol>
  *       Note: This class, along with TargetConstraints, uses a lot of mutable state and few setters/getters
  *       be careful.  This choice was made as it makes the resulting code more readable.
  */

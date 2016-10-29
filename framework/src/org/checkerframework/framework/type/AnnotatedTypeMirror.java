@@ -789,10 +789,12 @@ public abstract class AnnotatedTypeMirror {
      * recursively and the returned type refers to those copies in its component locations.
      *
      * Note: deepCopy provides two important properties in the returned copy:
-     *  1) Structure preservation - The exact structure of the original AnnotatedTypeMirror is preserved in the copy
+     * <ol>
+     *  <li> Structure preservation -- The exact structure of the original AnnotatedTypeMirror is preserved in the copy
      *     including all component types.
-     *  2) Annotation preservation - All of the annotations from the original AnnotatedTypeMirror and its components
+     *  <li> Annotation preservation -- All of the annotations from the original AnnotatedTypeMirror and its components
      *     have been copied to the new type.
+     * </ol>
      *
      * If copyAnnotations is set to false, the second property, Annotation preservation, is removed.  This is useful
      * for cases in which the user may want to copy the structure of a type exactly but NOT its annotations.
@@ -1009,6 +1011,7 @@ public abstract class AnnotatedTypeMirror {
         /*
          * Return the direct super types field without lazy initialization;
          * originally to prevent infinite recursion in IGJATF.postDirectSuperTypes.
+         *
          * TODO: find a nicer way, see the single caller in QualifierDefaults
          * for comment.
          */
@@ -1775,9 +1778,9 @@ public abstract class AnnotatedTypeMirror {
      * NoType are:
      *
      * <ul>
-     *   <li>VOID - corresponds to the keyword void.</li>
-     *   <li> PACKAGE - the pseudo-type of a package element.</li>
-     *   <li> NONE - used in other cases where no actual type is appropriate;
+     *   <li>VOID -- corresponds to the keyword void.</li>
+     *   <li> PACKAGE -- the pseudo-type of a package element.</li>
+     *   <li> NONE -- used in other cases where no actual type is appropriate;
      *        for example, the superclass of java.lang.Object. </li>
      * </ul>
      */
@@ -2084,8 +2087,8 @@ public abstract class AnnotatedTypeMirror {
     public static class AnnotatedIntersectionType extends AnnotatedTypeMirror {
 
         /**
-         * AnnotatedIntersectionTypes are created by type parameters whose bounds include an &amp;
-         * e.g.
+         * AnnotatedIntersectionTypes are created by type parameters whose bounds include an &amp;.
+         * For example:
          * {@code <T extends MyObject & Serializable & Comparable<MyObject>>}
          *
          * The bound {@code MyObject &amp; Serializable &amp; Comparable}

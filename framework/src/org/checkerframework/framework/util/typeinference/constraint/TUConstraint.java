@@ -10,9 +10,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
  * <p>
  * TU constraints come in the classic form of subtype, supertype, and equality constraints.<br>
  * <ul>
- * <li>{@code T <: U}  - implies T is a subtype of U, it is represented by TSubU <br>
- * <li>{@code T >: U}  - implies T is a supertype of U, it is represented by TSuperU <br>
- * <li>{@code T = U}   - implies T is equal to U, it is represented by TIsU <br>
+ * <li>{@code T <: U}  -- implies T is a subtype of U, it is represented by TSubU <br>
+ * <li>{@code T >: U}  -- implies T is a supertype of U, it is represented by TSuperU <br>
+ * <li>{@code T = U}   -- implies T is equal to U, it is represented by TIsU <br>
  * </ul>
  * <p>
  * Note, it is important that the type parameter is represented by an AnnotatedTypeVariable

@@ -76,7 +76,7 @@ public class JavaSource2CFGDOT {
                 i++;
                 clas = args[i];
             } else {
-                printError("Unknown command line argument: " + args[i]);
+                printError("Unknown command-line argument: " + args[i]);
                 error = true;
             }
         }

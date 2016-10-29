@@ -13,7 +13,7 @@ import org.checkerframework.framework.util.typeinference.solver.InferredValue.In
 
 /**
  * Represents the result from inferring type arguments.
- * InferenceResult is a map from: ({@code Target type variable -> inferred type or target})
+ * InferenceResult is a map from: ({@code Target type variable &rArr; inferred type or target})
  */
 public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> {
     private static final long serialVersionUID = 6911459752070485818L;

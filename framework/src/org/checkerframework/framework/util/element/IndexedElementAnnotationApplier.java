@@ -8,8 +8,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
  * Some Elements are members of a list (formal method parameters and type parameters).
- * This class ensures that the targeted annotations passed by handleTargeted - see
- * {@link TargetedElementAnnotationApplier} -
+ * This class ensures that the targeted annotations passed by handleTargeted -- see
+ * {@link TargetedElementAnnotationApplier} --
  * only include those with a position that matches the index returned by getElementIndex.
  */
 abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotationApplier {

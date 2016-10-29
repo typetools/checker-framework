@@ -38,9 +38,11 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
      * A factory can be used to create at most one {@link GraphQualifierHierarchy}.
      *
      * To create a hierarchy, a client may do so in three steps:
-     * 1. add qualifiers using {@link #addQualifier(AnnotationMirror)};
-     * 2. add subtype relations using {@link #addSubtype(AnnotationMirror, AnnotationMirror)}
-     * 3. build the hierarchy and gets using {@link #build()}.
+     * <ol>
+     *   <li>add qualifiers using {@link #addQualifier(AnnotationMirror)};
+     *   <li>add subtype relations using {@link #addSubtype(AnnotationMirror, AnnotationMirror)}
+     *   <li>build the hierarchy and gets using {@link #build()}.
+     * </ol>
      *
      * Notice that {@link #addSubtype(AnnotationMirror, AnnotationMirror)} adds
      * the two qualifiers to the hierarchy if they are not already in.
@@ -583,11 +585,13 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
     /**
      * Add the relationships for polymorphic qualifiers.
      *
-     * A polymorphic qualifier needs to be (take {@code PolyNull} for example):
-     * 1. a subtype of the top qualifier (e.g. {@code Nullable})
-     * 2. a supertype of all the bottom qualifiers  (e.g. {@code NonNull})
+     * A polymorphic qualifier, such as {@code PolyNull}, needs to be:
+     * <ol>
+     * <li>a subtype of the top qualifier (e.g. {@code Nullable})
+     * <li>a supertype of all the bottom qualifiers  (e.g. {@code NonNull})
+     * </ol>
      *
-     * Field supertypesMap is not set yet when this method is called - use fullMap instead.
+     * Field supertypesMap is not set yet when this method is called -- use fullMap instead.
      */
     // The method gets all required parameters passed in and could be static. However,
     // we want to allow subclasses to adapt the behavior and therefore make it an instance method.

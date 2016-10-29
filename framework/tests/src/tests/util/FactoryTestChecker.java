@@ -64,8 +64,8 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  *  The fully qualified name of the custom <i>AnnotatedTypeFactory</i> is
- *  specified through an -Afactory argument (e.g.
- *  -Afactory=checkers.nullness.NullnessAnnotatedTypeFactory).  The factory needs
+ *  specified through an {@code -Afactory} command-line argument (e.g.
+ *  {@code -Afactory=checkers.nullness.NullnessAnnotatedTypeFactory}).  The factory needs
  *  to have a constructor of the form
  *  {@code <init>(ProcessingEnvironment, CompilationUnitTree)}.
  */

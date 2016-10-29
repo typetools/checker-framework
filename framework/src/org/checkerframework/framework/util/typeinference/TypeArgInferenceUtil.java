@@ -310,7 +310,7 @@ public class TypeArgInferenceUtil {
     }
 
     /**
-     * Take a set of annotations and separate them into a mapping of ({@code hierarchy top -> annotations in hierarchy})
+     * Take a set of annotations and separate them into a mapping of ({@code hierarchy top &rArr; annotations in hierarchy})
      */
     public static Map<AnnotationMirror, AnnotationMirror> createHierarchyMap(
             final Set<AnnotationMirror> annos, final QualifierHierarchy qualifierHierarchy) {
@@ -395,7 +395,7 @@ public class TypeArgInferenceUtil {
 
     /**
      * Create a copy of toModify. In the copy,
-     *      For each pair {@code typeVariable -> annotated type}
+     *      For each pair {@code typeVariable &rArr; annotated type}
      *          replace uses of typeVariable with the corresponding annotated type using
      *          normal substitution rules (@see TypeVariableSubstitutor)
      * Return the copy

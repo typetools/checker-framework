@@ -17,10 +17,10 @@ public interface TestConfiguration {
     /**
      * Diagnostic files consist of a set of lines that enumerate expected error/warning diagnostics.
      * The lines are of the form:
-     * fileName:lineNumber: diagnostKind: (messageKey)
+     * <pre>fileName:lineNumber: diagnostKind: (messageKey)</pre>
      *
      * e.g.,
-     * MethodInvocation.java:17: error: (method.invocation.invalid)
+     * <pre>MethodInvocation.java:17: error: (method.invocation.invalid)</pre>
      *
      * If getDiagnosticFiles does NOT return an empty list, then the only diagnostics expected
      * by the TestExecutor will be the ones found in these files.
@@ -41,19 +41,19 @@ public interface TestConfiguration {
     List<String> getProcessors();
 
     /**
-     * Some Javac command line arguments require arguments themselves (e.g. -classpath takes a path)
-     * getOptions returns a {@code Map(optionName -> optionArgumentIfAny)}.  If an option does not take
+     * Some Javac command line arguments require arguments themselves (e.g. {@code -classpath} takes a path)
+     * getOptions returns a {@code Map(optionName &rArr; optionArgumentIfAny)}.  If an option does not take
      * an argument, pass null as the value.
      *
      * E.g.,
-     * {@code
+     * <pre>{@code
      *     Map(
-     *       "-AprintAllQualifiers" -> null
-     *        "-classpath" -> "myDir1:myDir2"
+     *       "-AprintAllQualifiers" &rArr; null
+     *        "-classpath" &rArr; "myDir1:myDir2"
      *     )
-     * }
+     * }</pre>
      *
-     * @return a Map representing all command line options to Javac other than source files and processors
+     * @return a Map representing all command-line options to Javac other than source files and processors
      */
     Map<String, String> getOptions();
 

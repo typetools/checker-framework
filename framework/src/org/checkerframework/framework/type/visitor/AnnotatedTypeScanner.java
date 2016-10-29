@@ -42,7 +42,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * Here is an example to count the parameter types number of nodes in
  * a tree:
  *
- * <pre>
+ * <pre>{@code
  * class CountTypeVariable extends TreeScanner {
  *
  *     &#64;Override
@@ -55,7 +55,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *         return (r1 == null ? 0 : r1) + (r2 == null ? 0 : r2);
  *     }
  * }
- * </pre>
+ * }</pre>
  *
  * @param <R>
  *            the return type of this visitor's methods. Use Void for

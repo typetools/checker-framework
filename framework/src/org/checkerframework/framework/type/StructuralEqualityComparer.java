@@ -197,8 +197,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two arrays are equal if:
-     *   1) Their sets of primary annotations are equal
-     *   2) Their component types are equal
+     * <ol>
+     *   <li> Their sets of primary annotations are equal, and
+     *   <li> Their component types are equal
+     * </ol>
      */
     @Override
     public Boolean visitArray_Array(
@@ -214,9 +216,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two declared types are equal if:
-     *   1) The types are of the same class/interfaces
-     *   2) Their sets of primary annotations are equal
-     *   3) Their sets of type arguments are equal or one type is raw
+     * <ol>
+     *   <li> The types are of the same class/interfaces
+     *   <li> Their sets of primary annotations are equal
+     *   <li> Their sets of type arguments are equal or one type is raw
+     * </ol>
      */
     @Override
     public Boolean visitDeclared_Declared(
@@ -268,8 +272,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * //TODO: SHOULD PRIMARY ANNOTATIONS OVERRIDE INDIVIDUAL BOUND ANNOTATIONS?
      * //TODO: IF SO THEN WE SHOULD REMOVE THE arePrimeAnnosEqual AND FIX AnnotatedIntersectionType
      * Two intersection types are equal if:
-     *   1) Their sets of primary annotations are equal
-     *   2) Their sets of bounds (the types being intersected) are equal
+     * <ul>
+     *   <li> Their sets of primary annotations are equal
+     *   <li> Their sets of bounds (the types being intersected) are equal
+     * </ul>
      */
     @Override
     public Boolean visitIntersection_Intersection(
@@ -286,7 +292,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two null types are equal if:
-     *   1) Their sets of primary annotations are equal
+     * <ul>
+     *   <li> Their sets of primary annotations are equal
+     * </ul>
      */
     @Override
     public Boolean visitNull_Null(
@@ -298,7 +306,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two primitive types are equal if:
-     *   1) Their sets of primary annotations are equal
+     * <ul>
+     *   <li> Their sets of primary annotations are equal
+     * </ul>
      */
     @Override
     public Boolean visitPrimitive_Primitive(
@@ -310,7 +320,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two type variables are equal if:
-     *   1) Their bounds are equal
+     * <ul>
+     *   <li> Their bounds are equal
+     * </ul>
      *
      * Note:  Primary annotations will be taken into account when the bounds are retrieved
      */
@@ -407,13 +419,16 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                         .equals(type2.getLowerBound().getUnderlyingType());
     }
     /**
-     * TODO: IDENTIFY TESTS THAT LEAD TO RECURSIVE BOUNDED WILDCARDS, PERHAPS THE RIGHT THING IS TO
-     * TODO: MOVE THE CODE THAT IDENTIFIES REFERENCES TO THE SAME WILDCARD TYPE HERE.
-     * TODO  WOULD WE EVER WANT TO HAVE A REFERENCE TO THE SAME WILDCARD WITH DIFFERENT ANNOTATIONS?
      * Two wildcards are equal if:
-     *   1) Their bounds are equal
+     * <ul>
+     *   <li> Their bounds are equal
+     * </ul>
      *
      * Note:  Primary annotations will be taken into account when the bounds are retrieved
+     *
+     * TODO: IDENTIFY TESTS THAT LEAD TO RECURSIVE BOUNDED WILDCARDS, PERHAPS THE RIGHT THING IS TO
+     * MOVE THE CODE THAT IDENTIFIES REFERENCES TO THE SAME WILDCARD TYPE HERE.
+     * WOULD WE EVER WANT TO HAVE A REFERENCE TO THE SAME WILDCARD WITH DIFFERENT ANNOTATIONS?
      */
     @Override
     public Boolean visitWildcard_Wildcard(
@@ -459,7 +474,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
      * though they should never truly be equal.
      *
      * A wildcard is equal tyo a type variable if:
-     *   1) The wildcard's bounds are equal to the type variable's bounds
+     * <ul>
+     *   <li> The wildcard's bounds are equal to the type variable's bounds
+     * </ul>
      */
     @Override
     public Boolean visitWildcard_Typevar(

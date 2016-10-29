@@ -51,14 +51,16 @@ public class ElementAnnotationApplier {
      *
      * Note:  Element annotations come from two sources.
      *
-     * 1) Annotations found on elements may represent those in source code or bytecode;
+     * <ol>
+     * <li>Annotations found on elements may represent those in source code or bytecode;
      * these are added to the element by the compiler.
      *
-     * 2) The annotations may also represent those that were inferred or defaulted by the Checker
+     * <li>The annotations may also represent those that were inferred or defaulted by the Checker
      * Framework after a previous call to this method.  The Checker Framework will store
      * any annotations on declarations back into the elements that represent them
      * (see {@link org.checkerframework.framework.type.TypesIntoElements}).  Subsequent, calls to apply will encounter
      * these annotations on the provided element.
+     * </ol>
      *
      * Note:  This is not the ONLY place that annotations are explicitly added to types.
      * See {@link org.checkerframework.framework.type.TypeFromTree}.
