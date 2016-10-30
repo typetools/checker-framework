@@ -106,11 +106,11 @@ public abstract class Node {
      * Accept method of the visitor pattern
      *
      * @param <R>
-     *            Result type of the operation.
+     *            Result type of the operation
      * @param <P>
      *            Parameter type.
      * @param visitor
-     *            The visitor to be applied to this node.
+     *            The visitor to be applied to this node
      * @param p
      *            The parameter for this operation.
      */

@@ -2616,7 +2616,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          *            the type of the overriding method
          * @param overridingType
          *            the type enclosing the overrider method, usually an AnnotatedDeclaredType;
-         *            for Method References may be something else.
+         *            for Method References may be something else
          * @param overridingReturnType
          *            the return type of the overriding method
          * @param overridden

@@ -106,7 +106,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
-     * @return a string representation of kind, with trailing _ASSIGNMENT stripped off if any.
+     * @return a string representation of kind, with trailing _ASSIGNMENT stripped off if any
      */
     private String kindWithOutAssignment(Kind kind) {
         String result = kind.toString();

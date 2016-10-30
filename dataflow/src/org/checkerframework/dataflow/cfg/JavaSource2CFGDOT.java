@@ -115,11 +115,11 @@ public class JavaSource2CFGDOT {
      * Generate the DOT representation of the CFG for a method.
      *
      * @param inputFile
-     *            Java source input file.
+     *            Java source input file
      * @param outputDir
      *            Source output directory.
      * @param method
-     *            Method name to generate the CFG for.
+     *            Method name to generate the CFG for
      * @param pdf
      *            Also generate a PDF?
      * @param analysis

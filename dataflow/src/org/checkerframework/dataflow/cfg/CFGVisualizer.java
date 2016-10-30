@@ -37,7 +37,7 @@ public interface CFGVisualizer<
      * output stores at the beginning of basic blocks.
      *
      * @param cfg
-     *            The CFG to visualize.
+     *            The CFG to visualize
      * @param entry
      *            The entry node of the control flow graph to be represented.
      * @param analysis
