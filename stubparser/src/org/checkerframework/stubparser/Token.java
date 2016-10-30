@@ -128,7 +128,7 @@ public class Token implements java.io.Serializable {
    * For example, if you have a subclass of Token called IDToken that
    * you want to create if ofKind is ID, simply add something like :
    *
-   *    case MyParserConstants.ID : return new IDToken(ofKind, image);
+   *    <pre>case MyParserConstants.ID : return new IDToken(ofKind, image);</pre>
    *
    * to the following switch statement. Then you can cast matchedToken
    * variable to the appropriate type and use sit in your lexical actions.

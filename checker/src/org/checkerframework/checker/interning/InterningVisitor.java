@@ -68,7 +68,7 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
     /**
      * @return  true if interning should be verified for the input expression.  By default, all classes are checked
-     * for interning unless -Acheckclass is specified.
+     * for interning unless {@code -Acheckclass} is specified.
      * @see <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#interning-checks">What the Interning Checker checks</a>
      */
     private boolean shouldCheckExpression(ExpressionTree tree) {
@@ -197,12 +197,16 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
      * Method to implement the @UsesObjectEquals functionality.
      * If a class is annotated with @UsesObjectEquals, it must:
      *
-     *    -not override .equals(Object)
-     *    -be a subclass of Object or another class annotated with @UsesObjectEquals
+     * <ul>
+     *    <li>not override .equals(Object)
+     *    <li>be a subclass of Object or another class annotated with @UsesObjectEquals
+     * </ul>
      *
      * If a class is not annotated with @UsesObjectEquals, it must:
      *
-     *  -not have a superclass annotated with @UsesObjectEquals
+     * <ul>
+     *  <li>not have a superclass annotated with @UsesObjectEquals
+     * </ul>
      *
      *
      * @see org.checkerframework.common.basetype.BaseTypeVisitor#visitClass(com.sun.source.tree.ClassTree, java.lang.Object)

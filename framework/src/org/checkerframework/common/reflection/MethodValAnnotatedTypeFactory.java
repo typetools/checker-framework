@@ -311,10 +311,12 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * the number of parameters in the underlying method or constructor must
          * be:
          *
-         * 0: if the argument is null
-         * x: if the argument is an array with @ArrayLen(x)
-         * UNKNOWN_PARAM_LENGTH: if the argument is an array with @UnknownVal
-         * 1: otherwise
+         * <ul>
+         * <li>0: if the argument is null
+         * <li>x: if the argument is an array with @ArrayLen(x)
+         * <li>UNKNOWN_PARAM_LENGTH: if the argument is an array with @UnknownVal
+         * <li>1: otherwise
+         * </ul>
          */
         private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
             AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);

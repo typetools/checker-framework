@@ -17,15 +17,19 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * halt visiting on recursive bounds.  Normally, this could be done using a HashSet; this class is
  * necessary because of two properties of wildcards:
  *
- * 1) there are times when we encounter wildcards that have recursive bounds.
- * 2) Since getEffectiveSuperBound and getEffectiveExtendsBound copy the bound before returning it,
+ * <ol>
+ * <li> there are times when we encounter wildcards that have recursive bounds.
+ * <li> Since getEffectiveSuperBound and getEffectiveExtendsBound copy the bound before returning it,
  *    two calls that should return the same bound will NOT return objects that are .equals to each other.
  *    E.g.
+ * <pre>{@code
  *      AnnotatedWildcardType wc = ...
- *      wc.getEffectiveSuperBound().equals(wc.getEffectiveSuperBound())
+ *          wc.getEffectiveSuperBound().equals(wc.getEffectiveSuperBound());
  *      // the above line will return false if the super bound is a wildcard
  *      // because two wildcards are .equals only if they are also referentially (==) equal
  *      // and each call to getEffectiveSuperBound returns a copy of the original bound
+ * }</pre>
+ * </ol>
  *
  * When we encounter types with property 1, property 2 ensures we cannot stop recursively comparing
  * the bounds because the equals method will not return true when we encounter a copy of a bound we have

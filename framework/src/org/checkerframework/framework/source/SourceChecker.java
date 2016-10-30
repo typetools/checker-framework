@@ -720,7 +720,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      * Exception type used only internally to abort
      * processing.
      * Only public to allow tests.AnnotationBuilderTest;
-     * this class should be private. TODO: nicer way?
+     * this class should be private.
+     *
+     * TODO: nicer way?
      */
     @SuppressWarnings("serial")
     public static class CheckerError extends RuntimeException {
@@ -1244,7 +1246,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Determines whether an error (whose error key is {@code errKey}) should
      * be suppressed, according to the user's explicitly-written
-     * SuppressWarnings annotation {@code anno} or the -AsuppressWarnings
+     * SuppressWarnings annotation {@code anno} or the {@code -AsuppressWarnings}
      * command-line argument.
      * <p>
      *
@@ -1748,8 +1750,9 @@ public abstract class SourceChecker extends AbstractTypeProcessor
 
     /**
      * Check whether the given option is provided.
+     *
      * Note that {@link #getOption(String)} can still return null even
-     * if hasOption is true: this happens e.g. for -Amyopt
+     * if {@code hasOption} returns true: this happens e.g. for {@code -Amyopt}
      *
      * @param name the option name to check
      * @return true if the option name was provided, false otherwise
@@ -1826,7 +1829,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
     /**
      * Generate the possible command-line option names by prefixing
      * each class name from {@code classPrefixes} to {@code options},
-     * separated by OPTION_SEPARATOR.
+     * separated by {@code OPTION_SEPARATOR}.
      *
      * @param clazzPrefixes the classes to prefix
      * @param options the option names

@@ -17,9 +17,10 @@ import java.util.regex.Pattern;
 
 /**
  * This file contains basic utility functions that should be reused to create
- * a command line call to CheckerMain.
+ * a command-line call to {@code CheckerMain}.
  *
  * NOTE: There are multiple copies of this file in the following projects/locations:
+ * <pre>
  * maven-plugin/
  *     org.checkerframework.mavenplugin.PluginUtil
  *
@@ -28,6 +29,7 @@ import java.util.regex.Pattern;
  *
  * checker-framework/
  *     org.checkerframework.framework.util.PluginUtil
+ * </pre>
  *
  * These files MUST be IDENTICAL after the package descriptor.
  */

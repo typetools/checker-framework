@@ -13,8 +13,12 @@ import org.checkerframework.javacutil.ErrorReporter;
  * already has an annotation in the same hierarchy at the same location as the
  * visited type.
  *
- * Example use: AnnotatedTypeMirror visitType = ...; AnnotatedTypeMirror
- * parameter - ...; visitType.accept(new AnnotatedTypesMerger(), parameter);
+ * Example use:
+ * <pre>{@code
+ *   AnnotatedTypeMirror visitType = ...;
+ *   AnnotatedTypeMirror parameter = ...;
+ *   visitType.accept(new AnnotatedTypesMerger(), parameter);
+ * }</pre>
  *
  * @author smillst
  *

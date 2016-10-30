@@ -50,10 +50,10 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * LockAnnotatedTypeFactory builds types with LockHeld and LockPossiblyHeld annotations.
+ * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations.
  * LockHeld identifies that an object is being used as a lock and is being held when a
  * given tree is executed. LockPossiblyHeld is the default type qualifier for this
- * hierarchy and applies to all fields, local variables and parameters - hence it does
+ * hierarchy and applies to all fields, local variables and parameters -- hence it does
  * not convey any information other than that it is not LockHeld.
  *
  * However, there are a number of other annotations used in conjunction with these annotations

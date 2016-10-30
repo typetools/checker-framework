@@ -27,7 +27,7 @@ import org.checkerframework.javacutil.Pair;
  * }</pre>
  *  And we pass HashMap and Map to mapTypeArguments, the result would be:
  * <pre>{@code
- *      Map(H1 -> M1, H2 -> M2)
+ *      Map(H1 &rArr; M1, H2 &rArr; M2)
  * }</pre>
  *
  * Note, a single type argument in the subtype can map to multiple type parameters in the supertype.
@@ -37,7 +37,7 @@ import org.checkerframework.javacutil.Pair;
  * }</pre>
  * would have the result:
  * <pre>{@code
- *      Map(O1 -> [M1,M2])
+ *      Map(O1 &rArr; [M1,M2])
  * }</pre>
  *
  * This utility only maps between corresponding type parameters, so the following class:
@@ -111,7 +111,7 @@ public class TypeArgumentMapper {
      * class B<B1,B2,B3,B4> extends A<B1,B1,B3> {}
      * }</pre>
      *
-     * results in a {@code Map(B1 -> [A1,A2], B2 -> [], B3 -> [A3], B4 -> [])}
+     * results in a {@code Map(B1 &rArr; [A1,A2], B2 &rArr; [], B3 &rArr; [A3], B4 &rArr; [])}
      *
      * @return a mapping from the type parameters of subtype to the supertype type parameter's
      * that to which they are a type argument

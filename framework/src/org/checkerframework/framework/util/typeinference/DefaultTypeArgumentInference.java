@@ -55,21 +55,24 @@ import org.checkerframework.javacutil.TypesUtils;
  * See <a href="http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7">JLS &sect;5.12.2.7</a>
  *
  * Note, there are some deviations JLS 7 for the following cases:
- *     a.) Places where the JLS is vague.  For these cases, first the OpenJDK implementation was consulted
+ * <ul>
+ *     <li> Places where the JLS is vague.  For these cases, first the OpenJDK implementation was consulted
  *     and then we favored the behavior we desire rather than the implied behavior of the JLS or JDK implementation.
  *
- *     b.) The fact that any given type variable type may or may not have annotations for multiple hierarchies means
+ *     <li> The fact that any given type variable type may or may not have annotations for multiple hierarchies means
  *     that constraints are more complicated than their Java equivalents.  Every constraint must identify the
  *     hierarchies to which they apply.  This makes solving the constraint sets more complicated.
  *
- *     c.) If an argument to a method is null, then the JLS says that it does not constrain the
+ *     <li> If an argument to a method is null, then the JLS says that it does not constrain the
  *     type argument.  However, null may constrain the qualifiers on the type argument, so it is
  *     included in the constraints but is not used as the underlying type of the type argument.
+ * </ul>
  *
  *  TODO: The following limitations need to be fixed, as at the time of this writing we do not have the time
  *        to handle them:
- *      1) The GlbUtil does not correctly handled wildcards/typevars when the glb result should be a wildcard or typevar
- *      2) Interdependent Method Invocations - Currently we do not correctly handle the case where two methods need
+ *  <ul>
+ *      <li> The GlbUtil does not correctly handled wildcards/typevars when the glb result should be a wildcard or typevar
+ *      <li> Interdependent Method Invocations -- Currently we do not correctly handle the case where two methods need
  *         to have their arguments inferred and one is the argument to the other.
  *         E.g.
  * <pre>{@code
@@ -78,6 +81,7 @@ import org.checkerframework.javacutil.TypesUtils;
  *              set(get())
  * }</pre>
  *         Presumably, we want to detect these situations and combine the set of constraints with {@code T <: S}.
+ *  </ul>
  */
 public class DefaultTypeArgumentInference implements TypeArgumentInference {
     private final EqualitiesSolver equalitiesSolver = new EqualitiesSolver();
@@ -220,21 +224,24 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * This algorithm works as follows:
-     * 1.  Build Argument Constraints - create a set of constraints using the arguments to the type parameter declarations,
+     * <ul> <!-- ul rather than ol because of many cross-references within the text -->
+     * <li>1. Build Argument Constraints -- create a set of constraints using the arguments to the type parameter declarations,
      * the formal parameters, and the arguments to the method call
-     * 2.  Solve Argument Constraints - Create two solutions from the arguments.
-     *       a. Equality Arg Solution: Solution inferred from arguments used in an invariant position
+     * <li>2. Solve Argument Constraints -- Create two solutions from the arguments.
+     *       <ol>
+     *         <li>Equality Arg Solution: Solution inferred from arguments used in an invariant position
      *       (i.e. from equality constraints)
-     *       b. Supertypes Arg Solution: Solution inferred from constraints in which the parameter is a supertype of
+     *         <li>Supertypes Arg Solution: Solution inferred from constraints in which the parameter is a supertype of
      *       argument types. These are kept separate and merged later.
+     *       </ol>
      *
      * Note: If there is NO assignment context we just combine the results from 2.a and 2.b, giving preference
      * to those in 2.a, and return the result.
      *
-     * 3.  Build and Solve Initial Assignment Constraints - Create a set of constraints from the assignment context WITHOUT
+     * <li>3. Build and Solve Initial Assignment Constraints -- Create a set of constraints from the assignment context WITHOUT
      *       substituting either solution from step 2.
      *
-     * 4.  Combine the solutions from steps 2.b and 3.  This handles cases like the following:
+     * <li>4.  Combine the solutions from steps 2.b and 3.  This handles cases like the following:
      *
      * <pre>{@code
      *        <T> List<T> method(T t1) {}
@@ -261,7 +268,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *  the argument "null" is invalid.  In this case, we use @Nullable String and report an
      *  assignment.type.incompatible because we ALWAYS favor the arguments over the assignment context.
      *
-     * 5. Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
+     * <li>5. Combine the result from 2.a and step 4, if there is a conflict use the result from step 2.a
      *
      * Suppose we have the following:
      * <pre>{@code
@@ -276,7 +283,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * favoring the equality constraints if there is a conflict.  For the above example we would infer
      * the following:
      * <pre>{@code
-     *     T -> @FBCBottom @NonNull String
+     *     T &rArr; @FBCBottom @NonNull String
      * }</pre>
      *
      * Another case covered in this step is:
@@ -290,14 +297,15 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *  The above assignment should fail because T is forced to be both @NonNull and @Nullable.  In cases like these,
      *  we use @NonNull String becasue we always favor constraints from the arguments over the assignment context.
      *
-     * 6. Infer from Assignment Context
+     * <li>6. Infer from Assignment Context
      * Finally, the JLS states that we should substitute the types we have inferred up until this point back
      * into the original argument constraints.  We should then combine the constraints we get from the
      * assignment context and solve using the greatest lower bounds of all of the constraints of the form:
      * {@literal F :> U}  (these are referred to as "subtypes" in the ConstraintMap.TargetConstraints).
      *
-     * 7. Merge the result from steps 5 and 6 giving preference to 5 (the argument constraints).
+     * <li>7. Merge the result from steps 5 and 6 giving preference to 5 (the argument constraints).
      * Return the result.
+     * </ul>
      */
     private Map<TypeVariable, AnnotatedTypeMirror> infer(
             final AnnotatedTypeFactory typeFactory,
@@ -386,7 +394,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * lower bound, make it AT the lower bound
      *
      * e.g.
-     * {@code
+     * <pre>{@code
      *   <@Initialized T extends @Initialized Object> void id(T t) { return t; }
      *   id(null);
      *
@@ -397,7 +405,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      *   // This should happen ONLY with supertype constraints because raising the primary annotation would still
      *   // be valid for these constraints (since we just LUB the arguments involved) but would violate any
      *   // equality constraints
-     * }
+     * }</pre>
      *
      * TODO: NOTE WE ONLY DO THIS FOR InferredType results for now but we should probably include targest as well
      *
@@ -557,10 +565,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
     /**
      * The first half of Step 6.
+     *
      * This method creates constraints:
-     *     a) between the bounds of types that are already inferred and their inferred arguments
-     *     b) between the assignment context and the return type of the method (with the previously inferred
+     * <ul>
+     *     <li> between the bounds of types that are already inferred and their inferred arguments
+     *     <li> between the assignment context and the return type of the method (with the previously inferred
      *     arguments substituted into these constraints)
+     * </ul>
      */
     public ConstraintMap createAssignmentConstraints(
             final AnnotatedTypeMirror assignedTo,

@@ -14,8 +14,10 @@ import javax.tools.JavaFileObject;
 /**
  * Reads a file that has serialized javac diagnostics and returns either a list of TestDiagnosticLines or
  * TestDiagnostics.  This file might either:
- *    a) a Java file, which is read by creating a JavaDiagnosticReader with the JAVA_COMMENT_CODEC as
- *    b) A "Diagnostic" file, which is read by creating a JavaDiagnosticReader with a DIAGNOSTIC_FILE_CODEC
+ * <ul>
+ *    <li> a Java file, which is read by creating a {@code JavaDiagnosticReader} with the {@link #JAVA_COMMENT_CODEC}
+ *    <li> a "Diagnostic" file, which is read by creating a {@code JavaDiagnosticReader} with a {@link #DIAGNOSTIC_FILE_CODEC}
+ * </ul>
  */
 public class JavaDiagnosticReader implements Iterator<TestDiagnosticLine> {
 

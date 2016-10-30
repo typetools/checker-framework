@@ -15,9 +15,9 @@ public interface TypeValidator {
      *
      * @param type the type to validate
      * @param tree the tree from which the type originated.
-     *   Note that the tree might be a method tree - the
+     *   Note that the tree might be a method tree -- the
      *     return type should then be validated.
-     *   Note that the tree might be a variable tree - the
+     *   Note that the tree might be a variable tree -- the
      *     field type should then be validated.
      * @return true, iff the type is valid
      */

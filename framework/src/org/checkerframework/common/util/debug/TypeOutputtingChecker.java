@@ -26,18 +26,20 @@ import org.checkerframework.javacutil.TreeUtils;
  * from java files.
  *
  * For testing, you need to do the following:
- * 1. Run the Checker on the source file like any checker:
+ * <ol>
+ * <li>Run the Checker on the source file like any checker:
  *    <pre>{@code
  *      java -processor org.checkerframework.common.util.debug.TypeOutputtingChecker [source-file]
  *    }</pre>
  *
- * 2. Run the Checker on the bytecode, by simply running the main and passing
+ * <li>Run the Checker on the bytecode, by simply running the main and passing
  *    the qualified name, e.g.
  *    <pre>{@code
  *      java org.checkerframework.common.util.debug.TypeOutputtingChecker [qualified-name]
  *    }</pre>
  *
- * 3. Apply a simple diff on the two outputs
+ * <li>Apply a simple diff on the two outputs
+ * </ol>
  *
  */
 public class TypeOutputtingChecker extends BaseTypeChecker {

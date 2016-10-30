@@ -208,7 +208,9 @@ public class NullnessTransfer
 
     /*
      * Provided that m is of a type that implements interface java.util.Map:
-     * -Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the thenStore and elseStore of the transfer result.
+     * <ul>
+     * <li>Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the thenStore and elseStore of the transfer result.
+     * </ul>
      */
     @Override
     public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(

@@ -35,15 +35,14 @@ import org.checkerframework.javacutil.TreeUtils;
  * The RHS always loses its type refinement (it is widened to
  * {@literal @}MaybeAliased, and its declared type must have been
  * {@literal @}MaybeAliased) except in the following cases:
- * <p>
- * 1.The RHS is a fresh expression.
- * <p>
- * 2.The LHS is a {@literal @}NonLeaked formal parameter and the RHS is an
+ * <ol>
+ * <li>The RHS is a fresh expression.
+ * <li>The LHS is a {@literal @}NonLeaked formal parameter and the RHS is an
  * argument in a method call or constructor invocation.
- * <p>
- * 3.The LHS is a {@literal @}LeakedToResult formal parameter, the RHS is an
+ * <li>The LHS is a {@literal @}LeakedToResult formal parameter, the RHS is an
  * argument in a method call or constructor invocation, and the method's return
  * value is discarded.
+ * </ol>
  */
 public class AliasingTransfer extends CFTransfer {
 

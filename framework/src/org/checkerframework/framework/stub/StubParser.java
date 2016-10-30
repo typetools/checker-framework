@@ -1159,7 +1159,7 @@ public class StubParser {
     }
 
     /**
-     * Issues a warning even if -AstubWarnIfNotFound or -AstubDebugs options are not passed.
+     * Issues a warning even if {@code -AstubWarnIfNotFound} or {@code -AstubDebugs} options are not passed.
      */
     private void stubAlwaysWarn(String warning) {
         if (warnings.add(warning)) {

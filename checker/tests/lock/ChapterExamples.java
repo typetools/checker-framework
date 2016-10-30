@@ -702,18 +702,24 @@ class ChapterExamples {
          *
          * Suppose the following lines from method1 are executed on thread A.
          *
+         * <pre>{@code
          * @GuardedBy("lock1") MyClass local;
          * m = local;
+         * }</pre>
          *
          * Then a context switch occurs to method2 on thread B and the following lines are executed:
          *
+         * <pre>{@code
          * @GuardedBy("lock2") MyClass local;
          * m = local;
+         * }</pre>
          *
          * Then a context switch back to method1 on thread A occurs and the following lines are executed:
          *
+         * <pre>{@code
          * lock1.lock();
          * m.field = new Object();
+         * }</pre>
          *
          * In this case, it is absolutely critical that the dereference above not be allowed.
          *

@@ -186,7 +186,7 @@ public class TestConfigurationBuilder {
      *    <li> There is at least one source file
      *    <li> There is at least one processor (if requireProcessors has been set to true)
      *    <li> There is an output directory specified for class files
-     *    <li> There is no -processor option in the optionMap (it should be added by addProcessor instead)
+     *    <li> There is no {@code -processor} option in the optionMap (it should be added by addProcessor instead)
      * </ul>
      * @param requireProcessors whether or not to require that there is at least one processor
      * @return a list of errors found while validating this configuration

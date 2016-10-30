@@ -434,7 +434,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * This method is called only when -Ainfer is passed as an option.
+     * This method is called only when {@code -Ainfer} is passed as an option.
      * It checks if another option that should not occur simultaneously with
      * the whole-program inference is also passed as argument, and
      * aborts the process if that is the case. For example, the whole-program
@@ -1935,9 +1935,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Java special cases the return type of getClass.  Though the method has a return type of {@code Class<?>},
      * the compiler special cases this return type and changes the bound of the type argument to the
      * erasure of the receiver type.  e.g.,
-     * <p>
-     * x.getClass() has the type {@code Class< ? extends erasure_of_x >}
-     * someInteger.getClass() has the type {@code Class< ? extends Integer >}
+     * <ul>
+     * <li>x.getClass() has the type {@code Class< ? extends erasure_of_x >}
+     * <li>someInteger.getClass() has the type {@code Class< ? extends Integer >}
+     * </ul>
      *
      * @param getClassType this must be a type representing a call to Object.getClass otherwise
      *                     a runtime exception will be thrown
@@ -2728,12 +2729,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Parses the stub files in the following order: <br>
-     * 1. jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is not supplied <br>
-     * 2. flow.astub in the same directory as BaseTypeChecker <br>
-     * 3. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker<br>
-     * 4. Stub files provide via stubs system property <br>
-     * 5. Stub files provide via stubs environment variable <br>
-     * 6. Stub files provide via stubs compiler option
+     * <ol>
+     * <li> jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is not supplied <br>
+     * <li> flow.astub in the same directory as BaseTypeChecker <br>
+     * <li> Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker<br>
+     * <li> Stub files provide via stubs system property <br>
+     * <li> Stub files provide via stubs environment variable <br>
+     * <li> Stub files provide via stubs compiler option
+     * </ol>
      * <p>
      *  If a type is annotated with a qualifier from the same hierarchy in more than one stub file, the qualifier
      *  in the last stub file is applied.

@@ -44,8 +44,9 @@ public class SuperTypeApplier extends IndexedElementAnnotationApplier {
      * Note: Due to the semantics of TypeAnnotationPosition, type_index/index numbering works as follows:
      *
      * If subtypeElement represents a class and not an interface:
+     *
      *    then
-     *      the first member of supertypes represents the object and the relevant type_index = -1
+     *      the first member of supertypes represents the object and the relevant type_index = -1;
      *      interface indices are offset by 1.
      *
      *    else

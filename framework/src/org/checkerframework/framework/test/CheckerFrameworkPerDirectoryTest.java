@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
  * <li> Declare a constructor taking 1 parameter of type {@code java.util.List<java.io.File>}.
  * This is a list of the files that will be compiled.
  * <li> Declare the following method:
- *  {@code @Parameters public static String [] getTestDirs()}
+ * <pre>{@code @Parameters public static String [] getTestDirs()}</pre>
  * <p>
  * getTestDir must return an array of directories that exist in the test
  * folder.
@@ -33,15 +33,16 @@ import org.junit.runner.RunWith;
  * test files that exists below the listed directories.  It is unnecessary
  * to list child directories of a directory you have already listed.  </li>
  * </ol>
- *  <pre>
+ * <pre>{@code
  * public class MyTest extends CheckerFrameworkPerDirectoryTest {
- *   {@code  public MyTest(List<File>} testFiles) {
+ *   public MyTest(List<File> testFiles) {
  *     super(testFiles, MyChecker.class, "", "Anomsgtext");
  *   }
- *   {@code @Parameters}
+ *   {@literal @}Parameters
  *   public static String [] getTestDirs() {
  *     return new String[]{"all-systems"};
  *   }
+ * }
  * }</pre>
  */
 @RunWith(PerDirectorySuite.class)

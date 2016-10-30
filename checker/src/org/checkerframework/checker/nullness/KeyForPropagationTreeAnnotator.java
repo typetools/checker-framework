@@ -44,8 +44,6 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * Note propagation only occurs between two AnnotatedDeclaredTypes.  If either side is not an
  * AnnotatedDeclaredType then this class does nothing.
- *
- * IMPORTANT NOTE:
  */
 public class KeyForPropagationTreeAnnotator extends TreeAnnotator {
     private final KeyForPropagator keyForPropagator;
