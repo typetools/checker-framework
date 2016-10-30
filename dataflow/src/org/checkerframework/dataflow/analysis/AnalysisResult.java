@@ -23,7 +23,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
  * @author Stefan Heule
  *
  * @param <A>
- *            type of the abstract value that is tracked.
+ *            type of the abstract value that is tracked
  */
 public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 

@@ -806,13 +806,13 @@ public class CFGBuilder {
          *
          * @param start
          *            The starting point of the search (an empty, regular basic
-         *            block).
+         *            block)
          * @param empty
          *            An empty set to be filled by this method with all empty
          *            basic blocks found (including {@code start}).
          * @param predecessors
          *            An empty set to be filled by this method with all
-         *            predecessors.
+         *            predecessors
          * @return the single successor of the set of the empty basic blocks
          */
         protected static BlockImpl computeNeighborhoodOfEmptyBlock(
@@ -850,12 +850,12 @@ public class CFGBuilder {
          *
          * @param start
          *            The starting point of the search (an empty, regular basic
-         *            block).
+         *            block)
          * @param empty
          *            A set to be filled by this method with all empty basic
          *            blocks found (including {@code start}).
          * @param predecessors
-         *            A set to be filled by this method with all predecessors.
+         *            A set to be filled by this method with all predecessors
          */
         protected static void computeNeighborhoodOfEmptyBlockBackwards(
                 RegularBlockImpl start,
@@ -1026,7 +1026,7 @@ public class CFGBuilder {
          * Perform phase two of the translation.
          *
          * @param in
-         *            The result of phase one.
+         *            The result of phase one
          * @return a control flow graph that might still contain degenerate
          *         basic block (such as empty regular basic blocks or
          *         conditional blocks with the same block as 'then' and 'else'
@@ -1475,7 +1475,7 @@ public class CFGBuilder {
          * Add a node to the lookup map if it not already present.
          *
          * @param node
-         *            The node to add to the lookup map.
+         *            The node to add to the lookup map
          */
         protected void addToLookupMap(Node node) {
             Tree tree = node.getTree();
@@ -1500,7 +1500,7 @@ public class CFGBuilder {
          * update the Tree-Node mapping with conversion nodes.
          *
          * @param node
-         *            The node to add to the lookup map.
+         *            The node to add to the lookup map
          */
         protected void addToConvertedLookupMap(Node node) {
             Tree tree = node.getTree();
@@ -1514,7 +1514,7 @@ public class CFGBuilder {
          * with conversion nodes.
          *
          * @param tree
-         *            The tree used as a key in the map.
+         *            The tree used as a key in the map
          * @param node
          *            The node to add to the lookup map.
          */
@@ -1528,7 +1528,7 @@ public class CFGBuilder {
          * Extend the list of extended nodes with a node.
          *
          * @param node
-         *            The node to add.
+         *            The node to add
          * @return the same node (for convenience)
          */
         protected <T extends Node> T extendWithNode(T node) {
@@ -1542,7 +1542,7 @@ public class CFGBuilder {
          * {@code node} might throw the exception {@code cause}.
          *
          * @param node
-         *            The node to add.
+         *            The node to add
          * @param cause
          *            An exception that the node might throw.
          * @return the node holder
@@ -1559,7 +1559,7 @@ public class CFGBuilder {
          * {@code causes}.
          *
          * @param node
-         *            The node to add.
+         *            The node to add
          * @param causes
          *            Set of exceptions that the node might throw.
          * @return the node holder
@@ -1582,7 +1582,7 @@ public class CFGBuilder {
          * {@code pred} is not present.
          *
          * @param node
-         *            The node to add.
+         *            The node to add
          * @param pred
          *            The desired predecessor of node.
          * @return the node holder
@@ -1600,11 +1600,11 @@ public class CFGBuilder {
          * is not present.
          *
          * @param node
-         *            The node to add.
+         *            The node to add
          * @param causes
          *            Set of exceptions that the node might throw.
          * @param pred
-         *            The desired predecessor of node.
+         *            The desired predecessor of node
          * @return the node holder
          */
         protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(
@@ -1623,7 +1623,7 @@ public class CFGBuilder {
          * Extend the list of extended nodes with an extended node.
          *
          * @param n
-         *            The extended node.
+         *            The extended node
          */
         protected void extendWithExtendedNode(ExtendedNode n) {
             nodeList.add(n);
@@ -1635,7 +1635,7 @@ public class CFGBuilder {
          * is not present.
          *
          * @param n
-         *            The extended node.
+         *            The extended node
          * @param pred
          *            The desired predecessor.
          */
