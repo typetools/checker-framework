@@ -228,10 +228,6 @@
   <!-- I can add back  quiet="true"  to the get invocations, when all
        installations have a modern enough Ant that recognizes that attribute. -->
 
-  <!-- Uncomment the first definition for debugging -->
-  <!-- <property name="run-gjf-website-dir" value="http://homes.cs.washington.edu/~mernst"/> -->
-  <property name="run-gjf-website-dir" value="https://raw.githubusercontent.com/mernst/plume-lib/master/bin"/>
-
   <condition property="isMac">
     <os family="mac" />
   </condition>
