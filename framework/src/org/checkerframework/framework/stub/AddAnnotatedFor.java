@@ -35,9 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Utility that generates {@code @AnnotatedFor} class annotations.
- * The {@link #main} method acts as a filter: it reads a JAIF from
- * standard input and writes an augmented JAIF to standard output.
+ * Utility that generates {@code @AnnotatedFor} class annotations. The {@link #main} method acts as
+ * a filter: it reads a JAIF from standard input and writes an augmented JAIF to standard output.
  *
  * @author dbro
  */
@@ -62,11 +61,9 @@ public class AddAnnotatedFor {
     }
 
     /**
-     * Reads JAIF from the file indicated by the first element, or
-     * standard input if the argument array is empty; inserts any
-     * appropriate {@code @AnnotatedFor} annotations, based on the
-     * annotations defined in the input JAIF; and writes the augmented
-     * JAIF to standard output.
+     * Reads JAIF from the file indicated by the first element, or standard input if the argument
+     * array is empty; inserts any appropriate {@code @AnnotatedFor} annotations, based on the
+     * annotations defined in the input JAIF; and writes the augmented JAIF to standard output.
      */
     public static void main(String[] args) throws IOException, DefException, ParseException {
         AScene scene = new AScene();

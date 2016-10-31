@@ -14,18 +14,20 @@ import org.checkerframework.framework.util.typeinference.solver.TargetConstraint
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Supertypes;
 
 /**
- * ConstraintMap holds simplified versions of the TUConstraints for ALL type variable for which
- * we are inferring an argument.  The ConstraintMap is edited on the fly as the various solvers
- * work (unlike the AF/TU Constraints which are immutable).
+ * ConstraintMap holds simplified versions of the TUConstraints for ALL type variable for which we
+ * are inferring an argument. The ConstraintMap is edited on the fly as the various solvers work
+ * (unlike the AF/TU Constraints which are immutable).
  *
- * This really consists of these things:
+ * <p>This really consists of these things:
+ *
  * <ol>
- *    <li> a Map({@code target &rArr; constraints for target})
- *    <li> Methods to easily build up the constraints in the map
- *    <li> A getter for the constraints of individual targets.
+ *   <li> a Map({@code target &rArr; constraints for target})
+ *   <li> Methods to easily build up the constraints in the map
+ *   <li> A getter for the constraints of individual targets.
  * </ol>
- *       Note: This class, along with TargetConstraints, uses a lot of mutable state and few setters/getters
- *       be careful.  This choice was made as it makes the resulting code more readable.
+ *
+ * Note: This class, along with TargetConstraints, uses a lot of mutable state and few
+ * setters/getters be careful. This choice was made as it makes the resulting code more readable.
  */
 public class ConstraintMap {
 
@@ -41,23 +43,22 @@ public class ConstraintMap {
         this.targetToRecords.putAll(toCopy.targetToRecords);
     }
 
-    /**
-     * Gets the equality, subtypes, and supertypes constraints for a particular target
-     */
+    /** Gets the equality, subtypes, and supertypes constraints for a particular target */
     public TargetConstraints getConstraints(final TypeVariable target) {
         return targetToRecords.get(target);
     }
 
     /**
-     * @return the set of all targets passed to the constructor of this constraint map (a target will
-     * appear in this list whether or not it has any constraints added)
+     * @return the set of all targets passed to the constructor of this constraint map (a target
+     *     will appear in this list whether or not it has any constraints added)
      */
     public Set<TypeVariable> getTargets() {
         return targetToRecords.keySet();
     }
 
     /**
-     * Add a constraint indicating that the equivalent is equal to target in the given qualifier hierarchies
+     * Add a constraint indicating that the equivalent is equal to target in the given qualifier
+     * hierarchies
      */
     public void addTargetEquality(
             final TypeVariable target,
@@ -73,7 +74,8 @@ public class ConstraintMap {
     }
 
     /**
-     * Add a constraint indicating that target has primary annotations equal to the given annotations
+     * Add a constraint indicating that target has primary annotations equal to the given
+     * annotations
      */
     public void addPrimaryEqualities(
             final TypeVariable target,
@@ -90,7 +92,9 @@ public class ConstraintMap {
     }
 
     /**
-     * Add a constraint indicating that target is a supertype of subtype in the given qualifier hierarchies
+     * Add a constraint indicating that target is a supertype of subtype in the given qualifier
+     * hierarchies
+     *
      * @param hierarchies a set of TOP annotations
      */
     public void addTargetSupertype(
@@ -107,7 +111,9 @@ public class ConstraintMap {
     }
 
     /**
-     * Add a constraint indicating that target is a supertype of subtype in the given qualifier hierarchies
+     * Add a constraint indicating that target is a supertype of subtype in the given qualifier
+     * hierarchies
+     *
      * @param hierarchies a set of TOP annotations
      */
     public void addTypeSupertype(
@@ -124,7 +130,8 @@ public class ConstraintMap {
     }
 
     /**
-     * Add a constraint indicating that target's primary annotations are subtypes of the given annotations
+     * Add a constraint indicating that target's primary annotations are subtypes of the given
+     * annotations
      */
     public void addPrimarySupertype(
             final TypeVariable target,
@@ -143,7 +150,9 @@ public class ConstraintMap {
     }
 
     /**
-     * Add a constraint indicating that target is a subtype of supertype in the given qualifier hierarchies
+     * Add a constraint indicating that target is a subtype of supertype in the given qualifier
+     * hierarchies
+     *
      * @param hierarchies a set of TOP annotations
      */
     public void addTargetSubtype(
@@ -160,7 +169,9 @@ public class ConstraintMap {
     }
 
     /**
-     * Add a constraint indicating that target is a subtype of supertype in the given qualifier hierarchies
+     * Add a constraint indicating that target is a subtype of supertype in the given qualifier
+     * hierarchies
+     *
      * @param hierarchies a set of TOP annotations
      */
     public void addTypeSubtype(
@@ -177,7 +188,8 @@ public class ConstraintMap {
     }
 
     /**
-     * Add a constraint indicating that target's primary annotations are subtypes of the given annotations
+     * Add a constraint indicating that target's primary annotations are subtypes of the given
+     * annotations
      */
     public void addPrimarySubtypes(
             final TypeVariable target,
@@ -197,6 +209,7 @@ public class ConstraintMap {
 
     /**
      * Add a constraint indicating that target is equal to type in the given hierarchies
+     *
      * @param hierarchies a set of TOP annotations
      */
     public void addTypeEqualities(

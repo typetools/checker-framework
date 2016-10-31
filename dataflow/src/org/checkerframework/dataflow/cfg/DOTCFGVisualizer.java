@@ -41,7 +41,6 @@ import org.checkerframework.javacutil.ErrorReporter;
  * Generate a graph description in the DOT language of a control graph.
  *
  * @author Stefan Heule
- *
  */
 public class DOTCFGVisualizer<
                 A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
@@ -81,9 +80,7 @@ public class DOTCFGVisualizer<
         this.sbBlock = new StringBuilder();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public /*@Nullable*/ Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, /*@Nullable*/ Analysis<A, S, T> analysis) {
@@ -109,9 +106,7 @@ public class DOTCFGVisualizer<
         return res;
     }
 
-    /**
-     * Generate the dot representation as String.
-     */
+    /** Generate the dot representation as String. */
     protected String generateDotGraph(
             ControlFlowGraph cfg, Block entry, /*@Nullable*/ Analysis<A, S, T> analysis) {
         this.sbDigraph.setLength(0);
@@ -491,8 +486,8 @@ public class DOTCFGVisualizer<
     }
 
     /**
-     * Write a file {@code methods.txt} that contains a mapping from
-     * source code location to generated dot file.
+     * Write a file {@code methods.txt} that contains a mapping from source code location to
+     * generated dot file.
      */
     @Override
     public void shutdown() {

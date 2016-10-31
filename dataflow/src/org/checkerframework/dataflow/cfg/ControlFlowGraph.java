@@ -29,7 +29,6 @@ import org.checkerframework.dataflow.cfg.node.ReturnNode;
  * A control flow graph (CFG for short) of a single method.
  *
  * @author Stefan Heule
- *
  */
 public class ControlFlowGraph {
 
@@ -46,12 +45,10 @@ public class ControlFlowGraph {
     protected UnderlyingAST underlyingAST;
 
     /**
-     * Maps from AST {@link Tree}s to {@link Node}s.  Every Tree that produces
-     * a value will have at least one corresponding Node.  Trees
-     * that undergo conversions, such as boxing or unboxing, can map to two
-     * distinct Nodes.  The Node for the pre-conversion value is stored
-     * in treeLookup, while the Node for the post-conversion value
-     * is stored in convertedTreeLookup.
+     * Maps from AST {@link Tree}s to {@link Node}s. Every Tree that produces a value will have at
+     * least one corresponding Node. Trees that undergo conversions, such as boxing or unboxing, can
+     * map to two distinct Nodes. The Node for the pre-conversion value is stored in treeLookup,
+     * while the Node for the post-conversion value is stored in convertedTreeLookup.
      */
     protected IdentityHashMap<Tree, Node> treeLookup;
 
@@ -59,8 +56,8 @@ public class ControlFlowGraph {
     protected IdentityHashMap<Tree, Node> convertedTreeLookup;
 
     /**
-     * All return nodes (if any) encountered. Only includes return
-     * statements that actually return something
+     * All return nodes (if any) encountered. Only includes return statements that actually return
+     * something
      */
     protected final List<ReturnNode> returnNodes;
 
@@ -82,10 +79,7 @@ public class ControlFlowGraph {
         this.returnNodes = returnNodes;
     }
 
-    /**
-     * @return the {@link Node} to which the {@link Tree} {@code t}
-     *         corresponds.
-     */
+    /** @return the {@link Node} to which the {@link Tree} {@code t} corresponds. */
     public Node getNodeCorrespondingToTree(Tree t) {
         if (convertedTreeLookup.containsKey(t)) {
             return convertedTreeLookup.get(t);
@@ -116,9 +110,7 @@ public class ControlFlowGraph {
         return underlyingAST;
     }
 
-    /**
-     * @return the set of all basic block in this control flow graph
-     */
+    /** @return the set of all basic block in this control flow graph */
     public Set<Block> getAllBlocks() {
         Set<Block> visited = new HashSet<>();
         Queue<Block> worklist = new LinkedList<>();
@@ -165,10 +157,9 @@ public class ControlFlowGraph {
     }
 
     /**
-     * @return the list of all basic block in this control flow graph
-     * in reversed depth-first postorder sequence.
-     *
-     * Blocks may appear more than once in the sequence.
+     * @return the list of all basic block in this control flow graph in reversed depth-first
+     *     postorder sequence.
+     *     <p>Blocks may appear more than once in the sequence.
      */
     public List<Block> getDepthFirstOrderedBlocks() {
         List<Block> dfsOrderResult = new LinkedList<>();
@@ -194,6 +185,7 @@ public class ControlFlowGraph {
 
     /**
      * Get a list of all successor Blocks for cur
+     *
      * @return a Deque of successor Blocks
      */
     private Deque<Block> getSuccessors(Block cur) {
@@ -219,16 +211,14 @@ public class ControlFlowGraph {
         return succs;
     }
 
-    /**
-     * @return the tree-lookup map
-     */
+    /** @return the tree-lookup map */
     public IdentityHashMap<Tree, Node> getTreeLookup() {
         return new IdentityHashMap<>(treeLookup);
     }
 
     /**
-     * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps
-     * to a {@link Node} in the CFG or null otherwise.
+     * Get the {@link MethodTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
+     * the CFG or null otherwise.
      */
     public /*@Nullable*/ MethodTree getContainingMethod(Tree t) {
         if (treeLookup.containsKey(t)) {
@@ -241,8 +231,8 @@ public class ControlFlowGraph {
     }
 
     /**
-     * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps
-     * to a {@link Node} in the CFG or null otherwise.
+     * Get the {@link ClassTree} of the CFG if the argument {@link Tree} maps to a {@link Node} in
+     * the CFG or null otherwise.
      */
     public /*@Nullable*/ ClassTree getContainingClass(Tree t) {
         if (treeLookup.containsKey(t)) {

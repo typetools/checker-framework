@@ -15,10 +15,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 /**
  * A simple visitor for {@link AnnotatedTypeMirror}s.
  *
- * @param <R>   The return type of this visitor's methods.
- *              Use {@link Void} for visitors that do not need to return results.
- * @param <P>   the type of the additional parameter to this visitor's methods.
- *              Use {@link Void} for visitors that do not need an additional parameter.
+ * @param <R> The return type of this visitor's methods. Use {@link Void} for visitors that do not
+ *     need to return results.
+ * @param <P> the type of the additional parameter to this visitor's methods. Use {@link Void} for
+ *     visitors that do not need an additional parameter.
  */
 public class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R, P> {
 
@@ -26,16 +26,16 @@ public class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R,
     protected final R DEFAULT_VALUE;
 
     /**
-     * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with
-     * default value being {@code null}
+     * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with default value being {@code
+     * null}
      */
     public SimpleAnnotatedTypeVisitor() {
         this(null);
     }
 
     /**
-     * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with
-     * the default value being the passed defaultValue
+     * Creates an instance of {@link SimpleAnnotatedTypeVisitor} with the default value being the
+     * passed defaultValue
      *
      * @param defaultValue the default value this class should return
      */
@@ -44,11 +44,11 @@ public class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R,
     }
 
     /**
-     * Performs the default action for visiting trees, if subclasses do not
-     * override the visitFOO node.
+     * Performs the default action for visiting trees, if subclasses do not override the visitFOO
+     * node.
      *
-     * This implementation merely returns the default value (as specified by the
-     * protected field {@code DEFAULT_VALUE}).
+     * <p>This implementation merely returns the default value (as specified by the protected field
+     * {@code DEFAULT_VALUE}).
      */
     protected R defaultAction(AnnotatedTypeMirror type, P p) {
         return DEFAULT_VALUE;

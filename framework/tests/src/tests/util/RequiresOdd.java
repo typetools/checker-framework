@@ -8,11 +8,10 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
- * A precondition annotation to indicate that a method requires certain
- * expressions to be {@link Odd}.
+ * A precondition annotation to indicate that a method requires certain expressions to be {@link
+ * Odd}.
  *
  * @author Stefan Heule
- *
  */
 @PreconditionAnnotation(qualifier = Odd.class)
 @Documented

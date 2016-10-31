@@ -1,5 +1,4 @@
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 public class Class2Min {
     void test(Class1Min class1) {

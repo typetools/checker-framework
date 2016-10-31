@@ -37,13 +37,10 @@ import org.checkerframework.stubparser.ast.type.VoidType;
 import org.checkerframework.stubparser.ast.type.WildcardType;
 import org.checkerframework.stubparser.ast.visitor.SimpleVoidVisitor;
 
-/**
- * Utility class for stub files
- */
+/** Utility class for stub files */
 public class StubUtil {
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            String className, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(String className, IndexUnit indexFile) {
         int indexOfDot = className.lastIndexOf('.');
 
         if (indexOfDot == -1) {
@@ -70,8 +67,7 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            TypeElement type, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(TypeElement type, IndexUnit indexFile) {
         return findDeclaration(type.getQualifiedName().toString(), indexFile);
     }
 
@@ -121,8 +117,7 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            String simpleName, CompilationUnit cu) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(String simpleName, CompilationUnit cu) {
         for (TypeDeclaration type : cu.getTypes()) {
             if (simpleName.equals(type.getName())) {
                 return type;
@@ -152,7 +147,7 @@ public class StubUtil {
     /**
      * Returns the chosen canonical string of the method declaration.
      *
-     * The canonical representation contains simple names of the types only.
+     * <p>The canonical representation contains simple names of the types only.
      */
     /*package-scope*/ static String toString(ExecutableElement element) {
         StringBuilder sb = new StringBuilder();
@@ -196,10 +191,10 @@ public class StubUtil {
     }
 
     /**
-     * A helper method that standarize type by printing simple names
-     * instead of fully qualified names.
+     * A helper method that standarize type by printing simple names instead of fully qualified
+     * names.
      *
-     * This eliminates the need for imports.
+     * <p>This eliminates the need for imports.
      */
     private static String standarizeType(TypeMirror type) {
         switch (type.getKind()) {
@@ -220,7 +215,7 @@ public class StubUtil {
         return null; // dead code
     }
 
-    private final static class ElementPrinter extends SimpleVoidVisitor<Void> {
+    private static final class ElementPrinter extends SimpleVoidVisitor<Void> {
         public static String toString(Node n) {
             ElementPrinter printer = new ElementPrinter();
             n.accept(printer, null);
@@ -372,9 +367,8 @@ public class StubUtil {
     }
 
     /**
-     * Side-effects {@code resources} by adding to it either
-     * {@code stub} if it is a stub file, or all the contained stub
-     * files if {@code stub} is a jar file or a directory.
+     * Side-effects {@code resources} by adding to it either {@code stub} if it is a stub file, or
+     * all the contained stub files if {@code stub} is a jar file or a directory.
      */
     private static void allStubFiles(File stub, List<StubResource> resources) {
         if (isStub(stub)) {

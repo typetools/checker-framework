@@ -21,20 +21,20 @@ import polyall.quals.H1S2;
  * Outputs:
  * ...
  * <pre>
- Issue681$Inner addH1S2;
- descriptor: LIssue681$Inner;
- flags:
- RuntimeVisibleTypeAnnotations:
- 0: #10(): FIELD
- 1: #11(): FIELD
-
- Issue681$Inner explicitH1S2;
- descriptor: LIssue681$Inner;
- flags:
- RuntimeVisibleTypeAnnotations:
- 0: #11(): FIELD, location=[INNER_TYPE]
- 1: #10(): FIELD
- 2: #11(): FIELD
+ * Issue681$Inner addH1S2;
+ * descriptor: LIssue681$Inner;
+ * flags:
+ * RuntimeVisibleTypeAnnotations:
+ * 0: #10(): FIELD
+ * 1: #11(): FIELD
+ *
+ * Issue681$Inner explicitH1S2;
+ * descriptor: LIssue681$Inner;
+ * flags:
+ * RuntimeVisibleTypeAnnotations:
+ * 0: #11(): FIELD, location=[INNER_TYPE]
+ * 1: #10(): FIELD
+ * 2: #11(): FIELD
  * </pre>
  */
 class Issue681 {
@@ -44,7 +44,7 @@ class Issue681 {
         @H1S2 Issue681.Inner explicitOneOuterH1S2;
         Inner addH1S2;
 
-        @H1S2 Inner method (@H1S2 Inner paramExplicit, Inner nonAnno) {
+        @H1S2 Inner method(@H1S2 Inner paramExplicit, Inner nonAnno) {
             return paramExplicit;
         }
     }

@@ -1,5 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
 import org.checkerframework.common.value.qual.*;
 
 class TypeCast {

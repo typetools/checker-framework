@@ -30,18 +30,18 @@ import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an arrow
- * is a reference.  Arrows are labeled with the relationship that reference represents (e.g. an arrow
- * marked "extends" starts from a type variable or wildcard type and points to the upper bound of that
- * type).
+ * TypeVisualizer prints AnnotatedTypeMirrors as a directed graph where each node is a type and an
+ * arrow is a reference. Arrows are labeled with the relationship that reference represents (e.g. an
+ * arrow marked "extends" starts from a type variable or wildcard type and points to the upper bound
+ * of that type).
  *
- * Currently, to use TypeVisualizer just insert an if statement somewhere that targets
- * the type you would like to print:
- * e.g.
+ * <p>Currently, to use TypeVisualizer just insert an if statement somewhere that targets the type
+ * you would like to print: e.g.
+ *
  * <pre>{@code
- *     if (type.getKind() == TypeKind.EXECUTABLE && type.toString().contains("methodToPrint")) {
- *         TypeVisualizer.drawToPng("/Users/jburke/Documents/tmp/method.png", type);
- *     }
+ * if (type.getKind() == TypeKind.EXECUTABLE && type.toString().contains("methodToPrint")) {
+ *     TypeVisualizer.drawToPng("/Users/jburke/Documents/tmp/method.png", type);
+ * }
  * }</pre>
  *
  * Be sure to remove such statements before commiting your changes.
@@ -50,6 +50,7 @@ public class TypeVisualizer {
 
     /**
      * Creates a dot file at dest that contains a digraph for the structure of type
+     *
      * @param dest the destination dot file
      * @param type the type to be written
      */
@@ -60,6 +61,7 @@ public class TypeVisualizer {
 
     /**
      * Creates a dot file at dest that contains a digraph for the structure of type
+     *
      * @param dest the destination dot file, this string will be directly passed to new File(dest)
      * @param type the type to be written
      */
@@ -69,7 +71,9 @@ public class TypeVisualizer {
 
     /**
      * Draws a dot file for type in a temporary directory then calls the "dot" program to convert
-     * that file into a png at the location dest.  This method will fail if a temp file can't be created.
+     * that file into a png at the location dest. This method will fail if a temp file can't be
+     * created.
+     *
      * @param dest the destination png file
      * @param type the type to be written
      */
@@ -86,7 +90,9 @@ public class TypeVisualizer {
 
     /**
      * Draws a dot file for type in a temporary directory then calls the "dot" program to convert
-     * that file into a png at the location dest.  This method will fail if a temp file can't be created.
+     * that file into a png at the location dest. This method will fail if a temp file can't be
+     * created.
+     *
      * @param dest the destination png file, this string will be directly passed to new File(dest)
      * @param type the type to be written
      */
@@ -95,8 +101,9 @@ public class TypeVisualizer {
     }
 
     /**
-     * Converts the given dot file to a png file at the specified location.  This method
-     * calls the program "dot" from Runtime.exec and will fail if "dot" is not on your class path.
+     * Converts the given dot file to a png file at the specified location. This method calls the
+     * program "dot" from Runtime.exec and will fail if "dot" is not on your class path.
+     *
      * @param dotFile the dot file to convert
      * @param pngFile the destination of the resultant png file
      */
@@ -113,6 +120,7 @@ public class TypeVisualizer {
     /**
      * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable
      * to a dot file at directory/varName.dot
+     *
      * @return true if the type variable was printed, otherwise false
      */
     public static boolean printTypevarToDotIfMatches(
@@ -125,6 +133,7 @@ public class TypeVisualizer {
     /**
      * If the name of typeVariable matches one in the list of typeVarNames, then print typeVariable
      * to a png file at directory/varName.png
+     *
      * @return true if the type variable was printed, otherwise false
      */
     public static boolean printTypevarToPngIfMatches(
@@ -158,11 +167,10 @@ public class TypeVisualizer {
     /**
      * This class exists because there is no LinkedIdentityHashMap.
      *
-     * Node is just a wrapper around type mirror that replaces .equals with referential equality.
-     * This is done to preserve the order types were traversed so that printing will occur
-     * in a hierarchical order.  However, since there is no LinkedIdentityHashMap, it was
-     * easiest to just create a wrapper that performed referential equality on types and use
-     * a LinkedHashMap.
+     * <p>Node is just a wrapper around type mirror that replaces .equals with referential equality.
+     * This is done to preserve the order types were traversed so that printing will occur in a
+     * hierarchical order. However, since there is no LinkedIdentityHashMap, it was easiest to just
+     * create a wrapper that performed referential equality on types and use a LinkedHashMap.
      */
     private static class Node {
         private final AnnotatedTypeMirror type;
@@ -190,14 +198,14 @@ public class TypeVisualizer {
     }
 
     /**
-     * Drawing visits a type and writes a dot file to the location specified.  It contains
-     * data structures to hold the intermediate dot information before printing.
+     * Drawing visits a type and writes a dot file to the location specified. It contains data
+     * structures to hold the intermediate dot information before printing.
      */
     private static class Drawing {
         /** A map from Node (type) to a dot string declaring that node */
         private final Map<Node, String> nodes = new LinkedHashMap<>();
 
-        /** list of connections between nodes.  Lines will refer to identifiers in nodes.values() */
+        /** list of connections between nodes. Lines will refer to identifiers in nodes.values() */
         private final List<String> lines = new ArrayList<>();
 
         private final String graphName;
@@ -205,7 +213,7 @@ public class TypeVisualizer {
         /** The type being drawn */
         private final AnnotatedTypeMirror type;
 
-        /** Used to identify nodes uniquely.  This field is monotonically increasing. */
+        /** Used to identify nodes uniquely. This field is monotonically increasing. */
         private int nextId = 0;
 
         public Drawing(final String graphName, final AnnotatedTypeMirror type) {
@@ -266,8 +274,8 @@ public class TypeVisualizer {
         }
 
         /**
-         * Connection drawer is used to add the connections between all the nodes created by
-         * the NodeDrawer.  It is not a scanner and is called on every node in the nodes map.
+         * Connection drawer is used to add the connections between all the nodes created by the
+         * NodeDrawer. It is not a scanner and is called on every node in the nodes map.
          */
         private class ConnectionDrawer implements AnnotatedTypeVisitor<Void, Void> {
 

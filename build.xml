@@ -228,10 +228,6 @@
   <!-- I can add back  quiet="true"  to the get invocations, when all
        installations have a modern enough Ant that recognizes that attribute. -->
 
-  <!-- Uncomment the first definition for debugging -->
-  <!-- <property name="run-gjf-website-dir" value="http://homes.cs.washington.edu/~mernst"/> -->
-  <property name="run-gjf-website-dir" value="https://raw.githubusercontent.com/mernst/plume-lib/master/bin"/>
-
   <condition property="isMac">
     <os family="mac" />
   </condition>
@@ -240,23 +236,28 @@
   <condition property="maxparallel" value="1000" else="-1">
     <isset property="isMac"/>
   </condition>
-  <target name="reformat"
+
+  <target name="-get-run-google-java-format"
+          description="Obtain or update run-google-java-format project">
+    <exec executable="/bin/sh">
+      <arg value="-c"/>
+      <arg value="cd checker/bin-devel &amp;&amp; (git -C .run-google-java-format pull -q || git clone -q https://github.com/plume-lib/run-google-java-format.git .run-google-java-format)"/>
+    </exec>
+  </target>
+
+  <target name="reformat" depends="-get-run-google-java-format"
           description="Reformat Java code">
-    <get src="${run-gjf-website-dir}/run-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" maxtime="60"/>
-    <chmod file="checker/bin-devel/run-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
-      <arg value="./checker/bin-devel/run-google-java-format.py"/>
+      <arg value="./checker/bin-devel/.run-google-java-format/run-google-java-format.py"/>
       <arg value="--aosp"/>    <!-- 4-space indentation -->
       <fileset refid="formatted.java.files"/>
     </apply>
   </target>
 
-  <target name="check-format"
+  <target name="check-format" depends="-get-run-google-java-format"
           description="Check Java code formatting">
-    <get src="${run-gjf-website-dir}/check-google-java-format.py" dest="checker/bin-devel/" usetimestamp="true" maxtime="60"/>
-    <chmod file="checker/bin-devel/check-google-java-format.py" perm="+x"/>
     <apply executable="python" parallel="true" maxparallel="${maxparallel}" failonerror="true">
-      <arg value="./checker/bin-devel/check-google-java-format.py"/>
+      <arg value="./checker/bin-devel/.run-google-java-format/check-google-java-format.py"/>
       <arg value="--aosp"/>    <!-- 4-space indentation -->
       <fileset refid="formatted.java.files"/>
     </apply>

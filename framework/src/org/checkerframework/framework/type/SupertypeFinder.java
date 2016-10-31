@@ -31,8 +31,9 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Finds the direct supertypes of an input AnnotatedTypeMirror.
- * See http://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.10.2
+ * Finds the direct supertypes of an input AnnotatedTypeMirror. See
+ * http://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.10.2
+ *
  * @see Types#directSupertypes(TypeMirror)
  */
 class SupertypeFinder {
@@ -88,6 +89,7 @@ class SupertypeFinder {
          * }</pre>
          *
          * For easiness:
+         *
          * <pre>{@code
          * boxed(primitiveType) >: primitiveType
          * }</pre>
@@ -296,6 +298,8 @@ class SupertypeFinder {
         }
 
         /**
+         *
+         *
          * <pre>{@code
          * For type = A[ ] ==>
          *  Object >: A[ ]
@@ -353,16 +357,16 @@ class SupertypeFinder {
         }
 
         /**
-         * Note: The explanation below is my interpretation of why we have this code.  I am not sure if this
-         * was the author's original intent but I can see no other reasoning, exercise caution:
+         * Note: The explanation below is my interpretation of why we have this code. I am not sure
+         * if this was the author's original intent but I can see no other reasoning, exercise
+         * caution:
          *
-         * Classes may have type parameters that are used in extends or implements clauses.
-         * E.g.
+         * <p>Classes may have type parameters that are used in extends or implements clauses. E.g.
          * {@code class MyList<T> extends List<T>}
          *
-         * Direct supertypes will contain a type {@code List<T>} but the type T may become out of sync with
-         * the annotations on type {@code MyList<T>}.  To keep them in-sync, we substitute out the copy of T
-         * with the same reference to T that is on {@code MyList<T>}
+         * <p>Direct supertypes will contain a type {@code List<T>} but the type T may become out of
+         * sync with the annotations on type {@code MyList<T>}. To keep them in-sync, we substitute
+         * out the copy of T with the same reference to T that is on {@code MyList<T>}
          */
         private static class TypeParamReplacer
                 extends AnnotatedTypeScanner<Void, Map<TypeParameterElement, AnnotatedTypeMirror>> {

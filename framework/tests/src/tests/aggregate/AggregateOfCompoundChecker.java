@@ -9,8 +9,8 @@ import org.checkerframework.framework.source.SourceChecker;
 import tests.compound.CompoundChecker;
 /**
  * An aggregate checker where one of the checkers is a compound checker.
- * @author smillst
  *
+ * @author smillst
  */
 public class AggregateOfCompoundChecker extends AggregateChecker {
 

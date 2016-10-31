@@ -32,38 +32,33 @@ import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
  * Outputs the method signatures of a class with fully annotated types.
- * <p>
  *
- * The class determines the effective annotations for a checker in source or
- * the classfile.  Finding the effective annotations is useful for the
- * following purposes:
+ * <p>The class determines the effective annotations for a checker in source or the classfile.
+ * Finding the effective annotations is useful for the following purposes:
  *
  * <ol>
- * <li value="1">Debugging annotations in classfile</li>
- * <li value="2">Debugging the default annotations that are implicitly added
- *    by the checker</li>
+ *   <li value="1">Debugging annotations in classfile
+ *   <li value="2">Debugging the default annotations that are implicitly added by the checker
  * </ol>
  *
  * <p>The class can be used in two possible ways, depending on the type file:
  *
  * <ol>
- * <li id="a">From source: the class is to be used as an annotation processor
- * when reading annotations from source.  It can be invoked via the command:
- * <p>{@code javac -processor SignaturePrinter <java files> ...}
- *
- * <li id="b">From classfile: the class is to be used as an independent app
- * when reading annotations from classfile.  It can be invoked via the command:
- * <p>{@code java SignaturePrinter <class name>}
- *
+ *   <li id="a">From source: the class is to be used as an annotation processor when reading
+ *       annotations from source. It can be invoked via the command:
+ *       <p>{@code javac -processor SignaturePrinter <java files> ...}
+ *   <li id="b">From classfile: the class is to be used as an independent app when reading
+ *       annotations from classfile. It can be invoked via the command:
+ *       <p>{@code java SignaturePrinter <class name>}
  * </ol>
  *
- * By default, only the annotations explicitly written by the user are emitted.
- * To view the default and effective annotations in a class that are associated
- * with a checker, the fully qualified name of the checker needs to be passed
- * as {@code -Achecker=} argument, e.g.
+ * By default, only the annotations explicitly written by the user are emitted. To view the default
+ * and effective annotations in a class that are associated with a checker, the fully qualified name
+ * of the checker needs to be passed as {@code -Achecker=} argument, e.g.
+ *
  * <pre>{@code
- *   javac -processor SignaturePrinter
- *         -Achecker=org.checkerframework.checker.nullness.NullnessChecker JavaFile.java
+ * javac -processor SignaturePrinter
+ *       -Achecker=org.checkerframework.checker.nullness.NullnessChecker JavaFile.java
  * }</pre>
  */
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -120,7 +115,7 @@ public class SignaturePrinter extends AbstractTypeProcessor {
 
     ////////// Printer //////////
     static class ElementPrinter extends AbstractElementVisitor6<Void, Void> {
-        private final static String INDENTION = "    ";
+        private static final String INDENTION = "    ";
 
         private final PrintStream out;
         private String indent = "";

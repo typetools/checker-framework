@@ -1,4 +1,5 @@
 import tests.wholeprograminference.qual.*;
+
 public class ParameterInferenceTest {
 
     void test1() {
@@ -18,5 +19,4 @@ public class ParameterInferenceTest {
     }
 
     void expectsTopNoSignature(int t) {}
-
 }

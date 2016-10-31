@@ -103,12 +103,10 @@ public class TypeAnnotationUtils {
     }
 
     /**
-     * Returns a newly created Attribute.Compound corresponding to an
-     * argument AnnotationMirror.
+     * Returns a newly created Attribute.Compound corresponding to an argument AnnotationMirror.
      *
-     * @param am  an AnnotationMirror, which may be part of an AST or an internally
-     *            created subclass
-     * @return  a new Attribute.Compound corresponding to the AnnotationMirror
+     * @param am an AnnotationMirror, which may be part of an AST or an internally created subclass
+     * @return a new Attribute.Compound corresponding to the AnnotationMirror
      */
     public static Attribute.Compound createCompoundFromAnnotationMirror(
             ProcessingEnvironment env, AnnotationMirror am) {
@@ -124,13 +122,11 @@ public class TypeAnnotationUtils {
     }
 
     /**
-     * Returns a newly created Attribute.TypeCompound corresponding to an
-     * argument AnnotationMirror.
+     * Returns a newly created Attribute.TypeCompound corresponding to an argument AnnotationMirror.
      *
-     * @param am  an AnnotationMirror, which may be part of an AST or an internally
-     *            created subclass
-     * @param tapos  the type annotation position to use
-     * @return  a new Attribute.TypeCompound corresponding to the AnnotationMirror
+     * @param am an AnnotationMirror, which may be part of an AST or an internally created subclass
+     * @param tapos the type annotation position to use
+     * @return a new Attribute.TypeCompound corresponding to the AnnotationMirror
      */
     public static Attribute.TypeCompound createTypeCompoundFromAnnotationMirror(
             ProcessingEnvironment env, AnnotationMirror am, TypeAnnotationPosition tapos) {
@@ -146,13 +142,11 @@ public class TypeAnnotationUtils {
     }
 
     /**
-     * Returns a newly created Attribute corresponding to an argument
-     * AnnotationValue.
+     * Returns a newly created Attribute corresponding to an argument AnnotationValue.
      *
      * @param meth the ExecutableElement that is assigned the value, needed for empty arrays
-     * @param av  an AnnotationValue, which may be part of an AST or an internally
-     *            created subclass
-     * @return  a new Attribute corresponding to the AnnotationValue
+     * @param av an AnnotationValue, which may be part of an AST or an internally created subclass
+     * @return a new Attribute corresponding to the AnnotationValue
      */
     public static Attribute attributeFromAnnotationValue(
             ProcessingEnvironment env, ExecutableElement meth, AnnotationValue av) {
@@ -291,12 +285,9 @@ public class TypeAnnotationUtils {
     }
 
     /**
-     * An interface to abstract a Java 8 and a Java 9 version of how
-     * to get a RET reference.
-     * These methods must then be implemented using reflection in order to
-     * compile in either setting.
-     * Note that we cannot use lambda for this as long as we want to
-     * support Java 7.
+     * An interface to abstract a Java 8 and a Java 9 version of how to get a RET reference. These
+     * methods must then be implemented using reflection in order to compile in either setting. Note
+     * that we cannot use lambda for this as long as we want to support Java 7.
      */
     interface Call8or9<RET> {
         RET call8() throws Throwable;
@@ -305,9 +296,9 @@ public class TypeAnnotationUtils {
     }
 
     /**
-     * Use the SourceVersion to decide whether to call the Java 8 or Java 9 version.
-     * Catch all exceptions and abort if one occurs -- the reflection code should
-     * never break once fully debugged.
+     * Use the SourceVersion to decide whether to call the Java 8 or Java 9 version. Catch all
+     * exceptions and abort if one occurs -- the reflection code should never break once fully
+     * debugged.
      *
      * @param tc the TAPCall abstraction to encapsulate two methods
      * @return the created TypeAnnotationPosition

@@ -31,13 +31,13 @@ import org.checkerframework.javacutil.AnnotationUtils;
 public class LockStore extends CFAbstractStore<CFValue, LockStore> {
 
     /**
-     * If true, indicates that the store refers to a point in the code
-     * inside a constructor or initializer. This is useful because
-     * constructors and initializers are special with regard to
-     * the set of locks that is considered to be held. For example,
-     * 'this' is considered to be held inside a constructor.
+     * If true, indicates that the store refers to a point in the code inside a constructor or
+     * initializer. This is useful because constructors and initializers are special with regard to
+     * the set of locks that is considered to be held. For example, 'this' is considered to be held
+     * inside a constructor.
      */
     protected boolean inConstructorOrInitializer = false;
+
     private LockAnnotatedTypeFactory atypeFactory;
 
     public LockStore(LockAnalysis analysis, boolean sequentialSemantics) {
@@ -106,9 +106,9 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
     }
 
     /**
-     * Makes a new CFValue with the same annotations as currentValue except that the annotation
-     * in the LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null,
-     * then a new value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown
+     * Makes a new CFValue with the same annotations as currentValue except that the annotation in
+     * the LockPossiblyHeld hierarchy is set to LockPossiblyHeld. If currentValue is null, then a
+     * new value is created where the annotation set is LockPossiblyHeld and GuardedByUnknown
      */
     private CFValue changeLockAnnoToTop(Receiver r, CFValue currentValue) {
         if (currentValue == null) {
@@ -134,9 +134,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         inConstructorOrInitializer = true;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public /*@Nullable*/ CFValue getValue(FlowExpressions.Receiver expr) {
 
@@ -157,9 +155,7 @@ public class LockStore extends CFAbstractStore<CFValue, LockStore> {
         return super.getValue(expr);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     protected void internalVisualize(CFGVisualizer<CFValue, LockStore, ?> viz) {
         viz.visualizeStoreKeyVal("inConstructorOrInitializer", inConstructorOrInitializer);

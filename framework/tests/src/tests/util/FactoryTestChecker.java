@@ -26,27 +26,26 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A specialized checker for testing purposes.  It compares an expression's
- * annotated type to an expected type.
+ * A specialized checker for testing purposes. It compares an expression's annotated type to an
+ * expected type.
  *
- * The expected type is written in a stylized comment (starting with '///')
- * in the same Java source file.  The comment appears either on the same
- * line as the expression, or else by itself on the line preceding the
- * expression.
+ * <p>The expected type is written in a stylized comment (starting with '///') in the same Java
+ * source file. The comment appears either on the same line as the expression, or else by itself on
+ * the line preceding the expression.
  *
- * The comments are of two forms:
+ * <p>The comments are of two forms:
+ *
  * <ul>
- *  <li>{@code /// <expected type>}:
- *      to specify the type of the expression in the expression statement</li>
- *  <li>{@code /// <subtree> -:- <expected type>}:
- *      to specify the type of the given subexpression within the line.</li>
+ *   <li>{@code /// <expected type>}: to specify the type of the expression in the expression
+ *       statement
+ *   <li>{@code /// <subtree> -:- <expected type>}: to specify the type of the given subexpression
+ *       within the line.
  * </ul>
  *
- * The specified types are allowed to use simple names (e.g.,
- * {@code List<String>}), instead of fully qualified names (e.g.,
- * {@code java.util.List<java.lang.String>}).
+ * The specified types are allowed to use simple names (e.g., {@code List<String>}), instead of
+ * fully qualified names (e.g., {@code java.util.List<java.lang.String>}).
  *
- * Example:
+ * <p>Example:
  *
  * <pre>
  *  void test() {
@@ -63,11 +62,10 @@ import org.checkerframework.javacutil.TreeUtils;
  *  }
  * </pre>
  *
- *  The fully qualified name of the custom <i>AnnotatedTypeFactory</i> is
- *  specified through an {@code -Afactory} command-line argument (e.g.
- *  {@code -Afactory=checkers.nullness.NullnessAnnotatedTypeFactory}).  The factory needs
- *  to have a constructor of the form
- *  {@code <init>(ProcessingEnvironment, CompilationUnitTree)}.
+ * The fully qualified name of the custom <i>AnnotatedTypeFactory</i> is specified through an {@code
+ * -Afactory} command-line argument (e.g. {@code
+ * -Afactory=checkers.nullness.NullnessAnnotatedTypeFactory}). The factory needs to have a
+ * constructor of the form {@code <init>(ProcessingEnvironment, CompilationUnitTree)}.
  */
 /*
  * The code here is one of the most ugliest I have ever written.  I should revise
@@ -123,10 +121,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
         return new ToStringVisitor(this);
     }
 
-    /**
-     * Builds the expected type for the trees from the source file of the
-     * tree compilation unit.
-     */
+    /** Builds the expected type for the trees from the source file of the tree compilation unit. */
     // This method is extremely ugly
     private Map<TreeSpec, String> buildExpected(CompilationUnitTree tree) {
         Map<TreeSpec, String> expected = new HashMap<TreeSpec, String>();
@@ -182,9 +177,7 @@ public class FactoryTestChecker extends BaseTypeChecker {
         return expected;
     }
 
-    /**
-     * A method to canonize the tree representation.
-     */
+    /** A method to canonize the tree representation. */
     private static String canonizeTreeString(String str) {
         String canon = str.trim();
         Pattern pattern = Pattern.compile("(@\\S+)\\(\\)");
@@ -197,11 +190,11 @@ public class FactoryTestChecker extends BaseTypeChecker {
     }
 
     /**
-     * A method to canonize type string representation.  It removes any unnecessary
-     * white spaces and finds the type simple name instead of the fully qualified name.
+     * A method to canonize type string representation. It removes any unnecessary white spaces and
+     * finds the type simple name instead of the fully qualified name.
      *
-     * @param str   the type string representation
-     * @return  a canonical representation of the type
+     * @param str the type string representation
+     * @return a canonical representation of the type
      */
     private static String canonizeTypeString(String str) {
         String canon = str.trim();
@@ -220,8 +213,8 @@ public class FactoryTestChecker extends BaseTypeChecker {
     }
 
     /**
-     * A data structure that encapsulate a string and the line number
-     * that string appears in the buffer
+     * A data structure that encapsulate a string and the line number that string appears in the
+     * buffer
      */
     private static class TreeSpec {
         public final String treeString;
@@ -253,8 +246,8 @@ public class FactoryTestChecker extends BaseTypeChecker {
     }
 
     /**
-     * A specialized visitor that compares the actual and expected types
-     * for the specified trees and report an error if they differ
+     * A specialized visitor that compares the actual and expected types for the specified trees and
+     * report an error if they differ
      */
     private class ToStringVisitor extends BaseTypeVisitor<GenericAnnotatedTypeFactory<?, ?, ?, ?>> {
         Map<TreeSpec, String> expected;

@@ -77,7 +77,8 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual chapter.
+ * The LockVisitor enforces the special type-checking rules described in the Lock Checker manual
+ * chapter.
  *
  * @checker_framework.manual #lock-checker Lock Checker
  */
@@ -119,13 +120,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues an error if two or more of the following annotations are present on a variable declaration:<br>
+     * Issues an error if two or more of the following annotations are present on a variable
+     * declaration:<br>
      * {@code @org.checkerframework.checker.lock.qual.GuardedBy}<br>
      * {@code @net.jcip.annotations.GuardedBy}<br>
      * {@code @javax.annotation.concurrent.GuardedBy}
      *
      * @param variableTree the VariableTree for the variable declaration used to determine if
-     * multiple @GuardedBy annotations are present and to report the error via checker.report.
+     *     multiple @GuardedBy annotations are present and to report the error via checker.report.
      */
     private void issueErrorIfMoreThanOneGuardedByAnnotationPresent(VariableTree variableTree) {
         int guardedByAnnotationCount = 0;
@@ -153,9 +155,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues an error if a method (explicitly or implicitly) annotated with @MayReleaseLocks has a formal parameter
-     * or receiver (explicitly or implicitly) annotated with @GuardSatisfied. Also issues an error if a synchronized
-     * method has a @LockingFree, @SideEffectFree or @Pure annotation.
+     * Issues an error if a method (explicitly or implicitly) annotated with @MayReleaseLocks has a
+     * formal parameter or receiver (explicitly or implicitly) annotated with @GuardSatisfied. Also
+     * issues an error if a synchronized method has a @LockingFree, @SideEffectFree or @Pure
+     * annotation.
      *
      * @param node the MethodTree of the method definition to visit
      */
@@ -253,14 +256,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * When visiting a method call, if the receiver formal parameter has type @GuardSatisfied
-     * and the receiver actual parameter has type @GuardedBy(...), this method verifies that
-     * the guard is satisfied, and it returns true, indicating that the receiver subtype check should be skipped.
-     * If the receiver actual parameter has type @GuardSatisfied, this method simply returns true without
-     * performing any other actions. The method returns false otherwise.
+     * When visiting a method call, if the receiver formal parameter has type @GuardSatisfied and
+     * the receiver actual parameter has type @GuardedBy(...), this method verifies that the guard
+     * is satisfied, and it returns true, indicating that the receiver subtype check should be
+     * skipped. If the receiver actual parameter has type @GuardSatisfied, this method simply
+     * returns true without performing any other actions. The method returns false otherwise.
      *
      * @param node the MethodInvocationTree of the method being called
-     * @param methodDefinitionReceiver the ATM of the formal receiver parameter of the method being called
+     * @param methodDefinitionReceiver the ATM of the formal receiver parameter of the method being
+     *     called
      * @param methodCallReceiver the ATM of the receiver argument of the method call
      * @return whether the caller can skip the receiver subtype check
      */
@@ -325,11 +329,12 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Given an AnnotatedTypeMirror containing a @GuardedBy annotation, returns the set of lock expression preconditions
-     * specified in the @GuardedBy annotation.
-     * Returns an empty set if no such expressions are found.
+     * Given an AnnotatedTypeMirror containing a @GuardedBy annotation, returns the set of lock
+     * expression preconditions specified in the @GuardedBy annotation. Returns an empty set if no
+     * such expressions are found.
      *
-     * @param atm the AnnotatedTypeMirror containing the @GuardedBy annotation with the lock expression preconditions.
+     * @param atm the AnnotatedTypeMirror containing the @GuardedBy annotation with the lock
+     *     expression preconditions.
      * @return a set of lock expression preconditions that can be processed by checkPreconditions
      */
     private Set<PreOrPostcondition> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
@@ -497,8 +502,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     *  Ensures that subclass methods are annotated with a stronger or equally strong side effect annotation
-     *  than the parent class method.
+     * Ensures that subclass methods are annotated with a stronger or equally strong side effect
+     * annotation than the parent class method.
      */
     @Override
     protected boolean checkOverride(
@@ -533,8 +538,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Checks that the field or array access is legal by checking that the locks
-     * in the access's expression are held.
+     * Checks that the field or array access is legal by checking that the locks in the access's
+     * expression are held.
      *
      * @param accessTree field or array access tree to check (may be an identifier tree of a field)
      * @param treeToReportErrorAt tree whose location is used to report the error
@@ -578,15 +583,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     /**
      * Skips the call to super and returns true.
-     * <p>
      *
-     * {@code GuardedBy({})} is the default type on class declarations, which is a subtype of the top annotation {@code @GuardedByUnknown}.
-     * However, it is valid to declare an instance of a class with any annotation from the {@code @GuardedBy} hierarchy.
-     * Hence, this method returns true for annotations in the {@code @GuardedBy} hierarchy.
-     * <p>
+     * <p>{@code GuardedBy({})} is the default type on class declarations, which is a subtype of the
+     * top annotation {@code @GuardedByUnknown}. However, it is valid to declare an instance of a
+     * class with any annotation from the {@code @GuardedBy} hierarchy. Hence, this method returns
+     * true for annotations in the {@code @GuardedBy} hierarchy.
      *
-     * Also returns true for annotations in the {@code @LockPossiblyHeld} hierarchy since the default for that hierarchy is the top type and
-     * annotations from that hierarchy cannot be explicitly written in code.
+     * <p>Also returns true for annotations in the {@code @LockPossiblyHeld} hierarchy since the
+     * default for that hierarchy is the top type and annotations from that hierarchy cannot be
+     * explicitly written in code.
      */
     @Override
     public boolean isValidUse(
@@ -595,12 +600,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * When visiting a method invocation, issue an error if the side effect annotation
-     * on the called method causes the side effect guarantee of the enclosing method
-     * to be violated. For example, a method annotated with @ReleasesNoLocks may not
-     * call a method annotated with @MayReleaseLocks.
-     * Also check that matching @GuardSatisfied(index) on a method's formal receiver/parameters matches
-     * those in corresponding locations on the method call site.
+     * When visiting a method invocation, issue an error if the side effect annotation on the called
+     * method causes the side effect guarantee of the enclosing method to be violated. For example,
+     * a method annotated with @ReleasesNoLocks may not call a method annotated
+     * with @MayReleaseLocks. Also check that matching @GuardSatisfied(index) on a method's formal
+     * receiver/parameters matches those in corresponding locations on the method call site.
      *
      * @param node the MethodInvocationTree of the method call being visited
      */
@@ -848,16 +852,16 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * When visiting a synchronized block, issue an error if the expression
-     * has a type that implements the java.util.concurrent.locks.Lock interface.
-     * This prevents explicit locks from being accidentally used as built-in (monitor) locks.
-     * This is important because the Lock Checker does not have a mechanism to separately
-     * keep track of the explicit lock and the monitor lock of an expression that implements
-     * the Lock interface (i.e. there is a @LockHeld annotation used in dataflow, but there are
-     * not distinct @MonitorLockHeld and @ExplicitLockHeld annotations). It is assumed that
-     * both kinds of locks will never be held for any expression that implements Lock.
+     * When visiting a synchronized block, issue an error if the expression has a type that
+     * implements the java.util.concurrent.locks.Lock interface. This prevents explicit locks from
+     * being accidentally used as built-in (monitor) locks. This is important because the Lock
+     * Checker does not have a mechanism to separately keep track of the explicit lock and the
+     * monitor lock of an expression that implements the Lock interface (i.e. there is a @LockHeld
+     * annotation used in dataflow, but there are not distinct @MonitorLockHeld
+     * and @ExplicitLockHeld annotations). It is assumed that both kinds of locks will never be held
+     * for any expression that implements Lock.
      *
-     * Additionally, a synchronized block may not be present in a method that has a @LockingFree
+     * <p>Additionally, a synchronized block may not be present in a method that has a @LockingFree
      * guarantee or stronger. An error is issued in this case.
      *
      * @param node the SynchronizedTree for the synchronized block being visited
@@ -906,14 +910,14 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Ensures that each variable accessed in an expression is final or effectively final and
-     * that each called method in the expression is @Deterministic.
-     * Issues an error otherwise. Recursively performs this check on method arguments.
-     * Only intended to be used on the expression of a synchronized block.
+     * Ensures that each variable accessed in an expression is final or effectively final and that
+     * each called method in the expression is @Deterministic. Issues an error otherwise.
+     * Recursively performs this check on method arguments. Only intended to be used on the
+     * expression of a synchronized block.
      *
-     * Example: given the expression var1.field1.method1(var2.method2()).field2,
-     * var1, var2, field1 and field2 are enforced to be final or effectively final, and
-     * method1 and method2 are enforced to be @Deterministic.
+     * <p>Example: given the expression var1.field1.method1(var2.method2()).field2, var1, var2,
+     * field1 and field2 are enforced to be final or effectively final, and method1 and method2 are
+     * enforced to be @Deterministic.
      *
      * @param lockExpressionTree the expression tree of a synchronized block
      */
@@ -1059,8 +1063,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Check that the lock expression in a GuardedBy annotation is a valid flow expression
-     * and is effectively final
+     * Check that the lock expression in a GuardedBy annotation is a valid flow expression and is
+     * effectively final
+     *
      * @param tree AnnotationTree used for context and error reporting
      * @param guardedByAnnotation GuardedBy AnnotationMirror
      */
@@ -1125,9 +1130,11 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues an error if a GuardSatisfied annotation is found in a location other than a method return type or parameter (including the receiver).
-     * @param annotationTree AnnotationTree used for error reporting and to help determine that an array parameter has no GuardSatisfied
-     * annotations except on the array type
+     * Issues an error if a GuardSatisfied annotation is found in a location other than a method
+     * return type or parameter (including the receiver).
+     *
+     * @param annotationTree AnnotationTree used for error reporting and to help determine that an
+     *     array parameter has no GuardSatisfied annotations except on the array type
      */
     // TODO: Remove this method once @TargetLocations are enforced (i.e. once
     // issue https://github.com/typetools/checker-framework/issues/515 is closed).
@@ -1173,24 +1180,24 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * The flow expression parser requires a path for retrieving the scope that will be used
-     * to resolve local variables. One would expect that simply providing the
-     * path to an AnnotationTree would work, since the compiler (as called by the
-     * org.checkerframework.javacutil.Resolver class) could walk up the path from the AnnotationTree
-     * to determine the scope. Unfortunately this is not how the compiler works. One must provide
-     * the path at the right level (not so deep that it results in a symbol not being found, but not so high up
-     * that it is out of the scope at hand). This is a problem when trying to retrieve local
-     * variables, since one could silently miss a local variable in scope and accidentally retrieve
-     * a field with the same name. This method returns the correct path for this purpose,
-     * given a path to an AnnotationTree.
+     * The flow expression parser requires a path for retrieving the scope that will be used to
+     * resolve local variables. One would expect that simply providing the path to an AnnotationTree
+     * would work, since the compiler (as called by the org.checkerframework.javacutil.Resolver
+     * class) could walk up the path from the AnnotationTree to determine the scope. Unfortunately
+     * this is not how the compiler works. One must provide the path at the right level (not so deep
+     * that it results in a symbol not being found, but not so high up that it is out of the scope
+     * at hand). This is a problem when trying to retrieve local variables, since one could silently
+     * miss a local variable in scope and accidentally retrieve a field with the same name. This
+     * method returns the correct path for this purpose, given a path to an AnnotationTree.
      *
-     * Note: this is definitely necessary for local variable retrieval. It has not been tested whether
-     * this is strictly necessary for fields or other identifiers.
+     * <p>Note: this is definitely necessary for local variable retrieval. It has not been tested
+     * whether this is strictly necessary for fields or other identifiers.
      *
-     * Only call this method from visitAnnotation.
+     * <p>Only call this method from visitAnnotation.
      *
      * @param path the TreePath whose leaf is an AnnotationTree
-     * @return a TreePath that can be passed to methods in the Resolver class to locate local variables
+     * @return a TreePath that can be passed to methods in the Resolver class to locate local
+     *     variables
      */
     private TreePath getPathForLocalVariableRetrieval(TreePath path) {
         assert path.getLeaf() instanceof AnnotationTree;
@@ -1237,8 +1244,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Returns true if the symbol for the given tree is final or effectively final.
-     * Package, class and method symbols are unmodifiable and therefore considered final.
+     * Returns true if the symbol for the given tree is final or effectively final. Package, class
+     * and method symbols are unmodifiable and therefore considered final.
      */
     private boolean isTreeSymbolEffectivelyFinalOrUnmodifiable(Tree tree) {
         Element elem = InternalUtils.symbol(tree);
@@ -1264,10 +1271,10 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
     /**
      * If expression is {@code "<self>"}, a flow expression receiver for {@code node} is returned,
-     * unless {@code node} is null, in which case null is returned.
-     * Also checks that the flow expression is effectively final and issues an error if it is not.
-     * <p>
-     * Returns the result of the super implementation otherwise.
+     * unless {@code node} is null, in which case null is returned. Also checks that the flow
+     * expression is effectively final and issues an error if it is not.
+     *
+     * <p>Returns the result of the super implementation otherwise.
      */
     @Override
     protected FlowExpressions.Receiver parseExpressionString(
@@ -1326,7 +1333,8 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Disallows annotations from the @GuardedBy hierarchy on class declarations (other than @GuardedBy({}).
+     * Disallows annotations from the @GuardedBy hierarchy on class declarations (other
+     * than @GuardedBy({}).
      */
     @Override
     public Void visitClass(ClassTree node, Void p) {
@@ -1383,15 +1391,15 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
     }
 
     /**
-     * Checks precondition for {@code tree} that is known to be the receiver of an implicit toString() call.
-     * The receiver of toString() is defined in the annotated JDK to be @GuardSatisfied.
-     * Therefore if the expression is guarded by a set of locks, the locks must be held prior
-     * to this implicit call to toString().
+     * Checks precondition for {@code tree} that is known to be the receiver of an implicit
+     * toString() call. The receiver of toString() is defined in the annotated JDK to
+     * be @GuardSatisfied. Therefore if the expression is guarded by a set of locks, the locks must
+     * be held prior to this implicit call to toString().
      *
-     * Only call this method from visitBinary and visitCompoundAssignment.
+     * <p>Only call this method from visitBinary and visitCompoundAssignment.
      *
-     * @param tree the Tree corresponding to the expression that is known to be the receiver
-     * of an implicit toString() call
+     * @param tree the Tree corresponding to the expression that is known to be the receiver of an
+     *     implicit toString() call
      */
     // TODO: If and when the de-sugared .toString() tree is accessible from BaseTypeVisitor,
     // the toString() method call should be visited instead of doing this. This would result

@@ -15,7 +15,6 @@ import org.checkerframework.javacutil.InternalUtils;
  * </pre>
  *
  * @author Stefan Heule
- *
  */
 public class ConditionalOrNode extends Node {
 

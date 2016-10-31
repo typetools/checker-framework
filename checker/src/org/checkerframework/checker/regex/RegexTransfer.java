@@ -153,11 +153,8 @@ public class RegexTransfer extends CFTransfer {
     }
 
     /**
-     * See whether possibleMatcher is a call of groupCount on a Matcher and
-     * possibleConstant is a constant.
-     * If so, annotate the matcher as
-     * constant + 1 if !isAlsoEqual
-     * constant if isAlsoEqual
+     * See whether possibleMatcher is a call of groupCount on a Matcher and possibleConstant is a
+     * constant. If so, annotate the matcher as constant + 1 if !isAlsoEqual constant if isAlsoEqual
      *
      * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
      * @param possibleConstant the Node that might be a constant
@@ -222,9 +219,7 @@ public class RegexTransfer extends CFTransfer {
         }
         return false;
     }
-    /**
-     * Returns true if the given receiver is a class named "RegexUtil".
-     */
+    /** Returns true if the given receiver is a class named "RegexUtil". */
     private boolean isRegexUtil(String receiver) {
         return receiver.equals("RegexUtil") || receiver.endsWith(".RegexUtil");
     }

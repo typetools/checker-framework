@@ -10,10 +10,9 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 /**
  * A polymorphic qualifier for the Interning type system.
  *
- * <p>
- * Any method written using @PolyInterned conceptually has two versions:  one
- * in which every instance of @PolyInterned has been replaced by @Interned, and
- * one in which every instance of @PolyInterned has been erased.
+ * <p>Any method written using @PolyInterned conceptually has two versions: one in which every
+ * instance of @PolyInterned has been replaced by @Interned, and one in which every instance
+ * of @PolyInterned has been erased.
  *
  * @checker_framework.manual #interning-checker Interning Checker
  */

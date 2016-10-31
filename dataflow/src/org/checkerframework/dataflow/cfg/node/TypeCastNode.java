@@ -9,11 +9,10 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 /**
  * A node for the cast operator:
  *
- * (<em>Point</em>) <em>x</em>
+ * <p>(<em>Point</em>) <em>x</em>
  *
  * @author Stefan Heule
  * @author Charlie Garrett
- *
  */
 public class TypeCastNode extends Node {
 

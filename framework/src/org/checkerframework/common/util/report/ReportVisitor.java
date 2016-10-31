@@ -43,14 +43,10 @@ import org.checkerframework.javacutil.TreeUtils;
 
 public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
 
-    /**
-     * The tree kinds that should be reported.
-     */
+    /** The tree kinds that should be reported. */
     private final String[] treeKinds;
 
-    /**
-     * The modifiers that should be reported.
-     */
+    /** The modifiers that should be reported. */
     private final String[] modifiers;
 
     public ReportVisitor(BaseTypeChecker checker) {
@@ -103,9 +99,8 @@ public class ReportVisitor extends BaseTypeVisitor<BaseAnnotatedTypeFactory> {
     }
 
     /**
-     * Check for uses of the {@link ReportUse} annotation.
-     * This method has to be called for every explicit or implicit use of a type,
-     * most cases are simply covered by the type validator.
+     * Check for uses of the {@link ReportUse} annotation. This method has to be called for every
+     * explicit or implicit use of a type, most cases are simply covered by the type validator.
      *
      * @param node the tree for error reporting only
      * @param member the element from which to start looking

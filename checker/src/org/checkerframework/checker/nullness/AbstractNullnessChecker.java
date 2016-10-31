@@ -10,9 +10,9 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
 /**
- * An implementation of the nullness type-system, parameterized by an
- * initialization type-system for safe initialization.  It can use
- * freedom-before-commitment or rawness as its initialization type system.
+ * An implementation of the nullness type-system, parameterized by an initialization type-system for
+ * safe initialization. It can use freedom-before-commitment or rawness as its initialization type
+ * system.
  */
 @SupportedLintOptions({
     AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
@@ -28,25 +28,19 @@ import org.checkerframework.framework.source.SupportedLintOptions;
 })
 public abstract class AbstractNullnessChecker extends InitializationChecker {
 
-    /**
-     * Should we be strict about initialization of {@link MonotonicNonNull} variables.
-     */
+    /** Should we be strict about initialization of {@link MonotonicNonNull} variables. */
     public static final String LINT_NOINITFORMONOTONICNONNULL = "noInitForMonotonicNonNull";
 
-    /**
-     * Default for {@link #LINT_NOINITFORMONOTONICNONNULL}.
-     */
+    /** Default for {@link #LINT_NOINITFORMONOTONICNONNULL}. */
     public static final boolean LINT_DEFAULT_NOINITFORMONOTONICNONNULL = false;
 
     /**
-     * Warn about redundant comparisons of expressions with {@code null}, if the
-     * expressions is known to be non-null.
+     * Warn about redundant comparisons of expressions with {@code null}, if the expressions is
+     * known to be non-null.
      */
     public static final String LINT_REDUNDANTNULLCOMPARISON = "redundantNullComparison";
 
-    /**
-     * Default for {@link #LINT_REDUNDANTNULLCOMPARISON}.
-     */
+    /** Default for {@link #LINT_REDUNDANTNULLCOMPARISON}. */
     public static final boolean LINT_DEFAULT_REDUNDANTNULLCOMPARISON = false;
 
     public AbstractNullnessChecker(boolean useFbc) {

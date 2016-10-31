@@ -39,8 +39,8 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * The TreeBuilder permits the creation of new AST Trees using the
- * non-public Java compiler API TreeMaker.
+ * The TreeBuilder permits the creation of new AST Trees using the non-public Java compiler API
+ * TreeMaker.
  */
 public class TreeBuilder {
     protected final Elements elements;
@@ -63,12 +63,10 @@ public class TreeBuilder {
     }
 
     /**
-     * Builds an AST Tree to access the iterator() method of some iterable
-     * expression.
+     * Builds an AST Tree to access the iterator() method of some iterable expression.
      *
-     * @param iterableExpr  an expression whose type is a subtype of Iterable
-     * @return  a MemberSelectTree that accesses the iterator() method of
-     *    the expression
+     * @param iterableExpr an expression whose type is a subtype of Iterable
+     * @return a MemberSelectTree that accesses the iterator() method of the expression
      */
     public MemberSelectTree buildIteratorMethodAccess(ExpressionTree iterableExpr) {
         DeclaredType exprType =
@@ -130,9 +128,8 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to access the hasNext() method of an iterator.
      *
-     * @param iteratorExpr  an expression whose type is a subtype of Iterator
-     * @return  a MemberSelectTree that accesses the hasNext() method of
-     *    the expression
+     * @param iteratorExpr an expression whose type is a subtype of Iterator
+     * @return a MemberSelectTree that accesses the hasNext() method of the expression
      */
     public MemberSelectTree buildHasNextMethodAccess(ExpressionTree iteratorExpr) {
         DeclaredType exprType = (DeclaredType) InternalUtils.typeOf(iteratorExpr);
@@ -167,9 +164,8 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to access the next() method of an iterator.
      *
-     * @param iteratorExpr  an expression whose type is a subtype of Iterator
-     * @return  a MemberSelectTree that accesses the next() method of
-     *    the expression
+     * @param iteratorExpr an expression whose type is a subtype of Iterator
+     * @return a MemberSelectTree that accesses the next() method of the expression
      */
     public MemberSelectTree buildNextMethodAccess(ExpressionTree iteratorExpr) {
         DeclaredType exprType = (DeclaredType) InternalUtils.typeOf(iteratorExpr);
@@ -222,8 +218,8 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to dereference the length field of an array
      *
-     * @param expression  the array expression whose length is being accessed
-     * @return  a MemberSelectTree to dereference the length of the array
+     * @param expression the array expression whose length is being accessed
+     * @return a MemberSelectTree to dereference the length of the array
      */
     public MemberSelectTree buildArrayLengthAccess(ExpressionTree expression) {
 
@@ -234,20 +230,20 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to call a method designated by the argument expression.
      *
-     * @param methodExpr  an expression denoting a method with no arguments
-     * @return  a MethodInvocationTree to call the argument method
+     * @param methodExpr an expression denoting a method with no arguments
+     * @return a MethodInvocationTree to call the argument method
      */
     public MethodInvocationTree buildMethodInvocation(ExpressionTree methodExpr) {
         return maker.App((JCTree.JCExpression) methodExpr);
     }
 
     /**
-     * Builds an AST Tree to call a method designated by methodExpr,
-     * with one argument designated by argExpr.
+     * Builds an AST Tree to call a method designated by methodExpr, with one argument designated by
+     * argExpr.
      *
-     * @param methodExpr  an expression denoting a method with one argument
-     * @param argExpr  an expression denoting an argument to the method
-     * @return  a MethodInvocationTree to call the argument method
+     * @param methodExpr an expression denoting a method with one argument
+     * @param argExpr an expression denoting an argument to the method
+     * @return a MethodInvocationTree to call the argument method
      */
     public MethodInvocationTree buildMethodInvocation(
             ExpressionTree methodExpr, ExpressionTree argExpr) {
@@ -259,11 +255,11 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to declare and initialize a variable, with no modifiers.
      *
-     * @param type  the type of the variable
-     * @param name  the name of the variable
-     * @param owner  the element containing the new symbol
-     * @param initializer  the initializer expression
-     * @return  a VariableDeclTree declaring the new variable
+     * @param type the type of the variable
+     * @param name the name of the variable
+     * @param owner the element containing the new symbol
+     * @param initializer the initializer expression
+     * @return a VariableDeclTree declaring the new variable
      */
     public VariableTree buildVariableDecl(
             TypeMirror type, String name, Element owner, ExpressionTree initializer) {
@@ -275,14 +271,14 @@ public class TreeBuilder {
     }
 
     /**
-     * Builds an AST Tree to declare and initialize a variable.  The
-     * type of the variable is specified by a Tree.
+     * Builds an AST Tree to declare and initialize a variable. The type of the variable is
+     * specified by a Tree.
      *
-     * @param type  the type of the variable, as a Tree
-     * @param name  the name of the variable
-     * @param owner  the element containing the new symbol
-     * @param initializer  the initializer expression
-     * @return  a VariableDeclTree declaring the new variable
+     * @param type the type of the variable, as a Tree
+     * @param name the name of the variable
+     * @param owner the element containing the new symbol
+     * @param initializer the initializer expression
+     * @return a VariableDeclTree declaring the new variable
      */
     public VariableTree buildVariableDecl(
             Tree type, String name, Element owner, ExpressionTree initializer) {
@@ -305,8 +301,8 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to refer to a variable.
      *
-     * @param decl  the declaration of the variable
-     * @return  an IdentifierTree to refer to the variable
+     * @param decl the declaration of the variable
+     * @return an IdentifierTree to refer to the variable
      */
     public IdentifierTree buildVariableUse(VariableTree decl) {
         return (IdentifierTree) maker.Ident((JCTree.JCVariableDecl) decl);
@@ -315,9 +311,9 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to cast the type of an expression.
      *
-     * @param type  the type to cast to
-     * @param expr  the expression to be cast
-     * @return  a cast of the expression to the type
+     * @param type the type to cast to
+     * @param expr the expression to be cast
+     * @return a cast of the expression to the type
      */
     public TypeCastTree buildTypeCast(TypeMirror type, ExpressionTree expr) {
         return maker.TypeCast((Type) type, (JCTree.JCExpression) expr);
@@ -326,9 +322,9 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to assign an expression to a variable.
      *
-     * @param variable  the declaration of the variable to assign to
-     * @param expr      the expression to be assigned
-     * @return  a statement assigning the expression to the variable
+     * @param variable the declaration of the variable to assign to
+     * @param expr the expression to be assigned
+     * @return a statement assigning the expression to the variable
      */
     public StatementTree buildAssignment(VariableTree variable, ExpressionTree expr) {
         return maker.Assignment(TreeInfo.symbolFor((JCTree) variable), (JCTree.JCExpression) expr);
@@ -337,9 +333,9 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to assign an RHS expression to an LHS expression.
      *
-     * @param lhs  the expression to be assigned to
-     * @param rhs  the expression to be assigned
-     * @return  a statement assigning the expression to the variable
+     * @param lhs the expression to be assigned to
+     * @param rhs the expression to be assigned
+     * @return a statement assigning the expression to the variable
      */
     public AssignmentTree buildAssignment(ExpressionTree lhs, ExpressionTree rhs) {
         JCTree.JCAssign assign = maker.Assign((JCTree.JCExpression) lhs, (JCTree.JCExpression) rhs);
@@ -347,10 +343,7 @@ public class TreeBuilder {
         return assign;
     }
 
-    /**
-     * Builds an AST Tree representing a literal value of primitive
-     * or String type.
-     */
+    /** Builds an AST Tree representing a literal value of primitive or String type. */
     public LiteralTree buildLiteral(Object value) {
         return maker.Literal(value);
     }
@@ -358,9 +351,9 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to compare two operands with less than.
      *
-     * @param left  the left operand tree
-     * @param right  the right operand tree
-     * @return  a Tree representing "left &lt; right"
+     * @param left the left operand tree
+     * @param right the right operand tree
+     * @return a Tree representing "left &lt; right"
      */
     public BinaryTree buildLessThan(ExpressionTree left, ExpressionTree right) {
         JCTree.JCBinary binary =
@@ -373,9 +366,9 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to dereference an array.
      *
-     * @param array  the array to dereference
-     * @param index  the index at which to dereference
-     * @return  a Tree representing the dereference
+     * @param array the array to dereference
+     * @param index the index at which to dereference
+     * @return a Tree representing the dereference
      */
     public ArrayAccessTree buildArrayAccess(ExpressionTree array, ExpressionTree index) {
         ArrayType arrayType = (ArrayType) InternalUtils.typeOf(array);
@@ -388,20 +381,18 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to refer to a class name.
      *
-     * @param elt  an element representing the class
-     * @return  an IdentifierTree referring to the class
+     * @param elt an element representing the class
+     * @return an IdentifierTree referring to the class
      */
     public IdentifierTree buildClassUse(Element elt) {
         return maker.Ident((Symbol) elt);
     }
 
     /**
-     * Builds an AST Tree to access the valueOf() method of boxed type
-     * such as Short or Float.
+     * Builds an AST Tree to access the valueOf() method of boxed type such as Short or Float.
      *
-     * @param expr  an expression whose type is a boxed type
-     * @return  a MemberSelectTree that accesses the valueOf() method of
-     *    the expression
+     * @param expr an expression whose type is a boxed type
+     * @return a MemberSelectTree that accesses the valueOf() method of the expression
      */
     public MemberSelectTree buildValueOfMethodAccess(Tree expr) {
         TypeMirror boxedType = InternalUtils.typeOf(expr);
@@ -420,9 +411,7 @@ public class TreeBuilder {
         return valueOfAccess;
     }
 
-    /**
-     * Returns the valueOf method of a boxed type such as Short or Float.
-     */
+    /** Returns the valueOf method of a boxed type such as Short or Float. */
     public static Symbol.MethodSymbol getValueOfMethod(
             ProcessingEnvironment env, TypeMirror boxedType) {
         Symbol.MethodSymbol valueOfMethod = null;
@@ -447,13 +436,11 @@ public class TreeBuilder {
     }
 
     /**
-     * Builds an AST Tree to access the *Value() method of a
-     * boxed type such as Short or Float, where * is the corresponding
-     * primitive type (i.e. shortValue or floatValue).
+     * Builds an AST Tree to access the *Value() method of a boxed type such as Short or Float,
+     * where * is the corresponding primitive type (i.e. shortValue or floatValue).
      *
-     * @param expr  an expression whose type is a boxed type
-     * @return  a MemberSelectTree that accesses the *Value() method of
-     *    the expression
+     * @param expr an expression whose type is a boxed type
+     * @return a MemberSelectTree that accesses the *Value() method of the expression
      */
     public MemberSelectTree buildPrimValueMethodAccess(Tree expr) {
         TypeMirror boxedType = InternalUtils.typeOf(expr);
@@ -486,9 +473,7 @@ public class TreeBuilder {
         return primValueAccess;
     }
 
-    /**
-     * Map public AST Tree.Kinds to internal javac JCTree.Tags.
-     */
+    /** Map public AST Tree.Kinds to internal javac JCTree.Tags. */
     public JCTree.Tag kindToTag(Tree.Kind kind) {
         switch (kind) {
             case AND:
@@ -653,11 +638,11 @@ public class TreeBuilder {
     /**
      * Builds an AST Tree to perform a binary operation.
      *
-     * @param type  result type of the operation
-     * @param op    AST Tree operator
-     * @param left  the left operand tree
-     * @param right  the right operand tree
-     * @return  a Tree representing "left &lt; right"
+     * @param type result type of the operation
+     * @param op AST Tree operator
+     * @param left the left operand tree
+     * @param right the right operand tree
+     * @return a Tree representing "left &lt; right"
      */
     public BinaryTree buildBinary(
             TypeMirror type, Tree.Kind op, ExpressionTree left, ExpressionTree right) {

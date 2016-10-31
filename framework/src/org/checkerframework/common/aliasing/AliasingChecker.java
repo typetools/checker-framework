@@ -4,8 +4,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.StubFiles;
 
 /**
- * Aliasing type system -- used to identify expressions that definitely have
- * no aliases.
+ * Aliasing type system -- used to identify expressions that definitely have no aliases.
  *
  * @checker_framework.manual #aliasing-checker Aliasing Checker
  */

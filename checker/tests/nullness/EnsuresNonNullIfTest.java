@@ -1,5 +1,4 @@
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.dataflow.qual.Pure;
 
 class MyNode {
     int id;
