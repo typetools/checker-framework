@@ -16,10 +16,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 
 /**
- * Our
- * //TODO: USING THE SAME LOGIC AS THE OLD TYPE_HIERARCHY.isSubtypeAsTypeArgument but only for
- * //TODO: RAW TypeArguments, we can replace this later if we think there is a more sensible thing to do
- * //TODO: LOOK AT OLD TYPE_HIERARCHY FOR MORE INFORAMTION
+ * Our //TODO: USING THE SAME LOGIC AS THE OLD TYPE_HIERARCHY.isSubtypeAsTypeArgument but only for
+ * //TODO: RAW TypeArguments, we can replace this later if we think there is a more sensible thing
+ * to do //TODO: LOOK AT OLD TYPE_HIERARCHY FOR MORE INFORAMTION
  */
 public class DefaultRawnessComparer extends AbstractAtmComboVisitor<Boolean, VisitHistory> {
     private final DefaultTypeHierarchy typeHierarchy;

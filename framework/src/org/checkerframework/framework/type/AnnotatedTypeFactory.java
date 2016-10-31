@@ -116,27 +116,25 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.DetachedVarSymbol;
 
 /**
- * The methods of this class take an element or AST node, and return the
- * annotated type as an {@link AnnotatedTypeMirror}.  The methods are:
+ * The methods of this class take an element or AST node, and return the annotated type as an {@link
+ * AnnotatedTypeMirror}. The methods are:
  *
  * <ul>
- * <li>{@link #getAnnotatedType(ClassTree)}</li>
- * <li>{@link #getAnnotatedType(MethodTree)}</li>
- * <li>{@link #getAnnotatedType(Tree)}</li>
- * <li>{@link #getAnnotatedTypeFromTypeTree(Tree)}</li>
- * <li>{@link #getAnnotatedType(TypeElement)}</li>
- * <li>{@link #getAnnotatedType(ExecutableElement)}</li>
- * <li>{@link #getAnnotatedType(Element)}</li>
+ *   <li>{@link #getAnnotatedType(ClassTree)}
+ *   <li>{@link #getAnnotatedType(MethodTree)}
+ *   <li>{@link #getAnnotatedType(Tree)}
+ *   <li>{@link #getAnnotatedTypeFromTypeTree(Tree)}
+ *   <li>{@link #getAnnotatedType(TypeElement)}
+ *   <li>{@link #getAnnotatedType(ExecutableElement)}
+ *   <li>{@link #getAnnotatedType(Element)}
  * </ul>
  *
- * This implementation only adds qualifiers explicitly specified by the
- * programmer.
+ * This implementation only adds qualifiers explicitly specified by the programmer.
  *
- * Type system checker writers may need to subclass this class, to add implicit
- * and default qualifiers according to the type system semantics. Subclasses
- * should especially override
- * {@link AnnotatedTypeFactory#addComputedTypeAnnotations(Element, AnnotatedTypeMirror)}
- * and {@link #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
+ * <p>Type system checker writers may need to subclass this class, to add implicit and default
+ * qualifiers according to the type system semantics. Subclasses should especially override {@link
+ * AnnotatedTypeFactory#addComputedTypeAnnotations(Element, AnnotatedTypeMirror)} and {@link
+ * #addComputedTypeAnnotations(Tree, AnnotatedTypeMirror)}.
  *
  * @checker_framework.manual #writing-a-checker How to write a checker plug-in
  */
@@ -160,17 +158,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Utility class for working with {@link TypeMirror}s. */
     protected final Types types;
 
-    /** The state of the visitor. **/
+    /** The state of the visitor. * */
     protected final VisitorState visitorState;
 
-    /** ===== postInit initialized fields ====
-     * Note: qualHierarchy and typeHierarchy are both initialized in the postInit.
-     * @see #postInit()
-     * This means, they cannot be final and cannot be referred to in any subclass
-     * constructor or method until after postInit is called.
+    /**
+     * ===== postInit initialized fields ==== Note: qualHierarchy and typeHierarchy are both
+     * initialized in the postInit.
+     *
+     * @see #postInit() This means, they cannot be final and cannot be referred to in any subclass
+     *     constructor or method until after postInit is called.
      */
 
-    /** Represent the annotation relations. **/
+    /** Represent the annotation relations. * */
     protected QualifierHierarchy qualHierarchy;
 
     /** Represent the type relations. */
@@ -180,34 +179,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private WholeProgramInference wholeProgramInference;
 
     /**
-     * This formatter is used for converting AnnotatedTypeMirrors to Strings.
-     * This formatter will be passed to all AnnotatedTypeMirrors created by this
-     * factory and will be used in their toString methods.
+     * This formatter is used for converting AnnotatedTypeMirrors to Strings. This formatter will be
+     * passed to all AnnotatedTypeMirrors created by this factory and will be used in their toString
+     * methods.
      */
     protected final AnnotatedTypeFormatter typeFormatter;
 
     /**
-     * Annotation formatter is used to format AnnotationMirrors. It is primarily
-     * used by SourceChecker when generating error messages.
+     * Annotation formatter is used to format AnnotationMirrors. It is primarily used by
+     * SourceChecker when generating error messages.
      */
     private final AnnotationFormatter annotationFormatter;
 
     /**
-     * Provides utility method to substitute arguments for their type variables.
-     * Field should be final, but can only be set in postInit, because subtypes
-     * might need other state to be initialized first.
+     * Provides utility method to substitute arguments for their type variables. Field should be
+     * final, but can only be set in postInit, because subtypes might need other state to be
+     * initialized first.
      */
     protected TypeVariableSubstitutor typeVarSubstitutor;
 
-    /**
-     * Provides utility method to infer type arguments
-     */
+    /** Provides utility method to infer type arguments */
     protected TypeArgumentInference typeArgumentInference;
 
     /**
-     * To cache the supported type qualifiers.
-     * call {@link #getSupportedTypeQualifiers()} instead of using this field
-     * directly, as it may not have been initialized.
+     * To cache the supported type qualifiers. call {@link #getSupportedTypeQualifiers()} instead of
+     * using this field directly, as it may not have been initialized.
      */
     private final Set<Class<? extends Annotation>> supportedQuals;
 
@@ -219,42 +215,40 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Declaration annotations read from stub files (but not those from the annotated JDK jar file).
-     * Map keys cannot be Element, because a different Element appears
-     * in the stub files than in the real files.  So, map keys are the
-     * verbose element name, as returned by ElementUtils.getVerboseName.
+     * Map keys cannot be Element, because a different Element appears in the stub files than in the
+     * real files. So, map keys are the verbose element name, as returned by
+     * ElementUtils.getVerboseName.
      */
     // Not final, because it is assigned in postInit().
     private Map<String, Set<AnnotationMirror>> declAnnosFromStubFiles;
 
     /**
-     * A cache used to store elements whose declaration annotations
-     * have already been stored by calling the method {@link #getDeclAnnotations(Element)}.
+     * A cache used to store elements whose declaration annotations have already been stored by
+     * calling the method {@link #getDeclAnnotations(Element)}.
      */
     private final Map<Element, Set<AnnotationMirror>> cacheDeclAnnos;
 
     /**
-     * A set containing declaration annotations that should be inherited.
-     * A declaration annotation will be inherited if it is in this set,
-     * or if it has the meta-annotation @InheritedAnnotation.
+     * A set containing declaration annotations that should be inherited. A declaration annotation
+     * will be inherited if it is in this set, or if it has the
+     * meta-annotation @InheritedAnnotation.
      */
     private final Set<AnnotationMirror> inheritedAnnotations =
             AnnotationUtils.createAnnotationSet();
 
-    /**
-     * The checker to use for option handling and resource management.
-     */
+    /** The checker to use for option handling and resource management. */
     protected final BaseTypeChecker checker;
 
     /**
-     * Map from class name (canonical name) of an annotation, to the
-     * annotation in the Checker Framework that will be used in its place.
+     * Map from class name (canonical name) of an annotation, to the annotation in the Checker
+     * Framework that will be used in its place.
      */
     private final Map<String, AnnotationMirror> aliases = new HashMap<String, AnnotationMirror>();
 
     /**
-     * A map from the class name (canonical name) of an annotation to the set of
-     * class names (canonical names) for annotations with the same meaning
-     * (i.e., aliases), as well as the annotation mirror that should be used.
+     * A map from the class name (canonical name) of an annotation to the set of class names
+     * (canonical names) for annotations with the same meaning (i.e., aliases), as well as the
+     * annotation mirror that should be used.
      */
     private final Map<String, Pair<AnnotationMirror, Set</*@Interned*/ String>>> declAliases =
             new HashMap<>();
@@ -265,54 +259,46 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /** Unique ID of the current object; for debugging purposes. */
     public final int uid;
 
-    /**
-     * Annotation added to every method defined in a class file
-     * that is not in a stub file.
-     */
+    /** Annotation added to every method defined in a class file that is not in a stub file. */
     private final AnnotationMirror fromByteCode;
 
     /** Annotation added to every method defined in a stub file. */
     private final AnnotationMirror fromStubFile;
 
     /**
-     * Object that is used to resolve reflective method calls, if reflection
-     * resolution is turned on.
+     * Object that is used to resolve reflective method calls, if reflection resolution is turned
+     * on.
      */
     protected ReflectionResolver reflectionResolver;
 
-    /**
-     * Annotated Type Loader used to load annotation classes via reflective lookup
-     */
+    /** Annotated Type Loader used to load annotation classes via reflective lookup */
     protected AnnotationClassLoader loader;
 
-    /**
-     * Indicates that the whole-program inference is on.
-     */
+    /** Indicates that the whole-program inference is on. */
     private final boolean infer;
 
     /**
-     * Should results be cached?
-     * This means that ATM.deepCopy() will be called.
-     * ATM.deepCopy() used to (and perhaps still does) side effect the ATM being copied.
-     * So setting this to false is not equivalent to setting shouldReadCache to false.
+     * Should results be cached? This means that ATM.deepCopy() will be called. ATM.deepCopy() used
+     * to (and perhaps still does) side effect the ATM being copied. So setting this to false is not
+     * equivalent to setting shouldReadCache to false.
      */
     public boolean shouldCache;
 
     /** Size of LRU cache if one isn't specified using the atfCacheSize option. */
-    private final static int DEFAULT_CACHE_SIZE = 300;
+    private static final int DEFAULT_CACHE_SIZE = 300;
 
     /** Mapping from a Tree to its annotated type; implicits have been applied. */
     private final Map<Tree, AnnotatedTypeMirror> classAndMethodTreeCache;
 
     /**
-     * Mapping from a Tree to its annotated type; before implicits are applied,
-     * just what the programmer wrote.
+     * Mapping from a Tree to its annotated type; before implicits are applied, just what the
+     * programmer wrote.
      */
     protected final Map<Tree, AnnotatedTypeMirror> fromTreeCache;
 
     /**
-     * Mapping from an Element to its annotated type; before implicits are applied,
-     * just what the programmer wrote.
+     * Mapping from an Element to its annotated type; before implicits are applied, just what the
+     * programmer wrote.
      */
     private final Map<Element, AnnotatedTypeMirror> elementCache;
 
@@ -320,16 +306,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     private final Map<Element, Tree> elementToTreeCache;
 
     /**
-     * Constructs a factory from the given {@link ProcessingEnvironment}
-     * instance and syntax tree root. (These parameters are required so that
-     * the factory may conduct the appropriate annotation-gathering analyses on
-     * certain tree types.)
-     * <p>
-     * Root can be {@code null} if the factory does not operate on trees.
-     * <p>
-     * A subclass must call postInit at the end of its constructor.
-     * postInit must be the last call in the constructor or else types
-     * from stub files may not be created as expected.
+     * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
+     * root. (These parameters are required so that the factory may conduct the appropriate
+     * annotation-gathering analyses on certain tree types.)
+     *
+     * <p>Root can be {@code null} if the factory does not operate on trees.
+     *
+     * <p>A subclass must call postInit at the end of its constructor. postInit must be the last
+     * call in the constructor or else types from stub files may not be created as expected.
      *
      * @param checker the {@link SourceChecker} to which this factory belongs
      * @throws IllegalArgumentException if either argument is {@code null}
@@ -380,8 +364,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Issue an error and abort if any of the support qualifiers has a @Target meta-annotation
-     * that contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
+     * Issue an error and abort if any of the support qualifiers has a @Target meta-annotation that
+     * contain something besides TYPE_USE or TYPE_PARAMETER. (@Target({}) is allowed)
      */
     private void checkSupportedQuals() {
         boolean hasPolyAll = false;
@@ -434,12 +418,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * This method is called only when -Ainfer is passed as an option.
-     * It checks if another option that should not occur simultaneously with
-     * the whole-program inference is also passed as argument, and
-     * aborts the process if that is the case. For example, the whole-program
-     * inference process was not designed to work with unchecked code defaults.
-     * (Subclasses may override this method to add more options.)
+     * This method is called only when -Ainfer is passed as an option. It checks if another option
+     * that should not occur simultaneously with the whole-program inference is also passed as
+     * argument, and aborts the process if that is the case. For example, the whole-program
+     * inference process was not designed to work with unchecked code defaults. (Subclasses may
+     * override this method to add more options.)
      */
     protected void checkInvalidOptionsInferSignatures() {
         // See Issue 683
@@ -453,10 +436,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Actions that logically belong in the constructor, but need to run
-     * after the subclass constructor has completed.  In particular,
-     * parseStubFiles() may try to do type resolution with this
-     * AnnotatedTypeFactory.
+     * Actions that logically belong in the constructor, but need to run after the subclass
+     * constructor has completed. In particular, parseStubFiles() may try to do type resolution with
+     * this AnnotatedTypeFactory.
      */
     protected void postInit() {
         this.qualHierarchy = createQualifierHierarchy();
@@ -493,9 +475,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
     }
 
-    /**
-     * Returns the WholeProgramInference instance.
-     */
+    /** Returns the WholeProgramInference instance. */
     public WholeProgramInference getWholeProgramInference() {
         return wholeProgramInference;
     }
@@ -538,19 +518,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return getClass().getSimpleName() + "#" + uid;
     }
 
-    /**
-     * Factory method to easily change what Factory is used to
-     * create a QualifierHierarchy.
-     */
+    /** Factory method to easily change what Factory is used to create a QualifierHierarchy. */
     protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
     /**
-     * Factory method to easily change what QualifierHierarchy is
-     * created.
-     * Needs to be public only because the GraphFactory must be able to call this method.
-     * No external use of this method is necessary.
+     * Factory method to easily change what QualifierHierarchy is created. Needs to be public only
+     * because the GraphFactory must be able to call this method. No external use of this method is
+     * necessary.
      */
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new GraphQualifierHierarchy(factory, null);
@@ -558,15 +534,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the type qualifier hierarchy graph to be used by this processor.
-     * <p>
-     * The implementation builds the type qualifier hierarchy for the
-     * {@link #getSupportedTypeQualifiers()} using the
-     * meta-annotations found in them.  The current implementation returns an
-     * instance of {@code GraphQualifierHierarchy}.
-     * <p>
-     * Subclasses may override this method to express any relationships that
-     * cannot be inferred using meta-annotations (e.g. due to lack of
-     * meta-annotations).
+     *
+     * <p>The implementation builds the type qualifier hierarchy for the {@link
+     * #getSupportedTypeQualifiers()} using the meta-annotations found in them. The current
+     * implementation returns an instance of {@code GraphQualifierHierarchy}.
+     *
+     * <p>Subclasses may override this method to express any relationships that cannot be inferred
+     * using meta-annotations (e.g. due to lack of meta-annotations).
      *
      * @return an annotation relation tree representing the supported qualifiers
      */
@@ -580,10 +554,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the type qualifier hierarchy graph for a given set of type qualifiers and a factory.
-     * <p>
-     * The implementation builds the type qualifier hierarchy for the
-     * {@code supportedTypeQualifiers}.  The current implementation returns an
-     * instance of {@code GraphQualifierHierarchy}.
+     *
+     * <p>The implementation builds the type qualifier hierarchy for the {@code
+     * supportedTypeQualifiers}. The current implementation returns an instance of {@code
+     * GraphQualifierHierarchy}.
      *
      * @return an annotation relation tree representing the supported qualifiers
      */
@@ -647,7 +621,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns the type qualifier hierarchy graph to be used by this processor.
      *
      * @see #createQualifierHierarchy()
-     *
      * @return the {@link QualifierHierarchy} for this checker
      */
     public final QualifierHierarchy getQualifierHierarchy() {
@@ -657,13 +630,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates the type subtyping checker using the current type qualifier
-     * hierarchy.
-     * <p>
-     * Subclasses may override this method to specify new type-checking
-     * rules beyond the typical java subtyping rules.
+     * Creates the type subtyping checker using the current type qualifier hierarchy.
      *
-     * @return  the type relations class to check type subtyping
+     * <p>Subclasses may override this method to specify new type-checking rules beyond the typical
+     * java subtyping rules.
+     *
+     * @return the type relations class to check type subtyping
      */
     protected TypeHierarchy createTypeHierarchy() {
         return new DefaultTypeHierarchy(
@@ -678,8 +650,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * TypeVariableSubstitutor provides a method to replace type parameters with
-     * their arguments.
+     * TypeVariableSubstitutor provides a method to replace type parameters with their arguments.
      */
     protected TypeVariableSubstitutor createTypeVariableSubstitutor() {
         return new TypeVariableSubstitutor();
@@ -690,8 +661,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * TypeArgumentInference infers the method type arguments when
-     * they are not explicitly written.
+     * TypeArgumentInference infers the method type arguments when they are not explicitly written.
      */
     protected TypeArgumentInference createTypeArgumentInference() {
         return new DefaultTypeArgumentInference();
@@ -703,125 +673,104 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns a mutable set of annotation classes that are supported by a checker
-     * <p>
-     * Subclasses may override this method and to return a mutable set
-     * of their supported type qualifiers through one of the 5 approaches shown below.
-     * <p>
-     * Subclasses should not call this method; they should call
-     * {@link #getSupportedTypeQualifiers} instead.
-     * <p>
-     * By default, a checker supports {@link PolyAll}, and all annotations located
-     * in a subdirectory called {@literal qual} that's located in the same directory
-     * as the checker. Note that only annotations defined with the
-     * {@code @Target({ElementType.TYPE_USE})} meta-annotation (and optionally with
-     * the additional value of {@code ElementType.TYPE_PARAMETER}, but no other
-     * {@code ElementType} values) are automatically considered as supported
-     * annotations.
-     * <p>
-     * Annotations located outside the {@literal qual} subdirectory, or has other
-     * {@code ElementType} values must be explicitly listed in code by overriding
-     * the
-     * {@link #createSupportedTypeQualifiers()}
-     * method, as shown below.
-     * <p>
-     * Lastly, for checkers that do not want to support {@link PolyAll}, it must
-     * also be explicitly written in code, as shown below.
-     * <p>
-     * In total, there are 5 ways to indicate annotations that are supported by a
-     * checker:
+     *
+     * <p>Subclasses may override this method and to return a mutable set of their supported type
+     * qualifiers through one of the 5 approaches shown below.
+     *
+     * <p>Subclasses should not call this method; they should call {@link
+     * #getSupportedTypeQualifiers} instead.
+     *
+     * <p>By default, a checker supports {@link PolyAll}, and all annotations located in a
+     * subdirectory called {@literal qual} that's located in the same directory as the checker. Note
+     * that only annotations defined with the {@code @Target({ElementType.TYPE_USE})}
+     * meta-annotation (and optionally with the additional value of {@code
+     * ElementType.TYPE_PARAMETER}, but no other {@code ElementType} values) are automatically
+     * considered as supported annotations.
+     *
+     * <p>Annotations located outside the {@literal qual} subdirectory, or has other {@code
+     * ElementType} values must be explicitly listed in code by overriding the {@link
+     * #createSupportedTypeQualifiers()} method, as shown below.
+     *
+     * <p>Lastly, for checkers that do not want to support {@link PolyAll}, it must also be
+     * explicitly written in code, as shown below.
+     *
+     * <p>In total, there are 5 ways to indicate annotations that are supported by a checker:
+     *
      * <ol>
-     * <li>
-     * Only support annotations located in a checker's {@literal qual} directory,
-     * and {@link PolyAll}:
-     * <p>
-     * This is the default behavior. Simply place those annotations within the
-     * {@literal qual} directory.
-     * </li>
-     * <li>
-     * Support annotations located in a checker's {@literal qual} directory, but
-     * without {@link PolyAll}:
-     * <p>
-     * Place those annotations within the {@literal qual} directory, and override
-     * {@link #createSupportedTypeQualifiers()} by calling
-     * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} with no
-     * parameters passed in. Code example:
-     * <pre>
+     *   <li> Only support annotations located in a checker's {@literal qual} directory, and {@link
+     *       PolyAll}:
+     *       <p>This is the default behavior. Simply place those annotations within the {@literal
+     *       qual} directory.
+     *   <li> Support annotations located in a checker's {@literal qual} directory, but without
+     *       {@link PolyAll}:
+     *       <p>Place those annotations within the {@literal qual} directory, and override {@link
+     *       #createSupportedTypeQualifiers()} by calling {@link
+     *       #getBundledTypeQualifiersWithPolyAll(Class...)} with no parameters passed in. Code
+     *       example:
+     *       <pre>
      * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
      *      return getBundledTypeQualifiersWithoutPolyAll();
      *  } }
      * </pre>
-     * </li>
-     * <li>
-     * Support annotations located in a checker's {@literal qual} directory,
-     * {@link PolyAll}, and a list of other annotations:
-     * <p>
-     * Place those annotations within the {@literal qual} directory, and override
-     * {@link #createSupportedTypeQualifiers()} by calling
-     * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} with a
-     * varargs parameter list of the other annotations. Code example:
      *
-     * <pre>
+     *   <li> Support annotations located in a checker's {@literal qual} directory, {@link PolyAll},
+     *       and a list of other annotations:
+     *       <p>Place those annotations within the {@literal qual} directory, and override {@link
+     *       #createSupportedTypeQualifiers()} by calling {@link
+     *       #getBundledTypeQualifiersWithPolyAll(Class...)} with a varargs parameter list of the
+     *       other annotations. Code example:
+     *       <pre>
      * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
      *      return getBundledTypeQualifiersWithPolyAll(Regex.class, PartialRegex.class, RegexBottom.class, UnknownRegex.class);
      *  } }
      * </pre>
-     * </li>
-     * <li>
-     * Support annotations located in a checker's {@literal qual} directory and a
-     * list of other annotations, but without supporting {@link PolyAll}:
-     * <p>
-     * Place those annotations within the {@literal qual} directory, and override
-     * {@link #createSupportedTypeQualifiers()} by calling
-     * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} with a
-     * varargs parameter list of the other annotations. Code example:
-     * <pre>
+     *
+     *   <li> Support annotations located in a checker's {@literal qual} directory and a list of
+     *       other annotations, but without supporting {@link PolyAll}:
+     *       <p>Place those annotations within the {@literal qual} directory, and override {@link
+     *       #createSupportedTypeQualifiers()} by calling {@link
+     *       #getBundledTypeQualifiersWithoutPolyAll(Class...)} with a varargs parameter list of the
+     *       other annotations. Code example:
+     *       <pre>
      * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
      *      return getBundledTypeQualifiersWithoutPolyAll(UnknownFormat.class, FormatBottom.class);
      *  } }
      * </pre>
-     * </li>
-     * <li>
-     * Supporting only annotations that are explicitly listed:
-     * Override
-     * {@link #createSupportedTypeQualifiers()} and return a mutable
-     * set of the supported annotations. Code example:
-     * <pre>
+     *
+     *   <li> Supporting only annotations that are explicitly listed: Override {@link
+     *       #createSupportedTypeQualifiers()} and return a mutable set of the supported
+     *       annotations. Code example:
+     *       <pre>
      * {@code @Override protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
      *      return new HashSet<Class<? extends Annotation>>(
      *              Arrays.asList(A.class, B.class));
      *  } }
      * </pre>
-     *
-     * The set of qualifiers returned by
-     * {@link #createSupportedTypeQualifiers()} must be a fresh, mutable
-     * set. The methods
-     * {@link #getBundledTypeQualifiersWithoutPolyAll(Class...)} and
-     * {@link #getBundledTypeQualifiersWithPolyAll(Class...)} each
-     * must return a fresh, mutable set
-     * </li>
+     *       The set of qualifiers returned by {@link #createSupportedTypeQualifiers()} must be a
+     *       fresh, mutable set. The methods {@link
+     *       #getBundledTypeQualifiersWithoutPolyAll(Class...)} and {@link
+     *       #getBundledTypeQualifiersWithPolyAll(Class...)} each must return a fresh, mutable set
      * </ol>
      *
-     * @return the type qualifiers supported this processor, or an empty set if
-     *         none
+     * @return the type qualifiers supported this processor, or an empty set if none
      */
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         return getBundledTypeQualifiersWithPolyAll();
     }
 
     /**
-     * Loads all annotations contained in the qual directory of a checker via
-     * reflection, and adds {@link PolyAll}, if a polymorphic type qualifier exists,
-     * and an explicit array of annotations to the set of annotation classes.
-     * <p>
-     * This method can be called in the overridden versions of
-     * {@link #createSupportedTypeQualifiers()} in each checker.
+     * Loads all annotations contained in the qual directory of a checker via reflection, and adds
+     * {@link PolyAll}, if a polymorphic type qualifier exists, and an explicit array of annotations
+     * to the set of annotation classes.
      *
-     * @param explicitlyListedAnnotations
-     *            a varargs array of explicitly listed annotation classes to be
-     *            added to the returned set. For example, it is used frequently
-     *            to add Bottom qualifiers.
-     * @return a mutable set of the loaded and listed annotation classes, as
-     *         well as {@link PolyAll}.
+     * <p>This method can be called in the overridden versions of {@link
+     * #createSupportedTypeQualifiers()} in each checker.
+     *
+     * @param explicitlyListedAnnotations a varargs array of explicitly listed annotation classes to
+     *     be added to the returned set. For example, it is used frequently to add Bottom
+     *     qualifiers.
+     * @return a mutable set of the loaded and listed annotation classes, as well as {@link
+     *     PolyAll}.
      */
     @SafeVarargs
     protected final Set<Class<? extends Annotation>> getBundledTypeQualifiersWithPolyAll(
@@ -842,17 +791,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Loads all annotations contained in the qual directory of a checker via
-     * reflection, and an explicit list of annotations to the set of annotation
-     * classes.
-     * <p>
-     * This method can be called in the overridden versions of
-     * {@link #createSupportedTypeQualifiers()} in each checker.
+     * Loads all annotations contained in the qual directory of a checker via reflection, and an
+     * explicit list of annotations to the set of annotation classes.
      *
-     * @param explicitlyListedAnnotations
-     *            a varargs array of explicitly listed annotation classes to be
-     *            added to the returned set. For example, it is used frequently
-     *            to add Bottom qualifiers.
+     * <p>This method can be called in the overridden versions of {@link
+     * #createSupportedTypeQualifiers()} in each checker.
+     *
+     * @param explicitlyListedAnnotations a varargs array of explicitly listed annotation classes to
+     *     be added to the returned set. For example, it is used frequently to add Bottom
+     *     qualifiers.
      * @return a mutable set of the loaded, and listed annotation classes
      */
     @SafeVarargs
@@ -862,22 +809,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Loads all annotations contained in the qual directory of a checker via
-     * reflection, and has the option to include an explicitly stated list of
-     * annotations (eg ones found in a different directory than qual).
-     * <p>
-     * The annotations that are automatically loaded must have the
-     * {@link java.lang.annotation.Target Target} meta-annotation with the value
-     * of {@link ElementType#TYPE_USE} (and optionally
-     * {@link ElementType#TYPE_PARAMETER}). If it has other {@link ElementType}
-     * values, it won't be loaded. Other annotation classes must be explicitly
-     * listed even if they are in the same directory as the checker's qual
-     * directory.
+     * Loads all annotations contained in the qual directory of a checker via reflection, and has
+     * the option to include an explicitly stated list of annotations (eg ones found in a different
+     * directory than qual).
      *
-     * @param explicitlyListedAnnotations
-     *            a set of explicitly listed annotation classes to be added to
-     *            the returned set, for example, it is used frequently to add
-     *            Bottom qualifiers
+     * <p>The annotations that are automatically loaded must have the {@link
+     * java.lang.annotation.Target Target} meta-annotation with the value of {@link
+     * ElementType#TYPE_USE} (and optionally {@link ElementType#TYPE_PARAMETER}). If it has other
+     * {@link ElementType} values, it won't be loaded. Other annotation classes must be explicitly
+     * listed even if they are in the same directory as the checker's qual directory.
+     *
+     * @param explicitlyListedAnnotations a set of explicitly listed annotation classes to be added
+     *     to the returned set, for example, it is used frequently to add Bottom qualifiers
      * @return a set of annotation class instances
      */
     @SafeVarargs
@@ -896,9 +839,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates the AnnotatedTypeFormatter used by this type factory and all AnnotatedTypeMirrors
-     * it creates.  The AnnotatedTypeFormatter is used in AnnotatedTypeMirror.toString and
-     * will affect the error messages printed for checkers that use this type factory.
+     * Creates the AnnotatedTypeFormatter used by this type factory and all AnnotatedTypeMirrors it
+     * creates. The AnnotatedTypeFormatter is used in AnnotatedTypeMirror.toString and will affect
+     * the error messages printed for checkers that use this type factory.
+     *
      * @return the AnnotatedTypeFormatter to pass to all instantiated AnnotatedTypeMirrors
      */
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
@@ -915,17 +859,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an immutable set of the type qualifiers supported by this
-     * checker.
-     * <p>
-     * Subclasses cannot override this method; they should override
-     * {@link #createSupportedTypeQualifiers createSupportedTypeQualifiers}
-     * instead.
+     * Returns an immutable set of the type qualifiers supported by this checker.
+     *
+     * <p>Subclasses cannot override this method; they should override {@link
+     * #createSupportedTypeQualifiers createSupportedTypeQualifiers} instead.
      *
      * @see #createSupportedTypeQualifiers()
-     *
-     * @return an immutable set of the supported type qualifiers, or an
-     *         empty set if no qualifiers are supported
+     * @return an immutable set of the supported type qualifiers, or an empty set if no qualifiers
+     *     are supported
      */
     public final Set<Class<? extends Annotation>> getSupportedTypeQualifiers() {
         if (this.supportedQuals.isEmpty()) {
@@ -939,12 +880,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // Factories for annotated types that account for implicit qualifiers
     // **********************************************************************
 
-    /** Mapping from a Tree to its TreePath **/
+    /** Mapping from a Tree to its TreePath * */
     private final TreePathCacher treePathCache = new TreePathCacher();
 
     /**
-     * Returns the int supplied to the checker via the atfCacheSize option or
-     * the default cache size.
+     * Returns the int supplied to the checker via the atfCacheSize option or the default cache
+     * size.
+     *
      * @return cache size passed as argument to checker or DEFAULT_CACHE_SIZE
      */
     private int getCacheSize() {
@@ -992,7 +934,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns an AnnotatedTypeMirror representing the annotated type of {@code tree}.
+     *
      * <p>
+     *
      * @param tree the AST node
      * @return the annotated type of {@code tree}
      */
@@ -1038,6 +982,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} before the classTree is type
      * checked.
+     *
      * @param classTree ClassTree on which to perfrom preprocessing
      */
     public void preProcessClassTree(ClassTree classTree) {}
@@ -1045,11 +990,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Called by {@link BaseTypeVisitor#visitClass(ClassTree, Void)} after the ClassTree has been
      * type checked.
-     * <p>
-     * The default implementation uses this to store the defaulted AnnotatedTypeMirrors
-     * and inherited declaration annotations back into the corresponding Elements.
-     * Subclasses might want to override this method if storing defaulted types is
-     * not desirable.
+     *
+     * <p>The default implementation uses this to store the defaulted AnnotatedTypeMirrors and
+     * inherited declaration annotations back into the corresponding Elements. Subclasses might want
+     * to override this method if storing defaulted types is not desirable.
      */
     public void postProcessClassTree(ClassTree tree) {
         TypesIntoElements.store(processingEnv, this, tree);
@@ -1064,12 +1008,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Determines the annotated type from a type in tree form.
+     *
+     * <p>Note that we cannot decide from a Tree whether it is a type use or an expression.
+     * TreeUtils.isTypeTree is only an under-approximation. For example, an identifier can be either
+     * a type or an expression.
+     *
      * <p>
-     * Note that we cannot decide from a Tree whether it is
-     * a type use or an expression.
-     * TreeUtils.isTypeTree is only an under-approximation.
-     * For example, an identifier can be either a type or an expression.
-     * <p>
+     *
      * @param tree the type tree
      * @return the annotated type of the type in the AST
      */
@@ -1090,8 +1035,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // **********************************************************************
 
     /**
-     * Creates an AnnotatedTypeMirror for {@code elt} that includes:
-     * annotations explicitly written on the element and annotations from stub files
+     * Creates an AnnotatedTypeMirror for {@code elt} that includes: annotations explicitly written
+     * on the element and annotations from stub files
      *
      * @param elt the element
      * @return AnnotatedTypeMirror of the element with explicitly-written and stub file annotations
@@ -1148,8 +1093,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds @FromByteCode to methods, constructors, and fields declared in class files
-     * that are not already annotated with @FromStubFile
+     * Adds @FromByteCode to methods, constructors, and fields declared in class files that are not
+     * already annotated with @FromStubFile
      */
     private void addFromByteCode(Element elt) {
         if (declAnnosFromStubFiles == null) { // || trees.getTree(elt) != null) {
@@ -1176,8 +1121,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns an AnnotatedDeclaredType with explicit annotations from the
-     * ClassTree {@code tree}.
+     * Returns an AnnotatedDeclaredType with explicit annotations from the ClassTree {@code tree}.
      *
      * @param tree the class declaration
      * @return AnnotatedDeclaredType with explicit annotations from {@code tree}
@@ -1187,18 +1131,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates an AnnotatedTypeMirror for a variable or method declaration tree.
-     * The AnnotatedTypeMirror contains annotations explicitly written on the tree
-     * and annotations inherited from the class declarations
-     * {@link #annotateInheritedFromClass(AnnotatedTypeMirror)}.
-     * <p>
-     * If a VariableTree is a parameter to a lambda, this method also adds
-     * annotations from the declared type of the functional interface and the executable
-     * type of its method.
+     * Creates an AnnotatedTypeMirror for a variable or method declaration tree. The
+     * AnnotatedTypeMirror contains annotations explicitly written on the tree and annotations
+     * inherited from the class declarations {@link
+     * #annotateInheritedFromClass(AnnotatedTypeMirror)}.
+     *
+     * <p>If a VariableTree is a parameter to a lambda, this method also adds annotations from the
+     * declared type of the functional interface and the executable type of its method.
      *
      * @param tree MethodTree or VariableTree
-     * @return AnnotatedTypeMirror with explicit annotations from {@code tree}
-     * and annotations inherited from class declarations
+     * @return AnnotatedTypeMirror with explicit annotations from {@code tree} and annotations
+     *     inherited from class declarations
      */
     private final AnnotatedTypeMirror fromMember(Tree tree) {
         if (!(tree instanceof MethodTree || tree instanceof VariableTree)) {
@@ -1219,21 +1162,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates an AnnotatedTypeMirror for an ExpressionTree.
-     * The AnnotatedTypeMirror contains explicit annotations written with on the expression,
-     * annotations inherited from class declarations, and for some expressions, annotations
-     * from sub-expressions that could have been explicitly written, implicited, defaulted,
-     * refined, or otherwise computed. (Expression whose type include annotations from sub-
-     * expressions are: ArrayAccessTree, ConditionalExpressionTree, IdentifierTree,
-     * MemberSelectTree, and MethodInvocationTree.)
-     * <p>
-     * For example, the AnnotatedTypeMirror returned for an array access expression is the
-     * fully annotated type of the array component of the array being accessed.
+     * Creates an AnnotatedTypeMirror for an ExpressionTree. The AnnotatedTypeMirror contains
+     * explicit annotations written with on the expression, annotations inherited from class
+     * declarations, and for some expressions, annotations from sub-expressions that could have been
+     * explicitly written, implicited, defaulted, refined, or otherwise computed. (Expression whose
+     * type include annotations from sub- expressions are: ArrayAccessTree,
+     * ConditionalExpressionTree, IdentifierTree, MemberSelectTree, and MethodInvocationTree.)
+     *
+     * <p>For example, the AnnotatedTypeMirror returned for an array access expression is the fully
+     * annotated type of the array component of the array being accessed.
      *
      * @param tree an expression
-     * @return AnnotatedTypeMirror of the expressions either fully-annotated or partially
-     * annotated depending on the kind of expression
-     *
+     * @return AnnotatedTypeMirror of the expressions either fully-annotated or partially annotated
+     *     depending on the kind of expression
      * @see TypeFromExpressionVisitor
      */
     private AnnotatedTypeMirror fromExpression(ExpressionTree tree) {
@@ -1252,15 +1193,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates an AnnotatedTypeMirror for the tree.  The AnnotatedTypeMirror contains
-     * annotations explicitly written on the tree and annotations inherited from  class
-     * declarations {@link #annotateInheritedFromClass(AnnotatedTypeMirror)}.
-     * It also adds type arguments to raw types that include annotations from the element
-     * declaration of the type {@link #fromElement(Element)}.
-     * <p>
-     * Called on the following trees: AnnotatedTypeTree, ArrayTypeTree, ParameterizedTypeTree,
-     * PrimitiveTypeTree, TypeParameterTree, WildcardTree, UnionType,
-     * IntersectionTypeTree, and IdentifierTree, MemberSelectTree.
+     * Creates an AnnotatedTypeMirror for the tree. The AnnotatedTypeMirror contains annotations
+     * explicitly written on the tree and annotations inherited from class declarations {@link
+     * #annotateInheritedFromClass(AnnotatedTypeMirror)}. It also adds type arguments to raw types
+     * that include annotations from the element declaration of the type {@link
+     * #fromElement(Element)}.
+     *
+     * <p>Called on the following trees: AnnotatedTypeTree, ArrayTypeTree, ParameterizedTypeTree,
+     * PrimitiveTypeTree, TypeParameterTree, WildcardTree, UnionType, IntersectionTypeTree, and
+     * IdentifierTree, MemberSelectTree.
      *
      * @param tree the type tree
      * @return the (partially) annotated type of the type in the AST
@@ -1305,9 +1246,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // **********************************************************************
 
     /**
-     * Adds implicit annotations to a type obtained from a {@link Tree}. By
-     * default, this method does nothing. Subclasses should use this method to
-     * implement implicit annotations specific to their type systems.
+     * Adds implicit annotations to a type obtained from a {@link Tree}. By default, this method
+     * does nothing. Subclasses should use this method to implement implicit annotations specific to
+     * their type systems.
      *
      * @param tree an AST node
      * @param type the type obtained from {@code tree}
@@ -1317,9 +1258,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds implicit annotations to a type obtained from a {@link Element}. By
-     * default, this method does nothing. Subclasses should use this method to
-     * implement implicit annotations specific to their type systems.
+     * Adds implicit annotations to a type obtained from a {@link Element}. By default, this method
+     * does nothing. Subclasses should use this method to implement implicit annotations specific to
+     * their type systems.
      *
      * @param elt an element
      * @param type the type obtained from {@code elt}
@@ -1329,17 +1270,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * A callback method for the AnnotatedTypeFactory subtypes to customize
-     * directSuperTypes().  Overriding methods should merely change the
-     * annotations on the supertypes, without adding or removing new types.
-     * <p>
-     * The default provided implementation adds {@code type} annotations to
-     * {@code supertypes}.  This allows the {@code type} and its supertypes
-     * to have the qualifiers.
+     * A callback method for the AnnotatedTypeFactory subtypes to customize directSuperTypes().
+     * Overriding methods should merely change the annotations on the supertypes, without adding or
+     * removing new types.
      *
-     * @param type  the type whose supertypes are desired
-     * @param supertypes
-     *      the supertypes as specified by the base AnnotatedTypeFactory
+     * <p>The default provided implementation adds {@code type} annotations to {@code supertypes}.
+     * This allows the {@code type} and its supertypes to have the qualifiers.
+     *
+     * @param type the type whose supertypes are desired
+     * @param supertypes the supertypes as specified by the base AnnotatedTypeFactory
      */
     protected void postDirectSuperTypes(
             AnnotatedTypeMirror type, List<? extends AnnotatedTypeMirror> supertypes) {
@@ -1357,12 +1296,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * A callback method for the AnnotatedTypeFactory subtypes to customize
-     * AnnotatedTypes.asMemberOf().  Overriding methods should merely change
-     * the annotations on the subtypes, without changing the types.
+     * AnnotatedTypes.asMemberOf(). Overriding methods should merely change the annotations on the
+     * subtypes, without changing the types.
      *
-     * @param type  the annotated type of the element
+     * @param type the annotated type of the element
      * @param owner the annotated type of the receiver of the accessing tree
-     * @param element   the element of the field or method
+     * @param element the element of the field or method
      */
     public void postAsMemberOf(
             AnnotatedTypeMirror type, AnnotatedTypeMirror owner, Element element) {
@@ -1373,9 +1312,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * A callback method for the AnnotatedTypeFactory subtypes to customize
      * AnnotatedTypeMirror.substitute().
      *
-     * @param varDecl   a declaration of a type variable
-     * @param varUse    a use of the same type variable
-     * @param value     the new type to substitute in for the type variable
+     * @param varDecl a declaration of a type variable
+     * @param varUse a use of the same type variable
+     * @param value the new type to substitute in for the type variable
      */
     public void postTypeVarSubstitution(
             AnnotatedTypeVariable varDecl,
@@ -1389,28 +1328,31 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adapt the upper bounds of the type variables of a class relative
-     * to the type instantiation.
-     * In some type systems, the upper bounds depend on the instantiation
-     * of the class. For example, in the Generic Universe Type system,
-     * consider a class declaration
+     * Adapt the upper bounds of the type variables of a class relative to the type instantiation.
+     * In some type systems, the upper bounds depend on the instantiation of the class. For example,
+     * in the Generic Universe Type system, consider a class declaration
+     *
      * <pre>{@code   class C<X extends @Peer Object> }</pre>
+     *
      * then the instantiation
+     *
      * <pre>{@code   @Rep C<@Rep Object> }</pre>
-     * is legal. The upper bounds of class C have to be adapted
-     * by the main modifier.
-     * <p>
-     * An example of an adaptation follows.  Suppose, I have a declaration:
+     *
+     * is legal. The upper bounds of class C have to be adapted by the main modifier.
+     *
+     * <p>An example of an adaptation follows. Suppose, I have a declaration:
+     *
      * <pre>{@code  class MyClass<E extends List<E>>}</pre>
+     *
      * And an instantiation:
+     *
      * <pre>{@code  new MyClass<@NonNull String>()}</pre>
-     * <p>
-     * The upper bound of E adapted to the argument String, would be
-     * {@code List<@NonNull String>}
-     * and the lower bound would be an AnnotatedNullType.
-     * <p>
-     * TODO: ensure that this method is consistently used instead
-     * of directly querying the type variables.
+     *
+     * <p>The upper bound of E adapted to the argument String, would be {@code List<@NonNull
+     * String>} and the lower bound would be an AnnotatedNullType.
+     *
+     * <p>TODO: ensure that this method is consistently used instead of directly querying the type
+     * variables.
      *
      * @param type the use of the type
      * @param element the corresponding element
@@ -1446,21 +1388,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds annotations to the type based on the annotations from its class
-     * type if and only if no annotations are already present on the type.
-     * <p>
-     * The class type is found using {@link #fromElement(Element)}
+     * Adds annotations to the type based on the annotations from its class type if and only if no
+     * annotations are already present on the type.
      *
-     * @param type the type for which class annotations will be inherited if
-     * there are no annotations already present
+     * <p>The class type is found using {@link #fromElement(Element)}
+     *
+     * @param type the type for which class annotations will be inherited if there are no
+     *     annotations already present
      */
     protected void annotateInheritedFromClass(AnnotatedTypeMirror type) {
         InheritedFromClassAnnotator.INSTANCE.visit(type, this);
     }
 
-    /**
-     * Callback to determine what to do with the annotations from a class declaration.
-     */
+    /** Callback to determine what to do with the annotations from a class declaration. */
     protected void annotateInheritedFromClass(
             AnnotatedTypeMirror type, Set<AnnotationMirror> fromClass) {
         type.addMissingAnnotations(fromClass);
@@ -1468,6 +1408,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Creates and returns an AnnotatedNullType qualified with {@code annotations}.
+     *
      * @param annotations set of AnnotationMirrors to qualify the returned type with
      * @return AnnotatedNullType qualified with {@code annotations}
      */
@@ -1480,8 +1421,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * A singleton utility class for pulling annotations down from a class
-     * type.
+     * A singleton utility class for pulling annotations down from a class type.
      *
      * @see #annotateInheritedFromClass
      */
@@ -1563,9 +1503,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Return the implicit receiver type of an expression tree.
-     * <p>
-     * The result is null for expressions that don't have a receiver,
-     * e.g. for a local variable or method parameter access.
+     *
+     * <p>The result is null for expressions that don't have a receiver, e.g. for a local variable
+     * or method parameter access.
      *
      * @param tree the expression that might have an implicit receiver
      * @return the type of the receiver
@@ -1665,14 +1605,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determine whether the tree dereferences the most enclosing "this" object.
-     * That is, we have an expression like "f.g" and want to know whether it is
-     * an access "this.f.g" or whether e.g. f is a field of an outer class or
-     * e.g. f is a local variable.
+     * Determine whether the tree dereferences the most enclosing "this" object. That is, we have an
+     * expression like "f.g" and want to know whether it is an access "this.f.g" or whether e.g. f
+     * is a field of an outer class or e.g. f is a local variable.
      *
      * @param tree the tree to check
-     * @return true, iff the tree is an explicit or implicit reference to the
-     *         most enclosing "this"
+     * @return true, iff the tree is an explicit or implicit reference to the most enclosing "this"
      */
     public final boolean isMostEnclosingThisDeref(ExpressionTree tree) {
         if (!isAnyEnclosingThisDeref(tree)) {
@@ -1693,8 +1631,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Does this expression have (the innermost or an outer) "this" as receiver?
-     * Note that the receiver can be either explicit or implicit.
+     * Does this expression have (the innermost or an outer) "this" as receiver? Note that the
+     * receiver can be either explicit or implicit.
      *
      * @param tree the tree to test
      * @return true, iff the expression uses (the innermost or an outer) "this" as receiver
@@ -1742,16 +1680,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the type of {@code this} in the current location, which can
-     * be used if {@code this} has a special semantics (e.g. {@code this}
-     * is non-null).
-     * <p>
-     * The parameter is an arbitrary tree and does not have to mention "this",
-     * neither explicitly nor implicitly.
-     * This method should be overridden for type-system specific behavior.
+     * Returns the type of {@code this} in the current location, which can be used if {@code this}
+     * has a special semantics (e.g. {@code this} is non-null).
      *
-     * TODO: in 1.8.2, handle all receiver type annotations.
-     * TODO: handle enclosing classes correctly.
+     * <p>The parameter is an arbitrary tree and does not have to mention "this", neither explicitly
+     * nor implicitly. This method should be overridden for type-system specific behavior.
+     *
+     * <p>TODO: in 1.8.2, handle all receiver type annotations. TODO: handle enclosing classes
+     * correctly.
      */
     public AnnotatedDeclaredType getSelfType(Tree tree) {
         TreePath path = getPath(tree);
@@ -1783,10 +1719,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determine the type of the most enclosing class of the given tree that
-     * is a subtype of the given element. Receiver type annotations of an
-     * enclosing method are considered, similarly return type annotations of an
-     * enclosing constructor.
+     * Determine the type of the most enclosing class of the given tree that is a subtype of the
+     * given element. Receiver type annotations of an enclosing method are considered, similarly
+     * return type annotations of an enclosing constructor.
      */
     public AnnotatedDeclaredType getEnclosingType(TypeElement element, Tree tree) {
         Element enclosingElt = getMostInnerClassOrMethod(tree);
@@ -1823,17 +1758,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Returns the receiver type of the expression tree, or null if it does not exist.
-     * <p>
-     * The only trees that could potentially have a receiver are:
+     *
+     * <p>The only trees that could potentially have a receiver are:
+     *
      * <ul>
-     *  <li> Array Access
-     *  <li> Identifiers (whose receivers are usually self type)
-     *  <li> Method Invocation Trees
-     *  <li> Member Select Trees
+     *   <li> Array Access
+     *   <li> Identifiers (whose receivers are usually self type)
+     *   <li> Method Invocation Trees
+     *   <li> Member Select Trees
      * </ul>
      *
      * @param expression the expression for which to determine the receiver type
-     * @return  the type of the receiver of this expression
+     * @return the type of the receiver of this expression
      */
     public final AnnotatedTypeMirror getReceiverType(ExpressionTree expression) {
         if (this.isAnyEnclosingThisDeref(expression)) {
@@ -1850,32 +1786,27 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determines the type of the invoked method based on the passed method
-     * invocation tree.
-     * <p>
-     * The returned method type has all type variables resolved, whether based
-     * on receiver type, passed type parameters if any, and method invocation
-     * parameter.
-     * <p>
-     * Subclasses may override this method to customize inference of types
-     * or qualifiers based on method invocation parameters.
-     * <p>
-     * As an implementation detail, this method depends on
-     * {@link AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)},
-     * and customization based on receiver type should be in accordance to its
-     * specification.
-     * <p>
-     * The return type is a pair of the type of the invoked method and
-     * the (inferred) type arguments.
-     * Note that neither the explicitly passed nor the inferred type arguments
-     * are guaranteed to be subtypes of the corresponding upper bounds.
-     * See method
-     * {@link org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List)}
-     * for the checks of type argument well-formedness.
-     * <p>
-     * Note that "this" and "super" constructor invocations are also handled by this
-     * method. Method {@link #constructorFromUse(NewClassTree)} is only used for a constructor
-     * invocation in a "new" expression.
+     * Determines the type of the invoked method based on the passed method invocation tree.
+     *
+     * <p>The returned method type has all type variables resolved, whether based on receiver type,
+     * passed type parameters if any, and method invocation parameter.
+     *
+     * <p>Subclasses may override this method to customize inference of types or qualifiers based on
+     * method invocation parameters.
+     *
+     * <p>As an implementation detail, this method depends on {@link
+     * AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)}, and
+     * customization based on receiver type should be in accordance to its specification.
+     *
+     * <p>The return type is a pair of the type of the invoked method and the (inferred) type
+     * arguments. Note that neither the explicitly passed nor the inferred type arguments are
+     * guaranteed to be subtypes of the corresponding upper bounds. See method {@link
+     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List,
+     * List)} for the checks of type argument well-formedness.
+     *
+     * <p>Note that "this" and "super" constructor invocations are also handled by this method.
+     * Method {@link #constructorFromUse(NewClassTree)} is only used for a constructor invocation in
+     * a "new" expression.
      *
      * @param tree the method invocation tree
      * @return the method type being invoked with tree and the (inferred) type arguments
@@ -1932,16 +1863,17 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Java special cases the return type of getClass.  Though the method has a return type of {@code Class<?>},
-     * the compiler special cases this return type and changes the bound of the type argument to the
-     * erasure of the receiver type.  e.g.,
-     * <p>
-     * x.getClass() has the type {@code Class< ? extends erasure_of_x >}
-     * someInteger.getClass() has the type {@code Class< ? extends Integer >}
+     * Java special cases the return type of getClass. Though the method has a return type of {@code
+     * Class<?>}, the compiler special cases this return type and changes the bound of the type
+     * argument to the erasure of the receiver type. e.g.,
      *
-     * @param getClassType this must be a type representing a call to Object.getClass otherwise
-     *                     a runtime exception will be thrown
-     * @param receiverType the receiver type of the method invocation (not the declared receiver type)
+     * <p>x.getClass() has the type {@code Class< ? extends erasure_of_x >} someInteger.getClass()
+     * has the type {@code Class< ? extends Integer >}
+     *
+     * @param getClassType this must be a type representing a call to Object.getClass otherwise a
+     *     runtime exception will be thrown
+     * @param receiverType the receiver type of the method invocation (not the declared receiver
+     *     type)
      */
     protected static void adaptGetClassReturnTypeToReceiver(
             final AnnotatedExecutableType getClassType, final AnnotatedTypeMirror receiverType) {
@@ -1975,36 +1907,30 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Determines the type of the invoked constructor based on the passed new
-     * class tree.
-     * <p>
-     * The returned method type has all type variables resolved, whether based
-     * on receiver type, passed type parameters if any, and constructor invocation
-     * parameter.
-     * <p>
-     * Subclasses may override this method to customize inference of types
-     * or qualifiers based on constructor invocation parameters.
-     * <p>
-     * As an implementation detail, this method depends on
-     * {@link AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)},
-     * and customization based on receiver type should be in accordance with its
-     * specification.
-     * <p>
-     * The return type is a pair of the type of the invoked constructor and
-     * the (inferred) type arguments.
-     * Note that neither the explicitly passed nor the inferred type arguments
-     * are guaranteed to be subtypes of the corresponding upper bounds.
-     * See method
-     * {@link org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List, List)}
-     * for the checks of type argument well-formedness.
-     * <p>
-     * Note that "this" and "super" constructor invocations are handled by
-     * method {@link #methodFromUse}. This method only handles constructor invocations
-     * in a "new" expression.
+     * Determines the type of the invoked constructor based on the passed new class tree.
+     *
+     * <p>The returned method type has all type variables resolved, whether based on receiver type,
+     * passed type parameters if any, and constructor invocation parameter.
+     *
+     * <p>Subclasses may override this method to customize inference of types or qualifiers based on
+     * constructor invocation parameters.
+     *
+     * <p>As an implementation detail, this method depends on {@link
+     * AnnotatedTypes#asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)}, and
+     * customization based on receiver type should be in accordance with its specification.
+     *
+     * <p>The return type is a pair of the type of the invoked constructor and the (inferred) type
+     * arguments. Note that neither the explicitly passed nor the inferred type arguments are
+     * guaranteed to be subtypes of the corresponding upper bounds. See method {@link
+     * org.checkerframework.common.basetype.BaseTypeVisitor#checkTypeArguments(Tree, List, List,
+     * List)} for the checks of type argument well-formedness.
+     *
+     * <p>Note that "this" and "super" constructor invocations are handled by method {@link
+     * #methodFromUse}. This method only handles constructor invocations in a "new" expression.
      *
      * @param tree the constructor invocation tree
-     * @return the annotated type of the invoked constructor (as an executable
-     *         type) and the (inferred) type arguments
+     * @return the annotated type of the invoked constructor (as an executable type) and the
+     *     (inferred) type arguments
      */
     public Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> constructorFromUse(
             NewClassTree tree) {
@@ -2037,18 +1963,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return Pair.of(con, typeargs);
     }
 
-    /**
-     * Returns the return type of the method {@code m}.
-     */
+    /** Returns the return type of the method {@code m}. */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
         AnnotatedExecutableType methodType = getAnnotatedType(m);
         AnnotatedTypeMirror ret = methodType.getReturnType();
         return ret;
     }
 
-    /**
-     * Returns the return type of the method {@code m} at the return statement {@code r}.
-     */
+    /** Returns the return type of the method {@code m} at the return statement {@code r}. */
     public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
         AnnotatedExecutableType methodType = getAnnotatedType(m);
         AnnotatedTypeMirror ret = methodType.getReturnType();
@@ -2060,12 +1982,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Creates an AnnotatedDeclaredType for a NewClassTree.  Adds explicit annotations
-     * and annotations inherited from class declarations {@link #annotateInheritedFromClass(AnnotatedTypeMirror)}.
-     * <p>
-     * If the NewClassTree has type arguments, then any explicit (or inherited from class) annotations
-     * on those type arguments are included. If the NewClassTree has a diamond operator, then
-     * the annotations on the type arguments are inferred using the assignment context.
+     * Creates an AnnotatedDeclaredType for a NewClassTree. Adds explicit annotations and
+     * annotations inherited from class declarations {@link
+     * #annotateInheritedFromClass(AnnotatedTypeMirror)}.
+     *
+     * <p>If the NewClassTree has type arguments, then any explicit (or inherited from class)
+     * annotations on those type arguments are included. If the NewClassTree has a diamond operator,
+     * then the annotations on the type arguments are inferred using the assignment context.
      *
      * @param newClassTree NewClassTree
      * @return AnnotatedDeclaredType
@@ -2174,12 +2097,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the annotated boxed type of the given primitive type.
-     * The returned type would only have the annotations on the given type.
-     * <p>
-     * Subclasses may override this method safely to override this behavior.
+     * Returns the annotated boxed type of the given primitive type. The returned type would only
+     * have the annotations on the given type.
      *
-     * @param type  the primitive type
+     * <p>Subclasses may override this method safely to override this behavior.
+     *
+     * @param type the primitive type
      * @return the boxed declared type of the passed primitive type
      */
     public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
@@ -2190,14 +2113,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * returns the annotated primitive type of the given declared type
-     * if it is a boxed declared type.  Otherwise, it throws
-     * <i>IllegalArgumentException</i> exception.
-     * <p>
-     * The returned type would have the annotations on the given type and
-     * nothing else.
+     * returns the annotated primitive type of the given declared type if it is a boxed declared
+     * type. Otherwise, it throws <i>IllegalArgumentException</i> exception.
      *
-     * @param type  the declared type
+     * <p>The returned type would have the annotations on the given type and nothing else.
+     *
+     * @param type the declared type
      * @return the unboxed primitive type
      * @throws IllegalArgumentException if the type given has no unbox conversion
      */
@@ -2213,6 +2134,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Returns AnnotatedDeclaredType with underlying type String and annotations copied from type.
      * Subclasses may change the annotations.
+     *
      * @param type type to convert to String
      * @return AnnotatedTypeMirror that results from converting type to a String type
      */
@@ -2233,8 +2155,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns AnnotatedPrimitiveType with underlying type {@code narrowedTypeMirror} and
      * annotations copied from {@code type}.
      *
-     * Currently this method is called only for primitives that are narrowed at assignments from
-     * literal ints, for example, {@code byte b = 1;}.  All other narrowing conversions happen at
+     * <p>Currently this method is called only for primitives that are narrowed at assignments from
+     * literal ints, for example, {@code byte b = 1;}. All other narrowing conversions happen at
      * typecasts.
      *
      * @param type type to narrow.
@@ -2251,9 +2173,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         return narrowed;
     }
 
-    /**
-     * Returns the VisitorState instance used by the factory to infer types
-     */
+    /** Returns the VisitorState instance used by the factory to infer types */
     public VisitorState getVisitorState() {
         return this.visitorState;
     }
@@ -2263,58 +2183,42 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // with appropriate casts to reduce casts on the client side
     // **********************************************************************
 
-    /**
-     * @see #getAnnotatedType(Tree)
-     */
+    /** @see #getAnnotatedType(Tree) */
     public final AnnotatedDeclaredType getAnnotatedType(ClassTree tree) {
         return (AnnotatedDeclaredType) getAnnotatedType((Tree) tree);
     }
 
-    /**
-     * @see #getAnnotatedType(Tree)
-     */
+    /** @see #getAnnotatedType(Tree) */
     public final AnnotatedDeclaredType getAnnotatedType(NewClassTree tree) {
         return (AnnotatedDeclaredType) getAnnotatedType((Tree) tree);
     }
 
-    /**
-     * @see #getAnnotatedType(Tree)
-     */
+    /** @see #getAnnotatedType(Tree) */
     public final AnnotatedArrayType getAnnotatedType(NewArrayTree tree) {
         return (AnnotatedArrayType) getAnnotatedType((Tree) tree);
     }
 
-    /**
-     * @see #getAnnotatedType(Tree)
-     */
+    /** @see #getAnnotatedType(Tree) */
     public final AnnotatedExecutableType getAnnotatedType(MethodTree tree) {
         return (AnnotatedExecutableType) getAnnotatedType((Tree) tree);
     }
 
-    /**
-     * @see #getAnnotatedType(Element)
-     */
+    /** @see #getAnnotatedType(Element) */
     public final AnnotatedDeclaredType getAnnotatedType(TypeElement elt) {
         return (AnnotatedDeclaredType) getAnnotatedType((Element) elt);
     }
 
-    /**
-     * @see #getAnnotatedType(Element)
-     */
+    /** @see #getAnnotatedType(Element) */
     public final AnnotatedExecutableType getAnnotatedType(ExecutableElement elt) {
         return (AnnotatedExecutableType) getAnnotatedType((Element) elt);
     }
 
-    /**
-     * @see #fromElement(Element)
-     */
+    /** @see #fromElement(Element) */
     public final AnnotatedDeclaredType fromElement(TypeElement elt) {
         return (AnnotatedDeclaredType) fromElement((Element) elt);
     }
 
-    /**
-     * @see #fromElement(Element)
-     */
+    /** @see #fromElement(Element) */
     public final AnnotatedExecutableType fromElement(ExecutableElement elt) {
         return (AnnotatedExecutableType) fromElement((Element) elt);
     }
@@ -2324,14 +2228,13 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     // **********************************************************************
 
     /**
-     * Determines whether the given annotation is a part of the type system
-     * under which this type factory operates.
-     * Null is never a supported qualifier; the parameter is nullable to
-     * allow the result of aliasedAnnotation to be passed in directly.
+     * Determines whether the given annotation is a part of the type system under which this type
+     * factory operates. Null is never a supported qualifier; the parameter is nullable to allow the
+     * result of aliasedAnnotation to be passed in directly.
      *
      * @param a any annotation
-     * @return true if that annotation is part of the type system under which
-     *         this type factory operates, false otherwise
+     * @return true if that annotation is part of the type system under which this type factory
+     *     operates, false otherwise
      */
     public boolean isSupportedQualifier(/*@Nullable*/ AnnotationMirror a) {
         if (a == null) return false;
@@ -2345,11 +2248,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the canonical annotation for the passed annotation if it is
-     * an alias of a canonical one in the framework.  If it is not an alias,
-     * the method returns null.
-     * <p>
-     * Returns an aliased type of the current one
+     * Returns the canonical annotation for the passed annotation if it is an alias of a canonical
+     * one in the framework. If it is not an alias, the method returns null.
+     *
+     * <p>Returns an aliased type of the current one
      *
      * @param a the qualifier to check for an alias
      * @return the alias or null if none exists
@@ -2361,11 +2263,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Add the annotation {@code alias} as an alias for the declaration
-     * annotation {@code annotation}, where the annotation mirror
-     * {@code annoationToUse} will be used instead. If multiple calls are made
-     * with the same {@code annotation}, then the {@code anontationToUse} must
-     * be the same.
+     * Add the annotation {@code alias} as an alias for the declaration annotation {@code
+     * annotation}, where the annotation mirror {@code annoationToUse} will be used instead. If
+     * multiple calls are made with the same {@code annotation}, then the {@code anontationToUse}
+     * must be the same.
      */
     protected void addAliasedDeclAnnotation(
             Class<? extends Annotation> alias,
@@ -2382,12 +2283,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds the annotation {@code annotation} in the set of declaration
-     * annotations that should be inherited. A declaration annotation
-     * will be inherited if it is in this list,  or if it has the
-     * meta-annotation @InheritedAnnotation.
-     * The meta-annotation @InheritedAnnotation should be used instead of this
-     * method, if possible.
+     * Adds the annotation {@code annotation} in the set of declaration annotations that should be
+     * inherited. A declaration annotation will be inherited if it is in this list, or if it has the
+     * meta-annotation @InheritedAnnotation. The meta-annotation @InheritedAnnotation should be used
+     * instead of this method, if possible.
      */
     protected void addInheritedAnnotation(AnnotationMirror annotation) {
         inheritedAnnotations.add(annotation);
@@ -2398,22 +2297,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * AnnotatedTypeMirror} using {@link AnnotatedTypeMirror#createType}.
      *
      * @param t the {@link TypeMirror}
-     * @param declaration   true if the result should be marked as a type declaration
-     * @return an {@link AnnotatedTypeMirror} that has {@code t} as its
-     * underlying type
+     * @param declaration true if the result should be marked as a type declaration
+     * @return an {@link AnnotatedTypeMirror} that has {@code t} as its underlying type
      */
     protected final AnnotatedTypeMirror toAnnotatedType(TypeMirror t, boolean declaration) {
         return AnnotatedTypeMirror.createType(t, this, declaration);
     }
 
     /**
-     * Determines an empty annotated type of the given tree. In other words,
-     * finds the {@link TypeMirror} for the tree and converts that into an
-     * {@link AnnotatedTypeMirror}, but does not add any annotations to the
-     * result.
-     * <p>
-     * Most users will want to use getAnnotatedType instead; this method
-     * is mostly for internal use.
+     * Determines an empty annotated type of the given tree. In other words, finds the {@link
+     * TypeMirror} for the tree and converts that into an {@link AnnotatedTypeMirror}, but does not
+     * add any annotations to the result.
+     *
+     * <p>Most users will want to use getAnnotatedType instead; this method is mostly for internal
+     * use.
      *
      * @param node the tree to analyze
      * @return the type of {@code node}, without any annotations
@@ -2440,9 +2337,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     /**
      * Gets the declaration tree for the element, if the source is available.
      *
-     * TODO: would be nice to move this to InternalUtils/TreeUtils.
+     * <p>TODO: would be nice to move this to InternalUtils/TreeUtils.
      *
-     * @param elt   an element
+     * @param elt an element
      * @return the tree declaration of the element if found
      */
     public final Tree declarationFromElement(Element elt) {
@@ -2489,9 +2386,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the current class type being visited by the visitor.  The method
-     * uses the parameter only if the most enclosing class cannot be found
-     * directly.
+     * Returns the current class type being visited by the visitor. The method uses the parameter
+     * only if the most enclosing class cannot be found directly.
      *
      * @return type of the most enclosing class being visited
      */
@@ -2508,12 +2404,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the receiver type of the current method being visited, and
-     * returns null if the visited tree is not within a method or if that
-     * method has no receiver (e.g. a static method).
-     * <p>
-     * The method uses the parameter only if the most enclosing method cannot
-     * be found directly.
+     * Returns the receiver type of the current method being visited, and returns null if the
+     * visited tree is not within a method or if that method has no receiver (e.g. a static method).
+     *
+     * <p>The method uses the parameter only if the most enclosing method cannot be found directly.
      *
      * @return receiver type of the most enclosing method being visited
      */
@@ -2573,10 +2467,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
             ErrorReporter.errorAbort(
                     String.format(
                             "AnnotatedTypeFactory.getMostInnerClassOrMethod: getPath(tree)=>null%n  TreePath.getPath(root, tree)=>%s\n  for tree (%s) = %s%n  root=%s",
-                            TreePath.getPath(root, tree),
-                            tree.getClass(),
-                            tree,
-                            root));
+                            TreePath.getPath(root, tree), tree.getClass(), tree, root));
             return null; // dead code
         }
         for (Tree pathTree : path) {
@@ -2598,13 +2489,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Gets the path for the given {@link Tree} under the current root by
-     * checking from the visitor's current path, and only using
-     * {@link Trees#getPath(CompilationUnitTree, Tree)} (which is much slower)
-     * only if {@code node} is not found on the current path.
-     * <p>
-     * Note that the given Tree has to be within the current compilation unit,
-     * otherwise null will be returned.
+     * Gets the path for the given {@link Tree} under the current root by checking from the
+     * visitor's current path, and only using {@link Trees#getPath(CompilationUnitTree, Tree)}
+     * (which is much slower) only if {@code node} is not found on the current path.
+     *
+     * <p>Note that the given Tree has to be within the current compilation unit, otherwise null
+     * will be returned.
      *
      * @param node the {@link Tree} to get the path for
      * @return the path for {@code node} under the current root
@@ -2672,25 +2562,21 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Gets the {@link Element} representing the declaration of the
-     * method enclosing a tree node. This feature is used to record
-     * the enclosing methods of {@link Tree}s that are created
+     * Gets the {@link Element} representing the declaration of the method enclosing a tree node.
+     * This feature is used to record the enclosing methods of {@link Tree}s that are created
      * internally by the checker.
      *
-     * TODO: Find a better way to store information about enclosing
-     * Trees.
+     * <p>TODO: Find a better way to store information about enclosing Trees.
      *
      * @param node the {@link Tree} to get the enclosing method for
-     * @return the method {@link Element} enclosing the argument, or
-     * null if none has been recorded
+     * @return the method {@link Element} enclosing the argument, or null if none has been recorded
      */
     public final Element getEnclosingMethod(Tree node) {
         return pathHack.get(node);
     }
 
     /**
-     * Assert that the type is a type of valid type mirror, i.e. not an ERROR
-     * or OTHER type.
+     * Assert that the type is a type of valid type mirror, i.e. not an ERROR or OTHER type.
      *
      * @param type an annotated type
      * @return true if the type is a valid annotated type, false otherwise
@@ -2706,11 +2592,9 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Used for asserting that a type is valid for converting to an annotated
-     * type.
+     * Used for asserting that a type is valid for converting to an annotated type.
      *
-     * @return true if {@code type} can be converted to an annotated type, false
-     *         otherwise
+     * @return true if {@code type} can be converted to an annotated type, false otherwise
      */
     private static final boolean validType(TypeMirror type) {
         if (type == null) {
@@ -2728,17 +2612,19 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
     /**
      * Parses the stub files in the following order: <br>
-     * 1. jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is not supplied <br>
+     * 1. jdk.astub in the same directory as the checker, if it exists and ignorejdkastub option is
+     * not supplied <br>
      * 2. flow.astub in the same directory as BaseTypeChecker <br>
-     * 3. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as the checker<br>
+     * 3. Stub files listed in @Stubfiles annotation on the checker; must be in same directory as
+     * the checker<br>
      * 4. Stub files provide via stubs system property <br>
      * 5. Stub files provide via stubs environment variable <br>
      * 6. Stub files provide via stubs compiler option
-     * <p>
-     *  If a type is annotated with a qualifier from the same hierarchy in more than one stub file, the qualifier
-     *  in the last stub file is applied.
-     * <p>
-     * Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
+     *
+     * <p>If a type is annotated with a qualifier from the same hierarchy in more than one stub
+     * file, the qualifier in the last stub file is applied.
+     *
+     * <p>Sets typesFromStubFiles and declAnnosFromStubFiles by side effect, just before returning.
      */
     protected void parseStubFiles() {
         if (this.typesFromStubFiles != null || this.declAnnosFromStubFiles != null) {
@@ -2853,11 +2739,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this element,
-     * whose name equals the passed annotation class, if one exists, or null otherwise.
+     * Returns the actual annotation mirror used to annotate this element, whose name equals the
+     * passed annotation class, if one exists, or null otherwise.
      *
      * @see #getDeclAnnotationNoAliases
-     *
      * @param elt the element to retrieve the declaration annotation from
      * @param anno annotation class
      * @return the annotation mirror for anno
@@ -2869,21 +2754,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this element,
-     * whose name equals the passed annotation class, if one exists, or null otherwise.
-     * Does not check for aliases of the annotation class.
-     * <p>
+     * Returns the actual annotation mirror used to annotate this element, whose name equals the
+     * passed annotation class, if one exists, or null otherwise. Does not check for aliases of the
+     * annotation class.
      *
-     * Call this method from a checker that needs to alias annotations for one purpose
-     * and not for another. For example, in the Lock Checker, {@code @LockingFree} and
-     * {@code @ReleasesNoLocks} are both aliases of {@code @SideEffectFree} since they are
-     * all considered side-effect-free with regard to the set of locks held before
-     * and after the method call. However, a {@code synchronized} block is permitted inside
-     * a {@code @ReleasesNoLocks} method but not inside a {@code @LockingFree} or
-     * {@code @SideEffectFree} method.
+     * <p>Call this method from a checker that needs to alias annotations for one purpose and not
+     * for another. For example, in the Lock Checker, {@code @LockingFree} and
+     * {@code @ReleasesNoLocks} are both aliases of {@code @SideEffectFree} since they are all
+     * considered side-effect-free with regard to the set of locks held before and after the method
+     * call. However, a {@code synchronized} block is permitted inside a {@code @ReleasesNoLocks}
+     * method but not inside a {@code @LockingFree} or {@code @SideEffectFree} method.
      *
      * @see #getDeclAnnotation
-     *
      * @param elt the element to retrieve the declaration annotation from
      * @param anno annotation class
      * @return the annotation mirror for anno
@@ -2895,17 +2777,16 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns true if the element appears in a stub file
-     * (Currently only works for methods, constructors, and fields)
+     * Returns true if the element appears in a stub file (Currently only works for methods,
+     * constructors, and fields)
      */
     public boolean isFromStubFile(Element element) {
         return this.getDeclAnnotation(element, FromStubFile.class) != null;
     }
 
     /**
-     * Returns true if the element is from bytecode
-     * and the if the element did not appear in a stub file
-     * (Currently only works for methods, constructors, and fields)
+     * Returns true if the element is from bytecode and the if the element did not appear in a stub
+     * file (Currently only works for methods, constructors, and fields)
      */
     public boolean isFromByteCode(Element element) {
         if (isFromStubFile(element)) return false;
@@ -2913,20 +2794,20 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns the actual annotation mirror used to annotate this type, whose
-     * name equals the passed annotationName if one exists, null otherwise. This
-     * is the private implementation of the same-named, public method.
+     * Returns the actual annotation mirror used to annotate this type, whose name equals the passed
+     * annotationName if one exists, null otherwise. This is the private implementation of the
+     * same-named, public method.
      *
-     * An option is provided to not to check for aliases of annotations.
-     * For example, an annotated type factory may use aliasing for a pair of
-     * annotations for convenience while needing in some cases to determine
-     * a strict ordering between them, such as when determining whether
-     * the annotations on an overrider method are more specific than the
-     * annotations of an overridden method.
+     * <p>An option is provided to not to check for aliases of annotations. For example, an
+     * annotated type factory may use aliasing for a pair of annotations for convenience while
+     * needing in some cases to determine a strict ordering between them, such as when determining
+     * whether the annotations on an overrider method are more specific than the annotations of an
+     * overridden method.
      *
-     * @param elt           the element to retrieve the annotation from
-     * @param annoName      the class name of the annotation to retrieve
-     * @param checkAliases  whether to return an annotation mirror for an alias of the requested annotation class name
+     * @param elt the element to retrieve the annotation from
+     * @param annoName the class name of the annotation to retrieve
+     * @param checkAliases whether to return an annotation mirror for an alias of the requested
+     *     annotation class name
      * @return the annotation mirror for the requested annotation or null if not found
      */
     private AnnotationMirror getDeclAnnotation(
@@ -2955,11 +2836,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns all of the actual annotation mirrors used to annotate this element
-     * (includes stub files and declaration annotations from overridden methods).
+     * Returns all of the actual annotation mirrors used to annotate this element (includes stub
+     * files and declaration annotations from overridden methods).
+     *
      * <p>
-     * @param elt
-     *            The element for which to determine annotations.
+     *
+     * @param elt The element for which to determine annotations.
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
         if (cacheDeclAnnos.containsKey(elt)) {
@@ -2996,14 +2878,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Adds into {@code results} the declaration annotations found in all
-     * elements that the method element {@code elt} overrides.
+     * Adds into {@code results} the declaration annotations found in all elements that the method
+     * element {@code elt} overrides.
      *
-     * @param elt
-     *          Method element.
-     * @param results
-     *          {@code elt} local declaration annotations. The ones found
-     *          in stub files and in the element itself.
+     * @param elt Method element.
+     * @param results {@code elt} local declaration annotations. The ones found in stub files and in
+     *     the element itself.
      */
     private void inheritOverriddenDeclAnnos(ExecutableElement elt, Set<AnnotationMirror> results) {
         Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods =
@@ -3066,17 +2946,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns a list of all declaration annotations used to annotate this element,
-     * which have a meta-annotation (i.e., an annotation on that annotation)
-     * with class {@code metaAnnotation}.
+     * Returns a list of all declaration annotations used to annotate this element, which have a
+     * meta-annotation (i.e., an annotation on that annotation) with class {@code metaAnnotation}.
      *
-     * @param element
-     *            The element for which to determine annotations.
-     * @param metaAnnotation
-     *            The meta-annotation that needs to be present.
-     * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is
-     *         the annotation mirror at {@code element}, and {@code metaAnno} is
-     *         the annotation mirror used to annotate {@code anno}.
+     * @param element The element for which to determine annotations.
+     * @param metaAnnotation The meta-annotation that needs to be present.
+     * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror
+     *     at {@code element}, and {@code metaAnno} is the annotation mirror used to annotate {@code
+     *     anno}.
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getDeclAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotation) {
@@ -3113,17 +2990,14 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Returns a list of all annotations used to annotate this element,
-     * which have a meta-annotation (i.e., an annotation on that annotation)
-     * with class {@code metaAnnotation}.
+     * Returns a list of all annotations used to annotate this element, which have a meta-annotation
+     * (i.e., an annotation on that annotation) with class {@code metaAnnotation}.
      *
-     * @param element
-     *            The element at which to look for annotations.
-     * @param metaAnnotation
-     *            The meta-annotation that needs to be present.
-     * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is
-     *         the annotation mirror at {@code element}, and {@code metaAnno} is
-     *         the annotation mirror used to annotate {@code anno}.
+     * @param element The element at which to look for annotations.
+     * @param metaAnnotation The meta-annotation that needs to be present.
+     * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror
+     *     at {@code element}, and {@code metaAnno} is the annotation mirror used to annotate {@code
+     *     anno}.
      */
     public List<Pair<AnnotationMirror, AnnotationMirror>> getAnnotationWithMetaAnnotation(
             Element element, Class<? extends Annotation> metaAnnotation) {
@@ -3150,10 +3024,10 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * This method is a hack to use when a method type argument
-     * could not be inferred automatically or if a raw type is used.
-     * The only use should be:
-     * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment, AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
+     * This method is a hack to use when a method type argument could not be inferred automatically
+     * or if a raw type is used. The only use should be:
+     * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment,
+     * AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
      * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
@@ -3183,47 +3057,52 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * If {@code wildcard}'s upper bound is a super type of {@code annotatedTypeMirror},
-     * this method returns an AnnotatedTypeMirror with the same qualifiers as {@code
-     * annotatedTypeMirror}, but
-     * the underlying Java type is the the most specific base type of {@code annotatedTypeMirror} whose erasure type
-     * is equivalent to the upper bound of {@code wildcard}.
-     * <p>
-     * Otherwise, returns {@code annotatedTypeMirror} unmodified.
-     * <p>
-     * For example:
+     * If {@code wildcard}'s upper bound is a super type of {@code annotatedTypeMirror}, this method
+     * returns an AnnotatedTypeMirror with the same qualifiers as {@code annotatedTypeMirror}, but
+     * the underlying Java type is the the most specific base type of {@code annotatedTypeMirror}
+     * whose erasure type is equivalent to the upper bound of {@code wildcard}.
+     *
+     * <p>Otherwise, returns {@code annotatedTypeMirror} unmodified.
+     *
+     * <p>For example:
+     *
      * <pre>
      * wildcard := @NonNull ? extends @NonNull Object
      * annotatedTypeMirror := @Nullable String
      *
      * widenToUpperBound(annotatedTypeMirror, wildcard) returns @Nullable Object
      * </pre>
-     * This method is needed because,
-     * the Java compiler allows wildcards to have upper bounds above the type variable upper bounds
-     * for which they are type arguments.  For example, given the following parametric type:
+     *
+     * This method is needed because, the Java compiler allows wildcards to have upper bounds above
+     * the type variable upper bounds for which they are type arguments. For example, given the
+     * following parametric type:
+     *
      * <pre>
      * {@code class MyClass<T extends Number>}
      * </pre>
+     *
      * the following is legal:
+     *
      * <pre>
      * {@code MyClass<? extends Object>}
      * </pre>
-     * This is sound because in Java the wildcard is capture converted to:
-     * {@code CAP#1 extends Number from capture of ? extends Object}.
-     * <p>
-     * Because the Checker Framework does not implement capture conversion, wildcard upper bounds may
-     * cause spurious errors in subtyping checks.  This method prevents those errors by
-     * widening the upper bound of the type parameter.
-     * <p>
-     * This method widens the underlying Java type of the upper bound of the type parameter rather
-     * than narrowing the bound of the wildcard in order to avoid issuing an error with an upper
-     * bound that is not in source code.
-     * <p>
-     * The widened type should only be used for typing checks that require it. Using the widened type
-     * elsewhere would cause confusing error messages with types not in the source code.
+     *
+     * This is sound because in Java the wildcard is capture converted to: {@code CAP#1 extends
+     * Number from capture of ? extends Object}.
+     *
+     * <p>Because the Checker Framework does not implement capture conversion, wildcard upper bounds
+     * may cause spurious errors in subtyping checks. This method prevents those errors by widening
+     * the upper bound of the type parameter.
+     *
+     * <p>This method widens the underlying Java type of the upper bound of the type parameter
+     * rather than narrowing the bound of the wildcard in order to avoid issuing an error with an
+     * upper bound that is not in source code.
+     *
+     * <p>The widened type should only be used for typing checks that require it. Using the widened
+     * type elsewhere would cause confusing error messages with types not in the source code.
      *
      * @param annotatedTypeMirror AnnotatedTypeMirror to widen
-     * @param wildcard            AnnotatedWildcardType whose upper bound is used to widen
+     * @param wildcard AnnotatedWildcardType whose upper bound is used to widen
      * @return {@code annotatedTypeMirror} widen to the upper bound of {@code wildcard}
      */
     public AnnotatedTypeMirror widenToUpperBound(
@@ -3268,8 +3147,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Find the declared type of the functional interface and the executable type for its method for a given
-     * MemberReferenceTree or LambdaExpressionTree.
+     * Find the declared type of the functional interface and the executable type for its method for
+     * a given MemberReferenceTree or LambdaExpressionTree.
      *
      * @param tree the MemberReferenceTree or LambdaExpressionTree
      * @return the declared type of the functional interface and the executable type
@@ -3298,11 +3177,11 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * Get the AnnotatedDeclaredType for the FunctionalInterface from assignment context of the method reference
-     * which may be a variable assignment, a method call, or a cast.
-     * <p>
-     * The assignment context is not always correct, so we must search up the AST. It will recursively search
-     * for lambdas nested in lambdas.
+     * Get the AnnotatedDeclaredType for the FunctionalInterface from assignment context of the
+     * method reference which may be a variable assignment, a method call, or a cast.
+     *
+     * <p>The assignment context is not always correct, so we must search up the AST. It will
+     * recursively search for lambdas nested in lambdas.
      *
      * @param lambdaTree the tree of the lambda or method reference
      * @return the functional interface type
@@ -3336,9 +3215,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                             String.format(
                                     "Expected the type of a cast tree in an assignment context to contain a functional interface bound. "
                                             + "Found type: %s for tree: %s in lambda tree: %s",
-                                    castATM,
-                                    cast,
-                                    lambdaTree));
+                                    castATM, cast, lambdaTree));
                 }
                 return (AnnotatedDeclaredType) castATM;
 
@@ -3469,18 +3346,15 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
                     String.format(
                             "Expected the type of %s tree in assignment context to be a functional interface. "
                                     + "Found type: %s for tree: %s in lambda tree: %s",
-                            contextTree.getKind(),
-                            type,
-                            contextTree,
-                            lambdaTree));
+                            contextTree.getKind(), type, contextTree, lambdaTree));
         }
     }
 
     /**
      * Create the ground target type of the functional interface.
-     * <p>
-     * Basically, it replaces the wildcards with their bounds
-     * doing a capture conversion like glb for extends bounds.
+     *
+     * <p>Basically, it replaces the wildcards with their bounds doing a capture conversion like glb
+     * for extends bounds.
      *
      * @see "JLS 9.9"
      * @param overriddenType the functional interface type

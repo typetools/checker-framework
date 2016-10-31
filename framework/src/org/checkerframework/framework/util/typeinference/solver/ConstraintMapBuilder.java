@@ -13,39 +13,34 @@ import org.checkerframework.framework.util.typeinference.constraint.TIsU;
 import org.checkerframework.framework.util.typeinference.constraint.TSuperU;
 import org.checkerframework.framework.util.typeinference.constraint.TUConstraint;
 
-/**
- * Converts a set of TUConstraints into a ConstraintMap.
- */
+/** Converts a set of TUConstraints into a ConstraintMap. */
 public class ConstraintMapBuilder {
 
     /**
-     * Let Ti be a the ith target being inferred
-     * Let ATV(i) be the annotated type variable that represents as use of Ti which may or may not
-     * have primary annotations.
-     * Let ATM be an annotated type mirror that may or may not be target Tx, or have a component target Tx
-     * Let Ai be the type argument we are trying to infer for Ti
+     * Let Ti be a the ith target being inferred Let ATV(i) be the annotated type variable that
+     * represents as use of Ti which may or may not have primary annotations. Let ATM be an
+     * annotated type mirror that may or may not be target Tx, or have a component target Tx Let Ai
+     * be the type argument we are trying to infer for Ti
      *
-     * We have a set of constraints of the form:
-     * {@code ATV(i) <?> ATM}
+     * <p>We have a set of constraints of the form: {@code ATV(i) <?> ATM}
      *
-     * Where {@code <?>} is either a subtype ({@code <:}), supertype ({@code :>}), or equality relationship ({@code =}).
+     * <p>Where {@code <?>} is either a subtype ({@code <:}), supertype ({@code :>}), or equality
+     * relationship ({@code =}).
      *
-     * Regardless of what {@code <?>} is, a constraint will only imply constraints on Ai in a given
-     * hierarchy if ATV(i) does NOT have a primary annotation in that hierarchy.  That is:
+     * <p>Regardless of what {@code <?>} is, a constraint will only imply constraints on Ai in a
+     * given hierarchy if ATV(i) does NOT have a primary annotation in that hierarchy. That is:
      *
-     * E.g. Let ATV(i) be @NonNull Ti,  the constraints @NonNull Ti = @NonNull @Initialized String
-     * does not imply any primary annotation in the Nullness hierarchy for type argument Ai because the Annotated
-     * type mirror has a primary annotation in the NUllness hierarchy.
+     * <p>E.g. Let ATV(i) be @NonNull Ti, the constraints @NonNull Ti = @NonNull @Initialized String
+     * does not imply any primary annotation in the Nullness hierarchy for type argument Ai because
+     * the Annotated type mirror has a primary annotation in the NUllness hierarchy.
      *
-     * However, it does imply that Ai has a primary annotation of @Initialized since ATV(i) has no
-     * primary annotation in the initialization hierarchy.
+     * <p>However, it does imply that Ai has a primary annotation of @Initialized since ATV(i) has
+     * no primary annotation in the initialization hierarchy.
      *
-     * Note, constraints come in 2 forms:
-     *   a) between a target and a concrete AnnotatedTypeMirror.
-     *   E.g., As seen above (@NonNull Ti = @NonNull @Initialized String)
+     * <p>Note, constraints come in 2 forms: a) between a target and a concrete AnnotatedTypeMirror.
+     * E.g., As seen above (@NonNull Ti = @NonNull @Initialized String)
      *
-     *   b) between two targets
-     *   E.g., (@NonNull Ti = Tj)
+     * <p>b) between two targets E.g., (@NonNull Ti = Tj)
      */
     public ConstraintMap build(
             Set<TypeVariable> targets,

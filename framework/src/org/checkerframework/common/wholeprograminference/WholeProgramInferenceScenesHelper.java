@@ -39,55 +39,49 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * This class stores annotations for fields, method return types, and method
- * parameters.
- * <p>
- * The set of annotations inferred for a certain class is stored in an
- * {@link annotations.el.AScene}, which {@link #writeScenesToJaif} can write
- * into a .jaif file.
- * For example, a class field of a class whose fully-qualified name is
- * {@code my.package.MyClass} will have its inferred type stored in a Scene,
- * and later written into a file named {@code my.package.MyClass.jaif}.
- * <p>
- * This class populates the initial Scenes by reading existing .jaif files
- * on the {@link #jaifFilesPath} directory. Having more information in those
- * initial .jaif files means that the precision achieved by the whole-program
- * inference analysis will be better. {@link #writeScenesToJaif} rewrites
- * the initial .jaif files, and may create new ones.
+ * This class stores annotations for fields, method return types, and method parameters.
+ *
+ * <p>The set of annotations inferred for a certain class is stored in an {@link
+ * annotations.el.AScene}, which {@link #writeScenesToJaif} can write into a .jaif file. For
+ * example, a class field of a class whose fully-qualified name is {@code my.package.MyClass} will
+ * have its inferred type stored in a Scene, and later written into a file named {@code
+ * my.package.MyClass.jaif}.
+ *
+ * <p>This class populates the initial Scenes by reading existing .jaif files on the {@link
+ * #jaifFilesPath} directory. Having more information in those initial .jaif files means that the
+ * precision achieved by the whole-program inference analysis will be better. {@link
+ * #writeScenesToJaif} rewrites the initial .jaif files, and may create new ones.
  */
 public class WholeProgramInferenceScenesHelper {
 
     /**
-     * Maps a TypeUseLocation to a set of names of annotations that should
-     * not be added to .jaif files for that location.
+     * Maps a TypeUseLocation to a set of names of annotations that should not be added to .jaif
+     * files for that location.
      */
     private final Map<TypeUseLocation, Set<String>> annosToIgnore = new HashMap<>();
 
     /**
-     * Directory where .jaif files will be written to and read from.
-     * This directory is relative to where the CF's javac command is executed.
+     * Directory where .jaif files will be written to and read from. This directory is relative to
+     * where the CF's javac command is executed.
      */
     public static final String jaifFilesPath =
             "build" + File.separator + "whole-program-inference" + File.separator;
 
-    /**
-     * Indicates whether assignments where the rhs is null should be ignored.
-     */
+    /** Indicates whether assignments where the rhs is null should be ignored. */
     private final boolean ignoreNullAssignments;
 
     /** Maps .jaif file paths (Strings) to Scenes. Relatives to jaifFilesPath. */
     private final Map<String, AScene> scenes = new HashMap<>();
 
     /**
-     * Set representing Scenes that were modified since the last time all
-     * Scenes were written into .jaif files. Each String element of this set
-     * is a path to the .jaif file of the corresponding Scene in the set. It
-     * is obtained by passing a class name as argument to the
-     * {@link #getJaifPath} method.
-     * <p>
-     * Modifying a Scene means adding (or changing) a type annotation for a
-     * field, method return type, or method parameter type in the Scene.
-     * (Scenes are modified by the method {@link #updateAnnotationSetInScene}.)
+     * Set representing Scenes that were modified since the last time all Scenes were written into
+     * .jaif files. Each String element of this set is a path to the .jaif file of the corresponding
+     * Scene in the set. It is obtained by passing a class name as argument to the {@link
+     * #getJaifPath} method.
+     *
+     * <p>Modifying a Scene means adding (or changing) a type annotation for a field, method return
+     * type, or method parameter type in the Scene. (Scenes are modified by the method {@link
+     * #updateAnnotationSetInScene}.)
      */
     private final Set<String> modifiedScenes = new HashSet<>();
 
@@ -96,8 +90,8 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Write all modified scenes into .jaif files.
-     * (Scenes are modified by the method {@link #updateAnnotationSetInScene}.)
+     * Write all modified scenes into .jaif files. (Scenes are modified by the method {@link
+     * #updateAnnotationSetInScene}.)
      */
     public void writeScenesToJaif() {
         // Create .jaif files directory if it doesn't exist already.
@@ -129,17 +123,15 @@ public class WholeProgramInferenceScenesHelper {
         modifiedScenes.clear();
     }
 
-    /**
-     * Returns the String representing the .jaif path of a class given its name.
-     */
+    /** Returns the String representing the .jaif path of a class given its name. */
     protected String getJaifPath(String className) {
         String jaifPath = jaifFilesPath + className + ".jaif";
         return jaifPath;
     }
 
     /**
-     * Returns the Scene stored in a .jaif file path passed as input.
-     * If the file does not exist, an empty Scene is created.
+     * Returns the Scene stored in a .jaif file path passed as input. If the file does not exist, an
+     * empty Scene is created.
      */
     protected AScene getScene(String jaifPath) {
         AScene scene;
@@ -166,9 +158,7 @@ public class WholeProgramInferenceScenesHelper {
         return scene;
     }
 
-    /**
-     * Returns the AClass in an AScene, given a className and a jaifPath.
-     */
+    /** Returns the AClass in an AScene, given a className and a jaifPath. */
     protected AClass getAClass(String className, String jaifPath) {
         // Possibly reads .jaif file to obtain a Scene.
         AScene scene = getScene(jaifPath);
@@ -177,16 +167,19 @@ public class WholeProgramInferenceScenesHelper {
 
     /**
      * Updates the set of annotations in a location of a Scene.
-     *   <ul>
-     *     <li>If there was no previous annotation for that location, then the
-     *      updated set will be the annotations in newATM.</li>
-     *     <li>If there was a previous annotation, the updated set will be the
-     *      LUB between the previous annotation and newATM.</li>
-     *   </ul>
+     *
+     * <ul>
+     *   <li>If there was no previous annotation for that location, then the updated set will be the
+     *       annotations in newATM.
+     *   <li>If there was a previous annotation, the updated set will be the LUB between the
+     *       previous annotation and newATM.
+     * </ul>
+     *
      * <p>
+     *
      * @param type ATypeElement of the Scene which will be modified.
-     * @param atf the annotated type factory of a given type system, whose
-     * type hierarchy will be used.
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used.
      * @param jaifPath used to identify a Scene.
      * @param rhsATM the RHS of the annotated type on the source code.
      * @param lhsATM the LHS of the annotated type on the source code.
@@ -221,8 +214,7 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Removes all annotations that should be ignored from an AScene.
-     * (See {@link #shouldIgnore}).
+     * Removes all annotations that should be ignored from an AScene. (See {@link #shouldIgnore}).
      */
     private void removeIgnoredAnnosFromScene(AScene scene) {
         for (AClass aclass : scene.classes.values()) {
@@ -243,8 +235,8 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Removes all annotations that should be ignored from an ATypeElement.
-     * (See {@link #shouldIgnore}).
+     * Removes all annotations that should be ignored from an ATypeElement. (See {@link
+     * #shouldIgnore}).
      */
     private void removeIgnoredAnnosFromATypeElement(ATypeElement typeEl, TypeUseLocation loc) {
         Set<Annotation> annosToRemove = new HashSet<>();
@@ -267,12 +259,12 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Updates sourceCodeATM to contain the LUB between sourceCodeATM and
-     * jaifATM, ignoring missing AnnotationMirrors from jaifATM -- it considers
-     * the LUB between an AnnotationMirror am and a missing AnnotationMirror to be am.
-     * The results are stored in sourceCodeATM.
-     * @param atf the annotated type factory of a given type system, whose
-     * type hierarchy will be used.
+     * Updates sourceCodeATM to contain the LUB between sourceCodeATM and jaifATM, ignoring missing
+     * AnnotationMirrors from jaifATM -- it considers the LUB between an AnnotationMirror am and a
+     * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
+     *
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used.
      * @param sourceCodeATM the annotated type on the source code.
      * @param jaifATM the annotated type on the .jaif file.
      */
@@ -329,19 +321,16 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Returns true if am should not be inserted in source code, for example
-     * {@link org.checkerframework.common.value.qual.BottomVal}. This happens
-     * when am cannot be inserted in source code or is the default for the
-     * location passed as argument.
-     * <p>
-     * Invisible qualifiers, which are annotations that contain the
-     * {@link org.checkerframework.framework.qual.InvisibleQualifier}
-     * meta-annotation, also return true.
-     * <p>
-     * TODO: Merge functionality somewhere else with
-     * {@link org.checkerframework.framework.type.GenericAnnotatedTypeFactory#createQualifierDefaults}.
-     * Look into the createQualifierDefaults method before changing anything here.
-     * See Issue 683
+     * Returns true if am should not be inserted in source code, for example {@link
+     * org.checkerframework.common.value.qual.BottomVal}. This happens when am cannot be inserted in
+     * source code or is the default for the location passed as argument.
+     *
+     * <p>Invisible qualifiers, which are annotations that contain the {@link
+     * org.checkerframework.framework.qual.InvisibleQualifier} meta-annotation, also return true.
+     *
+     * <p>TODO: Merge functionality somewhere else with {@link
+     * org.checkerframework.framework.type.GenericAnnotatedTypeFactory#createQualifierDefaults}.
+     * Look into the createQualifierDefaults method before changing anything here. See Issue 683
      * https://github.com/typetools/checker-framework/issues/683
      */
     private boolean shouldIgnore(
@@ -409,10 +398,7 @@ public class WholeProgramInferenceScenesHelper {
         return false;
     }
 
-    /**
-     * Returns a subset of annosSet, consisting of the annotations supported
-     * by atf.
-     */
+    /** Returns a subset of annosSet, consisting of the annotations supported by atf. */
     private Set<Annotation> getSupportedAnnosInSet(
             Set<Annotation> annosSet, AnnotatedTypeFactory atf) {
         Set<Annotation> output = new HashSet<>();
@@ -430,13 +416,13 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Updates an {@link org.checkerframework.framework.type.AnnotatedTypeMirror}
-     * to contain the {@link annotations.Annotation}s of an
-     * {@link annotations.el.ATypeElement}.
+     * Updates an {@link org.checkerframework.framework.type.AnnotatedTypeMirror} to contain the
+     * {@link annotations.Annotation}s of an {@link annotations.el.ATypeElement}.
+     *
      * @param atm the AnnotatedTypeMirror to be modified
      * @param type the {@link annotations.el.ATypeElement}.
-     * @param atf the annotated type factory of a given type system, whose
-     * type hierarchy will be used.
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used.
      */
     private void typeElementToATM(
             AnnotatedTypeMirror atm, ATypeElement type, AnnotatedTypeFactory atf) {
@@ -461,26 +447,22 @@ public class WholeProgramInferenceScenesHelper {
     }
 
     /**
-     * Updates an {@link annotations.el.ATypeElement} to have the annotations of an
-     * {@link org.checkerframework.framework.type.AnnotatedTypeMirror} passed
-     * as argument. Annotations in the original set that should be ignored
-     * (see {@link #shouldIgnore}) are not added to the resulting set.
-     * This method also checks if the AnnotatedTypeMirror has explicit
-     * annotations in source code, and if that is the case no annotations are
-     * added for that location.
-     * <p>
-     * This method removes from the ATypeElement all annotations supported by atf
-     * before inserting new ones. It is assumed that every time this method is
-     * called, the AnnotatedTypeMirror has a better type estimate for the
-     * ATypeElement. Therefore, it is not a problem to remove all annotations
-     * before inserting  the new annotations.
+     * Updates an {@link annotations.el.ATypeElement} to have the annotations of an {@link
+     * org.checkerframework.framework.type.AnnotatedTypeMirror} passed as argument. Annotations in
+     * the original set that should be ignored (see {@link #shouldIgnore}) are not added to the
+     * resulting set. This method also checks if the AnnotatedTypeMirror has explicit annotations in
+     * source code, and if that is the case no annotations are added for that location.
      *
-     * @param newATM the AnnotatedTypeMirror whose annotations will be added to
-     * the ATypeElement.
-     * @param curATM used to check if the element which will be updated has
-     * explicit annotations in source code.
-     * @param atf the annotated type factory of a given type system, whose
-     * type hierarchy will be used.
+     * <p>This method removes from the ATypeElement all annotations supported by atf before
+     * inserting new ones. It is assumed that every time this method is called, the
+     * AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore, it is not a
+     * problem to remove all annotations before inserting the new annotations.
+     *
+     * @param newATM the AnnotatedTypeMirror whose annotations will be added to the ATypeElement.
+     * @param curATM used to check if the element which will be updated has explicit annotations in
+     *     source code.
+     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
+     *     used.
      * @param typeToUpdate the ATypeElement which will be updated.
      * @param idx used to write annotations on compound types of an ATypeElement.
      * @param defLoc the location where the annotation will be added.

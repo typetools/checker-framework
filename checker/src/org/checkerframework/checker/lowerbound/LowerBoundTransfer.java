@@ -11,94 +11,89 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- *  Implements the refinement rules described in lowerbound_rules.txt.
- *  In particular, implements data flow refinements based on tests: &lt;,
- *  &gt;, ==, and their derivatives.
- * <p>
+ * Implements the refinement rules described in lowerbound_rules.txt. In particular, implements data
+ * flow refinements based on tests: &lt;, &gt;, ==, and their derivatives.
  *
- *  We represent &gt;, &lt;, &ge;, &le;, ==, and != nodes as combinations
- *  of &gt; and &ge; (e.g. == is &ge; in both directions in the then
- *  branch), and implement refinements based on these decompositions.
- *  <pre>
- *Refinement/transfer rules for conditionals:
+ * <p>We represent &gt;, &lt;, &ge;, &le;, ==, and != nodes as combinations of &gt; and &ge; (e.g.
+ * == is &ge; in both directions in the then branch), and implement refinements based on these
+ * decompositions.
  *
- *There are two "primitives":
+ * <pre>
+ * Refinement/transfer rules for conditionals:
  *
- *x &gt; y, which implies things about x based on y's type:
+ * There are two "primitives":
  *
- *y has type:    implies x has type:
+ * x &gt; y, which implies things about x based on y's type:
+ *
+ * y has type:    implies x has type:
  *  gte-1                nn
  *  nn                   pos
  *  pos                  pos
  *
- *and x &ge; y:
+ * and x &ge; y:
  *
- *y has type:    implies x has type:
+ * y has type:    implies x has type:
  *  gte-1                gte-1
  *  nn                   nn
  *  pos                  pos
  *
- *Then, we can use these two "building blocks" to make all
- *other conditional expressions:
+ * Then, we can use these two "building blocks" to make all
+ * other conditional expressions:
  *
- *EXPR             THEN          ELSE
- *x &gt; y            x &gt; y         y &ge; x
- *x &ge; y           x &ge; y        y &gt; x
- *x &lt; y            y &gt; x         x &ge; y
- *x &le; y           y &ge; x        x &gt; y
+ * EXPR             THEN          ELSE
+ * x &gt; y            x &gt; y         y &ge; x
+ * x &ge; y           x &ge; y        y &gt; x
+ * x &lt; y            y &gt; x         x &ge; y
+ * x &le; y           y &ge; x        x &gt; y
  *
- *Or, more formally:
+ * Or, more formally:
  *
- *EXPR        THEN                                        ELSE
- *x &gt; y       x_refined = GLB(x_orig, promote(y))         y_refined = GLB(y_orig, x)
- *x &ge; y      x_refined = GLB(x_orig, y)                  y_refined = GLB(y_orig, promote(x))
- *x &lt; y       y_refined = GLB(y_orig, promote(x))         x_refined = GLB(x_orig, y)
- *x &le; y      y_refined = GLB(y_orig, x)                  x_refined = GLB(x_orig, promote(y))
+ * EXPR        THEN                                        ELSE
+ * x &gt; y       x_refined = GLB(x_orig, promote(y))         y_refined = GLB(y_orig, x)
+ * x &ge; y      x_refined = GLB(x_orig, y)                  y_refined = GLB(y_orig, promote(x))
+ * x &lt; y       y_refined = GLB(y_orig, promote(x))         x_refined = GLB(x_orig, y)
+ * x &le; y      y_refined = GLB(y_orig, x)                  x_refined = GLB(x_orig, promote(y))
  *
- *where GLB is the greatest lower bound and promote is the increment
- *function on types (or, equivalently, the function specified by the "x
- *&gt; y" information above).
+ * where GLB is the greatest lower bound and promote is the increment
+ * function on types (or, equivalently, the function specified by the "x
+ * &gt; y" information above).
  *
- *There's also ==, which is a special case. We only know
- *things about the THEN branch:
+ * There's also ==, which is a special case. We only know
+ * things about the THEN branch:
  *
- *EXPR             THEN                   ELSE
- *x == y           x &ge; y &amp;&amp; y &ge; x       nothing known
+ * EXPR             THEN                   ELSE
+ * x == y           x &ge; y &amp;&amp; y &ge; x       nothing known
  *
- *or, more formally:
+ * or, more formally:
  *
- *EXPR            THEN                                    ELSE
- *x == y          x_refined = GLB(x_orig, y_orig)         nothing known
+ * EXPR            THEN                                    ELSE
+ * x == y          x_refined = GLB(x_orig, y_orig)         nothing known
  *                y_refined = GLB(x_orig, y_orig)
  *
- *finally, not equal:
+ * finally, not equal:
  *
- *EXPR             THEN                   ELSE
- *x != y           nothing known          x &ge; y &amp;&amp; y &ge; x
+ * EXPR             THEN                   ELSE
+ * x != y           nothing known          x &ge; y &amp;&amp; y &ge; x
  *
- *more formally:
+ * more formally:
  *
- *EXPR            THEN               ELSE
- *x != y          nothing known      x_refined = GLB(x_orig, y_orig)
+ * EXPR            THEN               ELSE
+ * x != y          nothing known      x_refined = GLB(x_orig, y_orig)
  *                                   y_refined = GLB(x_orig, y_orig)
  *
- *</pre>
- *
+ * </pre>
  */
 public class LowerBoundTransfer extends CFTransfer {
 
@@ -128,11 +123,10 @@ public class LowerBoundTransfer extends CFTransfer {
     }
 
     /**
-     *  This struct contains all of the information that the refinement
-     *  functions need. It's called by each node function (i.e. greater
-     *  than node, less than node, etc.) and then the results are passed
-     *  to the refinement function in whatever order is appropriate for
-     *  that node. It's constructor contains all of its logic.
+     * This struct contains all of the information that the refinement functions need. It's called
+     * by each node function (i.e. greater than node, less than node, etc.) and then the results are
+     * passed to the refinement function in whatever order is appropriate for that node. It's
+     * constructor contains all of its logic.
      */
     private class RefinementInfo {
         public Node left, right;
@@ -268,11 +262,10 @@ public class LowerBoundTransfer extends CFTransfer {
     }
 
     /**
-     * The implementation of the algorithm for refining a &gt; test.
-     * Changes the type of left (the greater
-     * one) to one closer to bottom than the type of right. Can't call the promote
-     * function from the ATF directly because we're not introducing a
-     * new expression here - we have to modify an existing one.
+     * The implementation of the algorithm for refining a &gt; test. Changes the type of left (the
+     * greater one) to one closer to bottom than the type of right. Can't call the promote function
+     * from the ATF directly because we're not introducing a new expression here - we have to modify
+     * an existing one.
      */
     private void refineGT(
             Node left,
@@ -305,10 +298,9 @@ public class LowerBoundTransfer extends CFTransfer {
     }
 
     /**
-     * Refines left to exactly the level of right, since in the
-     * worst case they're equal. Modifies an existing type in the
-     * store, but has to be careful not to overwrite a more precise
-     * existing type.
+     * Refines left to exactly the level of right, since in the worst case they're equal. Modifies
+     * an existing type in the store, but has to be careful not to overwrite a more precise existing
+     * type.
      */
     private void refineGTE(
             Node left,

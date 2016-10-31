@@ -17,13 +17,11 @@ import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
  * An {@link AnalysisResult} represents the result of a org.checkerframework.dataflow analysis by
- * providing the abstract values given a node or a tree. Note that it does not
- * keep track of custom results computed by some analysis.
+ * providing the abstract values given a node or a tree. Note that it does not keep track of custom
+ * results computed by some analysis.
  *
  * @author Stefan Heule
- *
- * @param <A>
- *            type of the abstract value that is tracked.
+ * @param <A> type of the abstract value that is tracked.
  */
 public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
 
@@ -36,14 +34,10 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     /** Map from (effectively final) local variable elements to their abstract value. */
     protected final HashMap<Element, A> finalLocalValues;
 
-    /**
-     * The stores before every method call.
-     */
+    /** The stores before every method call. */
     protected final IdentityHashMap<Block, TransferInput<A, S>> stores;
 
-    /**
-     * Initialize with a given node-value mapping.
-     */
+    /** Initialize with a given node-value mapping. */
     public AnalysisResult(
             Map<Node, A> nodeValues,
             IdentityHashMap<Block, TransferInput<A, S>> stores,
@@ -55,9 +49,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         this.finalLocalValues = finalLocalValues;
     }
 
-    /**
-     * Initialize empty result.
-     */
+    /** Initialize empty result. */
     public AnalysisResult() {
         nodeValues = new IdentityHashMap<>();
         treeLookup = new IdentityHashMap<>();
@@ -65,9 +57,7 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         finalLocalValues = new HashMap<>();
     }
 
-    /**
-     * Combine with another analysis result.
-     */
+    /** Combine with another analysis result. */
     public void combine(AnalysisResult<A, S> other) {
         for (Entry<Node, A> e : other.nodeValues.entrySet()) {
             nodeValues.put(e.getKey(), e.getValue());
@@ -83,40 +73,34 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         }
     }
 
-    /**
-     * @return the value of effectively final local variables
-     */
+    /** @return the value of effectively final local variables */
     public HashMap<Element, A> getFinalLocalValues() {
         return finalLocalValues;
     }
 
     /**
-     * @return the abstract value for {@link Node} {@code n}, or {@code null} if
-     *         no information is available.
+     * @return the abstract value for {@link Node} {@code n}, or {@code null} if no information is
+     *     available.
      */
     public /*@Nullable*/ A getValue(Node n) {
         return nodeValues.get(n);
     }
 
     /**
-     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if
-     *         no information is available.
+     * @return the abstract value for {@link Tree} {@code t}, or {@code null} if no information is
+     *     available.
      */
     public /*@Nullable*/ A getValue(Tree t) {
         A val = getValue(treeLookup.get(t));
         return val;
     }
 
-    /**
-     * @return the {@link Node} for a given {@link Tree}.
-     */
+    /** @return the {@link Node} for a given {@link Tree}. */
     public /*@Nullable*/ Node getNodeForTree(Tree tree) {
         return treeLookup.get(tree);
     }
 
-    /**
-     * @return the store immediately before a given {@link Tree}.
-     */
+    /** @return the store immediately before a given {@link Tree}. */
     public S getStoreBefore(Tree tree) {
         Node node = getNodeForTree(tree);
         if (node == null) {
@@ -125,16 +109,12 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
         return getStoreBefore(node);
     }
 
-    /**
-     * @return the store immediately before a given {@link Node}.
-     */
+    /** @return the store immediately before a given {@link Node}. */
     public S getStoreBefore(Node node) {
         return runAnalysisFor(node, true);
     }
 
-    /**
-     * @return the store immediately after a given {@link Tree}.
-     */
+    /** @return the store immediately after a given {@link Tree}. */
     public S getStoreAfter(Tree tree) {
         Node node = getNodeForTree(tree);
         if (node == null) {
@@ -144,14 +124,12 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * Runs the analysis again within the block of {@code node} and returns the
-     * store at the location of {@code node}. If {@code before} is true, then
-     * the store immediately before the {@link Node} {@code node} is returned.
-     * Otherwise, the store after {@code node} is returned.
+     * Runs the analysis again within the block of {@code node} and returns the store at the
+     * location of {@code node}. If {@code before} is true, then the store immediately before the
+     * {@link Node} {@code node} is returned. Otherwise, the store after {@code node} is returned.
      *
-     * <p>
-     * If the given {@link Node} cannot be reached (in the control flow graph),
-     * then {@code null} is returned.
+     * <p>If the given {@link Node} cannot be reached (in the control flow graph), then {@code null}
+     * is returned.
      */
     protected S runAnalysisFor(Node node, boolean before) {
         Block block = node.getBlock();
@@ -163,10 +141,9 @@ public class AnalysisResult<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * Runs the analysis again within the block of {@code node} and returns the
-     * store at the location of {@code node}. If {@code before} is true, then
-     * the store immediately before the {@link Node} {@code node} is returned.
-     * Otherwise, the store after {@code node} is returned.
+     * Runs the analysis again within the block of {@code node} and returns the store at the
+     * location of {@code node}. If {@code before} is true, then the store immediately before the
+     * {@link Node} {@code node} is returned. Otherwise, the store after {@code node} is returned.
      */
     public static <A extends AbstractValue<A>, S extends Store<S>> S runAnalysisFor(
             Node node, boolean before, TransferInput<A, S> transferInput) {

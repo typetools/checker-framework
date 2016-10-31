@@ -16,32 +16,29 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This file contains basic utility functions that should be reused to create
- * a command line call to CheckerMain.
+ * This file contains basic utility functions that should be reused to create a command line call to
+ * CheckerMain.
  *
- * NOTE: There are multiple copies of this file in the following projects/locations:
- * maven-plugin/
- *     org.checkerframework.mavenplugin.PluginUtil
+ * <p>NOTE: There are multiple copies of this file in the following projects/locations:
+ * maven-plugin/ org.checkerframework.mavenplugin.PluginUtil
  *
- * checker-framework-eclipse-plugin/
- *     org.checkerframework.eclipse.util.PluginUtil
+ * <p>checker-framework-eclipse-plugin/ org.checkerframework.eclipse.util.PluginUtil
  *
- * checker-framework/
- *     org.checkerframework.framework.util.PluginUtil
+ * <p>checker-framework/ org.checkerframework.framework.util.PluginUtil
  *
- * These files MUST be IDENTICAL after the package descriptor.
+ * <p>These files MUST be IDENTICAL after the package descriptor.
  */
 public class PluginUtil {
 
     /**
-     * Option name for specifying an alternative javac.jar location.  The accompanying value
-     * MUST be the path to the jar file (NOT the path to its encompassing directory)
+     * Option name for specifying an alternative javac.jar location. The accompanying value MUST be
+     * the path to the jar file (NOT the path to its encompassing directory)
      */
     public static final String JAVAC_PATH_OPT = "-javacJar";
 
     /**
-     * Option name for specifying an alternative jdk.jar location.  The accompanying value
-     * MUST be the path to the jar file (NOT the path to its encompassing directory)
+     * Option name for specifying an alternative jdk.jar location. The accompanying value MUST be
+     * the path to the jar file (NOT the path to its encompassing directory)
      */
     public static final String JDK_PATH_OPT = "-jdkJar";
 
@@ -55,10 +52,12 @@ public class PluginUtil {
     }
 
     /**
-     * Takes a list of files and writes it as a "File of file names" (i.e. a file with one filepath on each line)
-     * to the destination file, overwriting the destination file if it exists.  Note the filepath used is the
-     * absolute filepath
-     * @param destination the fofn file we are writing.  This file will contain newline separated list of absolute file paths
+     * Takes a list of files and writes it as a "File of file names" (i.e. a file with one filepath
+     * on each line) to the destination file, overwriting the destination file if it exists. Note
+     * the filepath used is the absolute filepath
+     *
+     * @param destination the fofn file we are writing. This file will contain newline separated
+     *     list of absolute file paths
      * @param files the files to write to the destination file
      */
     public static void writeFofn(final File destination, final List<File> files)
@@ -77,10 +76,12 @@ public class PluginUtil {
     }
 
     /**
-     * Takes a list of files and writes it as a "File of file names" (i.e. a file with one filepath on each line)
-     * to the destination file, overwriting the destination file if it exists.  Note the filepath used is the
-     * absolute filepath
-     * @param destination the fofn file we are writing.  This file will contain newline separated list of absolute file paths
+     * Takes a list of files and writes it as a "File of file names" (i.e. a file with one filepath
+     * on each line) to the destination file, overwriting the destination file if it exists. Note
+     * the filepath used is the absolute filepath
+     *
+     * @param destination the fofn file we are writing. This file will contain newline separated
+     *     list of absolute file paths
      * @param files the files to write to the destination file
      */
     public static void writeFofn(final File destination, final File... files) throws IOException {
@@ -103,6 +104,7 @@ public class PluginUtil {
 
     /**
      * Write the strings to a temporary file.
+     *
      * @param deleteOnExit if true, delete the file on program exit
      */
     public static File writeTmpFile(
@@ -275,8 +277,9 @@ public class PluginUtil {
 
     /**
      * Any options found in props to the cmd list
-     * @param cmd    a list to which the options should be added
-     * @param props  the map of checker properties too search for options in
+     *
+     * @param cmd a list to which the options should be added
+     * @param props the map of checker properties too search for options in
      */
     private static void addOptions(final List<String> cmd, Map<CheckerProp, Object> props) {
         for (CheckerProp cp : CheckerProp.values()) {
@@ -489,6 +492,7 @@ public class PluginUtil {
 
     /**
      * Extract the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
+     *
      * @return the first two version numbers from java.version (e.g. 1.6 from 1.6.whatever)
      */
     public static double getJreVersion() {
@@ -515,8 +519,9 @@ public class PluginUtil {
     }
 
     /**
-     * Determine the version of the JRE that we are currently running and select a jdkX where
-     * X is the version of Java that is being run (e.g. 6, 7, ...)
+     * Determine the version of the JRE that we are currently running and select a jdkX where X is
+     * the version of Java that is being run (e.g. 6, 7, ...)
+     *
      * @return "jdk<em>X</em>" where X is the version of Java that is being run (e.g. 6, 7, ...)
      */
     public static String getJdkJarPrefix() {
@@ -536,8 +541,9 @@ public class PluginUtil {
     }
 
     /**
-     * Determine the version of the JRE that we are currently running and select a jdkX.jar where
-     * X is the version of Java that is being run (e.g. 6, 7, ...)
+     * Determine the version of the JRE that we are currently running and select a jdkX.jar where X
+     * is the version of Java that is being run (e.g. 6, 7, ...)
+     *
      * @return the jdkX.jar where X is the version of Java that is being run (e.g. 6, 7, ...)
      */
     public static String getJdkJarName() {

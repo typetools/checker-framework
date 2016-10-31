@@ -40,9 +40,8 @@ class ClassNameValidator extends BaseTypeValidator {
     }
 
     /**
-     * Reports an "illegal.classname" error if the type contains a classVal
-     * annotation with classNames that cannot possibly be valid class
-     * annotations.
+     * Reports an "illegal.classname" error if the type contains a classVal annotation with
+     * classNames that cannot possibly be valid class annotations.
      */
     @Override
     public boolean isValid(AnnotatedTypeMirror type, Tree tree) {
@@ -60,9 +59,9 @@ class ClassNameValidator extends BaseTypeValidator {
     }
 
     /**
-     * A string is a legal binary name if it has the following form:
-     * ((Java identifier)\.)*(Java identifier)([])*
-     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1
+     * A string is a legal binary name if it has the following form: ((Java identifier)\.)*(Java
+     * identifier)([])* https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1
+     *
      * @param className string to check
      * @return true if className is a legal class name
      */
@@ -82,8 +81,8 @@ class ClassNameValidator extends BaseTypeValidator {
     }
 
     /**
-     * Whether the given string is a Java Identifier. (This method returns true
-     * if the Identifier is a keyword, boolean literal, null literal.
+     * Whether the given string is a Java Identifier. (This method returns true if the Identifier is
+     * a keyword, boolean literal, null literal.
      */
     private boolean isJavaIdentifier(String identifier) {
         char[] identifierChars = identifier.toCharArray();

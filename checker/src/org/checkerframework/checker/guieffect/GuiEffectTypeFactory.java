@@ -30,9 +30,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- * Annotated type factory for the GUI Effect Checker.
- */
+/** Annotated type factory for the GUI Effect Checker. */
 public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final boolean debugSpew;
@@ -141,22 +139,22 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Calling context annotations
-     * To make anon-inner-classes work, I need to climb the inheritance DAG, until I:
-     * - find the class/interface that declares this calling method (an anon inner class is a separate class that implements an interface)
-     * - check whether *that* declaration specifies @UI on either the type or method
-     * A method has the UI effect when:
-     * 1. A method is UI if annotated @UIEffect
-     * 2. A method is UI if the enclosing class is annotated @UI or @UIType and the method is not annotated @AlwaysSafe
-     * 3. A method is UI if the corresponding method in the super-class/interface is UI,
-     *    and this method is not annotated @AlwaysSafe, and this method resides in an anonymous inner class (named classes still require
-     *    a package/class/method annotation to make it UI, only anon inner classes have this inheritance-by-default)
-     *    + A method must be *annotated* UI if the method it overrides is *annotated* UI
-     *    + A method must be *annotated* UI if it overrides a UI method and the enclosing class is not UI
-     * 4. It is an error if a method is UI but the same method in a super-type is not UI
-     * 5. It is an error if two super-types specify the same method, where one type says it's UI and one says it's not
-     *    (it's possible to simply enforce the weaker (safe) effect, but this seems more principled, it's easier ---
-     *    backwards-compatible --- to change our minds about this later)
+     * Calling context annotations To make anon-inner-classes work, I need to climb the inheritance
+     * DAG, until I: - find the class/interface that declares this calling method (an anon inner
+     * class is a separate class that implements an interface) - check whether *that* declaration
+     * specifies @UI on either the type or method A method has the UI effect when: 1. A method is UI
+     * if annotated @UIEffect 2. A method is UI if the enclosing class is annotated @UI or @UIType
+     * and the method is not annotated @AlwaysSafe 3. A method is UI if the corresponding method in
+     * the super-class/interface is UI, and this method is not annotated @AlwaysSafe, and this
+     * method resides in an anonymous inner class (named classes still require a
+     * package/class/method annotation to make it UI, only anon inner classes have this
+     * inheritance-by-default) + A method must be *annotated* UI if the method it overrides is
+     * *annotated* UI + A method must be *annotated* UI if it overrides a UI method and the
+     * enclosing class is not UI 4. It is an error if a method is UI but the same method in a
+     * super-type is not UI 5. It is an error if two super-types specify the same method, where one
+     * type says it's UI and one says it's not (it's possible to simply enforce the weaker (safe)
+     * effect, but this seems more principled, it's easier --- backwards-compatible --- to change
+     * our minds about this later)
      */
     public Effect getDeclaredEffect(ExecutableElement methodElt) {
         if (debugSpew) {
@@ -419,9 +417,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(super.createTreeAnnotator(), new GuiEffectTreeAnnotator());
     }
 
-    /**
-     * A class for adding annotations based on tree.
-     */
+    /** A class for adding annotations based on tree. */
     private class GuiEffectTreeAnnotator extends TreeAnnotator {
 
         GuiEffectTreeAnnotator() {

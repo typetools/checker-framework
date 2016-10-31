@@ -13,7 +13,6 @@ import org.checkerframework.javacutil.Pair;
  * The default org.checkerframework.dataflow analysis used in the Checker Framework.
  *
  * @author Stefan Heule
- *
  */
 public class CFAnalysis extends CFAbstractAnalysis<CFValue, CFStore, CFTransfer> {
 

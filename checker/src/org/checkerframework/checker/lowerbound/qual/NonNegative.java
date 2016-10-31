@@ -2,7 +2,6 @@ package org.checkerframework.checker.lowerbound.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**

@@ -26,10 +26,11 @@ public class SubtypesSolver {
 
     /**
      * Infers type arguments using subtype constraints.
+     *
      * @param remainingTargets targets for which we still need to infer a value
      * @param constraints the set of constraints for all targets
-     * @return a mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
-     *         and will not infer that the target is equivalent to another target
+     * @return a mapping of ( {@code target -> inferred type} ), note this class always infers
+     *     concrete types and will not infer that the target is equivalent to another target
      */
     public InferenceResult solveFromSubtypes(
             final Set<TypeVariable> remainingTargets,
@@ -135,8 +136,7 @@ public class SubtypesSolver {
     }
 
     /**
-     * /**
-     * If the target corresponding to targetRecord must be a subtype of another target for which
+     * /** If the target corresponding to targetRecord must be a subtype of another target for which
      * we have already determined a GLB, add that target's GLB to the list of subtypes to be GLBed
      * for this target.
      */

@@ -13,15 +13,15 @@ import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
-/**
- * TypeVariableSusbtitutor replaces type variables from a declaration with arguments to its use.
- */
+/** TypeVariableSusbtitutor replaces type variables from a declaration with arguments to its use. */
 public class TypeVariableSubstitutor {
 
     /**
-     * Given a mapping between type variable's to typeArgument, replace each instance of
-     * type variable with a copy of type argument.
-     * @see #substituteTypeVariable(AnnotatedTypeMirror, org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable)
+     * Given a mapping between type variable's to typeArgument, replace each instance of type
+     * variable with a copy of type argument.
+     *
+     * @see #substituteTypeVariable(AnnotatedTypeMirror,
+     *     org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable)
      * @return a copy of typeMirror with its type variables substituted
      */
     public AnnotatedTypeMirror substitute(
@@ -32,15 +32,16 @@ public class TypeVariableSubstitutor {
     }
 
     /**
-     * Given the types of a type parameter declaration, the argument to that type parameter declaration,
-     * and a given use of that declaration, return a substitute for the use with the correct annotations.
+     * Given the types of a type parameter declaration, the argument to that type parameter
+     * declaration, and a given use of that declaration, return a substitute for the use with the
+     * correct annotations.
      *
-     * To determine what primary annotations are correct for the substitute the following rules are used:
-     * If the type variable use has a primary annotation then apply that primary annotation to the substitute.
-     * Otherwise, use the annotations of the argument.
+     * <p>To determine what primary annotations are correct for the substitute the following rules
+     * are used: If the type variable use has a primary annotation then apply that primary
+     * annotation to the substitute. Otherwise, use the annotations of the argument.
      *
-     * @param argument    the argument to declaration (this will be a value in typeParamToArg)
-     * @param use  the use that is being replaced
+     * @param argument the argument to declaration (this will be a value in typeParamToArg)
+     * @param use the use that is being replaced
      * @return a shallow copy of argument with the appropriate annotations applied
      */
     protected AnnotatedTypeMirror substituteTypeVariable(

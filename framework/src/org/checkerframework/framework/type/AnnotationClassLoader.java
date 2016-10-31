@@ -35,29 +35,26 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  */
 
 /**
- * This class assists the {@link AnnotatedTypeFactory} by reflectively looking
- * up the list of annotation class names in each checker's qual directory, and
- * then loading and returning it as a set of annotation classes. It can also
- * look up and load annotation classes from external directories that are passed
- * as arguments to checkers that have extension capabilities such as the
+ * This class assists the {@link AnnotatedTypeFactory} by reflectively looking up the list of
+ * annotation class names in each checker's qual directory, and then loading and returning it as a
+ * set of annotation classes. It can also look up and load annotation classes from external
+ * directories that are passed as arguments to checkers that have extension capabilities such as the
  * Subtyping Checker, Fenum Checker, and Units Checker.
  *
- * To load annotations using this class, their directory structure and package
- * structure must be identical.
+ * <p>To load annotations using this class, their directory structure and package structure must be
+ * identical.
  *
- * Only annotation classes that have the {@link Target} meta-annotation with the
- * value of {@link ElementType#TYPE_USE} (and optionally
- * {@link ElementType#TYPE_PARAMETER}) are loaded. If it has other
- * {@link ElementType} values, it won't be loaded. Other annotation classes must
- * be manually listed in a checker's annotated type factory by overriding
- * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
+ * <p>Only annotation classes that have the {@link Target} meta-annotation with the value of {@link
+ * ElementType#TYPE_USE} (and optionally {@link ElementType#TYPE_PARAMETER}) are loaded. If it has
+ * other {@link ElementType} values, it won't be loaded. Other annotation classes must be manually
+ * listed in a checker's annotated type factory by overriding {@link
+ * AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
  *
- * Checker writers may wish to subclass this class if they wish to implement
- * some custom rules to filter or process loaded annotation classes, by
- * providing an override implementation of
- * {@link #isSupportedAnnotationClass(Class)}. See
- * {@link org.checkerframework.checker.units.UnitsAnnotationClassLoader
- * UnitsAnnotationClassLoader} for an example.
+ * <p>Checker writers may wish to subclass this class if they wish to implement some custom rules to
+ * filter or process loaded annotation classes, by providing an override implementation of {@link
+ * #isSupportedAnnotationClass(Class)}. See {@link
+ * org.checkerframework.checker.units.UnitsAnnotationClassLoader UnitsAnnotationClassLoader} for an
+ * example.
  *
  * @author Jeff Luo
  */
@@ -83,8 +80,8 @@ public class AnnotationClassLoader {
     private static final char SLASH = '/';
 
     /**
-     * Processing Env used to create an {@link AnnotationBuilder}, which is in
-     * turn used to build the annotation mirror from the loaded class.
+     * Processing Env used to create an {@link AnnotationBuilder}, which is in turn used to build
+     * the annotation mirror from the loaded class.
      */
     protected final ProcessingEnvironment processingEnv;
 
@@ -92,7 +89,7 @@ public class AnnotationClassLoader {
     private final URL resourceURL;
 
     /**
-     * The loaded annotation classes.  Call {@link #getLoadedAnnotationClasses} rather than using
+     * The loaded annotation classes. Call {@link #getLoadedAnnotationClasses} rather than using
      * this field directly as it may be null.
      */
     private Set<Class<? extends Annotation>> loadedAnnotations;
@@ -155,13 +152,12 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Scans all classpaths and returns the resource URL to the jar which
-     * contains the checker's qual package, or the qual package directory if it
-     * exists, or null if no jar or directory contains the package
+     * Scans all classpaths and returns the resource URL to the jar which contains the checker's
+     * qual package, or the qual package directory if it exists, or null if no jar or directory
+     * contains the package
      *
-     * @return a URL to the jar that contains the qual package, or to the qual
-     *         package's directory, or null if no jar or directory contains the
-     *         qual package
+     * @return a URL to the jar that contains the qual package, or to the qual package's directory,
+     *     or null if no jar or directory contains the qual package
      */
     private final /*@Nullable*/ URL getURLFromClasspaths() {
         // Debug use, uncomment if needed to see all of the classpaths (boot
@@ -223,12 +219,11 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Checks to see if the jar or directory referred by the URL contains the
-     * qual package of a specific checker
+     * Checks to see if the jar or directory referred by the URL contains the qual package of a
+     * specific checker
      *
      * @param url a URL referring to either a jar or a directory
-     * @return true if the jar or the directory contains the qual package, false
-     *         otherwise
+     * @return true if the jar or the directory contains the qual package, false otherwise
      */
     private final boolean containsPackage(final URL url) {
         // see whether the resource URL has a protocol of jar or file
@@ -255,8 +250,7 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Checks to see if the jar file contains the qual package of a specific
-     * checker
+     * Checks to see if the jar file contains the qual package of a specific checker
      *
      * @param jar a jar file
      * @return true if the jar file contains the qual package, false otherwise
@@ -282,28 +276,25 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Checks to see if the current directory contains the qual package through
-     * recursion currentDir starts at the root directory (a directory passed in
-     * as part of the classpaths), the iterator goes through each segment of the
-     * fully qualified package name (each segment is separated by a dot)
+     * Checks to see if the current directory contains the qual package through recursion currentDir
+     * starts at the root directory (a directory passed in as part of the classpaths), the iterator
+     * goes through each segment of the fully qualified package name (each segment is separated by a
+     * dot)
      *
-     * Each step of the recursion checks to see if there's a subdirectory in the
-     * current directory which has a name matching the package name segment, if
-     * so, it recursively descends into that subdirectory to check the next
-     * package name segment
+     * <p>Each step of the recursion checks to see if there's a subdirectory in the current
+     * directory which has a name matching the package name segment, if so, it recursively descends
+     * into that subdirectory to check the next package name segment
      *
-     * If there's no more segments left, then we've found the qual directory of
-     * interest
+     * <p>If there's no more segments left, then we've found the qual directory of interest
      *
-     * If we've checked every subdirectory and none of them match the current
-     * package name segment, then the qual directory of interest does not exist
-     * in the given root directory (at the beginning of recursion)
+     * <p>If we've checked every subdirectory and none of them match the current package name
+     * segment, then the qual directory of interest does not exist in the given root directory (at
+     * the beginning of recursion)
      *
      * @param currentDir current directory
-     * @param pkgNames an iterator which provides each segment of the fully
-     *            qualified qual package name
-     * @return true if the qual package exists within the root directory, false
-     *         otherwise
+     * @param pkgNames an iterator which provides each segment of the fully qualified qual package
+     *     name
+     * @return true if the qual package exists within the root directory, false otherwise
      */
     private final boolean checkDirForPackage(
             final File currentDir, final Iterator<String> pkgNames) {
@@ -337,8 +328,8 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Given an absolute path to a directory, this method will return a URL
-     * reference to that directory
+     * Given an absolute path to a directory, this method will return a URL reference to that
+     * directory
      *
      * @param absolutePathToDirectory an absolute path to a directory
      * @return a URL reference to the directory, or null if the URL is malformed
@@ -360,8 +351,8 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Given an absolute path to a jar file, this method will return a URL
-     * reference to that jar file
+     * Given an absolute path to a jar file, this method will return a URL reference to that jar
+     * file
      *
      * @param absolutePathToJarFile an absolute path to a jar file
      * @return a URL reference to the jar file, or null if the URL is malformed
@@ -381,17 +372,15 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Obtains and returns a set of the classpaths from compiler options, system
-     * environment variables, and by examining the classloader to see what paths
-     * it has access to
+     * Obtains and returns a set of the classpaths from compiler options, system environment
+     * variables, and by examining the classloader to see what paths it has access to
      *
-     * The classpaths will be obtained in the order of: 1) extension
-     * paths (from java.ext.dirs) 2) classpaths (set in CLASSPATH, or through
-     * -classpath and -cp) 3) paths accessible and examined by the classloader
+     * <p>The classpaths will be obtained in the order of: 1) extension paths (from java.ext.dirs)
+     * 2) classpaths (set in CLASSPATH, or through -classpath and -cp) 3) paths accessible and
+     * examined by the classloader
      *
-     * In each of these paths, the order of the paths as specified in the
-     * command line options or environment variables will be the order returned
-     * in the set
+     * <p>In each of these paths, the order of the paths as specified in the command line options or
+     * environment variables will be the order returned in the set
      *
      * @return an immutable linked hashset of the classpaths
      */
@@ -418,19 +407,17 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Obtains the classloader used to load the checker class, if that isn't
-     * available then it will try to obtain the system classloader
+     * Obtains the classloader used to load the checker class, if that isn't available then it will
+     * try to obtain the system classloader
      *
-     * @return the classloader used to load the checker class, or the system
-     *         classloader, or null if both are unavailable
+     * @return the classloader used to load the checker class, or the system classloader, or null if
+     *     both are unavailable
      */
     private final /*@Nullable*/ ClassLoader getAppClassLoader() {
         return InternalUtils.getClassLoaderForClass(checker.getClass());
     }
 
-    /**
-     * Debug Use Displays all classpaths
-     */
+    /** Debug Use Displays all classpaths */
     @SuppressWarnings("unused") // for debugging
     private final void printPaths() {
         // all paths in Xbootclasspath
@@ -468,15 +455,13 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Gets the set of the loaded annotation classes. Note that the returned set
-     * from this method is mutable. This method is intended to be called within
-     * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()
-     * createSupportedTypeQualifiers()} (or its helper methods) to help define
-     * the set of supported qualifiers.
-     * {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()
-     * createSupportedTypeQualifiers()} must return an immutable set, and it is
-     * the responsibility of that method (or helper methods it calls) to convert
-     * the set returned by this method, along with any additional annotation
+     * Gets the set of the loaded annotation classes. Note that the returned set from this method is
+     * mutable. This method is intended to be called within {@link
+     * AnnotatedTypeFactory#createSupportedTypeQualifiers() createSupportedTypeQualifiers()} (or its
+     * helper methods) to help define the set of supported qualifiers. {@link
+     * AnnotatedTypeFactory#createSupportedTypeQualifiers() createSupportedTypeQualifiers()} must
+     * return an immutable set, and it is the responsibility of that method (or helper methods it
+     * calls) to convert the set returned by this method, along with any additional annotation
      * classes, into an immutable set.
      *
      * @return the set of loaded annotation classes
@@ -530,8 +515,7 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Retrieves the annotation class file names from the qual directory
-     * contained inside a jar
+     * Retrieves the annotation class file names from the qual directory contained inside a jar
      *
      * @param jar the JarFile containing the annotation class files
      * @return a set of fully qualified class names of the annotations
@@ -567,11 +551,11 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * This method takes as input the canonical name of an external annotation
-     * class and loads and returns that class via the class loader.
+     * This method takes as input the canonical name of an external annotation class and loads and
+     * returns that class via the class loader.
      *
      * @param annoName canonical name of an external annotation class, e.g.
-     *            "myproject.qual.myannotation"
+     *     "myproject.qual.myannotation"
      * @return the loaded annotation class
      */
     public final /*@Nullable*/ Class<? extends Annotation> loadExternalAnnotationClass(
@@ -597,8 +581,8 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * This method takes as input a fully qualified path to a directory, and
-     * loads and returns the set of all annotation classes from that directory.
+     * This method takes as input a fully qualified path to a directory, and loads and returns the
+     * set of all annotation classes from that directory.
      *
      * @param dirName absolute path to a directory containing annotation classes
      * @return a set of annotation classes
@@ -612,24 +596,20 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Retrieves all annotation names from the current directory, and
-     * recursively descends and retrieves annotation names from sub-directories.
+     * Retrieves all annotation names from the current directory, and recursively descends and
+     * retrieves annotation names from sub-directories.
      *
-     * @param packageName a string storing the name of the package that contains
-     *            the qual package
-     * @param rootDirectory a string storing the absolute path of the root
-     *            directory of a set of annotations, which is subtracted from
-     *            class names to retrieve each class's fully qualified class
-     *            names
-     * @param currentDirectory a {@link File} object representing the current
-     *            sub-directory of the root directory
-     * @param fileExtension a file extension suffix that a file must have to be
-     *            considered an annotation file, normally either
-     *            {@link #CLASS_SUFFIX} or {@link #JAVA_SUFFIX} is passed in as
-     *            its value.
-     * @return a set of strings where each string is the fully qualified class
-     *         name of an annotation in the root directory or its
-     *         sub-directories
+     * @param packageName a string storing the name of the package that contains the qual package
+     * @param rootDirectory a string storing the absolute path of the root directory of a set of
+     *     annotations, which is subtracted from class names to retrieve each class's fully
+     *     qualified class names
+     * @param currentDirectory a {@link File} object representing the current sub-directory of the
+     *     root directory
+     * @param fileExtension a file extension suffix that a file must have to be considered an
+     *     annotation file, normally either {@link #CLASS_SUFFIX} or {@link #JAVA_SUFFIX} is passed
+     *     in as its value.
+     * @return a set of strings where each string is the fully qualified class name of an annotation
+     *     in the root directory or its sub-directories
      */
     private final Set<String> getAnnotationNamesFromDirectory(
             final String packageName,
@@ -694,13 +674,12 @@ public class AnnotationClassLoader {
     }
 
     /**
-     * Loads the class indicated by the fullyQualifiedClassName, and checks to
-     * see if it is an annotation that is supported by a checker.
+     * Loads the class indicated by the fullyQualifiedClassName, and checks to see if it is an
+     * annotation that is supported by a checker.
      *
      * @param fullyQualifiedClassName the fully qualified name of the class
-     * @return the loaded annotation class if it is defined with
-     *         ElementType.TYPE_USE and is a supported annotation, null
-     *         otherwise
+     * @return the loaded annotation class if it is defined with ElementType.TYPE_USE and is a
+     *     supported annotation, null otherwise
      */
     private final /*@Nullable*/ Class<? extends Annotation> loadAnnotationClass(
             final String fullyQualifiedClassName) {
@@ -741,10 +720,9 @@ public class AnnotationClassLoader {
     /**
      * Loads a set of annotations indicated by fullyQualifiedAnnoNames.
      *
-     * @param fullyQualifiedAnnoNames a set of strings where each string is a single
-     *            annotation class's fully qualified name
+     * @param fullyQualifiedAnnoNames a set of strings where each string is a single annotation
+     *     class's fully qualified name
      * @return a set of loaded annotation classes.
-     *
      * @see #loadAnnotationClass(String)
      */
     private final Set<Class<? extends Annotation>> loadAnnotationClasses(
@@ -768,8 +746,8 @@ public class AnnotationClassLoader {
     /**
      * Checks to see whether a particular annotation class is supported.
      *
-     * Every subclass of AnnotatedTypeLoader can override this method to
-     * indicate whether a particular annotation is supported by its checker.
+     * <p>Every subclass of AnnotatedTypeLoader can override this method to indicate whether a
+     * particular annotation is supported by its checker.
      *
      * @param annoClass an annotation class
      * @return true if the annotation is supported, false if it isn't

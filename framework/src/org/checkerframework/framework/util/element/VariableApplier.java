@@ -16,7 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- *  Applies annotations to variable declaration (providing they are not the use of a TYPE_PARAMETER).
+ * Applies annotations to variable declaration (providing they are not the use of a TYPE_PARAMETER).
  */
 public class VariableApplier extends TargetedElementAnnotationApplier {
 
@@ -28,9 +28,7 @@ public class VariableApplier extends TargetedElementAnnotationApplier {
         ElementKind.LOCAL_VARIABLE, ElementKind.RESOURCE_VARIABLE, ElementKind.EXCEPTION_PARAMETER
     };
 
-    /**
-     * @return true if this is a variable declaration including fields an enum constants
-     */
+    /** @return true if this is a variable declaration including fields an enum constants */
     public static boolean accepts(final AnnotatedTypeMirror typeMirror, final Element element) {
         return contains(element.getKind(), acceptedKinds) || element.getKind().isField();
     }

@@ -51,9 +51,7 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- * The visitor for the nullness type-system.
- */
+/** The visitor for the nullness type-system. */
 public class NullnessVisitor
         extends InitializationVisitor<NullnessAnnotatedTypeFactory, NullnessValue, NullnessStore> {
     // Error message keys
@@ -75,14 +73,10 @@ public class NullnessVisitor
     private final AnnotationMirror NONNULL, NULLABLE, MONOTONIC_NONNULL;
     private final TypeMirror stringType;
 
-    /**
-     * The element for java.util.Collection.size().
-     */
+    /** The element for java.util.Collection.size(). */
     private final ExecutableElement collectionSize;
 
-    /**
-     * The element for java.util.Collection.toArray(T).
-     */
+    /** The element for java.util.Collection.toArray(T). */
     private final ExecutableElement collectionToArray;
 
     public NullnessVisitor(BaseTypeChecker checker, boolean useFbc) {
@@ -254,9 +248,8 @@ public class NullnessVisitor
     }
 
     /**
-     * Determine whether all dimensions given in a new array expression have
-     * zero as length. For example "new Object[0][0];". Also true for empty
-     * dimensions, as in "new Object[] {...}".
+     * Determine whether all dimensions given in a new array expression have zero as length. For
+     * example "new Object[0][0];". Also true for empty dimensions, as in "new Object[] {...}".
      */
     private static boolean isNewArrayAllZeroDims(NewArrayTree node) {
         boolean isAllZeros = true;
@@ -359,8 +352,7 @@ public class NullnessVisitor
     }
 
     /**
-     * Reports an error if a comparison of a @NonNull expression with the null
-     * literal is performed.
+     * Reports an error if a comparison of a @NonNull expression with the null literal is performed.
      */
     protected void checkForRedundantTests(BinaryTree node) {
 
@@ -386,10 +378,7 @@ public class NullnessVisitor
         }
     }
 
-    /**
-     * Case 6: Check for redundant nullness tests Case 7: unboxing case:
-     * primitive operations
-     */
+    /** Case 6: Check for redundant nullness tests Case 7: unboxing case: primitive operations */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
         final ExpressionTree leftOp = node.getLeftOperand();
@@ -435,13 +424,10 @@ public class NullnessVisitor
     // ///////////// Utility methods //////////////////////////////
 
     /**
-     * Issues a 'dereference.of.nullable' if the type is not of a
-     * {@link NonNull} type.
+     * Issues a 'dereference.of.nullable' if the type is not of a {@link NonNull} type.
      *
-     * @param tree
-     *            the tree where the error is to reported
-     * @param errMsg
-     *            the error message (must be {@link CompilerMessageKey})
+     * @param tree the tree where the error is to reported
+     * @param errMsg the error message (must be {@link CompilerMessageKey})
      */
     private void checkForNullability(ExpressionTree tree, /*@CompilerMessageKey*/ String errMsg) {
         AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(tree);
@@ -489,17 +475,13 @@ public class NullnessVisitor
         }
     }
 
-    /**
-     * @return true if the type of the tree is a super of String
-     */
+    /** @return true if the type of the tree is a super of String */
     private final boolean isString(ExpressionTree tree) {
         TypeMirror type = InternalUtils.typeOf(tree);
         return types.isAssignable(stringType, type);
     }
 
-    /**
-     * @return true if the type of the tree is a primitive
-     */
+    /** @return true if the type of the tree is a primitive */
     private static final boolean isPrimitive(ExpressionTree tree) {
         return InternalUtils.typeOf(tree).getKind().isPrimitive();
     }

@@ -6,6 +6,7 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Converts ClassTrees into AnnotatedDeclaredType.
+ *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
 class TypeFromClassVisitor extends TypeFromTreeVisitor {

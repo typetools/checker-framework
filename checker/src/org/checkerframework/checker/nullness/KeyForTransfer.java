@@ -111,9 +111,7 @@ public class KeyForTransfer extends CFTransfer {
         return result;
     }
 
-    /**
-     * @return the String value of a KeyFor, this will throw an exception
-     */
+    /** @return the String value of a KeyFor, this will throw an exception */
     private Set<String> getKeys(final AnnotationMirror keyFor) {
         if (keyFor.getElementValues().size() == 0) {
             return new LinkedHashSet<>();

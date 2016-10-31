@@ -14,8 +14,8 @@ import javax.lang.model.element.*;
 import javax.lang.model.util.ElementFilter;
 
 /**
- * An annotation processor for counting the occurrences of annotations.
- * To invoke it, use
+ * An annotation processor for counting the occurrences of annotations. To invoke it, use
+ *
  * <pre>
  * javac -proc:only -processor org.checkerframework.common.util.count.AnnotationsCounter <em>MyFile.java ...</em>
  * </pre>

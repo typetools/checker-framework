@@ -2,13 +2,9 @@ package org.checkerframework.checker.lowerbound.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.lowerbound.qual.NonNegative;
-import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
-import org.checkerframework.framework.qual.TargetLocations;
-import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * This type represents any integer greater than or equal to 1.
