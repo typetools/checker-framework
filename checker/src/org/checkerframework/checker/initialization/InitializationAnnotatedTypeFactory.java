@@ -570,11 +570,11 @@ public abstract class InitializationAnnotatedTypeFactory<
      * receiver type and the declared annotations for the field.
      *
      * @param type
-     *            Type of the field access expression.
+     *            Type of the field access expression
      * @param declaredFieldAnnotations
      *            Annotations on the element.
      * @param receiverType
-     *            Inferred annotations of the receiver.
+     *            Inferred annotations of the receiver
      */
     private void computeFieldAccessType(
             AnnotatedTypeMirror type,

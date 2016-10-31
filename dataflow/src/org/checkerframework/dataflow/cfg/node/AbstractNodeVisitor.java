@@ -15,7 +15,7 @@ package org.checkerframework.dataflow.cfg.node;
  * @author Stefan Heule
  *
  * @param <R>
- *            Return type of the visitor.
+ *            Return type of the visitor
  * @param <P>
  *            Parameter type of the visitor.
  */

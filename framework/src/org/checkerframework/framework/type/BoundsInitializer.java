@@ -69,11 +69,13 @@ public class BoundsInitializer {
      * annotations.  We do this so that when we make copies of the original type to represent recursive references
      * the recursive references don't have the primary annotation.
      *
+     * <pre>{@code
      * e.g.   given the declaration {@code <E extends List<E>>}
      *        if we do not do this, the NonNull on the use @NonNull E
      *        would be copied to the primary annotation on E in the bound {@code List<E>}
      *        i.e. the use would be {@code <@NonNull E extends @NonNull List<@NonNull E>>}
      *             rather than      {@code <@NonNull E extends @NonNull List<E>>}
+     * }</pre>
      *
      */
     private static Set<AnnotationMirror> saveAnnotations(final AnnotatedTypeMirror type) {
@@ -662,7 +664,7 @@ public class BoundsInitializer {
          * If this type variable is upper or lower bounded by another type variable (not a declared type or intersection)
          * then this variable will contain the path to that type variable //TODO: Add link to explanation
          *
-         * e.g. T extends E  &rArr; The structure for T will have an immediateBoundTypeVars = List(UpperBound)
+         * e.g. {@code T extends E}  &rArr; The structure for T will have an immediateBoundTypeVars = List(UpperBound)
          * The BoundPaths here must exist in pathToTypeVar
          */
         public Set<BoundPath> immediateBoundTypeVars = new LinkedHashSet<>();

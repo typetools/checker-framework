@@ -20,7 +20,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
  * AnnotatedTypeCopier is a visitor that deep copies an AnnotatedTypeMirror exactly, including any lazily initialized
  * fields.  That is, if a field has already been initialized, it will be initialized in the copied type.
  *
- * When making copies, a map of encountered {@literal references -> copied} types is maintained.  This ensures that, if a
+ * When making copies, a map of encountered {@literal references &rArr; copied} types is maintained.  This ensures that, if a
  * reference appears in multiple locations in the original type, a corresponding copy of the original type
  * appears in the same locations in the output copy.  This ensures that the recursive loops in the input type
  * are preserved in its output copy (see makeOrReturnCopy)
@@ -29,7 +29,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
  * AnnotatedTypeMirror#deepCopy makes use of AnnotatedTypeCopier under the covers.  However, this visitor and
  * its subclasses can be invoked as follows:
  *
- * new AnnotatedTypeCopier().visit(myTypeVar);
+ * <pre>{@code new AnnotatedTypeCopier().visit(myTypeVar);}</pre>
  *
  * Note: There are methods that may require a copy of a type mirror with slight changes.  It is intended that this
  * class can be overridden for these cases.
@@ -57,10 +57,12 @@ public class AnnotatedTypeCopier
     /**
      * Creates an AnnotatedTypeCopier that may or may not copyAnnotations
      * By default AnnotatedTypeCopier provides two major properties in its copies:
-     *   1) Structure preservation - the exact structure of the original AnnotatedTypeMirror is preserved in the copy
+     * <ol>
+     *   <li> Structure preservation -- the exact structure of the original AnnotatedTypeMirror is preserved in the copy
      *      including all component types.
-     *   2) Annotation preservation - All of the annotations from the original AnnotatedTypeMirror and its components
+     *   <li> Annotation preservation -- All of the annotations from the original AnnotatedTypeMirror and its components
      *      have been copied to the new type.
+     * </ol>
      *
      * If copyAnnotations is set to false, the second property, annotation preservation, is removed.  This is useful
      * for cases in which the user may want to copy the structure of a type exactly but NOT its annotations.

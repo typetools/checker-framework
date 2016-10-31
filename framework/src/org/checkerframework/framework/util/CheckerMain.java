@@ -20,10 +20,10 @@ import java.util.zip.ZipEntry;
 /**
  * This class behaves similarly to javac.  CheckerMain does the following:
  * <ul>
- *   <li>add the jsr308-langtools javac.jar to the runtime bootclasspath
+ *   <li>add the jsr308-langtools {@code javac.jar} to the runtime bootclasspath
  *     of the process that runs the Checker Framework.
  *     This specifies which classes are used to run javac</li>
- *   <li>add jdk7.jar or jdk8.jar to the compile time bootclasspath
+ *   <li>add {@code jdk7.jar} or {@code jdk8.jar} to the compile time bootclasspath
  *     of the javac argument list passed to javac</li>
  *   <li>parse and implement any special options used by the Checker Framework,
  *     e.g., using "shortnames" for annotation processors</li>
@@ -37,7 +37,7 @@ import java.util.zip.ZipEntry;
  *
  * "To run the Checker Framework" really means to run java, where the
  * program being run is a special version of javac, and javac is passed a
- * -processor command-line argument that mentions a Checker Framework
+ * {@code -processor} command-line argument that mentions a Checker Framework
  * checker.  There are 5 relevant classpaths:  The classpath and
  * bootclasspath when running java, and the classpath, bootclasspath, and
  * processorpath used by javac.  The latter three are the only important
@@ -267,14 +267,14 @@ public class CheckerMain {
     }
 
     /**
-     * A pattern to match bootclasspath prepend entries, used to construct one -Xbootclasspath/p: argument
+     * A pattern to match bootclasspath prepend entries, used to construct one {@code -Xbootclasspath/p:} command-line argument
      */
     protected static final Pattern BOOT_CLASS_PATH_REGEX =
             Pattern.compile("^(?:-J)?-Xbootclasspath/p:(.*)$");
 
     // TODO: Why does this treat -J and -J-X the same?  They have different semantics, don't they?
     /**
-     * Remove all -Xbootclasspath/p: or -J-Xbootclasspath/p: arguments from args and add them to the returned list
+     * Remove all {@code -Xbootclasspath/p:} or {@code -J-Xbootclasspath/p:} arguments from args and add them to the returned list.
      * @param args the arguments to extract from
      * @return all non-empty arguments matching BOOT_CLASS_PATH_REGEX or an empty list if there were none
      */
@@ -283,22 +283,22 @@ public class CheckerMain {
     }
 
     /**
-     * Matches all -J arguments
+     * Matches all {@code -J} arguments
      */
     protected static final Pattern JVM_OPTS_REGEX = Pattern.compile("^(?:-J)(.*)$");
 
     /**
-     * Remove all -J arguments from args and add them to the returned list (without the -J prefix)
+     * Remove all {@code -J} arguments from {@code args} and add them to the returned list (without the {@code -J} prefix)
      * @param args the arguments to extract from
-     * @return all -J arguments (without the -J prefix) or an empty list if there were none
+     * @return all {@code -J} arguments (without the {@code -J} prefix) or an empty list if there were none
      */
     protected static List<String> extractJvmOpts(final List<String> args) {
         return extractOptWithPattern(JVM_OPTS_REGEX, false, args);
     }
 
     /**
-     * Remove the -cp and -classpath options and their arguments from args.
-     * Return the last argument.  If no -cp or -classpath arguments were
+     * Remove the {@code -cp} and {@code -classpath} options and their arguments from args.
+     * Return the last argument.  If no {@code -cp} or {@code -classpath} arguments were
      * present then return the CLASSPATH environment variable followed by
      * the current directory.
      *
@@ -338,7 +338,7 @@ public class CheckerMain {
     }
 
     /**
-     * Remove the -processorpath options and their arguments from args.
+     * Remove the {@code -processorpath} options and their arguments from args.
      * Return the last argument.
      *
      * @param args a list of arguments to extract from

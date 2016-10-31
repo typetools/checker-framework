@@ -120,7 +120,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      *            The {@link AnnotatedTypeFactory} of the underlying type
      *            system.
      * @param tree
-     *            The method invocation tree that has to be resolved.
+     *            The method invocation tree that has to be resolved
      * @param origResult
      *            The original result from {@code factory.methodFromUse}.
      */
@@ -256,7 +256,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      *            system.
      * @param tree
      *            The method invocation tree (representing a constructor call)
-     *            that has to be resolved.
+     *            that has to be resolved
      * @param origResult
      *            The original result from {@code factory.methodFromUse}.
      */

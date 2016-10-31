@@ -42,7 +42,7 @@ public class EqualitiesSolver {
      *
      * @param targets the list of type parameters for which we are inferring type arguments
      * @param constraintMap the set of constraints over the set of targets
-     * @return a Map( {@code target -> inferred type or target })
+     * @return a Map( {@code target &rArr; inferred type or target })
      */
     public InferenceResult solveEqualities(
             Set<TypeVariable> targets,

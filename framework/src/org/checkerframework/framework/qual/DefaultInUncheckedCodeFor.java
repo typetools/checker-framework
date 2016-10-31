@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * <p>
  *
  * Unchecked code defaults are only applied if they are enabled via the
- * -AuseDefaultsForUncheckedCode command-line option.  They can be enabled for
+ * {@code -AuseDefaultsForUncheckedCode} command-line option.  They can be enabled for
  * source and bytecode separately.  If the unchecked code defaults are enabled for
  * source code, they will only be applied to source code not annotated with
  * {@link AnnotatedFor} for the checker being executed.

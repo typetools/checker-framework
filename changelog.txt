@@ -13,6 +13,8 @@ written explicitly in source code and defaults them as implicit upper bounds.
 
 The manual describes how to run a checker within the NetBeans IDE.
 
+The manual describes two approaches to creating a type alias or typedef.
+
 ---------------------------------------------------------------------------
 
 Version 2.1.4, 3 October 2016

@@ -96,7 +96,7 @@ public final class RegexUtil {
          * @param desc a description of the error
          * @param regex the erroneous pattern
          * @param index the approximate index in the pattern of the error,
-         *              or {@code -1} if the index is not known
+         *              or -1 if the index is not known
          */
         public CheckedPatternSyntaxException(String desc, String regex, int index) {
             this(new PatternSyntaxException(desc, regex, index));

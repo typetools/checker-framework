@@ -128,7 +128,7 @@ public abstract class CFAbstractTransfer<
      *
      * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on.
      * If false, concurrent semantics are turned off by default, but the user can
-     * still turn them on via -AconcurrentSemantics.
+     * still turn them on via {@code -AconcurrentSemantics}.
      * If true, the user cannot turn off concurrent semantics.
      */
     public CFAbstractTransfer(

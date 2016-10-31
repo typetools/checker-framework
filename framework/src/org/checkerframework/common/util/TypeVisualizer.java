@@ -38,13 +38,13 @@ import org.checkerframework.javacutil.ErrorReporter;
  * Currently, to use TypeVisualizer just insert an if statement somewhere that targets
  * the type you would like to print:
  * e.g.
- * {@code
+ * <pre>{@code
  *     if (type.getKind() == TypeKind.EXECUTABLE && type.toString().contains("methodToPrint")) {
  *         TypeVisualizer.drawToPng("/Users/jburke/Documents/tmp/method.png", type);
  *     }
- * }
+ * }</pre>
  *
- * Be sure to remove such statements before check-in.
+ * Be sure to remove such statements before commiting your changes.
  */
 public class TypeVisualizer {
 

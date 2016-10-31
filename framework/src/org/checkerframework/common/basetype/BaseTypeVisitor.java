@@ -142,18 +142,20 @@ import org.checkerframework.javacutil.TypesUtils;
  * <p>
  *
  * This implementation does the following checks:
- * 1. <b>Assignment and Pseudo-Assignment Check</b>:
+ * <ol>
+ * <li> <b>Assignment and Pseudo-Assignment Check</b>:
  *    It verifies that any assignment type-checks, using
  *    {@code TypeHierarchy.isSubtype} method. This includes method invocation and
  *    method overriding checks.
  *
- * 2. <b>Type Validity Check</b>:
+ * <li> <b>Type Validity Check</b>:
  *    It verifies that any user-supplied type is a valid type, using
  *    {@code isValidUse} method.
  *
- * 3. <b>(Re-)Assignability Check</b>:
+ * <li> <b>(Re-)Assignability Check</b>:
  *    It verifies that any assignment is valid, using
  *    {@code Checker.isAssignable} method.
+ * </ol>
  *
  * @see "JLS $4"
  * @see TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
@@ -163,7 +165,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * Note how the handling of VisitorState is duplicated in AbstractFlow. In
  * particular, the handling of the assignment context has to be done correctly
  * in both classes. This is a pain and we should see how to handle this in the
- * DFF version. TODO: missing assignment context: - array initializer
+ * DFF version.
+ *
+ * TODO: missing assignment context: array initializer
  * expressions should have the component type as context
  */
 public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
@@ -2616,7 +2620,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
          *            the type of the overriding method
          * @param overridingType
          *            the type enclosing the overrider method, usually an AnnotatedDeclaredType;
-         *            for Method References may be something else.
+         *            for Method References may be something else
          * @param overridingReturnType
          *            the return type of the overriding method
          * @param overridden

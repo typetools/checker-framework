@@ -28,7 +28,7 @@ public class SubtypesSolver {
      * Infers type arguments using subtype constraints.
      * @param remainingTargets targets for which we still need to infer a value
      * @param constraints the set of constraints for all targets
-     * @return a mapping of ( {@code target -> inferred type} ), note this class always infers concrete types
+     * @return a mapping of ( {@code target &rArr; inferred type} ), note this class always infers concrete types
      *         and will not infer that the target is equivalent to another target
      */
     public InferenceResult solveFromSubtypes(

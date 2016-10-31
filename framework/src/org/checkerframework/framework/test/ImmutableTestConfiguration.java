@@ -15,12 +15,12 @@ public class ImmutableTestConfiguration implements TestConfiguration {
 
     /**
      * Options that should be passed to the compiler.  This a {@code Map(optionName &rarr; optionArgumentIfAny)}.  E.g.,
-     * {@code
+     * <pre>{@code
      *     Map(
-     *       "-AprintAllQualifiers" -> null
-     *        "-classpath" -> "myDir1:myDir2"
+     *       "-AprintAllQualifiers" &rArr; null
+     *        "-classpath" &rArr; "myDir1:myDir2"
      *     )
-     * }
+     * }</pre>
      */
     private final Map<String, String> options;
     /**

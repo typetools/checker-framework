@@ -47,12 +47,12 @@ import org.checkerframework.javacutil.Pair;
  * @author Stefan Heule
  *
  * @param <A>
- *            The abstract value type to be tracked by the analysis.
+ *            The abstract value type to be tracked by the analysis
  * @param <S>
  *            The store type used in the analysis.
  * @param <T>
  *            The transfer function type that is used to approximated runtime
- *            behavior.
+ *            behavior
  */
 public class Analysis<
         A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {

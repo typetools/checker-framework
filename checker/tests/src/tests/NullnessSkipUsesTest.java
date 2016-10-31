@@ -6,7 +6,7 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * JUnit tests for the Nullness Checker -- testing -AskipUses command-line argument.
+ * JUnit tests for the Nullness Checker -- testing {@code -AskipUses} command-line argument.
  */
 public class NullnessSkipUsesTest extends CheckerFrameworkPerDirectoryTest {
 
