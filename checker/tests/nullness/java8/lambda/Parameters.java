@@ -13,8 +13,8 @@ interface NNConsumer {
 
 class LambdaParam {
 
-    //:: error: (lambda.param.type.incompatible)
     NullConsumer fn1 =
+            //:: error: (lambda.param.type.incompatible)
             (@NonNull String i) -> {
             };
     NullConsumer fn2 =
@@ -56,8 +56,8 @@ class LambdaParam {
     //    }
 
     static void foo() {
-        //:: error: (lambda.param.type.incompatible)
         NullConsumer fn1 =
+                //:: error: (lambda.param.type.incompatible)
                 (@NonNull String i) -> {
                 };
         NullConsumer fn2 =
@@ -78,8 +78,8 @@ class LambdaParam {
     }
 
     void bar() {
-        //:: error: (lambda.param.type.incompatible)
         NullConsumer fn1 =
+                //:: error: (lambda.param.type.incompatible)
                 (@NonNull String i) -> {
                 };
         NullConsumer fn2 =
