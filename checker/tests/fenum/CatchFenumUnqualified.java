@@ -3,8 +3,8 @@ import org.checkerframework.checker.fenum.qual.Fenum;
 class CatchFenumUnqualfied {
     void method() {
         try {
-            //:: error: (exception.parameter.invalid)
         } catch (
+                //:: error: (exception.parameter.invalid)
                 @Fenum("A") RuntimeException e) {
 
         }
