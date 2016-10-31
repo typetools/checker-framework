@@ -15,14 +15,17 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node representing a package name used in an expression such as a constructor invocation
+ * A node representing a package name used in an expression such as a
+ * constructor invocation
  *
- * <p><em>package</em>.class.object(...)
- *
- * <p>parent.<em>package</em>.class.object(...)
+ * <p>
+ * <em>package</em>.class.object(...)
+ * <p>
+ * parent.<em>package</em>.class.object(...)
  *
  * @author Stefan Heule
  * @author Charlie Garrett
+ *
  */
 public class PackageNameNode extends Node {
 

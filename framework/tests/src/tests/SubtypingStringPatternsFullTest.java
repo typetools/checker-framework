@@ -5,7 +5,10 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** Test suite for the Subtyping Checker, using a simple {@link Encrypted} annotation. */
+/**
+ * Test suite for the Subtyping Checker, using a simple {@link Encrypted}
+ * annotation.
+ */
 public class SubtypingStringPatternsFullTest extends CheckerFrameworkPerDirectoryTest {
 
     public SubtypingStringPatternsFullTest(List<File> testFiles) {

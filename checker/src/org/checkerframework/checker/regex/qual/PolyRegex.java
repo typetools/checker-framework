@@ -10,9 +10,11 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 /**
  * A polymorphic qualifier for the Regex type system.
  *
- * <p>Any method written using {@code @PolyRegex} conceptually has two versions: one in which every
- * instance of {@code @PolyRegex String} has been replaced by {@code @Regex String}, and one in
- * which every instance of {@code @PolyRegex String} has been replaced by {@code String}.
+ * <p>
+ * Any method written using {@code @PolyRegex} conceptually has two versions:
+ * one in which every instance of {@code @PolyRegex String} has been replaced
+ * by {@code @Regex String}, and one in which every instance of
+ * {@code @PolyRegex String} has been replaced by {@code String}.
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */

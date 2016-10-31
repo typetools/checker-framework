@@ -9,7 +9,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.qual.Unqualified;
 
-/** Denotes an object with a representation that has been encrypted. */
+/**
+ * Denotes an object with a representation that has been encrypted.
+ */
 @SubtypeOf(Unqualified.class)
 @ImplicitFor(literals = LiteralKind.NULL)
 @DefaultFor({TypeUseLocation.LOWER_BOUND})

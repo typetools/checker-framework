@@ -9,8 +9,9 @@ import javax.lang.model.util.Types;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
- * A node for a case in a switch statement. Although a case has no abstract value, it can imply
- * facts about the abstract values of its operands.
+ * A node for a case in a switch statement.  Although
+ * a case has no abstract value, it can imply facts about
+ * the abstract values of its operands.
  *
  * <pre>
  *   case <em>constant</em>:
@@ -18,6 +19,7 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  *
  * @author Stefan Heule
  * @author Charlie Garrett
+ *
  */
 public class CaseNode extends Node {
 

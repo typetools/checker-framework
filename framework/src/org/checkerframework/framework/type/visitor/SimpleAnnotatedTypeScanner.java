@@ -20,7 +20,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     /**
      * Visits a declared type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -33,7 +33,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     /**
      * Visits an executable type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -46,7 +46,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     /**
      * Visits an array type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -59,7 +59,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     /**
      * Visits a type variable.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -72,7 +72,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     /**
      * Visits a primitive type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -84,7 +84,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     /**
      * Visits NoType type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -96,7 +96,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     /**
      * Visits a {@code null} type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -108,7 +108,7 @@ public class SimpleAnnotatedTypeScanner<R, P> extends AnnotatedTypeScanner<R, P>
     /**
      * Visits a wildcard type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */

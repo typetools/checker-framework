@@ -12,7 +12,8 @@ import org.checkerframework.checker.formatter.qual.ConversionCategory;
 import org.checkerframework.checker.formatter.qual.ReturnsFormat;
 
 /**
- * This class provides a collection of utilities to ease working with format strings.
+ * This class provides a collection of utilities to ease working
+ * with format strings.
  *
  * @author Konstantin Weitz
  */
@@ -36,10 +37,11 @@ public class FormatUtil {
     }
 
     /**
-     * Returns if the format string is satisfiable, and if the format's parameters match the passed
-     * {@link ConversionCategory}s. Otherwise an {@link Error} is thrown.
+     * Returns if the format string is satisfiable, and if the
+     * format's parameters match the passed {@link ConversionCategory}s.
+     * Otherwise an {@link Error} is thrown.
      *
-     * <p>TODO introduce more such functions, see RegexUtil for examples
+     * TODO introduce more such functions, see RegexUtil for examples
      */
     @ReturnsFormat
     public static String asFormat(String format, ConversionCategory... cc)
@@ -58,16 +60,19 @@ public class FormatUtil {
         return format;
     }
 
-    /** Throws an exception if the format is not syntactically valid. */
+    /**
+     * Throws an exception if the format is not syntactically valid.
+     */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         @SuppressWarnings("unused")
         String unused = String.format(format, (Object[]) null);
     }
 
     /**
-     * Returns a {@link ConversionCategory} for every conversion found in the format string.
+     * Returns a {@link ConversionCategory} for every conversion found in the
+     * format string.
      *
-     * <p>Throws an exception if the format is not syntactically valid.
+     * Throws an exception if the format is not syntactically valid.
      */
     public static ConversionCategory[] formatParameterCategories(String format)
             throws IllegalFormatException {
@@ -162,8 +167,8 @@ public class FormatUtil {
         private final int found;
 
         /**
-         * Constructs an instance of this class with the actual argument length and the expected
-         * one.
+         * Constructs an instance of this class with the actual argument length and
+         * the expected one.
          */
         public ExcessiveOrMissingFormatArgumentException(int expected, int found) {
             super("-");
@@ -193,7 +198,8 @@ public class FormatUtil {
         private final ConversionCategory found;
 
         /**
-         * Constructs an instance of this class with the mismatched conversion and the expected one.
+         * Constructs an instance of this class with the mismatched conversion and
+         * the expected one.
          */
         public IllegalFormatConversionCategoryException(
                 ConversionCategory expected, ConversionCategory found) {

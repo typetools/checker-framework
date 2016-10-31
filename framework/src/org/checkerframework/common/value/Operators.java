@@ -1,11 +1,13 @@
 package org.checkerframework.common.value;
 
 /**
- * This file contains methods that simulate the functions of the binary and unary operators in java
- * (e.g. +, -, &lt;, ++, etc.). The purpose of doing this is to streamline the code for evaluating
- * operators in ValueAnnotatedTypeFactory and make it more similar to the code for evaluating
- * methods as well. The naming is the same name as the operator has when BinaryTree.getKind() is
- * called.
+ * This file contains methods that simulate the functions of the binary and
+ * unary operators in java (e.g. +, -, &lt;, ++, etc.). The purpose of doing this
+ * is to streamline the code for evaluating operators in
+ * ValueAnnotatedTypeFactory and make it more similar to the code for evaluating
+ * methods as well. The naming is the same name as the operator has when
+ * BinaryTree.getKind() is called.
+ *
  */
 public class Operators {
 
@@ -26,9 +28,12 @@ public class Operators {
     }
 
     /**
-     * NOTE ON POSTFIX OPERATORS: Because the postfix increment/decrement would take place after the
-     * value is returned, the method does not actually perform a postfix increment/decrement; this
-     * is correctly handled by the org.checkerframework.dataflow analysis elsewhere.
+     *
+     * NOTE ON POSTFIX OPERATORS: Because the postfix increment/decrement would
+     * take place after the value is returned, the method does not actually
+     * perform a postfix increment/decrement; this is correctly handled by the
+     * org.checkerframework.dataflow analysis elsewhere.
+     *
      */
     public static byte POSTFIX_INCREMENT(Byte a) {
         return a;

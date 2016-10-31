@@ -9,6 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
  * Tests the ClassVal Checker.
  *
  * @author smillst
+ *
  */
 public class ClassValTest extends CheckerFrameworkPerDirectoryTest {
 

@@ -41,8 +41,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This class provides a collection of utilities to ease working with syntax trees that have
- * something to do with Formatters.
+ * This class provides a collection of utilities to ease working
+ * with syntax trees that have something to do with Formatters.
  *
  * @author Konstantin Weitz
  */
@@ -65,17 +65,17 @@ public class FormatterTreeUtil {
          */
     }
 
-    /** Describes the ways a format method may be invoked. */
+    /**
+     * Describes the ways a format method may be invoked.
+     */
     public enum InvocationType {
         /**
          * The parameters are passed as varargs. For example:
          *
          * <blockquote>
-         *
          * <pre>
          * String.format("%s %d", "Example", 7);
          * </pre>
-         *
          * </blockquote>
          */
         VARARG,
@@ -84,25 +84,22 @@ public class FormatterTreeUtil {
          * The parameters are passed as array. For example:
          *
          * <blockquote>
-         *
          * <pre>
          * Object[] a = new Object[]{"Example",7};
          * String.format("%s %d", a);
          * </pre>
-         *
          * </blockquote>
          */
         ARRAY,
 
         /**
-         * A null array is passed to the format method. This happens seldomly.
+         * A null array is passed to the format method.
+         * This happens seldomly.
          *
          * <blockquote>
-         *
          * <pre>
          * String.format("%s %d", (Object[])null);
          * </pre>
-         *
          * </blockquote>
          */
         NULLARRAY;
@@ -168,7 +165,9 @@ public class FormatterTreeUtil {
         return anno != null;
     }
 
-    /** Represents a format method invocation in the syntax tree. */
+    /**
+     * Represents a format method invocation in the syntax tree.
+     */
     public class FormatCall {
         private final AnnotatedTypeMirror formatAnno;
         private final List<? extends ExpressionTree> args;
@@ -197,8 +196,8 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Returns an error description if the format string cannot be satisfied. Returns null if
-         * the format string does not contain syntactic errors.
+         * Returns an error description if the format string cannot be satisfied.
+         * Returns null if the format string does not contain syntactic errors.
          */
         public final Result<String> isIllegalFormat() {
             String res = null;
@@ -291,9 +290,10 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Returns the type of the function's parameters. Use {@link
-         * #isValidParameter(ConversionCategory, TypeMirror) isValidParameter} and {@link
-         * #isParameterNull(TypeMirror) isParameterNull} to work with the result.
+         * Returns the type of the function's parameters.
+         * Use {@link #isValidParameter(ConversionCategory, TypeMirror) isValidParameter}
+         * and {@link #isParameterNull(TypeMirror) isParameterNull}
+         * to work with the result.
          */
         public final Result<TypeMirror>[] getParamTypes() {
             // One to make javac happy, the other to make Eclipse happy...
@@ -308,8 +308,8 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Checks if the type of a parameter returned from {@link #getParamTypes()} is valid for the
-         * passed ConversionCategory.
+         * Checks if the type of a parameter returned from {@link #getParamTypes()}
+         * is valid for the passed ConversionCategory.
          */
         public final boolean isValidParameter(ConversionCategory formatCat, TypeMirror paramType) {
             Class<? extends Object> type = typeMirrorToClass(paramType);
@@ -326,8 +326,8 @@ public class FormatterTreeUtil {
         }
 
         /**
-         * Checks if the parameter returned from {@link #getParamTypes()} is a {@code null}
-         * expression.
+         * Checks if the parameter returned from {@link #getParamTypes()} is a
+         * {@code null} expression.
          */
         public final boolean isParameterNull(TypeMirror type) {
             // is it the null literal
@@ -349,7 +349,9 @@ public class FormatterTreeUtil {
         }
     }
 
-    /** Reports an error. Takes a {@link Result} to report the location. */
+    /**
+     * Reports an error. Takes a {@link Result} to report the location.
+     */
     public final <E> void failure(
             Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
         ResultImpl<E> impl = (ResultImpl<E>) res;
@@ -357,7 +359,9 @@ public class FormatterTreeUtil {
                 org.checkerframework.framework.source.Result.failure(msg, args), impl.location);
     }
 
-    /** Reports an warning. Takes a {@link Result} to report the location. */
+    /**
+     * Reports an warning. Takes a {@link Result} to report the location.
+     */
     public final <E> void warning(
             Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
         ResultImpl<E> impl = (ResultImpl<E>) res;
@@ -367,16 +371,17 @@ public class FormatterTreeUtil {
 
     /**
      * Takes an exception that describes an invalid formatter string and, returns a syntax trees
-     * element that represents a {@link InvalidFormat} annotation with the exception's error message
-     * as value.
+     * element that represents a {@link InvalidFormat} annotation with the exception's error
+     * message as value.
      */
     public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalFormatException ex) {
         return stringToInvalidFormatAnnotation(ex.getMessage());
     }
 
     /**
-     * Takes an invalid formatter string and, returns a syntax trees element that represents a
-     * {@link InvalidFormat} annotation with the invalid formatter string as value.
+     * Takes an invalid formatter string and, returns a syntax trees
+     * element that represents a {@link InvalidFormat} annotation with
+     * the invalid formatter string as value.
      */
     // package-private
     AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
@@ -387,16 +392,17 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Takes a syntax tree element that represents a {@link InvalidFormat} annotation, and returns
-     * its value.
+     * Takes a syntax tree element that represents a {@link InvalidFormat} annotation,
+     * and returns its value.
      */
     public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
         return "\"" + AnnotationUtils.getElementValue(anno, "value", String.class, true) + "\"";
     }
 
     /**
-     * Takes a list of ConversionCategory elements, and returns a syntax tree element that
-     * represents a {@link Format} annotation with the list as value.
+     * Takes a list of ConversionCategory elements, and returns a syntax tree
+     * element that represents a {@link Format} annotation with the list as
+     * value.
      */
     public AnnotationMirror categoriesToFormatAnnotation(ConversionCategory[] args) {
         AnnotationBuilder builder =
@@ -406,8 +412,8 @@ public class FormatterTreeUtil {
     }
 
     /**
-     * Takes a syntax tree element that represents a {@link Format} annotation, and returns its
-     * value.
+     * Takes a syntax tree element that represents a {@link Format} annotation,
+     * and returns its value.
      */
     public ConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
         List<ConversionCategory> list =

@@ -11,9 +11,9 @@ import org.codehaus.plexus.compiler.CompilerError;
 import org.codehaus.plexus.compiler.javac.JavacCompiler;
 
 /**
- * Parser for errors emitted by {@code javac}. This is derived from the {@link
- * JavacCompiler#parseModernStream} and {@link JavacCompiler#parseModernError} methods of {@link
- * JavacCompiler}.
+ * Parser for errors emitted by {@code javac}. This is derived from the
+ * {@link JavacCompiler#parseModernStream} and
+ * {@link JavacCompiler#parseModernError} methods of {@link JavacCompiler}.
  */
 public class JavacErrorMessagesParser {
     protected static final String EOL = System.getProperty("line.separator");

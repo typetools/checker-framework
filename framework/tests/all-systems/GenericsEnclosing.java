@@ -1,10 +1,11 @@
 import java.util.TreeMap;
 
 /**
- * Resolution of outer classes must take substitution of generic types into account. Thanks to EMS
- * for finding this problem.
+ * Resolution of outer classes must take substitution of generic types
+ * into account.
+ * Thanks to EMS for finding this problem.
  *
- * <p>Also see regex/GenericsEnclosing for a test case for the Regex Checker.
+ * Also see regex/GenericsEnclosing for a test case for the Regex Checker.
  */
 class GenericsEnclosing extends TreeMap<String, String> {
     class Inner {

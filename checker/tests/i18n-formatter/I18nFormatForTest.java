@@ -1,7 +1,14 @@
+import java.io.ByteArrayOutputStream;
+import java.io.Console;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.Formatter;
+import java.util.Locale;
 import org.checkerframework.checker.i18nformatter.*;
 import org.checkerframework.checker.i18nformatter.qual.*;
+import org.junit.Assert;
 
 public class I18nFormatForTest {
 

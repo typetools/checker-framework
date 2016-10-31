@@ -13,20 +13,25 @@ import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
 import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.framework.util.PluginUtil;
 
-/** Used by the Checker Framework test suite to run the framework and generate a test result. */
+/**
+ * Used by the Checker Framework test suite to run the framework and generate a test result.
+ */
 public class TypecheckExecutor {
 
     public TypecheckExecutor() {}
 
-    /** Runs a typechecking test using the given configuration and returns the test result */
+    /**
+     * Runs a typechecking test using the given configuration and returns the
+     * test result
+     */
     public TypecheckResult runTest(TestConfiguration configuration) {
         CompilationResult result = compile(configuration);
         return interpretResults(configuration, result);
     }
 
     /**
-     * Using the settings from the input configuration, compile all source files in the
-     * configuration, and return place the result in a CompilationResult
+     * Using the settings from the input configuration, compile all source files in the configuration,
+     * and return place the result in a CompilationResult
      */
     public CompilationResult compile(TestConfiguration configuration) {
         TestUtilities.ensureDirectoryExists(new File(configuration.getOptions().get("-d")));
@@ -105,8 +110,8 @@ public class TypecheckExecutor {
     }
 
     /**
-     * Added in case a subclass wishes to filter out errors or add new expected errors. This method
-     * is called immediately before results are checked.
+     * Added in case a subclass wishes to filter out errors or add new expected errors.  This method is called immediately
+     * before results are checked.
      */
     protected List<TestDiagnostic> readDiagnostics(
             TestConfiguration config, CompilationResult compilationResult) {

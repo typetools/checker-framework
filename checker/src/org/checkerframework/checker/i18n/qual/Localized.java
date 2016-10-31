@@ -10,8 +10,8 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Indicates that the {@code String} type has been localized and formatted for the target output
- * locale.
+ * Indicates that the {@code String} type has been localized and
+ * formatted for the target output locale.
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import org.checkerframework.checker.signature.qual.*;
 
 public class SignatureConcatenation {

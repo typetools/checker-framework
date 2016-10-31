@@ -16,7 +16,7 @@ class Postcondition {
         return null;
     }
 
-    /** *** normal postcondition ***** */
+    /***** normal postcondition ******/
     @EnsuresQualifier(expression = "f1", qualifier = Odd.class)
     void oddF1() {
         f1 = null;
@@ -116,7 +116,7 @@ class Postcondition {
         @Odd String l2 = p.p1();
     }
 
-    /** *** many postcondition ***** */
+    /***** many postcondition ******/
     @EnsuresQualifiers({
         @EnsuresQualifier(expression = "f1", qualifier = Odd.class),
         @EnsuresQualifier(expression = "f2", qualifier = Value.class)
@@ -153,7 +153,7 @@ class Postcondition {
         error2();
     }
 
-    /** *** conditional postcondition ***** */
+    /***** conditional postcondition ******/
     @EnsuresQualifierIf(result = true, expression = "f1", qualifier = Odd.class)
     boolean condOddF1(boolean b) {
         if (b) {
@@ -241,7 +241,7 @@ class Postcondition {
         }
     }
 
-    /** *** many conditional postcondition ***** */
+    /***** many conditional postcondition ******/
     @EnsuresQualifiersIf({
         @EnsuresQualifierIf(result = true, expression = "f1", qualifier = Odd.class),
         @EnsuresQualifierIf(result = false, expression = "f1", qualifier = Value.class)

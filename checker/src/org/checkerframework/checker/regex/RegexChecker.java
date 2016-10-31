@@ -6,8 +6,8 @@ import org.checkerframework.framework.qual.RelevantJavaTypes;
 import org.checkerframework.framework.qual.StubFiles;
 
 /**
- * A type-checker plug-in for the {@link Regex} qualifier that finds syntactically invalid regular
- * expressions.
+ * A type-checker plug-in for the {@link Regex} qualifier that finds
+ * syntactically invalid regular expressions.
  *
  * @checker_framework.manual #regex-checker Regex Checker
  */

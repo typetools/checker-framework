@@ -1,3 +1,5 @@
+import java.lang.SuppressWarnings;
+import java.util.regex.Pattern;
 import org.checkerframework.checker.regex.qual.PolyRegex;
 import org.checkerframework.checker.regex.qual.Regex;
 

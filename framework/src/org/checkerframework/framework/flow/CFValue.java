@@ -8,6 +8,7 @@ import javax.lang.model.type.TypeMirror;
  * The default abstract value used in the Checker Framework.
  *
  * @author Stefan Heule
+ *
  */
 public class CFValue extends CFAbstractValue<CFValue> {
 

@@ -11,8 +11,8 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Annotation to override the UI effect on a class, and make a field or method safe for non-UI code
- * to use.
+ * Annotation to override the UI effect on a class, and make a field or method
+ * safe for non-UI code to use.
  *
  * @checker_framework.manual #guieffect-checker GUI Effect Checker
  */

@@ -3,12 +3,15 @@ import java.util.List;
 import org.checkerframework.checker.nullness.qual.*;
 
 /**
- * This class illustrates use of nullness type annotations. The class doesn't do anything -- it is
- * merely meant to be compiled. Compilation will produce no warning messages.
+ * This class illustrates use of nullness type annotations.
+ * The class doesn't do anything -- it is merely meant to be compiled.
+ * Compilation will produce no warning messages.
+ * <p>
  *
- * <p>There are two related files that differ only slightly: {@link NullnessExample}, an example of
- * correct use, and {@link NullnessExampleWithWarnings}, an example of incorrect use. See the
- * Nullness Checker documentation for larger examples of annotated code.
+ * There are two related files that differ only slightly:
+ * {@link NullnessExample}, an example of correct use, and {@link
+ * NullnessExampleWithWarnings}, an example of incorrect use.
+ * See the Nullness Checker documentation for larger examples of annotated code.
  */
 public class NullnessExample {
 

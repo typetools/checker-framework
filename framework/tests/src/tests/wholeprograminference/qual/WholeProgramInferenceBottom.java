@@ -8,7 +8,6 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * Toy type system for testing field inference.
- *
  * @see Sibling1, Sibling2, Parent
  */
 @SubtypeOf({ImplicitAnno.class})

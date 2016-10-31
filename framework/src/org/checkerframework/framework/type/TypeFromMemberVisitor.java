@@ -1,6 +1,8 @@
 package org.checkerframework.framework.type;
 
-/** Created by jburke on 11/20/14. */
+/**
+ * Created by jburke on 11/20/14.
+ */
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;

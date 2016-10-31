@@ -327,7 +327,7 @@ class ChapterExamples {
         o1 = (@GuardedBy({}) MyClass) o2;
     }
 
-    static final Object myLock = new Object();
+    final static Object myLock = new Object();
 
     @GuardedBy("ChapterExamples.myLock") MyClass myMethod3() {
         return new MyClass();

@@ -70,8 +70,8 @@ public class CheckerDevelMain extends CheckerMain {
     }
 
     /**
-     * Construct all the relevant file locations and java version given the path to this jar and a
-     * set of directories in which to search for jars
+     * Construct all the relevant file locations and java version given the path to this jar and
+     * a set of directories in which to search for jars
      */
     public CheckerDevelMain(File searchPath, List<String> args) {
         super(searchPath, args);

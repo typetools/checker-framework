@@ -38,14 +38,16 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Transfer function for the non-null type system. Performs the following refinements:
- *
+ * Transfer function for the non-null type system. Performs the following
+ * refinements:
  * <ol>
- *   <li>After an expression is compared with the {@code null} literal, then that expression can
- *       safely be considered {@link NonNull} if the result of the comparison is false.
- *   <li>If an expression is dereferenced, then it can safely be assumed to non-null in the future.
- *       If it would not be, then the dereference would have raised a {@link NullPointerException}.
- *   <li>Tracks whether {@link PolyNull} is known to be {@link Nullable}.
+ * <li>After an expression is compared with the {@code null} literal, then that
+ * expression can safely be considered {@link NonNull} if the result of the
+ * comparison is false.
+ * <li>If an expression is dereferenced, then it can safely be assumed to
+ * non-null in the future. If it would not be, then the dereference would have
+ * raised a {@link NullPointerException}.
+ * <li>Tracks whether {@link PolyNull} is known to be {@link Nullable}.
  * </ol>
  *
  * @author Stefan Heule
@@ -76,15 +78,18 @@ public class NullnessTransfer
     }
 
     /**
-     * Sets a given {@link Node} to non-null in the given {@code store}. Calls to this method
-     * implement case 2.
+     * Sets a given {@link Node} to non-null in the given {@code store}. Calls
+     * to this method implement case 2.
      */
     protected void makeNonNull(NullnessStore store, Node node) {
         Receiver internalRepr = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
         store.insertValue(internalRepr, NONNULL);
     }
 
-    /** Sets a given {@link Node} {@code node} to non-null in the given {@link TransferResult}. */
+    /**
+     * Sets a given {@link Node} {@code node} to non-null in the given
+     * {@link TransferResult}.
+     */
     protected void makeNonNull(TransferResult<NullnessValue, NullnessStore> result, Node node) {
         if (result.containsTwoStores()) {
             makeNonNull(result.getThenStore(), node);
@@ -106,9 +111,10 @@ public class NullnessTransfer
     /**
      * {@inheritDoc}
      *
-     * <p>Furthermore, this method refines the type to {@code NonNull} for the appropriate branch if
-     * an expression is compared to the {@code null} literal (listed as case 1 in the class
-     * description).
+     * <p>
+     * Furthermore, this method refines the type to {@code NonNull} for the
+     * appropriate branch if an expression is compared to the {@code null}
+     * literal (listed as case 1 in the class description).
      */
     @Override
     protected TransferResult<NullnessValue, NullnessStore> strengthenAnnotationOfEqualTo(
@@ -292,7 +298,9 @@ public class NullnessTransfer
         }
     }
 
-    /** Creates a dummy abstract value (whose type is not supposed to be looked at). */
+    /**
+     * Creates a dummy abstract value (whose type is not supposed to be looked at).
+     */
     private NullnessValue createDummyValue() {
         TypeMirror dummy = analysis.getEnv().getTypeUtils().getPrimitiveType(TypeKind.BOOLEAN);
         Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();

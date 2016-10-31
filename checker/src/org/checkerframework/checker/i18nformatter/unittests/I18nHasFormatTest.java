@@ -16,11 +16,13 @@ public class I18nHasFormatTest {
         assertTrue(
                 I18nFormatUtil.hasFormat(
                         "{1} {0, date}",
-                        I18nConversionCategory.NUMBER, I18nConversionCategory.NUMBER));
+                        I18nConversionCategory.NUMBER,
+                        I18nConversionCategory.NUMBER));
         assertTrue(
                 I18nFormatUtil.hasFormat(
                         "{0} and {1,number}",
-                        I18nConversionCategory.GENERAL, I18nConversionCategory.NUMBER));
+                        I18nConversionCategory.GENERAL,
+                        I18nConversionCategory.NUMBER));
         assertTrue(
                 I18nFormatUtil.hasFormat(
                         "{1, number}",
@@ -54,7 +56,8 @@ public class I18nHasFormatTest {
         assertTrue(
                 I18nFormatUtil.hasFormat(
                         "{1} {1, date}",
-                        I18nConversionCategory.UNUSED, I18nConversionCategory.DATE));
+                        I18nConversionCategory.UNUSED,
+                        I18nConversionCategory.DATE));
         assertTrue(
                 I18nFormatUtil.hasFormat(
                         "{1, number} {1, date}",

@@ -17,7 +17,6 @@ import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * Converts type trees into AnnotatedTypeMirrors
- *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
 class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {

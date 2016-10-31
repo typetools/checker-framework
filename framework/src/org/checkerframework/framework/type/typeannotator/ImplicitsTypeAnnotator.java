@@ -20,21 +20,23 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Adds annotations to a type based on the contents of a type. By default, this class honors the
- * {@link ImplicitFor} annotation and applies implicit annotations specified by {@link ImplicitFor}
- * for any type whose visitor is not overridden or does not call {@code super}; it is designed to be
- * invoked from {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Element,
- * org.checkerframework.framework.type.AnnotatedTypeMirror)} and {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Tree,
- * org.checkerframework.framework.type.AnnotatedTypeMirror)}.
+ * Adds annotations to a type based on the contents of a type. By default, this
+ * class honors the {@link ImplicitFor} annotation and applies implicit
+ * annotations specified by {@link ImplicitFor} for any type whose visitor is
+ * not overridden or does not call {@code super}; it is designed to be invoked
+ * from
+ * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Element, org.checkerframework.framework.type.AnnotatedTypeMirror)}
+ * and
+ * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(Tree, org.checkerframework.framework.type.AnnotatedTypeMirror)}.
  *
- * <p>{@link ImplicitsTypeAnnotator} traverses types deeply by default, except that it skips the
- * method receiver of executable types (for interoperability with {@link
- * org.checkerframework.framework.type.AnnotatedTypeFactory#annotateInheritedFromClass(org.checkerframework.framework.type.AnnotatedTypeMirror)}).
+ * <p>
  *
- * <p>This class takes care of two of the attributes of {@link ImplicitFor}; the others are handled
- * in {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
+ * {@link ImplicitsTypeAnnotator} traverses types deeply by default, except that it skips
+ * the method receiver of executable types (for interoperability with
+ * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#annotateInheritedFromClass(org.checkerframework.framework.type.AnnotatedTypeMirror)}).
+ *
+ * This class takes care of two of the attributes of {@link ImplicitFor};
+ * the others are handled in {@link org.checkerframework.framework.type.treeannotator.TreeAnnotator}.
  *
  * @see org.checkerframework.framework.type.treeannotator.TreeAnnotator
  */
@@ -48,8 +50,8 @@ public class ImplicitsTypeAnnotator extends TypeAnnotator {
     // private final AnnotatedTypeFactory atypeFactory;
 
     /**
-     * Creates a {@link ImplicitsTypeAnnotator} from the given checker, using that checker to
-     * determine the annotations that are in the type hierarchy.
+     * Creates a {@link ImplicitsTypeAnnotator} from the given checker, using
+     * that checker to determine the annotations that are in the type hierarchy.
      */
     public ImplicitsTypeAnnotator(AnnotatedTypeFactory typeFactory) {
         super(typeFactory);

@@ -6,9 +6,11 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An identifier, followed by any number of array square brackets.
+ * An identifier,
+ * followed by any number of array square brackets.
  *
- * <p>Example: Foobar[][] Example: Baz22
+ * Example: Foobar[][]
+ * Example: Baz22
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

@@ -5,12 +5,12 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a method descriptor (JVM representation of method signature) as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.3">Java Virtual
- * Machine Specification, section 4.3.3</a>.
+ * Represents a method descriptor (JVM representation of method signature)
+ * as defined in the <a
+ * href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-4.html#jvms-4.3.3">Java Virtual Machine Specification, section 4.3.3</a>.
  *
- * <p>Example:
- *
+ * <p>
+ * Example:
  * <pre>
  *  package edu.cs.washington;
  *  public class BinaryName {
@@ -19,7 +19,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
  *    }
  *  }
  * </pre>
- *
  * In this example method descriptor for method 'method': (Ljava/lang/Object;I)Z
  *
  * @checker_framework.manual #signature-checker Signature Checker

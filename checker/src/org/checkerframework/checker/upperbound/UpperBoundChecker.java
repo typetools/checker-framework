@@ -6,7 +6,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 
 /**
- * A type-checker for preventing arrays from being accessed with values that are too high.
+ * A type-checker for preventing arrays from being accessed with
+ * values that are too high.
  *
  * @checker_framework.manual #index-checker Index Checker
  */

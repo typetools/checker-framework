@@ -6,7 +6,10 @@ import org.checkerframework.checker.nullness.AbstractNullnessChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** JUnit tests for the Nullness checker (that uses the rawness type system for initialization). */
+/**
+ * JUnit tests for the Nullness checker (that uses the rawness type system for
+ * initialization).
+ */
 public class NullnessRawnessTest extends CheckerFrameworkPerDirectoryTest {
 
     public NullnessRawnessTest(List<File> testFiles) {

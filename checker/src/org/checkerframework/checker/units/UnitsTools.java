@@ -22,7 +22,9 @@ import org.checkerframework.checker.units.qual.mol;
 import org.checkerframework.checker.units.qual.radians;
 import org.checkerframework.checker.units.qual.s;
 
-/** Utility methods to generate annotated types and to convert between them. */
+/**
+ * Utility methods to generate annotated types and to convert between them.
+ */
 @SuppressWarnings("units")
 
 // TODO: add fromTo methods for all useful unit combinations.

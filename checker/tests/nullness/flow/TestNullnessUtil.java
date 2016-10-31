@@ -1,7 +1,9 @@
 import org.checkerframework.checker.nullness.NullnessUtil;
 import org.checkerframework.checker.nullness.qual.*;
 
-/** Test class org.checkerframework.checker.nullness.NullnessUtil. */
+/**
+ * Test class org.checkerframework.checker.nullness.NullnessUtil.
+ */
 //@non-308-skip-test
 class TestNullnessUtil {
     void testRef1(@Nullable Object o) {

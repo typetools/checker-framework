@@ -31,24 +31,25 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Collection of classes and helper functions to represent Java expressions about which the
- * org.checkerframework.dataflow analysis can possibly infer facts. Expressions include:
- *
+ * Collection of classes and helper functions to represent Java expressions
+ * about which the org.checkerframework.dataflow analysis can possibly infer facts. Expressions
+ * include:
  * <ul>
- *   <li>Field accesses (e.g., <em>o.f</em>)
- *   <li>Local variables (e.g., <em>l</em>)
- *   <li>This reference (e.g., <em>this</em>)
- *   <li>Pure method calls (e.g., <em>o.m()</em>)
- *   <li>Unknown other expressions to mark that something else was present.
+ * <li>Field accesses (e.g., <em>o.f</em>)</li>
+ * <li>Local variables (e.g., <em>l</em>)</li>
+ * <li>This reference (e.g., <em>this</em>)</li>
+ * <li>Pure method calls (e.g., <em>o.m()</em>)</li>
+ * <li>Unknown other expressions to mark that something else was present.</li>
  * </ul>
  *
  * @author Stefan Heule
+ *
  */
 public class FlowExpressions {
 
     /**
-     * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
-     *     Can contain {@link Unknown} as receiver.
+     * @return the internal representation (as {@link FieldAccess}) of a
+     *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
      */
     public static FieldAccess internalReprOfFieldAccess(
             AnnotationProvider provider, FieldAccessNode node) {
@@ -63,8 +64,8 @@ public class FlowExpressions {
     }
 
     /**
-     * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
-     *     Can contain {@link Unknown} as receiver.
+     * @return the internal representation (as {@link FieldAccess}) of a
+     *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
      */
     public static ArrayAccess internalReprOfArrayAccess(
             AnnotationProvider provider, ArrayAccessNode node) {
@@ -74,22 +75,22 @@ public class FlowExpressions {
     }
 
     /**
-     * We ignore operations such as widening and narrowing when computing the internal
-     * representation.
+     * We ignore operations such as widening and
+     * narrowing when computing the internal representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any {@link Node}. Might contain
-     *     {@link Unknown}.
+     * @return the internal representation (as {@link Receiver}) of any
+     *         {@link Node}. Might contain {@link Unknown}.
      */
     public static Receiver internalReprOf(AnnotationProvider provider, Node receiverNode) {
         return internalReprOf(provider, receiverNode, false);
     }
 
     /**
-     * We ignore operations such as widening and narrowing when computing the internal
-     * representation.
+     * We ignore operations such as widening and
+     * narrowing when computing the internal representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any {@link Node}. Might contain
-     *     {@link Unknown}.
+     * @return the internal representation (as {@link Receiver}) of any
+     *         {@link Node}. Might contain {@link Unknown}.
      */
     public static Receiver internalReprOf(
             AnnotationProvider provider, Node receiverNode, boolean allowNonDeterministic) {
@@ -179,7 +180,7 @@ public class FlowExpressions {
         return receiver;
     }
 
-    public abstract static class Receiver {
+    public static abstract class Receiver {
         protected final TypeMirror type;
 
         public Receiver(TypeMirror type) {
@@ -198,32 +199,38 @@ public class FlowExpressions {
         }
 
         /**
-         * Returns true if and only if the value this expression stands for cannot be changed by a
-         * method call. This is the case for local variables, the self reference as well as final
-         * field accesses for whose receiver {@link #isUnmodifiableByOtherCode} is true.
+         * Returns true if and only if the value this expression stands for
+         * cannot be changed by a method call. This is the case for local
+         * variables, the self reference as well as final field accesses for
+         * whose receiver {@link #isUnmodifiableByOtherCode} is true.
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
-        /** @return true if and only if the two receiver are syntactically identical */
+        /**
+         * @return true if and only if the two receiver are syntactically
+         *         identical
+         */
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
 
         /**
-         * @return true if and only if this receiver contains a receiver that is syntactically equal
-         *     to {@code other}.
+         * @return true if and only if this receiver contains a receiver that is
+         *         syntactically equal to {@code other}.
          */
         public boolean containsSyntacticEqualReceiver(Receiver other) {
             return syntacticEquals(other);
         }
 
         /**
-         * Returns true if and only if {@code other} appears anywhere in this receiver or an
-         * expression appears in this receiver such that {@code other} might alias this expression,
-         * and that expression is modifiable.
+         * Returns true if and only if {@code other} appears anywhere in this
+         * receiver or an expression appears in this receiver such that
+         * {@code other} might alias this expression, and that expression is
+         * modifiable.
          *
-         * <p>This is always true, except for cases where the Java type information prevents
-         * aliasing and none of the subexpressions can alias 'other'.
+         * <p>
+         * This is always true, except for cases where the Java type information
+         * prevents aliasing and none of the subexpressions can alias 'other'.
          */
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return this.equals(other) || store.canAlias(this, other);
@@ -356,8 +363,8 @@ public class FlowExpressions {
     }
 
     /**
-     * A ClassName represents the occurrence of a class as part of a static field access or method
-     * invocation.
+     * A ClassName represents the occurrence of a class as part of a static
+     * field access or method invocation.
      */
     public static class ClassName extends Receiver {
         public ClassName(TypeMirror type) {
@@ -576,7 +583,9 @@ public class FlowExpressions {
         }
     }
 
-    /** A method call. */
+    /**
+     * A method call.
+     */
     public static class MethodCall extends Receiver {
 
         protected final Receiver receiver;
@@ -610,20 +619,23 @@ public class FlowExpressions {
             return false;
         }
 
-        /** @return the method call receiver (for inspection only - do not modify) */
+        /**
+         * @return the method call receiver (for inspection only - do not modify)
+         */
         public Receiver getReceiver() {
             return receiver;
         }
 
         /**
-         * @return the method call parameters (for inspection only - do not modify any of the
-         *     parameters)
+         * @return the method call parameters (for inspection only - do not modify any of the parameters)
          */
         public List<Receiver> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
 
-        /** @return the ExecutableElement for the method call */
+        /**
+         * @return the ExecutableElement for the method call
+         */
         public ExecutableElement getElement() {
             return method;
         }
@@ -728,7 +740,9 @@ public class FlowExpressions {
         }
     }
 
-    /** A deterministic method call. */
+    /**
+     * A deterministic method call.
+     */
     public static class ArrayAccess extends Receiver {
 
         protected final Receiver receiver;

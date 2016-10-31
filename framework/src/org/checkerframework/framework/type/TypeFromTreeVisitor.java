@@ -5,10 +5,10 @@ import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * Converts a Tree into an AnnotatedTypeMirror. This class is abstract and provides 2 important
- * properties to subclasses: 1) It implements SimpleTreeVisitor with the appropriate type parameters
- * 2) It provides a defaultAction that causes all visit methods to abort if the subclass does not
- * override them
+ * Converts a Tree into an AnnotatedTypeMirror.  This class is abstract and provides 2 important properties
+ * to subclasses:
+ *   1) It implements SimpleTreeVisitor with the appropriate type parameters
+ *   2) It provides a defaultAction that causes all visit methods to abort if the subclass does not override them
  *
  * @see org.checkerframework.framework.type.TypeFromTree
  */

@@ -10,7 +10,9 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
-/** Created by jburke on 9/29/14. */
+/**
+ * Created by jburke on 9/29/14.
+ */
 public class UpperBoundQual {
 
     @DefaultQualifierInHierarchy

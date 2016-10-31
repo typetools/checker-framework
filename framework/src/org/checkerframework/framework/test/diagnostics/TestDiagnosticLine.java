@@ -3,7 +3,9 @@ package org.checkerframework.framework.test.diagnostics;
 import java.util.List;
 import org.checkerframework.framework.util.PluginUtil;
 
-/** Represents an entire line of TestDiagnostics which is essentially a list of diagnostics */
+/**
+ * Represents an entire line of TestDiagnostics which is essentially a list of diagnostics
+ */
 public class TestDiagnosticLine {
     private final String filename;
     private final long lineNumber;
@@ -38,9 +40,8 @@ public class TestDiagnosticLine {
     }
 
     /**
-     * @return a String representation of how this diagnostic should appear in source. This may
-     *     differ from the original line if there was no original line, the original line had
-     *     extraneous whitespace
+     * @return a String representation of how this diagnostic should appear in source.  This may differ
+     * from the original line if there was no original line, the original line had extraneous whitespace
      */
     public String asSourceString() {
         return "//:: "

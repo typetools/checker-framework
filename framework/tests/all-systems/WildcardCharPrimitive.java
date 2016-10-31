@@ -3,7 +3,7 @@ class WildcardCharPrimitive {
         boolean apply(T t);
     }
 
-    abstract static class Matcher {
+    static abstract class Matcher {
 
         public abstract boolean matches(char character);
     }

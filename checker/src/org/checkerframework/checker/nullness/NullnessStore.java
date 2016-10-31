@@ -8,8 +8,8 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 
 /**
- * Behaves like {@link InitializationStore}, but additionally tracks whether {@link PolyNull} is
- * known to be {@link Nullable}.
+ * Behaves like {@link InitializationStore}, but additionally tracks whether
+ * {@link PolyNull} is known to be {@link Nullable}.
  *
  * @author Stefan Heule
  */

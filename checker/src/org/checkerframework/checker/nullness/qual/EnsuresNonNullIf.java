@@ -9,43 +9,43 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * Indicates that the given expressions are non-null, if the method returns the given result (either
- * true or false).
+ * Indicates that the given expressions are non-null,
+ * if the method returns the given result (either true or false).
+ * <p>
  *
- * <p>Here are ways this conditional postcondition annotation can be used:
+ * Here are ways this conditional postcondition annotation can be used:
+ * <p>
  *
- * <p><b>Method parameters:</b> A common example is that the {@code equals} method is annotated as
- * follows:
- *
+ * <b>Method parameters:</b>
+ * A common example is that the {@code equals} method is annotated as follows:
  * <pre>{@code    @EnsuresNonNullIf(expression="#1", result=true)
  *   public boolean equals(@Nullable Object obj) { ... }}</pre>
+ * because, if {@code equals} returns true, then the first (#1) argument to
+ * {@code equals} was not null.
+ * <p>
  *
- * because, if {@code equals} returns true, then the first (#1) argument to {@code equals} was not
- * null.
- *
- * <p><b>Fields:</b> The value expressions can refer to fields, even private ones. For example:
- *
+ * <b>Fields:</b>
+ * The value expressions can refer to fields, even private ones.  For example:
  * <pre>{@code    @EnsuresNonNullIf(expression="this.derived", result=true)
  *   public boolean isDerived() {
  *     return (this.derived != null);
  *   }}</pre>
- *
- * As another example, an {@code Iterator} may cache the next value that will be returned, in which
- * case its {@code hasNext} method could be annotated as:
- *
+ * As another example, an {@code Iterator} may cache the next value that
+ * will be returned, in which case its {@code hasNext} method could be
+ * annotated as:
  * <pre>{@code    @EnsuresNonNullIf(expression="next_cache", result=true)
  *   public boolean hasNext() {
  *     if (next_cache == null) return false;
  *     ...
  *   }}</pre>
+ * An {@code EnsuresNonNullIf} annotation that refers to a private field is
+ * useful for verifying that client code performs needed checks in the right
+ * order, even if the client code cannot directly affect the field.
+ * <p>
  *
- * An {@code EnsuresNonNullIf} annotation that refers to a private field is useful for verifying
- * that client code performs needed checks in the right order, even if the client code cannot
- * directly affect the field.
- *
- * <p><b>Method calls:</b> If {@link Class#isArray()} returns true, then {@link
- * Class#getComponentType()} returns non-null. You can express this relationship as:
- *
+ * <b>Method calls:</b>
+ * If {@link Class#isArray()} returns true, then {@link Class#getComponentType()}
+ * returns non-null.  You can express this relationship as:
  * <pre>{@code    @EnsuresNonNullIf(expression="getComponentType()", result=true)
  *   public native @Pure boolean isArray();}</pre>
  *
@@ -61,12 +61,15 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @InheritedAnnotation
 public @interface EnsuresNonNullIf {
     /**
-     * Java expression(s) that are non-null after the method returns the given result.
-     *
+     * Java expression(s) that are non-null after the method returns the
+     * given result.
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     String[] expression();
 
-    /** The return value of the method that needs to hold for the postcondition to hold. */
+    /**
+     * The return value of the method that needs to hold for the postcondition
+     * to hold.
+     */
     boolean result();
 }

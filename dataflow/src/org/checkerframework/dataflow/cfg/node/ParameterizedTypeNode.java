@@ -14,12 +14,14 @@ import org.checkerframework.javacutil.InternalUtils;
  *   <em>type&lt;arg1, arg2&gt;</em>
  * </pre>
  *
- * Parameterized types don't represent any computation to be done at runtime, so we might choose to
- * represent them differently by modifying the {@link Node}s in which parameterized types can occur,
- * such as {@link ObjectCreationNode}s.
+ * Parameterized types don't represent any computation to be done
+ * at runtime, so we might choose to represent them differently by
+ * modifying the {@link Node}s in which parameterized types can occur, such
+ * as {@link ObjectCreationNode}s.
  *
  * @author Stefan Heule
  * @author Charlie Garrett
+ *
  */
 public class ParameterizedTypeNode extends Node {
 

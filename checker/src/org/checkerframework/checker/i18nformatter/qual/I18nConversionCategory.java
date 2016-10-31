@@ -6,22 +6,22 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Elements of this enumeration are used in a {@link I18nFormat} annotation to indicate the valid
- * types that may be passed as a format parameter. For example:
+ * Elements of this enumeration are used in a {@link I18nFormat} annotation
+ * to indicate the valid types that may be passed as a format parameter.
+ * For example:
  *
  * <blockquote>
- *
  * <pre>{@literal @}I18nFormat({I18nConversionCategory.GENERAL, I18nConversionCategory.NUMBER})
  * String f = "{0}{1, number}";
  * MessageFormat.format(f, "Example", 0) // valid</pre>
- *
  * </blockquote>
  *
- * The annotation indicates that the format string requires any object as the first parameter
- * ({@link I18nConversionCategory#GENERAL}) and a number as the second parameter ({@link
- * I18nConversionCategory#NUMBER}).
+ * The annotation indicates that the format string requires any object as the
+ * first parameter ({@link I18nConversionCategory#GENERAL}) and a number as the
+ * second parameter ({@link I18nConversionCategory#NUMBER}).
  *
- * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
+ * @checker_framework.manual #i18n-formatter-checker Internationalization
+ *                           Format String Checker
  * @author Siwakorn Srisakaokul
  */
 public enum I18nConversionCategory {
@@ -33,24 +33,31 @@ public enum I18nConversionCategory {
      * MessageFormat.format(&quot;{1}&quot;, a, b);
      * </pre>
      *
-     * Only the second argument ("b") is used. The first argument ("a") is ignored
+     * Only the second argument ("b") is used. The first argument ("a") is
+     * ignored
      */
     UNUSED(null /* everything */, null),
 
-    /** Use if the parameter can be of any type. */
+    /**
+     * Use if the parameter can be of any type.
+     */
     GENERAL(null /* everything */, null),
 
-    /** Use if the parameter can be of date, time, or number types */
+    /**
+     * Use if the parameter can be of date, time, or number types
+     */
     DATE(new Class<?>[] {Date.class, Number.class}, new String[] {"date", "time"}),
 
     /**
-     * Use if the parameter can be of number or choice types. An example of choice:
+     * Use if the parameter can be of number or choice types.
+     * An example of choice:
      *
      * <pre>{@code
      * format("{0, choice, 0#zero|1#one|1<{0, number} is more than 1}", 2)
      * }</pre>
      *
      * This will print "2 is more than 1".
+     *
      */
     NUMBER(new Class<?>[] {Number.class}, new String[] {"number", "choice"});
 
@@ -63,8 +70,6 @@ public enum I18nConversionCategory {
     }
 
     /**
-     *
-     *
      * <pre>
      * I18nConversionCategory.stringToI18nConversionCategory("number") == I18nConversionCategory.NUMBER;
      * </pre>
@@ -87,7 +92,9 @@ public enum I18nConversionCategory {
         return new HashSet<E>(Arrays.asList(a));
     }
 
-    /** @return true if a is a subset of b */
+    /**
+     * @return true if a is a subset of b
+     */
     public static boolean isSubsetOf(I18nConversionCategory a, I18nConversionCategory b) {
         return intersect(a, b) == a;
     }
@@ -155,7 +162,9 @@ public enum I18nConversionCategory {
         return NUMBER;
     }
 
-    /** Returns a pretty printed {@link I18nConversionCategory}. */
+    /**
+     * Returns a pretty printed {@link I18nConversionCategory}.
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(this.name());

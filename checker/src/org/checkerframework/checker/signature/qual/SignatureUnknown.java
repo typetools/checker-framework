@@ -6,9 +6,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Top qualifier in the type hierarchy.
+ * <p>
  *
- * <p>This annotation may not be written in source code; it is an implementation detail of the
- * checker.
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

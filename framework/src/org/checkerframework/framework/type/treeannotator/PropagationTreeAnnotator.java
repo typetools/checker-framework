@@ -18,14 +18,14 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting type is a function
- * of an input type, e.g. the result of a binary operation is a LUB of the type of expressions in
- * the binary operation.
+ * {@link PropagationTreeAnnotator} adds qualifiers to types where the resulting
+ * type is a function of an input type, e.g. the result of a binary operation
+ * is a LUB of the type of expressions in the binary operation.
  *
- * <p>{@link PropagationTreeAnnotator} is generally ran first by {@link ListTreeAnnotator} since the
- * trees it handles are not usually targets of @implicit for.
+ * {@link PropagationTreeAnnotator} is generally ran first by {@link ListTreeAnnotator}
+ * since the trees it handles are not usually targets of @implicit for.
  *
- * <p>{@link PropagationTreeAnnotator} does not traverse trees deeply by default.
+ * {@link PropagationTreeAnnotator} does not traverse trees deeply by default.
  *
  * @see TreeAnnotator
  */
@@ -34,8 +34,8 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     private final QualifierHierarchy qualHierarchy;
 
     /**
-     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
-     * from the given checker, using that checker's type hierarchy.
+     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator} from the given checker, using that checker's
+     * type hierarchy.
      */
     public PropagationTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);

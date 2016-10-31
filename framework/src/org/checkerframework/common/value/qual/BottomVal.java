@@ -10,8 +10,8 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the Constant Value qualifier hierarchy. It means that the value always
- * has the value null or that the expression is dead code.
+ * Represents the bottom of the Constant Value qualifier hierarchy.  It means that
+ * the value always has the value null or that the expression is dead code.
  *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */

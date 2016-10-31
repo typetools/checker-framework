@@ -10,10 +10,10 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The bottom of the GuardedBy qualifier hierarchy. If a variable {@code x} has type
- * {@code @GuardedByBottom}, then the value referred to by {@code x} is {@code null} and can never
+ * The bottom of the GuardedBy qualifier hierarchy.
+ * If a variable {@code x} has type {@code @GuardedByBottom}, then
+ * the value referred to by {@code x} is {@code null} and can never
  * be dereferenced.
- *
  * <p>
  *
  * @checker_framework.manual #lock-checker Lock Checker

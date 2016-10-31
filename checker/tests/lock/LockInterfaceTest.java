@@ -11,7 +11,7 @@ class LockInterfaceTest {
 
     static final Lock myStaticLock = new ReentrantLock(true);
 
-    private static final Date x = new Date((long) (System.currentTimeMillis() * Math.random()));
+    private final static Date x = new Date((long) (System.currentTimeMillis() * Math.random()));
 
     @Holding("myStaticLock")
     @ReleasesNoLocks

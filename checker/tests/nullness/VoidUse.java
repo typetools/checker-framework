@@ -1,3 +1,4 @@
+import com.sun.source.tree.Tree;
 import org.checkerframework.checker.nullness.qual.*;
 
 public class VoidUse {
@@ -17,7 +18,7 @@ public class VoidUse {
 
     // Void is treated as Nullable.  Is there a value on having it be
     // NonNull?
-    public abstract static class VoidTestNode<T extends Object> {}
+    public static abstract class VoidTestNode<T extends Object> {}
 
     public static class VoidTestInvNode extends VoidTestNode<@NonNull Void> {}
 

@@ -32,31 +32,33 @@ import org.checkerframework.javacutil.TypesUtils;
  * An implementation of an abstract value used by the Checker Framework
  * org.checkerframework.dataflow analysis.
  *
- * <p>A value holds a set of annotations and a type mirror. The set of annotations represents the
- * primary annotation on a type; therefore, the set of annotations must have an annotation for each
- * hierarchy unless the type mirror is a type variable or a wildcard that extends a type variable.
- * Both type variables and wildcards may be missing a primary annotation. For this set of
- * annotations, there is an additional constraint that only wildcards that extend type variables can
- * be missing annotations.
+ * A value holds a set of annotations and a type mirror.  The set of annotations represents the
+ * primary annotation on a type; therefore, the set of annotations must have an annotation for
+ * each hierarchy unless the type mirror is a type variable or a wildcard that extends a type
+ * variable. Both type variables and wildcards may be missing a primary annotation.  For this set
+ * of annotations, there is an additional constraint that only wildcards that extend type
+ * variables can be missing annotations.
  *
- * <p>In order to compute {@link #leastUpperBound(CFAbstractValue)} and {@link
- * #mostSpecific(CFAbstractValue, CFAbstractValue)}, the case where one value has an annotation in a
- * hierarchy and the other does not must be handled. For type variables, the {@link
- * AnnotatedTypeVariable} for the declaration of the type variable is used. The {@link
- * AnnotatedTypeVariable} is computed using the type mirror. For wildcards, it is not always
- * possible to get the {@link AnnotatedWildcardType} for the type mirror. However, a
+ * In order to compute {@link #leastUpperBound(CFAbstractValue)} and
+ * {@link #mostSpecific(CFAbstractValue, CFAbstractValue)}, the case where one value has an
+ * annotation in a hierarchy and the other does not must be handled.  For type variables, the
+ * {@link AnnotatedTypeVariable} for the declaration of the type variable is used.  The
+ * {@link AnnotatedTypeVariable} is computed using the type mirror.  For wildcards, it is not
+ * always possible to get the {@link AnnotatedWildcardType} for the type mirror.  However, a
  * CFAbstractValue's type mirror is only a wildcard if the type of some expression is a wildcard.
  * The type of an expression is only a wildcard because the Checker Framework does not implement
- * capture conversion. For these uses of uncaptured wildcards, only the primary annotation on the
- * upper bound is ever used. So, the set of annotations represents the primary annotation on the
- * wildcard's upper bound. If that upper bound is a type variable, then the set of annotations could
- * be missing an annotation in a hierarchy.
+ * capture conversion.  For these uses of uncaptured wildcards, only
+ * the primary annotation on the upper bound is ever used.  So, the set of annotations represents
+ * the primary annotation on the wildcard's upper bound.  If that upper bound is a type variable,
+ * then the set of annotations could be missing an annotation in a hierarchy.
  *
  * @author Stefan Heule
  */
 public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements AbstractValue<V> {
 
-    /** The analysis class this value belongs to. */
+    /**
+     * The analysis class this value belongs to.
+     */
     protected final CFAbstractAnalysis<V, ?, ?> analysis;
 
     protected final TypeMirror underlyingType;
@@ -103,7 +105,6 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     /**
      * Returns whether or not the set of annotations can be missing an annotation for any hierarchy
-     *
      * @return whether or not the set of annotations can be missing an annotation
      */
     public boolean canBeMissingAnnotations() {
@@ -126,9 +127,8 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     }
 
     /**
-     * Returns a set of annotations. If {@link #canBeMissingAnnotations()} returns true, then the
-     * set of annotations may not have an annotation for every hierarchy.
-     *
+     * Returns a set of annotations.  If {@link #canBeMissingAnnotations()} returns true, then
+     * the set of annotations may not have an annotation for every hierarchy.
      * @return Returns a set of annotations
      */
     @Pure
@@ -163,7 +163,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
         return HashCodeUtils.hash(objects);
     }
 
-    /** @return the string representation as a comma-separated list */
+    /**
+     * @return the string representation as a comma-separated list
+     */
     @SideEffectFree
     @Override
     public String toString() {
@@ -180,9 +182,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
      * not contain information for all hierarchies, then it is possible that information from both
      * {@code this} and {@code other} are taken.
      *
-     * <p>If neither of the two is more specific for one of the hierarchies (i.e., if the two are
-     * incomparable as determined by {@link QualifierHierarchy#isSubtype(AnnotationMirror,
-     * AnnotationMirror)}, then the respective value from {@code backup} is used.
+     * <p> If neither of the two is more specific for one of the hierarchies (i.e., if the two are
+     * incomparable as determined by {@link QualifierHierarchy#isSubtype(AnnotationMirror, AnnotationMirror)},
+     * then the respective value from {@code backup} is used.
      */
     public V mostSpecific(/*@Nullable*/ V other, /*@Nullable*/ V backup) {
         if (other == null) {
@@ -397,7 +399,7 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
 
     /**
      * Iterates through two sets of AnnotationMirrors by hierarchy and calls one of three methods
-     * depending on whether an annotation exists for the hierarchy in each set. Also, passes a
+     * depending on whether an annotation exists for the hierarchy in each set.  Also, passes a
      * {@link AnnotatedTypeVariable} if an annotation does not exist.
      */
     protected abstract class AnnotationSetAndTypeMirrorVisitor {
@@ -452,9 +454,9 @@ public abstract class CFAbstractValue<V extends CFAbstractValue<V>> implements A
     /**
      * Returns the AnnotatedTypeVariable associated with the given TypeMirror or null.
      *
-     * <p>If TypeMirror is a type variable, then the AnnotatedTypeVariable return is the declaration
+     * If TypeMirror is a type variable, then the AnnotatedTypeVariable return is the declaration
      * of that TypeMirror. If the TypeMirror is a wildcard that extends a type variable, the
-     * AnnotatedTypeVariable return is the declaration of that type variable. Otherwise, null is
+     * AnnotatedTypeVariable return is the declaration of that type variable.  Otherwise, null is
      * returned.
      */
     private AnnotatedTypeVariable getEffectTypeVar(TypeMirror typeMirror) {

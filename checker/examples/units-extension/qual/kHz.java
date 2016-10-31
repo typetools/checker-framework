@@ -10,7 +10,9 @@ import org.checkerframework.checker.units.qual.UnitsMultiple;
 import org.checkerframework.checker.units.qual.UnitsRelations;
 import org.checkerframework.framework.qual.SubtypeOf;
 
-/** Kilohertz (kHz), a unit of frequency, and an alias of @Hz(Prefix.kilo). */
+/**
+ * Kilohertz (kHz), a unit of frequency, and an alias of @Hz(Prefix.kilo).
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

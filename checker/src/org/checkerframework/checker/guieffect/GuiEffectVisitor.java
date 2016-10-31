@@ -27,7 +27,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Require that only UI code invokes code with the UI effect. */
+/**
+ * Require that only UI code invokes code with the UI effect.
+ */
 public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     protected final boolean debugSpew;

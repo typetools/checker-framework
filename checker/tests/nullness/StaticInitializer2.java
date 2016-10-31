@@ -3,6 +3,7 @@
 // https://github.com/typetools/checker-framework/issues/353
 // There are also a couple of tests commented out in checker/tests/nullness/java8/lambda/Initialization.java
 
+import java.util.ArrayList;
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 

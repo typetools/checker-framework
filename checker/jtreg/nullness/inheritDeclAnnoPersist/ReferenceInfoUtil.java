@@ -5,11 +5,14 @@
 import com.sun.tools.classfile.Annotation;
 import com.sun.tools.classfile.Attribute;
 import com.sun.tools.classfile.ClassFile;
+import com.sun.tools.classfile.Code_attribute;
 import com.sun.tools.classfile.ConstantPool.InvalidIndex;
 import com.sun.tools.classfile.ConstantPool.UnexpectedEntry;
 import com.sun.tools.classfile.Method;
 import com.sun.tools.classfile.RuntimeAnnotations_attribute;
+import com.sun.tools.classfile.TypeAnnotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ReferenceInfoUtil {
@@ -30,8 +33,8 @@ public class ReferenceInfoUtil {
     }
 
     /**
-     * Test the result of Attributes.getIndex according to expectations encoded in the method's
-     * name.
+     * Test the result of Attributes.getIndex according to expectations
+     * encoded in the method's name.
      */
     private static void findAnnotations(
             ClassFile cf, Method m, String name, List<Annotation> annos) {

@@ -2,10 +2,17 @@ package org.checkerframework.checker.upperbound;
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
@@ -18,6 +25,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -30,28 +38,33 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Implements the introduction rules for the upper bound checker. Works primarily by way of querying
- * the minLen checker and comparing the min lengths of arrays to the known values of variables as
- * supplied by the value checker.
+ * Implements the introduction rules for the upper bound checker.
+ * Works primarily by way of querying the minLen checker
+ * and comparing the min lengths of arrays to the known values
+ * of variables as supplied by the value checker.
  */
 public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    /** Easy shorthand for UpperBoundUnknown.class, basically. */
+    /**
+     *  Easy shorthand for UpperBoundUnknown.class, basically.
+     */
     public static AnnotationMirror UNKNOWN;
 
     /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
+     *  Provides a way to query the Constant Value Checker, which computes the
+     *  values of expressions known at compile time (constant prop + folding).
      */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
     /**
-     * Provides a way to query the Min Len (minimum length) Checker, which computes the lengths of
-     * arrays.
+     *  Provides a way to query the Min Len (minimum length) Checker,
+     *  which computes the lengths of arrays.
      */
     private final MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory;
 
-    /** We need this to make an AnnotationBuilder for some reason. */
+    /**
+     *  We need this to make an AnnotationBuilder for some reason.
+     */
     protected static ProcessingEnvironment env;
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -65,8 +78,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Queries the MinLen Checker to determine if there is a known minimum length for the array. If
-     * not, returns null.
+     *  Queries the MinLen Checker to determine if there
+     *  is a known minimum length for the array. If not,
+     *  returns null.
      */
     public Integer minLenFromExpressionTree(ExpressionTree tree) {
         AnnotatedTypeMirror minLenType = minLenAnnotatedTypeFactory.getAnnotatedType(tree);
@@ -75,7 +89,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return minLen;
     }
 
-    /** Get the list of possible values from a value checker type. May return null. */
+    /**
+     *  Get the list of possible values from a value checker type.
+     *  May return null.
+     */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
         AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
         if (anm == null) {
@@ -85,10 +102,12 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If the argument valueType indicates that the Constant Value Checker knows the exact value of
-     * the annotated expression, returns that integer. Otherwise returns null. This method should
-     * only be used by clients who need exactly one value - such as the binary operator rules - and
-     * not by those that need to know whether a valueType belongs to a qualifier.
+     * If the argument valueType indicates that the Constant Value
+     * Checker knows the exact value of the annotated expression,
+     * returns that integer.  Otherwise returns null. This method
+     * should only be used by clients who need exactly one value -
+     * such as the binary operator rules - and not by those that
+     * need to know whether a valueType belongs to a qualifier.
      */
     private Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
@@ -99,7 +118,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Finds the maximum value in the set of values represented by a value checker annotation. */
+    /**
+     *  Finds the maximum value in the set of values represented
+     *  by a value checker annotation.
+     */
     public Integer valMaxFromExpressionTree(ExpressionTree tree) {
         /*  It's possible that possibleValues could be null (if
          *  there was no value checker annotation, I guess, but this
@@ -181,11 +203,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * The qualifier hierarchy for the upperbound type system. The qh is responsible for determining
-     * the relationships within the qualifiers - especially subtyping relations.
+     * The qualifier hierarchy for the upperbound type system.
+     * The qh is responsible for determining the relationships
+     * within the qualifiers - especially subtyping relations.
      */
     private final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
-        /** @param factory MultiGraphFactory to use to construct this */
+        /**
+         * @param factory
+         *            MultiGraphFactory to use to construct this
+         */
         public UpperBoundQualifierHierarchy(
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
@@ -209,9 +235,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Determines the least upper bound of a1 and a2. If a1 and a2 are both the same type of
-         * Value annotation, then the LUB is the result of taking all values from both a1 and a2 and
-         * removing duplicates.
+         * Determines the least upper bound of a1 and a2. If a1 and a2 are both
+         * the same type of Value annotation, then the LUB is the result of
+         * taking all values from both a1 and a2 and removing duplicates.
          *
          * @return the least upper bound of a1 and a2
          */
@@ -238,9 +264,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
-         * annotations are the same. In this case, rhs is a subtype of lhs iff lhs contains at least
-         * every element of rhs.
+         * Computes subtyping as per the subtyping in the qualifier hierarchy
+         * structure unless both annotations are the same. In this case, rhs is a
+         * subtype of lhs iff lhs contains at least every element of rhs.
          *
          * @return true if rhs is a subtype of lhs, false otherwise.
          */
@@ -318,10 +344,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * This exists specifically for Math.min. We need to special case Math.min because it has
-         * unusual semantics: it can be used to combine annotations for the UBC, so it needs to be
-         * special cased. Do not special case other methods here unless you have a compelling reason
-         * to do so.
+         *  This exists specifically for Math.min.
+         *  We need to special case Math.min because it has unusual
+         *  semantics: it can be used to combine annotations for the UBC,
+         *  so it needs to be special cased. Do not special case other
+         *  methods here unless you have a compelling reason to do so.
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
@@ -411,10 +438,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return;
         }
 
-        /**
-         * addAnnotationForPlus handles the following cases:
-         *
-         * <pre>
+        /** addAnnotationForPlus handles the following cases:
+         *  <pre>
          *      lit 0 + * &rarr; *
          *      lit 1 + LTL &rarr; LTEL
          *      LTL,EL,LTEL + negative lit &rarr; LTL
@@ -449,10 +474,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Implements two rules: 1. If there is a literal on the right side of a subtraction, call
-         * our literal add method, replacing the literal with the literal times negative one. 2.
-         * Since EL implies that the number is either positive or zero, subtracting it from
-         * something that's already LTL or EL always implies LTL, and from LTEL implies LTEL.
+         *  Implements two rules:
+         *  1. If there is a literal on the right side of a subtraction, call our literal add method,
+         *     replacing the literal with the literal times negative one.
+         *  2. Since EL implies that the number is either positive or zero, subtracting it from
+         *     something that's already LTL or EL always implies LTL, and from LTEL implies LTEL.
          */
         private void addAnnotationForMinus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {

@@ -15,24 +15,32 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 
 /**
- * A TypeVisitor that visits all the child tree nodes. To visit types of a particular type, just
- * override the corresponding visitXYZ method. Inside your method, call super.visitXYZ to visit
- * descendant nodes.
+ * A TypeVisitor that visits all the child tree nodes. To visit types
+ * of a particular type, just override the corresponding visitXYZ
+ * method. Inside your method, call super.visitXYZ to visit descendant
+ * nodes.
+ * <p>
  *
- * <p>The default implementation of the visitXYZ methods will determine a result as follows:
+ * The default implementation of the visitXYZ methods will determine a
+ * result as follows:
  *
  * <ul>
- *   <li>If the node being visited has no children, the result will be null.
- *   <li>If the node being visited has one child, the result will be the result of calling scan on
- *       that child. The child may be a simple node or itself a list of nodes.
- *   <li>If the node being visited has more than one child, the result will be determined by calling
- *       scan each child in turn, and then combining the result of each scan after the first with
- *       the cumulative result so far, as determined by the reduce(R, R) method. Each child may be
- *       either a simple node or a list of nodes. The default behavior of the reduce method is such
- *       that the result of the visitXYZ method will be the result of the last child scanned.
+ *   <li>If the node being visited has no children, the result will be null.</li>
+ *   <li>If the node being visited has one child, the result will be the
+ *     result of calling scan on that child. The child may be a simple
+ *     node or itself a list of nodes.</li>
+ *   <li>If the node being visited has more
+ *     than one child, the result will be determined by calling scan each
+ *     child in turn, and then combining the result of each scan after the
+ *     first with the cumulative result so far, as determined by the
+ *     reduce(R, R) method. Each child may be either a simple node or a
+ *     list of nodes. The default behavior of the reduce method is such
+ *     that the result of the visitXYZ method will be the result of the
+ *     last child scanned.</li>
  * </ul>
  *
- * Here is an example to count the parameter types number of nodes in a tree:
+ * Here is an example to count the parameter types number of nodes in
+ * a tree:
  *
  * <pre>
  * class CountTypeVariable extends TreeScanner {
@@ -49,11 +57,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  * }
  * </pre>
  *
- * @param <R> the return type of this visitor's methods. Use Void for visitors that do not need to
- *     return results.
- * @param
- *     <p>the type of the additional parameter to this visitor's methods. Use Void for visitors that
- *     do not need an additional parameter.
+ * @param <R>
+ *            the return type of this visitor's methods. Use Void for
+ *            visitors that do not need to return results.
+ * @param <P>
+ *            the type of the additional parameter to this visitor's
+ *            methods. Use Void for visitors that do not need an
+ *            additional parameter.
  */
 public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
 
@@ -62,8 +72,9 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
             new IdentityHashMap<AnnotatedTypeMirror, R>();
 
     /**
-     * Reset the scanner to allow reuse of the same instance. Subclasses should override this method
-     * to clear their additional state; they must call the super implementation.
+     * Reset the scanner to allow reuse of the same instance.
+     * Subclasses should override this method to clear their additional
+     * state; they must call the super implementation.
      */
     public void reset() {
         visitedNodes.clear();
@@ -81,8 +92,8 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
     }
 
     /**
-     * Processes an element by calling e.accept(this, p); this method may be overridden by
-     * subclasses.
+     * Processes an element by calling e.accept(this, p); this method
+     * may be overridden by subclasses.
      *
      * @return the result of visiting {@code type}
      */
@@ -91,8 +102,8 @@ public class AnnotatedTypeScanner<R, P> implements AnnotatedTypeVisitor<R, P> {
     }
 
     /**
-     * Processes an element by calling e.accept(this, p); this method may be overridden by
-     * subclasses.
+     * Processes an element by calling e.accept(this, p); this method
+     * may be overridden by subclasses.
      *
      * @return a visitor-specified result
      */

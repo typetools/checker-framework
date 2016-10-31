@@ -40,15 +40,15 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Typechecks source code for interning violations. A type is considered interned if its primary
- * annotation is {@link Interned}. This visitor reports errors or warnings for violations for the
- * following cases:
+ * Typechecks source code for interning violations.  A type is considered interned
+ * if its primary annotation is {@link Interned}.
+ * This visitor reports errors or warnings for violations for the following cases:
  *
  * <ol>
- *   <li value="1">either argument to a "==" or "!=" comparison is not Interned (error
- *       "not.interned")
- *   <li value="2">the receiver and argument for a call to an equals method are both Interned
- *       (optional warning "unnecessary.equals")
+ * <li value="1">either argument to a "==" or "!=" comparison is not Interned (error
+ *    "not.interned")
+ * <li value="2">the receiver and argument for a call to an equals method are both
+ *    Interned (optional warning "unnecessary.equals")
  * </ol>
  *
  * @see BaseTypeVisitor
@@ -67,11 +67,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * @return true if interning should be verified for the input expression. By default, all
-     *     classes are checked for interning unless -Acheckclass is specified.
-     * @see <a
-     *     href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#interning-checks">What
-     *     the Interning Checker checks</a>
+     * @return  true if interning should be verified for the input expression.  By default, all classes are checked
+     * for interning unless -Acheckclass is specified.
+     * @see <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#interning-checks">What the Interning Checker checks</a>
      */
     private boolean shouldCheckExpression(ExpressionTree tree) {
         if (typeToCheck == null) return true;
@@ -80,7 +78,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
         return types.isSubtype(type, typeToCheck) || types.isSubtype(typeToCheck, type);
     }
 
-    /** Checks comparison operators, == and !=, for INTERNING violations. */
+    /**
+     * Checks comparison operators, == and !=, for INTERNING violations.
+     */
     @Override
     public Void visitBinary(BinaryTree node, Void p) {
 
@@ -175,8 +175,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * If lint option "dotequals" is specified, warn if the .equals method is used where reference
-     * equality is safe.
+     * If lint option "dotequals" is specified, warn if the .equals method is used
+     * where reference equality is safe.
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -194,19 +194,18 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Method to implement the @UsesObjectEquals functionality. If a class is annotated
-     * with @UsesObjectEquals, it must:
+     * Method to implement the @UsesObjectEquals functionality.
+     * If a class is annotated with @UsesObjectEquals, it must:
      *
-     * <p>-not override .equals(Object) -be a subclass of Object or another class annotated
-     * with @UsesObjectEquals
+     *    -not override .equals(Object)
+     *    -be a subclass of Object or another class annotated with @UsesObjectEquals
      *
-     * <p>If a class is not annotated with @UsesObjectEquals, it must:
+     * If a class is not annotated with @UsesObjectEquals, it must:
      *
-     * <p>-not have a superclass annotated with @UsesObjectEquals
+     *  -not have a superclass annotated with @UsesObjectEquals
      *
-     * @see
-     *     org.checkerframework.common.basetype.BaseTypeVisitor#visitClass(com.sun.source.tree.ClassTree,
-     *     java.lang.Object)
+     *
+     * @see org.checkerframework.common.basetype.BaseTypeVisitor#visitClass(com.sun.source.tree.ClassTree, java.lang.Object)
      */
     @Override
     public Void visitClass(ClassTree node, Void p) {
@@ -256,7 +255,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     // Helper methods
     // **********************************************************************
 
-    /** Returns true if a class overrides Object.equals */
+    /**
+     * Returns true if a class overrides Object.equals
+     */
     private boolean overridesEquals(ClassTree node) {
         List<? extends Tree> members = node.getMembers();
         for (Tree member : members) {
@@ -272,12 +273,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Tests whether a method invocation is an invocation of {@link #equals} that overrides or hides
-     * {@link Object#equals(Object)}.
+     * Tests whether a method invocation is an invocation of
+     * {@link #equals} that overrides or hides {@link Object#equals(Object)}.
+     * <p>
      *
-     * <p>Returns true even if a method does not override {@link Object#equals(Object)}, because of
-     * the common idiom of writing an equals method with a non-Object parameter, in addition to the
-     * equals method that overrides {@link Object#equals(Object)}.
+     * Returns true even if a method does not override {@link Object#equals(Object)},
+     * because of the common idiom of writing an equals method with a non-Object
+     * parameter, in addition to the equals method that overrides
+     * {@link Object#equals(Object)}.
      *
      * @param node a method invocation node
      * @return true iff {@code node} is a invocation of {@code equals()}
@@ -292,8 +295,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Tests whether a method invocation is an invocation of {@link Comparable#compareTo}.
-     *
+     * Tests whether a method invocation is an invocation of
+     * {@link Comparable#compareTo}.
      * <p>
      *
      * @param node a method invocation node
@@ -308,23 +311,29 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Pattern matches particular comparisons to avoid common false positives in the {@link
-     * Comparable#compareTo(Object)} and {@link Object#equals(Object)}.
+     * Pattern matches particular comparisons to avoid common false positives
+     * in the {@link Comparable#compareTo(Object)} and
+     * {@link Object#equals(Object)}.
      *
-     * <p>Specifically, this method tests if: the comparison is a == comparison, it is the test of
-     * an if statement that's the first statement in the method, and one of the following is true:
-     *
+     * Specifically, this method tests if:  the comparison is a == comparison,
+     * it is the test of an if statement that's the first statement in the
+     * method, and one of the following is true:
      * <ol>
-     *   <li> the method overrides {@link Comparator#compare}, the "then" branch of the if statement
-     *       returns zero, and the comparison tests equality of the method's two parameters
-     *   <li> the method overrides {@link Object#equals(Object)} and the comparison tests "this"
-     *       against the method's parameter
-     *   <li> the method overrides {@link Comparable#compareTo(Object)}, the "then" branch of the if
-     *       statement returns zero, and the comparison tests "this" against the method's parameter
+     * <li> the method overrides {@link Comparator#compare}, the "then" branch
+     *    of the if statement returns zero, and the comparison tests equality
+     *    of the method's two parameters</li>
+     *
+     * <li> the method overrides {@link Object#equals(Object)} and the
+     *    comparison tests "this" against the method's parameter </li>
+     *
+     * <li> the method overrides {@link Comparable#compareTo(Object)}, the
+     *    "then" branch of the if statement returns zero, and the comparison
+     *    tests "this" against the method's parameter </li>
      * </ol>
      *
      * @param node the comparison to check
-     * @return true if one of the supported heuristics is matched, false otherwise
+     * @return true if one of the supported heuristics is matched, false
+     *         otherwise
      */
     // TODO: handle != comparisons too!
     // TODO: handle more methods, such as early return from addAll when this == arg
@@ -458,19 +467,21 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Returns true if two expressions originating from the same scope are identical, i.e. they are
-     * syntactically represented in the same way (modulo parentheses) and represent the same value.
+     * Returns true if two expressions originating from the same scope are identical,
+     * i.e. they are syntactically represented in the same way (modulo parentheses) and
+     * represent the same value.
      *
-     * <p>For example, given an expression (a == b) || a.equals(b) sameTree can be called to
-     * determine that the first 'a' and second 'a' refer to the same variable, which is the case
-     * since both expressions 'a' originate from the same scope.
+     * For example, given an expression
+     * (a == b) || a.equals(b)
+     * sameTree can be called to determine that the first 'a' and second 'a' refer
+     * to the same variable, which is the case since both expressions 'a' originate from
+     * the same scope.
      *
-     * <p>If the expression includes one or more method calls, assumes the method calls are
-     * deterministic.
+     * If the expression includes one or more method calls, assumes the method calls
+     * are deterministic.
      *
      * @param expr1 the first expression to compare
-     * @param expr2 the second expression to compare - expr2 must originate from the same scope as
-     *     expr1
+     * @param expr2 the second expression to compare - expr2 must originate from the same scope as expr1
      * @return true if the expressions expr1 and expr2 are identical
      */
     private static boolean sameTree(ExpressionTree expr1, ExpressionTree expr2) {
@@ -481,13 +492,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
 
     /**
      * Pattern matches to prevent false positives of the forms:
-     *
      * <pre>
      *   (a == b) || a.equals(b)
      *   (a == b) || (a != null ? a.equals(b) : false)
      *   (a == b) || (a != null &amp;&amp; a.equals(b))
      * </pre>
-     *
      * Returns true iff the given node fits this pattern.
      *
      * @return true iff the node fits a pattern such as (a == b || a.equals(b))
@@ -612,8 +621,9 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Pattern matches to prevent false positives of the form {@code (a == b || a.compareTo(b) ==
-     * 0)}. Returns true iff the given node fits this pattern.
+     * Pattern matches to prevent false positives of the form
+     * {@code (a == b || a.compareTo(b) == 0)}. Returns true iff
+     * the given node fits this pattern.
      *
      * @return true iff the node fits the pattern (a == b || a.compareTo(b) == 0)
      */
@@ -715,9 +725,11 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Given {@code a == b}, where a has type A and b has type B, don't issue a warning when either
-     * the declaration of A or that of B is annotated with @Interned because {@code a == b} will be
-     * true only if a's run-time type is B (or lower), in which case a is actually interned.
+     * Given {@code a == b}, where a has type A and b has type B,
+     * don't issue a warning when either the declaration of A or that of B
+     * is annotated with @Interned
+     * because {@code a == b} will be true only if a's run-time type is B (or
+     * lower), in which case a is actually interned.
      */
     private boolean suppressEqualsIfClassIsAnnotated(
             AnnotatedTypeMirror left, AnnotatedTypeMirror right) {
@@ -769,11 +781,12 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Determines the element corresponding to "this" inside a scope. Returns null within static
-     * methods.
+     * Determines the element corresponding to "this" inside a scope.  Returns
+     * null within static methods.
      *
      * @param scope the scope to search for the element corresponding to "this" in
-     * @return the element corresponding to "this" in the given scope, or null if not found
+     * @return the element corresponding to "this" in the given scope, or null
+     *      if not found
      */
     private Element getThis(Scope scope) {
         for (Element e : scope.getLocalElements()) {
@@ -785,13 +798,14 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Determines whether or not the given element overrides the named method in the named class.
+     * Determines whether or not the given element overrides the named method in
+     * the named class.
      *
      * @param e an element for a method
      * @param clazz the class
      * @param method the name of a method
-     * @return true if the method given by {@code e} overrides the named method in the named class;
-     *     false otherwise
+     * @return true if the method given by {@code e} overrides the named method
+     *         in the named class; false otherwise
      */
     private boolean overrides(ExecutableElement e, Class<?> clazz, String method) {
 
@@ -810,11 +824,13 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     }
 
     /**
-     * Returns the declared type of which the equality tests should be tested, if the user
-     * explicitly passed one. The user can pass the class name via the {@code -Acheckclass=...}
-     * option.
+     * Returns the declared type of which the equality tests should be tested,
+     * if the user explicitly passed one.  The user can pass the class name
+     * via the {@code -Acheckclass=...} option.
      *
-     * <p>If no class is specified, or the class specified isn't in the classpath, it returns null.
+     * If no class is specified, or the class specified isn't in the
+     * classpath, it returns null.
+     *
      */
     DeclaredType typeToCheck() {
         String className = checker.getOption("checkclass");

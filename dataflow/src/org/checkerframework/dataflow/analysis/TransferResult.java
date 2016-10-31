@@ -8,29 +8,34 @@ import java.util.Map;
 import javax.lang.model.type.TypeMirror;
 
 /**
- * {@code TransferResult} is used as the result type of the individual transfer functions of a
- * {@link TransferFunction}. It always belongs to the result of the individual transfer function for
- * a particular {@link org.checkerframework.dataflow.cfg.node.Node}, even though that {@code
- * org.checkerframework.dataflow.cfg.node.Node} is not explicitly store in {@code TransferResult}.
+ * {@code TransferResult} is used as the result type of the individual transfer
+ * functions of a {@link TransferFunction}. It always belongs to the result of
+ * the individual transfer function for a particular {@link org.checkerframework.dataflow.cfg.node.Node}, even though
+ * that {@code org.checkerframework.dataflow.cfg.node.Node} is not explicitly store in {@code TransferResult}.
  *
- * <p>A {@code TransferResult} contains one or two stores (for 'then' and 'else'), and zero or more
- * stores with a cause ({@link TypeMirror}).
+ * <p>
+ *
+ * A {@code TransferResult} contains one or two stores (for 'then' and 'else'),
+ * and zero or more stores with a cause ({@link TypeMirror}).
  *
  * @author Stefan Heule
- * @param <S> The {@link Store} used to keep track of intermediate results.
+ *
+ * @param <S>
+ *            The {@link Store} used to keep track of intermediate results.
  */
-public abstract class TransferResult<A extends AbstractValue<A>, S extends Store<S>> {
+abstract public class TransferResult<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
-     * The stores in case the basic block throws an exception (or {@code null} if the corresponding
-     * {@link org.checkerframework.dataflow.cfg.node.Node} does not throw any exceptions). Does not
-     * necessarily contain a store for every exception, in which case the in-store will be used.
+     * The stores in case the basic block throws an exception (or {@code null}
+     * if the corresponding {@link org.checkerframework.dataflow.cfg.node.Node} does not throw any exceptions). Does
+     * not necessarily contain a store for every exception, in which case the
+     * in-store will be used.
      */
     protected /*@Nullable*/ Map<TypeMirror, S> exceptionalStores;
 
     /**
-     * The abstract value of the {@link org.checkerframework.dataflow.cfg.node.Node} associated with
-     * this {@link TransferResult}, or {@code null} if no value has been produced.
+     * The abstract value of the {@link org.checkerframework.dataflow.cfg.node.Node} associated with this
+     * {@link TransferResult}, or {@code null} if no value has been produced.
      */
     protected /*@Nullable*/ A resultValue;
 
@@ -38,7 +43,9 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
         this.resultValue = resultValue;
     }
 
-    /** @return the abstract value produced by the transfer function */
+    /**
+     * @return the abstract value produced by the transfer function
+     */
     public A getResultValue() {
         return resultValue;
     }
@@ -48,27 +55,27 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
     }
 
     /**
-     * @return the regular result store produced if no exception is thrown by the {@link
-     *     org.checkerframework.dataflow.cfg.node.Node} corresponding to this transfer function
-     *     result.
+     * @return the regular result store produced if no exception is thrown by
+     *         the {@link org.checkerframework.dataflow.cfg.node.Node} corresponding to this transfer function result.
      */
-    public abstract S getRegularStore();
+    abstract public S getRegularStore();
 
     /**
-     * @return the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
-     *     this result belongs to evaluates to {@code true}.
+     * @return the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node} this result belongs
+     *         to evaluates to {@code true}.
      */
-    public abstract S getThenStore();
+    abstract public S getThenStore();
 
     /**
-     * @return the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node}
-     *     this result belongs to evaluates to {@code false}.
+     * @return the result store produced if the {@link org.checkerframework.dataflow.cfg.node.Node} this result belongs
+     *         to evaluates to {@code false}.
      */
-    public abstract S getElseStore();
+    abstract public S getElseStore();
 
     /**
-     * @return the store that flows along the outgoing exceptional edge labeled with {@code
-     *     exception} (or {@code null} if no special handling is required for exceptional edges).
+     * @return the store that flows along the outgoing exceptional edge labeled
+     *         with {@code exception} (or {@code null} if no special handling is
+     *         required for exceptional edges).
      */
     public /*@Nullable*/ S getExceptionalStore(TypeMirror exception) {
         if (exceptionalStores == null) {
@@ -79,6 +86,7 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
 
     /**
      * @return a Map of {@link TypeMirror} to {@link Store}.
+     *
      * @see TransferResult#getExceptionalStore(TypeMirror)
      */
     public Map<TypeMirror, S> getExceptionalStores() {
@@ -86,19 +94,21 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
     }
 
     /**
-     * @return {@code true} if and only if this transfer result contains two stores that are
-     *     potentially not equal. Note that the result {@code true} does not imply that {@code
-     *     getRegularStore} cannot be called (or vice versa for {@code false}). Rather, it indicates
-     *     that {@code getThenStore} or {@code getElseStore} can be used to give more precise
-     *     results. Otherwise, if the result is {@code false}, then all three methods {@code
-     *     getRegularStore}, {@code getThenStore}, and {@code getElseStore} return equivalent
-     *     stores.
+     * @return {@code true} if and only if this transfer result contains two
+     *         stores that are potentially not equal. Note that the result
+     *         {@code true} does not imply that {@code getRegularStore} cannot
+     *         be called (or vice versa for {@code false}). Rather, it indicates
+     *         that {@code getThenStore} or {@code getElseStore} can be used to
+     *         give more precise results. Otherwise, if the result is
+     *         {@code false}, then all three methods {@code getRegularStore},
+     *         {@code getThenStore}, and {@code getElseStore} return equivalent
+     *         stores.
      */
-    public abstract boolean containsTwoStores();
+    abstract public boolean containsTwoStores();
 
     /**
-     * @return {@code true} if and only if the transfer function returning this transfer result
-     *     changed the regularStore, elseStore, or thenStore.
+     * @return {@code true} if and only if the transfer function returning this
+     *         transfer result changed the regularStore, elseStore, or thenStore.
      */
-    public abstract boolean storeChanged();
+    abstract public boolean storeChanged();
 }

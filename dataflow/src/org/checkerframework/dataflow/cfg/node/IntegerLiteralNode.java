@@ -13,6 +13,7 @@ import java.util.Collections;
  * </pre>
  *
  * @author Stefan Heule
+ *
  */
 public class IntegerLiteralNode extends ValueLiteralNode {
 

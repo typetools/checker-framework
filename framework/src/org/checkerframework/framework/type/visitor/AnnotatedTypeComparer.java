@@ -6,17 +6,22 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * A TypeVisitor that takes two AnnotatedTypeMirrors as parameters, and visits them simultaneously.
- * Both Annotated Type Mirrors must have the same structure or else the various asserts will fail.
+ * A TypeVisitor that takes two AnnotatedTypeMirrors as parameters, and
+ * visits them simultaneously.  Both Annotated Type Mirrors must have the
+ * same structure or else the various asserts will fail.
  *
  * @see AnnotatedTypeScanner
  */
 public abstract class AnnotatedTypeComparer<R>
         extends AnnotatedTypeScanner<R, AnnotatedTypeMirror> {
-    /** Compares two annotated type mirrors. */
+    /**
+     * Compares two annotated type mirrors.
+     */
     protected abstract R compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p);
 
-    /** Supplies the logic to reduce on how to combine two R objects */
+    /**
+     * Supplies the logic to reduce on how to combine two R objects
+     */
     protected abstract R combineRs(R r1, R r2);
 
     protected R scan(

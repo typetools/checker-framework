@@ -7,26 +7,28 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Represents a binary name as defined in the <a
- * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1">Java Language
- * Specification, section 13.1</a>.
+ * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-13.html#jls-13.1">Java
+ * Language Specification, section 13.1</a>.
+ * <p>
  *
- * <p>For example, in
- *
+ * For example, in
  * <pre>
  *  package org.checkerframework.checker.signature;
  *  public class SignatureChecker {
  *    private class Inner {}
  *  }
  * </pre>
- *
  * the binary names for the two types are org.checkerframework.checker.signature.SignatureChecker
  * and org.checkerframework.checker.signature.SignatureChecker$Inner.
+ * <p>
  *
- * <p>Binary names and {@linkplain FullyQualifiedName fully qualified names} are the same for
- * top-level classes and only differ by '$' vs. '.' for inner classes.
+ * Binary names and {@linkplain FullyQualifiedName fully qualified names} are the
+ * same for top-level classes and only differ by '$' vs. '.' for inner classes.
+ * <p>
  *
- * <p>The binary name should not be confused with the {@linkplain InternalForm internal form}, which
- * is a variant of the binary name that actually appears in the class file.
+ * The binary name should not be confused with the {@linkplain InternalForm
+ * internal form}, which is a variant of the binary name that actually
+ * appears in the class file.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

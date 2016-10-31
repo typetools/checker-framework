@@ -1,6 +1,6 @@
 /**
- * Reported tree kinds depend on the command-line invocation; see
- * org.checkerframework.checker/tests/src/tests/ReportTreeKindsTest.java
+ * Reported tree kinds depend on the command-line invocation;
+ * see org.checkerframework.checker/tests/src/tests/ReportTreeKindsTest.java
  */
 class TestTreeKinds {
     void test(boolean a, boolean b) {

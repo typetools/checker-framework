@@ -17,9 +17,10 @@ import org.checkerframework.javacutil.TypeAnnotationUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
 /**
- * The TreeBuilder permits the creation of new AST Trees using the non-public Java compiler API
- * TreeMaker. Initially, it will support construction of desugared Trees required by the CFGBuilder,
- * e.g. the pieces of a desugared enhanced for loop.
+ * The TreeBuilder permits the creation of new AST Trees using the
+ * non-public Java compiler API TreeMaker.  Initially, it will support
+ * construction of desugared Trees required by the CFGBuilder, e.g.
+ * the pieces of a desugared enhanced for loop.
  */
 public class CFTreeBuilder extends TreeBuilder {
 
@@ -30,8 +31,8 @@ public class CFTreeBuilder extends TreeBuilder {
     /**
      * Builds an AST Tree representing an AnnotatedTypeMirror.
      *
-     * @param annotatedType the annotated type
-     * @return a Tree representing the annotated type
+     * @param annotatedType  the annotated type
+     * @return  a Tree representing the annotated type
      */
     public Tree buildAnnotatedType(AnnotatedTypeMirror annotatedType) {
         return createAnnotatedType(annotatedType);

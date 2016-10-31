@@ -13,8 +13,8 @@ import java.util.List;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- * Created by jburke on 6/12/14. TODO: Document this class. It is currently not used within the
- * framework.
+ * Created by jburke on 6/12/14.
+ * TODO: Document this class. It is currently not used within the framework.
  */
 public class ComboLog {
 

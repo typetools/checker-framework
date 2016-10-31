@@ -12,10 +12,11 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 /**
  * A node for the instanceof operator:
  *
- * <p><em>x</em> instanceof <em>Point</em>
+ * <em>x</em> instanceof <em>Point</em>
  *
  * @author Stefan Heule
  * @author Charlie Garrett
+ *
  */
 public class InstanceOfNode extends Node {
 

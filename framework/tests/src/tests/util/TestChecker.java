@@ -24,10 +24,12 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * A simple checker used for testing the Checker Framework. It treats the {@code @Odd} and
- * {@code @Even} annotations as a subtype-style qualifiers with no special semantics.
+ * A simple checker used for testing the Checker Framework. It treats the
+ * {@code @Odd} and {@code @Even} annotations as a subtype-style qualifiers with
+ * no special semantics.
  *
- * <p>This checker should only be used for testing the framework.
+ * <p>
+ * This checker should only be used for testing the framework.
  */
 public final class TestChecker extends BaseTypeChecker {
     @Override

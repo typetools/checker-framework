@@ -11,8 +11,8 @@ import org.checkerframework.javacutil.ErrorReporter;
 /**
  * Represents the type qualifier hierarchy of a type system.
  *
- * <p>This class is immutable and can be only created through {@link
- * MultiGraphQualifierHierarchy.MultiGraphFactory}.
+ * This class is immutable and can be only created through
+ * {@link MultiGraphQualifierHierarchy.MultiGraphFactory}.
  */
 public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
@@ -52,8 +52,8 @@ public class GraphQualifierHierarchy extends MultiGraphQualifierHierarchy {
     /**
      * Returns the top qualifier for this hierarchy.
      *
-     * <p>The top qualifier is inferred from the hierarchy, as being the only one without any super
-     * qualifiers
+     * The top qualifier is inferred from the hierarchy, as being the only
+     * one without any super qualifiers
      */
     @Override
     public Set<? extends AnnotationMirror> getTopAnnotations() {

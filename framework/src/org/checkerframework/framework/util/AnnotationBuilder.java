@@ -31,22 +31,25 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Builds an annotation mirror that may have some values.
+ * <p>
  *
- * <p>Constructing an {@link AnnotationMirror} requires:
- *
+ * Constructing an {@link AnnotationMirror} requires:
  * <ol>
- *   <li>Constructing the builder with the desired annotation class
- *   <li>Setting each value individually using {@code setValue} methods
- *   <li>Calling {@link #build()} to get the annotation
+ * <li>Constructing the builder with the desired annotation class</li>
+ * <li>Setting each value individually using {@code setValue} methods</li>
+ * <li>Calling {@link #build()} to get the annotation</li>
  * </ol>
  *
- * Once an annotation is built, no further modification or calls to build can be made. Otherwise, a
- * {@link IllegalStateException} is thrown.
+ * Once an annotation is built, no further modification or calls to build can be
+ * made. Otherwise, a {@link IllegalStateException} is thrown.
+ * <p>
  *
- * <p>All setter methods throw {@link IllegalArgumentException} if the specified element is not
- * found, or if the given value is not a subtype of the expected type.
+ * All setter methods throw {@link IllegalArgumentException} if the specified
+ * element is not found, or if the given value is not a subtype of the
+ * expected type.
+ * <p>
  *
- * <p>TODO: Doesn't type-check arrays yet
+ * TODO: Doesn't type-check arrays yet
  */
 public class AnnotationBuilder {
 

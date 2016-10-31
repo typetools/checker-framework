@@ -7,11 +7,11 @@ import java.util.List;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- * ListTypeAnnotator is a TypeAnnotator that executes a list of {@link TypeAnnotator} for each type
- * visited.
+ * ListTypeAnnotator is a TypeAnnotator that executes a list of {@link TypeAnnotator}
+ * for each type visited.
  *
- * <p>Checkers should not extend ListTypeAnnotator; they should instead pass a custom TypeAnnotator
- * to the constructor.
+ * Checkers should not extend ListTypeAnnotator; they should instead
+ * pass a custom TypeAnnotator to the constructor.
  *
  * @see org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator
  * @see org.checkerframework.framework.type.typeannotator.PropagationTypeAnnotator
@@ -21,16 +21,18 @@ public final class ListTypeAnnotator extends TypeAnnotator {
     protected final List<TypeAnnotator> annotators;
 
     /**
-     * @param annotators the annotators that will be executed for each type scanned by this
-     *     TypeAnnotator. They are executed in the order passed in.
+     * @param annotators the annotators that will be executed for
+     *                   each type scanned by this TypeAnnotator.
+     *                   They are executed in the order passed in.
      */
     public ListTypeAnnotator(TypeAnnotator... annotators) {
         this(Arrays.asList(annotators));
     }
 
     /**
-     * @param annotators the annotators that will be executed for each type scanned by this
-     *     TypeAnnotator. They are executed in the order passed in.
+     * @param annotators the annotators that will be executed for
+     *                   each type scanned by this TypeAnnotator.
+     *                   They are executed in the order passed in.
      */
     public ListTypeAnnotator(List<TypeAnnotator> annotators) {
         super(null);

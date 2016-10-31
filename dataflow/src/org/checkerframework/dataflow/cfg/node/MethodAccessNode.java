@@ -17,6 +17,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  * @author Stefan Heule
+ *
  */
 public class MethodAccessNode extends Node {
 

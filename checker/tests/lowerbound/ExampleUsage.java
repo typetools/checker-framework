@@ -1,10 +1,10 @@
 
 
 public class ExampleUsage {
-    /**
-     * this class contains a set of test methods that are supposed to show how the lowerbound
-     * checker should work in practice. They contain no annotations - the only test is whether or
-     * not it alarms on particular code constructs that are or are not safe
+    /** this class contains a set of test methods that are supposed to show how
+     * the lowerbound checker should work in practice. They contain no annotations -
+     * the only test is whether or not it alarms on particular code constructs that
+     * are or are not safe
      */
     void safe_loop_const() {
         int[] arr = new int[5];

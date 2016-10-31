@@ -63,21 +63,23 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A visitor that determines the purity (as defined by {@link
- * org.checkerframework.dataflow.qual.SideEffectFree}, {@link
- * org.checkerframework.dataflow.qual.Deterministic}, and {@link
- * org.checkerframework.dataflow.qual.Pure}) of a statement or expression. The entry point is method
- * {@link #checkPurity}.
+ * org.checkerframework.dataflow.qual.SideEffectFree}, {@link org.checkerframework.dataflow.qual.Deterministic},
+ * and {@link org.checkerframework.dataflow.qual.Pure}) of a statement or expression.  The
+ * entry point is method {@link #checkPurity}.
  *
  * @see SideEffectFree
  * @see Deterministic
  * @see Pure
+ *
  * @author Stefan Heule
+ *
  */
 public class PurityChecker {
 
     /**
-     * Compute whether the given statement is side-effect-free, deterministic, or both. Returns a
-     * result that can be queried.
+     * Compute whether the given statement is
+     * side-effect-free, deterministic, or both.
+     * Returns a result that can be queried.
      */
     public static PurityResult checkPurity(
             Tree statement, AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
@@ -87,8 +89,10 @@ public class PurityChecker {
     }
 
     /**
-     * Result of the {@link PurityChecker}. Can be queried queried regarding whether a given tree
-     * was side-effect-free, deterministic, or both; also gives reasons if the answer is "no".
+     * Result of the {@link PurityChecker}.
+     * Can be queried queried regarding whether a given tree was
+     * side-effect-free, deterministic, or both; also gives reasons if
+     * the answer is "no".
      */
     public static class PurityResult {
 
@@ -113,38 +117,48 @@ public class PurityChecker {
             return types.containsAll(kinds);
         }
 
-        /** Get the {@code reason}s why the method is not side-effect-free. */
+        /**
+         * Get the {@code reason}s why the method is not side-effect-free.
+         */
         public List<Pair<Tree, String>> getNotSeFreeReasons() {
             return notSeFreeReasons;
         }
 
-        /** Add {@code reason} as a reason why the method is not side-effect free. */
+        /**
+         * Add {@code reason} as a reason why the method is not side-effect
+         * free.
+         */
         public void addNotSeFreeReason(Tree t, String msgId) {
             notSeFreeReasons.add(Pair.of(t, msgId));
             types.remove(Kind.SIDE_EFFECT_FREE);
         }
 
-        /** Get the {@code reason}s why the method is not deterministic. */
+        /**
+         * Get the {@code reason}s why the method is not deterministic.
+         */
         public List<Pair<Tree, String>> getNotDetReasons() {
             return notDetReasons;
         }
 
-        /** Add {@code reason} as a reason why the method is not deterministic. */
+        /**
+         * Add {@code reason} as a reason why the method is not deterministic.
+         */
         public void addNotDetReason(Tree t, String msgId) {
             notDetReasons.add(Pair.of(t, msgId));
             types.remove(Kind.DETERMINISTIC);
         }
 
         /**
-         * Get the {@code reason}s why the method is not both side-effect-free and deterministic.
+         * Get the {@code reason}s why the method is not both side-effect-free
+         * and deterministic.
          */
         public List<Pair<Tree, String>> getNotBothReasons() {
             return notBothReasons;
         }
 
         /**
-         * Add {@code reason} as a reason why the method is not both side-effect free and
-         * deterministic.
+         * Add {@code reason} as a reason why the method is not both side-effect
+         * free and deterministic.
          */
         public void addNotBothReason(Tree t, String msgId) {
             notBothReasons.add(Pair.of(t, msgId));
@@ -154,21 +168,21 @@ public class PurityChecker {
     }
 
     /**
-     * Helper class to keep {@link PurityChecker}'s interface clean. The implementation is heavily
-     * based on {@link TreeScanner}, but some parts of the AST are skipped (such as types or
-     * modifiers). Furthermore, scanning works differently in that the input parameter (usually
-     * named {@code p}) gets "threaded through", instead of using {@code reduce}.
+     * Helper class to keep {@link PurityChecker}'s interface clean. The
+     * implementation is heavily based on {@link TreeScanner}, but some parts of
+     * the AST are skipped (such as types or modifiers). Furthermore, scanning
+     * works differently in that the input parameter (usually named {@code p})
+     * gets "threaded through", instead of using {@code reduce}.
      */
     protected static class PurityCheckerHelper
             extends SimpleTreeVisitor<PurityResult, PurityResult> {
 
         protected final AnnotationProvider annoProvider;
         /**
-         * True if all methods should be assumed to be @SideEffectFree, for the purposes of
-         * org.checkerframework.dataflow analysis.
+         * True if all methods should be assumed to be @SideEffectFree,
+         * for the purposes of org.checkerframework.dataflow analysis.
          */
         private final boolean assumeSideEffectFree;
-
         protected /*@Nullable*/ List<Element> methodParameter;
 
         public PurityCheckerHelper(AnnotationProvider annoProvider, boolean assumeSideEffectFree) {
@@ -176,12 +190,16 @@ public class PurityChecker {
             this.assumeSideEffectFree = assumeSideEffectFree;
         }
 
-        /** Scan a single node. */
+        /**
+         * Scan a single node.
+         */
         public PurityResult scan(Tree node, PurityResult p) {
             return node == null ? p : node.accept(this, p);
         }
 
-        /** Scan a list of nodes. */
+        /**
+         * Scan a list of nodes.
+         */
         public PurityResult scan(Iterable<? extends Tree> nodes, PurityResult p) {
             PurityResult r = p;
             if (nodes != null) {

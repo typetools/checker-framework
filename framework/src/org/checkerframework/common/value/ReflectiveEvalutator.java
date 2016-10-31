@@ -35,11 +35,16 @@ public class ReflectiveEvalutator {
     }
 
     /**
-     * @param allArgValues a list of list where the first list corresponds to all possible values
-     *     for the first argument. Pass null to indicate that the method has no arguments.
-     * @param receiverValues a list of possible receiver values. null indicates that the method has
-     *     no receiver
-     * @param tree location to report any errors
+     *
+     * @param allArgValues
+     *            a list of list where the first list corresponds to all
+     *            possible values for the first argument. Pass null to indicate
+     *            that the method has no arguments.
+     * @param receiverValues
+     *            a list of possible receiver values. null indicates that the
+     *            method has no receiver
+     * @param tree
+     *            location to report any errors
      * @return all possible values that the method may return
      */
     public List<?> evaluteMethodCall(
@@ -94,10 +99,11 @@ public class ReflectiveEvalutator {
     }
 
     /**
-     * Method for reflectively obtaining a method object so it can (potentially) be statically
-     * executed by the checker for constant propagation
+     * Method for reflectively obtaining a method object so it can (potentially)
+     * be statically executed by the checker for constant propagation
      *
-     * @return the Method object corresponding to the method being invoke in tree
+     * @return the Method object corresponding to the method being invoke in
+     *         tree
      */
     private Method getMethodObject(MethodInvocationTree tree) {
         try {
@@ -251,8 +257,8 @@ public class ReflectiveEvalutator {
         return constructor;
     }
     /**
-     * Returns the box primitive type if the passed type is an (unboxed) primitive. Otherwise it
-     * returns the passed type
+     * Returns the box primitive type if the passed type is an (unboxed)
+     * primitive. Otherwise it returns the passed type
      */
     private static Class<?> boxPrimatives(Class<?> type) {
         if (type == byte.class) {

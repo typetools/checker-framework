@@ -1,3 +1,4 @@
+import java.util.regex.Pattern;
 import org.checkerframework.checker.regex.qual.Regex;
 
 public class LUB {

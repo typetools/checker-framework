@@ -22,18 +22,19 @@ import org.checkerframework.javacutil.TypesUtils;
 /**
  * Takes a single step in reducing a AFConstraint.
  *
- * <p>The visit method will determine if the given constraint should either: a) be discarded - in
- * this case, the visitor just returns b) reduced to a simpler constraint or set of constraints - in
- * this case, the new constraint or set of constraints is added to newConstraints
+ * The visit method will determine if the given constraint should either:
+ *    a) be discarded - in this case, the visitor just returns
+ *    b) reduced to a simpler constraint or set of constraints - in this case, the new constraint
+ *    or set of constraints is added to newConstraints
  *
- * <p>Sprinkled throughout this class are comments of the form:
+ *  Sprinkled throughout this class are comments of the form:
  *
  * <pre>{@code
- * // If F has the form G<..., Yk-1, ? super U, Yk+1, ...>, where U involves Tj
+ *  // If F has the form G<..., Yk-1, ? super U, Yk+1, ...>, where U involves Tj
  * }</pre>
  *
- * These are excerpts from the JLS, if you search for them you will find the corresponding JLS
- * description of the case being covered.
+ *  These are excerpts from the JLS, if you search for them you will find the corresponding
+ *  JLS description of the case being covered.
  */
 abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFConstraint>> {
 
@@ -78,10 +79,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     }
 
     /**
-     * Called when we encounter an AF constraint on a type combination that we did not think is
-     * possible. This either implies that the type combination is possible, we accidentally created
-     * an invalid A2F or F2A Constraint, or we called the visit method on two AnnotatedTypeMirrors
-     * that do not appear together in a constraint.
+     * Called when we encounter an AF constraint on a type combination that we did not think is possible.
+     * This either implies that the type combination is possible, we accidentally created an invalid
+     * A2F or F2A Constraint, or we called the visit method on two AnnotatedTypeMirrors that do not appear together
+     * in a constraint.
      */
     @Override
     protected String defaultErrorMessage(
@@ -156,10 +157,10 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     // Declared as argument
 
     /**
-     * I believe there should be only 1 way to have a constraint of this form: {@code visit
-     * (Array<T>, T [])} At this point, I don't think that's a valid argument for a formal
-     * parameter. If this occurs is is because of idiosyncrasies with the Checker Framework . We're
-     * going to skip this case for now.
+     * I believe there should be only 1 way to have a constraint of this form:
+     * {@code visit (Array<T>, T [])}
+     * At this point, I don't think that's a valid argument for a formal parameter.  If this occurs
+     * is is because of idiosyncrasies with the Checker Framework .  We're going to skip this case for now.
      */
     @Override
     public Void visitDeclared_Array(
@@ -322,8 +323,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     // Null as argument
 
     /**
-     * NULL types only have primary annotations. A type parameter could only appear as a component
-     * of the parameter type and therefore has no relationship to these primary annotations
+     * NULL types only have primary annotations.  A type parameter could only appear as a component of the
+     * parameter type and therefore has no relationship to these primary annotations
      */
     @Override
     public Void visitNull_Array(
@@ -334,8 +335,8 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     }
 
     /**
-     * NULL types only have primary annotations. A type parameter could only appear as a component
-     * of the parameter type and therefore has no relationship to these primary annotations
+     * NULL types only have primary annotations.  A type parameter could only appear as a component of the
+     * parameter type and therefore has no relationship to these primary annotations
      */
     @Override
     public Void visitNull_Declared(
@@ -346,9 +347,9 @@ abstract class AFReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFCon
     }
 
     /**
-     * TODO: PERHAPS FOR ALL OF THESE WHERE WE COMPARE AGAINST THE LOWER BOUND, WE SHOULD INSTEAD
-     * COMPARE TODO: against the UPPER_BOUND with the LOWER_BOUND's PRIMARY ANNOTATIONS For captured
-     * types, the lower bound might be interesting so we compare against the lower bound but for
+     * TODO: PERHAPS FOR ALL OF THESE WHERE WE COMPARE AGAINST THE LOWER BOUND, WE SHOULD INSTEAD COMPARE
+     * TODO: against the UPPER_BOUND with the LOWER_BOUND's PRIMARY ANNOTATIONS
+     * For captured types, the lower bound might be interesting so we compare against the lower bound but for
      * most types the constraint added in this method is probably discarded in the next round of
      * reduction (especially since we don't implement capture at the moment).
      */

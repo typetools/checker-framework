@@ -1,9 +1,11 @@
 package org.checkerframework.checker.lowerbound;
 
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
 import java.util.Collections;
 import java.util.List;
@@ -25,12 +27,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 /**
- * Implements the introduction rules for the Lower Bound Checker.
- *
- * <pre>
+ *  Implements the introduction rules for the Lower Bound Checker.
+ *  <pre>
  *  The type hierarchy is:
  *
  *  Top = lbu ("Lower Bound Unknown")
@@ -41,10 +43,10 @@ import org.checkerframework.javacutil.InternalUtils;
  *   |
  *  pos ("Positive")
  *  </pre>
- *
- * In general, check whether the constant Value Checker can determine the value of a variable; if it
- * can, use that; if not, use more specific rules based on expression type. These rules are
- * documented on the functions implementing them.
+ *  In general, check whether the constant Value Checker can determine the
+ *  value of a variable; if it can, use that; if not, use more specific rules
+ *  based on expression type. These rules are documented on the functions
+ *  implementing them.
  */
 public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -59,8 +61,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
 
     /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
+     * Provides a way to query the Constant Value Checker, which computes the
+     * values of expressions known at compile time (constant prop + folding).
      */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
             getTypeFactoryOfSubchecker(ValueChecker.class);
@@ -85,10 +87,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Sets typeDst to the immediate supertype of typeSrc, unless typeSrc is already Positive.
-         * Implements the following transitions:
-         *
-         * <pre>
+         *  Sets typeDst to the immediate supertype of typeSrc, unless typeSrc is already
+         *  Positive. Implements the following transitions:
+         *  <pre>
          *      pos &rarr; pos
          *      nn &rarr; pos
          *      gte-1 &rarr; nn
@@ -109,10 +110,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Sets typeDst to the immediate subtype of typeSrc, unless typeSrc is already
-         * LowerBoundUnknown. Implements the following transitions:
-         *
-         * <pre>
+         *  Sets typeDst to the immediate subtype of typeSrc, unless typeSrc is already
+         *  LowerBoundUnknown. Implements the following transitions:
+         *  <pre>
          *       pos &rarr; nn
          *       nn &rarr; gte-1
          *       gte-1, lbu &rarr; lbu
@@ -129,7 +129,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return;
         }
 
-        /** Determine the annotation that should be associated with a literal. */
+        /**
+         *  Determine the annotation that should be associated with a literal.
+         */
         private AnnotationMirror anmFromVal(int val) {
             if (val >= 1) {
                 return POS;
@@ -151,7 +153,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitLiteral(tree, type);
         }
 
-        /** Call increment and decrement helper functions. */
+        /**
+         *  Call increment and decrement helper functions.
+         */
         @Override
         public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
             AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
@@ -172,7 +176,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitUnary(tree, typeDst);
         }
 
-        /** Get the list of possible values from a Value Checker type. May return null. */
+        /**
+         *  Get the list of possible values from a Value Checker type.
+         *  May return null.
+         */
         private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
             AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
             // Anm can be null if the Value Checker didn't assign an IntVal annotation
@@ -183,12 +190,14 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * If the argument valueType indicates that the Constant Value Checker knows the exact value
-         * of the annotated expression, returns that integer. Otherwise returns null. This method
-         * should only be used by clients who need exactly one value - such as the binary operator
-         * rules - and not by those that need to know whether a valueType belongs to an LBC
-         * qualifier. Clients needing a qualifier should use lowerBoundAnmFromValueType instead of
-         * this method.
+         * If the argument valueType indicates that the Constant Value
+         * Checker knows the exact value of the annotated expression,
+         * returns that integer.  Otherwise returns null. This method
+         * should only be used by clients who need exactly one value -
+         * such as the binary operator rules - and not by those that
+         * need to know whether a valueType belongs to an LBC qualifier.
+         * Clients needing a qualifier should use lowerBoundAnmFromValueType
+         * instead of this method.
          */
         private Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
@@ -199,7 +208,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        /** Returns the type in the lower bound hierarchy a Value Checker type corresponds to. */
+        /**
+         *  Returns the type in the lower bound hierarchy a Value Checker type corresponds to.
+         */
         public AnnotationMirror lowerBoundAnmFromValueType(AnnotatedTypeMirror valueType) {
             // In the code, AnnotationMirror is abbr. as anm.
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
@@ -221,8 +232,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * For dealing with array length expressions. We look for array length accesses
-         * specifically, then dispatch to the MinLen checker to deteremine the length of the
-         * relevant array. If we find it, we use it to give the expression a type.
+         * specifically, then dispatch to the MinLen checker to deteremine the length
+         * of the relevant array. If we find it, we use it to give the expression a type.
          */
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
@@ -258,8 +269,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Dispatch to binary operator helper methods. The lower bound checker currently handles
-         * addition, subtraction, multiplication, division, and modular division.
+         *  Dispatch to binary operator helper methods. The lower bound checker currently
+         *  handles addition, subtraction, multiplication, division, and modular division.
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
@@ -304,11 +315,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Helper method for addAnnotationForPlus. Handles addition of constants.
-         *
-         * @param val The integer value of the constant.
-         * @param nonLiteralType The type of the side of the expression that isn't a constant.
-         * @param type The type of the result expression.
+         *  Helper method for addAnnotationForPlus. Handles addition of constants.
+         *  @param val The integer value of the constant.
+         *  @param nonLiteralType The type of the side of the expression that isn't a constant.
+         *  @param type The type of the result expression.
          */
         private void addAnnotationForLiteralPlus(
                 int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
@@ -340,9 +350,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         *
-         *
-         * <pre>
+         *  <pre>
          *  addAnnotationForPlus handles the following cases:
          *      lit -2 + pos &rarr; gte-1
          *      lit -1 + * &rarr; call demote
@@ -412,9 +420,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         *
-         *
-         * <pre>
+         *  <pre>
          *  addAnnotationForMinus handles the following cases:
          *      * - lit &rarr; call plus(*, -1 * the value of the lit)
          *      * - * &rarr; lbu
@@ -440,11 +446,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Helper function for addAnnotationForMultiply. Handles compile-time known constants.
-         *
-         * @param val The integer value of the constant.
-         * @param nonLiteralType The type of the side of the expression that isn't a constant.
-         * @param type The type of the result expression.
+         *  Helper function for addAnnotationForMultiply. Handles compile-time known constants.
+         *  @param val The integer value of the constant.
+         *  @param nonLiteralType The type of the side of the expression that isn't a constant.
+         *  @param type The type of the result expression.
          */
         private void addAnnotationForLiteralMultiply(
                 int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
@@ -465,9 +470,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         *
-         *
-         * <pre>
+         *  <pre>
          *  addAnnotationForMultiply handles the following cases:
          *        * * lit 0 &rarr; nn (=0)
          *        * * lit 1 &rarr; *
@@ -522,7 +525,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return;
         }
 
-        /** When the value on the left is known at compile time. */
+        /**
+         *  When the value on the left is known at compile time.
+         */
         private void addAnnotationForLiteralDivideLeft(
                 int val, AnnotatedTypeMirror rightType, AnnotatedTypeMirror type) {
             if (val == 0) {
@@ -540,10 +545,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * When the value on the right is known at compile time. If the value is zero, then we've
-         * discovered division by zero. We treat division by zero as bottom (i.e. Positive) so that
-         * users aren't warned about dead code that's dividing by zero. We assume that actual code
-         * won't include literal divide by zeros...
+         *   When the value on the right is known at compile time.
+         *   If the value is zero, then we've discovered division by zero.
+         *   We treat division by zero as bottom (i.e. Positive) so that
+         *   users aren't warned about dead code that's dividing by zero. We
+         *   assume that actual code won't include literal divide by zeros...
          */
         private void addAnnotationForLiteralDivideRight(
                 int val, AnnotatedTypeMirror leftType, AnnotatedTypeMirror type) {
@@ -558,11 +564,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         *
-         *
-         * <pre>
+         *  <pre>
          *  addAnnotationForDivide handles these cases:
-         * lit 0 / * &rarr; nn (=0)
+         *	lit 0 / * &rarr; nn (=0)
          *      * / lit 0 &rarr; pos
          *      lit 1 / {pos, nn} &rarr; nn
          *      lit 1 / * &rarr; gten1
@@ -612,7 +616,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * When we take a remainder with 1 or -1 as the divisor, we know the answer ahead of time.
+         *  When we take a remainder with 1 or -1 as the divisor, we know the answer ahead of time.
          */
         private void addAnnotationForLiteralRemainder(int val, AnnotatedTypeMirror type) {
             if (val == 1 || val == -1) {
@@ -622,8 +626,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * addAnnotationForRemainder handles these cases: * % 1/-1 &rarr; nn pos/nn % * &rarr; nn
-         * gten1 % * &rarr; gten1 * % * &rarr; lbu
+         *  addAnnotationForRemainder handles these cases:
+         *     * % 1/-1 &rarr; nn
+         *     pos/nn % * &rarr; nn
+         *     gten1 % * &rarr; gten1
+         *     * % * &rarr; lbu
          */
         public void addAnnotationForRemainder(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
@@ -657,7 +664,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Handles shifts. * &gt;&gt; NonNegative &rarr; NonNegative */
+    /**
+     *  Handles shifts.
+     *  * &gt;&gt; NonNegative &rarr; NonNegative
+     */
     private void addAnnotationForRightShift(
             ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
         AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
@@ -673,8 +683,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Handles masking. Particularly, handles the following cases: * &amp; NonNegative &rarr;
-     * NonNegative
+     *  Handles masking.
+     *  Particularly, handles the following cases:
+     *  * &amp; NonNegative &rarr; NonNegative
      */
     private void addAnnotationForAnd(
             ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {

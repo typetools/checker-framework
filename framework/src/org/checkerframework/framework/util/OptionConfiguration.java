@@ -3,7 +3,9 @@ package org.checkerframework.framework.util;
 import java.util.Map;
 import java.util.Set;
 
-/** Provides methods for querying the Checker's options. */
+/**
+ * Provides methods for querying the Checker's options.
+ */
 public interface OptionConfiguration {
     String getOption(String name);
 

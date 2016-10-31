@@ -5,8 +5,8 @@ import org.checkerframework.common.reflection.qual.MethodVal;
 
 /**
  * Example used in the reflection resolution section of the Checker Framework manual
- *
  * @author smillst
+ *
  */
 public class NullnessReflectionExampleTest {
     @NonNull Location getCurrentLocation() {

@@ -9,13 +9,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * A utility class to convert trees into corresponding AnnotatedTypeMirrors. This class should be
- * used ONLY from AnnotatedTypeFactory.
+ * A utility class to convert trees into corresponding AnnotatedTypeMirrors.
+ * This class should be used ONLY from AnnotatedTypeFactory.
  *
- * <p>For each method in TypeFromTree there is a corresponding TypeFromTreeVisitor that handles the
- * input tree. The list of methods implemented by these visitors outline which trees each method
- * will support. If a tree kind is not handled by the given visitor, then execution is halted and an
- * RuntimeException is thrown which includes a list of supported tree types.
+ * For each method in TypeFromTree there is a corresponding TypeFromTreeVisitor
+ * that handles the input tree.  The list of methods implemented by these visitors
+ * outline which trees each method will support.  If a tree kind is not handled
+ * by the given visitor, then execution is halted and an RuntimeException is thrown
+ * which includes a list of supported tree types.
  */
 class TypeFromTree {
 
@@ -65,7 +66,9 @@ class TypeFromTree {
         return type;
     }
 
-    /** @return an AnnotatedDeclaredType representing the input ClassTree */
+    /**
+     * @return an AnnotatedDeclaredType representing the input ClassTree
+     */
     public static AnnotatedDeclaredType fromClassTree(
             final AnnotatedTypeFactory typeFactory, final ClassTree tree) {
         abortIfTreeIsNull(typeFactory, tree);

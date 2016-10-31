@@ -1,3 +1,4 @@
+import java.lang.reflect.Method;
 import org.checkerframework.common.value.qual.*;
 
 class Methods {

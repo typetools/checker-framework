@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Line alignments in a flow layout (see {@link java.awt.FlowLayout} for more details).
- *
+ * Line alignments in a flow layout (see
+ * {@link java.awt.FlowLayout} for more details).
  * @see java.awt.FlowLayout#LEFT
  * @see java.awt.FlowLayout#CENTER
  * @see java.awt.FlowLayout#RIGHT

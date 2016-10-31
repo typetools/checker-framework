@@ -1,3 +1,4 @@
+import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.framework.qual.DefaultQualifier;
 

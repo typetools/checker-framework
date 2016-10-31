@@ -5,7 +5,9 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** JUnit tests for the Nullness checker when array subtyping is invariant. */
+/**
+ * JUnit tests for the Nullness checker when array subtyping is invariant.
+ */
 public class NullnessInvariantArraysTest extends CheckerFrameworkPerDirectoryTest {
 
     public NullnessInvariantArraysTest(List<File> testFiles) {

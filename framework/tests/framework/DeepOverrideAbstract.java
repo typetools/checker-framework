@@ -6,11 +6,11 @@ public class DeepOverrideAbstract {
         @Odd String interfaceMethod();
     }
 
-    public abstract static class A {
+    public static abstract class A {
         public abstract @Odd String abstractMethod();
     }
 
-    public abstract static class B extends A implements I {}
+    public static abstract class B extends A implements I {}
 
     public static class C extends B {
         public @Odd String interfaceMethod() {

@@ -32,7 +32,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-/** A Utility class to find symbols corresponding to string references. */
+/**
+ * A Utility class to find symbols corresponding to string references.
+ */
 public class Resolver {
     private final Resolve resolve;
     private final Names names;
@@ -132,9 +134,12 @@ public class Resolver {
     /**
      * Finds the package with name {@code name}.
      *
-     * @param name The name of the package.
-     * @param path The tree path to the local scope.
-     * @return the {@code PackageSymbol} for the package if it is found, {@code null} otherwise
+     * @param name
+     *            The name of the package.
+     * @param path
+     *            The tree path to the local scope.
+     * @return the {@code PackageSymbol} for the package if it is found,
+     * {@code null} otherwise
      */
     public PackageSymbol findPackage(String name, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
@@ -160,12 +165,17 @@ public class Resolver {
     /**
      * Finds the field with name {@code name} in a given type.
      *
-     * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
-     * for name resolution.
+     * <p>
+     * The method adheres to all the rules of Java's scoping (while also
+     * considering the imports) for name resolution.
      *
-     * @param name The name of the field.
-     * @param type The type of the receiver (i.e., the type in which to look for the field).
-     * @param path The tree path to the local scope.
+     * @param name
+     *            The name of the field.
+     * @param type
+     *            The type of the receiver (i.e., the type in which to look for
+     *            the field).
+     * @param path
+     *            The tree path to the local scope.
      * @return the element for the field
      */
     public VariableElement findField(String name, TypeMirror type, TreePath path) {
@@ -193,8 +203,10 @@ public class Resolver {
     /**
      * Finds the local variable with name {@code name} in the given scope.
      *
-     * @param name The name of the local variable.
-     * @param path The tree path to the local scope.
+     * @param name
+     *            The name of the local variable.
+     * @param path
+     *            The tree path to the local scope.
      * @return the element for the local variable
      */
     public VariableElement findLocalVariableOrParameterOrField(String name, TreePath path) {
@@ -219,11 +231,14 @@ public class Resolver {
     /**
      * Finds the class literal with name {@code name}.
      *
-     * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
-     * for name resolution.
+     * <p>
+     * The method adheres to all the rules of Java's scoping (while also
+     * considering the imports) for name resolution.
      *
-     * @param name The name of the class.
-     * @param path The tree path to the local scope.
+     * @param name
+     *            The name of the class.
+     * @param path
+     *            The tree path to the local scope.
      * @return the element for the class
      */
     public Element findClass(String name, TreePath path) {
@@ -240,10 +255,14 @@ public class Resolver {
     /**
      * Finds the class with name {@code name} in a given package.
      *
-     * @param name The name of the class.
-     * @param pck The PackageSymbol for the package.
-     * @param path The tree path to the local scope.
-     * @return the {@code ClassSymbol} for the class if it is found, {@code null} otherwise
+     * @param name
+     *            The name of the class.
+     * @param pck
+     *            The PackageSymbol for the package.
+     * @param path
+     *            The tree path to the local scope.
+     * @return the {@code ClassSymbol} for the class if it is found,
+     * {@code null} otherwise
      */
     public ClassSymbol findClassInPackage(String name, PackageSymbol pck, TreePath path) {
         Log.DiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
@@ -264,14 +283,19 @@ public class Resolver {
     }
 
     /**
-     * Finds the method element for a given name and list of expected parameter types.
+     * Finds the method element for a given name and list of expected parameter
+     * types.
      *
-     * <p>The method adheres to all the rules of Java's scoping (while also considering the imports)
-     * for name resolution.
+     * <p>
+     * The method adheres to all the rules of Java's scoping (while also
+     * considering the imports) for name resolution.
      *
-     * @param methodName Name of the method to find.
-     * @param receiverType Type of the receiver of the method
-     * @param path Tree path.
+     * @param methodName
+     *            Name of the method to find.
+     * @param receiverType
+     *            Type of the receiver of the method
+     * @param path
+     *            Tree path.
      * @return the method element (if found)
      */
     public Element findMethod(
@@ -324,7 +348,9 @@ public class Resolver {
         }
     }
 
-    /** Build an instance of {@code Resolve$MethodResolutionContext}. */
+    /**
+     * Build an instance of {@code Resolve$MethodResolutionContext}.
+     */
     protected Object buildMethodContext()
             throws ClassNotFoundException, InstantiationException, IllegalAccessException,
                     InvocationTargetException, NoSuchFieldException {

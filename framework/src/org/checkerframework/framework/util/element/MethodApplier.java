@@ -60,9 +60,10 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
 
     private final AnnotatedTypeFactory typeFactory;
 
-    /** Method being annotated, this symbol contains all relevant annotations */
+    /**
+     * Method being annotated, this symbol contains all relevant annotations
+     */
     private final Symbol.MethodSymbol methodSymbol;
-
     private final AnnotatedExecutableType methodType;
 
     MethodApplier(AnnotatedTypeMirror type, Element element, AnnotatedTypeFactory typeFactory) {
@@ -73,14 +74,16 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
     }
 
     /**
-     * @return receiver, returns, and throws. See extract and apply as we also annotate type params.
+     * @return receiver, returns, and throws.  See extract and apply as we also annotate type params.
      */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[] {METHOD_RECEIVER, METHOD_RETURN, THROWS};
     }
 
-    /** @return all possible annotation positions for a method except those in annotatedTargets */
+    /**
+     * @return all possible annotation positions for a method except those in annotatedTargets
+     */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
@@ -102,7 +105,9 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         };
     }
 
-    /** @return the annotations on the method symbol (element) */
+    /**
+     * @return the annotations on the method symbol (element)
+     */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
         return methodSymbol.getRawTypeAttributes();
@@ -169,7 +174,9 @@ public class MethodApplier extends TargetedElementAnnotationApplier {
         }
     }
 
-    /** For each thrown type, collect all the annotations for that type and apply them */
+    /**
+     * For each thrown type, collect all the annotations for that type and apply them
+     */
     private void applyThrowsAnnotations(final List<Attribute.TypeCompound> annos) {
         final List<AnnotatedTypeMirror> thrown = methodType.getThrownTypes();
         if (thrown.isEmpty()) {

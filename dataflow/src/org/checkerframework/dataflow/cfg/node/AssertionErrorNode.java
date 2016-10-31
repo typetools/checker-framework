@@ -16,6 +16,7 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  *
  * @author Stefan Heule
  * @author Charlie Garrett
+ *
  */
 public class AssertionErrorNode extends Node {
 

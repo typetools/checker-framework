@@ -7,9 +7,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation for methods of the form: <br>
- * {@code {@link MethodVal}(classname=c, methodname=m, params=p) Method getMyMethod(Class<c> this,
- * String m, Object... params)}
+ * Annotation for methods of the form:
+ * <br>
+ * {@code {@link MethodVal}(classname=c, methodname=m, params=p) Method
+ * getMyMethod(Class<c> this, String m, Object... params)}
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

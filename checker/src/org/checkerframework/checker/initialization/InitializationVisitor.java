@@ -47,10 +47,12 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The visitor for the freedom-before-commitment type-system. The freedom-before-commitment
- * type-system and this class are abstract and need to be combined with another type-system whose
- * safe initialization should be tracked. For an example, see the {@link NullnessChecker}. Also
- * supports rawness as a type-system for tracking initialization, though FBC is preferred.
+ * The visitor for the freedom-before-commitment type-system. The
+ * freedom-before-commitment type-system and this class are abstract and need to
+ * be combined with another type-system whose safe initialization should be
+ * tracked. For an example, see the {@link NullnessChecker}. Also supports
+ * rawness as a type-system for tracking initialization, though FBC is
+ * preferred.
  *
  * @author Stefan Heule
  */
@@ -355,7 +357,9 @@ public class InitializationVisitor<
         return super.visitMethod(node, p);
     }
 
-    /** Returns the full list of annotations on the receiver. */
+    /**
+     * Returns the full list of annotations on the receiver.
+     */
     private List<? extends AnnotationMirror> getAllReceiverAnnotations(MethodTree node) {
         // TODO: get access to a Types instance and use it to get receiver type
         // Or, extend ExecutableElement with such a method.
@@ -377,8 +381,8 @@ public class InitializationVisitor<
     }
 
     /**
-     * Checks that all fields (all static fields if {@code staticFields} is true) are initialized in
-     * the given store.
+     * Checks that all fields (all static fields if {@code staticFields} is
+     * true) are initialized in the given store.
      */
     // TODO: the code for checking if fields are initialized should be re-written,
     // as the current version contains quite a few ugly parts, is hard to understand,

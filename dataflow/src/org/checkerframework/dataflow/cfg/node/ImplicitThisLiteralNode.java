@@ -7,6 +7,7 @@ import javax.lang.model.type.TypeMirror;
  * A node to model the implicit {@code this}, e.g., in a field access.
  *
  * @author Stefan Heule
+ *
  */
 public class ImplicitThisLiteralNode extends ThisLiteralNode {
 

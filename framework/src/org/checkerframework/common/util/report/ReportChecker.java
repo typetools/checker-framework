@@ -5,10 +5,14 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 
 /**
  * The Report Checker for semantic searches.
+ * <p>
  *
- * <p>See the qualifiers for documentation.
+ * See the qualifiers for documentation.
+ * <p>
  *
- * <p>Options: reportTreeKinds: comma-separated list of Tree.Kinds that should be reported.
+ * Options:
+ * reportTreeKinds: comma-separated list of Tree.Kinds that should be reported.
+ *
  */
 @SupportedOptions({"reportTreeKinds", "reportModifiers"})
 public class ReportChecker extends BaseTypeChecker {}

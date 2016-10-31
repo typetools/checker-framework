@@ -10,8 +10,8 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * A factory that extends {@link GenericAnnotatedTypeFactory} to use the default flow-sensitive
- * analysis as provided by {@link CFAnalysis}.
+ * A factory that extends {@link GenericAnnotatedTypeFactory} to use the
+ * default flow-sensitive analysis as provided by {@link CFAnalysis}.
  *
  * @author Stefan Heule
  */

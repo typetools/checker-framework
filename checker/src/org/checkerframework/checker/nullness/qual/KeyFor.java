@@ -9,18 +9,20 @@ import org.checkerframework.framework.qual.FieldIsExpression;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Indicates that the value assigned to the annotated variable is a key for at least the given
- * map(s).
+ * Indicates that the value assigned to the annotated variable is a key for at least the given map(s).
  *
- * <p>The value of the annotation is the reference name of the map. Suppose that {@code config} is a
- * {@code Map<String, String>}. Then the declaration
+ * <p>
+ * The value of the annotation is the reference name of the map.
+ * Suppose that {@code config} is a {@code Map<String, String>}.
+ * Then the declaration
  *
  * <pre>{@code   @KeyFor("config") String key = "HOSTNAME"; }</pre>
  *
  * indicates that "HOSTNAME" is a key in {@code config}.
  *
- * <p>The value of the annotation can also be a set of reference names of the maps. If {@code
- * defaultConfig} is also a {@code Map<String, String>}, then
+ * <p>
+ * The value of the annotation can also be a set of reference names of the maps.
+ * If {@code defaultConfig} is also a {@code Map<String, String>}, then
  *
  * <pre>{@code   @KeyFor({"config","defaultConfig"}) String key = "HOSTNAME"; }</pre>
  *
@@ -36,7 +38,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 public @interface KeyFor {
     /**
      * Java expression(s) that evaluate to a map for which the annotated type is a key.
-     *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     public String[] value();

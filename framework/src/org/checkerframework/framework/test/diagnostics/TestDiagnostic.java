@@ -1,8 +1,8 @@
 package org.checkerframework.framework.test.diagnostics;
 
 /**
- * Represents an expected error/warning message in a Java test file or an error/warning reported by
- * the Javac compiler See JavaFileDiagnosticReader and TestDiagnosticLine
+ * Represents an expected error/warning message in a Java test file or an error/warning reported by the Javac compiler
+ * See JavaFileDiagnosticReader and TestDiagnosticLine
  */
 public class TestDiagnostic {
 
@@ -13,18 +13,15 @@ public class TestDiagnostic {
     /** Whether this diagnostic should no longer be reported after whole program inference */
     private final boolean isFixable;
 
-    /**
-     * An error key or full error message that usually appears between parentheses in diagnostic
-     * messages
-     */
+    /** An error key or full error message that usually appears between parentheses in diagnostic messages */
     private final String message;
 
-    /**
-     * Whether or not String representation methods should omit the parentheses around the message
-     */
+    /** Whether or not String representation methods should omit the parentheses around the message */
     private final boolean omitParentheses;
 
-    /** Basic constructor that sets the immutable fields of this diagnostic. */
+    /**
+     * Basic constructor that sets the immutable fields of this diagnostic.
+     */
     public TestDiagnostic(
             String filename,
             long lineNumber,
@@ -61,16 +58,14 @@ public class TestDiagnostic {
     }
 
     /**
-     * @return whether or not String representation methods should omit the parentheses around the
-     *     message
+     * @return whether or not String representation methods should omit the parentheses around the message
      */
     public boolean shouldOmitParentheses() {
         return omitParentheses;
     }
 
     /**
-     * @return a String representing the format of this diagnostic as if it appeared in a source
-     *     file
+     * @return a String representing the format of this diagnostic as if it appeared in a source file
      */
     public String asSourceString() {
         if (omitParentheses) {
@@ -81,7 +76,6 @@ public class TestDiagnostic {
 
     /**
      * Equality is compared without isFixable/omitParentheses
-     *
      * @return true if this and otherObj are equal according to lineNumber, kind, and message
      */
     @Override
@@ -106,7 +100,9 @@ public class TestDiagnostic {
                 * filename.hashCode();
     }
 
-    /** @return a representation of this diagnostic as if it appeared in a diagnostics file */
+    /**
+     * @return a representation of this diagnostic as if it appeared in a diagnostics file
+     */
     @Override
     public String toString() {
         if (omitParentheses) {

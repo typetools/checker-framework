@@ -2,7 +2,6 @@
 // TODO: Enable this test when whole-program inference is working correctly for cases
 // involving inheritance.
 import tests.wholeprograminference.qual.*;
-
 class IParent {
     int field;
 
@@ -16,6 +15,7 @@ class IParent {
     void test() {
         expectsBotNoSignature(field);
     }
+
 }
 
 class IChild extends IParent {
@@ -24,4 +24,5 @@ class IChild extends IParent {
         expectsBotNoSignature(bot);
         field = bot;
     }
+
 }

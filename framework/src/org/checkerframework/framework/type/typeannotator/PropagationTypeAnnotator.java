@@ -16,16 +16,17 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * {@link PropagationTypeAnnotator} adds qualifiers to types where the qualifier to add should be
- * transferred from one or more other types.
+ * {@link PropagationTypeAnnotator} adds qualifiers to types where the qualifier
+ * to add should be transferred from one or more other types.
  *
- * <p>At the moment, the only function PropagationTypeAnnotator provides, is the propagation of
- * generic type parameter annotations to unannotated wildcards with missing bounds annotations.
+ * At the moment, the only function PropagationTypeAnnotator provides, is the
+ * propagation of generic type parameter annotations to unannotated wildcards
+ * with missing bounds annotations.
  *
- * @see
- *     #visitWildcard(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType,
- *     Object)
- *     <p>PropagationTypeAnnotator traverses trees deeply by default.
+ * @see #visitWildcard(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType, Object)
+ *
+ * PropagationTypeAnnotator traverses trees deeply by default.
+ *
  */
 public class PropagationTypeAnnotator extends TypeAnnotator {
 
@@ -61,10 +62,9 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     }
 
     /**
-     * Sometimes the underlying type parameters of AnnotatedWildcardTypes are not available on the
-     * wildcards themselves. Instead, record enclosing class to find the type parameter to use as a
-     * backup in visitWildcards.
-     *
+     * Sometimes the underlying type parameters of AnnotatedWildcardTypes are not available
+     * on the wildcards themselves.  Instead, record enclosing class to find the type parameter
+     * to use as a backup in visitWildcards.
      * @param declaredType type to record
      */
     @Override
@@ -79,9 +79,9 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     }
 
     /**
-     * Rather than defaulting the missing bounds of a wildcard, find the bound annotations on the
-     * type parameter it replaced. Place those annotations on the wildcard.
-     *
+     * Rather than defaulting the missing bounds of a wildcard, find the bound
+     * annotations on the type parameter it replaced.  Place those annotations
+     * on the wildcard.
      * @param wildcardAtm type to annotate
      */
     @Override
@@ -139,10 +139,7 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         applyAnnosFromBound(wildcard.getExtendsBound(), typeParam.getUpperBound(), tops);
     }
 
-    /**
-     * Take the primary annotations from typeParamBound and place them as primary annotations on
-     * wildcard bound
-     */
+    /** Take the primary annotations from typeParamBound and place them as primary annotations on wildcard bound */
     private void applyAnnosFromBound(
             final AnnotatedTypeMirror wildcardBound,
             final AnnotatedTypeMirror typeParamBound,
@@ -177,9 +174,10 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     }
 
     /**
-     * Search parent's type arguments for wildcard. Using the index of wildcard, find the
-     * corresponding type parameter element and return it. Returns null if the wildcard is the
-     * result of substitution and therefore not in the list of type arguments.
+     * Search parent's type arguments for wildcard.  Using the index of wildcard,
+     * find the corresponding type parameter element and return it.
+     * Returns null if the wildcard is the result of substitution and therefore
+     * not in the list of type arguments.
      */
     private Element getTypeParamFromEnclosingClass(
             final AnnotatedWildcardType wildcard, final AnnotatedDeclaredType parent) {

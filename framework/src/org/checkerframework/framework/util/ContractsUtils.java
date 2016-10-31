@@ -35,7 +35,9 @@ public class ContractsUtils {
     protected static ContractsUtils instance;
     protected GenericAnnotatedTypeFactory<?, ?, ?, ?> factory;
 
-    /** Returns an instance of the {@link ContractsUtils} class. */
+    /**
+     * Returns an instance of the {@link ContractsUtils} class.
+     */
     public static ContractsUtils getInstance(GenericAnnotatedTypeFactory<?, ?, ?, ?> factory) {
         if (instance == null || instance.factory != factory) {
             instance = new ContractsUtils(factory);
@@ -44,22 +46,27 @@ public class ContractsUtils {
     }
 
     /**
-     * Represents a pre- or postcondition that must be verified by {@code BaseTypeVisitor} or one of
-     * its subclasses. Automatically extracted from annotations with meta-annotations
-     * {@code @PreconditionAnnotation} or {@code @PostconditionAnnotation}, such as
-     * {@code @RequiresNonNull} and {@code @EnsuresNonNull}. Can also be generated, such as in
+     * Represents a pre- or postcondition that must be verified by
+     * {@code BaseTypeVisitor} or one of its subclasses. Automatically
+     * extracted from annotations with meta-annotations
+     * {@code @PreconditionAnnotation} or {@code @PostconditionAnnotation},
+     * such as {@code @RequiresNonNull} and {@code @EnsuresNonNull}.
+     * Can also be generated, such as in
      * {@code LockVisitor.generatePreconditionsBasedOnGuards}.
      */
     // When making changes, make also the appropriate changes
     // to class ConditionalPostcondition.
     public static class PreOrPostcondition {
         /**
-         * The expression for which the condition must hold, such as {@code "foo"} in
-         * {@code @RequiresNonNull("foo")}.
+         * The expression for which the condition must hold, such as
+         * {@code "foo"} in {@code @RequiresNonNull("foo")}.
          */
         public final String expression;
 
-        /** The name of the qualifier class that describes the condition that must hold. */
+        /**
+         * The name of the qualifier class that describes the condition that
+         * must hold.
+         */
         public final String annotationString;
 
         public PreOrPostcondition(String expression, String annotationString) {
@@ -69,29 +76,35 @@ public class ContractsUtils {
     }
 
     /**
-     * Represents a conditional postcondition that must be verified by {@code BaseTypeVisitor} or
-     * one of its subclasses. Automatically extracted from annotations with meta-annotation
-     * {@code @ConditionalPostconditionAnnotation}, such as {@code EnsuresNonNullIf}.
+     * Represents a conditional postcondition that must be verified by
+     * {@code BaseTypeVisitor} or one of its subclasses. Automatically
+     * extracted from annotations with meta-annotation
+     * {@code @ConditionalPostconditionAnnotation}, such as
+     * {@code EnsuresNonNullIf}.
      */
     // When making changes, make also the appropriate changes
     // to class PreOrPostcondition.
     public static class ConditionalPostcondition {
         /**
-         * The expression for which the conditional postcondition must hold, such as {@code "foo"}
-         * in {@code @EnsuresNonNullIf(expression="foo", result=true)}.
+         * The expression for which the conditional postcondition must hold,
+         * such as {@code "foo"} in
+         * {@code @EnsuresNonNullIf(expression="foo", result=true)}.
          */
         public final String expression;
 
         /**
-         * The return value for the annotated method that ensures that the conditional postcondition
-         * holds. For example, given<br>
+         * The return value for the annotated method that ensures that the
+         * conditional postcondition holds. For example, given<br>
          * {@code @EnsuresNonNullIf(expression="foo", result=false) boolean method()}<br>
-         * {@code foo} is guaranteed to be {@code @NonNull} after a call to {@code method()} if that
-         * call returns {@code false}.
+         * {@code foo} is guaranteed to be {@code @NonNull} after a call
+         * to {@code method()} if that call returns {@code false}.
          */
         public final boolean annoResult;
 
-        /** The name of the qualifier class that describes the condition that must hold. */
+        /**
+         * The name of the qualifier class that describes the condition that
+         * must hold.
+         */
         public final String annotationString;
 
         public ConditionalPostcondition(
@@ -103,8 +116,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a set of pairs {@code (expr, annotation)} of preconditions on the element {@code
-     * element}.
+     * Returns a set of pairs {@code (expr, annotation)} of preconditions on the
+     * element {@code element}.
      */
     public Set<PreOrPostcondition> getPreconditions(Element element) {
         Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
@@ -145,8 +158,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a set of pairs {@code (expr, annotation)} of preconditions according to the given
-     * {@link RequiresQualifier}.
+     * Returns a set of pairs {@code (expr, annotation)} of preconditions
+     * according to the given {@link RequiresQualifier}.
      */
     private Set<PreOrPostcondition> getPrecondition(AnnotationMirror requiresAnnotation) {
         if (requiresAnnotation == null) {
@@ -166,8 +179,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a set of pairs {@code (expr, annotation)} of postconditions on the method {@code
-     * methodElement}.
+     * Returns a set of pairs {@code (expr, annotation)} of postconditions on
+     * the method {@code methodElement}.
      */
     public Set<PreOrPostcondition> getPostconditions(ExecutableElement methodElement) {
         Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
@@ -208,8 +221,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a set of pairs {@code (expr, annotation)} of postconditions according to the given
-     * {@link EnsuresQualifier}.
+     * Returns a set of pairs {@code (expr, annotation)} of postconditions
+     * according to the given {@link EnsuresQualifier}.
      */
     private Set<PreOrPostcondition> getPostcondition(AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation == null) {
@@ -229,8 +242,8 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a set of triples {@code (expr, (result, annotation))} of conditional postconditions
-     * on the method {@code methodElement}.
+     * Returns a set of triples {@code (expr, (result, annotation))} of
+     * conditional postconditions on the method {@code methodElement}.
      */
     public Set<ConditionalPostcondition> getConditionalPostconditions(
             ExecutableElement methodElement) {
@@ -275,8 +288,9 @@ public class ContractsUtils {
     }
 
     /**
-     * Returns a set of triples {@code (expr, (result, annotation))} of conditional postconditions
-     * according to the given {@link EnsuresQualifierIf}.
+     * Returns a set of triples {@code (expr, (result, annotation))} of
+     * conditional postconditions according to the given
+     * {@link EnsuresQualifierIf}.
      */
     private Set<ConditionalPostcondition> getConditionalPostcondition(
             AnnotationMirror ensuresAnnotationIf) {

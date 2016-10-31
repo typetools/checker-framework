@@ -1,4 +1,5 @@
 
+import java.io.PrintStream;
 
 public class SimpleLog {
     public SimpleLog() {

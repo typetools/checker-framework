@@ -9,8 +9,8 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The top qualifier of the tainting type system. This annotation is associated with the {@link
- * org.checkerframework.checker.tainting.TaintingChecker}.
+ * The top qualifier of the tainting type system.
+ * This annotation is associated with the {@link  org.checkerframework.checker.tainting.TaintingChecker}.
  *
  * @see Untainted
  * @see org.checkerframework.checker.tainting.TaintingChecker

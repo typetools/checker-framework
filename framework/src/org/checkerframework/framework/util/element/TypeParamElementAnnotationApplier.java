@@ -22,12 +22,14 @@ import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * Applies Element annotations to a single AnnotatedTypeVariable representing a type parameter.
- * Note, the index of IndexedElementAnnotationApplier refers to the type parameter's index in the
- * list that encloses it.
+ * Note, the index of IndexedElementAnnotationApplier refers to the type parameter's index in
+ * the list that encloses it.
  */
 abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotationApplier {
 
-    /** @return true if element is a TYPE_PARAMETER */
+    /**
+     * @return true if element is a TYPE_PARAMETER
+     */
     public static boolean accepts(AnnotatedTypeMirror typeMirror, Element element) {
         return element.getKind() == ElementKind.TYPE_PARAMETER;
     }
@@ -35,11 +37,15 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     protected final AnnotatedTypeVariable typeParam;
     protected final AnnotatedTypeFactory typeFactory;
 
-    /** @return target type that represents the location of the lower bound of element */
-    protected abstract TargetType lowerBoundTarget();
+    /**
+     * @return target type that represents the location of the lower bound of element
+     */
+    abstract protected TargetType lowerBoundTarget();
 
-    /** @return target type that represents the location of the upper bound of element */
-    protected abstract TargetType upperBoundTarget();
+    /**
+     * @return target type that represents the location of the upper bound of element
+     */
+    abstract protected TargetType upperBoundTarget();
 
     TypeParamElementAnnotationApplier(
             final AnnotatedTypeVariable type,
@@ -50,15 +56,17 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
         this.typeFactory = typeFactory;
     }
 
-    /** @return the lower bound and upper bound targets */
+    /**
+     * @return the lower bound and upper bound targets
+     */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[] {lowerBoundTarget(), upperBoundTarget()};
     }
 
     /**
-     * @return the parameter_index of anno's TypeAnnotationPosition which will actually point to the
-     *     type parameter's index in its enclosing type parameter list
+     * @return the parameter_index of anno's TypeAnnotationPosition which will actually
+     * point to the type parameter's index in its enclosing type parameter list
      */
     @Override
     public int getTypeCompoundIndex(final TypeCompound anno) {
@@ -66,14 +74,14 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     }
 
     /**
-     * @param targeted the list of annotations that were on the lower/upper bounds of the type
-     *     parameter
-     *     <p>Note: When handling type parameters we NEVER add primary annotations to the type
-     *     parameter. Primary annotations are reserved for the use of a type parameter
-     *     (e.g. @Nullable T t; )
-     *     <p>If an annotation is present on the type parameter itself, it represents the
-     *     lower-bound annotation of that type parameter. Any annotation on the extends bound of a
-     *     type parameter is placed on that bound.
+     * @param targeted the list of annotations that were on the lower/upper bounds of the type parameter
+     *
+     * Note: When handling type parameters we NEVER add primary annotations to the type parameter.
+     * Primary annotations are reserved for the use of a type parameter (e.g. @Nullable T t; )
+     *
+     * If an annotation is present on the type parameter itself, it represents the lower-bound annotation
+     * of that type parameter.  Any annotation on the extends bound of a type parameter is placed on
+     * that bound.
      */
     @Override
     protected void handleTargeted(final List<TypeCompound> targeted) {
@@ -106,8 +114,9 @@ abstract class TypeParamElementAnnotationApplier extends IndexedElementAnnotatio
     }
 
     /**
-     * Applies a list of annotations to the upperBound of the type parameter. If the type of the
-     * upper bound is an intersection we must first find the correct location for each annotation.
+     * Applies a list of annotations to the upperBound of the type parameter.  If the type of
+     * the upper bound is an intersection we must first find the correct location for each
+     * annotation.
      */
     private void applyUpperBounds(final List<TypeCompound> upperBounds) {
         if (!upperBounds.isEmpty()) {

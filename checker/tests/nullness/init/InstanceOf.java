@@ -11,7 +11,8 @@ class PptTopLevel {
         }
     }
 
-    class OtherPpt extends Ppt {}
+    class OtherPpt extends Ppt {
+    }
 }
 
 class InstanceOf {

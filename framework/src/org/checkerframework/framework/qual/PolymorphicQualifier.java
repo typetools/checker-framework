@@ -8,12 +8,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A meta-annotation that indicates that an annotation is a polymorphic type qualifier.
+ * A meta-annotation that indicates that an annotation is a polymorphic type
+ * qualifier.
  *
- * <p>Any method written using a polymorphic type qualifier conceptually has two or more versions
- * &mdash; one version for each qualifier in the qualifier hierarchy. In each version of the method,
- * all instances of the polymorphic type qualifier are replaced by one of the other type qualifiers.
- *
+ * <p>
+ * Any method written using a polymorphic type qualifier conceptually has
+ * two or more versions &mdash; one version for each qualifier in the
+ * qualifier hierarchy.  In each version of the method, all instances of
+ * the polymorphic type qualifier are replaced by one of the other type
+ * qualifiers.
  * <p>
  *
  * @checker_framework.manual #qualifier-polymorphism Qualifier polymorphism
@@ -23,10 +26,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PolymorphicQualifier {
     /**
-     * Usually, you can write {@code @PolymorphicQualifier} without an argument. When multiple type
-     * hierarchies are supported by a single type system, then each polymorphic qualifier needs to
-     * indicate which sub-hierarchy it belongs to. Do so by passing a qualifier from the given
-     * hierarchy, by convention the top qualifier.
+     * Usually, you can write {@code @PolymorphicQualifier} without an
+     * argument.  When multiple type hierarchies are supported by a single
+     * type system, then each polymorphic qualifier needs to indicate which
+     * sub-hierarchy it belongs to.  Do so by passing a qualifier from the
+     * given hierarchy, by convention the top qualifier.
      */
     // We use the meaningless PolymorphicQualifier.class as default value and
     // then ensure there is a single top qualifier to use.

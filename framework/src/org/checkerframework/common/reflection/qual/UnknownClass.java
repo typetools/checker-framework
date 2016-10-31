@@ -9,10 +9,11 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents a Class object whose run-time value is not known at compile time. Also represents
- * non-Class values.
+ * Represents a Class object whose run-time value is not known at compile time.
+ * Also represents non-Class values.
+ * <p>
  *
- * <p>This annotation is the default in the hierarchy.
+ * This annotation is the default in the hierarchy.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */

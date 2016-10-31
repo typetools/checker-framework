@@ -9,7 +9,8 @@ import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import tests.wholeprograminference.qual.DefaultType;
 /**
- * Visitor for a simple type system to test whole-program inference using .jaif files.
+ * Visitor for a simple type system to test whole-program inference
+ * using .jaif files.
  *
  * @author pbsf
  */

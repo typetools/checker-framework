@@ -19,6 +19,7 @@ import org.checkerframework.javacutil.TreeUtils;
  * </pre>
  *
  * @author Stefan Heule
+ *
  */
 public class FieldAccessNode extends Node {
 
@@ -79,7 +80,9 @@ public class FieldAccessNode extends Node {
         return getReceiver() + "." + field;
     }
 
-    /** Is this a static field? */
+    /**
+     * Is this a static field?
+     */
     public boolean isStatic() {
         return ElementUtils.isStatic(getElement());
     }

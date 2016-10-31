@@ -6,11 +6,12 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * Tests for the flow-sensitive part of the framework. These tests complement the tests of {@link
- * FlowTest} and have been written when the org.checkerframework.dataflow analysis has been
- * completely rewritten.
+ * Tests for the flow-sensitive part of the framework. These tests complement
+ * the tests of {@link FlowTest} and have been written when the org.checkerframework.dataflow
+ * analysis has been completely rewritten.
  *
  * @author Stefan Heule
+ *
  */
 public class Flow2Test extends CheckerFrameworkPerDirectoryTest {
 

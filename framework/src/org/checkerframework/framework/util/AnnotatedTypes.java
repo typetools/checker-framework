@@ -61,8 +61,8 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Utility methods for operating on {@code AnnotatedTypeMirror}. This class mimics the class {@link
- * Types}.
+ * Utility methods for operating on {@code AnnotatedTypeMirror}. This
+ * class mimics the class {@link Types}.
  */
 public class AnnotatedTypes {
     // Class cannot be instantiated.
@@ -71,8 +71,7 @@ public class AnnotatedTypes {
     }
 
     /**
-     * @deprecated Use {@link #asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror,
-     *     AnnotatedTypeMirror)}
+     * @deprecated Use {@link #asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}
      */
     @Deprecated
     public static AnnotatedTypeMirror asSuper(
@@ -86,42 +85,38 @@ public class AnnotatedTypes {
     private static AsSuperVisitor asSuperVisitor;
 
     /**
-     * Copies annotations from {@code type} to a copy of {@code superType} where the type variables
-     * of {@code superType} have been substituted. How the annotations are copied depends on the
-     * kinds of AnnotatedTypeMirrors given. Generally, if {@code type} and {@code superType} are
-     * both declared types, asSuper is called recursively on the direct super types, see {@link
-     * AnnotatedTypeMirror#directSuperTypes()}, of {@code type} until {@code type}'s erased Java
-     * type is the same as {@code superType}'s erased super type. Then {@code type is returned}. For
-     * compound types, asSuper is call recursively on components.
-     *
-     * <p>Preconditions:<br>
+     * Copies annotations from {@code type} to a copy of {@code superType} where the type
+     * variables of {@code superType} have been substituted. How the annotations are copied
+     * depends on the kinds of AnnotatedTypeMirrors given.  Generally, if {@code type} and {@code
+     * superType} are both declared types, asSuper is called recursively on the direct super
+     * types, see {@link AnnotatedTypeMirror#directSuperTypes()}, of {@code type} until {@code
+     * type}'s erased Java type is the same as {@code superType}'s erased super type.  Then
+     * {@code type is returned}. For compound types, asSuper is call recursively on components.
+     * <p>
+     * Preconditions:<br>
      * {@code superType} may have annotations, but they are ignored. <br>
      * {@code type} may not be an instanceof AnnotatedNullType, because if {@code superType} is a
      * compound type, the annotations on the component types are undefined.<br>
      * The underlying {@code type} (ie the Java type) of {@code type} should be a subtype (or the
      * same type) of the underlying type of {@code superType}. Except for these cases:
-     *
-     * <ul>
-     *   <li> If {@code type} is a primitive, then the boxed type of {@code type} must be subtype of
-     *       {@code superType}.
-     *   <li> If {@code superType} is a primitive, then {@code type} must be convertible to {@code
-     *       superType}.
-     *   <li> If {@code superType} is a type variable or wildcard without a lower bound, then {@code
-     *       type} must be a subtype of the upper bound of {@code superType}. (This relaxed rule is
-     *       used during type argument inference where the type variable or wildcard is the type
-     *       argument that was inferred.)
-     *   <li> If {@code superType} is a wildcard with a lower bound, then {@code type} must be a
-     *       subtype of the lower bound of {@code superType}.
-     * </ul>
-     *
-     * <p>Postconditions: {@code type} and {@code superType} are not modified.
+     *  <ul>
+     *  <li> If {@code type} is a primitive, then the boxed type of {@code type} must be subtype of {@code superType}.
+     *  <li> If {@code superType} is a primitive, then {@code type} must be convertible to {@code superType}.
+     *  <li> If {@code superType} is a type variable or wildcard without a lower bound, then {@code type} must be
+     *  a subtype of the upper bound of {@code superType}. (This relaxed rule is used during type argument
+     *  inference where the type variable or wildcard is the type argument that was inferred.)
+     *  <li> If {@code superType} is a wildcard with a lower bound, then {@code type} must be a subtype of the
+     *  lower bound of {@code superType}.
+     *  </ul>
+     *  <p>
+     *  Postconditions: {@code type} and {@code superType} are not modified.
      *
      * @param atypeFactory {@link AnnotatedTypeFactory}
      * @param type Type from which to copy annotations
-     * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
-     *     type.
+     * @param superType a type whose erased Java type is a supertype of {@code type}'s erased
+     *                  Java type.
      * @return {@code superType} with annotations copied from {@code type} and type variables
-     *     substituted from {@code type}.
+     * substituted from {@code type}.
      */
     public static <T extends AnnotatedTypeMirror> T asSuper(
             AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror type, T superType) {
@@ -131,14 +126,16 @@ public class AnnotatedTypes {
         return asSuperVisitor.asSuper(type, superType);
     }
 
-    /** This method identifies wildcard types that are unbound. */
+    /**
+     * This method identifies wildcard types that are unbound.
+     */
     public static boolean hasNoExplicitBound(final AnnotatedTypeMirror wildcard) {
         return ((Type.WildcardType) wildcard.getUnderlyingType()).isUnbound();
     }
 
     /**
-     * This method identifies wildcard types that have an explicit super bound. NOTE:
-     * Type.WildcardType.isSuperBound will return true for BOTH unbound and super bound wildcards
+     * This method identifies wildcard types that have an explicit super bound.
+     * NOTE: Type.WildcardType.isSuperBound will return true for BOTH unbound and super bound wildcards
      * which necessitates this method
      */
     public static boolean hasExplicitSuperBound(final AnnotatedTypeMirror wildcard) {
@@ -148,9 +145,9 @@ public class AnnotatedTypes {
     }
 
     /**
-     * This method identifies wildcard types that have an explicit extends bound. NOTE:
-     * Type.WildcardType.isExtendsBound will return true for BOTH unbound and extends bound
-     * wildcards which necessitates this method
+     * This method identifies wildcard types that have an explicit extends bound.
+     * NOTE: Type.WildcardType.isExtendsBound will return true for BOTH unbound and extends bound wildcards
+     * which necessitates this method
      */
     public static boolean hasExplicitExtendsBound(final AnnotatedTypeMirror wildcard) {
         final Type.WildcardType wildcardType = (Type.WildcardType) wildcard.getUnderlyingType();
@@ -159,11 +156,11 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Return the base type of type or any of its outer types that starts with the given type. If
-     * none exists, return null.
+     * Return the base type of type or any of its outer types that starts
+     * with the given type. If none exists, return null.
      *
-     * @param type a type
-     * @param superType a type
+     * @param type     a type
+     * @param superType   a type
      */
     private static AnnotatedTypeMirror asOuterSuper(
             Types types,
@@ -195,7 +192,9 @@ public class AnnotatedTypes {
         return asSuper(atypeFactory, type, superType);
     }
 
-    /** @see #asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element) */
+    /**
+     * @see #asMemberOf(Types, AnnotatedTypeFactory, AnnotatedTypeMirror, Element)
+     */
     public static AnnotatedExecutableType asMemberOf(
             Types types,
             AnnotatedTypeFactory atypeFactory,
@@ -205,27 +204,31 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns the type of an element when that element is viewed as a member of, or otherwise
-     * directly contained by, a given type.
+     * Returns the type of an element when that element is viewed as a member
+     * of, or otherwise directly contained by, a given type.
      *
-     * <p>For example, when viewed as a member of the parameterized type {@code Set<@NonNull
-     * String>}, the {@code Set.add} method is an {@code ExecutableType} whose parameter is of type
+     * For example, when viewed as a member of the parameterized type
+     * {@code Set<@NonNull String>}, the {@code Set.add} method is an
+     * {@code ExecutableType} whose parameter is of type
      * {@code @NonNull String}.
      *
-     * <p>The result is customized according to the type system semantics, according to {@link
-     * AnnotatedTypeFactory#postAsMemberOf( AnnotatedTypeMirror, AnnotatedTypeMirror, Element)}.
+     * The result is customized according to the type system semantics,
+     * according to {@link AnnotatedTypeFactory#postAsMemberOf(
+     * AnnotatedTypeMirror, AnnotatedTypeMirror, Element)}.
      *
-     * <p>Note that this method does not currently return (top level) captured types for type
-     * parameters, parameters, and return types. Instead, the original wildcard is returned, or
-     * sometimes inferring type arguments will create a wildcard type which is returned. The bounds
-     * of an inferred wildcard may itself have captures.
+     * Note that this method does not currently return (top level) captured types
+     * for type parameters, parameters, and return types. Instead, the original
+     * wildcard is returned, or sometimes inferring type arguments will create
+     * a wildcard type which is returned. The bounds of an inferred wildcard
+     * may itself have captures.
      *
-     * <p>To prevent unsoundness, the rest of the checker framework must expect wildcard in places
-     * where captures should appear (like type arguments). This should just involve the bounds of
-     * the wildcard where the bounds of the capture would have been used.
+     * To prevent unsoundness, the rest of the checker framework must expect
+     * wildcard in places where captures should appear (like type arguments).
+     * This should just involve the bounds of the wildcard where the bounds
+     * of the capture would have been used.
      *
-     * @param t a type
-     * @param elem an element
+     * @param t    a type
+     * @param elem  an element
      */
     public static AnnotatedTypeMirror asMemberOf(
             Types types, AnnotatedTypeFactory atypeFactory, AnnotatedTypeMirror t, Element elem) {
@@ -379,13 +382,13 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns the iterated type of the passed iterable type, and throws {@link
-     * IllegalArgumentException} if the passed type is not iterable.
+     * Returns the iterated type of the passed iterable type, and throws
+     * {@link IllegalArgumentException} if the passed type is not iterable.
      *
-     * <p>The iterated type is the component type of an array, and the type argument of {@link
-     * Iterable} for declared types.
+     * The iterated type is the component type of an array, and the type
+     * argument of {@link Iterable} for declared types.
      *
-     * @param iterableType the iterable type (either array or declared)
+     * @param iterableType  the iterable type (either array or declared)
      * @return the types of elements in the iterable type
      */
     public static AnnotatedTypeMirror getIteratedType(
@@ -433,7 +436,7 @@ public class AnnotatedTypes {
      * Returns all the super types of the given declared type.
      *
      * @param type a declared type
-     * @return all the supertypes of the given type
+     * @return  all the supertypes of the given type
      */
     public static Set<AnnotatedDeclaredType> getSuperTypes(AnnotatedDeclaredType type) {
 
@@ -465,12 +468,14 @@ public class AnnotatedTypes {
     }
 
     /**
-     * A utility method that takes a Method element and returns a set of all elements that this
-     * method overrides (as {@link ExecutableElement}s)
+     * A utility method that takes a Method element and returns a set
+     * of all elements that this method overrides (as
+     * {@link ExecutableElement}s)
      *
-     * @param method the overriding method
-     * @return an unmodifiable set of {@link ExecutableElement}s representing the elements that
-     *     method overrides
+     * @param method
+     *            the overriding method
+     * @return an unmodifiable set of {@link ExecutableElement}s
+     *         representing the elements that method overrides
      */
     public static Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods(
             Elements elements, AnnotatedTypeFactory atypeFactory, ExecutableElement method) {
@@ -481,15 +486,19 @@ public class AnnotatedTypes {
     }
 
     /**
-     * A utility method that takes the element for a method and the set of all supertypes of the
-     * method's containing class and returns the set of all elements that method overrides (as
+     * A utility method that takes the element for a method and the
+     * set of all supertypes of the method's containing class and
+     * returns the set of all elements that method overrides (as
      * {@link ExecutableElement}s).
      *
-     * @param method the overriding method
-     * @param supertypes the set of supertypes to check for methods that are overridden by {@code
-     *     method}
-     * @return an unmodified set of {@link ExecutableElement}s representing the elements that {@code
-     *     method} overrides among {@code supertypes}
+     * @param method
+     *            the overriding method
+     * @param supertypes
+     *            the set of supertypes to check for methods that are
+     *            overridden by {@code method}
+     * @return an unmodified set of {@link ExecutableElement}s
+     *         representing the elements that {@code method} overrides
+     *         among {@code supertypes}
      */
     public static Map<AnnotatedDeclaredType, ExecutableElement> overriddenMethods(
             Elements elements,
@@ -520,21 +529,22 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Given a method or constructor invocation, return a mapping of the type variables to their
-     * type arguments, if any exist.
+     * Given a method or constructor invocation, return a mapping
+     * of the type variables to their type arguments, if any exist.
      *
-     * <p>It uses the method or constructor invocation type arguments if they were specified and
-     * otherwise it infers them based on the passed arguments or the return type context, according
-     * to JLS 15.12.2.
+     * It uses the method or constructor invocation type arguments if they
+     * were specified and otherwise it infers them based on the passed arguments
+     * or the return type context, according to JLS 15.12.2.
      *
      * @param atypeFactory the annotated type factory
-     * @param expr the method or constructor invocation tree; the passed argument has to be a
-     *     subtype of MethodInvocationTree or NewClassTree
+     * @param expr the method or constructor invocation tree; the passed argument
+     *   has to be a subtype of MethodInvocationTree or NewClassTree
      * @param elt the element corresponding to the tree
-     * @param preType the (partially annotated) type corresponding to the tree - the result of
-     *     AnnotatedTypes.asMemberOf with the receiver and elt.
-     * @return the mapping of the type variables to type arguments for this method or constructor
-     *     invocation
+     * @param preType the (partially annotated) type corresponding to the tree -
+     *   the result of AnnotatedTypes.asMemberOf with the receiver and elt.
+     *
+     * @return the mapping of the type variables to type arguments for
+     *   this method or constructor invocation
      */
     public static Map<TypeVariable, AnnotatedTypeMirror> findTypeArguments(
             final ProcessingEnvironment processingEnv,
@@ -587,8 +597,7 @@ public class AnnotatedTypes {
         }
     }
     /**
-     * @deprecated Use {@link #leastUpperBound(AnnotatedTypeFactory, AnnotatedTypeMirror,
-     *     AnnotatedTypeMirror)}
+     * @deprecated Use {@link #leastUpperBound(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}
      */
     @Deprecated
     public static AnnotatedTypeMirror leastUpperBound(
@@ -601,7 +610,6 @@ public class AnnotatedTypes {
 
     /**
      * Returns the lub of two annotated types.
-     *
      * @param atypeFactory AnnotatedTypeFactory
      * @param type1 annotated type
      * @param type2 annotated type
@@ -624,9 +632,9 @@ public class AnnotatedTypes {
      *
      * @param atypeFactory AnnotatedTypeFactory
      * @param type1 annotated type whose underlying type must be a subtype or convertible to
-     *     lubTypeMirror
+     *              lubTypeMirror
      * @param type2 annotated type whose underlying type must be a subtype or convertible to
-     *     lubTypeMirror
+     *              lubTypeMirror
      * @param lubTypeMirror underlying type of the returned lub
      * @return the lub of type1 and type2 with underlying type lubTypeMirror
      */
@@ -639,18 +647,19 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns the method parameters for the invoked method, with the same number of arguments
-     * passed in the methodInvocation tree.
+     * Returns the method parameters for the invoked method, with the same number
+     * of arguments passed in the methodInvocation tree.
      *
-     * <p>If the invoked method is not a vararg method or it is a vararg method but the invocation
-     * passes an array to the vararg parameter, it would simply return the method parameters.
+     * If the invoked method is not a vararg method or it is a vararg method
+     * but the invocation passes an array to the vararg parameter, it would simply
+     * return the method parameters.
      *
-     * <p>Otherwise, it would return the list of parameters as if the vararg is expanded to match
-     * the size of the passed arguments.
+     * Otherwise, it would return the list of parameters as if the vararg is expanded
+     * to match the size of the passed arguments.
      *
      * @param method the method's type
      * @param args the arguments to the method invocation
-     * @return the types that the method invocation arguments need to be subtype of
+     * @return  the types that the method invocation arguments need to be subtype of
      */
     public static List<AnnotatedTypeMirror> expandVarArgs(
             AnnotatedTypeFactory atypeFactory,
@@ -707,14 +716,13 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter
-     * type expect at the indexth position (unwrapping var args if necessary).
+     * Given an AnnotatedExecutableType of a method or constructor declaration, get the parameter type
+     * expect at the indexth position (unwrapping var args if necessary).
      *
-     * @param methodType AnnotatedExecutableType of method or constructor containing parameter to
-     *     return
+     * @param methodType AnnotatedExecutableType of method or constructor containing parameter to return
      * @param index position of parameter type to return
-     * @return if that parameter is a varArgs, return the component of the var args and NOT the
-     *     array type. Otherwise, return the exact type of the parameter in the index position
+     * @return if that parameter is a varArgs, return the component of the var args and NOT the array type.
+     *         Otherwise, return the exact type of the parameter in the index position
      */
     public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
             AnnotatedExecutableType methodType, int index) {
@@ -734,12 +742,12 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Return a list of the AnnotatedTypeMirror of the passed expression trees, in the same order as
-     * the trees.
+     * Return a list of the AnnotatedTypeMirror of the passed
+     * expression trees, in the same order as the trees.
      *
      * @param paramTypes the parameter types to use as assignment context
      * @param trees the AST nodes
-     * @return a list with the AnnotatedTypeMirror of each tree in trees
+     * @return  a list with the AnnotatedTypeMirror of each tree in trees
      */
     public static List<AnnotatedTypeMirror> getAnnotatedTypes(
             AnnotatedTypeFactory atypeFactory,
@@ -780,7 +788,7 @@ public class AnnotatedTypes {
      * Returns the depth of the array type of the provided array.
      *
      * @param array the type of the array
-     * @return the depth of the provided array
+     * @return  the depth of the provided array
      */
     public static int getArrayDepth(AnnotatedArrayType array) {
         int counter = 0;
@@ -801,10 +809,10 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Checks whether type contains the given modifier, also recursively in type arguments and
-     * arrays. This method might be easier to implement directly as instance method in
-     * AnnotatedTypeMirror; it corresponds to a "deep" version of {@link
-     * AnnotatedTypeMirror#hasAnnotation(AnnotationMirror)}.
+     * Checks whether type contains the given modifier, also recursively in type arguments and arrays.
+     * This method might be easier to implement directly as instance method in AnnotatedTypeMirror;
+     * it corresponds to a "deep" version of
+     * {@link AnnotatedTypeMirror#hasAnnotation(AnnotationMirror)}.
      *
      * @param type the type to search
      * @param modifier the modifier to search for
@@ -875,13 +883,15 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Sees if the passed in array of {@link ElementType} values have the correct set of values
-     * which defines a type qualifier
+     * Sees if the passed in array of {@link ElementType} values have the correct set of
+     * values which defines a type qualifier
      *
-     * @param elements an array of {@link ElementType} values
+     * @param elements
+     *            an array of {@link ElementType} values
      * @param cls the annotation class being tested; used for diagnostic messages only
-     * @throws RuntimeException if the array contains both {@link ElementType#TYPE_USE} and
-     *     something besides {@link ElementType#TYPE_PARAMETER}
+     * @throws RuntimeException if the array contains both
+     *         {@link ElementType#TYPE_USE} and something besides
+     *         {@link ElementType#TYPE_PARAMETER}
      */
     public static boolean hasTypeQualifierElementTypes(ElementType[] elements, Class<?> cls) {
         boolean hasTypeUse = false;
@@ -909,18 +919,20 @@ public class AnnotatedTypes {
     }
 
     /**
-     * Returns true if the given {@link AnnotatedTypeMirror} passed a set of well-formedness checks.
-     * The method will never return false for valid types, but might not catch all invalid types.
+     * Returns true if the given {@link AnnotatedTypeMirror} passed a set of
+     * well-formedness checks. The method will never return false for valid
+     * types, but might not catch all invalid types.
      *
-     * <p>Currently, the following is checked:
-     *
+     * <p>
+     * Currently, the following is checked:
      * <ol>
-     *   <li>There should not be multiple annotations from the same hierarchy.
-     *   <li>There should not be more annotations than the width of the qualifier hierarchy.
-     *   <li>If the type is not a type variable, then the number of annotations should be the same
-     *       as the width of the qualifier hierarchy.
-     *   <li>These properties should also hold recursively for component types of arrays, as wells
-     *       as bounds of type variables and wildcards.
+     * <li>There should not be multiple annotations from the same hierarchy.
+     * <li>There should not be more annotations than the width of the qualifier
+     * hierarchy.
+     * <li>If the type is not a type variable, then the number of annotations
+     * should be the same as the width of the qualifier hierarchy.
+     * <li>These properties should also hold recursively for component types of
+     * arrays, as wells as bounds of type variables and wildcards.
      * </ol>
      */
     public static boolean isValidType(
@@ -1021,15 +1033,17 @@ public class AnnotatedTypes {
     private static String annotationClassName =
             java.lang.annotation.Annotation.class.getCanonicalName();
 
-    /** @return true if the underlying type of this atm is a java.lang.annotation.Annotation */
+    /**
+     * @return true if the underlying type of this atm is a java.lang.annotation.Annotation
+     */
     public static boolean isJavaLangAnnotation(final AnnotatedTypeMirror atm) {
         return TypesUtils.isDeclaredOfName(atm.getUnderlyingType(), annotationClassName);
     }
 
     /**
-     * @return true if atm is an Annotation interface, i.e. an implementation of
-     *     java.lang.annotation.Annotation e.g. @interface MyAnno - implementsAnnotation would
-     *     return true when called on an AnnotatedDeclaredType representing a use of MyAnno
+     * @return true if atm is an Annotation interface, i.e. an implementation of java.lang.annotation.Annotation
+     * e.g. @interface MyAnno - implementsAnnotation would return true when called on an
+     * AnnotatedDeclaredType representing a use of MyAnno
      */
     public static boolean implementsAnnotation(final AnnotatedTypeMirror atm) {
         if (atm.getKind() != TypeKind.DECLARED) {
@@ -1069,7 +1083,9 @@ public class AnnotatedTypes {
         return false;
     }
 
-    /** @return true if the typeVar1 and typeVar2 are two uses of the same type variable */
+    /**
+     * @return true if the typeVar1 and typeVar2 are two uses of the same type variable
+     */
     public static boolean haveSameDeclaration(
             Types types,
             final AnnotatedTypeVariable typeVar1,
@@ -1078,14 +1094,14 @@ public class AnnotatedTypes {
     }
 
     /**
-     * When overriding a method, you must include the same number of type parameters as the base
-     * method. By index, these parameters are considered equivalent to the type parameters of the
-     * overridden method. Necessary conditions: Both type variables are defined in methods One of
-     * the two methods overrides the other Within their method declaration, both types have the same
-     * type parameter index
+     * When overriding a method, you must include the same number of type parameters as the base method.  By index,
+     * these parameters are considered equivalent to the type parameters of the overridden method.
+     * Necessary conditions:
+     *    Both type variables are defined in methods
+     *    One of the two methods overrides the other
+     *    Within their method declaration, both types have the same type parameter index
      *
-     * @return returns true if type1 and type2 are corresponding type variables (that is, either one
-     *     "overrides" the other)
+     * @return  returns true if type1 and type2 are corresponding type variables (that is, either one "overrides" the other)
      */
     public static boolean areCorrespondingTypeVariables(
             Elements elements, AnnotatedTypeVariable type1, AnnotatedTypeVariable type2) {
@@ -1119,10 +1135,9 @@ public class AnnotatedTypes {
     }
 
     /**
-     * When comparing types against the bounds of a type variable, we may encounter other type
-     * variables, wildcards, and intersections in those bounds. This method traverses the bounds
-     * until it finds a concrete type from which it can pull an annotation.
-     *
+     * When comparing types against the bounds of a type variable, we may encounter other
+     * type variables, wildcards, and intersections in those bounds.  This method traverses
+     * the bounds until it finds a concrete type from which it can pull an annotation.
      * @param top the top of the hierarchy for which you are searching
      * @return the AnnotationMirror that represents the type of toSearch in the hierarchy of top
      */
@@ -1133,14 +1148,13 @@ public class AnnotatedTypes {
         return findEffectiveAnnotationInHierarchy(qualifierHierarchy, toSearch, top, false);
     }
     /**
-     * When comparing types against the bounds of a type variable, we may encounter other type
-     * variables, wildcards, and intersections in those bounds. This method traverses the bounds
-     * until it finds a concrete type from which it can pull an annotation.
-     *
+     * When comparing types against the bounds of a type variable, we may encounter other
+     * type variables, wildcards, and intersections in those bounds.  This method traverses
+     * the bounds until it finds a concrete type from which it can pull an annotation.
      * @param top the top of the hierarchy for which you are searching
-     * @param canBeEmpty whether or not the effective type can have NO annotation in the hierarchy
-     *     specified by top If this param is false, an exception will be thrown if no annotation is
-     *     found Otherwise the result is null
+     * @param canBeEmpty whether or not the effective type can have NO annotation in the hierarchy specified by top
+     *                   If this param is false, an exception will be thrown if no annotation is found
+     *                   Otherwise the result is null
      * @return the AnnotationMirror that represents the type of toSearch in the hierarchy of top
      */
     public static AnnotationMirror findEffectiveAnnotationInHierarchy(
@@ -1198,11 +1212,10 @@ public class AnnotatedTypes {
     }
 
     /**
-     * When comparing types against the bounds of a type variable, we may encounter other type
-     * variables, wildcards, and intersections in those bounds. This method traverses the lower
-     * bounds until it finds a concrete type from which it can pull an annotation. This occurs for
-     * every hierarchy in QualifierHierarchy
-     *
+     * When comparing types against the bounds of a type variable, we may encounter other
+     * type variables, wildcards, and intersections in those bounds.  This method traverses
+     * the lower bounds until it finds a concrete type from which it can pull an annotation.
+     * This occurs for every hierarchy in QualifierHierarchy
      * @return the set of effective annotation mirrors in all hierarchies
      */
     public static Set<AnnotationMirror> findEffectiveLowerBoundAnnotations(
@@ -1244,11 +1257,10 @@ public class AnnotatedTypes {
     }
 
     /**
-     * When comparing types against the bounds of a type variable, we may encounter other type
-     * variables, wildcards, and intersections in those bounds. This method traverses the bounds
-     * until it finds a concrete type from which it can pull an annotation. This occurs for every
-     * hierarchy in QualifierHierarchy
-     *
+     * When comparing types against the bounds of a type variable, we may encounter other
+     * type variables, wildcards, and intersections in those bounds.  This method traverses
+     * the bounds until it finds a concrete type from which it can pull an annotation.
+     * This occurs for every hierarchy in QualifierHierarchy
      * @return the set of effective annotation mirrors in all hierarchies
      */
     public static Set<AnnotationMirror> findEffectiveAnnotations(
@@ -1307,7 +1319,6 @@ public class AnnotatedTypes {
 
     /**
      * Get's the lowest primary annotation of all bounds in the intersection
-     *
      * @param isect the intersection for which we are glbing bounds
      * @param qualifierHierarchy the qualifier used to get the hierarchies in which to glb
      * @return a set of annotations representing the glb of the intersection's bounds
@@ -1332,27 +1343,32 @@ public class AnnotatedTypes {
                 && !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
     }
 
-    /** Returns true if wildcard type was explicitly unbounded. */
+    /**
+     * Returns true if wildcard type was explicitly unbounded.
+     */
     public static boolean isExplicitlyExtendsBounded(final AnnotatedWildcardType wildcardType) {
         return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound()
                 && !((Type.WildcardType) wildcardType.getUnderlyingType()).isUnbound();
     }
 
-    /** Returns true if this type is super bounded or unbounded. */
+    /**
+     * Returns true if this type is super bounded or unbounded.
+     */
     public static boolean isUnboundedOrSuperBounded(final AnnotatedWildcardType wildcardType) {
         return ((Type.WildcardType) wildcardType.getUnderlyingType()).isSuperBound();
     }
 
-    /** Returns true if this type is extends bounded or unbounded. */
+    /**
+     * Returns true if this type is extends bounded or unbounded.
+     */
     public static boolean isUnboundedOrExtendsBounded(final AnnotatedWildcardType wildcardType) {
         return ((Type.WildcardType) wildcardType.getUnderlyingType()).isExtendsBound();
     }
 
     /**
-     * Copies explicit annotations and annotations resulting from resolution of polymorphic
-     * qualifiers from {@code constructor} to {@code returnType}. If {@code returnType} has an
-     * annotation in the same hierarchy of an annotation to be copied, that annotation is not
-     * copied.
+     * Copies explicit annotations and annotations resulting from resolution of polymorphic qualifiers
+     * from {@code constructor} to {@code returnType}. If {@code returnType} has an annotation in the
+     * same hierarchy of an annotation to be copied, that annotation is not copied.
      *
      * @param atypeFactory type factory
      * @param returnType return type to copy annotations to

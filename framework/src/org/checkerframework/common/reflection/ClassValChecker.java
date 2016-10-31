@@ -7,7 +7,8 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.framework.qual.StubFiles;
 
 /**
- * The ClassVal Checker provides a sound estimate of the binary name of Class objects.
+ * The ClassVal Checker provides a sound estimate of the binary name of Class
+ * objects.
  *
  * @checker_framework.manual #methodval-and-classval-checkers ClassVal Checker
  */

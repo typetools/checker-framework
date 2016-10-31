@@ -5,7 +5,9 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** JUnit tests for the Nullness checker when running with concurrent semantics */
+/**
+ * JUnit tests for the Nullness checker when running with concurrent semantics
+ */
 public class NullnessConcurrentTest extends CheckerFrameworkPerDirectoryTest {
 
     public NullnessConcurrentTest(List<File> testFiles) {

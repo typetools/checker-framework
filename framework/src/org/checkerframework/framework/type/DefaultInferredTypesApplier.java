@@ -9,7 +9,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.ErrorReporter;
 
-/** Utility class for applying the annotations inferred by dataflow to a given type. */
+/**
+ * Utility class for applying the annotations inferred by dataflow to a given type.
+ */
 public class DefaultInferredTypesApplier {
 
     // At the moment, only Inference uses the omitSubtypingCheck option.
@@ -34,9 +36,8 @@ public class DefaultInferredTypesApplier {
     }
 
     /**
-     * For each top in qualifier hierarchy, traverse inferred and copy the required annotations over
-     * to type.
-     *
+     * For each top in qualifier hierarchy, traverse inferred and copy the required annotations over to
+     * type.
      * @param type the type to which annotations are being applied
      * @param inferredSet the type inferred by data flow
      * @param inferredTypeMirror underlying inferred type

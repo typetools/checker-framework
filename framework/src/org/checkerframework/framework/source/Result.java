@@ -15,10 +15,11 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
- * Represents the outcome of a type-checking operation (success, warning, or failure, plus a list of
- * explanatory messages). {@link Result}s created during type-checking can be reported using {@link
- * SourceChecker#report}, which ultimately delivers an error or warning message via the JSR 199
- * compiler interface.
+ * Represents the outcome of a type-checking operation (success,
+ * warning, or failure, plus a list of explanatory messages).
+ * {@link Result}s created during type-checking can be reported using
+ * {@link SourceChecker#report}, which ultimately delivers an error
+ * or warning message via the JSR 199 compiler interface.
  *
  * @see SourceChecker#report
  */
@@ -29,7 +30,9 @@ public final class Result {
         FAILURE,
         WARNING;
 
-        /** @return whichever of the given types is most serious */
+        /**
+         * @return whichever of the given types is most serious
+         */
         public static final Type merge(Type a, Type b) {
             if (a == FAILURE || b == FAILURE) {
                 return FAILURE;
@@ -44,7 +47,7 @@ public final class Result {
     /** The type of result (success, warning, failure). */
     private final Type type;
 
-    /** The messages for the results * */
+    /** The messages for the results **/
     private final List<DiagMessage> messages;
 
     /** The success result. */
@@ -53,8 +56,10 @@ public final class Result {
     /**
      * Creates a new failure result with the given message key.
      *
-     * @param messageKey the key representing the reason for failure
-     * @param args optional arguments to be included in the message
+     * @param messageKey
+     *            the key representing the reason for failure
+     * @param args
+     *            optional arguments to be included in the message
      * @return the failure result
      */
     public static Result failure(
@@ -65,8 +70,10 @@ public final class Result {
     /**
      * Creates a new warning result with the given message.
      *
-     * @param messageKey the key for the warning message
-     * @param args optional arguments to be included in the message
+     * @param messageKey
+     *            the key for the warning message
+     * @param args
+     *            optional arguments to be included in the message
      * @return the warning result
      */
     public static Result warning(
@@ -92,10 +99,12 @@ public final class Result {
     /**
      * Merges two results into one.
      *
-     * @param r the result to merge with this result
-     * @return a result that is the success result if both this and {@code r} are success results,
-     *     or a result that has the more significant type (failure &gt; warning &gt; success) and
-     *     the message keys of both this result and {@code r}
+     * @param r
+     *            the result to merge with this result
+     * @return a result that is the success result if both this and
+     *         {@code r} are success results, or a result that has the
+     *         more significant type (failure &gt; warning &gt; success) and
+     *         the message keys of both this result and {@code r}
      */
     public Result merge(Result r) {
         if (r == null) {
@@ -112,22 +121,31 @@ public final class Result {
         return new Result(Type.merge(r.type, this.type), messages);
     }
 
-    /** @return true if the result is success (not a failure or warning) */
+    /**
+     * @return true if the result is success (not a failure or
+     *         warning)
+     */
     public boolean isSuccess() {
         return type == Type.SUCCESS;
     }
 
-    /** @return true if the result is a failure */
+    /**
+     * @return true if the result is a failure
+     */
     public boolean isFailure() {
         return type == Type.FAILURE;
     }
 
-    /** @return true if the result is a warning */
+    /**
+     * @return true if the result is a warning
+     */
     public boolean isWarning() {
         return type == Type.WARNING;
     }
 
-    /** @return the message keys associated with the result */
+    /**
+     * @return the message keys associated with the result
+     */
     public List<String> getMessageKeys() {
         List<String> msgKeys = new LinkedList<String>();
         for (DiagMessage msg : getDiagMessages()) {
@@ -137,7 +155,9 @@ public final class Result {
         return Collections.</*@NonNull*/ String>unmodifiableList(msgKeys);
     }
 
-    /** @return an unmodifiable list of the message pairs */
+    /**
+     * @return an unmodifiable list of the message pairs
+     */
     public List<DiagMessage> getDiagMessages() {
         return Collections.</*@NonNull*/ DiagMessage>unmodifiableList(messages);
     }
@@ -159,10 +179,12 @@ public final class Result {
     /**
      * A class that represents diagnostic messages.
      *
-     * <p>{@code DiagMessage} encapsulate the message key which would identify the relevant standard
-     * error message according to the user locale.
+     * {@code DiagMessage} encapsulate the message key which would identify
+     * the relevant standard error message according to the user locale.
      *
-     * <p>The optional arguments are possible custom strings for the error message.
+     * The optional arguments are possible custom strings for the error
+     * message.
+     *
      */
     public static class DiagMessage {
         private final /*@CompilerMessageKey*/ String message;
@@ -177,12 +199,16 @@ public final class Result {
             }
         }
 
-        /** @return the message key of this DiagMessage */
+        /**
+         * @return the message key of this DiagMessage
+         */
         public /*@CompilerMessageKey*/ String getMessageKey() {
             return this.message;
         }
 
-        /** @return the customized optional arguments for the message */
+        /**
+         * @return the customized optional arguments for the message
+         */
         public Object[] getArgs() {
             return this.args;
         }

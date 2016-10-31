@@ -2,6 +2,7 @@
 // see also the test for Issue450
 // Test file for lambda syntax
 
+import java.lang.Runnable;
 import java.lang.String;
 import java.lang.Thread;
 

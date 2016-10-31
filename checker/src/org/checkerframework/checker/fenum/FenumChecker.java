@@ -13,14 +13,17 @@ import org.checkerframework.framework.qual.StubFiles;
 /**
  * The main checker class for the Fake Enum Checker.
  *
- * <p>There are two options to distinguish different enumerators:
+ * There are two options to distinguish different enumerators:
  *
  * <ol>
- *   <li> {@code @Fenum("Name")}: introduces a fake enumerator with the name "Name". Enumerators
- *       with different names are distinct. The default name is empty, but you are encouraged to use
- *       a unique name for your purpose.
- *   <li> Alternatively, you can specify the annotation to use with the {@code -Aqual} command line
- *       argument.
+ * <li> {@code @Fenum("Name")}: introduces a fake enumerator with the name
+ * "Name". Enumerators with different names are distinct. The default name is
+ * empty, but you are encouraged to use a unique name for your purpose.
+ * </li>
+ *
+ * <li> Alternatively, you can specify the annotation to use with the
+ * {@code -Aqual} command line argument.
+ * </li>
  * </ol>
  *
  * @author wmdietl
@@ -39,7 +42,6 @@ public class FenumChecker extends BaseTypeChecker {
 
     /**
      * Copied from SubtypingChecker; cannot reuse it, because SubtypingChecker is final.
-     *
      * @see SubtypingChecker#getSuppressWarningsKeys()
      */
     @Override

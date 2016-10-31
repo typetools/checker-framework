@@ -25,8 +25,8 @@ public @interface GuardedBy {
      * The Java expressions that need to be held.
      *
      * @see <a
-     *     href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
-     *     of Java expressions</a>
+     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
+     *      of Java expressions</a>
      */
     String[] value() default {};
 }

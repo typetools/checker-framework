@@ -6,7 +6,7 @@ class MetaPostcondition {
     String f1, f2, f3;
     MetaPostcondition p;
 
-    /** *** normal postcondition ***** */
+    /***** normal postcondition ******/
     @EnsuresOdd("f1")
     void oddF1() {
         f1 = null;
@@ -97,7 +97,7 @@ class MetaPostcondition {
         error2(p1, p2);
     }
 
-    /** *** conditional postcondition ***** */
+    /***** conditional postcondition ******/
     @EnsuresOddIf(result = true, expression = "f1")
     boolean condOddF1(boolean b) {
         if (b) {

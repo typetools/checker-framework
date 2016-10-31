@@ -27,7 +27,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.javacutil.ErrorReporter;
 
-/** Applies the annotations present for a method type parameter onto an AnnotatedTypeVariable. */
+/**
+ * Applies the annotations present for a method type parameter onto an AnnotatedTypeVariable.
+ */
 public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
 
     public static void apply(
@@ -35,7 +37,9 @@ public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
         new MethodTypeParamApplier(type, element, typeFactory).extractAndApply();
     }
 
-    /** @return true if element represents a type parameter for a method */
+    /**
+     * @return true if element represents a type parameter for a method
+     */
     public static boolean accepts(final AnnotatedTypeMirror type, final Element element) {
         return element.getKind() == ElementKind.TYPE_PARAMETER
                 && element.getEnclosingElement() instanceof Symbol.MethodSymbol;
@@ -60,19 +64,25 @@ public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
         enclosingMethod = (Symbol.MethodSymbol) element.getEnclosingElement();
     }
 
-    /** @return TargetType.METHOD_TYPE_PARAMETER */
+    /**
+     * @return TargetType.METHOD_TYPE_PARAMETER
+     */
     @Override
     protected TargetType lowerBoundTarget() {
         return TargetType.METHOD_TYPE_PARAMETER;
     }
 
-    /** @return TargetType.METHOD_TYPE_PARAMETER_BOUND */
+    /**
+     * @return TargetType.METHOD_TYPE_PARAMETER_BOUND
+     */
     @Override
     protected TargetType upperBoundTarget() {
         return TargetType.METHOD_TYPE_PARAMETER_BOUND;
     }
 
-    /** @return the index of element in the type parameter list of its enclosing method */
+    /**
+     * @return the index of element in the type parameter list of its enclosing method
+     */
     @Override
     public int getElementIndex() {
         return enclosingMethod.getTypeParameters().indexOf(element);
@@ -100,7 +110,9 @@ public class MethodTypeParamApplier extends TypeParamElementAnnotationApplier {
         };
     }
 
-    /** @return the TypeCompounds (annotations) of the declaring element */
+    /**
+     * @return the TypeCompounds (annotations) of the declaring element
+     */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
         return enclosingMethod.getRawTypeAttributes();

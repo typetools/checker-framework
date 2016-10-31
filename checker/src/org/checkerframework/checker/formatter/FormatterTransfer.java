@@ -19,7 +19,8 @@ public class FormatterTransfer extends CFTransfer {
     }
 
     /**
-     * Makes it so that the {@link FormatUtil#asFormat} method returns a correctly annotated String.
+     * Makes it so that the {@link FormatUtil#asFormat} method returns
+     * a correctly annotated String.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(

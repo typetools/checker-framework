@@ -22,7 +22,9 @@ import org.checkerframework.framework.source.Result;
 
 /**
  * @author plvines
- *     <p>Visitor for the Constant Value type-system.
+ *
+ *         Visitor for the Constant Value type-system.
+ *
  */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
@@ -36,10 +38,9 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues a warning if any constant-value annotation has &gt; MAX_VALUES number of values
-     * provided. Works together with
-     * ValueAnnotatedTypeFactory.ValueTypeAnnotator.replaceWithUnknownValIfTooManyValues which
-     * treats the value as @UnknownVal in this case.
+     * Issues a warning if any constant-value annotation has &gt; MAX_VALUES number of values provided.
+     * Works together with ValueAnnotatedTypeFactory.ValueTypeAnnotator.replaceWithUnknownValIfTooManyValues
+     * which treats the value as @UnknownVal in this case.
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {

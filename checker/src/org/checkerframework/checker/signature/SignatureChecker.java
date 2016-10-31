@@ -4,7 +4,9 @@ import com.sun.source.tree.CompilationUnitTree;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 
-/** @checker_framework.manual #signature-checker Signature Checker */
+/**
+ * @checker_framework.manual #signature-checker Signature Checker
+ */
 @RelevantJavaTypes(CharSequence.class)
 public final class SignatureChecker extends BaseTypeChecker {
 

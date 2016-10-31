@@ -26,6 +26,8 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
+import org.checkerframework.framework.flow.CFStore;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -63,9 +65,6 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         MinLenStore store = result.getRegularStore();
         if (TreeUtils.isMethodInvocation(node.getTree(), listAdd, env)
                 || TreeUtils.isMethodInvocation(node.getTree(), listAdd2, env)) {
-            if (node.getTarget().getReceiver().getTree() == null) {
-                return result;
-            }
             AnnotatedTypeMirror ATM =
                     atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
             AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
@@ -79,9 +78,6 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             return newResult;
         } else if (TreeUtils.isMethodInvocation(node.getTree(), listToArray, env)
                 || TreeUtils.isMethodInvocation(node.getTree(), listToArray1, env)) {
-            if (node.getTarget().getReceiver().getTree() == null) {
-                return result;
-            }
             AnnotatedTypeMirror ATM =
                     atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
             AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
@@ -122,12 +118,14 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     /**
-     * This struct contains all of the information that the refinement functions need. It's called
-     * by each node function (i.e. greater than node, less than node, etc.) and then the results are
-     * passed to the refinement function in whatever order is appropriate for that node. Its
-     * constructor contains all of its logic. I originally wrote this for LowerBoundTransfer but I'm
-     * duplicating it here since I need it again...maybe it should live elsewhere and be shared? I
-     * don't know where though.
+     *  This struct contains all of the information that the refinement
+     *  functions need. It's called by each node function (i.e. greater
+     *  than node, less than node, etc.) and then the results are passed
+     *  to the refinement function in whatever order is appropriate for
+     *  that node. Its constructor contains all of its logic.
+     *  I originally wrote this for LowerBoundTransfer but I'm duplicating it
+     *  here since I need it again...maybe it should live elsewhere and be
+     *  shared? I don't know where though.
      */
     private class RefinementInfo {
         public Node left, right;

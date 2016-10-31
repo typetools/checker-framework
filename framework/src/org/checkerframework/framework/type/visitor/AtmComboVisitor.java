@@ -3,9 +3,8 @@ package org.checkerframework.framework.type.visitor;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 
 /**
- * Visitor interface for all pair-wise combinations of AnnotatedTypeMirrors. See AtmCombo, it
- * enumerates all possible combinations and provides an "accept" method used to call AtmComboVisitor
- * visit methods.
+ * Visitor interface for all pair-wise combinations of AnnotatedTypeMirrors.  See AtmCombo, it enumerates all
+ * possible combinations and provides an "accept" method used to call AtmComboVisitor visit methods.
  */
 public interface AtmComboVisitor<RETURN_TYPE, PARAM> {
 

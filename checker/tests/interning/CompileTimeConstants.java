@@ -2,7 +2,7 @@ import org.checkerframework.checker.interning.qual.*;
 
 public class CompileTimeConstants {
     class A {
-        static final String a1 = "hello";
+        final static String a1 = "hello";
         @Interned String a2 = "a2";
 
         void method() {
@@ -11,7 +11,7 @@ public class CompileTimeConstants {
     }
 
     class B {
-        static final String b1 = "hello";
+        final static String b1 = "hello";
 
         void method() {
             if (b1 == A.a1) {}

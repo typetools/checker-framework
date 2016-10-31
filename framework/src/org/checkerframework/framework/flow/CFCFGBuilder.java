@@ -23,8 +23,9 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A control-flow graph builder (see {@link CFGBuilder}) that knows about the Checker Framework
- * annotations and their representation as {@link AnnotatedTypeMirror}s.
+ * A control-flow graph builder (see {@link CFGBuilder}) that knows
+ * about the Checker Framework annotations and their representation as
+ * {@link AnnotatedTypeMirror}s.
  *
  * @author Stefan Heule
  */
@@ -48,7 +49,9 @@ public class CFCFGBuilder extends CFGBuilder {
         this.factory = factory;
     }
 
-    /** Build the control flow graph of some code. */
+    /**
+     * Build the control flow graph of some code.
+     */
     @Override
     public ControlFlowGraph run(
             CompilationUnitTree root, ProcessingEnvironment env, UnderlyingAST underlyingAST) {

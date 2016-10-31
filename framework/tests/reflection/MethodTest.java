@@ -1,8 +1,9 @@
-import java.lang.reflect.Method;
 import tests.reflection.qual.ReflectBottom;
+import tests.reflection.qual.Top;
 import tests.reflection.qual.Sibling1;
 import tests.reflection.qual.Sibling2;
-import tests.reflection.qual.Top;
+
+import java.lang.reflect.Method;
 
 public class MethodTest {
 
@@ -11,17 +12,17 @@ public class MethodTest {
 
     public void real_class() {
         try {
-            Class<?> c = Object.class;
-            Method m = c.getMethod("equals", Object.class);
-            Object rec = new Object();
-            Object param = new Object();
-            Boolean other = (Boolean) rec.equals(param);
-            Boolean equals = (Boolean) m.invoke(rec, param);
+        Class<?> c = Object.class;
+        Method m = c.getMethod("equals", Object.class);
+        Object rec = new Object();
+        Object param = new Object();
+        Boolean other = (Boolean) rec.equals(param);
+        Boolean equals = (Boolean) m.invoke(rec, param);
         } catch (Exception ignore) {
         }
     }
 
-    public void pass1(@ReflectBottom MethodTest this) {
+    public void pass1(@ReflectBottom MethodTest this ) {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod("getA", new Class[] {});
@@ -30,7 +31,7 @@ public class MethodTest {
         }
     }
 
-    public void pass1b(@ReflectBottom MethodTest this) {
+    public void pass1b(@ReflectBottom MethodTest this ) {
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
             Method m = c.getMethod("getA", (Class[]) null);
@@ -70,13 +71,12 @@ public class MethodTest {
         @Sibling1 Integer val2 = val1;
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
-            Method m = c.getMethod(str, new Class[] {Integer.class});
+            Method m = c.getMethod(str, new Class[] { Integer.class });
             m.invoke(this, val1);
             m.invoke(this, val2);
         } catch (Exception ignore) {
         }
     }
-
     public void pass4b(@ReflectBottom MethodTest this) {
         String str = "setA";
         @Sibling1 int val1 = sibling1;
@@ -104,7 +104,8 @@ public class MethodTest {
     public void pass6() {
         try {
             Class<?> c = MethodTest.class;
-            Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
+            Method m = c
+                    .getMethod("convertSibling2ToSibling1", new Class[] { Integer.class });
             @Sibling1 Object o = m.invoke(null, sibling2);
         } catch (Exception ignore) {
         }
@@ -114,18 +115,19 @@ public class MethodTest {
     public void pass7() {
         try {
             Class<?> c = MethodTest.class;
-            Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {int.class});
+            Method m = c.getMethod("convertSibling2ToSibling1", new Class[] { int.class });
             @Sibling1 Object o = m.invoke(null, sibling2);
         } catch (Exception ignore) {
         }
     }
 
+
     public void pass8(@ReflectBottom MethodTest this) {
         String str = "setA";
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
-            Method m = c.getMethod(str, new Class[] {Integer.class});
-            m.invoke(this, sibling1);
+            Method m = c.getMethod(str, new Class[] { Integer.class });
+            m.invoke(this, sibling1 );
         } catch (Exception ignore) {
         }
     }
@@ -157,7 +159,8 @@ public class MethodTest {
     public void pass11() {
         try {
             Class<?> c = this.getClass();
-            Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
+            Method m = c
+                    .getMethod("convertSibling2ToSibling1", new Class[] { Integer.class });
             @Sibling1 Object o = m.invoke(null, sibling2);
         } catch (Exception ignore) {
         }
@@ -166,7 +169,8 @@ public class MethodTest {
     public void pass11b() {
         try {
             Class<?> c = getClass();
-            Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
+            Method m = c
+                    .getMethod("convertSibling2ToSibling1", new Class[] { Integer.class });
             @Sibling1 Object o = m.invoke(null, sibling2);
         } catch (Exception ignore) {
         }
@@ -213,12 +217,14 @@ public class MethodTest {
         }
     }
 
-    public void test() {}
+    public void test() {
+    }
 
     public void fail1() {
         try {
             Class<?> c = MethodTest.class;
-            Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
+            Method m = c
+                    .getMethod("convertSibling2ToSibling1", new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
             Object o = m.invoke(null, sibling1);
         } catch (Exception ignore) {
@@ -229,7 +235,7 @@ public class MethodTest {
     public void fail2(@ReflectBottom MethodTest this, String str) {
         try {
             Class<?> c = Class.forName(str);
-            Method m = c.getMethod("getA", new Class[] {Integer.class});
+            Method m = c.getMethod("getA", new Class[] { Integer.class });
             //:: error: (assignment.type.incompatible)
             @Sibling1 Object o = m.invoke(this, (@ReflectBottom Object[]) null);
         } catch (Exception ignore) {
@@ -240,7 +246,7 @@ public class MethodTest {
         String str = "setB";
         try {
             Class<?> c = Class.forName("MethodTest$SuperClass");
-            Method m = c.getMethod(str, new Class[] {Integer.class});
+            Method m = c.getMethod(str, new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
             m.invoke(this, sibling1);
         } catch (Exception ignore) {
@@ -251,9 +257,9 @@ public class MethodTest {
         String str = "setA";
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
-            Method m = c.getMethod(str, new Class[] {Integer.class});
+            Method m = c.getMethod(str, new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            m.invoke(this, new Object[] {sibling2});
+            m.invoke(this, new Object[] { sibling2 });
         } catch (Exception ignore) {
         }
     }
@@ -262,9 +268,10 @@ public class MethodTest {
         String str = "setAB";
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
-            Method m = c.getMethod(str, new Class[] {Integer.class, Integer.class});
+            Method m = c.getMethod(str, new Class[] { Integer.class,
+                    Integer.class });
             //:: error: (argument.type.incompatible)
-            m.invoke(this, new Object[] {sibling1, sibling2});
+            m.invoke(this, new Object[] { sibling1, sibling2 });
         } catch (Exception ignore) {
         }
     }
@@ -276,9 +283,9 @@ public class MethodTest {
         }
         try {
             Class<?> c = Class.forName("MethodTest$SubClass");
-            Method m = c.getMethod(str, new Class[] {Integer.class});
+            Method m = c.getMethod(str, new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            m.invoke(this, new Object[] {sibling1});
+            m.invoke(this, new Object[] { sibling1 });
         } catch (Exception ignore) {
         }
     }
@@ -287,19 +294,18 @@ public class MethodTest {
         @Sibling2 MethodTest inst = new @Sibling2 MethodTest();
         try {
             Class<?> c = MethodTest.class;
-            Method m = c.getMethod("convertSibling2ToSibling1", new Class[] {Integer.class});
+            Method m = c.getMethod("convertSibling2ToSibling1", new Class[]{Integer.class});
             @Sibling1 Object o = m.invoke(inst, sibling2);
-        } catch (Exception ignore) {
-        }
+        } catch (Exception ignore) {}
     }
 
     // Test method call that cannot be uniquely resolved
     public void fail8() {
         try {
             Class<?> c = SuperClass.class;
-            Method m = c.getMethod("setC", new Class[] {Integer.class});
+            Method m = c.getMethod("setC", new Class[] { Integer.class });
             //:: error: (argument.type.incompatible)
-            Object o = m.invoke(new SuperClass(), new Object[] {sibling2});
+            Object o = m.invoke(new SuperClass(), new Object[] { sibling2 });
         } catch (Exception ignore) {
         }
     }
@@ -307,7 +313,7 @@ public class MethodTest {
     public void bug(@ReflectBottom MethodTest this) {
         String str = "setA";
         @Sibling1 int val1 = sibling1;
-        @Sibling1 Object[] args = new Object[] {val1};
+        @Sibling1 Object[] args = new Object[]{val1};
         try {
             //
             Class<?> c = Class.forName("MethodTest$SuperClass");
@@ -327,7 +333,7 @@ public class MethodTest {
         @Sibling1 int val1 = sibling1;
         @Sibling2 int val2 = sibling2;
 
-        Object[] args = new Object[] {val1, val2};
+        Object[] args = new Object[]{val1, val2};
         try {
             //
             Class<?> c = Class.forName("MethodTest$SuperClass");
@@ -340,14 +346,14 @@ public class MethodTest {
         } catch (Exception ignore) {
         }
     }
-
     public static @Sibling1 int convertSibling2ToSibling1(@Sibling2 int a) {
         return (@Sibling1 int) 1;
     }
 
     // TODO: Does the testing framework somehow support the compilation of
     // multiple files at the same time?
-    private class SubClass extends SuperClass {}
+    private class SubClass extends SuperClass {
+    }
 
     private class SuperClass {
         private @Sibling1 int a;

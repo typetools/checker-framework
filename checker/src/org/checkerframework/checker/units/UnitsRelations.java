@@ -8,7 +8,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
-/** Interface that is used to specify the relation between units. */
+/**
+ * Interface that is used to specify the relation between units.
+ */
 public interface UnitsRelations {
     /**
      * Initialize the object. Needs to be called before any other method.
@@ -23,8 +25,8 @@ public interface UnitsRelations {
      *
      * @param lht left hand side in multiplication
      * @param rht right hand side in multiplication
-     * @return the annotation to use for the result of the multiplication or null if no special
-     *     relation is known
+     * @return the annotation to use for the result of the multiplication or
+     *      null if no special relation is known
      */
     /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht);
 
@@ -33,8 +35,8 @@ public interface UnitsRelations {
      *
      * @param lht left hand side in division
      * @param rht right hand side in division
-     * @return the annotation to use for the result of the division or null if no special relation
-     *     is known
+     * @return the annotation to use for the result of the division or
+     *      null if no special relation is known
      */
     /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht);
 }

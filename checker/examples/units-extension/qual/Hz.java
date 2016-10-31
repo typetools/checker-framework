@@ -9,7 +9,9 @@ import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.UnitsRelations;
 import org.checkerframework.framework.qual.SubtypeOf;
 
-/** Hertz (Hz), a unit of frequency. */
+/**
+ * Hertz (Hz), a unit of frequency.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

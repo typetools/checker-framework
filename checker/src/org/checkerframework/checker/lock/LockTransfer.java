@@ -29,7 +29,6 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
 
     /** Type-specific version of super.analysis. */
     protected LockAnalysis analysis;
-
     protected LockChecker checker;
     private LockAnnotatedTypeFactory atypeFactory;
 
@@ -43,13 +42,17 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
         this.atypeFactory = (LockAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
-    /** Sets a given {@link Node} to @LockHeld in the given {@code store}. */
+    /**
+     * Sets a given {@link Node} to @LockHeld in the given {@code store}.
+     */
     protected void makeLockHeld(LockStore store, Node node) {
         Receiver internalRepr = FlowExpressions.internalReprOf(atypeFactory, node);
         store.insertValue(internalRepr, atypeFactory.LOCKHELD);
     }
 
-    /** Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}. */
+    /**
+     * Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}.
+     */
     protected void makeLockPossiblyHeld(LockStore store, Node node) {
         Receiver internalRepr = FlowExpressions.internalReprOf(atypeFactory, node);
 
@@ -59,7 +62,10 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
         store.insertLockPossiblyHeld(internalRepr);
     }
 
-    /** Sets a given {@link Node} {@code node} to LockHeld in the given {@link TransferResult}. */
+    /**
+     * Sets a given {@link Node} {@code node} to LockHeld in the given
+     * {@link TransferResult}.
+     */
     protected void makeLockHeld(TransferResult<CFValue, LockStore> result, Node node) {
         if (result.containsTwoStores()) {
             makeLockHeld(result.getThenStore(), node);
@@ -70,8 +76,8 @@ public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTra
     }
 
     /**
-     * Sets a given {@link Node} {@code node} to LockPossiblyHeld in the given {@link
-     * TransferResult}.
+     * Sets a given {@link Node} {@code node} to LockPossiblyHeld in the given
+     * {@link TransferResult}.
      */
     protected void makeLockPossiblyHeld(TransferResult<CFValue, LockStore> result, Node node) {
         if (result.containsTwoStores()) {

@@ -8,12 +8,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation used to indicate what Checker Framework options a checker supports. The {@link
- * SourceChecker#getSupportedOptions} method constructs its result from the value of this annotation
- * and additionally prefixing the checker class name.
+ * An annotation used to indicate what Checker Framework options a checker supports.
+ * The {@link SourceChecker#getSupportedOptions} method constructs its
+ * result from the value of this annotation and additionally prefixing
+ * the checker class name.
  *
- * <p>In contrast to {@link javax.annotation.processing.SupportedOptions}, note that this qualifier
- * is {@link Inherited}.
+ * In contrast to
+ * {@link javax.annotation.processing.SupportedOptions},
+ * note that this qualifier is {@link Inherited}.
  *
  * @see SupportedLintOptions
  * @see javax.annotation.processing.SupportedOptions

@@ -5,6 +5,8 @@
 package pkg3;
 
 import pkg2.Class2;
+import tests.util.Odd;
+import tests.util.RequiresOdd;
 
 // @skip-test
 public class Issue862 {

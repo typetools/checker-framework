@@ -7,9 +7,11 @@ import org.checkerframework.dataflow.cfg.CFGVisualizer;
  * has accumulated at any given point in time.
  *
  * @author Stefan Heule
- * @param <S> The type of the store returned by {@code copy} and that is used in {@code
- *     leastUpperBound}. Usually it is the implementing class itself, e.g. in {@code T extends
- *     Store<T>}.
+ *
+ * @param <S>
+ *            The type of the store returned by {@code copy} and that is used in
+ *            {@code leastUpperBound}. Usually it is the implementing class
+ *            itself, e.g. in {@code T extends Store<T>}.
  */
 public interface Store<S extends Store<S>> {
 
@@ -40,22 +42,24 @@ public interface Store<S extends Store<S>> {
     /**
      * Compute the least upper bound of two stores.
      *
-     * <p><em>Important</em>: This method must fulfill the following contract:
+     * <p>
      *
+     * <em>Important</em>: This method must fulfill the following contract:
      * <ul>
-     *   <li>Does not change {@code this}.
-     *   <li>Does not change {@code other}.
-     *   <li>Returns a fresh object which is not aliased yet.
-     *   <li>Returns an object of the same (dynamic) type as {@code this}, even if the signature is
-     *       more permissive.
-     *   <li>Is commutative.
+     * <li>Does not change {@code this}.</li>
+     * <li>Does not change {@code other}.</li>
+     * <li>Returns a fresh object which is not aliased yet.</li>
+     * <li>Returns an object of the same (dynamic) type as {@code this}, even if
+     * the signature is more permissive.</li>
+     * <li>Is commutative.</li>
      * </ul>
      */
     S leastUpperBound(S other);
 
     /**
-     * Can the objects {@code a} and {@code b} be aliases? Returns a conservative answer (i.e.,
-     * returns {@code true} if not enough information is available to determine aliasing).
+     * Can the objects {@code a} and {@code b} be aliases? Returns a
+     * conservative answer (i.e., returns {@code true} if not enough information
+     * is available to determine aliasing).
      */
     boolean canAlias(FlowExpressions.Receiver a, FlowExpressions.Receiver b);
 

@@ -1,5 +1,4 @@
 import tests.wholeprograminference.qual.*;
-
 public class ConstructorTest {
 
     public ConstructorTest(int top) {}
@@ -9,4 +8,5 @@ public class ConstructorTest {
         //:: error: (argument.type.incompatible)
         new ConstructorTest(top);
     }
+
 }

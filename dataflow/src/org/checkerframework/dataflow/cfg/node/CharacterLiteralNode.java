@@ -16,6 +16,7 @@ import java.util.Collections;
  *
  * @author Stefan Heule
  * @author Charlie Garrett
+ *
  */
 public class CharacterLiteralNode extends ValueLiteralNode {
 

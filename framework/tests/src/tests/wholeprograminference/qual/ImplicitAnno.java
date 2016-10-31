@@ -8,7 +8,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
  * Toy type system for testing field inference.
- *
  * @see Sibling1, Sibling2, Parent
  */
 @SubtypeOf({Sibling1.class, Sibling2.class})

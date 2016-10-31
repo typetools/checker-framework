@@ -10,8 +10,9 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The value is to be interpreted as signed. That is, if the most significant bit in the bitwise
- * representation is set, then the bits should be interpreted as a negative number.
+ * The value is to be interpreted as signed.
+ * That is, if the most significant bit in the bitwise representation is
+ * set, then the bits should be interpreted as a negative number.
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */

@@ -6,8 +6,8 @@ import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
- * JUnit tests for the Nullness Checker (that uses the Freedom Before Commitment type system for
- * initialization).
+ * JUnit tests for the Nullness Checker (that uses the Freedom Before Commitment
+ * type system for initialization).
  */
 public class NullnessAssumeAssertionsAreDisabled extends CheckerFrameworkPerDirectoryTest {
 

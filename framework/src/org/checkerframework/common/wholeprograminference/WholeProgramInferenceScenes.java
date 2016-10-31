@@ -36,44 +36,46 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 
 /**
- * WholeProgramInferenceScenes is an implementation of {@link
- * org.checkerframework.common.wholeprograminference.WholeProgramInference} that uses a helper class
+ * WholeProgramInferenceScenes is an implementation of
+ * {@link org.checkerframework.common.wholeprograminference.WholeProgramInference}
+ * that uses a helper class
  * ({@link org.checkerframework.common.wholeprograminference.WholeProgramInferenceScenesHelper})
  * that manipulates .jaif files to perform whole-program inference.
- *
- * <p>Calling an update* method ({@link #updateInferredFieldType updateInferredFieldType}, {@link
- * #updateInferredMethodParameterTypes updateInferredMethodParameterTypes}, {@link
- * #updateInferredParameterType updateInferredParameterType}, or {@link
- * #updateInferredMethodReturnType updateInferredMethodReturnType}) replaces the currently-stored
- * type for an element in a {@link annotations.el.AScene}, if any, by the LUB of it and the update
- * method's argument.
- *
- * <p>This class does not perform inference for an element if the element has explicit annotations:
- * an update* method ignores an explicitly annotated field, method return, or method parameter when
+ * <p>
+ * Calling an update* method
+ * ({@link #updateInferredFieldType updateInferredFieldType},
+ * {@link #updateInferredMethodParameterTypes updateInferredMethodParameterTypes},
+ * {@link #updateInferredParameterType updateInferredParameterType}, or
+ * {@link #updateInferredMethodReturnType updateInferredMethodReturnType})
+ * replaces the currently-stored type for an element in a {@link annotations.el.AScene}, if any,
+ * by the LUB of it and the update method's argument.
+ * <p>
+ * This class does not perform inference for an element if the element has
+ * explicit annotations:  an update* method ignores an
+ * explicitly annotated field, method return, or method parameter when
  * passed as an argument.
- *
- * <p>In addition, whole program inference ignores inferred types in a few scenarios. When
- * discovering a use, if:
- *
+ * <p>
+ * In addition, whole program inference ignores inferred types in a few scenarios.
+ * When discovering a use, if:
  * <ol>
- *   <li>The inferred type of an element that should be written into a .jaif file is a subtype of
- *       the upper bounds of this element's currently-written type on the source code.
- *   <li>The annotation annotates a {@code null} literal, except when doing inference for the
- *       NullnessChecker. (The rationale for this is that {@code null} is a frequently-used default
- *       value, and it would be undesirable to compute any inferred type if {@code null} were the
- *       only value passed as an argument.)
+ *   <li>The inferred type of an element that should be written into a .jaif
+ *       file is a subtype of the upper bounds of this element's currently-written
+ *       type on the source code.</li>
+ *   <li>The annotation annotates a {@code null} literal, except when
+ *       doing inference for the NullnessChecker.  (The rationale for this
+ *       is that {@code null} is a frequently-used default value, and
+ *       it would be undesirable to compute any inferred type if
+ *       {@code null} were the only value passed as an argument.)</li>
  * </ol>
- *
  * When outputting a .jaif file, if:
- *
  * <ol>
- *   <li>The @Target annotation does not permit the annotation to be written at this location.
- *   <li>The inferred has the @InvisibleQualifier meta-annotation.
- *   <li>The resulting type would be defaulted or implicited &mdash; that is, if omitting it has the
- *       same effect as writing it.
+ *   <li>The @Target annotation does not permit the annotation to be
+ *       written at this location.</li>
+ *   <li>The inferred has the @InvisibleQualifier meta-annotation.</li>
+ *   <li>The resulting type would be defaulted or implicited &mdash; that is, if
+ *       omitting it has the same effect as writing it.</li>
  * </ol>
- *
- * @author pbsf
+ *  @author pbsf
  */
 //  TODO: We could add an option to update the type of explicitly annotated
 //  elements, but this currently is not recommended since the
@@ -93,25 +95,24 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the parameter types of the constructor created by objectCreationNode based on
-     * arguments to the constructor.
-     *
-     * <p>For each parameter in constructorElt:
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
-     *       the respective value passed as argument in the object creation call objectCreationNode
-     *       will be added to the parameter in the Scene.
-     *   <li>If the Scene previously contained an annotated type for that parameter, then its new
-     *       type will be the LUB between the previous type and the type of the respective value
-     *       passed as argument in the object creation call.
-     * </ul>
-     *
+     * Updates the parameter types of the constructor created by objectCreationNode
+     * based on arguments to the constructor.
      * <p>
-     *
+     * For each parameter in constructorElt:
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for that
+     *     parameter, then the type of the respective value passed as argument
+     *     in the object creation call objectCreationNode will be added to the
+     *     parameter in the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for that
+     *     parameter, then its new type will be the LUB between the previous
+     *     type and the type of the respective value passed as argument in the
+     *     object creation call.</li>
+     *   </ul>
+     * <p>
      * @param objectCreationNode the new Object() node.
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the constructor's parameters' types.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the constructor's parameters' types.
      */
     @Override
     public void updateInferredConstructorParameterTypes(
@@ -137,27 +138,27 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the parameter types of the method {@code methodElt} in the Scene of the method's
-     * enclosing class based on the overridden method {@code overriddenMethod} parameter types.
-     *
-     * <p>For each method parameter in methodElt:
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
-     *       the respective parameter on the overridden method will be added to the parameter in the
-     *       Scene.
-     *   <li>If the Scene previously contained an annotated type for that parameter, then its new
-     *       type will be the LUB between the previous type and the type of the respective parameter
-     *       on the overridden method.
-     * </ul>
-     *
+     * Updates the parameter types of the method {@code methodElt} in the Scene
+     * of the method's enclosing class based on the overridden method
+     * {@code overriddenMethod} parameter types.
      * <p>
-     *
+     * For each method parameter in methodElt:
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for that
+     *     parameter, then the type of the respective parameter on the
+     *     overridden method will be added to the parameter in the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for that
+     *     parameter, then its new type will be the LUB between the previous
+     *     type and the type of the respective parameter on the overridden
+     *     method.</li>
+     *   </ul>
+     * <p>
      * @param methodTree the tree of the method that contains the parameter.
      * @param methodElt the element of the method.
-     * @param overriddenMethod the AnnotatedExecutableType of the overridden method.
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type.
+     * @param overriddenMethod the AnnotatedExecutableType of the overridden
+     * method.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the parameter type.
      */
     @Override
     public void updateInferredMethodParameterTypes(
@@ -184,27 +185,27 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the parameter types of the method methodElt in the Scene of the receiverTree's
-     * enclosing class based on the arguments to the method.
-     *
-     * <p>For each method parameter in methodElt:
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
-     *       the respective value passed as argument in the method call methodInvNode will be added
-     *       to the parameter in the Scene.
-     *   <li>If the Scene previously contained an annotated type for that parameter, then its new
-     *       type will be the LUB between the previous type and the type of the respective value
-     *       passed as argument in the method call.
-     * </ul>
-     *
+     * Updates the parameter types of the method methodElt in the Scene of the
+     * receiverTree's enclosing class based on the arguments to the method.
      * <p>
-     *
+     * For each method parameter in methodElt:
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for that
+     *     parameter, then the type of the respective value passed as argument
+     *     in the method call methodInvNode will be added to the parameter in
+     *     the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for that
+     *     parameter, then its new type will be the LUB between the previous
+     *     type and the type of the respective value passed as argument in the
+     *     method call.</li>
+     *   </ul>
+     * <p>
      * @param methodInvNode the node representing a method invocation.
-     * @param receiverTree the Tree of the class that contains the method being invoked.
+     * @param receiverTree the Tree of the class that contains the method being
+     * invoked.
      * @param methodElt the element of the method being invoked.
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method parameters' types.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the method parameters' types.
      */
     @Override
     public void updateInferredMethodParameterTypes(
@@ -246,7 +247,9 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         updateInferredExecutableParameterTypes(methodElt, atf, jaifPath, method, arguments);
     }
 
-    /** Helper method for updating parameter types based on calls to a method or constructor. */
+    /**
+     * Helper method for updating parameter types based on calls to a method or constructor.
+     */
     private void updateInferredExecutableParameterTypes(
             ExecutableElement methodElt,
             AnnotatedTypeFactory atf,
@@ -275,26 +278,26 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the parameter type represented by lhs of the method methodTree in the Scene of the
-     * receiverTree's enclosing class based on assignments to the parameter inside the method body.
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for that parameter, then the type of
-     *       the respective value passed as argument in the method call methodInvNode will be added
-     *       to the parameter in the Scene.
-     *   <li>If the Scene previously contained an annotated type for that parameter, then its new
-     *       type will be the LUB between the previous type and the type of the respective value
-     *       passed as argument in the method call.
-     * </ul>
-     *
+     * Updates the parameter type represented by lhs of the method methodTree
+     * in the Scene of the receiverTree's enclosing class based on assignments
+     * to the parameter inside the method body.
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for that
+     *     parameter, then the type of the respective value passed as argument
+     *     in the method call methodInvNode will be added to the parameter in
+     *     the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for that
+     *     parameter, then its new type will be the LUB between the previous
+     *     type and the type of the respective value passed as argument in the
+     *     method call.</li>
+     *   </ul>
      * <p>
-     *
      * @param lhs the node representing the parameter.
      * @param rhs the node being assigned to the parameter.
      * @param classTree the tree of the class that contains the parameter.
      * @param methodTree the tree of the method that contains the parameter.
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the parameter type.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the parameter type.
      */
     @Override
     public void updateInferredParameterType(
@@ -340,26 +343,25 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the receiver type of the method {@code methodElt} in the Scene of the method's
-     * enclosing class based on the overridden method {@code overriddenMethod} receiver type.
-     *
-     * <p>For the receiver in methodElt:
-     *
-     * <ul>
-     *   <li>If the Scene does not contain an annotated type for the receiver, then the type of the
-     *       receiver on the overridden method will be added to the receiver in the Scene.
-     *   <li>If the Scene previously contained an annotated type for the receiver, then its new type
-     *       will be the LUB between the previous type and the type of the receiver on the
-     *       overridden method.
-     * </ul>
-     *
+     * Updates the receiver type of the method {@code methodElt} in the Scene
+     * of the method's enclosing class based on the overridden method
+     * {@code overriddenMethod} receiver type.
      * <p>
-     *
+     * For the receiver in methodElt:
+     *   <ul>
+     *     <li>If the Scene does not contain an annotated type for the
+     *     receiver, then the type of the receiver on the overridden method will
+     *     be added to the receiver in the Scene.</li>
+     *     <li>If the Scene previously contained an annotated type for the
+     *     receiver, then its new type will be the LUB between the previous
+     *     type and the type of the receiver on the overridden method.</li>
+     *   </ul>
+     * <p>
      * @param methodTree the tree of the method that contains the receiver.
      * @param methodElt the element of the method.
      * @param overriddenMethod the overridden method.
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the receiver type.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the receiver type.
      */
     @Override
     public void updateInferredMethodReceiverType(
@@ -386,21 +388,21 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the type of the field lhs in the Scene of the class with tree classTree. If the field
-     * has a declaration annotation with the {@link IgnoreInWholeProgramInference} meta-annotation,
-     * no type annotation will be inferred for that field.
-     *
-     * <p>If the Scene contains no entry for the field lhs, the entry will be created and its type
-     * will be the type of rhs. If the Scene previously contained an entry/type for lhs, its new
-     * type will be the LUB between the previous type and the type of rhs.
-     *
+     * Updates the type of the field lhs in the Scene of the class with
+     * tree classTree. If the field has a declaration annotation with the
+     * {@link IgnoreInWholeProgramInference} meta-annotation, no type annotation
+     * will be inferred for that field.
      * <p>
-     *
+     * If the Scene contains no entry for the field lhs,
+     * the entry will be created and its type will be the type of rhs. If the
+     * Scene previously contained an entry/type for lhs, its new type will be
+     * the LUB between the previous type and the type of rhs.
+     * <p>
      * @param lhs the field whose type will be refined.
      * @param rhs the expression being assigned to the field.
      * @param classTree the ClassTree for the enclosing class of the assignment.
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the field's type.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the field's type.
      */
     @Override
     public void updateInferredFieldType(
@@ -438,22 +440,22 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
     }
 
     /**
-     * Updates the return type of the method methodTree in the Scene of the class with symbol
-     * classSymbol.
-     *
-     * <p>If the Scene does not contain an annotated return type for the method methodTree, then the
-     * type of the value passed to the return expression will be added to the return type of that
-     * method in the Scene. If the Scene previously contained an annotated return type for the
-     * method methodTree, its new type will be the LUB between the previous type and the type of the
-     * value passed to the return expression.
-     *
+     * Updates the return type of the method methodTree in the
+     * Scene of the class with symbol classSymbol.
      * <p>
-     *
+     * If the Scene does not contain an annotated return type for the method
+     * methodTree, then the type of the value passed to the return expression
+     * will be added to the return type of that method in the Scene.
+     * If the Scene previously contained an annotated return type for the
+     * method methodTree, its new type will be the LUB between the previous
+     * type and the type of the value passed to the return expression.
+     * <p>
      * @param retNode the node that contains the expression returned.
      * @param classSymbol the symbol of the class that contains the method.
-     * @param methodTree the tree of the method whose return type may be updated.
-     * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used to update the method's return type.
+     * @param methodTree the tree of the method whose return type
+     * may be updated.
+     * @param atf the annotated type factory of a given type system, whose
+     * type hierarchy will be used to update the method's return type.
      */
     @Override
     public void updateInferredMethodReturnType(
@@ -478,17 +480,21 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
                 method.returnType, atf, jaifPath, rhsATM, lhsATM, TypeUseLocation.RETURN);
     }
 
-    /** Write all modified scenes into .jaif files. */
+    /**
+     * Write all modified scenes into .jaif files.
+     */
     @Override
     public void saveResults() {
         helper.writeScenesToJaif();
     }
 
     /**
-     * Returns the ClassSymbol of the class encapsulating the node n passed as parameter.
-     *
-     * <p>If the receiver of field is an instance of "this", the implementation obtains the
-     * ClassSymbol by using classTree. Otherwise, the ClassSymbol is from the field's receiver.
+     * Returns the ClassSymbol of the class encapsulating
+     * the node n passed as parameter.
+     * <p>
+     * If the receiver of field is an instance of "this", the implementation
+     * obtains the ClassSymbol by using classTree. Otherwise, the ClassSymbol
+     * is from the field's receiver.
      */
     // TODO: These methods below could be moved somewhere else.
     private ClassSymbol getEnclosingClassSymbol(ClassTree classTree, Node field) {
@@ -512,7 +518,10 @@ public class WholeProgramInferenceScenes implements WholeProgramInference {
         return getEnclosingClassSymbol(receiverNode.getTree());
     }
 
-    /** Returns the ClassSymbol of the class encapsulating tree passed as parameter. */
+    /**
+     * Returns the ClassSymbol of the class encapsulating
+     * tree passed as parameter.
+     */
     private ClassSymbol getEnclosingClassSymbol(Tree tree) {
         Element symbol = InternalUtils.symbol(tree);
         if (symbol instanceof ClassSymbol) {

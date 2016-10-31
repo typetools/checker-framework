@@ -18,7 +18,7 @@ abstract class Outer<T> {
         }
     }
 
-    public abstract Inner getInner();
+    abstract public Inner getInner();
 }
 
 class Harness {

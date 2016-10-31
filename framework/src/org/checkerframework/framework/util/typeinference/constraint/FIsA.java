@@ -4,8 +4,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
 /**
- * @see org.checkerframework.framework.util.typeinference.constraint.AFConstraint A constraint of
- *     the form: F = A or A = F
+ * @see org.checkerframework.framework.util.typeinference.constraint.AFConstraint
+ * A constraint of the form:
+ * F = A or A = F
  */
 public class FIsA extends AFConstraint {
 

@@ -15,55 +15,64 @@ import org.checkerframework.dataflow.cfg.block.SpecialBlock;
 import org.checkerframework.dataflow.cfg.node.Node;
 
 /**
- * Perform some visualization on a control flow graph. The particular operations depend on the
- * implementation.
+ * Perform some visualization on a control flow graph.
+ * The particular operations depend on the implementation.
  */
 public interface CFGVisualizer<
         A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {
     /**
-     * Initialization method guaranteed to be called once before the first invocation of {@link
-     * visualize}.
+     * Initialization method guaranteed to be called once before the
+     * first invocation of {@link visualize}.
      *
      * @param args implementation-dependent options
      */
     void init(Map<String, Object> args);
 
     /**
-     * Output a visualization representing the control flow graph starting at {@code entry}. The
-     * concrete actions are implementation dependent.
+     * Output a visualization representing the control flow graph starting
+     * at {@code entry}.
+     * The concrete actions are implementation dependent.
      *
-     * <p>An invocation {@code visualize(cfg, entry, null);} does not output stores at the beginning
-     * of basic blocks.
+     * An invocation {@code visualize(cfg, entry, null);} does not
+     * output stores at the beginning of basic blocks.
      *
-     * @param cfg The CFG to visualize.
-     * @param entry The entry node of the control flow graph to be represented.
-     * @param analysis An analysis containing information about the program represented by the CFG.
-     *     The information includes {@link Store}s that are valid at the beginning of basic blocks
-     *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
-     *     Can also be {@code null} to indicate that this information should not be output.
+     * @param cfg
+     *            The CFG to visualize.
+     * @param entry
+     *            The entry node of the control flow graph to be represented.
+     * @param analysis
+     *            An analysis containing information about the program
+     *            represented by the CFG. The information includes {@link Store}s
+     *            that are valid at the beginning of basic blocks reachable
+     *            from {@code entry} and per-node information for value
+     *            producing {@link Node}s. Can also be {@code null} to
+     *            indicate that this information should not be output.
      * @return possible analysis results, e.g. generated file names.
      */
     /*@Nullable*/ Map<String, Object> visualize(
             ControlFlowGraph cfg, Block entry, /*@Nullable*/ Analysis<A, S, T> analysis);
 
     /**
-     * Delegate the visualization responsibility to the passed {@link Store} instance, which will
-     * call back to this visualizer instance for sub-components.
+     * Delegate the visualization responsibility
+     * to the passed {@link Store} instance, which will call back to this
+     * visualizer instance for sub-components.
      *
      * @param store the store to visualize
      */
     void visualizeStore(S store);
 
     /**
-     * Called by a {@code CFAbstractStore} to visualize the class name before calling the {@code
-     * CFAbstractStore#internalVisualize()} method.
+     * Called by a {@code CFAbstractStore} to visualize
+     * the class name before calling the
+     * {@code CFAbstractStore#internalVisualize()} method.
      *
      * @param classCanonicalName the canonical name of the class
      */
     void visualizeStoreHeader(String classCanonicalName);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize a local variable.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize
+     * a local variable.
      *
      * @param localVar the local variable
      * @param value the value of the local variable
@@ -71,16 +80,16 @@ public interface CFGVisualizer<
     void visualizeStoreLocalVar(FlowExpressions.LocalVariable localVar, A value);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of the current
-     * object {@code this} in this Store.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize
+     * the value of the current object {@code this} in this Store.
      *
      * @param value the value of the current object this
      */
     void visualizeStoreThisVal(A value);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of fields
-     * collected by this Store.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize
+     * the value of fields collected by this Store.
      *
      * @param fieldAccess the field
      * @param value the value of the field
@@ -88,8 +97,8 @@ public interface CFGVisualizer<
     void visualizeStoreFieldVals(FlowExpressions.FieldAccess fieldAccess, A value);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of arrays
-     * collected by this Store.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize
+     * the value of arrays collected by this Store.
      *
      * @param arrayValue the array
      * @param value the value of the array
@@ -97,8 +106,8 @@ public interface CFGVisualizer<
     void visualizeStoreArrayVal(FlowExpressions.ArrayAccess arrayValue, A value);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of pure method
-     * calls collected by this Store.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize
+     * the value of pure method calls collected by this Store.
      *
      * @param methodCall the pure method call
      * @param value the value of the pure method call
@@ -106,8 +115,8 @@ public interface CFGVisualizer<
     void visualizeStoreMethodVals(FlowExpressions.MethodCall methodCall, A value);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the value of class names
-     * collected by this Store.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize
+     * the value of class names collected by this Store.
      *
      * @param className the class name
      * @param value the value of the class name
@@ -115,10 +124,11 @@ public interface CFGVisualizer<
     void visualizeStoreClassVals(FlowExpressions.ClassName className, A value);
 
     /**
-     * Called by {@code CFAbstractStore#internalVisualize()} to visualize the specific information
-     * collected according to the specific kind of Store. Currently, these Stores call this method:
-     * {@code LockStore}, {@code NullnessStore}, and {@code InitializationStore} to visualize
-     * additional information.
+     * Called by {@code CFAbstractStore#internalVisualize()} to visualize
+     * the specific information collected according to the specific kind of Store.
+     * Currently, these Stores call this method: {@code LockStore},
+     * {@code NullnessStore}, and {@code InitializationStore} to visualize additional
+     * information.
      *
      * @param keyName the name of the specific information to be visualized
      * @param value the value of the specific information to be visualized
@@ -126,8 +136,8 @@ public interface CFGVisualizer<
     void visualizeStoreKeyVal(String keyName, Object value);
 
     /**
-     * Called by {@code CFAbstractStore} to visualize any information after the invocation of {@code
-     * CFAbstractStore#internalVisualize()}.
+     * Called by {@code CFAbstractStore} to visualize
+     * any information after the invocation of {@code CFAbstractStore#internalVisualize()}.
      */
     void visualizeStoreFooter();
 
@@ -162,6 +172,9 @@ public interface CFGVisualizer<
      */
     void visualizeBlockNode(Node t, /*@Nullable*/ Analysis<A, S, T> analysis);
 
-    /** Shutdown method called once from the shutdown hook of the {@code BaseTypeChecker}. */
+    /**
+     * Shutdown method called once from the shutdown hook of the
+     * {@code BaseTypeChecker}.
+     */
     void shutdown();
 }

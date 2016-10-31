@@ -13,27 +13,31 @@ import org.checkerframework.javacutil.AbstractTypeProcessor;
 /**
  * A utility class for pretty-printing the AST of a program.
  *
- * <p>The class is actually an annotation processor; in order to use it, invoke the compiler on the
- * source file(s) for which you wish to view the AST of the program. You may also wish to use the
- * {@code -proc:only} javac option to stop compilation after annotation processing. (But, in general
+ * <p>
+ * The class is actually an annotation processor; in order to use it, invoke the
+ * compiler on the source file(s) for which you wish to view the AST of the program.
+ * You may also wish to use the {@code -proc:only} javac option to
+ * stop compilation after annotation processing.  (But, in general
  * {@code -proc:only} causes type annotation processors not to be run.)
  *
- * <p>A simple main method is also provided. Put jsr308-all.jar on the bootclasspath and you can
- * invoke this tool as:
+ * <p>
+ * A simple main method is also provided. Put jsr308-all.jar on the bootclasspath
+ * and you can invoke this tool as:
  *
- * <p>java org.checkerframework.common.util.debug.TreePrinter *.java
+ *   java org.checkerframework.common.util.debug.TreePrinter *.java
  *
- * <p>TODO: is there an environment variable for the bootclasspath?
+ * TODO: is there an environment variable for the bootclasspath?
  *
- * <p>The visitor simply uses the javac Pretty visitor to output a nicely formatted version of the
- * AST.
+ * <p>
+ * The visitor simply uses the javac Pretty visitor to output a nicely formatted
+ * version of the AST.
  *
- * <p>TODO: I couldn't find a way to display the result of Pretty, therefore I wrote this simple
- * class. If there already was a way, please let me know.
+ * TODO: I couldn't find a way to display the result of Pretty, therefore I wrote
+ * this simple class. If there already was a way, please let me know.
  *
- * <p>TODO: what I really want is something like SignaturePrinter, but for the whole source of the
- * program, that is, for each type in the program use the factory to determine the defaulted
- * annotations on the type.
+ * TODO: what I really want is something like SignaturePrinter, but for the whole
+ * source of the program, that is, for each type in the program use the factory
+ * to determine the defaulted annotations on the type.
  *
  * @see org.checkerframework.common.util.debug.TreeDebug
  */

@@ -2,8 +2,10 @@ import org.checkerframework.checker.units.*;
 import org.checkerframework.checker.units.qual.*;
 
 /**
- * One possible future extension is adding method annotations to check for consistency of arguments.
- * This is not implemented yet; send us a message if you think this would help you!
+ * One possible future extension is adding method annotations to check
+ * for consistency of arguments.
+ * This is not implemented yet; send us a message if you think this would
+ * help you!
  *
  * @skip-test
  */

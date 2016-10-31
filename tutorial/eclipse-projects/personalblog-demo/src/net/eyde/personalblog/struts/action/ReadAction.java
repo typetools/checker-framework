@@ -16,22 +16,23 @@ import org.apache.struts.action.ActionMessages;
 /**
  * Description of the Class
  *
- * @author NEyde
- * @created September 17, 2002
+ * @author     NEyde
+ * @created    September 17, 2002
  */
 public final class ReadAction extends BlogGeneralAction {
     /**
-     * Process the specified HTTP request, and create the corresponding HTTP response (or forward to
-     * another web component that will create it). Return an ActionForward instance describing where
-     * and how control should be forwarded, or null if the response has already been completed.
+     * Process the specified HTTP request, and create the corresponding HTTP
+     * response (or forward to another web component that will create it). Return
+     * an ActionForward instance describing where and how control should be
+     * forwarded, or null if the response has already been completed.
      *
-     * @param mapping The ActionMapping used to select this instance
-     * @param request The HTTP request we are processing
-     * @param response The HTTP response we are creating
-     * @param form Description of the Parameter
-     * @return Description of the Return Value
-     * @exception IOException if an input/output error occurs
-     * @exception ServletException if a servlet exception occurs
+     * @param  mapping               The ActionMapping used to select this instance
+     * @param  request               The HTTP request we are processing
+     * @param  response              The HTTP response we are creating
+     * @param  form                  Description of the Parameter
+     * @return                       Description of the Return Value
+     * @exception  IOException       if an input/output error occurs
+     * @exception  ServletException  if a servlet exception occurs
      */
     @Override
     public ActionForward executeSub(
@@ -75,13 +76,15 @@ public final class ReadAction extends BlogGeneralAction {
     }
 
     /**
-     * Validates userInput: verifies that it cannot be used for an attack.
+     * Validates userInput: verifies that it cannot be used for an
+     * attack.
      *
-     * <p>A string is valid if it contains only letters, digits, and whitespace.
+     * A string is valid if it contains only letters, digits, and whitespace.
      *
-     * @param userInput user input to be validated
+     * @param  userInput   user input to be validated
      * @return the input if it is valid
-     * @throws IllegalArgumentException if userInput is not valid
+     * @throws IllegalArgumentException  if userInput is not valid
+     *
      */
     /*@Untainted*/ String validate(String userInput) {
         for (int i = 0; i < userInput.length(); ++i) {

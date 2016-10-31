@@ -94,7 +94,6 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     /**
      * Returns a list of class names for the given tree using the Class Val Checker
-     *
      * @param tree ExpressionTree whose class names are requested
      * @param mustBeExact whether @ClassBound may be used
      * @return list of class names or the empty list if no class names were found
@@ -121,9 +120,8 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return classNames;
     }
     /**
-     * Returns the string values for the argument passed. The String Values are estimated using the
-     * Value Checker.
-     *
+     * Returns the string values for the argument passed.  The String Values
+     * are estimated using the Value Checker.
      * @param arg ExpressionTree whose string values are sought
      * @return string values of arg or the empty list if no values were found
      */
@@ -208,7 +206,9 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(new MethodValTreeAnnotator(this), super.createTreeAnnotator());
     }
 
-    /** TreeAnnotator with the visitMethodInvocation method overridden */
+    /**
+     * TreeAnnotator with the visitMethodInvocation method overridden
+     */
     protected class MethodValTreeAnnotator extends TreeAnnotator {
 
         protected MethodValTreeAnnotator(MethodValAnnotatedTypeFactory factory) {
@@ -306,12 +306,15 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * if getMethod(Object receiver, Object... params) or getConstrutor(Object... params) have
-         * one argument for params, then the number of parameters in the underlying method or
-         * constructor must be:
+         * if getMethod(Object receiver, Object... params) or
+         * getConstrutor(Object... params) have one argument for params, then
+         * the number of parameters in the underlying method or constructor must
+         * be:
          *
-         * <p>0: if the argument is null x: if the argument is an array with @ArrayLen(x)
-         * UNKNOWN_PARAM_LENGTH: if the argument is an array with @UnknownVal 1: otherwise
+         * 0: if the argument is null
+         * x: if the argument is an array with @ArrayLen(x)
+         * UNKNOWN_PARAM_LENGTH: if the argument is an array with @UnknownVal
+         * 1: otherwise
          */
         private List<Integer> getNumberOfParameterOneArg(ExpressionTree argument) {
             AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(argument);
@@ -343,10 +346,10 @@ public class MethodValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 }
 /**
- * An object that represents a the tuple that identifies a method signature: (fully qualified class
- * name, method name, number of parameters)
- *
+ * An object that represents a the tuple that identifies a method signature:
+ * (fully qualified class name, method name, number of parameters)
  * @author smillst
+ *
  */
 class MethodSignature {
     String className;

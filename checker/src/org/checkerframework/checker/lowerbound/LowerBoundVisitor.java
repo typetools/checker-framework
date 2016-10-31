@@ -10,9 +10,10 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- * Implements the actual checks to make sure that array accesses aren't too low. Will issue a
- * warning if a variable that can't be proved to be either "NonNegative" (i.e. &ge; 0) or "Positive"
- * (i.e. &ge; 1) is used as an array index.
+ * Implements the actual checks to make sure that array accesses
+ *  aren't too low. Will issue a warning if a variable that can't be
+ *  proved to be either "NonNegative" (i.e. &ge; 0) or "Positive"
+ *  (i.e. &ge; 1) is used as an array index.
  */
 public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFactory> {
 

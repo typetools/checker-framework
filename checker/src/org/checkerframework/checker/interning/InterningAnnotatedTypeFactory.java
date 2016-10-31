@@ -27,22 +27,25 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * An {@link AnnotatedTypeFactory} that accounts for the properties of the Interned type system.
- * This type factory will add the {@link Interned} annotation to a type if the input:
+ * An {@link AnnotatedTypeFactory} that accounts for the properties of the
+ * Interned type system. This type factory will add the {@link Interned}
+ * annotation to a type if the input:
  *
  * <ol>
- *   <li value="1">is a String literal
- *   <li value="2">is a class literal
- *   <li value="3">has an enum type
- *   <li value="4">has a primitive type
- *   <li value="5">has the type java.lang.Class
- *   <li value="6">is a use of a class declared to be @Interned
+ * <li value="1">is a String literal
+ * <li value="2">is a class literal
+ * <li value="3">has an enum type
+ * <li value="4">has a primitive type
+ * <li value="5">has the type java.lang.Class
+ * <li value="6">is a use of a class declared to be @Interned</li>
  * </ol>
  *
- * This factory extends {@link BaseAnnotatedTypeFactory} and inherits its functionality, including:
- * flow-sensitive qualifier inference, qualifier polymorphism (of {@link PolyInterned}), implicit
- * annotations via {@link ImplicitFor} on {@link Interned} (to handle cases 1, 2, 4), and
- * user-specified defaults via {@link DefaultQualifier}. Case 5 is handled by the stub library.
+ * This factory extends {@link BaseAnnotatedTypeFactory} and inherits its
+ * functionality, including: flow-sensitive qualifier inference, qualifier
+ * polymorphism (of {@link PolyInterned}), implicit annotations via
+ * {@link ImplicitFor} on {@link Interned} (to handle cases 1, 2, 4), and
+ * user-specified defaults via {@link DefaultQualifier}.
+ * Case 5 is handled by the stub library.
  */
 public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -50,7 +53,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     final AnnotationMirror INTERNED, TOP;
 
     /**
-     * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a particular AST.
+     * Creates a new {@link InterningAnnotatedTypeFactory} that operates on a
+     * particular AST.
      *
      * @param checker the checker to use
      */
@@ -92,7 +96,9 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         super.addComputedTypeAnnotations(element, type);
     }
 
-    /** A class for adding annotations based on tree */
+    /**
+     * A class for adding annotations based on tree
+     */
     private class InterningTreeAnnotator extends TreeAnnotator {
 
         InterningTreeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
@@ -124,7 +130,9 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /** Adds @Interned to enum types and any use of a class that is declared to be @Interned */
+    /**
+     * Adds @Interned to enum types and any use of a class that is declared to be @Interned
+     */
     private class InterningTypeAnnotator extends TypeAnnotator {
 
         InterningTypeAnnotator(InterningAnnotatedTypeFactory atypeFactory) {
@@ -156,8 +164,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Unbox type and replace any interning type annotations with @Interned since all all primitives
-     * can safely use ==. See case 4 in the class comments.
+     * Unbox type and replace any interning type annotations with @Interned since all
+     * all primitives can safely use ==. See case 4 in the class comments.
      */
     @Override
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type) {

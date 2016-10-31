@@ -9,6 +9,7 @@ import org.junit.runners.Parameterized.Parameters;
  * Tests for the compound checker design pattern
  *
  * @author smillst
+ *
  */
 public class CompoundCheckerTest extends CheckerFrameworkPerDirectoryTest {
 

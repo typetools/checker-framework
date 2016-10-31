@@ -4,7 +4,8 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 
 /**
- * A type-checker that checks that only localized {@code String}s are visible to the user.
+ * A type-checker that checks that only localized {@code String}s are visible
+ * to the user.
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */

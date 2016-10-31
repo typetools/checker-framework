@@ -1,6 +1,6 @@
 /**
- * Reported modifiers depend on the command-line invocation; see
- * org.checkerframework.checker/tests/src/tests/ReportModifiers.java
+ * Reported modifiers depend on the command-line invocation;
+ * see org.checkerframework.checker/tests/src/tests/ReportModifiers.java
  */
 class TestModifiers {
     void test() {

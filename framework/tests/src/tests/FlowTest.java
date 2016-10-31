@@ -5,7 +5,8 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** */
+/**
+ */
 public class FlowTest extends CheckerFrameworkPerDirectoryTest {
 
     public FlowTest(List<File> testFiles) {

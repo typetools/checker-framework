@@ -3,17 +3,22 @@ package org.checkerframework.framework.qual;
 import java.lang.annotation.Target;
 
 /**
- * A special annotation intended solely for representing an unqualified type in the qualifier
- * hierarchy, as an argument to {@link SubtypeOf#value()}, in the type qualifiers declarations.
+ * A special annotation intended solely for representing an unqualified type in
+ * the qualifier hierarchy, as an argument to {@link SubtypeOf#value()},
+ * in the type qualifiers declarations.
+ * <p>
  *
- * <p>This annotation may not be written in source code; it is an implementation detail of the
- * checker.
+ * This annotation may not be written in source code; it is an
+ * implementation detail of the checker.
+ * <p>
  *
- * <p>Note that because of the missing RetentionPolicy, the qualifier will not be stored in
- * bytecode.
+ * Note that because of the missing RetentionPolicy, the qualifier will
+ * not be stored in bytecode.
+ * <p>
  *
- * <p>Only use this qualifier for very simple type systems. For realistic systems, introduce a top
- * and bottom qualifier that gets stored in bytecode.
+ * Only use this qualifier for very simple type systems.
+ * For realistic systems, introduce a top and bottom qualifier
+ * that gets stored in bytecode.
  */
 @InvisibleQualifier
 @SubtypeOf({})

@@ -1,7 +1,9 @@
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.common.reflection.qual.ClassBound;
 import org.checkerframework.common.reflection.qual.ClassVal;
+import org.checkerframework.common.reflection.qual.UnknownClass;
 
 public class ClassValInferenceTest {
 

@@ -27,23 +27,27 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Indicates that a thread may dereference the value referred to by the annotated variable only if
- * the thread holds all the given lock expressions.
+ * Indicates that a thread may dereference the value referred to by the
+ * annotated variable only if the thread holds all the given lock expressions.
+ * <p>
  *
- * <p>{@code @GuardedBy({})} is the default type qualifier.
+ * {@code @GuardedBy({})} is the default type qualifier.
+ * <p>
  *
- * <p>The argument is a string or set of strings that indicates the expression(s) that must be held,
- * using the <a
+ * The argument is a string or set of strings that indicates the
+ * expression(s) that must be held, using the <a
  * href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">syntax
- * of Java expressions</a> described in the manual. The expressions evaluate to an intrinsic
- * (built-in, synchronization) monitor or an explicit {@link java.util.concurrent.locks.Lock}. The
- * expression {@code "<self>"} is also permitted; the type {@code @GuardedBy("<self>") Object o}
- * indicates that the value referenced by {@code o} is guarded by the intrinsic (monitor) lock of
+ * of Java expressions</a> described in the manual.
+ * The expressions evaluate to an intrinsic (built-in, synchronization)
+ * monitor or an explicit {@link java.util.concurrent.locks.Lock}.  The
+ * expression {@code "<self>"} is also permitted; the type
+ * {@code @GuardedBy("<self>") Object o} indicates that the value
+ * referenced by {@code o} is guarded by the intrinsic (monitor) lock of
  * the value referenced by {@code o}.
+ * <p>
  *
- * <p>Two {@code @GuardedBy} annotations with different argument expressions are unrelated by
- * subtyping.
- *
+ * Two {@code @GuardedBy} annotations with different argument expressions
+ * are unrelated by subtyping.
  * <p>
  *
  * @see Holding
@@ -75,8 +79,8 @@ public @interface GuardedBy {
      * The Java value expressions that need to be held.
      *
      * @see <a
-     *     href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
-     *     of Java expressions</a>
+     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
+     *      of Java expressions</a>
      */
     String[] value() default {};
 }

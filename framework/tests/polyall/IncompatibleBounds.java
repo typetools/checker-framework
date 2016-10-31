@@ -5,13 +5,14 @@ import org.checkerframework.framework.qual.DefaultQualifiers;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import polyall.quals.*;
 /**
- * This test is solely to ensure that if bounds in type parameters and wildcards are invalid then
- * they are reported as such using a "bound.type.incompatible" error.
+ * This test is solely to ensure that if bounds in type parameters and wildcards are
+ * invalid then they are reported as such using a "bound.type.incompatible" error.
  *
- * <p>Polyall has been a catch all for a variety of cases because it has a useful type hierarchy.
+ * Polyall has been a catch all for a variety of cases because it has a useful type hierarchy.
  * That is the same reason this test is placed here.
  *
- * <p>A valid bound is one with LOWER_BOUND annotations that subtypes of UPPER_BOUND annotations.
+ * A valid bound is one with LOWER_BOUND annotations that subtypes of UPPER_BOUND
+ * annotations.
  */
 
 // set the defaults in the H2 hierarchy such that do not report errors in this test

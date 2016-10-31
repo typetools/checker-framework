@@ -9,10 +9,13 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 import org.checkerframework.framework.qual.PostconditionAnnotation;
 
 /**
- * Indicates that the value expressions are non-null, if the method terminates successfully.
+ * Indicates that the value expressions are non-null, if the method
+ * terminates successfully.
+ * <p>
  *
- * <p>This postcondition annotation is useful for methods that initialize a field. It can also be
- * used for a method that fails if a given expression is null.
+ * This postcondition annotation is useful for methods that initialize a
+ * field.  It can also be used for a method that fails if a given
+ * expression is null.
  *
  * @see NonNull
  * @see org.checkerframework.checker.nullness.NullnessChecker
@@ -25,7 +28,8 @@ import org.checkerframework.framework.qual.PostconditionAnnotation;
 @InheritedAnnotation
 public @interface EnsuresNonNull {
     /**
-     * The Java expressions that are ensured to be {@link NonNull} on successful method termination.
+     * The Java expressions that are ensured to be {@link NonNull} on successful
+     * method termination.
      *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */

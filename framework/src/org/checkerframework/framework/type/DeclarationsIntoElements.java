@@ -15,12 +15,13 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
 /**
- * A helper class that puts the declaration annotations from a method declaration back into the
- * corresponding Elements, so that they get stored in the bytecode by the compiler.
+ * A helper class that puts the declaration annotations from a method declaration
+ * back into the corresponding Elements, so that they get stored in the bytecode
+ * by the compiler.
  *
- * <p>This is similar to {@code TypesIntoElements} but for declaration annotations.
+ * This is similar to {@code TypesIntoElements} but for declaration annotations.
  *
- * <p>This class deals with javac internals and liberally imports such classes.
+ * This class deals with javac internals and liberally imports such classes.
  */
 public class DeclarationsIntoElements {
 
@@ -40,9 +41,8 @@ public class DeclarationsIntoElements {
     }
 
     /**
-     * Add inherited declaration annotations from overridden methods into the corresponding Elements
-     * so they are written into bytecode.
-     *
+     * Add inherited declaration annotations from overridden methods into
+     * the corresponding Elements so they are written into bytecode.
      * @param env ProcessingEnvironment
      * @param atypeFactory the type factory
      * @param meth the MethodTree to add the annotations

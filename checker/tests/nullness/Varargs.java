@@ -2,7 +2,7 @@ import org.checkerframework.checker.nullness.qual.*;
 
 public class Varargs {
 
-    public void test(@NonNull Object @NonNull ... o) {
+    public void test(@NonNull Object @NonNull... o) {
         for (@NonNull Object p : o) {
             System.out.println(p);
         }
@@ -25,18 +25,18 @@ public class Varargs {
         test2("foo", "bar");
     }
 
-    public void format1(java.lang.String a1, java.lang.@Nullable Object... a2) {
-        int x = a2.length; // no warning
+    public void format1(java.lang.String a1, java.lang. @Nullable Object... a2) {
+        int x = a2.length;           // no warning
         //:: error: (enhancedfor.type.incompatible)
         for (@NonNull Object p : a2) // warning
-        System.out.println(p);
+            System.out.println(p);
     }
 
     public void format2(java.lang.String a1, java.lang.Object @Nullable ... a2) {
         //:: error: (dereference.of.nullable)
-        int x = a2.length; // warning
+        int x = a2.length;           // warning
         for (@NonNull Object p : a2) // no warning
-        System.out.println(p);
+            System.out.println(p);
     }
 
     public void testPrintf() {
@@ -47,7 +47,5 @@ public class Varargs {
     }
 
     // printf declaration is taken from PrintStream
-    public java.io.PrintStream printf(java.lang.String a1, java.lang.@Nullable Object... a2) {
-        throw new RuntimeException("skeleton method");
-    }
+    public java.io.PrintStream printf(java.lang.String a1, java.lang. @Nullable Object ... a2) { throw new RuntimeException("skeleton method"); }
 }

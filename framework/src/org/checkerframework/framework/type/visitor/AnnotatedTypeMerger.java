@@ -8,14 +8,16 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * Replaces or adds all the annotations in the parameter with the annotations from the visited type.
- * An annotation is replaced if the parameter type already has an annotation in the same hierarchy
- * at the same location as the visited type.
+ * Replaces or adds all the annotations in the parameter with the annotations
+ * from the visited type. An annotation is replaced if the parameter type
+ * already has an annotation in the same hierarchy at the same location as the
+ * visited type.
  *
- * <p>Example use: AnnotatedTypeMirror visitType = ...; AnnotatedTypeMirror parameter - ...;
- * visitType.accept(new AnnotatedTypesMerger(), parameter);
+ * Example use: AnnotatedTypeMirror visitType = ...; AnnotatedTypeMirror
+ * parameter - ...; visitType.accept(new AnnotatedTypesMerger(), parameter);
  *
  * @author smillst
+ *
  */
 public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
@@ -44,8 +46,7 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
     }
 
     /**
-     * @param top if top != null, then only annotation in the hierarchy of top are affected by this
-     *     merger
+     * @param top if top != null, then only annotation in the hierarchy of top are affected by this merger
      */
     public AnnotatedTypeMerger(final AnnotationMirror top) {
         this.top = top;
@@ -90,9 +91,8 @@ public class AnnotatedTypeMerger extends AnnotatedTypeComparer<Void> {
 
     /**
      * For type variables and wildcards, the absence of a primary annotations has an implied meaning
-     * on substitution. Therefore, in these cases we remove the primary annotation and rely on the
-     * fact that the bounds are also merged into the type to.
-     *
+     * on substitution.  Therefore, in these cases we remove the primary annotation and rely on
+     * the fact that the bounds are also merged into the type to.
      * @param from a type variable or wildcard
      */
     public void resolvePrimaries(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {

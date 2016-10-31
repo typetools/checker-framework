@@ -60,10 +60,11 @@ import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The annotated type factory for the freedom-before-commitment type-system. The
- * freedom-before-commitment type-system and this class are abstract and need to be combined with
- * another type-system whose safe initialization should be tracked. For an example, see the {@link
- * NullnessChecker}. Also supports rawness as a type-system for tracking initialization, though FBC
- * is preferred.
+ * freedom-before-commitment type-system and this class are abstract and need to
+ * be combined with another type-system whose safe initialization should be
+ * tracked. For an example, see the {@link NullnessChecker}. Also supports
+ * rawness as a type-system for tracking initialization, though FBC is
+ * preferred.
  *
  * @author Stefan Heule
  */
@@ -74,24 +75,34 @@ public abstract class InitializationAnnotatedTypeFactory<
                 Flow extends CFAbstractAnalysis<Value, Store, Transfer>>
         extends GenericAnnotatedTypeFactory<Value, Store, Transfer, Flow> {
 
-    /** {@link UnknownInitialization} or {@link Raw} */
+    /**
+     * {@link UnknownInitialization} or {@link Raw}
+     */
     protected final AnnotationMirror UNCLASSIFIED;
 
-    /** {@link Initialized} or {@link NonRaw} */
+    /**
+     * {@link Initialized} or {@link NonRaw}
+     */
     protected final AnnotationMirror COMMITTED;
 
-    /** {@link UnderInitialization} or null */
+    /**
+     *{@link  UnderInitialization} or null
+     */
     protected final AnnotationMirror FREE;
 
-    /** {@link NotOnlyInitialized} or null */
+    /**
+     * {@link NotOnlyInitialized} or null
+     */
     protected final AnnotationMirror NOT_ONLY_COMMITTED;
 
-    /** {@link FBCBottom} or {@link NonRaw} */
+    /**
+     * {@link FBCBottom} or {@link NonRaw}
+     */
     protected final AnnotationMirror FBCBOTTOM;
 
     /**
-     * Should the initialization type system be FBC? If not, the rawness type system is used for
-     * initialization.
+     * Should the initialization type system be FBC? If not, the rawness type
+     * system is used for initialization.
      */
     protected final boolean useFbc;
 
@@ -134,7 +145,9 @@ public abstract class InitializationAnnotatedTypeFactory<
         return initAnnos;
     }
 
-    /** Is the annotation {@code anno} an initialization qualifier? */
+    /**
+     * Is the annotation {@code anno} an initialization qualifier?
+     */
     protected boolean isInitializationAnnotation(AnnotationMirror anno) {
         assert anno != null;
         return AnnotationUtils.areSameIgnoringValues(anno, UNCLASSIFIED)
@@ -148,18 +161,23 @@ public abstract class InitializationAnnotatedTypeFactory<
      * commitment type-system.
      */
 
-    /** @return the list of annotations that is forbidden for the constructor return type */
+    /**
+     * @return the list of annotations that is forbidden for the constructor
+     *         return type
+     */
     public Set<Class<? extends Annotation>> getInvalidConstructorReturnTypeAnnotations() {
         return getInitializationAnnotations();
     }
 
     /**
-     * Returns the annotation that makes up the invariant of this commitment type system, such as
-     * {@code @NonNull}.
+     * Returns the annotation that makes up the invariant of this commitment
+     * type system, such as {@code @NonNull}.
      */
     public abstract AnnotationMirror getFieldInvariantAnnotation();
 
-    /** Returns a {@link UnderInitialization} annotation with a given type frame. */
+    /**
+     * Returns a {@link UnderInitialization} annotation with a given type frame.
+     */
     public AnnotationMirror createFreeAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
         assert useFbc : "The rawness type system does not have a @UnderInitialization annotation.";
@@ -168,7 +186,9 @@ public abstract class InitializationAnnotatedTypeFactory<
         return builder.build();
     }
 
-    /** Returns a {@link UnderInitialization} annotation with a given type frame. */
+    /**
+     * Returns a {@link UnderInitialization} annotation with a given type frame.
+     */
     public AnnotationMirror createFreeAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
         assert useFbc : "The rawness type system does not have a @UnderInitialization annotation.";
@@ -178,7 +198,8 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link UnknownInitialization} or {@link Raw} annotation with a given type frame.
+     * Returns a {@link UnknownInitialization} or {@link Raw} annotation with a given
+     * type frame.
      */
     public AnnotationMirror createUnclassifiedAnnotation(Class<?> typeFrame) {
         assert typeFrame != null;
@@ -188,7 +209,9 @@ public abstract class InitializationAnnotatedTypeFactory<
         return builder.build();
     }
 
-    /** Returns a {@link UnknownInitialization} annotation with a given type frame. */
+    /**
+     * Returns a {@link UnknownInitialization} annotation with a given type frame.
+     */
     public AnnotationMirror createUnclassifiedAnnotation(TypeMirror typeFrame) {
         assert typeFrame != null;
         Class<? extends Annotation> clazz = useFbc ? UnknownInitialization.class : Raw.class;
@@ -198,8 +221,8 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the type frame of a given annotation. The annotation must either be {@link
-     * UnderInitialization} or {@link UnknownInitialization}.
+     * Returns the type frame of a given annotation. The annotation must either
+     * be {@link UnderInitialization} or {@link UnknownInitialization}.
      */
     public TypeMirror getTypeFrameFromAnnotation(AnnotationMirror annotation) {
         TypeMirror name =
@@ -216,22 +239,25 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Is {@code anno} the {@link UnknownInitialization} annotation (with any type frame)? If {@code
-     * useFbc} is false, then {@link Raw} is used in the comparison.
+     * Is {@code anno} the {@link UnknownInitialization} annotation (with any type
+     * frame)? If {@code useFbc} is false, then {@link Raw} is used in the
+     * comparison.
      */
     public boolean isUnclassified(AnnotationMirror anno) {
         Class<? extends Annotation> clazz = useFbc ? UnknownInitialization.class : Raw.class;
         return AnnotationUtils.areSameByClass(anno, clazz);
     }
 
-    /** Is {@code anno} the bottom annotation? */
+    /**
+     * Is {@code anno} the bottom annotation?
+     */
     public boolean isFbcBottom(AnnotationMirror anno) {
         return AnnotationUtils.areSame(anno, FBCBOTTOM);
     }
 
     /**
-     * Is {@code anno} the {@link Initialized} annotation? If {@code useFbc} is false, then {@link
-     * NonRaw} is used in the comparison.
+     * Is {@code anno} the {@link Initialized} annotation? If {@code useFbc} is
+     * false, then {@link NonRaw} is used in the comparison.
      */
     public boolean isCommitted(AnnotationMirror anno) {
         return AnnotationUtils.areSame(anno, COMMITTED);
@@ -246,23 +272,26 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Does {@code anno} have the annotation {@link UnknownInitialization} (with any type frame)? If
-     * {@code useFbc} is false, then {@link Raw} is used in the comparison.
+     * Does {@code anno} have the annotation {@link UnknownInitialization} (with any type
+     * frame)? If {@code useFbc} is false, then {@link Raw} is used in the
+     * comparison.
      */
     public boolean isUnclassified(AnnotatedTypeMirror anno) {
         Class<? extends Annotation> clazz = useFbc ? UnknownInitialization.class : Raw.class;
         return anno.hasEffectiveAnnotation(clazz);
     }
 
-    /** Does {@code anno} have the bottom annotation? */
+    /**
+     * Does {@code anno} have the bottom annotation?
+     */
     public boolean isFbcBottom(AnnotatedTypeMirror anno) {
         Class<? extends Annotation> clazz = useFbc ? FBCBottom.class : NonRaw.class;
         return anno.hasEffectiveAnnotation(clazz);
     }
 
     /**
-     * Does {@code anno} have the annotation {@link Initialized}? If {@code useFbc} is false, then
-     * {@link NonRaw} is used in the comparison.
+     * Does {@code anno} have the annotation {@link Initialized}? If
+     * {@code useFbc} is false, then {@link NonRaw} is used in the comparison.
      */
     public boolean isCommitted(AnnotatedTypeMirror anno) {
         Class<? extends Annotation> clazz = useFbc ? Initialized.class : NonRaw.class;
@@ -274,7 +303,9 @@ public abstract class InitializationAnnotatedTypeFactory<
         return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
     }
 
-    /** Are all fields committed-only? */
+    /**
+     * Are all fields committed-only?
+     */
     protected boolean areAllFieldsCommittedOnly(ClassTree classTree) {
         if (!useFbc) {
             // In the rawness type system, no fields can store not fully
@@ -302,8 +333,11 @@ public abstract class InitializationAnnotatedTypeFactory<
     /**
      * {@inheritDoc}
      *
-     * <p>In most cases, subclasses want to call this method first because it may clear all
-     * annotations and use the hierarchy's root annotations.
+     * <p>
+     *
+     * In most cases, subclasses want to call this method first because it may
+     * clear all annotations and use the hierarchy's root annotations.
+     *
      */
     @Override
     public void postAsMemberOf(
@@ -320,9 +354,8 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Controls which hierarchies' qualifiers are changed based on the receiver type and the
-     * declared annotations for a field.
-     *
+     * Controls which hierarchies' qualifiers are changed based on the
+     * receiver type and the declared annotations for a field.
      * @see #computeFieldAccessType
      * @see #getAnnotatedTypeLhs(Tree)
      */
@@ -355,11 +388,11 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * In the first enclosing class, find the top-level member that contains tree. TODO: should we
-     * look whether these elements are enclosed within another class that is itself under
-     * construction.
+     * In the first enclosing class, find the top-level member that contains tree.
+     * TODO: should we look whether these elements are enclosed within another class that
+     * is itself under construction.
      *
-     * <p>Are there any other type of top level objects?
+     * Are there any other type of top level objects?
      */
     private Tree findTopLevelClassMemberForTree(TreePath path) {
         ClassTree enclosingClass = TreeUtils.enclosingClass(path);
@@ -407,8 +440,9 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns a {@link UnderInitialization} annotation (or {@link UnknownInitialization} if rawness
-     * is used) that has the supertype of {@code type} as type frame.
+     * Returns a {@link UnderInitialization} annotation (or
+     * {@link UnknownInitialization} if rawness is used) that has the supertype
+     * of {@code type} as type frame.
      */
     protected AnnotationMirror getFreeOrRawAnnotationOfSuperType(TypeMirror type) {
         // Find supertype if possible.
@@ -441,8 +475,8 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the (non-static) fields that have the invariant annotation and are not yet
-     * initialized in a given store.
+     * Returns the (non-static) fields that have the invariant annotation
+     * and are not yet initialized in a given store.
      */
     public List<VariableTree> getUninitializedInvariantFields(
             Store store,
@@ -472,8 +506,8 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Returns the (non-static) fields that have the invariant annotation and are initialized in a
-     * given store.
+     * Returns the (non-static) fields that have the invariant annotation
+     * and are initialized in a given store.
      */
     public List<VariableTree> getInitializedInvariantFields(Store store, TreePath path) {
         // TODO: Instead of passing the TreePath around, can we use
@@ -497,7 +531,10 @@ public abstract class InitializationAnnotatedTypeFactory<
         return initializedFields;
     }
 
-    /** Returns whether the field {@code f} is unused, given the annotations on the receiver. */
+    /**
+     * Returns whether the field {@code f} is unused, given the annotations on
+     * the receiver.
+     */
     private boolean isUnused(
             VariableTree field, Collection<? extends AnnotationMirror> receiverAnnos) {
         if (receiverAnnos.isEmpty()) {
@@ -529,12 +566,15 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * Determine the type of a field access (implicit or explicit) based on the receiver type and
-     * the declared annotations for the field.
+     * Determine the type of a field access (implicit or explicit) based on the
+     * receiver type and the declared annotations for the field.
      *
-     * @param type Type of the field access expression.
-     * @param declaredFieldAnnotations Annotations on the element.
-     * @param receiverType Inferred annotations of the receiver.
+     * @param type
+     *            Type of the field access expression.
+     * @param declaredFieldAnnotations
+     *            Annotations on the element.
+     * @param receiverType
+     *            Inferred annotations of the receiver.
      */
     private void computeFieldAccessType(
             AnnotatedTypeMirror type,
@@ -662,13 +702,13 @@ public abstract class InitializationAnnotatedTypeFactory<
     }
 
     /**
-     * The {@link QualifierHierarchy} for the initialization type system. Type systems extending the
-     * Initialization Checker should call methods {@link
-     * InitializationQualifierHierarchy#isSubtypeInitialization(AnnotationMirror, AnnotationMirror)}
-     * and {@link InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror,
-     * AnnotationMirror)} for appropriate qualifiers. See protected subclass
-     * NullnessQualifierHierarchy within class {@link
-     * org.checkerframework.checker.nullness.AbstractNullnessChecker} for an example.
+     * The {@link QualifierHierarchy} for the initialization type system.
+     * Type systems extending the Initialization Checker should call methods
+     * {@link InitializationQualifierHierarchy#isSubtypeInitialization(AnnotationMirror, AnnotationMirror)}
+     * and
+     * {@link InitializationQualifierHierarchy#leastUpperBoundInitialization(AnnotationMirror, AnnotationMirror)}
+     * for appropriate qualifiers.
+     * See protected subclass NullnessQualifierHierarchy within class {@link org.checkerframework.checker.nullness.AbstractNullnessChecker} for an example.
      */
     protected abstract class InitializationQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
@@ -677,9 +717,10 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
 
         /**
-         * Subtype testing for initialization annotations. Will return false if either qualifier is
-         * not an initialization annotation. Subclasses should override isSubtype and call this
-         * method for initialization qualifiers.
+         * Subtype testing for initialization annotations.
+         * Will return false if either qualifier is not an initialization annotation.
+         * Subclasses should override isSubtype and call this method for
+         * initialization qualifiers.
          */
         public boolean isSubtypeInitialization(AnnotationMirror rhs, AnnotationMirror lhs) {
             if (!isInitializationAnnotation(rhs) || !isInitializationAnnotation(lhs)) {
@@ -726,9 +767,10 @@ public abstract class InitializationAnnotatedTypeFactory<
         }
 
         /**
-         * Compute the least upper bound of two initialization qualifiers. Returns null if one of
-         * the qualifiers is not in the initialization hierarachy. Subclasses should override
-         * leastUpperBound and call this method for initialization qualifiers.
+         * Compute the least upper bound of two initialization qualifiers.
+         * Returns null if one of the qualifiers is not in the initialization hierarachy.
+         * Subclasses should override leastUpperBound and call this method for
+         * initialization qualifiers.
          *
          * @param anno1 an initialization qualifier
          * @param anno2 an initialization qualifier
@@ -773,7 +815,9 @@ public abstract class InitializationAnnotatedTypeFactory<
                             getTypeFrameFromAnnotation(anno1), getTypeFrameFromAnnotation(anno2)));
         }
 
-        /** Returns the least upper bound of two types. */
+        /**
+         * Returns the least upper bound of two types.
+         */
         protected TypeMirror lubTypeFrame(TypeMirror a, TypeMirror b) {
             if (types.isSubtype(a, b)) {
                 return b;

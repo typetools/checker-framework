@@ -1,6 +1,6 @@
 /**
- * An Annotation can contain components besides the methods declaring the annotation arguments, e.g.
- * classes and fields.
+ * An Annotation can contain components besides the methods
+ * declaring the annotation arguments, e.g. classes and fields.
  */
 @interface Anno {
     class Inner {}

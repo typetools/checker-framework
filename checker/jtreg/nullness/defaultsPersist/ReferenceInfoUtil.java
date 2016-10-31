@@ -50,8 +50,8 @@ public class ReferenceInfoUtil {
     }
 
     /**
-     * Test the result of Attributes.getIndex according to expectations encoded in the method's
-     * name.
+     * Test the result of Attributes.getIndex according to expectations
+     * encoded in the method's name.
      */
     private static void findAnnotations(ClassFile cf, String name, List<TypeAnnotation> annos) {
         int index = cf.attributes.getIndex(cf.constant_pool, name);
@@ -64,8 +64,8 @@ public class ReferenceInfoUtil {
     }
 
     /**
-     * Test the result of Attributes.getIndex according to expectations encoded in the method's
-     * name.
+     * Test the result of Attributes.getIndex according to expectations
+     * encoded in the method's name.
      */
     private static void findAnnotations(
             ClassFile cf, Method m, String name, List<TypeAnnotation> annos) {
@@ -93,8 +93,8 @@ public class ReferenceInfoUtil {
     }
 
     /**
-     * Test the result of Attributes.getIndex according to expectations encoded in the method's
-     * name.
+     * Test the result of Attributes.getIndex according to expectations
+     * encoded in the method's name.
      */
     private static void findAnnotations(
             ClassFile cf, Field m, String name, List<TypeAnnotation> annos) {

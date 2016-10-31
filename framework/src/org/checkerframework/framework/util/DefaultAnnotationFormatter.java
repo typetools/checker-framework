@@ -8,12 +8,13 @@ import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.javacutil.ErrorReporter;
 
-/** A utility for converting AnnotationMirrors to Strings. */
+/**
+ * A utility for converting AnnotationMirrors to Strings.
+ */
 public class DefaultAnnotationFormatter implements AnnotationFormatter {
 
     /**
      * Returns true if, by default, anno should not be printed
-     *
      * @see org.checkerframework.framework.qual.InvisibleQualifier
      * @return true if anno's declaration was qualified by InvisibleQualifier
      */
@@ -26,7 +27,6 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     /**
      * Creates a space String of each annotation in annos separated by a single space character,
      * obeying the printInvisible parameter.
-     *
      * @param annos a collection of annotations to print
      * @param printInvisible whether or not to print "invisible" annotation mirrors
      * @return the list of annotations converted to a String
@@ -51,9 +51,9 @@ public class DefaultAnnotationFormatter implements AnnotationFormatter {
     }
 
     /**
+     *
      * @param anno the annotation mirror to convert
-     * @return the string representation of a single AnnotationMirror, without showing full package
-     *     names
+     * @return the string representation of a single AnnotationMirror, without showing full package names
      */
     @Override
     @SideEffectFree

@@ -24,16 +24,16 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * This class has auxiliary methods that performs conversion between {@link annotations.Annotation}
- * and {@link javax.lang.model.element.AnnotationMirror}.
- *
+ * This class has auxiliary methods that performs conversion between
+ * {@link annotations.Annotation} and
+ * {@link javax.lang.model.element.AnnotationMirror}.
  * @author pbsf
  */
 public class AnnotationConverter {
 
     /**
-     * Converts an {@link javax.lang.model.element.AnnotationMirror} into an {@link
-     * annotations.Annotation}.
+     * Converts an {@link javax.lang.model.element.AnnotationMirror}
+     * into an {@link annotations.Annotation}.
      */
     protected static Annotation annotationMirrorToAnnotation(AnnotationMirror am) {
         AnnotationDef def = new AnnotationDef(AnnotationUtils.annotationName(am));
@@ -71,8 +71,8 @@ public class AnnotationConverter {
     }
 
     /**
-     * Converts an {@link annotations.Annotation} into an {@link
-     * javax.lang.model.element.AnnotationMirror}.
+     * Converts an {@link annotations.Annotation} into an
+     * {@link javax.lang.model.element.AnnotationMirror}.
      */
     protected static AnnotationMirror annotationToAnnotationMirror(
             Annotation anno, ProcessingEnvironment processingEnv) {
@@ -83,7 +83,9 @@ public class AnnotationConverter {
         return builder.build();
     }
 
-    /** Returns an AnnotationFieldType given an ExecutableElement or value. */
+    /**
+     * Returns an AnnotationFieldType given an ExecutableElement or value.
+     */
     protected static AnnotationFieldType getAnnotationFieldType(
             ExecutableElement ee, Object value) {
         if (value instanceof List<?>) {
@@ -129,7 +131,6 @@ public class AnnotationConverter {
 
     /**
      * Adds a field to an AnnotationBuilder.
-     *
      * @param fieldKey is the name of the field
      * @param obj is the value of the field
      * @param builder is the AnnotationBuilder

@@ -3,7 +3,6 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
 /**
  * Test case for issue 62: https://github.com/typetools/checker-framework/issues/62
- *
  * @skip-test
  */
 public class AssertIfTrueTest {

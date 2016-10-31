@@ -44,7 +44,7 @@ public class ExecUtil {
         }
     }
 
-    public static final int BLOCK_SIZE = 1024;
+    public final static int BLOCK_SIZE = 1024;
 
     public static class Redirection {
         private final char[] buffer;

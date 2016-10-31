@@ -8,14 +8,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Specifies the annotations to be included in a type without having to provide them explicitly.
+ * Specifies the annotations to be included in a type without having to provide
+ * them explicitly.
+ * <p>
  *
- * <p>This annotation permits specifying multiple default qualifiers for more than one type system.
- * It is necessary because Java forbids multiple annotations of the same name at a single location.
+ * This annotation permits specifying multiple default qualifiers for more
+ * than one type system.  It is necessary because Java forbids multiple
+ * annotations of the same name at a single location.
  *
- * <p>Example:
+ * Example:
  * <!-- &nbsp; is a hack that prevents @ from being the first character on the line, which confuses Javadoc -->
- *
  * <pre>
  * &nbsp; @DefaultQualifiers({
  * &nbsp;     @DefaultQualifier(NonNull.class),

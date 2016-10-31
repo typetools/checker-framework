@@ -1,7 +1,9 @@
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 
-/** Test case for issue 53: https://github.com/typetools/checker-framework/issues/53 (fixed now) */
+/**
+ * Test case for issue 53: https://github.com/typetools/checker-framework/issues/53 (fixed now)
+ */
 public class AssertIfTrueTest2 {
 
     private @Nullable Long id;

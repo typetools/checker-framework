@@ -64,12 +64,15 @@ import org.checkerframework.stubparser.ast.type.WildcardType;
 import org.checkerframework.stubparser.ast.visitor.GenericVisitorAdapter;
 
 /**
- * Convert a JAIF file plus a stub file into index files (JAIFs). Note that the resulting index
- * files will not include annotation definitions, for which stubfiles do not generally provide
- * complete information.
+ * Convert a JAIF file plus a stub file into index files (JAIFs).
+ * Note that the resulting index files will not include annotation
+ * definitions, for which stubfiles do not generally provide complete
+ * information.
+ * <p>
  *
- * <p>An instance of the class represents conversion of 1 stub file, but the static {@link
- * #main(String[])} method converts multiple stub files, instantiating the class multiple times.
+ * An instance of the class represents conversion of 1 stub file, but the
+ * static {@link #main(String[])} method converts multiple stub files,
+ * instantiating the class multiple times.
  *
  * @author dbro
  */
@@ -81,13 +84,16 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
             Pattern.compile("\\bimport *+((?:[^.]*+[.] *+)*+[^ ]*) *+;");
 
     /**
-     * Package name that is active at the current point in the input file. Changes as package
-     * declarations are encountered.
+     * Package name that is active at the current point in the input file.
+     * Changes as package declarations are encountered.
      */
     private final String pkgName;
     /** Imports that appear in the stub file. */
     private final List<String> imports;
-    /** A scene read from the input JAIF file, and will be written to the output JAIF file. */
+    /**
+     * A scene read from the input JAIF file,
+     * and will be written to the output JAIF file.
+     */
     private final AScene scene;
 
     /**
@@ -120,11 +126,13 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     /**
-     * Parse stub files and write out equivalent JAIFs. Note that the results do not include
-     * annotation definitions, for which stubfiles do not generally provide complete information.
+     * Parse stub files and write out equivalent JAIFs.
+     * Note that the results do not include annotation definitions, for
+     * which stubfiles do not generally provide complete information.
      *
-     * @param args name of JAIF with annotation definition, followed by names of stub files to be
-     *     converted (if none given, program reads from standard input)
+     * @param args name of JAIF with annotation definition, followed by
+     * names of stub files to be converted (if none given, program reads
+     * from standard input)
      */
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -159,8 +167,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     /**
-     * Augment given scene with information from stubfile, reading stubs from input stream and
-     * writing JAIF to output stream.
+     * Augment given scene with information from stubfile, reading stubs
+     * from input stream and writing JAIF to output stream.
      *
      * @param scene the initial scene
      * @param in stubfile contents
@@ -178,9 +186,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     /**
-     * Entry point of recursive-descent IndexUnit to AScene transformer. It operates by visiting the
-     * stub and scene in parallel, descending into them in the same way. It augments the existing
-     * scene (it does not create a new scene).
+     * Entry point of recursive-descent IndexUnit to AScene transformer.
+     * It operates by visiting the stub and scene in parallel, descending
+     * into them in the same way.
+     * It augments the existing scene (it does not create a new scene).
      *
      * @param iu {@link IndexUnit} representing stubfile
      */
@@ -205,8 +214,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     /**
-     * Builds simplified annotation from its declaration. Only the name is included, because
-     * stubfiles do not generally have access to the full definitions of annotations.
+     * Builds simplified annotation from its declaration.
+     * Only the name is included, because stubfiles do not generally have
+     * access to the full definitions of annotations.
      */
     private static Annotation extractAnnotation(AnnotationExpr expr) {
         String exprName = expr.toString().substring(1); // leave off leading '@'
@@ -407,8 +417,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
     }
 
     /**
-     * Copies information from an AST declaration node to an {@link ADeclaration}. Called by
-     * visitors for BodyDeclaration subclasses.
+     * Copies information from an AST declaration node to an {@link ADeclaration}.
+     * Called by visitors for BodyDeclaration subclasses.
      */
     private Void visitDecl(BodyDeclaration decl, ADeclaration elem) {
         List<AnnotationExpr> annoExprs = decl.getAnnotations();
@@ -421,7 +431,9 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return null;
     }
 
-    /** Copies information from an AST type node to an {@link ATypeElement}. */
+    /**
+     * Copies information from an AST type node to an {@link ATypeElement}.
+     */
     private Void visitType(Type type, final ATypeElement elem) {
         List<AnnotationExpr> exprs = type.getAnnotations();
         if (exprs != null) {
@@ -436,7 +448,10 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
         return null;
     }
 
-    /** Copies information from an AST type node's inner type nodes to an {@link ATypeElement}. */
+    /**
+     * Copies information from an AST type node's inner type nodes to an
+     * {@link ATypeElement}.
+     */
     private static Void visitInnerTypes(Type type, final ATypeElement elem) {
         return type.accept(
                 new GenericVisitorAdapter<Void, InnerTypeLocation>() {
@@ -482,7 +497,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
                     }
 
                     /**
-                     * Copies information from an AST inner type node to an {@link ATypeElement}.
+                     * Copies information from an AST inner type node to an
+                     * {@link ATypeElement}.
                      */
                     private void visitInnerType(Type type, InnerTypeLocation loc) {
                         ATypeElement typeElem = elem.innerTypes.vivify(loc);
@@ -495,7 +511,6 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
 
                     /**
                      * Extends type path by one element.
-                     *
                      * @see TypePathEntry.fromBinary
                      */
                     private InnerTypeLocation extendedTypePath(
@@ -584,8 +599,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * Finds the fully qualified name of the class with the given name.
      *
      * @param className possibly unqualified name of class
-     * @return fully qualified name of class that {@code className} identifies in the current
-     *     context, or null if resolution fails
+     * @return fully qualified name of class that {@code className}
+     * identifies in the current context, or null if resolution fails
      */
     private String resolve(String className) {
         String qualifiedName;
@@ -656,7 +671,8 @@ public class ToIndexFileConverter extends GenericVisitorAdapter<Void, AElement> 
      * Finds {@link Class} corresponding to a name.
      *
      * @param className
-     * @return {@link Class} object corresponding to className, or null if none found
+     * @return {@link Class} object corresponding to className, or null if
+     * none found
      */
     private static Class<?> loadClass(String className) {
         assert className != null;

@@ -14,8 +14,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import tests.reflection.qual.ReflectBottom;
 
 /**
- * AnnotatedTypeFactory with reflection resolution enabled. The used qualifier hierarchy is
- * straightforward and only intended for test purposes.
+ * AnnotatedTypeFactory with reflection resolution enabled. The used qualifier
+ * hierarchy is straightforward and only intended for test purposes.
  *
  * @author rjust, smillst
  */

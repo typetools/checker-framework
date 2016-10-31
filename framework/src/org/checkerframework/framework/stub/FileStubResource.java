@@ -5,7 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-/** {@link File}-based implementation of {@link StubResource}. */
+/**
+ * {@link File}-based implementation of {@link StubResource}.
+ */
 public class FileStubResource implements StubResource {
     private final File file;
 

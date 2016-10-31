@@ -9,7 +9,8 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Indicates that the {@code String} type has an unknown property key property.
+ * Indicates that the {@code String} type has an unknown
+ * property key property.
  *
  * @checker_framework.manual #propkey-checker Property File Checker
  */

@@ -10,7 +10,8 @@ import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Indicates that the {@code String} type has an unknown localizable key property.
+ * Indicates that the {@code String} type has an unknown
+ * localizable key property.
  *
  * @checker_framework.manual #i18n-checker Internationalization Checker
  */

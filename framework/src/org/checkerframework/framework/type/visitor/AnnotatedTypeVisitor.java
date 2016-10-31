@@ -14,26 +14,33 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 
 /**
  * A visitor of annotated types, in the style of the visitor design pattern.
+ * <p>
  *
- * <p>Classes implementing this interface are used to operate on a type when the kind of type is
- * unknown at compile time. When a visitor is passed to a type's accept method, the visitXYZ method
- * most applicable to that type is invoked.
+ * Classes implementing this interface are used to operate on a type
+ * when the kind of type is unknown at compile time. When a visitor is
+ * passed to a type's accept method, the visitXYZ method most
+ * applicable to that type is invoked.
+ * <p>
  *
- * <p>Classes implementing this interface may or may not throw a NullPointerException if the
- * additional parameter p is {@code null}; see documentation of the implementing class for details.
+ * Classes implementing this interface may or may not throw a
+ * NullPointerException if the additional parameter p is {@code null}; see
+ * documentation of the implementing class for details.
  *
- * @param <R> the return type of this visitor's methods. Use Void for visitors that do not need to
- *     return results.
- * @param
- *     <p>the type of the additional parameter to this visitor's methods. Use Void for visitors that
- *     do not need an additional parameter.
+ * @param <R>
+ *            the return type of this visitor's methods. Use Void for
+ *            visitors that do not need to return results.
+ *
+ * @param <P>
+ *            the type of the additional parameter to this visitor's
+ *            methods. Use Void for visitors that do not need an
+ *            additional parameter.
  */
 public interface AnnotatedTypeVisitor<R, P> {
 
     /**
      * A Convenience method equivalent to {@code v.visit(t, null)}.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @return a visitor-specified result
      */
     public R visit(AnnotatedTypeMirror type);
@@ -41,7 +48,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits a type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -50,7 +57,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits a declared type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -59,7 +66,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits a declared type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -68,7 +75,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits an intersection type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -77,7 +84,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits an union type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -86,7 +93,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits an executable type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -95,7 +102,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits an array type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -104,7 +111,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits a type variable.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -113,7 +120,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits a primitive type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -122,7 +129,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits NoType type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -131,7 +138,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits a {@code null} type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */
@@ -140,7 +147,7 @@ public interface AnnotatedTypeVisitor<R, P> {
     /**
      * Visits a wildcard type.
      *
-     * @param type the type to visit
+     * @param type  the type to visit
      * @param p a visitor-specified parameter
      * @return a visitor-specified result
      */

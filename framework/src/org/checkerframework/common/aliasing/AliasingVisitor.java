@@ -29,19 +29,23 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This visitor ensures that every constructor whose result is annotated as {@literal @}Unique does
- * not leak aliases.
+ * This visitor ensures that every constructor whose result is annotated as
+ * {@literal @}Unique does not leak aliases.
+ * <p>
  *
- * <p>TODO: Implement {@literal @}NonLeaked and {@literal @}LeakedToResult verifications:
+ * TODO: Implement {@literal @}NonLeaked and {@literal @}LeakedToResult verifications:
+ * <p>
+ *  {@literal @}NonLeaked: When a method declaration has a parameter annotated as
+ *  {@literal @}NonLeaked, the method body must not leak a reference to that parameter.
+ * <p>
  *
- * <p>{@literal @}NonLeaked: When a method declaration has a parameter annotated as
- * {@literal @}NonLeaked, the method body must not leak a reference to that parameter.
+ *  {@literal @}LeakedToResult: When a method declaration has a parameter annotated as
+ *  {@literal @}LeakedToResult, the method body must not leak a reference to that parameter,
+ *  except at the method return statements.
+ * <p>
  *
- * <p>{@literal @}LeakedToResult: When a method declaration has a parameter annotated as
- * {@literal @}LeakedToResult, the method body must not leak a reference to that parameter, except
- * at the method return statements.
- *
- * <p>Both of the checks above are similar to the @Unique check that is implemented in this visitor.
+ *  Both of the checks above are similar to the @Unique check that is
+ *  implemented in this visitor.
  */
 public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactory> {
 
@@ -50,20 +54,20 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     }
 
     /**
-     * Checks that if a method call is being invoked inside a constructor with result type
-     * {@literal @}Unique, it must not leak the "this" reference. There are 3 ways to make sure that
-     * this is not happening:
-     *
-     * <p>1. "this" is not an argument of the method call.
-     *
-     * <p>2. "this" is an argument of the method call, but the respective parameter is annotated as
-     * {@literal @}NonLeaked.
-     *
-     * <p>3. "this" is an argument of the method call, but the respective parameter is annotated as
-     * {@literal @}LeakedToResult AND the result of the method call is not being stored (the method
-     * call is a statement).
-     *
-     * <p>The private method {@code isUniqueCheck} handles cases 2 and 3.
+     * Checks that if a method call is being invoked inside a constructor with
+     * result type {@literal @}Unique, it must not leak the "this" reference.
+     * There are 3 ways to make sure that this is not happening:
+     * <p>
+     * 1. "this" is not an argument of the method call.
+     * <p>
+     * 2. "this" is an argument of the method call, but the respective parameter
+     * is annotated as {@literal @}NonLeaked.
+     * <p>
+     * 3. "this" is an argument of the method call, but the respective parameter
+     * is annotated as {@literal @}LeakedToResult AND the result of the method
+     * call is not being stored (the method call is a statement).
+     * <p>
+     * The private method {@code isUniqueCheck} handles cases 2 and 3.
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -240,9 +244,8 @@ public class AliasingVisitor extends BaseTypeVisitor<AliasingAnnotatedTypeFactor
     }
 
     /**
-     * Returns true if {@code exp} has type {@code @Unique} and is not a method invocation nor a new
-     * class expression.
-     *
+     * Returns true if {@code exp} has type {@code @Unique} and is not a
+     * method invocation nor a new class expression.
      * @param exp the Tree to check
      */
     private boolean canBeLeaked(Tree exp) {

@@ -1,4 +1,5 @@
 import java.util.regex.*;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 // this is a test-case for initialization that covers multiple initializer blocks, field initializers and a few other things
 class TwoStaticInitBlocks {

@@ -6,21 +6,18 @@ import org.checkerframework.framework.util.AtmCombo;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * Implements all methods from AtmComboVisitor. By default all methods call ErrorAbort with a
- * message created by defaultErrorMessage. Implement only those methods you expect to be called on
- * your subclass.
+ * Implements all methods from AtmComboVisitor. By default all methods call ErrorAbort with a message created by
+ * defaultErrorMessage.  Implement only those methods you expect to be called on your subclass.
  *
- * <p>This class does no traversal.
+ * This class does no traversal.
  */
 public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM>
         implements AtmComboVisitor<RETURN_TYPE, PARAM> {
 
     /**
-     * Formats type1, type2 and param into an error message used by all methods of
-     * AbstractAtmComboVisitor that are not overridden. Normally, this method should indicate that
-     * the given method (and therefore the given pair of type mirror classes) is not supported by
-     * this class.
-     *
+     * Formats type1, type2 and param into an error message used by all methods of AbstractAtmComboVisitor that
+     * are not overridden.  Normally, this method should indicate that the given method (and therefore the given
+     * pair of type mirror classes) is not supported by this class.
      * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
      * @param type2 the second AnnotatedTypeMirror parameter to the visit method called
      * @param param subtype specific parameter passed to every visit method
@@ -30,11 +27,9 @@ public abstract class AbstractAtmComboVisitor<RETURN_TYPE, PARAM>
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, PARAM param);
 
     /**
-     * Called by the default implementation of every AbstractAtmComboVisitor visit method. This
-     * methodnS issues a runtime exception by default. In general, it should handle the case where a
-     * visit method has been called with a pair of type mirrors that should never be passed to this
-     * particular visitor.
-     *
+     * Called by the default implementation of every AbstractAtmComboVisitor visit method.  This methodnS
+     * issues a runtime exception by default.  In general, it should handle the case where a visit method
+     * has been called with a pair of type mirrors that should never be passed to this particular visitor.
      * @param type1 the first AnnotatedTypeMirror parameter to the visit method called
      * @param type2 the second AnnotatedTypeMirror parameter to the visit method called
      * @param param subtype specific parameter passed to every visit method

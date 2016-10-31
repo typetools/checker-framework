@@ -8,24 +8,30 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 
 /**
- * {@code TransferInput} is used as the input type of the individual transfer functions of a {@link
- * TransferFunction}. It also contains a reference to the node for which the transfer function will
- * be applied.
+ * {@code TransferInput} is used as the input type of the individual transfer
+ * functions of a {@link TransferFunction}. It also contains a reference to the
+ * node for which the transfer function will be applied.
  *
- * <p>A {@code TransferInput} contains one or two stores. If two stores are present, one belongs to
- * 'then', and the other to 'else'.
+ * <p>
+ *
+ * A {@code TransferInput} contains one or two stores. If two stores are
+ * present, one belongs to 'then', and the other to 'else'.
  *
  * @author Stefan Heule
- * @param <S> The {@link Store} used to keep track of intermediate results.
+ *
+ * @param <S>
+ *            The {@link Store} used to keep track of intermediate results.
  */
 public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
-    /** The corresponding node. */
+    /**
+     * The corresponding node.
+     */
     protected Node node;
 
     /**
-     * The regular result store (or {@code null} if none is present). The following invariant is
-     * maintained:
+     * The regular result store (or {@code null} if none is present). The
+     * following invariant is maintained:
      *
      * <pre>{@code
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
@@ -34,8 +40,8 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     protected final /*@Nullable*/ S store;
 
     /**
-     * The 'then' result store (or {@code null} if none is present). The following invariant is
-     * maintained:
+     * The 'then' result store (or {@code null} if none is present). The
+     * following invariant is maintained:
      *
      * <pre>{@code
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
@@ -44,8 +50,8 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     protected final /*@Nullable*/ S thenStore;
 
     /**
-     * The 'else' result store (or {@code null} if none is present). The following invariant is
-     * maintained:
+     * The 'else' result store (or {@code null} if none is present). The
+     * following invariant is maintained:
      *
      * <pre>{@code
      * store == null &hArr; thenStore != null &amp;&amp; elseStore != null
@@ -53,18 +59,25 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
      */
     protected final /*@Nullable*/ S elseStore;
 
-    /** The corresponding analysis class to get intermediate flow results. */
+    /**
+     * The corresponding analysis class to get intermediate flow results.
+     */
     protected final Analysis<A, S, ?> analysis;
 
     /**
-     * Create a {@link TransferInput}, given a {@link TransferResult} and a node-value mapping.
+     * Create a {@link TransferInput}, given a {@link TransferResult} and a
+     * node-value mapping.
      *
-     * <p><em>Aliasing</em>: The stores returned by any methods of {@code to} will be stored
-     * internally and are not allowed to be used elsewhere. Full control of them is transfered to
-     * this object.
+     * <p>
      *
-     * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
-     * from within this {@link TransferInput}.
+     * <em>Aliasing</em>: The stores returned by any methods of {@code to} will
+     * be stored internally and are not allowed to be used elsewhere. Full
+     * control of them is transfered to this object.
+     *
+     * <p>
+     *
+     * The node-value mapping {@code nodeValues} is provided by the analysis and
+     * is only read from within this {@link TransferInput}.
      */
     public TransferInput(Node n, Analysis<A, S, ?> analysis, TransferResult<A, S> to) {
         node = n;
@@ -82,11 +95,16 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     /**
      * Create a {@link TransferInput}, given a store and a node-value mapping.
      *
-     * <p><em>Aliasing</em>: The store {@code s} will be stored internally and is not allowed to be
-     * used elsewhere. Full control over {@code s} is transfered to this object.
+     * <p>
      *
-     * <p>The node-value mapping {@code nodeValues} is provided by the analysis and is only read
-     * from within this {@link TransferInput}.
+     * <em>Aliasing</em>: The store {@code s} will be stored internally and is
+     * not allowed to be used elsewhere. Full control over {@code s} is
+     * transfered to this object.
+     *
+     * <p>
+     *
+     * The node-value mapping {@code nodeValues} is provided by the analysis and
+     * is only read from within this {@link TransferInput}.
      */
     public TransferInput(Node n, Analysis<A, S, ?> analysis, S s) {
         node = n;
@@ -96,10 +114,14 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * Create a {@link TransferInput}, given two stores and a node-value mapping.
+     * Create a {@link TransferInput}, given two stores and a node-value
+     * mapping.
      *
-     * <p><em>Aliasing</em>: The two stores {@code s1} and {@code s2} will be stored internally and
-     * are not allowed to be used elsewhere. Full control of them is transfered to this object.
+     * <p>
+     *
+     * <em>Aliasing</em>: The two stores {@code s1} and {@code s2} will be
+     * stored internally and are not allowed to be used elsewhere. Full control
+     * of them is transfered to this object.
      */
     public TransferInput(Node n, Analysis<A, S, ?> analysis, S s1, S s2) {
         node = n;
@@ -109,7 +131,9 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
         store = null;
     }
 
-    /** Copy constructor. */
+    /**
+     * Copy constructor.
+     */
     protected TransferInput(TransferInput<A, S> from) {
         this.node = from.node;
         this.analysis = from.analysis;
@@ -123,24 +147,27 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
         }
     }
 
-    /** @return the {@link Node} for this {@link TransferInput}. */
+    /**
+     * @return the {@link Node} for this {@link TransferInput}.
+     */
     public Node getNode() {
         return node;
     }
 
     /**
-     * @return the abstract value of {@link Node} {@code n}, which is required to be a 'sub-node'
-     *     (that is, a direct or indirect child) of the node this transfer input is associated with.
-     *     Furthermore, {@code n} cannot be a l-value node. Returns {@code null} if no value if
-     *     available.
+     * @return the abstract value of {@link Node} {@code n}, which is required
+     *         to be a 'sub-node' (that is, a direct or indirect child) of the
+     *         node this transfer input is associated with. Furthermore,
+     *         {@code n} cannot be a l-value node. Returns {@code null} if no
+     *         value if available.
      */
     public /*@Nullable*/ A getValueOfSubNode(Node n) {
         return analysis.getValue(n);
     }
 
     /**
-     * @return the regular result store produced if no exception is thrown by the {@link Node}
-     *     corresponding to this transfer function result.
+     * @return the regular result store produced if no exception is thrown by
+     *         the {@link Node} corresponding to this transfer function result.
      */
     public S getRegularStore() {
         if (store == null) {
@@ -151,8 +178,8 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * @return the result store produced if the {@link Node} this result belongs to evaluates to
-     *     {@code true}.
+     * @return the result store produced if the {@link Node} this result belongs
+     *         to evaluates to {@code true}.
      */
     public S getThenStore() {
         if (store == null) {
@@ -162,8 +189,8 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * @return the result store produced if the {@link Node} this result belongs to evaluates to
-     *     {@code false}.
+     * @return the result store produced if the {@link Node} this result belongs
+     *         to evaluates to {@code false}.
      */
     public S getElseStore() {
         if (store == null) {
@@ -175,13 +202,15 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     }
 
     /**
-     * @return {@code true} if and only if this transfer input contains two stores that are
-     *     potentially not equal. Note that the result {@code true} does not imply that {@code
-     *     getRegularStore} cannot be called (or vice versa for {@code false}). Rather, it indicates
-     *     that {@code getThenStore} or {@code getElseStore} can be used to give more precise
-     *     results. Otherwise, if the result is {@code false}, then all three methods {@code
-     *     getRegularStore}, {@code getThenStore}, and {@code getElseStore} return equivalent
-     *     stores.
+     * @return {@code true} if and only if this transfer input contains two
+     *         stores that are potentially not equal. Note that the result
+     *         {@code true} does not imply that {@code getRegularStore} cannot
+     *         be called (or vice versa for {@code false}). Rather, it indicates
+     *         that {@code getThenStore} or {@code getElseStore} can be used to
+     *         give more precise results. Otherwise, if the result is
+     *         {@code false}, then all three methods {@code getRegularStore},
+     *         {@code getThenStore}, and {@code getElseStore} return equivalent
+     *         stores.
      */
     public boolean containsTwoStores() {
         return (thenStore != null && elseStore != null);
@@ -195,8 +224,10 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
     /**
      * Compute the least upper bound of two stores.
      *
-     * <p><em>Important</em>: This method must fulfill the same contract as {@code leastUpperBound}
-     * of {@link Store}.
+     * <p>
+     *
+     * <em>Important</em>: This method must fulfill the same contract as
+     * {@code leastUpperBound} of {@link Store}.
      */
     public TransferInput<A, S> leastUpperBound(TransferInput<A, S> other) {
         if (store == null) {

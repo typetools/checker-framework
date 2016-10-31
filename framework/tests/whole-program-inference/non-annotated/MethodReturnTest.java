@@ -1,5 +1,4 @@
 import tests.wholeprograminference.qual.*;
-
 public class MethodReturnTest {
 
     static int getSibling1NotAnnotated() {
@@ -10,7 +9,6 @@ public class MethodReturnTest {
         //:: error: (return.type.incompatible)
         return getSibling1NotAnnotated();
     }
-
     public static boolean bool = false;
 
     public static int lubTest() {
@@ -29,7 +27,6 @@ public class MethodReturnTest {
 
     class InnerClass {
         int field = 0;
-
         int getParent2() {
             field = getParent();
             return getParent();
@@ -41,7 +38,6 @@ public class MethodReturnTest {
         }
 
         void expectsSibling1(@Sibling1 int i) {}
-
         void test() {
             @Sibling1 int sib = (@Sibling1 int) 0;
             receivesSibling1(sib);

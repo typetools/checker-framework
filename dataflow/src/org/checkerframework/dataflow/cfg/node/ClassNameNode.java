@@ -17,12 +17,14 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A node representing a class name used in an expression such as a static method invocation.
+ * A node representing a class name used in an expression
+ * such as a static method invocation.
  *
- * <p>parent.<em>class</em> .forName(...)
+ * parent.<em>class</em> .forName(...)
  *
  * @author Stefan Heule
  * @author Charlie Garrett
+ *
  */
 public class ClassNameNode extends Node {
 

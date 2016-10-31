@@ -11,25 +11,29 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Compiles all test files in a test directory together. Use {@link CheckerFrameworkPerFileTest} to
- * compile each test file in a test directory individually. A {@link
- * CheckerFrameworkPerDirectoryTest} is faster than an equivalent {@link
- * CheckerFrameworkPerFileTest}, but can only test that processor errors or warnings are issued.
+ * Compiles all test files in a test directory together. Use {@link CheckerFrameworkPerFileTest}
+ * to compile each test file in a test directory individually.
+ * A {@link CheckerFrameworkPerDirectoryTest} is faster than an equivalent
+ * {@link CheckerFrameworkPerFileTest}, but can only test that processor errors or warnings are
+ * issued.
  *
- * <p>To create a {@link CheckerFrameworkPerDirectoryTest}, create a new class that extends this
- * class. The new class must do the following:
+ * To create a {@link CheckerFrameworkPerDirectoryTest}, create a new class that extends this class.
+ * The new class must do the following:
  *
  * <ol>
- *   <li> Declare a constructor taking 1 parameter of type {@code java.util.List<java.io.File>}.
- *       This is a list of the files that will be compiled.
- *   <li> Declare the following method: {@code @Parameters public static String [] getTestDirs()}
- *       <p>getTestDir must return an array of directories that exist in the test folder. The
- *       directories can contain more path information (e.g., "myTestDir/moreTests") but note, the
- *       test suite will find all of the Java test files that exists below the listed directories.
- *       It is unnecessary to list child directories of a directory you have already listed.
+ * <li> Declare a constructor taking 1 parameter of type {@code java.util.List<java.io.File>}.
+ * This is a list of the files that will be compiled.
+ * <li> Declare the following method:
+ *  {@code @Parameters public static String [] getTestDirs()}
+ * <p>
+ * getTestDir must return an array of directories that exist in the test
+ * folder.
+ * The directories can contain more path information (e.g.,
+ * "myTestDir/moreTests") but note, the test suite will find all of the Java
+ * test files that exists below the listed directories.  It is unnecessary
+ * to list child directories of a directory you have already listed.  </li>
  * </ol>
- *
- * <pre>
+ *  <pre>
  * public class MyTest extends CheckerFrameworkPerDirectoryTest {
  *   {@code  public MyTest(List<File>} testFiles) {
  *     super(testFiles, MyChecker.class, "", "Anomsgtext");
@@ -89,14 +93,17 @@ public abstract class CheckerFrameworkPerDirectoryTest {
     }
 
     /**
-     * Override this method if you would like to supply a checker command-line option that depends
-     * on the Java files passed to the test. Those files are available in field {@link #testFiles}.
+     * Override this method if you would like to supply a checker
+     * command-line option that depends on the Java files passed to the test.
+     * Those files are available in field {@link #testFiles}.
+     * <p>
      *
-     * <p>If you want to specify the same command-line option for all tests of a particular checker,
-     * then pass it to the {@link #CheckerFrameworkPerDirectoryTest} constructor.
+     * If you want to specify the same command-line option for all tests of
+     * a particular checker, then pass it to the {@link #CheckerFrameworkPerDirectoryTest}
+     * constructor.
      *
-     * @param previousOptions the options specified in the constructor of the test previousOptions
-     *     is unmodifiable
+     * @param previousOptions the options specified in the constructor of the test
+     *                        previousOptions is unmodifiable
      * @return a new list of options or the original passed through
      */
     public List<String> customizeOptions(List<String> previousOptions) {
