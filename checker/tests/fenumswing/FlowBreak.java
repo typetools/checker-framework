@@ -1,5 +1,3 @@
-import org.checkerframework.checker.fenum.qual.SwingBoxOrientation;
-import org.checkerframework.checker.fenum.qual.SwingCompassDirection;
 import org.checkerframework.checker.fenum.qual.SwingHorizontalOrientation;
 import org.checkerframework.checker.fenum.qual.SwingVerticalOrientation;
 

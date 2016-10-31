@@ -96,9 +96,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new ClassValQualifierHierarchy(factory);
     }
 
-    /**
-     * The qualifier hierarchy for the ClassVal type system
-     */
+    /** The qualifier hierarchy for the ClassVal type system */
     protected class ClassValQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         public ClassValQualifierHierarchy(MultiGraphFactory f) {
@@ -203,6 +201,7 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * Implements these type inference rules:
+     *
      * <pre>
      * C.class:             @ClassVal(fully qualified name of C)
      * Class.forName(name): @ClassVal("name")
@@ -276,8 +275,8 @@ public class ClassValAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Return String representation of class name. This will not return the
-         * correct name for anonymous classes.
+         * Return String representation of class name. This will not return the correct name for
+         * anonymous classes.
          */
         private String getClassNameFromType(Type classType) {
             switch (classType.getKind()) {

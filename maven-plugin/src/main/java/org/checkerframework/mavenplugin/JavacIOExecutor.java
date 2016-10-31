@@ -1,19 +1,16 @@
 package org.checkerframework.mavenplugin;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import org.apache.maven.plugin.CompilationFailureException;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
-import org.codehaus.plexus.compiler.CompilerError;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
 /**
  * A CommandLineExecutor that reports the output and error streams with no additional processing.
+ *
  * @see org.checkerframework.mavenplugin.CommandLineExceutor
  */
 public class JavacIOExecutor implements CommandLineExceutor {
@@ -23,9 +20,7 @@ public class JavacIOExecutor implements CommandLineExceutor {
         this.pathToExecutable = pathToExecutable;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void executeCommandLine(final Commandline cl, final Log log, final boolean failOnError)
             throws MojoExecutionException, MojoFailureException {
         CommandLineUtils.StringStreamConsumer out = new CommandLineUtils.StringStreamConsumer();

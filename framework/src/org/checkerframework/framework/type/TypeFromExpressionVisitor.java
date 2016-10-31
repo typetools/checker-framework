@@ -43,9 +43,7 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-/**
- * Converts ExpressionTrees into AnnotatedTypeMirrors
- */
+/** Converts ExpressionTrees into AnnotatedTypeMirrors */
 class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
     @Override
@@ -236,11 +234,14 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
     /**
      * Creates an AnnotatedDeclaredType for the NewClassTree and adds, for each hierarchy, one of:
+     *
      * <ul>
-     *   <li>an explicit annotation on the new class expression ({@code new @HERE MyClass()} ), or</li>
-     *   <li>an explicit annotation on the declaration of the class ({@code @HERE class MyClass {}} ), or</li>
-     *   <li>an explicit annotation on the declaration of the constructor ({@code @HERE public MyClass() {}} ), or</li>
-     *   <li>no annotation for a this hierarchy.</li>
+     *   <li>an explicit annotation on the new class expression ({@code new @HERE MyClass()} ), or
+     *   <li>an explicit annotation on the declaration of the class ({@code @HERE class MyClass {}}
+     *       ), or
+     *   <li>an explicit annotation on the declaration of the constructor ({@code @HERE public
+     *       MyClass() {}} ), or
+     *   <li>no annotation for a this hierarchy.
      * </ul>
      *
      * @param node NewClassTree

@@ -12,28 +12,26 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * A node for a literals that have some form of value:
+ *
  * <ul>
- * <li>integer literal</li>
- * <li>long literal</li>
- * <li>char literal</li>
- * <li>string literal</li>
- * <li>float literal</li>
- * <li>double literal</li>
- * <li>boolean literal</li>
- * <li>null literal</li>
+ *   <li>integer literal
+ *   <li>long literal
+ *   <li>char literal
+ *   <li>string literal
+ *   <li>float literal
+ *   <li>double literal
+ *   <li>boolean literal
+ *   <li>null literal
  * </ul>
  *
  * @author Stefan Heule
- *
  */
 public abstract class ValueLiteralNode extends Node {
 
     protected final LiteralTree tree;
 
-    /**
-     * @return the value of the literal
-     */
-    abstract public /*@Nullable*/ Object getValue();
+    /** @return the value of the literal */
+    public abstract /*@Nullable*/ Object getValue();
 
     public ValueLiteralNode(LiteralTree tree) {
         super(InternalUtils.typeOf(tree));
@@ -50,9 +48,7 @@ public abstract class ValueLiteralNode extends Node {
         return String.valueOf(getValue());
     }
 
-    /**
-     * Compare the value of this nodes.
-     */
+    /** Compare the value of this nodes. */
     @Override
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof ValueLiteralNode)) {

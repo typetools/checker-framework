@@ -17,12 +17,11 @@ import org.checkerframework.javacutil.InternalUtils;
  *   <em>target(arg1, arg2, ...)</em>
  * </pre>
  *
- * CFGs may contain {@link MethodInvocationNode}s that correspond to no AST
- * {@link Tree}, in which case, the tree field will be null.
+ * CFGs may contain {@link MethodInvocationNode}s that correspond to no AST {@link Tree}, in which
+ * case, the tree field will be null.
  *
  * @author Stefan Heule
  * @author Charlie Garrett
- *
  */
 public class MethodInvocationNode extends Node {
 

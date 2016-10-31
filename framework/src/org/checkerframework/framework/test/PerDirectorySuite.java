@@ -22,13 +22,15 @@ import org.junit.runners.model.TestClass;
 // TODO: large parts of this file are the same as PerFileSuite.java.
 // Reduce duplication by moving common parts to an abstract class.
 /**
- * <p>PerDirectorySuite runs a test class once for each set of javaFiles returned by its method marked with {@code @Parameters}</p>
+ * PerDirectorySuite runs a test class once for each set of javaFiles returned by its method marked
+ * with {@code @Parameters}
+ *
  * <p>To use:<br>
- *  Annotated your test class with {@code @RunWith(PerDirectorySuite.class)}<br>
- *  Create a javaFiles method by annotating a public static method with {@code @Parameters}.  This method
- *  must return either a {@code List<File>} where each element of the list is a Java file to test against
- *  OR a {@code String []} where each String in the array is a directory in the tests directory.
- * </p>
+ * Annotated your test class with {@code @RunWith(PerDirectorySuite.class)}<br>
+ * Create a javaFiles method by annotating a public static method with {@code @Parameters}. This
+ * method must return either a {@code List<File>} where each element of the list is a Java file to
+ * test against OR a {@code String []} where each String in the array is a directory in the tests
+ * directory.
  */
 public class PerDirectorySuite extends Suite {
 
@@ -43,9 +45,7 @@ public class PerDirectorySuite extends Suite {
         return runners;
     }
 
-    /**
-     * Only called reflectively. Do not use programmatically.
-     */
+    /** Only called reflectively. Do not use programmatically. */
     public PerDirectorySuite(Class<?> klass) throws Throwable {
         super(klass, Collections.<Runner>emptyList());
         final TestClass testClass = getTestClass();
@@ -140,9 +140,7 @@ public class PerDirectorySuite extends Suite {
     private static final String requiredFormsMessage =
             "Parameter method must the following form:\n" + "@Parameters String [] getTestDirs()";
 
-    /**
-     * Runs the test class for the set of javaFiles passed in the constructor.
-     */
+    /** Runs the test class for the set of javaFiles passed in the constructor. */
     private static class PerParameterSetTestRunner extends BlockJUnit4ClassRunner {
         private final List<File> javaFiles;
 

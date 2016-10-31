@@ -30,9 +30,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- * Annotated type factory for the GUI Effect Checker.
- */
+/** Annotated type factory for the GUI Effect Checker. */
 public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final boolean debugSpew;
@@ -143,27 +141,35 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Calling context annotations
      *
-     * To make anon-inner-classes work, I need to climb the inheritance DAG, until I:
+     * <p>To make anon-inner-classes work, I need to climb the inheritance DAG, until I:
+     *
      * <ul>
-     * <li> find the class/interface that declares this calling method (an anon inner class is a separate class that implements an interface)
-     * <li> check whether *that* declaration specifies @UI on either the type or method
+     *   <li> find the class/interface that declares this calling method (an anon inner class is a
+     *       separate class that implements an interface)
+     *   <li> check whether *that* declaration specifies @UI on either the type or method
      * </ul>
      *
      * A method has the UI effect when:
+     *
      * <ol>
-     * <li> A method is UI if annotated @UIEffect
-     * <li> A method is UI if the enclosing class is annotated @UI or @UIType and the method is not annotated @AlwaysSafe
-     * <li> A method is UI if the corresponding method in the super-class/interface is UI,
-     *    and this method is not annotated @AlwaysSafe, and this method resides in an anonymous inner class (named classes still require
-     *    a package/class/method annotation to make it UI, only anon inner classes have this inheritance-by-default)
-     *    <ul>
-     *    <li> A method must be *annotated* UI if the method it overrides is *annotated* UI
-     *    <li> A method must be *annotated* UI if it overrides a UI method and the enclosing class is not UI
-     *    </ul>
-     * <li> It is an error if a method is UI but the same method in a super-type is not UI
-     * <li> It is an error if two super-types specify the same method, where one type says it's UI and one says it's not
-     *    (it's possible to simply enforce the weaker (safe) effect, but this seems more principled, it's easier ---
-     *    backwards-compatible --- to change our minds about this later)
+     *   <li> A method is UI if annotated @UIEffect
+     *   <li> A method is UI if the enclosing class is annotated @UI or @UIType and the method is
+     *       not annotated @AlwaysSafe
+     *   <li> A method is UI if the corresponding method in the super-class/interface is UI, and
+     *       this method is not annotated @AlwaysSafe, and this method resides in an anonymous inner
+     *       class (named classes still require a package/class/method annotation to make it UI,
+     *       only anon inner classes have this inheritance-by-default)
+     *       <ul>
+     *         <li> A method must be *annotated* UI if the method it overrides is *annotated* UI
+     *         <li> A method must be *annotated* UI if it overrides a UI method and the enclosing
+     *             class is not UI
+     *       </ul>
+     *
+     *   <li> It is an error if a method is UI but the same method in a super-type is not UI
+     *   <li> It is an error if two super-types specify the same method, where one type says it's UI
+     *       and one says it's not (it's possible to simply enforce the weaker (safe) effect, but
+     *       this seems more principled, it's easier --- backwards-compatible --- to change our
+     *       minds about this later)
      * </ol>
      */
     public Effect getDeclaredEffect(ExecutableElement methodElt) {
@@ -427,9 +433,7 @@ public class GuiEffectTypeFactory extends BaseAnnotatedTypeFactory {
         return new ListTreeAnnotator(super.createTreeAnnotator(), new GuiEffectTreeAnnotator());
     }
 
-    /**
-     * A class for adding annotations based on tree.
-     */
+    /** A class for adding annotations based on tree. */
     private class GuiEffectTreeAnnotator extends TreeAnnotator {
 
         GuiEffectTreeAnnotator() {

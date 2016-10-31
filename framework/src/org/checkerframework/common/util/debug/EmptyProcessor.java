@@ -8,9 +8,7 @@ import javax.lang.model.element.TypeElement;
 /**
  * Empty simple processor.
  *
- * It is useful in debugging compiler behavior with an annotation processor
- * present.
- *
+ * <p>It is useful in debugging compiler behavior with an annotation processor present.
  */
 @SupportedAnnotationTypes("*")
 public class EmptyProcessor extends AbstractProcessor {

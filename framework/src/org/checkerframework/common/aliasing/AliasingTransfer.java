@@ -28,20 +28,18 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Type refinement is treated in the usual way, except that at
- * (pseudo-)assignments the RHS may lose its type refinement, before the LHS is
- * type-refined.
+ * Type refinement is treated in the usual way, except that at (pseudo-)assignments the RHS may lose
+ * its type refinement, before the LHS is type-refined.
  *
- * The RHS always loses its type refinement (it is widened to
- * {@literal @}MaybeAliased, and its declared type must have been
- * {@literal @}MaybeAliased) except in the following cases:
+ * <p>The RHS always loses its type refinement (it is widened to {@literal @}MaybeAliased, and its
+ * declared type must have been {@literal @}MaybeAliased) except in the following cases:
+ *
  * <ol>
- * <li>The RHS is a fresh expression.
- * <li>The LHS is a {@literal @}NonLeaked formal parameter and the RHS is an
- * argument in a method call or constructor invocation.
- * <li>The LHS is a {@literal @}LeakedToResult formal parameter, the RHS is an
- * argument in a method call or constructor invocation, and the method's return
- * value is discarded.
+ *   <li>The RHS is a fresh expression.
+ *   <li>The LHS is a {@literal @}NonLeaked formal parameter and the RHS is an argument in a method
+ *       call or constructor invocation.
+ *   <li>The LHS is a {@literal @}LeakedToResult formal parameter, the RHS is an argument in a
+ *       method call or constructor invocation, and the method's return value is discarded.
  * </ol>
  */
 public class AliasingTransfer extends CFTransfer {
@@ -54,8 +52,8 @@ public class AliasingTransfer extends CFTransfer {
     }
 
     /**
-     * Case 1: For every assignment, the LHS is refined if the RHS has type
-     * {@literal @}Unique and is a method invocation or a new class instance.
+     * Case 1: For every assignment, the LHS is refined if the RHS has type {@literal @}Unique and
+     * is a method invocation or a new class instance.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(
@@ -75,14 +73,12 @@ public class AliasingTransfer extends CFTransfer {
     }
 
     /**
-     * Handling pseudo-assignments. Called by
-     * {@code CFAbstractTransfer.visitMethodInvocation()}.
-     * <p>
-     * Case 2: Given a method call, traverses all formal parameters of the
-     * method declaration, and if it doesn't have the {@literal @}NonLeaked or
-     * {@literal @}LeakedToResult annotations, we remove the node of the
-     * respective argument in the method call from the store. If parameter has
-     * {@literal @}LeakedToResult, {@code visitMethodInvocation()} handles it.
+     * Handling pseudo-assignments. Called by {@code CFAbstractTransfer.visitMethodInvocation()}.
+     *
+     * <p>Case 2: Given a method call, traverses all formal parameters of the method declaration,
+     * and if it doesn't have the {@literal @}NonLeaked or {@literal @}LeakedToResult annotations,
+     * we remove the node of the respective argument in the method call from the store. If parameter
+     * has {@literal @}LeakedToResult, {@code visitMethodInvocation()} handles it.
      */
     @Override
     protected void processPostconditions(
@@ -124,10 +120,9 @@ public class AliasingTransfer extends CFTransfer {
     }
 
     /**
-     * Case 3: Given a method invocation expression, if the parent of the
-     * expression is not a statement, check if there are any arguments of the
-     * method call annotated as {@literal @}LeakedToResult and remove it from the
-     * store, since it might be leaked.
+     * Case 3: Given a method invocation expression, if the parent of the expression is not a
+     * statement, check if there are any arguments of the method call annotated as
+     * {@literal @}LeakedToResult and remove it from the store, since it might be leaked.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(

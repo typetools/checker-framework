@@ -33,28 +33,26 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * A transfer function that extends {@link CFAbstractTransfer} and tracks
- * {@link InitializationStore}s. In addition to the features of
- * {@link CFAbstractTransfer}, this transfer function also track which fields of
- * the current class ('self' receiver) have been initialized.
+ * A transfer function that extends {@link CFAbstractTransfer} and tracks {@link
+ * InitializationStore}s. In addition to the features of {@link CFAbstractTransfer}, this transfer
+ * function also track which fields of the current class ('self' receiver) have been initialized.
  *
- * <p>
- * More precisely, the following refinements are performed:
+ * <p>More precisely, the following refinements are performed:
+ *
  * <ol>
- * <li>After the call to a constructor ("this()" call), all non-null fields of
- * the current class can safely be considered initialized.
- * <li>After a method call with a postcondition that ensures a field to be
- * non-null, that field can safely be considered initialized (this is done in
- * {@link InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
- * <li>All non-null fields with an initializer can be considered initialized
- * (this is done in {@link InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
- * <li>After the call to a super constructor ("super()" call), all non-null
- * fields of the super class can safely be considered initialized.
+ *   <li>After the call to a constructor ("this()" call), all non-null fields of the current class
+ *       can safely be considered initialized.
+ *   <li>After a method call with a postcondition that ensures a field to be non-null, that field
+ *       can safely be considered initialized (this is done in {@link
+ *       InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
+ *   <li>All non-null fields with an initializer can be considered initialized (this is done in
+ *       {@link InitializationStore#insertValue(FlowExpressions.Receiver, CFAbstractValue)}).
+ *   <li>After the call to a super constructor ("super()" call), all non-null fields of the super
+ *       class can safely be considered initialized.
  * </ol>
  *
  * @author Stefan Heule
  * @see InitializationStore
- *
  * @param <T> The type of the transfer function
  */
 public class InitializationTransfer<
@@ -87,8 +85,8 @@ public class InitializationTransfer<
     }
 
     /**
-     * Returns the fields that can safely be considered initialized after
-     * the method call {@code node}.
+     * Returns the fields that can safely be considered initialized after the method call {@code
+     * node}.
      */
     protected List<VariableElement> initializedFieldsAfterCall(
             MethodInvocationNode node, ConditionalTransferResult<V, S> transferResult) {
@@ -125,8 +123,8 @@ public class InitializationTransfer<
     }
 
     /**
-     * Adds all the fields of the class {@code clazzElem} that have the
-     * 'invariant annotation' to the set of initialized fields {@code result}.
+     * Adds all the fields of the class {@code clazzElem} that have the 'invariant annotation' to
+     * the set of initialized fields {@code result}.
      */
     protected void markInvariantFieldsAsInitialized(
             List<VariableElement> result, TypeElement clazzElem) {
@@ -164,9 +162,9 @@ public class InitializationTransfer<
     }
 
     /**
-     * If an invariant field is initialized and has the invariant annotation,
-     * than it has at least the invariant annotation. Note that only field of
-     * the 'this' receiver are tracked for initialization.
+     * If an invariant field is initialized and has the invariant annotation, than it has at least
+     * the invariant annotation. Note that only field of the 'this' receiver are tracked for
+     * initialization.
      */
     @Override
     public TransferResult<V, S> visitFieldAccess(FieldAccessNode n, TransferInput<V, S> p) {

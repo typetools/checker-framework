@@ -11,8 +11,8 @@ import org.checkerframework.javacutil.InternalUtils;
 /**
  * A node for member references and lambdas.
  *
- * The {@link Node#type} of a FunctionalInterfaceNode is determined by the
- * assignment context the member reference or lambda is used in.
+ * <p>The {@link Node#type} of a FunctionalInterfaceNode is determined by the assignment context the
+ * member reference or lambda is used in.
  *
  * <pre>
  *   <em>FunctionalInterface func = param1, param2, ... &rarr; statement</em>
@@ -27,7 +27,6 @@ import org.checkerframework.javacutil.InternalUtils;
  * </pre>
  *
  * @author David
- *
  */
 public class FunctionalInterfaceNode extends Node {
 

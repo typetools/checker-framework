@@ -11,15 +11,11 @@ import org.checkerframework.framework.util.PluginUtil;
 
 /**
  * Used to create an instance of TestConfiguration, TestConfigurationBuilder follows the standard
- * builder pattern.  That is, it returns itself after every call so you can string together
+ * builder pattern. That is, it returns itself after every call so you can string together
  * configuration methods as follows:
  *
- * {@code
- *    new TestConfigurationBuilder()
- *        .addOption("-Awarns")
- *        .addSourceFile("src1.java")
- *        .addDiagnosticFile("src1.out")
- * }
+ * <p>{@code new TestConfigurationBuilder() .addOption("-Awarns") .addSourceFile("src1.java")
+ * .addDiagnosticFile("src1.out") }
  *
  * @see TestConfiguration
  */
@@ -31,7 +27,9 @@ public class TestConfigurationBuilder {
 
     /**
      * This creates a builder for the default configuration used by Checker Framework JUnit tests.
-     * @param testSourcePath the path to the Checker test file sources, usually this is the directory of Checker's tests
+     *
+     * @param testSourcePath the path to the Checker test file sources, usually this is the
+     *     directory of Checker's tests
      * @param outputClassDirectory the directory to place classes compiled for testing
      * @param classPath the classpath to use for compilation
      * @param testSourceFiles the Java files that compose the test
@@ -82,13 +80,15 @@ public class TestConfigurationBuilder {
 
     /**
      * This is the default configuration used by Checker Framework JUnit tests.
-     * @param testSourcePath the path to the Checker test file sources, usually this is the directory of Checker's tests
+     *
+     * @param testSourcePath the path to the Checker test file sources, usually this is the
+     *     directory of Checker's tests
      * @param testSourceFiles the Java files that compose the test
      * @param processors the checkers or other annotation processors to run over the testSourceFiles
      * @param options the options to the compiler/processors
      * @param shouldEmitDebugInfo whether or not debug information should be emitted
-     * @return a TestConfiguration with input parameters added plus the normal default options, compiler,
-     *         and file manager used by Checker Framework tests
+     * @return a TestConfiguration with input parameters added plus the normal default options,
+     *     compiler, and file manager used by Checker Framework tests
      */
     public static TestConfiguration buildDefaultConfiguration(
             String testSourcePath,
@@ -118,13 +118,15 @@ public class TestConfigurationBuilder {
 
     /**
      * This is the default configuration used by Checker Framework JUnit tests.
-     * @param testSourcePath the path to the Checker test file sources, usually this is the directory of Checker's tests
+     *
+     * @param testSourcePath the path to the Checker test file sources, usually this is the
+     *     directory of Checker's tests
      * @param testFile a single test java file to compile
      * @param checkerName a single Checker to include in the processors field
      * @param options the options to the compiler/processors
      * @param shouldEmitDebugInfo whether or not debug information should be emitted
-     * @return a TestConfiguration with input parameters added plus the normal default options, compiler,
-     *         and file manager used by Checker Framework tests
+     * @return a TestConfiguration with input parameters added plus the normal default options,
+     *     compiler, and file manager used by Checker Framework tests
      */
     public static TestConfiguration buildDefaultConfiguration(
             String testSourcePath,
@@ -166,9 +168,7 @@ public class TestConfigurationBuilder {
         shouldEmitDebugInfo = false;
     }
 
-    /**
-     * Create a builder that has all of the optoins in initialConfig
-     */
+    /** Create a builder that has all of the optoins in initialConfig */
     public TestConfigurationBuilder(TestConfiguration initialConfig) {
         this.diagnosticFiles = new ArrayList<>(initialConfig.getDiagnosticFiles());
         this.testSourceFiles = new ArrayList<>(initialConfig.getTestSourceFiles());
@@ -180,14 +180,16 @@ public class TestConfigurationBuilder {
     }
 
     /**
-     * Ensures that the minimum requirements for running a test are met.
-     * These requirements are:
+     * Ensures that the minimum requirements for running a test are met. These requirements are:
+     *
      * <ul>
-     *    <li> There is at least one source file
-     *    <li> There is at least one processor (if requireProcessors has been set to true)
-     *    <li> There is an output directory specified for class files
-     *    <li> There is no {@code -processor} option in the optionMap (it should be added by addProcessor instead)
+     *   <li> There is at least one source file
+     *   <li> There is at least one processor (if requireProcessors has been set to true)
+     *   <li> There is an output directory specified for class files
+     *   <li> There is no {@code -processor} option in the optionMap (it should be added by
+     *       addProcessor instead)
      * </ul>
+     *
      * @param requireProcessors whether or not to require that there is at least one processor
      * @return a list of errors found while validating this configuration
      */
@@ -318,7 +320,7 @@ public class TestConfigurationBuilder {
     }
 
     /**
-     * Creates a TestConfiguration using the settings in this builder.  The settings are NOT
+     * Creates a TestConfiguration using the settings in this builder. The settings are NOT
      * validated first
      */
     public TestConfiguration build() {
@@ -331,9 +333,11 @@ public class TestConfigurationBuilder {
     }
 
     /**
-     * Creates a TestConfiguration using the settings in this builder.  The settings are
-     * first validated and a runtime exception is thrown if any errors are found
-     * @param requireProcessors whether or not there should be at least 1 processor specified, see method validate
+     * Creates a TestConfiguration using the settings in this builder. The settings are first
+     * validated and a runtime exception is thrown if any errors are found
+     *
+     * @param requireProcessors whether or not there should be at least 1 processor specified, see
+     *     method validate
      */
     public TestConfiguration validateThenBuild(boolean requireProcessors) {
         List<String> errors = validate(requireProcessors);
@@ -350,9 +354,7 @@ public class TestConfigurationBuilder {
                         + "\n");
     }
 
-    /**
-     * @return the set of Javac options as a flat list
-     */
+    /** @return the set of Javac options as a flat list */
     public List<String> flatOptions() {
         return options.getOptionsAsList();
     }
@@ -373,9 +375,7 @@ public class TestConfigurationBuilder {
                 + shouldEmitDebugInfo;
     }
 
-    /**
-     * @return a list that first has the items from parameter list then the items from iterable
-     */
+    /** @return a list that first has the items from parameter list then the items from iterable */
     private static <T> List<T> catListAndIterable(
             final List<T> list, final Iterable<? extends T> iterable) {
         final List<T> newList = new ArrayList<T>();
@@ -415,9 +415,7 @@ public class TestConfigurationBuilder {
                 + globalclasspath;
     }
 
-    /**
-     * Uses the system property "JDK_JAR" to find the annotated JDK
-     */
+    /** Uses the system property "JDK_JAR" to find the annotated JDK */
     public static String getJdkJarPathFromProperty() {
         return System.getProperty("JDK_JAR");
     }

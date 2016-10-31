@@ -56,17 +56,15 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Default implementation of {@link ReflectionResolver}, which resolves calls
- * to:
+ * Default implementation of {@link ReflectionResolver}, which resolves calls to:
+ *
  * <ul>
- * <li>{@link Method#invoke(Object, Object...)}</li>
- * <li>{@link Constructor#newInstance(Object...)}</li>
+ *   <li>{@link Method#invoke(Object, Object...)}
+ *   <li>{@link Constructor#newInstance(Object...)}
  * </ul>
  *
  * @checker_framework.manual #reflection-resolution Reflection resolution
- *
  * @author rjust
- *
  */
 public class DefaultReflectionResolver implements ReflectionResolver {
     // Message prefix added to verbose reflection messages
@@ -116,13 +114,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Resolves a call to {@link Method#invoke(Object, Object...)}.
      *
-     * @param factory
-     *            The {@link AnnotatedTypeFactory} of the underlying type
-     *            system.
-     * @param tree
-     *            The method invocation tree that has to be resolved
-     * @param origResult
-     *            The original result from {@code factory.methodFromUse}.
+     * @param factory The {@link AnnotatedTypeFactory} of the underlying type system.
+     * @param tree The method invocation tree that has to be resolved
+     * @param origResult The original result from {@code factory.methodFromUse}.
      */
     private Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolveMethodCall(
             AnnotatedTypeFactory factory,
@@ -251,14 +245,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Resolves a call to {@link Constructor#newInstance(Object...)}.
      *
-     * @param factory
-     *            The {@link AnnotatedTypeFactory} of the underlying type
-     *            system.
-     * @param tree
-     *            The method invocation tree (representing a constructor call)
-     *            that has to be resolved
-     * @param origResult
-     *            The original result from {@code factory.methodFromUse}.
+     * @param factory The {@link AnnotatedTypeFactory} of the underlying type system.
+     * @param tree The method invocation tree (representing a constructor call) that has to be
+     *     resolved
+     * @param origResult The original result from {@code factory.methodFromUse}.
      */
     private Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolveConstructorCall(
             AnnotatedTypeFactory factory,
@@ -326,12 +316,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Resolves a reflective method call and returns all possible corresponding
-     * method calls.
+     * Resolves a reflective method call and returns all possible corresponding method calls.
      *
-     * @param tree
-     *            The MethodInvocationTree node that is to be resolved
-     *            (Method.invoke)
+     * @param tree The MethodInvocationTree node that is to be resolved (Method.invoke)
      * @return a (potentially empty) list of all resolved MethodInvocationTrees
      */
     private List<MethodInvocationTree> resolveReflectiveMethod(
@@ -428,12 +415,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Resolves a reflective constructor call and returns all possible
-     * corresponding constructor calls.
+     * Resolves a reflective constructor call and returns all possible corresponding constructor
+     * calls.
      *
-     * @param tree
-     *            The MethodInvocationTree node that is to be resolved
-     *            (Constructor.newInstance)
+     * @param tree The MethodInvocationTree node that is to be resolved (Constructor.newInstance)
      * @return a (potentially empty) list of all resolved MethodInvocationTrees
      */
     private List<JCNewClass> resolveReflectiveConstructor(
@@ -493,8 +478,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Get set of MethodSymbols based on class name, method name, and parameter
-     * length.
+     * Get set of MethodSymbols based on class name, method name, and parameter length.
      *
      * @return the (potentially empty) set of corresponding method Symbol(s)
      */
@@ -550,11 +534,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Get set of Symbols for constructors based on class name and parameter
-     * length.
+     * Get set of Symbols for constructors based on class name and parameter length.
      *
-     * @return the (potentially empty) set of corresponding constructor
-     *         Symbol(s)
+     * @return the (potentially empty) set of corresponding constructor Symbol(s)
      */
     private List<Symbol> getConstructorSymbolsfor(
             String className, int paramLength, Env<AttrContext> env) {
@@ -599,11 +581,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Build lub of the two types (represented by sets {@code set1}
-     * and {@code set2}) using the provided AnnotatedTypeFactory.
-     * <p>
-     * If {@code set1} is {@code null} or empty, {@code set2} is
-     * returned.
+     * Build lub of the two types (represented by sets {@code set1} and {@code set2}) using the
+     * provided AnnotatedTypeFactory.
+     *
+     * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
      */
     private Set<? extends AnnotationMirror> lub(
             Set<? extends AnnotationMirror> set1,
@@ -617,11 +598,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Build glb of the two types (represented by sets {@code set1}
-     * and {@code set2}) using the provided AnnotatedTypeFactory.
-     * <p>
-     * If {@code set1} is {@code null} or empty, {@code set2} is
-     * returned.
+     * Build glb of the two types (represented by sets {@code set1} and {@code set2}) using the
+     * provided AnnotatedTypeFactory.
+     *
+     * <p>If {@code set1} is {@code null} or empty, {@code set2} is returned.
      */
     private Set<? extends AnnotationMirror> glb(
             Set<? extends AnnotationMirror> set1,
@@ -635,11 +615,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     }
 
     /**
-     * Reports debug information about the reflection resolution iff the
-     * corresponding debug flag is set
+     * Reports debug information about the reflection resolution iff the corresponding debug flag is
+     * set
      *
-     * @param msg
-     *            the debug message
+     * @param msg the debug message
      */
     private void debugReflection(String msg) {
         if (debug) {

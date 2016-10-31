@@ -7,9 +7,7 @@ import org.checkerframework.framework.type.DefaultAnnotatedTypeFormatter;
 import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 
-/**
- * A DefaultAnnotatedTypeFormatter that prints null literals without their annotations.
- */
+/** A DefaultAnnotatedTypeFormatter that prints null literals without their annotations. */
 public class NullnessAnnotatedTypeFormatter extends DefaultAnnotatedTypeFormatter {
     public NullnessAnnotatedTypeFormatter(
             boolean printVerboseGenerics, boolean printInvisibleQualifiers) {

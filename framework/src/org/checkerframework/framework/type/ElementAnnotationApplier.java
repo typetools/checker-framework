@@ -23,47 +23,43 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * Utility methods for adding the annotations that are stored in an Element to the
- * type that represents that element (or a use of that Element).
+ * Utility methods for adding the annotations that are stored in an Element to the type that
+ * represents that element (or a use of that Element).
  *
- * In a way, this class is a hack: the Type representation for the Elements should
- * contain all annotations that we want.
- * However, due to javac bugs
- * http://mail.openjdk.java.net/pipermail/type-annotations-dev/2013-December/001449.html
- * decoding the type annotations from the Element is necessary.
+ * <p>In a way, this class is a hack: the Type representation for the Elements should contain all
+ * annotations that we want. However, due to javac bugs
+ * http://mail.openjdk.java.net/pipermail/type-annotations-dev/2013-December/001449.html decoding
+ * the type annotations from the Element is necessary.
  *
- * Even once these bugs are fixed, this class might be useful: in TypesIntoElements
- * it is easy to add additional annotations to the element and have them stored in the
- * bytecode by the compiler.
- * It would be more work (and might not work in the end) to instead modify the Type
- * directly.
- * The interaction between TypeFromElement and TypesIntoElements allows us to write
- * the defaulted annotations into the Element and have them read later by other parts.
+ * <p>Even once these bugs are fixed, this class might be useful: in TypesIntoElements it is easy to
+ * add additional annotations to the element and have them stored in the bytecode by the compiler.
+ * It would be more work (and might not work in the end) to instead modify the Type directly. The
+ * interaction between TypeFromElement and TypesIntoElements allows us to write the defaulted
+ * annotations into the Element and have them read later by other parts.
  */
 public class ElementAnnotationApplier {
 
     /**
-     * Add all of the relevant annotations stored in Element to type. This includes both top-level primary
-     * annotations and nested annotations.  For the most part the TypeAnnotationPosition of the
-     * element annotations are used to locate the annotation in the right AnnotatedTypeMirror location
-     * though the individual applier classes may have special rules (such as those for upper and lower bounds
-     * and intersections).
+     * Add all of the relevant annotations stored in Element to type. This includes both top-level
+     * primary annotations and nested annotations. For the most part the TypeAnnotationPosition of
+     * the element annotations are used to locate the annotation in the right AnnotatedTypeMirror
+     * location though the individual applier classes may have special rules (such as those for
+     * upper and lower bounds and intersections).
      *
-     * Note:  Element annotations come from two sources.
+     * <p>Note: Element annotations come from two sources.
      *
      * <ol>
-     * <li>Annotations found on elements may represent those in source code or bytecode;
-     * these are added to the element by the compiler.
-     *
-     * <li>The annotations may also represent those that were inferred or defaulted by the Checker
-     * Framework after a previous call to this method.  The Checker Framework will store
-     * any annotations on declarations back into the elements that represent them
-     * (see {@link org.checkerframework.framework.type.TypesIntoElements}).  Subsequent, calls to apply will encounter
-     * these annotations on the provided element.
+     *   <li>Annotations found on elements may represent those in source code or bytecode; these are
+     *       added to the element by the compiler.
+     *   <li>The annotations may also represent those that were inferred or defaulted by the Checker
+     *       Framework after a previous call to this method. The Checker Framework will store any
+     *       annotations on declarations back into the elements that represent them (see {@link
+     *       org.checkerframework.framework.type.TypesIntoElements}). Subsequent, calls to apply
+     *       will encounter these annotations on the provided element.
      * </ol>
      *
-     * Note:  This is not the ONLY place that annotations are explicitly added to types.
-     * See {@link org.checkerframework.framework.type.TypeFromTree}.
+     * Note: This is not the ONLY place that annotations are explicitly added to types. See {@link
+     * org.checkerframework.framework.type.TypeFromTree}.
      *
      * @param type the type to which we wish to apply the element's annotations
      * @param element an element that possibly contains annotations
@@ -113,9 +109,12 @@ public class ElementAnnotationApplier {
     }
 
     /**
-     * Annotate the list of supertypes using the annotations on the TypeElement representing a class or interface
+     * Annotate the list of supertypes using the annotations on the TypeElement representing a class
+     * or interface
+     *
      * @param supertypes types representing supertype declarations of TypeElement
-     * @param subtypeElement an element representing the declaration of the class which is a subtype of supertypes
+     * @param subtypeElement an element representing the declaration of the class which is a subtype
+     *     of supertypes
      */
     public static void annotateSupers(
             List<AnnotatedDeclaredType> supertypes, TypeElement subtypeElement) {
@@ -123,13 +122,13 @@ public class ElementAnnotationApplier {
     }
 
     /**
-     * Helper method to get the lambda tree for ParamApplier.  Ideally, this method would be located in
-     * ElementAnnotationUtil but since AnnotatedTypeFactory.declarationFromElement is protected, it has
-     * been placed here.
+     * Helper method to get the lambda tree for ParamApplier. Ideally, this method would be located
+     * in ElementAnnotationUtil but since AnnotatedTypeFactory.declarationFromElement is protected,
+     * it has been placed here.
      *
      * @param varEle the element that may represent a lambda's parameter
-     * @return a LambdaExpressionTree if the varEle represents a parameter in a lambda expression, otherwise
-     *         null
+     * @return a LambdaExpressionTree if the varEle represents a parameter in a lambda expression,
+     *     otherwise null
      */
     public static Pair<VariableTree, LambdaExpressionTree> getParamAndLambdaTree(
             VariableElement varEle, AnnotatedTypeFactory typeFactory) {
@@ -147,9 +146,9 @@ public class ElementAnnotationApplier {
 
     /**
      * Was the type passed in generated by capture conversion.
+     *
      * @param element the element which type represents
-     * @return true if type was generated via capture conversion
-     *         false otherwise
+     * @return true if type was generated via capture conversion false otherwise
      */
     private static boolean isCaptureConvertedTypeVar(final Element element) {
         final Element enclosure = element.getEnclosingElement();

@@ -49,7 +49,7 @@ class Explosion {
         f();
     }
 
-    static private int f() {
+    private static int f() {
         while (true) {
             try {
                 throw new ExplosiveException();
@@ -61,7 +61,7 @@ class Explosion {
         }
     }
 
-    static public int foo() {
+    public static int foo() {
         final int v;
         int x;
         Integer z;

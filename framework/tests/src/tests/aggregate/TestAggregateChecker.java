@@ -10,8 +10,8 @@ import org.checkerframework.framework.source.SourceChecker;
 
 /**
  * Basic aggregate checker.
- * @author smillst
  *
+ * @author smillst
  */
 public class TestAggregateChecker extends AggregateChecker {
 

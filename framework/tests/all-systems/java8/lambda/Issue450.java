@@ -1,4 +1,3 @@
-import java.lang.CharSequence;
 
 class Issue450 {
 

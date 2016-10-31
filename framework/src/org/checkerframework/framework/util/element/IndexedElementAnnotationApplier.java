@@ -7,10 +7,10 @@ import javax.lang.model.element.Element;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- * Some Elements are members of a list (formal method parameters and type parameters).
- * This class ensures that the targeted annotations passed by handleTargeted -- see
- * {@link TargetedElementAnnotationApplier} --
- * only include those with a position that matches the index returned by getElementIndex.
+ * Some Elements are members of a list (formal method parameters and type parameters). This class
+ * ensures that the targeted annotations passed by handleTargeted -- see {@link
+ * TargetedElementAnnotationApplier} -- only include those with a position that matches the index
+ * returned by getElementIndex.
  */
 abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotationApplier {
 
@@ -18,15 +18,14 @@ abstract class IndexedElementAnnotationApplier extends TargetedElementAnnotation
         super(type, element);
     }
 
-    /**
-     * The index of element in the list of elements that contains it
-     */
+    /** The index of element in the list of elements that contains it */
     public abstract int getElementIndex();
 
     /**
-     * A TypeAnnotationPosition has a number of different indexes (type_index, bound_index, param_index)
-     * Return the index we are interested in.  If offsetting needs to be done it should be done in getElementIndex
-     * not here. (see ElementAnnotationUtils.getBoundIndexOffset )
+     * A TypeAnnotationPosition has a number of different indexes (type_index, bound_index,
+     * param_index) Return the index we are interested in. If offsetting needs to be done it should
+     * be done in getElementIndex not here. (see ElementAnnotationUtils.getBoundIndexOffset )
+     *
      * @param anno an annotation we might wish to apply
      * @return the index value this applier compares against the getElementIndex
      */

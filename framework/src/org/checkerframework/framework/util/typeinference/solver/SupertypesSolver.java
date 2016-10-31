@@ -35,10 +35,11 @@ public class SupertypesSolver {
 
     /**
      * Infers type arguments using supertype constraints.
+     *
      * @param remainingTargets targets for which we still need to infer a value
      * @param constraintMap the set of constraints for all targets
-     * @return a mapping of ( {@code target &rArr; inferred type} ), note this class always infers concrete types
-     *         and will not infer that the target is equivalent to another target
+     * @return a mapping of ( {@code target &rArr; inferred type} ), note this class always infers
+     *     concrete types and will not infer that the target is equivalent to another target
      */
     public InferenceResult solveFromSupertypes(
             final Set<TypeVariable> remainingTargets,
@@ -74,12 +75,12 @@ public class SupertypesSolver {
     }
 
     /**
-     * We previously found a type that is equal to target but not in all hierarchies.  Use the primary
-     * annotations from the lub type to fill in the missing annotations in this type.  Use that type
-     * as the inferred argument.
+     * We previously found a type that is equal to target but not in all hierarchies. Use the
+     * primary annotations from the lub type to fill in the missing annotations in this type. Use
+     * that type as the inferred argument.
      *
-     * If we failed to infer any annotation for a given hierarchy, either previously from equalities or from the lub,
-     * return null.
+     * <p>If we failed to infer any annotation for a given hierarchy, either previously from
+     * equalities or from the lub, return null.
      */
     protected InferredType mergeLubTypeWithEqualities(
             final TypeVariable target,
@@ -129,12 +130,12 @@ public class SupertypesSolver {
     }
 
     /**
-     * We previously found a type that is equal to target but not in all hierarchies.  Use the primary
-     * annotations from the lub annos to fill in the missing annotations in this type.  Use that type
-     * as the inferred argument.
+     * We previously found a type that is equal to target but not in all hierarchies. Use the
+     * primary annotations from the lub annos to fill in the missing annotations in this type. Use
+     * that type as the inferred argument.
      *
-     * If we failed to infer any annotation for a given hierarchy, either previously from equalities or from the lub,
-     * return null.
+     * <p>If we failed to infer any annotation for a given hierarchy, either previously from
+     * equalities or from the lub, return null.
      */
     protected InferredType mergeLubAnnosWithEqualities(
             final TypeVariable target,
@@ -174,9 +175,7 @@ public class SupertypesSolver {
         return null;
     }
 
-    /**
-     * Holds the least upper bounds for every target type parameter.
-     */
+    /** Holds the least upper bounds for every target type parameter. */
     class Lubs {
         public final Map<TypeVariable, AnnotatedTypeMirror> types = new LinkedHashMap<>();
         public final Map<TypeVariable, Map<AnnotationMirror, AnnotationMirror>> primaries =
@@ -201,7 +200,9 @@ public class SupertypesSolver {
     }
 
     /**
-     * For each target, lub all of the types/annotations in its supertypes constraints and return the lubs
+     * For each target, lub all of the types/annotations in its supertypes constraints and return
+     * the lubs
+     *
      * @param remainingTargets targets that do not already have an inferred type argument
      * @param constraintMap the set of constraints for all targets
      * @return the lub determined for each target that has at least 1 supertype constraint
@@ -303,9 +304,8 @@ public class SupertypesSolver {
     }
 
     /**
-     * For each qualifier hierarchy in tops,
-     *     take the lub of the annos in subtypeAnnos that correspond to that hierarchy
-     *     place the lub in lubOfPrimaries
+     * For each qualifier hierarchy in tops, take the lub of the annos in subtypeAnnos that
+     * correspond to that hierarchy place the lub in lubOfPrimaries
      */
     protected static void lubPrimaries(
             Map<AnnotationMirror, AnnotationMirror> lubOfPrimaries,
@@ -323,9 +323,8 @@ public class SupertypesSolver {
     }
 
     /**
-     * For each type in typeToHierarchies,
-     *    if that type does not have a corresponding annotation for a given hierarchy
-     *    replace it with the corresponding value in lowerBoundAnnos
+     * For each type in typeToHierarchies, if that type does not have a corresponding annotation for
+     * a given hierarchy replace it with the corresponding value in lowerBoundAnnos
      */
     public static AnnotatedTypeMirror groundMissingHierarchies(
             final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> typeToHierarchies,
@@ -349,8 +348,8 @@ public class SupertypesSolver {
     }
 
     /**
-     * Successively calls least upper bound on the elements of types.  Unlike AnnotatedTypes.leastUpperBound,
-     * this method will box primitives if necessary
+     * Successively calls least upper bound on the elements of types. Unlike
+     * AnnotatedTypes.leastUpperBound, this method will box primitives if necessary
      */
     public static AnnotatedTypeMirror leastUpperBound(
             final TypeVariable target,
@@ -372,12 +371,12 @@ public class SupertypesSolver {
         }
 
         /**
-         * If a constraint implies that a type parameter Ti is a supertype of an annotated type mirror Ai
-         * but only in a subset of all qualifier hierarchies then for all other qualifier hierarchies replace
-         * the primary annotation on Ai with the lowest possible annotation (ensuring that it won't be
-         * the LUB unless there are no other constraints, or all other constraints imply the bottom
-         * annotation is the LUB).
-         * Note: Even if we choose bottom as the lub here, the assignment context may raise this annotation.
+         * If a constraint implies that a type parameter Ti is a supertype of an annotated type
+         * mirror Ai but only in a subset of all qualifier hierarchies then for all other qualifier
+         * hierarchies replace the primary annotation on Ai with the lowest possible annotation
+         * (ensuring that it won't be the LUB unless there are no other constraints, or all other
+         * constraints imply the bottom annotation is the LUB). Note: Even if we choose bottom as
+         * the lub here, the assignment context may raise this annotation.
          */
         final Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> head = typesIter.next();
 
@@ -406,7 +405,7 @@ public class SupertypesSolver {
      * @param qualifierHierarchy the qualifier hierarchy that contains each annotation
      * @return the lub of all the annotations in annos
      */
-    private final static AnnotationMirror leastUpperBound(
+    private static final AnnotationMirror leastUpperBound(
             final Iterable<? extends AnnotationMirror> annos,
             QualifierHierarchy qualifierHierarchy) {
         Iterator<? extends AnnotationMirror> annoIter = annos.iterator();

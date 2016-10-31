@@ -6,11 +6,12 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * If you run:
+ *
  * <pre>mvn compile</pre>
  *
  * The build for this project should fail with a warning for the line:
- * <pre>@NonNull Object nn = nullable;</pre>
  *
+ * <pre>@NonNull Object nn = nullable;</pre>
  */
 public class MavenExample {
 

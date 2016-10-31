@@ -1,12 +1,10 @@
 import org.checkerframework.checker.regex.qual.*;
 
 /**
- * Resolution of outer classes must take substitution of generic types
- * into account.
- * Thanks to EMS for finding this problem.
+ * Resolution of outer classes must take substitution of generic types into account. Thanks to EMS
+ * for finding this problem.
  *
- * Also see all-systems/GenericsEnclosing for the type-system
- * independent test.
+ * <p>Also see all-systems/GenericsEnclosing for the type-system independent test.
  */
 class MyG<X> {
     X f;

@@ -14,7 +14,7 @@ public @GuardedBy({}) class Constructors {
 
     @GuardedBy("unlocked") MyClass guardedOther = new MyClass();
 
-    final static MyClass unlockedStatic = new MyClass();
+    static final MyClass unlockedStatic = new MyClass();
 
     @GuardedBy("unlockedStatic") MyClass nonstaticGuardedByStatic = new MyClass();
 

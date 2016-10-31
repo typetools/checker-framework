@@ -63,9 +63,7 @@ import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- * The annotated type factory for the nullness type-system.
- */
+/** The annotated type factory for the nullness type-system. */
 public class NullnessAnnotatedTypeFactory
         extends InitializationAnnotatedTypeFactory<
                 NullnessValue, NullnessStore, NullnessTransfer, NullnessAnalysis> {
@@ -79,10 +77,7 @@ public class NullnessAnnotatedTypeFactory
     protected final SystemGetPropertyHandler systemGetPropertyHandler;
     protected final CollectionToArrayHeuristics collectionToArrayHeuristics;
 
-    /**
-     * Factory for arbitrary qualifiers, used for declarations and "unused"
-     * qualifier.
-     */
+    /** Factory for arbitrary qualifiers, used for declarations and "unused" qualifier. */
     protected final GeneralAnnotatedTypeFactory generalFactory;
 
     /** Cache for the nullness annotations */
@@ -222,10 +217,9 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * For types of left-hand side of an assignment, this method replaces {@link PolyNull} or
-     * {@link PolyAll} with {@link Nullable} if the org.checkerframework.dataflow analysis
-     * has determined that this is allowed soundly.
-     * For example:
+     * For types of left-hand side of an assignment, this method replaces {@link PolyNull} or {@link
+     * PolyAll} with {@link Nullable} if the org.checkerframework.dataflow analysis has determined
+     * that this is allowed soundly. For example:
      *
      * <pre> @PolyNull String foo(@PolyNull String param) {
      *    if (param == null) {
@@ -237,7 +231,7 @@ public class NullnessAnnotatedTypeFactory
      * }
      * </pre>
      *
-     * @param lhsType  type to replace whose polymorphic qualifier will be replaced
+     * @param lhsType type to replace whose polymorphic qualifier will be replaced
      * @param context tree used to get dataflow value
      */
     protected void replacePolyQualifier(AnnotatedTypeMirror lhsType, Tree context) {
@@ -292,9 +286,7 @@ public class NullnessAnnotatedTypeFactory
         return new NullnessTransfer((NullnessAnalysis) analysis);
     }
 
-    /**
-     * @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals
-     */
+    /** @return an AnnotatedTypeFormatter that does not print the qualifiers on null literals */
     @Override
     protected AnnotatedTypeFormatter createAnnotatedTypeFormatter() {
         return new NullnessAnnotatedTypeFormatter(
@@ -347,13 +339,11 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * If the element is {@link NonNull} when used in a static member access,
-     * modifies the element's type (by adding {@link NonNull}).
+     * If the element is {@link NonNull} when used in a static member access, modifies the element's
+     * type (by adding {@link NonNull}).
      *
-     * @param elt
-     *            the element being accessed
-     * @param type
-     *            the type of the element {@code elt}
+     * @param elt the element being accessed
+     * @param type the type of the element {@code elt}
      */
     private void annotateIfStatic(Element elt, AnnotatedTypeMirror type) {
         if (elt == null) {
@@ -392,10 +382,10 @@ public class NullnessAnnotatedTypeFactory
     }
 
     /**
-     * Nullness doesn't call propagation on binary and unary because
-     * the result is always @Initialized (the default qualifier).
+     * Nullness doesn't call propagation on binary and unary because the result is
+     * always @Initialized (the default qualifier).
      *
-     * Would this be valid to move into CommitmentTreeAnnotator.
+     * <p>Would this be valid to move into CommitmentTreeAnnotator.
      */
     protected class NullnessPropagationAnnotator extends PropagationTreeAnnotator {
 
@@ -503,9 +493,7 @@ public class NullnessAnnotatedTypeFactory
         }
     }
 
-    /**
-     * @return the list of annotations of the non-null type system
-     */
+    /** @return the list of annotations of the non-null type system */
     public Set<Class<? extends Annotation>> getNullnessAnnotations() {
         return nullnessAnnos;
     }
