@@ -447,7 +447,8 @@ public class TestTreeKinds {
     void testExplicitLockSynchronized() {
         final ReentrantLock lock = new ReentrantLock();
         //:: error: (explicit.lock.synchronized)
-        synchronized (lock) {}
+        synchronized (lock) {
+        }
     }
 
     void testPrimitiveTypeGuardedby() {

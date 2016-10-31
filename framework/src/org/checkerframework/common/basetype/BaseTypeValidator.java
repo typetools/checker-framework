@@ -72,9 +72,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
     }
 
     protected void reportValidityResult(
-            final /*@CompilerMessageKey*/ String errorType,
-            final AnnotatedTypeMirror type,
-            final Tree p) {
+            final /*@CompilerMessageKey*/ String errorType, final AnnotatedTypeMirror type, final Tree p) {
         checker.report(Result.failure(errorType, type.getAnnotations(), type.toString()), p);
         isValid = false;
     }

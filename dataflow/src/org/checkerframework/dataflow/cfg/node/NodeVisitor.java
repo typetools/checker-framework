@@ -6,8 +6,8 @@ package org.checkerframework.dataflow.cfg.node;
  * @author Stefan Heule
  * @param <R> Return type of the visitor. Use {@link Void} if the visitor does not have a return
  *     value.
- * @param
- *     <p>Parameter type of the visitor. Use {@link Void} if the visitor does not have a parameter.
+ * @param <P> Parameter type of the visitor. Use {@link Void} if the visitor does not have a
+ *     parameter.
  */
 public interface NodeVisitor<R, P> {
     // Literals

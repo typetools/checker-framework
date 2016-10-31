@@ -16,8 +16,8 @@ public class Varargs {
         moreVarargs(new @Odd String(), new @Odd String());
         //:: error: (argument.type.incompatible)
         moreVarargs(new String(), new @Odd String());
-        //:: error: (argument.type.incompatible)
         moreVarargs(
+                //:: error: (argument.type.incompatible)
                 new String(),
                 //:: error: (argument.type.incompatible)
                 new String());

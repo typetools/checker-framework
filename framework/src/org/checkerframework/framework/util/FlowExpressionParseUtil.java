@@ -664,8 +664,7 @@ public class FlowExpressionParseUtil {
         }
 
         String packageName = dotMatcher.group(1);
-        String
-                remainingString = dotMatcher.group(2),
+        String remainingString = dotMatcher.group(2),
                 remainingStringIfPackageMatched = remainingString;
 
         PackageSymbol result = null; // the result of this method call

@@ -185,8 +185,7 @@ public abstract class AnnotatedTypeMirror {
      * Applies a visitor to this type.
      *
      * @param <R> the return type of the visitor's methods
-     * @param
-     *     <p>the type of the additional parameter to the visitor's methods
+     * @param <P> the type of the additional parameter to the visitor's methods
      * @param v the visitor operating on this type
      * @param p additional parameter to the visitor
      * @return a visitor-specified result

@@ -108,8 +108,7 @@ public final class NullnessUtil {
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends /*@Nullable*/ Object>
-            /*@NonNull*/ T /*@NonNull*/ [][][] castNonNullDeep(
-            T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+            /*@NonNull*/ T /*@NonNull*/ [][][] castNonNullDeep(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
         return (/*@NonNull*/ T[][][]) castNonNullArray(arr);
     }
 

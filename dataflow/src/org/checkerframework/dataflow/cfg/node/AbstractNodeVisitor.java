@@ -11,8 +11,7 @@ package org.checkerframework.dataflow.cfg.node;
  *
  * @author Stefan Heule
  * @param <R> Return type of the visitor
- * @param
- *     <p>Parameter type of the visitor.
+ * @param <P> Parameter type of the visitor
  */
 public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 

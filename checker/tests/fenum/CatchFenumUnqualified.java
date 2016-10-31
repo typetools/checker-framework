@@ -4,7 +4,8 @@ class CatchFenumUnqualfied {
     void method() {
         try {
             //:: error: (exception.parameter.invalid)
-        } catch (@Fenum("A") RuntimeException e) {
+        } catch (
+                @Fenum("A") RuntimeException e) {
 
         }
         try {

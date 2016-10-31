@@ -35,7 +35,7 @@ class Explosion {
         System.out.println("Possibly cause null pointer with this: " + s2.length());
         //:: warning: (known.nonnull)
         if (s2 == null) {
-            ; // do nothing
+            // do nothing
         } else {
             System.out.println("Can't cause null pointer here: " + s2.length());
             s = s2;
@@ -83,7 +83,7 @@ class Explosion {
             //:: error: (assignment.type.incompatible)
             nnz = z;
             while (z == null) {
-                ; // do nothing
+                // do nothing
             }
             nnz = z;
             // v = 1;

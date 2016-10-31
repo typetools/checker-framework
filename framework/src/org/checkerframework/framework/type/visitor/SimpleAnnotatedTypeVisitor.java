@@ -17,8 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
  *
  * @param <R> The return type of this visitor's methods. Use {@link Void} for visitors that do not
  *     need to return results.
- * @param
- *     <p>the type of the additional parameter to this visitor's methods. Use {@link Void} for
+ * @param <P> the type of the additional parameter to this visitor's methods. Use {@link Void} for
  *     visitors that do not need an additional parameter.
  */
 public class SimpleAnnotatedTypeVisitor<R, P> implements AnnotatedTypeVisitor<R, P> {

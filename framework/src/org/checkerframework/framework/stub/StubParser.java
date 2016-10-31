@@ -1393,8 +1393,8 @@ public class StubParser {
             // Search imports for full annotation name.
             for (String imp : imports) {
                 String[] import_delimited = imp.split("\\.");
-                if (import_delimited[import_delimited.length - 1]
-                        .equals(faexpr.getScope().toString())) {
+                if (import_delimited[import_delimited.length - 1].equals(
+                        faexpr.getScope().toString())) {
                     StringBuilder full_annotation = new StringBuilder();
                     for (int i = 0; i < import_delimited.length - 1; i++) {
                         full_annotation.append(import_delimited[i]);

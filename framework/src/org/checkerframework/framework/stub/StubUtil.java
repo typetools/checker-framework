@@ -40,8 +40,7 @@ import org.checkerframework.stubparser.ast.visitor.SimpleVoidVisitor;
 /** Utility class for stub files */
 public class StubUtil {
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            String className, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(String className, IndexUnit indexFile) {
         int indexOfDot = className.lastIndexOf('.');
 
         if (indexOfDot == -1) {
@@ -68,8 +67,7 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            TypeElement type, IndexUnit indexFile) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(TypeElement type, IndexUnit indexFile) {
         return findDeclaration(type.getQualifiedName().toString(), indexFile);
     }
 
@@ -119,8 +117,7 @@ public class StubUtil {
         return null;
     }
 
-    /*package-scope*/ static TypeDeclaration findDeclaration(
-            String simpleName, CompilationUnit cu) {
+    /*package-scope*/ static TypeDeclaration findDeclaration(String simpleName, CompilationUnit cu) {
         for (TypeDeclaration type : cu.getTypes()) {
             if (simpleName.equals(type.getName())) {
                 return type;

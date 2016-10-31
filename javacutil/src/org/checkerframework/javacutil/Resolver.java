@@ -53,17 +53,16 @@ public class Resolver {
     static {
         try {
             FIND_METHOD =
-                    Resolve.class
-                            .getDeclaredMethod(
-                                    "findMethod",
-                                    Env.class,
-                                    Type.class,
-                                    Name.class,
-                                    List.class,
-                                    List.class,
-                                    boolean.class,
-                                    boolean.class,
-                                    boolean.class);
+                    Resolve.class.getDeclaredMethod(
+                            "findMethod",
+                            Env.class,
+                            Type.class,
+                            Name.class,
+                            List.class,
+                            List.class,
+                            boolean.class,
+                            boolean.class,
+                            boolean.class);
             FIND_METHOD.setAccessible(true);
 
             FIND_VAR = Resolve.class.getDeclaredMethod("findVar", Env.class, Name.class);
@@ -74,23 +73,17 @@ public class Resolver {
             FIND_IDENT.setAccessible(true);
 
             FIND_IDENT_IN_TYPE =
-                    Resolve.class
-                            .getDeclaredMethod(
-                                    "findIdentInType",
-                                    Env.class,
-                                    Type.class,
-                                    Name.class,
-                                    int.class);
+                    Resolve.class.getDeclaredMethod(
+                            "findIdentInType", Env.class, Type.class, Name.class, int.class);
             FIND_IDENT_IN_TYPE.setAccessible(true);
 
             FIND_IDENT_IN_PACKAGE =
-                    Resolve.class
-                            .getDeclaredMethod(
-                                    "findIdentInPackage",
-                                    Env.class,
-                                    TypeSymbol.class,
-                                    Name.class,
-                                    int.class);
+                    Resolve.class.getDeclaredMethod(
+                            "findIdentInPackage",
+                            Env.class,
+                            TypeSymbol.class,
+                            Name.class,
+                            int.class);
             FIND_IDENT_IN_PACKAGE.setAccessible(true);
 
             FIND_TYPE = Resolve.class.getDeclaredMethod("findType", Env.class, Name.class);

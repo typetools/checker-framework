@@ -14,12 +14,24 @@ interface NNConsumer {
 class LambdaParam {
 
     //:: error: (lambda.param.type.incompatible)
-    NullConsumer fn1 = (@NonNull String i) -> {};
-    NullConsumer fn2 = (@Nullable String i) -> {};
-    NullConsumer fn3 = (String i) -> {};
-    NNConsumer fn4 = (String i) -> {};
-    NNConsumer fn5 = (@Nullable String i) -> {};
-    NNConsumer fn6 = (@NonNull String i) -> {};
+    NullConsumer fn1 =
+            (@NonNull String i) -> {
+            };
+    NullConsumer fn2 =
+            (@Nullable String i) -> {
+            };
+    NullConsumer fn3 =
+            (String i) -> {
+            };
+    NNConsumer fn4 =
+            (String i) -> {
+            };
+    NNConsumer fn5 =
+            (@Nullable String i) -> {
+            };
+    NNConsumer fn6 =
+            (@NonNull String i) -> {
+            };
 
     // Initializer blocks with annotations don't work yet because of javac compiler bug.
     // https://bugs.openjdk.java.net/browse/JDK-8056970
@@ -45,21 +57,45 @@ class LambdaParam {
 
     static void foo() {
         //:: error: (lambda.param.type.incompatible)
-        NullConsumer fn1 = (@NonNull String i) -> {};
-        NullConsumer fn2 = (@Nullable String i) -> {};
-        NullConsumer fn3 = (String i) -> {};
-        NNConsumer fn4 = (String i) -> {};
-        NNConsumer fn5 = (@Nullable String i) -> {};
-        NNConsumer fn6 = (@NonNull String i) -> {};
+        NullConsumer fn1 =
+                (@NonNull String i) -> {
+                };
+        NullConsumer fn2 =
+                (@Nullable String i) -> {
+                };
+        NullConsumer fn3 =
+                (String i) -> {
+                };
+        NNConsumer fn4 =
+                (String i) -> {
+                };
+        NNConsumer fn5 =
+                (@Nullable String i) -> {
+                };
+        NNConsumer fn6 =
+                (@NonNull String i) -> {
+                };
     }
 
     void bar() {
         //:: error: (lambda.param.type.incompatible)
-        NullConsumer fn1 = (@NonNull String i) -> {};
-        NullConsumer fn2 = (@Nullable String i) -> {};
-        NullConsumer fn3 = (String i) -> {};
-        NNConsumer fn4 = (String i) -> {};
-        NNConsumer fn5 = (@Nullable String i) -> {};
-        NNConsumer fn6 = (@NonNull String i) -> {};
+        NullConsumer fn1 =
+                (@NonNull String i) -> {
+                };
+        NullConsumer fn2 =
+                (@Nullable String i) -> {
+                };
+        NullConsumer fn3 =
+                (String i) -> {
+                };
+        NNConsumer fn4 =
+                (String i) -> {
+                };
+        NNConsumer fn5 =
+                (@Nullable String i) -> {
+                };
+        NNConsumer fn6 =
+                (@NonNull String i) -> {
+                };
     }
 }

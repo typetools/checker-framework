@@ -36,10 +36,7 @@ public class ArrayCreationNode extends Node {
     protected List<Node> initializers;
 
     public ArrayCreationNode(
-            /*@Nullable*/ NewArrayTree tree,
-            TypeMirror type,
-            List<Node> dimensions,
-            List<Node> initializers) {
+            /*@Nullable*/ NewArrayTree tree, TypeMirror type, List<Node> dimensions, List<Node> initializers) {
         super(type);
         this.tree = tree;
         this.dimensions = dimensions;

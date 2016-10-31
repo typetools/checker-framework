@@ -65,8 +65,7 @@ public class LockAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
 
     /** Annotation constants */
-    protected final AnnotationMirror
-            LOCKHELD,
+    protected final AnnotationMirror LOCKHELD,
             LOCKPOSSIBLYHELD,
             SIDEEFFECTFREE,
             GUARDEDBYUNKNOWN,
