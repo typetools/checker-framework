@@ -24,6 +24,7 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -78,7 +79,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new LowerBoundTreeAnnotator(this), new PropagationTreeAnnotator(this));
+                new LowerBoundTreeAnnotator(this),
+                new PropagationTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this));
     }
 
     private class LowerBoundTreeAnnotator extends TreeAnnotator {
