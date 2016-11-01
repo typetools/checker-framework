@@ -59,6 +59,15 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     public TransferResult<MinLenValue, MinLenStore> visitMethodInvocation(
             MethodInvocationNode node, TransferInput<MinLenValue, MinLenStore> in) {
         TransferResult<MinLenValue, MinLenStore> result = super.visitMethodInvocation(node, in);
+
+        String methodName = node.getTarget().getMethod().toString();
+        boolean add = methodName.startsWith("add(");
+        boolean asList = methodName.startsWith("asList(");
+        boolean toArray = methodName.startsWith("toArray(");
+        if (!(add || asList || toArray)) {
+            return result;
+        }
+
         Receiver rec =
                 FlowExpressions.internalReprOf(
                         analysis.getTypeFactory(), node.getTarget().getReceiver());
