@@ -149,6 +149,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
+            if(tree.getKind() == Tree.Kind.NULL_LITERAL) {
+                return super.visitLiteral(tree,type);
+            }
             // Call the constant value checker since we want to rely
             // on it handling constants correctly...
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
