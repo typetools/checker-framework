@@ -327,7 +327,7 @@ class ChapterExamples {
         o1 = (@GuardedBy({}) MyClass) o2;
     }
 
-    final static Object myLock = new Object();
+    static final Object myLock = new Object();
 
     @GuardedBy("ChapterExamples.myLock") MyClass myMethod3() {
         return new MyClass();
@@ -702,18 +702,24 @@ class ChapterExamples {
          *
          * Suppose the following lines from method1 are executed on thread A.
          *
+         * <pre>{@code
          * @GuardedBy("lock1") MyClass local;
          * m = local;
+         * }</pre>
          *
          * Then a context switch occurs to method2 on thread B and the following lines are executed:
          *
+         * <pre>{@code
          * @GuardedBy("lock2") MyClass local;
          * m = local;
+         * }</pre>
          *
          * Then a context switch back to method1 on thread A occurs and the following lines are executed:
          *
+         * <pre>{@code
          * lock1.lock();
          * m.field = new Object();
+         * }</pre>
          *
          * In this case, it is absolutely critical that the dereference above not be allowed.
          *
@@ -781,30 +787,35 @@ class ChapterExamples {
 
     @MayReleaseLocks
     void mayReleaseLocksMethodWithSynchronizedBlock() {
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     @ReleasesNoLocks
     void releasesNoLocksMethodWithSynchronizedBlock() {
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     @LockingFree
     void lockingFreeMethodWithSynchronizedBlock() {
         //:: error: (synchronized.block.in.lockingfree.method)
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     @SideEffectFree
     void sideEffectFreeMethodWithSynchronizedBlock() {
         //:: error: (synchronized.block.in.lockingfree.method)
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     @Pure
     void pureMethodWithSynchronizedBlock() {
         //:: error: (synchronized.block.in.lockingfree.method)
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     //:: error: (class.declaration.guardedby.annotation.invalid)
@@ -847,27 +858,33 @@ class ChapterExamples {
 
     // Analogous to testExplicitLockExpressionIsFinal and testGuardedByExpressionIsFinal, but for monitor locks acquired in synchronized blocks.
     void testSynchronizedExpressionIsFinal(boolean b) {
-        synchronized (c1) {}
+        synchronized (c1) {
+        }
 
         Object o1 = new Object(); // o1 is effectively final - it is never reassigned
         Object o2 = new Object(); // o2 is reassigned later - it is not effectively final
-        synchronized (o1) {}
+        synchronized (o1) {
+        }
         //:: error: (lock.expression.not.final)
-        synchronized (o2) {}
+        synchronized (o2) {
+        }
 
         o2 = new Object(); // Reassignment that makes o2 not have been effectively final earlier.
 
         // Tests that package names are considered final.
-        synchronized (java.lang.String.class) {}
+        synchronized (java.lang.String.class) {
+        }
 
         // Test a tree that is not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
         //:: error: (lock.expression.possibly.not.final)
-        synchronized (c1.getFieldPure(b ? c1 : o1, c1)) {}
+        synchronized (c1.getFieldPure(b ? c1 : o1, c1)) {
+        }
 
         synchronized (
                 c1.field.field.field.getFieldPure(
                                 c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field))
-                        .field) {}
+                        .field) {
+        }
 
         // The following negative test cases are the same as the one above but with one modification in each.
 
@@ -875,12 +892,14 @@ class ChapterExamples {
                 //:: error: (lock.expression.not.final)
                 c1.field.field2.field.getFieldPure(
                                 c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field))
-                        .field) {}
+                        .field) {
+        }
         synchronized (
                 c1.field.field.field.getFieldPure(
                                 //:: error: (lock.expression.not.final)
                                 c1.field, c1.getField().getFieldPure(c1, c1.field))
-                        .field) {}
+                        .field) {
+        }
     }
 
     class C2 extends ReentrantLock {

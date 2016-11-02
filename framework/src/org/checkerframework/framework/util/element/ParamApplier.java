@@ -41,9 +41,7 @@ import org.checkerframework.framework.type.ElementAnnotationApplier;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
-/**
- * Adds annotations to one formal parameter of a method or lambda within a method.
- */
+/** Adds annotations to one formal parameter of a method or lambda within a method. */
 public class ParamApplier extends IndexedElementAnnotationApplier {
 
     public static void apply(
@@ -93,8 +91,8 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @return the index of element its parent method's parameter list.
-     * Integer.MIN_VALUE if the element is the receiver parameter.
+     * @return the index of element its parent method's parameter list. Integer.MIN_VALUE if the
+     *     element is the receiver parameter.
      */
     @Override
     public int getElementIndex() {
@@ -120,25 +118,19 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         return paramIndex;
     }
 
-    /**
-     * @return the parameter index of anno's TypeAnnotationPosition
-     */
+    /** @return the parameter index of anno's TypeAnnotationPosition */
     @Override
     public int getTypeCompoundIndex(Attribute.TypeCompound anno) {
         return anno.getPosition().parameter_index;
     }
 
-    /**
-     * @return {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER}
-     */
+    /** @return {TargetType.METHOD_FORMAL_PARAMETER, TargetType.METHOD_RECEIVER} */
     @Override
     protected TargetType[] annotatedTargets() {
         return new TargetType[] {METHOD_FORMAL_PARAMETER, METHOD_RECEIVER};
     }
 
-    /**
-     * @return any annotation TargetType that can be found on a method
-     */
+    /** @return any annotation TargetType that can be found on a method */
     @Override
     protected TargetType[] validTargets() {
         return new TargetType[] {
@@ -162,9 +154,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         };
     }
 
-    /**
-     * @return the TypeCompounds (annotations) of the enclosing method for this parameter
-     */
+    /** @return the TypeCompounds (annotations) of the enclosing method for this parameter */
     @Override
     protected Iterable<Attribute.TypeCompound> getRawTypeAttributes() {
         return enclosingMethod.getRawTypeAttributes();
@@ -205,7 +195,8 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * @param targeted type compounds with formal method parameter target types with parameter_index == getIndex
+     * @param targeted type compounds with formal method parameter target types with parameter_index
+     *     == getIndex
      */
     @Override
     protected void handleTargeted(final List<Attribute.TypeCompound> targeted) {
@@ -222,9 +213,7 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
         }
     }
 
-    /**
-     * @return true if element represents the receiver parameter of a method
-     */
+    /** @return true if element represents the receiver parameter of a method */
     private boolean isReceiver(final Element element) {
         return element.getKind() == ElementKind.PARAMETER
                 && element.getSimpleName().contentEquals("this");
@@ -236,9 +225,11 @@ public class ParamApplier extends IndexedElementAnnotationApplier {
     }
 
     /**
-     * Return the enclosing MethodSymbol of the given element, throwing an exception of the symbol's enclosing
-     * element is not a MethodSymbol
-     * @param methodChildElem some element that is a child of a method typeDeclaration (e.g. a parameter or return type)
+     * Return the enclosing MethodSymbol of the given element, throwing an exception of the symbol's
+     * enclosing element is not a MethodSymbol
+     *
+     * @param methodChildElem some element that is a child of a method typeDeclaration (e.g. a
+     *     parameter or return type)
      * @return the MethodSymbol of the method containing methodChildElem
      */
     public static Symbol.MethodSymbol getParentMethod(final Element methodChildElem) {

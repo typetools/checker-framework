@@ -6,9 +6,7 @@ import org.checkerframework.checker.nullness.AbstractNullnessChecker;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * JUnit tests for the Nullness Checker.
- */
+/** JUnit tests for the Nullness Checker. */
 public class NullnessTempTest extends CheckerFrameworkPerDirectoryTest {
 
     public NullnessTempTest(List<File> testFiles) {

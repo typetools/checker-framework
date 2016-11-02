@@ -13,9 +13,7 @@ import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import org.checkerframework.javacutil.Pair;
 
-/**
- * A set of utilities and factory methods useful for working with TestDiagnostics
- */
+/** A set of utilities and factory methods useful for working with TestDiagnostics */
 public class TestDiagnosticUtils {
 
     // this regex represents how the diagnostics appear in Java source files
@@ -47,8 +45,9 @@ public class TestDiagnosticUtils {
             Pattern.compile(DIAGNOSTIC_FILE_WARNING_REGEX);
 
     /**
-     * Instantiate the diagnostic based on a string that would appear in diagnostic files
-     * (i.e. files that only contain line after line of expected diagnostics)
+     * Instantiate the diagnostic based on a string that would appear in diagnostic files (i.e.
+     * files that only contain line after line of expected diagnostics)
+     *
      * @param stringFromDiagnosticFile a single diagnostic string to parse
      */
     public static TestDiagnostic fromDiagnosticFileString(String stringFromDiagnosticFile) {
@@ -61,9 +60,11 @@ public class TestDiagnosticUtils {
     }
 
     /**
-     * Instantiate the diagnostic from a string that would appear in a Java file, e.g.:
-     * "error: (message)"
-     * @param lineNumber the lineNumber of the line immediately below the diagnostic comment in the Java file
+     * Instantiate the diagnostic from a string that would appear in a Java file, e.g.: "error:
+     * (message)"
+     *
+     * @param lineNumber the lineNumber of the line immediately below the diagnostic comment in the
+     *     Java file
      * @param stringFromjavaFile the string containing the diagnostic
      */
     public static TestDiagnostic fromJavaFileComment(
@@ -76,7 +77,7 @@ public class TestDiagnosticUtils {
                 stringFromjavaFile);
     }
     /**
-     * Instantiate a diagnostic using a diagnostic from the Java Compiler.  The resulting diagnostic
+     * Instantiate a diagnostic using a diagnostic from the Java Compiler. The resulting diagnostic
      * is never fixable and always has parentheses
      */
     public static TestDiagnostic fromJavaxToolsDiagnostic(
@@ -195,8 +196,8 @@ public class TestDiagnosticUtils {
     }
 
     /**
-     * Given a category string that may be prepended with "fixable-", return the category
-     * enum that corresponds with the category and whether or not it is a isFixable error
+     * Given a category string that may be prepended with "fixable-", return the category enum that
+     * corresponds with the category and whether or not it is a isFixable error
      */
     private static Pair<DiagnosticKind, Boolean> parseCategoryString(String category) {
         final String fixable = "fixable-";
@@ -209,9 +210,7 @@ public class TestDiagnosticUtils {
         return Pair.of(categoryEnum, isFixable);
     }
 
-    /**
-     * Convert a line in a JavaSource file to a (possibly empty) TestDiagnosticLine
-     */
+    /** Convert a line in a JavaSource file to a (possibly empty) TestDiagnosticLine */
     public static TestDiagnosticLine fromJavaSourceLine(
             String filename, String originalLine, long lineNumber) {
         final String trimmedLine = originalLine.trim();
@@ -238,9 +237,7 @@ public class TestDiagnosticUtils {
         }
     }
 
-    /**
-     * Convert a line in a DiagnosticFile to a TestDiagnosticLine
-     */
+    /** Convert a line in a DiagnosticFile to a TestDiagnosticLine */
     public static TestDiagnosticLine fromDiagnosticFileLine(String diagnosticLine) {
         final String trimmedLine = diagnosticLine.trim();
         if (trimmedLine.startsWith("#") || trimmedLine.isEmpty()) {
@@ -276,7 +273,8 @@ public class TestDiagnosticUtils {
     }
 
     /**
-     * Converts the given diagnostics to strings (as they would appear in a source file individually)
+     * Converts the given diagnostics to strings (as they would appear in a source file
+     * individually)
      */
     public static List<String> diagnosticsToString(List<TestDiagnostic> diagnostics) {
         final List<String> strings = new ArrayList<String>(diagnostics.size());

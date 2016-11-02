@@ -24,6 +24,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -241,7 +242,9 @@ public class MinLenAnnotatedTypeFactory
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new MinLenTreeAnnotator(this), new PropagationTreeAnnotator(this));
+                new MinLenTreeAnnotator(this),
+                new PropagationTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this));
     }
 
     protected class MinLenTreeAnnotator extends TreeAnnotator {

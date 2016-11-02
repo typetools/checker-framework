@@ -8,8 +8,8 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Vertical orientations for the title text of a
- * {@link javax.swing.border.TitledBorder}.
+ * Vertical orientations for the title text of a {@link javax.swing.border.TitledBorder}.
+ *
  * @see javax.swing.border.TitledBorder#DEFAULT_JUSTIFICATION
  * @see javax.swing.border.TitledBorder#LEFT
  * @see javax.swing.border.TitledBorder#CENTER

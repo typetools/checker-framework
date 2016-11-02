@@ -10,12 +10,15 @@ import org.apache.commons.lang3.text.StrBuilder;
 
 /**
  * If you run:
+ *
  * <pre>gradle build</pre>
  *
  * The build for this project should fail with a warning for the line:
+ *
  * <pre>@NonNull Object nn = nullable;</pre>
  *
  * And this line:
+ *
  * <pre>list.add(null);</pre>
  */
 public class GradleExample {

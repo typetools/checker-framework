@@ -10,8 +10,8 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Represents the bottom of the MethodVal qualifier hierarchy. This is used to
- * make the {@code null} literal a subtype of all MethodVal annotations.
+ * Represents the bottom of the MethodVal qualifier hierarchy. This is used to make the {@code null}
+ * literal a subtype of all MethodVal annotations.
  *
  * @checker_framework.manual #methodval-and-classval-checkers MethodVal Checker
  */

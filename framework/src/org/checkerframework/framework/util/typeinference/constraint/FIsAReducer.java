@@ -19,9 +19,9 @@ import org.checkerframework.framework.util.PluginUtil;
 
 /**
  * FIsAReducer takes an FIsA constraint that is not irreducible (@see AFConstraint.isIrreducible)
- * and reduces it by one step.  The resulting constraint may still be reducible.
+ * and reduces it by one step. The resulting constraint may still be reducible.
  *
- * Generally reductions should map to corresponding rules in
+ * <p>Generally reductions should map to corresponding rules in
  * http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
  */
 public class FIsAReducer implements AFReducer {
@@ -47,26 +47,28 @@ public class FIsAReducer implements AFReducer {
     }
 
     /**
-     * Given an FIsA constraint of the form:
-     * FIsA( typeFromFormalParameter, typeFromMethodArgument )
+     * Given an FIsA constraint of the form: FIsA( typeFromFormalParameter, typeFromMethodArgument )
      *
-     * FIsAReducingVisitor visits the constraint as follows:
-     * visit ( typeFromFormalParameter, typeFromMethodArgument, newConstraints )
+     * <p>FIsAReducingVisitor visits the constraint as follows: visit ( typeFromFormalParameter,
+     * typeFromMethodArgument, newConstraints )
      *
-     * The visit method will determine if the given constraint should either:
-     *    a) be discarded - in this case, the visitor just returns
-     *    b) reduced to a simpler constraint or set of constraints - in this case, the new constraint
-     *    or set of constraints is added to newConstraints
+     * <p>The visit method will determine if the given constraint should either:
      *
-     *  From the JLS, in general there are 2 rules that govern F = A constraints:
-     *  If F = Tj, then the constraint Tj = A is implied.
-     *  If F = U[], where the type U involves Tj, then if A is an array type V[], or a type variable with an
-     *  upper bound that is an array type V[], where V is a reference type, this algorithm is applied recursively
-     *  to the constraint {@code V >> U}. Otherwise, no constraint is implied on Tj.
+     * <ul>
+     *   <li> be discarded -- in this case, the visitor just returns
+     *   <li> reduced to a simpler constraint or set of constraints -- in this case, the new
+     *       constraint or set of constraints is added to newConstraints
+     * </ul>
      *
-     *  Since both F and A may have component types this visitor delves into their components
-     *  and applies these rules to the components.  However, only one step is taken at a time (i.e. this
-     *  is not a scanner)
+     * From the JLS, in general there are 2 rules that govern F = A constraints: If F = Tj, then the
+     * constraint Tj = A is implied. If F = U[], where the type U involves Tj, then if A is an array
+     * type V[], or a type variable with an upper bound that is an array type V[], where V is a
+     * reference type, this algorithm is applied recursively to the constraint {@code V >> U}.
+     * Otherwise, no constraint is implied on Tj.
+     *
+     * <p>Since both F and A may have component types this visitor delves into their components and
+     * applies these rules to the components. However, only one step is taken at a time (i.e. this
+     * is not a scanner)
      */
     private class FIsAReducingVisitor extends AbstractAtmComboVisitor<Void, Set<AFConstraint>> {
         @Override

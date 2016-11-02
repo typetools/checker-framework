@@ -26,11 +26,11 @@ import org.checkerframework.framework.type.visitor.AtmComboVisitor;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * AtmKind should mirror TypeKind except that each member has a reference
- * to the AnnotatedTypeMirror that would represents types of its kind.
+ * AtmKind should mirror TypeKind except that each member has a reference to the AnnotatedTypeMirror
+ * that would represents types of its kind.
  *
- * Note: This class is only useful so that AtmCombo can look up
- * combinations via the AtmKind.ordinal().  See AtmCombo.comboMap
+ * <p>Note: This class is only useful so that AtmCombo can look up combinations via the
+ * AtmKind.ordinal(). See AtmCombo.comboMap
  */
 enum AtmKind {
     ARRAY(AnnotatedArrayType.class),
@@ -51,9 +51,7 @@ enum AtmKind {
         this.atmClass = atmClass;
     }
 
-    /**
-     * @return the AtmKind corresponding to the class of atm
-     */
+    /** @return the AtmKind corresponding to the class of atm */
     public static AtmKind valueOf(final AnnotatedTypeMirror atm) {
         final Class<?> argClass = atm.getClass();
 
@@ -70,22 +68,24 @@ enum AtmKind {
 }
 
 /**
- * An enum representing the cartesian product of the set of AtmKinds with itself.  This represents
- * all pair-wise combinations of AnnotatedTypeMirror subclasses.  AtmCombo can be used in a switch
- * to easily (and in a readable fashion) enumerate a subset of Atm pairs to handle.  It is also used
- * to execute AtmComboVisitor, which is a visitor of all possible combinations of AnnotatedTypeMirror
+ * An enum representing the cartesian product of the set of AtmKinds with itself. This represents
+ * all pair-wise combinations of AnnotatedTypeMirror subclasses. AtmCombo can be used in a switch to
+ * easily (and in a readable fashion) enumerate a subset of Atm pairs to handle. It is also used to
+ * execute AtmComboVisitor, which is a visitor of all possible combinations of AnnotatedTypeMirror
  * subclasses.
  *
- * e.g.:
+ * <p>For example:
+ *
+ * <pre>{@code
  * switch (AtmCombo.valueOf(atm1, atm2)) {
  *     case WILDCARD_WILDCARD:
  *     case TYPEVAR_TYPEVAR:
  *         doSomething(atm1, atm2);
  *         break;
  * }
+ * }</pre>
  *
- * see also AtmCombo.accept
- *
+ * @see AtmCombo#accept
  */
 public enum AtmCombo {
     ARRAY_ARRAY(ARRAY, ARRAY),
@@ -207,8 +207,8 @@ public enum AtmCombo {
     }
 
     /**
-     * Used to locate AtmCombo pairs using AtmKinds as indices into a two-dimensional array.  This ensures
-     * that all pairs are included.
+     * Used to locate AtmCombo pairs using AtmKinds as indices into a two-dimensional array. This
+     * ensures that all pairs are included.
      */
     private static final AtmCombo[][] comboMap =
             new AtmCombo[AtmKind.values().length][AtmKind.values().length];
@@ -220,16 +220,17 @@ public enum AtmCombo {
     }
 
     /**
-     * @return the AtmCombo corresponding to the given ATM pair of the given ATMKinds.
-     * e.g. {@literal (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}
+     * @return the AtmCombo corresponding to the given ATM pair of the given ATMKinds. e.g.
+     *     {@literal (AtmKind.NULL, AtmKind.EXECUTABLE) => AtmCombo.NULL_EXECUTABLE}
      */
     public static AtmCombo valueOf(final AtmKind type1, final AtmKind type2) {
         return comboMap[type1.ordinal()][type2.ordinal()];
     }
 
     /**
-     * @return the AtmCombo corresponding to the pair of the classes for the given AnnotatedTypeMirrors.
-     * e.g. {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) => AtmCombo.PRIMITIVE_DECLARED}
+     * @return the AtmCombo corresponding to the pair of the classes for the given
+     *     AnnotatedTypeMirrors. e.g. {@literal (AnnotatedPrimitiveType, AnnotatedDeclaredType) =>
+     *     AtmCombo.PRIMITIVE_DECLARED}
      */
     public static AtmCombo valueOf(
             final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
@@ -237,10 +238,10 @@ public enum AtmCombo {
     }
 
     /**
-     * Call the visit method that corresponds to the AtmCombo that represents the classes of
-     * type1 and type2.  That is, get the combo for type1 and type 2, use it to identify the correct
-     * visitor method, and call that method with type1, type2 and initial param as arguments to
-     * the visit method.
+     * Call the visit method that corresponds to the AtmCombo that represents the classes of type1
+     * and type2. That is, get the combo for type1 and type 2, use it to identify the correct
+     * visitor method, and call that method with type1, type2 and initial param as arguments to the
+     * visit method.
      *
      * @param type1 first argument to the called visit method
      * @param type2 second argument to the called visit method

@@ -23,32 +23,26 @@ import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
- * An annotation processor for listing the potential locations of annotations.
- * To invoke it, use
+ * An annotation processor for listing the potential locations of annotations. To invoke it, use
+ *
  * <pre>
  * javac -proc:only -processor org.checkerframework.common.util.count.Locations <em>MyFile.java ...</em>
  * </pre>
  *
- * <p>
+ * <p>Counting the number of lines of the processor's output yields the annotation location count
+ * (e.g., by piping the output to {@code wc}). Because the processor outputs a single line of text
+ * describing type of each annotation location it encounters, you can obtain the count for specific
+ * annotation location types (i.e., possible local variable annotations, or possible method receiver
+ * annotations) by filtering the output accordingly (e.g., with {@code grep}).
  *
- * Counting the number of lines of the processor's output yields the annotation
- * location count (e.g., by piping the output to {@code wc}). Because the
- * processor outputs a single line of text describing type of each annotation
- * location it encounters, you can obtain the count for specific annotation
- * location types (i.e., possible local variable annotations, or possible
- * method receiver annotations) by filtering the output accordingly (e.g., with
- * {@code grep}).
- *
- * <p>
- *
- * By default, this utility displays annotation locations only. The following
- * two options may be used to adjust the output:
+ * <p>By default, this utility displays annotation locations only. The following two options may be
+ * used to adjust the output:
  *
  * <ul>
- *  <li>{@code -Aannotations}: prints, on the same line as each location,
- *  information about the annotation that is written there, if any</li>
- *  <li>{@code -Anolocations}: suppresses location output;
- *  only makes sense in conjunction with {@code -Aannotations}</li>
+ *   <li>{@code -Aannotations}: prints, on the same line as each location, information about the
+ *       annotation that is written there, if any
+ *   <li>{@code -Anolocations}: suppresses location output; only makes sense in conjunction with
+ *       {@code -Aannotations}
  * </ul>
  */
 /*

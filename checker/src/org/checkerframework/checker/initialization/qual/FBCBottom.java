@@ -12,8 +12,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * {@link FBCBottom} marks the bottom of the Freedom Before Commitment type
- * hierarchy.
+ * {@link FBCBottom} marks the bottom of the Freedom Before Commitment type hierarchy.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
  * @author Stefan Heule
