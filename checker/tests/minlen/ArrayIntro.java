@@ -22,6 +22,6 @@ class ArrayIntro {
 
     void listToArray(@MinLen(10) List<String> arg) {
         Object @MinLen(10) [] a1 = arg.toArray();
-        String @MinLen(10) [] a2 = arg.toArray(new String[0]);
+        String @MinLen(0) [] a2 = arg.toArray(new String[0]);
     }
 }

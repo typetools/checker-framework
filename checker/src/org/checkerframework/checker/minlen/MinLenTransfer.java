@@ -1,6 +1,8 @@
 package org.checkerframework.checker.minlen;
 
 import com.sun.source.tree.Tree;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -9,9 +11,11 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.minlen.qual.MinLen;
+import org.checkerframework.checker.minlen.qual.MinLenBottom;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -62,32 +66,41 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
 
         String methodName = node.getTarget().getMethod().toString();
         boolean add = methodName.startsWith("add(");
-        boolean asList = methodName.startsWith("asList(");
+        boolean asList = methodName.contains("asList(");
         boolean toArray = methodName.startsWith("toArray(");
         if (!(add || asList || toArray)) {
             return result;
         }
 
-        Receiver rec =
-                FlowExpressions.internalReprOf(
-                        analysis.getTypeFactory(), node.getTarget().getReceiver());
-        MinLenStore store = result.getRegularStore();
         if (TreeUtils.isMethodInvocation(node.getTree(), listAdd, env)
                 || TreeUtils.isMethodInvocation(node.getTree(), listAdd2, env)) {
-            if (node.getTarget().getReceiver().getTree() == null) {
+            Receiver rec =
+                    FlowExpressions.internalReprOf(
+                            analysis.getTypeFactory(), node.getTarget().getReceiver());
+            if (node.getTarget().getReceiver().getTree() == null || rec instanceof Unknown) {
                 return result;
             }
             AnnotatedTypeMirror ATM =
                     atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
             AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
+            if (anno == null || AnnotationUtils.areSameByClass(anno, MinLenBottom.class)) {
+                return result;
+            }
             int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
             AnnotationMirror AM = atypeFactory.createMinLen(value + 1);
-            store.clearValue(rec);
-            store.insertValue(rec, AM);
-            RegularTransferResult<MinLenValue, MinLenStore> newResult =
-                    new RegularTransferResult<MinLenValue, MinLenStore>(
-                            result.getResultValue(), store);
-            return newResult;
+            Set<AnnotationMirror> set = new HashSet<>();
+            set.add(AM);
+            MinLenValue minlen =
+                    new MinLenValue(analysis, set, node.getTarget().getReceiver().getType());
+            if (MinLenStore.canInsertReceiver(rec)) {
+                if (result.containsTwoStores()) {
+                    result.getThenStore().replaceValue(rec, minlen);
+                    result.getElseStore().replaceValue(rec, minlen);
+                } else {
+                    result.getRegularStore().replaceValue(rec, minlen);
+                }
+            }
+            return result;
         } else if (TreeUtils.isMethodInvocation(node.getTree(), listToArray, env)
                 || TreeUtils.isMethodInvocation(node.getTree(), listToArray1, env)) {
             if (node.getTarget().getReceiver().getTree() == null) {
