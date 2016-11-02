@@ -50,22 +50,22 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 
 /**
- * LockAnnotatedTypeFactory builds types with LockHeld and LockPossiblyHeld annotations.
- * LockHeld identifies that an object is being used as a lock and is being held when a
- * given tree is executed. LockPossiblyHeld is the default type qualifier for this
- * hierarchy and applies to all fields, local variables and parameters - hence it does
- * not convey any information other than that it is not LockHeld.
+ * LockAnnotatedTypeFactory builds types with @LockHeld and @LockPossiblyHeld annotations. LockHeld
+ * identifies that an object is being used as a lock and is being held when a given tree is
+ * executed. LockPossiblyHeld is the default type qualifier for this hierarchy and applies to all
+ * fields, local variables and parameters -- hence it does not convey any information other than
+ * that it is not LockHeld.
  *
- * However, there are a number of other annotations used in conjunction with these annotations
- * to enforce proper locking.
+ * <p>However, there are a number of other annotations used in conjunction with these annotations to
+ * enforce proper locking.
+ *
  * @checker_framework.manual #lock-checker Lock Checker
  */
 public class LockAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
 
     /** Annotation constants */
-    protected final AnnotationMirror
-            LOCKHELD,
+    protected final AnnotationMirror LOCKHELD,
             LOCKPOSSIBLYHELD,
             SIDEEFFECTFREE,
             GUARDEDBYUNKNOWN,
@@ -274,8 +274,8 @@ public class LockAnnotatedTypeFactory
         }
 
         /**
-         * Returns true if the receiver side effect annotation is weaker
-         * than side effect annotation 'other'.
+         * Returns true if the receiver side effect annotation is weaker than side effect annotation
+         * 'other'.
          */
         boolean isWeakerThan(SideEffectAnnotation other) {
             boolean weaker = false;
@@ -341,17 +341,18 @@ public class LockAnnotatedTypeFactory
     }
 
     /**
-     * Indicates which side effect annotation is present on the given method.
-     * If more than one annotation is present, this method issues an error (if issueErrorIfMoreThanOnePresent is true)
-     * and returns the annotation providing the weakest guarantee.
-     * Only call with issueErrorIfMoreThanOnePresent == true when visiting a method definition.
-     * This prevents multiple errors being issued for the same method (as would occur if
-     * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations).
-     * If no annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS
-     * as the default for unchecked code.
+     * Indicates which side effect annotation is present on the given method. If more than one
+     * annotation is present, this method issues an error (if issueErrorIfMoreThanOnePresent is
+     * true) and returns the annotation providing the weakest guarantee. Only call with
+     * issueErrorIfMoreThanOnePresent == true when visiting a method definition. This prevents
+     * multiple errors being issued for the same method (as would occur if
+     * issueErrorIfMoreThanOnePresent were set to true when visiting method invocations). If no
+     * annotation is present, return RELEASESNOLOCKS as the default, and MAYRELEASELOCKS as the
+     * default for unchecked code.
      *
      * @param element the method element
-     * @param issueErrorIfMoreThanOnePresent whether to issue an error if more than one side effect annotation is present on the method
+     * @param issueErrorIfMoreThanOnePresent whether to issue an error if more than one side effect
+     *     annotation is present on the method
      */
     // package-private
     SideEffectAnnotation methodSideEffectAnnotation(
@@ -393,8 +394,8 @@ public class LockAnnotatedTypeFactory
     }
 
     /**
-     * Returns the index on the GuardSatisfied annotation in the given AnnotatedTypeMirror.
-     * Assumes atm is non-null and contains a GuardSatisfied annotation.
+     * Returns the index on the GuardSatisfied annotation in the given AnnotatedTypeMirror. Assumes
+     * atm is non-null and contains a GuardSatisfied annotation.
      *
      * @param atm AnnotatedTypeMirror containing a GuardSatisfied annotation
      * @return the index on the GuardSatisfied annotation
@@ -405,8 +406,8 @@ public class LockAnnotatedTypeFactory
     }
 
     /**
-     * Returns the index on the given GuardSatisfied annotation.
-     * Assumes am is non-null and is a GuardSatisfied annotation.
+     * Returns the index on the given GuardSatisfied annotation. Assumes am is non-null and is a
+     * GuardSatisfied annotation.
      *
      * @param am AnnotationMirror for a GuardSatisfied annotation
      * @return the index on the GuardSatisfied annotation
@@ -486,18 +487,20 @@ public class LockAnnotatedTypeFactory
     }
 
     /**
-     * If {@code atm} is not null and contains a {@code @GuardSatisfied} annotation, and if the index of this
-     * {@code @GuardSatisfied} annotation matches {@code matchingGuardSatisfiedIndex}, then
-     * {@code methodReturnAtm} will have its annotation in the {@code @GuardedBy} hierarchy replaced
-     * with that in {@code atmWithAnnotationInGuardedByHierarchy}.
+     * If {@code atm} is not null and contains a {@code @GuardSatisfied} annotation, and if the
+     * index of this {@code @GuardSatisfied} annotation matches {@code matchingGuardSatisfiedIndex},
+     * then {@code methodReturnAtm} will have its annotation in the {@code @GuardedBy} hierarchy
+     * replaced with that in {@code atmWithAnnotationInGuardedByHierarchy}.
      *
-     * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will potentially have
-     * its annotation in the {@code @GuardedBy} hierarchy replaced.
-     * @param atm an AnnotatedTypeMirror that may contain a {@code @GuardSatisfied} annotation. May be null.
-     * @param matchingGuardSatisfiedIndex the {code @GuardSatisfied} index that the {@code @GuardSatisfied} annotation
-     * in {@code atm} must have in order for the replacement to occur.
-     * @param annotationInGuardedByHierarchy if the replacement occurs, the annotation in the {@code @GuardedBy}
-     *  hierarchy in this parameter will be used for the replacement.
+     * @param methodReturnAtm the AnnotatedTypeMirror for the return type of a method that will
+     *     potentially have its annotation in the {@code @GuardedBy} hierarchy replaced.
+     * @param atm an AnnotatedTypeMirror that may contain a {@code @GuardSatisfied} annotation. May
+     *     be null.
+     * @param matchingGuardSatisfiedIndex the {code @GuardSatisfied} index that the
+     *     {@code @GuardSatisfied} annotation in {@code atm} must have in order for the replacement
+     *     to occur.
+     * @param annotationInGuardedByHierarchy if the replacement occurs, the annotation in the
+     *     {@code @GuardedBy} hierarchy in this parameter will be used for the replacement.
      * @return true if the replacement occurred, false otherwise
      */
     private boolean replaceAnnotationInGuardedByHierarchyIfGuardSatisfiedIndexMatches(
@@ -541,13 +544,15 @@ public class LockAnnotatedTypeFactory
     }
 
     /**
-     * Given a field declaration with a {@code @net.jcip.annotations.GuardedBy} or
-     * {@code javax.annotation.concurrent.GuardedBy} annotation and an AnnotatedTypeMirror
-     * for that field, inserts the corresponding {@code @org.checkerframework.checker.lock.qual.GuardedBy}
-     * type qualifier into that AnnotatedTypeMirror.
+     * Given a field declaration with a {@code @net.jcip.annotations.GuardedBy} or {@code
+     * javax.annotation.concurrent.GuardedBy} annotation and an AnnotatedTypeMirror for that field,
+     * inserts the corresponding {@code @org.checkerframework.checker.lock.qual.GuardedBy} type
+     * qualifier into that AnnotatedTypeMirror.
      *
-     * @param element any Element (this method does nothing if the Element is not for a field declaration)
-     * @param atm the AnnotatedTypeMirror for element - the {@code @GuardedBy} type qualifier will be inserted here
+     * @param element any Element (this method does nothing if the Element is not for a field
+     *     declaration)
+     * @param atm the AnnotatedTypeMirror for element - the {@code @GuardedBy} type qualifier will
+     *     be inserted here
      */
     private void translateJcipAndJavaxAnnotations(Element element, AnnotatedTypeMirror atm) {
         if (!element.getKind().isField()) {

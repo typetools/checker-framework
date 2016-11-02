@@ -6,22 +6,25 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a fully-qualified name as defined in the <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.7">Java Language Specification, section 6.7</a>.
- * <p>
+ * Represents a fully-qualified name as defined in the <a
+ * href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-6.html#jls-6.7">Java Language
+ * Specification, section 6.7</a>.
  *
- * For example, in
+ * <p>For example, in
+ *
  * <pre>
  *  package org.checkerframework.checker.signature;
  *  public class SignatureChecker {
  *    private class Inner {}
  *  }
  * </pre>
- * the fully-qualified names for the two types are org.checkerframework.checker.signature.SignatureChecker
- * and org.checkerframework.checker.signature.SignatureChecker.Inner.
  *
- * <p>
- * Fully-qualified names and {@linkplain BinaryName binary names} are the same
- * for top-level classes and only differ by a '.' vs. '$' for inner classes.
+ * the fully-qualified names for the two types are
+ * org.checkerframework.checker.signature.SignatureChecker and
+ * org.checkerframework.checker.signature.SignatureChecker.Inner.
+ *
+ * <p>Fully-qualified names and {@linkplain BinaryName binary names} are the same for top-level
+ * classes and only differ by a '.' vs. '$' for inner classes.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

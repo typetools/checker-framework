@@ -5,18 +5,24 @@ public class Simple {
 
     void testMethodCall(@GuardedBy("lock1") Simple this) {
         //:: error: (contracts.precondition.not.satisfied.field)
-        synchronized (lock1) {}
+        synchronized (lock1) {
+        }
         //:: error: (contracts.precondition.not.satisfied.field)
-        synchronized (this.lock1) {}
+        synchronized (this.lock1) {
+        }
         //:: error: (contracts.precondition.not.satisfied.field)
-        synchronized (lock2) {}
+        synchronized (lock2) {
+        }
         //:: error: (contracts.precondition.not.satisfied.field)
-        synchronized (this.lock2) {}
+        synchronized (this.lock2) {
+        }
 
         final @GuardedBy("myClass.field") MyClass myClass = new MyClass();
         //:: error: (contracts.precondition.not.satisfied.field)
-        synchronized (myClass.field) {}
-        synchronized (myClass) {}
+        synchronized (myClass.field) {
+        }
+        synchronized (myClass) {
+        }
     }
 
     class MyClass {

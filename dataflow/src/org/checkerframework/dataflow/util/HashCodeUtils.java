@@ -4,7 +4,6 @@ package org.checkerframework.dataflow.util;
  * Utility class to implement the {@code hashCode} method.
  *
  * @author Stefan Heule
- *
  */
 public class HashCodeUtils {
 

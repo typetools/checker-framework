@@ -9,9 +9,8 @@ import org.checkerframework.framework.qual.ConditionalPostconditionAnnotation;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * A conditional postcondition annotation to indicate that a method ensures
- * certain expressions to be {@link Odd} given a certain result (either true or
- * false).
+ * A conditional postcondition annotation to indicate that a method ensures certain expressions to
+ * be {@link Odd} given a certain result (either true or false).
  *
  * @author Stefan Heule
  */

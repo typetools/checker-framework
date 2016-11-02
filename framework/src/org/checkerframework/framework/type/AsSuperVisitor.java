@@ -37,15 +37,14 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     }
 
     /**
-     * Implements asSuper.
-     * See {@link AnnotatedTypes#asSuper(AnnotatedTypeFactory, AnnotatedTypeMirror,
-     * AnnotatedTypeMirror)} for details.
+     * Implements asSuper. See {@link AnnotatedTypes#asSuper(AnnotatedTypeFactory,
+     * AnnotatedTypeMirror, AnnotatedTypeMirror)} for details.
      *
-     * @param type      Type from which to copy annotations
-     * @param superType a type whose erased Java type is a supertype of {@code type}'s erased
-     *                  Java type.
+     * @param type Type from which to copy annotations
+     * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
+     *     type.
      * @return A copy of {@code superType} with annotations copied from {@code type} and type
-     * variables substituted from {@code type}.
+     *     variables substituted from {@code type}.
      */
     @SuppressWarnings("unchecked")
     public <T extends AnnotatedTypeMirror> T asSuper(AnnotatedTypeMirror type, T superType) {
@@ -78,10 +77,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     }
 
     /**
-     * The code in this class is assuming that the primary annotation of an {@link AnnotatedIntersectionType}
-     * is the greatest lower bound of the annotations on its direct super types and that the primary
-     * annotation of an {@link AnnotatedUnionType} is the least upper bound of its alternatives.
-     * This method makes this assumption true.
+     * The code in this class is assuming that the primary annotation of an {@link
+     * AnnotatedIntersectionType} is the greatest lower bound of the annotations on its direct super
+     * types and that the primary annotation of an {@link AnnotatedUnionType} is the least upper
+     * bound of its alternatives. This method makes this assumption true.
      */
     private void ensurePrimaryIsCorrectForUnionsAndIntersections(AnnotatedTypeMirror type) {
         if (type.getKind() == TypeKind.INTERSECTION) {
@@ -131,10 +130,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return String.format(
                 "AsSuperVisitor: Unexpected combination: type: %s superType: %s.\ntype: %s"
                         + "\nsuperType: %s",
-                type.getKind(),
-                superType.getKind(),
-                type,
-                superType);
+                type.getKind(), superType.getKind(), type, superType);
     }
 
     private AnnotatedTypeMirror errorTypeNotErasedSubtypeOfSuperType(
@@ -146,8 +142,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         ErrorReporter.errorAbort(
                 "AsSuperVisitor: type is not an erased subtype of supertype."
                         + "\ntype: %s\nsuperType: %s",
-                type,
-                superType);
+                type, superType);
         return null; // dead code
     }
 
@@ -173,15 +168,15 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
      * A helper method for asSuper(AMT, Wildcard) methods to use to annotate the wildcard's lower
      * bound.
      *
-     * If the lower bound of superType is Null, then return copyPrimarayAnnos(type, superType)
+     * <p>If the lower bound of superType is Null, then return copyPrimarayAnnos(type, superType)
      *
-     * otherwise, return asSuper(type, superType.getLowerBound()
+     * <p>otherwise, return asSuper(type, superType.getLowerBound()
      *
-     * An error is issued if type is a Primitive or Wildcard -- those case are handled in
+     * <p>An error is issued if type is a Primitive or Wildcard -- those case are handled in
      * asSuper(Primitive, Wildcard) and asSuper(Wildcard, Wildcard)
      *
-     * An error is issued if the lower bound of superType is not Null and type is not a subtype of
-     * the lower bound.
+     * <p>An error is issued if the lower bound of superType is not Null and type is not a subtype
+     * of the lower bound.
      */
     private AnnotatedTypeMirror asSuperWildcardLowerBound(
             AnnotatedTypeMirror type, AnnotatedWildcardType superType, Void p) {
@@ -189,9 +184,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return asSuperLowerBound(type, p, lowerBound);
     }
 
-    /**
-     * Same as #asSuperWildcardLowerBound, but for Typevars
-     */
+    /** Same as #asSuperWildcardLowerBound, but for Typevars */
     private AnnotatedTypeMirror asSuperTypevarLowerBound(
             AnnotatedTypeMirror type, AnnotatedTypeVariable superType, Void p) {
         AnnotatedTypeMirror lowerBound = superType.getLowerBound();
@@ -434,8 +427,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             if (found == null) {
                 ErrorReporter.errorAbort(
                         "AsSuperVisitor visitIntersection_Intersection:\ntype: %s superType: %s",
-                        type,
-                        superType);
+                        type, superType);
             }
         }
         superType.setDirectSuperTypes(newDirectSupertypes);
@@ -460,8 +452,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
         ErrorReporter.errorAbort(
                 "AsSuperVisitor visitIntersection_Primitive:\ntype: %s superType: %s",
-                type,
-                superType);
+                type, superType);
         return null; // dead code
     }
 
@@ -489,8 +480,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         // Cannot happen: one of the types in the intersection must be a subtype of superType.
         ErrorReporter.errorAbort(
                 "AsSuperVisitor visitIntersection_Union:\ntype: %s\nsuperType: %s",
-                type,
-                superType);
+                type, superType);
         return null; // dead code
     }
 
@@ -536,9 +526,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         return visitPrimitive_Other(type, superType, p);
     }
 
-    /**
-     * All other narrowings require a cast. For example: Byte b = 100; See JLS 5.1.3
-     */
+    /** All other narrowings require a cast. For example: Byte b = 100; See JLS 5.1.3 */
     private boolean canBeNarrowingPrimitiveConversion(TypeMirror type) {
         // org.checkerframework.dataflow.cfg.CFGBuilder
         // .CFGTranslationPhaseOne#conversionRequiresNarrowing()

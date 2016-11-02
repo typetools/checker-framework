@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------
 
-Version 2.1.5, 1 November 2016
+Version 2.1.5, 2 November 2016
 
 The new class org.checkerframework.checker.nullness.Opt provides every
 method in Java 8's java.util.Optional class, but written for possibly-null
@@ -14,6 +14,9 @@ written explicitly in source code and defaults them as implicit upper bounds.
 The manual describes how to run a checker within the NetBeans IDE.
 
 The manual describes two approaches to creating a type alias or typedef.
+
+Closed issues:
+643, 775, 887, 906, 941.
 
 ---------------------------------------------------------------------------
 

@@ -10,7 +10,6 @@ import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 class Issue373 extends AbstractMap<String, String> {
     @Override

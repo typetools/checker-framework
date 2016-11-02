@@ -21,15 +21,14 @@ import org.checkerframework.javacutil.TreeUtils;
 /**
  * A type-checking visitor for the Regex type system.
  *
- * This visitor does the following:
+ * <p>This visitor does the following:
  *
  * <ol>
- * <li value="1">Allows any String to be passed to Pattern.compile if the
- *    Pattern.LITERAL flag is passed.</li>
- * <li value="2">Checks compound String concatenation to ensure correct usage
- *    of Regex Strings.</li>
- * <li value="3">Checks calls to {@code MatchResult.start}, {@code MatchResult.end}
- * and {@code MatchResult.group} to ensure that a valid group number is passed.</li>
+ *   <li value="1">Allows any String to be passed to Pattern.compile if the Pattern.LITERAL flag is
+ *       passed.
+ *   <li value="2">Checks compound String concatenation to ensure correct usage of Regex Strings.
+ *   <li value="3">Checks calls to {@code MatchResult.start}, {@code MatchResult.end} and {@code
+ *       MatchResult.group} to ensure that a valid group number is passed.
  * </ol>
  *
  * @see RegexChecker
@@ -58,8 +57,8 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
     }
 
     /**
-     * Case 1: Don't require a Regex annotation on the String argument to
-     * Pattern.compile if the Pattern.LITERAL flag is passed.
+     * Case 1: Don't require a Regex annotation on the String argument to Pattern.compile if the
+     * Pattern.LITERAL flag is passed.
      */
     @Override
     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
@@ -84,8 +83,8 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
                 || TreeUtils.isMethodInvocation(node, matchResultGroup, env)
                 || TreeUtils.isMethodInvocation(node, matchResultStart, env)) {
             /**
-             * Case 3: Checks calls to {@code MatchResult.start}, {@code MatchResult.end}
-             * and {@code MatchResult.group} to ensure that a valid group number is passed.
+             * Case 3: Checks calls to {@code MatchResult.start}, {@code MatchResult.end} and {@code
+             * MatchResult.group} to ensure that a valid group number is passed.
              */
             ExpressionTree group = node.getArguments().get(0);
             if (group.getKind() == Kind.INT_LITERAL) {
@@ -111,9 +110,7 @@ public class RegexVisitor extends BaseTypeVisitor<RegexAnnotatedTypeFactory> {
         return super.visitMethodInvocation(node, p);
     }
 
-    /**
-     * Case 2: Check String compound concatenation for valid Regex use.
-     */
+    /** Case 2: Check String compound concatenation for valid Regex use. */
     // TODO: Remove this. This should be handled by flow.
     /*@Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {

@@ -6,10 +6,9 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
 /**
- *  Used to test the compound checker design pattern.
- *  AliasingChecker and AnotherCompoundChecker are subcheckers of this checker
- *  AnotherCompoundChecker relies on the Alaising Checker, too.
- *  This is so that the order of subcheckers is tested.
+ * Used to test the compound checker design pattern. AliasingChecker and AnotherCompoundChecker are
+ * subcheckers of this checker AnotherCompoundChecker relies on the Alaising Checker, too. This is
+ * so that the order of subcheckers is tested.
  */
 public class CompoundChecker extends BaseTypeChecker {
     @Override

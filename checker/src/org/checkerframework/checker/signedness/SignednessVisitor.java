@@ -12,8 +12,8 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- * The SignednessVisitor enforces the Signedness Checker rules. These rules
- * are described in detail in the Checker Framework Manual.
+ * The SignednessVisitor enforces the Signedness Checker rules. These rules are described in detail
+ * in the Checker Framework Manual.
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */
@@ -24,15 +24,15 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
-     * Enforces the following rules on binary operations involving Unsigned and
-     * Signed types:
+     * Enforces the following rules on binary operations involving Unsigned and Signed types:
+     *
      * <ul>
-     *      <li> Do not allow any Unsigned types in {@literal {/, %}} operations. </li>
-     *      <li> Do not allow signed right shift {@literal {>>}} on an Unsigned type. </li>
-     *      <li> Do not allow unsigned right shift {@literal {>>>}} on a Signed type. </li>
-     *      <li> Allow any left shift {@literal {<<}}. </li>
-     *      <li> Do not allow non-equality comparisons {@literal {<, <=, >, >=}} on Unsigned types. </li>
-     *      <li> Do not allow the mixing of Signed and Unsigned types. </li>
+     *   <li> Do not allow any Unsigned types in {@literal {/, %}} operations.
+     *   <li> Do not allow signed right shift {@literal {>>}} on an Unsigned type.
+     *   <li> Do not allow unsigned right shift {@literal {>>>}} on a Signed type.
+     *   <li> Allow any left shift {@literal {<<}}.
+     *   <li> Do not allow non-equality comparisons {@literal {<, <=, >, >=}} on Unsigned types.
+     *   <li> Do not allow the mixing of Signed and Unsigned types.
      * </ul>
      */
     @Override
@@ -105,9 +105,7 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         return super.visitBinary(node, p);
     }
 
-    /**
-     * @return a string representation of kind, with trailing _ASSIGNMENT stripped off if any.
-     */
+    /** @return a string representation of kind, with trailing _ASSIGNMENT stripped off if any */
     private String kindWithOutAssignment(Kind kind) {
         String result = kind.toString();
         if (result.endsWith("_ASSIGNMENT")) {
@@ -118,14 +116,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
-     * Enforces the following rules on compound assignments involving Unsigned and
-     * Signed types:
+     * Enforces the following rules on compound assignments involving Unsigned and Signed types:
+     *
      * <ul>
-     *      <li> Do not allow any Unsigned types in {@literal {/=, %=}} assignments. </li>
-     *      <li> Do not allow signed right shift {@literal {>>=}} to assign to an Unsigned type. </li>
-     *      <li> Do not allow unsigned right shift {@literal {>>>=}} to assign to a Signed type. </li>
-     *      <li> Allow any left shift {@literal {<<=}} assignment. </li>
-     *      <li> Do not allow mixing of Signed and Unsigned types. </li>
+     *   <li> Do not allow any Unsigned types in {@literal {/=, %=}} assignments.
+     *   <li> Do not allow signed right shift {@literal {>>=}} to assign to an Unsigned type.
+     *   <li> Do not allow unsigned right shift {@literal {>>>=}} to assign to a Signed type.
+     *   <li> Allow any left shift {@literal {<<=}} assignment.
+     *   <li> Do not allow mixing of Signed and Unsigned types.
      * </ul>
      */
     @Override

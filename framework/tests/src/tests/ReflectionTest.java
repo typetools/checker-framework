@@ -12,7 +12,6 @@ import org.junit.runners.Parameterized.Parameters;
  * Tests the reflection resolution using a toy type system.
  *
  * @author rjust, smillst
- *
  */
 public class ReflectionTest extends CheckerFrameworkPerDirectoryTest {
 

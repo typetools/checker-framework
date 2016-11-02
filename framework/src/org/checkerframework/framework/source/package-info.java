@@ -1,14 +1,10 @@
 /**
- * Contains the essential functionality for interfacing a compile-time (source)
- * type-checker plug-in to the Java compiler. This allows a checker to use
- * the compiler's error reporting mechanism and to access abstract syntax trees
- * and compiler utility classes.
+ * Contains the essential functionality for interfacing a compile-time (source) type-checker plug-in
+ * to the Java compiler. This allows a checker to use the compiler's error reporting mechanism and
+ * to access abstract syntax trees and compiler utility classes.
  *
- * <p>
- *
- * Most classes won't want to extend the classes in this package directly; the
- * classes in the {@link org.checkerframework.common.basetype} package provide subtype checking
- * functionality.
+ * <p>Most classes won't want to extend the classes in this package directly; the classes in the
+ * {@link org.checkerframework.common.basetype} package provide subtype checking functionality.
  *
  * @see org.checkerframework.common.basetype
  * @checker_framework.manual #writing-a-checker Writing a Checker

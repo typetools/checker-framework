@@ -23,13 +23,11 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Adds {@link Format} to the type of tree, if it is a {@code String} or
- * {@code char} literal that represents a satisfiable format. The annotation's
- * value is set to be a list of appropriate {@link ConversionCategory} values
- * for every parameter of the format.
+ * Adds {@link Format} to the type of tree, if it is a {@code String} or {@code char} literal that
+ * represents a satisfiable format. The annotation's value is set to be a list of appropriate {@link
+ * ConversionCategory} values for every parameter of the format.
  *
  * @see ConversionCategory
- *
  * @author Konstantin Weitz
  */
 public class FormatterAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {

@@ -3,9 +3,7 @@
 import static org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory.DATE;
 import static org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory.NUMBER;
 
-import org.checkerframework.checker.i18nformatter.I18nFormatUtil;
 import org.checkerframework.checker.i18nformatter.qual.I18nFormat;
-import org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat;
 
 public class ManualExample {
 

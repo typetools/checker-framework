@@ -12,9 +12,8 @@ import org.checkerframework.framework.qual.SubtypeOf;
 /**
  * The top qualifier for the Interning Checker.
  *
- * <p>
- *
- * This annotation is associated with the {@link org.checkerframework.checker.interning.InterningChecker}.
+ * <p>This annotation is associated with the {@link
+ * org.checkerframework.checker.interning.InterningChecker}.
  *
  * @see org.checkerframework.checker.interning.InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker

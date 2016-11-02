@@ -1,7 +1,5 @@
 
-/**
- * BoundR and unbound constraints.
- */
+/** BoundR and unbound constraints. */
 interface UnboundR {
     void consume(/*1*/ UnboundR this, /*2*/ MyClass my, String s);
 }
@@ -38,10 +36,7 @@ class MyClass {
     }
 }
 
-/**
- * Constraints for implicit inner constraints
- * and super
- */
+/** Constraints for implicit inner constraints and super */
 @SuppressWarnings("lock")
 class OuterR {
     class Inner {

@@ -5,8 +5,9 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
- * Toy type system for testing reflection resolution.
- * Uses org.checkerframework.framework.qual.Bottom as bottom
+ * Toy type system for testing reflection resolution. Uses
+ * org.checkerframework.framework.qual.Bottom as bottom
+ *
  * @see Sibling1, Sibling2
  */
 @PolymorphicQualifier

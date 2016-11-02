@@ -18,9 +18,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-/**
- * @checker_framework.manual #signedness-checker Signedness Checker
- */
+/** @checker_framework.manual #signedness-checker Signedness Checker */
 public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     // private final AnnotationMirror UNSIGNED;
@@ -50,9 +48,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return getBundledTypeQualifiersWithoutPolyAll();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     protected void addComputedTypeAnnotations(
             Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
@@ -70,8 +66,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * If the tree is a local variable and the type is a byte, short, int or long,
-     * then it adds the UnknownSignedness annotation so that data flow can refine it.
+     * If the tree is a local variable and the type is a byte, short, int or long, then it adds the
+     * UnknownSignedness annotation so that data flow can refine it.
      */
     private void addUnknownSignednessToSomeLocals(Tree tree, AnnotatedTypeMirror type) {
         switch (type.getKind()) {
@@ -105,9 +101,7 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     protected TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -115,8 +109,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * This TreeAnnotator ensures that booleans expressions are not
-     * given Unsigned or Signed annotations by {@link PropagationTreeAnnotator}
+     * This TreeAnnotator ensures that booleans expressions are not given Unsigned or Signed
+     * annotations by {@link PropagationTreeAnnotator}
      */
     private class SignednessTreeAnnotator extends TreeAnnotator {
 
@@ -125,8 +119,8 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Change the type of booleans to @UnknownSignedness so that the {@link PropagationTreeAnnotator}
-         * does not change the type of them.
+         * Change the type of booleans to @UnknownSignedness so that the {@link
+         * PropagationTreeAnnotator} does not change the type of them.
          */
         private Void annotateBoolean(AnnotatedTypeMirror type) {
             switch (type.getKind()) {

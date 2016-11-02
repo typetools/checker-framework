@@ -9,23 +9,21 @@ import org.checkerframework.checker.nullness.qual.EnsuresNonNull;
 
 /**
  * Utility class for the Nullness Checker.
- * <p>
  *
- * To avoid the need to write the NullnessUtil class name, do:
+ * <p>To avoid the need to write the NullnessUtil class name, do:
+ *
  * <pre>import static org.checkerframework.checker.nullness.NullnessUtil.castNonNull;</pre>
+ *
  * or
+ *
  * <pre>import static org.checkerframework.checker.nullness.NullnessUtil.*;</pre>
- * <p>
  *
- * <b>Runtime Dependency</b>
- * <p>
+ * <p><b>Runtime Dependency</b>
  *
- * Please note that using this class introduces a runtime dependency.
- * This means that you need to distribute (or link to) the Checker
- * Framework, along with your binaries.
+ * <p>Please note that using this class introduces a runtime dependency. This means that you need to
+ * distribute (or link to) the Checker Framework, along with your binaries.
  *
- * To eliminate this dependency, you can simply copy this class into your
- * own project.
+ * <p>To eliminate this dependency, you can simply copy this class into your own project.
  */
 // Nullness utilities are trusted regarding nullness.
 // Casts look redundant if Nullness Checker is not run.
@@ -38,15 +36,12 @@ public final class NullnessUtil {
 
     /**
      * A method that suppresses warnings from the Nullness Checker.
-     * <p>
      *
-     * The method takes a possibly-null reference, unsafely casts it to
-     * have the @NonNull type qualifier, and returns it.  The Nullness
-     * Checker considers both the return value, and also the argument, to
-     * be non-null after the method call.  Therefore, the
-     * {@code castNonNull} method can be used either as a cast expression or
-     * as a statement.  The Nullness Checker issues no warnings in any of
-     * the following code:
+     * <p>The method takes a possibly-null reference, unsafely casts it to have the @NonNull type
+     * qualifier, and returns it. The Nullness Checker considers both the return value, and also the
+     * argument, to be non-null after the method call. Therefore, the {@code castNonNull} method can
+     * be used either as a cast expression or as a statement. The Nullness Checker issues no
+     * warnings in any of the following code:
      *
      * <pre>
      *   // one way to use as a cast:
@@ -60,19 +55,16 @@ public final class NullnessUtil {
      *   possiblyNull3.toString();`
      * </pre>
      *
-     * The {@code castNonNull} method is intended to be used in situations
-     * where the programmer definitively knows that a given reference is
-     * not null, but the type system is unable to make this deduction.  It
-     * is not intended for defensive programming, in which a programmer
-     * cannot prove that the value is not null but wishes to have an
-     * earlier indication if it is.  See the Checker Framework Manual for
-     * further discussion.
-     * <p>
+     * The {@code castNonNull} method is intended to be used in situations where the programmer
+     * definitively knows that a given reference is not null, but the type system is unable to make
+     * this deduction. It is not intended for defensive programming, in which a programmer cannot
+     * prove that the value is not null but wishes to have an earlier indication if it is. See the
+     * Checker Framework Manual for further discussion.
      *
-     * The method throws {@link AssertionError} if Java assertions are
-     * enabled and the argument is {@code null}.  If the exception is ever
-     * thrown, then that indicates that the programmer misused the method
-     * by using it in a circumstance where its argument can be null.
+     * <p>The method throws {@link AssertionError} if Java assertions are enabled and the argument
+     * is {@code null}. If the exception is ever thrown, then that indicates that the programmer
+     * misused the method by using it in a circumstance where its argument can be null.
+     *
      * <p>
      *
      * @param ref a reference of @Nullable type
@@ -85,10 +77,10 @@ public final class NullnessUtil {
     }
 
     /**
-     * Like castNonNull, but whereas that method only checks and casts the
-     * reference itself, this traverses all levels of the argument array.
-     * The array is recursively checked to ensure that all elements at
-     * every array level are non-null.
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends /*@Nullable*/ Object>
@@ -97,10 +89,10 @@ public final class NullnessUtil {
     }
 
     /**
-     * Like castNonNull, but whereas that method only checks and casts the
-     * reference itself, this traverses all levels of the argument array.
-     * The array is recursively checked to ensure that all elements at
-     * every array level are non-null.
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends /*@Nullable*/ Object>
@@ -109,23 +101,22 @@ public final class NullnessUtil {
     }
 
     /**
-     * Like castNonNull, but whereas that method only checks and casts the
-     * reference itself, this traverses all levels of the argument array.
-     * The array is recursively checked to ensure that all elements at
-     * every array level are non-null.
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends /*@Nullable*/ Object>
-            /*@NonNull*/ T /*@NonNull*/ [][][] castNonNullDeep(
-            T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
+            /*@NonNull*/ T /*@NonNull*/ [][][] castNonNullDeep(T /*@Nullable*/ [] /*@Nullable*/ [] /*@Nullable*/ [] arr) {
         return (/*@NonNull*/ T[][][]) castNonNullArray(arr);
     }
 
     /**
-     * Like castNonNull, but whereas that method only checks and casts the
-     * reference itself, this traverses all levels of the argument array.
-     * The array is recursively checked to ensure that all elements at
-     * every array level are non-null.
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends /*@Nullable*/ Object>
@@ -135,10 +126,10 @@ public final class NullnessUtil {
     }
 
     /**
-     * Like castNonNull, but whereas that method only checks and casts the
-     * reference itself, this traverses all levels of the argument array.
-     * The array is recursively checked to ensure that all elements at
-     * every array level are non-null.
+     * Like castNonNull, but whereas that method only checks and casts the reference itself, this
+     * traverses all levels of the argument array. The array is recursively checked to ensure that
+     * all elements at every array level are non-null.
+     *
      * @see #castNonNull(Object)
      */
     public static @EnsuresNonNull("#1") <T extends /*@Nullable*/ Object>

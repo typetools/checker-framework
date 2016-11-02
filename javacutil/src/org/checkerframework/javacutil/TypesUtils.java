@@ -23,10 +23,7 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-/**
- * A utility class that helps with {@link TypeMirror}s.
- *
- */
+/** A utility class that helps with {@link TypeMirror}s. */
 // TODO: This class needs significant restructuring
 public final class TypesUtils {
 
@@ -36,8 +33,8 @@ public final class TypesUtils {
     }
 
     /**
-     * Gets the fully qualified name for a provided type.  It returns an empty
-     * name if type is an anonymous type.
+     * Gets the fully qualified name for a provided type. It returns an empty name if type is an
+     * anonymous type.
      *
      * @param type the declared type
      * @return the name corresponding to that type
@@ -50,7 +47,7 @@ public final class TypesUtils {
     /**
      * Checks if the type represents a java.lang.Object declared type.
      *
-     * @param type  the type
+     * @param type the type
      * @return true iff type represents java.lang.Object
      */
     public static boolean isObject(TypeMirror type) {
@@ -60,7 +57,7 @@ public final class TypesUtils {
     /**
      * Checks if the type represents a java.lang.Class declared type.
      *
-     * @param type  the type
+     * @param type the type
      * @return true iff type represents java.lang.Class
      */
     public static boolean isClass(TypeMirror type) {
@@ -68,11 +65,11 @@ public final class TypesUtils {
     }
 
     /**
-     * Checks if the type represents a java.lang.String declared type.
-     * TODO: it would be cleaner to use String.class.getCanonicalName(), but
-     *   the two existing methods above don't do that, I guess for performance reasons.
+     * Checks if the type represents a java.lang.String declared type. TODO: it would be cleaner to
+     * use String.class.getCanonicalName(), but the two existing methods above don't do that, I
+     * guess for performance reasons.
      *
-     * @param type  the type
+     * @param type the type
      * @return true iff type represents java.lang.String
      */
     public static boolean isString(TypeMirror type) {
@@ -80,8 +77,8 @@ public final class TypesUtils {
     }
 
     /**
-     * Checks if the type represents a boolean type, that is either boolean
-     * (primitive type) or java.lang.Boolean.
+     * Checks if the type represents a boolean type, that is either boolean (primitive type) or
+     * java.lang.Boolean.
      *
      * @param type the type to test
      * @return true iff type represents a boolean type
@@ -119,7 +116,7 @@ public final class TypesUtils {
                 || qualifiedName.equals("java.lang.Float"));
     }
 
-    /** @return type represents a Throwable type (e.g. Exception, Error) **/
+    /** @return type represents a Throwable type (e.g. Exception, Error) * */
     public static boolean isThrowable(TypeMirror type) {
         while (type != null && type.getKind() == TypeKind.DECLARED) {
             DeclaredType dt = (DeclaredType) type;
@@ -169,7 +166,7 @@ public final class TypesUtils {
     /**
      * Returns true iff the arguments are both the same primitive types.
      *
-     * @return  whether the arguments are the same primitive types
+     * @return whether the arguments are the same primitive types
      */
     public static boolean areSamePrimitiveTypes(TypeMirror left, TypeMirror right) {
         if (!isPrimitive(left) || !isPrimitive(right)) {
@@ -182,7 +179,7 @@ public final class TypesUtils {
     /**
      * Returns true iff the argument is a primitive numeric type.
      *
-     * @return  whether the argument is a primitive numeric type
+     * @return whether the argument is a primitive numeric type
      */
     public static boolean isNumeric(TypeMirror type) {
         switch (type.getKind()) {
@@ -202,7 +199,7 @@ public final class TypesUtils {
     /**
      * Returns true iff the argument is an integral type.
      *
-     * @return  whether the argument is an integral type
+     * @return whether the argument is an integral type
      */
     public static boolean isIntegral(TypeMirror type) {
         switch (type.getKind()) {
@@ -220,7 +217,7 @@ public final class TypesUtils {
     /**
      * Returns true iff the argument is a floating point type.
      *
-     * @return  whether the argument is a floating point type
+     * @return whether the argument is a floating point type
      */
     public static boolean isFloating(TypeMirror type) {
         switch (type.getKind()) {
@@ -233,14 +230,13 @@ public final class TypesUtils {
     }
 
     /**
-     * Returns the widened numeric type for an arithmetic operation
-     * performed on a value of the left type and the right type.
-     * Defined in JLS 5.6.2.  We return a {@link TypeKind} because
-     * creating a {@link TypeMirror} requires a {@link Types} object
-     * from the {@link javax.annotation.processing.ProcessingEnvironment}.
+     * Returns the widened numeric type for an arithmetic operation performed on a value of the left
+     * type and the right type. Defined in JLS 5.6.2. We return a {@link TypeKind} because creating
+     * a {@link TypeMirror} requires a {@link Types} object from the {@link
+     * javax.annotation.processing.ProcessingEnvironment}.
      *
-     * @return  the result of widening numeric conversion, or NONE when
-     *          the conversion cannot be performed
+     * @return the result of widening numeric conversion, or NONE when the conversion cannot be
+     *     performed
      */
     public static TypeKind widenedNumericType(TypeMirror left, TypeMirror right) {
         if (!isNumeric(left) || !isNumeric(right)) {
@@ -266,13 +262,12 @@ public final class TypesUtils {
     }
 
     /**
-     * If the argument is a bounded TypeVariable or WildcardType,
-     * return its non-variable, non-wildcard upper bound.  Otherwise,
-     * return the type itself.
+     * If the argument is a bounded TypeVariable or WildcardType, return its non-variable,
+     * non-wildcard upper bound. Otherwise, return the type itself.
      *
-     * @param type  a type
-     * @return  the non-variable, non-wildcard upper bound of a type,
-     *    if it has one, or itself if it has no bounds
+     * @param type a type
+     * @return the non-variable, non-wildcard upper bound of a type, if it has one, or itself if it
+     *     has no bounds
      */
     public static TypeMirror upperBound(TypeMirror type) {
         do {
@@ -298,8 +293,9 @@ public final class TypesUtils {
     }
 
     /**
-     * Get the type parameter for this wildcard from the underlying type's bound field
-     * This field is sometimes null, in that case this method will return null
+     * Get the type parameter for this wildcard from the underlying type's bound field This field is
+     * sometimes null, in that case this method will return null
+     *
      * @return the TypeParameterElement the wildcard is an argument to
      */
     public static TypeParameterElement wildcardToTypeParam(final Type.WildcardType wildcard) {
@@ -315,8 +311,8 @@ public final class TypesUtils {
     }
 
     /**
-     * Version of com.sun.tools.javac.code.Types.wildUpperBound(Type)
-     * that works with both jdk8 (called upperBound there) and jdk8u.
+     * Version of com.sun.tools.javac.code.Types.wildUpperBound(Type) that works with both jdk8
+     * (called upperBound there) and jdk8u.
      */
     // TODO: contrast to upperBound.
     public static Type wildUpperBound(ProcessingEnvironment env, TypeMirror tm) {
@@ -336,8 +332,8 @@ public final class TypesUtils {
     }
 
     /**
-     * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type)
-     * that works with both jdk8 (called upperBound there) and jdk8u.
+     * Version of com.sun.tools.javac.code.Types.wildLowerBound(Type) that works with both jdk8
+     * (called upperBound there) and jdk8u.
      */
     public static Type wildLowerBound(ProcessingEnvironment env, TypeMirror tm) {
         Type t = (Type) tm;
@@ -350,9 +346,7 @@ public final class TypesUtils {
             return t.unannotatedType();
         }
     }
-    /**
-     * Returns the {@link TypeMirror} for a given {@link Class}.
-     */
+    /** Returns the {@link TypeMirror} for a given {@link Class}. */
     public static TypeMirror typeFromClass(Types types, Elements elements, Class<?> clazz) {
         if (clazz == void.class) {
             return types.getNoType(TypeKind.VOID);
@@ -373,17 +367,15 @@ public final class TypesUtils {
         }
     }
 
-    /**
-     * Returns an {@link ArrayType} with elements of type {@code componentType}.
-     */
+    /** Returns an {@link ArrayType} with elements of type {@code componentType}. */
     public static ArrayType createArrayType(Types types, TypeMirror componentType) {
         JavacTypes t = (JavacTypes) types;
         return t.getArrayType(componentType);
     }
 
     /**
-     * Returns true if declaredType is a Class that is used to box primitive type
-     * (e.g. declaredType=java.lang.Double and primitiveType=22.5d )
+     * Returns true if declaredType is a Class that is used to box primitive type (e.g.
+     * declaredType=java.lang.Double and primitiveType=22.5d )
      */
     public static boolean isBoxOf(TypeMirror declaredType, TypeMirror primitiveType) {
         if (declaredType.getKind() != TypeKind.DECLARED) {
@@ -415,10 +407,12 @@ public final class TypesUtils {
     }
 
     /**
-     * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound.  If
-     * the bounded type extends other bounded types, this method will iterate through their bounds
-     * until a class, interface, or intersection is found.
-     * @return a type that is not a wildcard or typevar, or null if this type is an unbounded wildcard
+     * Given a bounded type (wildcard or typevar) get the concrete type of its upper bound. If the
+     * bounded type extends other bounded types, this method will iterate through their bounds until
+     * a class, interface, or intersection is found.
+     *
+     * @return a type that is not a wildcard or typevar, or null if this type is an unbounded
+     *     wildcard
      */
     public static TypeMirror findConcreteUpperBound(final TypeMirror boundedType) {
         TypeMirror effectiveUpper = boundedType;
@@ -447,8 +441,8 @@ public final class TypesUtils {
     /**
      * Returns true if the erased type of subtype is a subtype of the erased type of supertype.
      *
-     * @param types     Types
-     * @param subtype   possible subtype
+     * @param types Types
+     * @param subtype possible subtype
      * @param supertype possible supertype
      * @return true if the erased type of subtype is a subtype of the erased type of supertype
      */
