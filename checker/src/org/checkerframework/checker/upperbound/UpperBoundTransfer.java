@@ -26,7 +26,6 @@ import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -70,9 +69,7 @@ public class UpperBoundTransfer extends CFTransfer {
         return result;
     }
 
-    /**
-     *  Makes array.length have type EL(array).
-     */
+    /** Makes array.length have type EL(array). */
     @Override
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
@@ -91,14 +88,12 @@ public class UpperBoundTransfer extends CFTransfer {
     }
 
     /**
-     *  This struct contains all of the information that the refinement
-     *  functions need. It's called by each node function (i.e. greater
-     *  than node, less than node, etc.) and then the results are passed
-     *  to the refinement function in whatever order is appropriate for
-     *  that node. Its constructor contains all of its logic.
-     *  I originally wrote this for LowerBoundTransfer but I'm duplicating it
-     *  here since I need it again...maybe it should live elsewhere and be
-     *  shared? I don't know where though.
+     * This struct contains all of the information that the refinement functions need. It's called
+     * by each node function (i.e. greater than node, less than node, etc.) and then the results are
+     * passed to the refinement function in whatever order is appropriate for that node. Its
+     * constructor contains all of its logic. I originally wrote this for LowerBoundTransfer but I'm
+     * duplicating it here since I need it again...maybe it should live elsewhere and be shared? I
+     * don't know where though.
      */
     private class RefinementInfo {
         public Node left, right;
@@ -228,9 +223,8 @@ public class UpperBoundTransfer extends CFTransfer {
     }
 
     /**
-     * The implementation of the algorithm for refining a &gt; test.
-     * If an EL, an LTL, or an LTEL is greater than something, then
-     * that thing must be an LTL.
+     * The implementation of the algorithm for refining a &gt; test. If an EL, an LTL, or an LTEL is
+     * greater than something, then that thing must be an LTL.
      */
     private void refineGT(
             Node left,
@@ -256,8 +250,8 @@ public class UpperBoundTransfer extends CFTransfer {
     }
 
     /**
-     * If an LTL is greater than or equal to something, it must also be LTL.
-     * If an EL or LTEL is greater than or equal to something, it must be be LTEL.
+     * If an LTL is greater than or equal to something, it must also be LTL. If an EL or LTEL is
+     * greater than or equal to something, it must be be LTEL.
      */
     private void refineGTE(
             Node left,

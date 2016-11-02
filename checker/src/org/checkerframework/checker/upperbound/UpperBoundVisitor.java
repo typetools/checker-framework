@@ -2,16 +2,13 @@ package org.checkerframework.checker.upperbound;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
-import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
-/**
- *  Warns about array accesses that could be too high.
- */
+/** Warns about array accesses that could be too high. */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
     private static final String UPPER_BOUND = "array.access.unsafe.high";
@@ -21,16 +18,13 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     }
 
     /**
-     *  When the visitor reachs an array access, it needs to check a couple of things.
-     *  First, it checks if the index has been assigned a reasonable UpperBound type:
-     *  only an index with type LessThanLength(arr) is safe to access arr.
-     *  If that fails, it checks if the access is still safe. To do
-     *  so, it checks if the MinLen checker knows the minimum
-     *  length of arr by querying the MinLenATF.
-     *  If the MinLen of the array is known, the visitor can check if
-     *  the index is less than the MinLen, using the Value Checker. If so
-     *  then the access is still safe. Otherwise, report a potential unsafe
-     *  access.
+     * When the visitor reachs an array access, it needs to check a couple of things. First, it
+     * checks if the index has been assigned a reasonable UpperBound type: only an index with type
+     * LessThanLength(arr) is safe to access arr. If that fails, it checks if the access is still
+     * safe. To do so, it checks if the MinLen checker knows the minimum length of arr by querying
+     * the MinLenATF. If the MinLen of the array is known, the visitor can check if the index is
+     * less than the MinLen, using the Value Checker. If so then the access is still safe.
+     * Otherwise, report a potential unsafe access.
      */
     @Override
     public Void visitArrayAccess(ArrayAccessTree tree, Void type) {

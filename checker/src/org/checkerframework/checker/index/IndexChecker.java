@@ -8,8 +8,8 @@ import org.checkerframework.framework.source.AggregateChecker;
 import org.checkerframework.framework.source.SourceChecker;
 
 /**
- * A type-checker for preventing arrays from being accessed with
- * values that are too low. Normally bundled as part of the Index Checker.
+ * A type-checker for preventing arrays from being accessed with values that are too low. Normally
+ * bundled as part of the Index Checker.
  *
  * @checker_framework.manual #index-checker Index Checker
  */
