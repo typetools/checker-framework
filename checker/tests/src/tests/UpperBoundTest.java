@@ -5,9 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * JUnit tests for the Upper Bound checker.
- */
+/** JUnit tests for the Upper Bound checker. */
 public class UpperBoundTest extends CheckerFrameworkPerDirectoryTest {
 
     public UpperBoundTest(List<File> testFiles) {
@@ -20,6 +18,6 @@ public class UpperBoundTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"upperbound"};
+        return new String[] {"upperbound", "all-systems"};
     }
 }
