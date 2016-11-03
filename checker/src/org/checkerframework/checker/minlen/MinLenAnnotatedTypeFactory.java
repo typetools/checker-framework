@@ -2,19 +2,14 @@ package org.checkerframework.checker.minlen;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.minlen.qual.*;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
@@ -35,11 +30,10 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
- *  The MinLen checker is responsible for annotating arrays with their
- *  minimum lengths. It is meant to be run by the upper bound checker.
+ * The MinLen checker is responsible for annotating arrays with their minimum lengths. It is meant
+ * to be run by the upper bound checker.
  */
 public class MinLenAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
@@ -48,8 +42,8 @@ public class MinLenAnnotatedTypeFactory
     protected static ProcessingEnvironment env;
 
     /**
-     * Provides a way to query the Constant Value Checker, which computes the
-     * values of expressions known at compile time (constant prop + folding).
+     * Provides a way to query the Constant Value Checker, which computes the values of expressions
+     * known at compile time (constant prop + folding).
      */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
@@ -66,17 +60,15 @@ public class MinLenAnnotatedTypeFactory
         defaults.addCheckedCodeDefault(minLen0, TypeUseLocation.OTHERWISE);
     }
 
-    /**
-     *  Returns the value type associated with the given ExpressionTree.
-     */
+    /** Returns the value type associated with the given ExpressionTree. */
     public AnnotatedTypeMirror valueTypeFromTree(Tree tree) {
         return valueAnnotatedTypeFactory.getAnnotatedType(tree);
     }
 
     /**
-     * Finds the minimum value in a value type. If there is no information
-     * (such as when the list is empty or null), returns null. Otherwise,
-     * returns the smallest element in the list of possible values.
+     * Finds the minimum value in a value type. If there is no information (such as when the list is
+     * empty or null), returns null. Otherwise, returns the smallest element in the list of possible
+     * values.
      */
     public Integer minLenFromValueType(AnnotatedTypeMirror valueType) {
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
@@ -88,10 +80,7 @@ public class MinLenAnnotatedTypeFactory
         return min;
     }
 
-    /**
-     *  Get the list of possible values from a value checker type.
-     *  May return null.
-     */
+    /** Get the list of possible values from a value checker type. May return null. */
     private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
         AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
         if (anm == null) {
@@ -106,21 +95,16 @@ public class MinLenAnnotatedTypeFactory
     }
 
     /**
-     * The qualifier hierarchy for the minlen type system.
-     * The qh is responsible for determining the relationships
-     * between various qualifiers - especially subtyping relations.
-     * In particular, it's used to determine the relationship between
-     * two identical qualifiers with differing arguments (i.e.
-     * MinLen(2) vs MinLen(3).
+     * The qualifier hierarchy for the minlen type system. The qh is responsible for determining the
+     * relationships between various qualifiers - especially subtyping relations. In particular,
+     * it's used to determine the relationship between two identical qualifiers with differing
+     * arguments (i.e. MinLen(2) vs MinLen(3).
      */
     private final class MinLenQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         Set<? extends AnnotationMirror> minLenTops = null;
 
-        /**
-         * @param factory
-         *            MultiGraphFactory to use to construct this
-         */
+        /** @param factory MultiGraphFactory to use to construct this */
         public MinLenQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
@@ -184,9 +168,9 @@ public class MinLenAnnotatedTypeFactory
         }
 
         /**
-         * Computes subtyping as per the subtyping in the qualifier hierarchy
-         * structure unless both annotations are the same. In this case, rhs is a
-         * subtype of lhs iff lhs contains at least every element of rhs.
+         * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
+         * annotations are the same. In this case, rhs is a subtype of lhs iff lhs contains at least
+         * every element of rhs.
          *
          * @return true if rhs is a subtype of lhs, false otherwise.
          */
@@ -253,10 +237,7 @@ public class MinLenAnnotatedTypeFactory
             super(factory);
         }
 
-        /** When we encounter a new array, record how long it is.
-         *  TODO write how this is done
-         *
-         */
+        /** When we encounter a new array, record how long it is. TODO write how this is done */
         @Override
         public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
             // When there is an explicit initialization, we know the length.
