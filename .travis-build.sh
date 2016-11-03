@@ -88,4 +88,8 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   # Documentation
   ant javadoc-private
   make -C checker/manual all
+
+  # jsr308-langtools documentation (it's kept at Bitbucket rather than GitHub)
+  make -C ../jsr308-langtools/docs
+
 fi
