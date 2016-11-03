@@ -1,7 +1,6 @@
 package org.checkerframework.checker.minlen;
 
 import com.sun.source.tree.Tree;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,7 +15,6 @@ import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
-import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
@@ -30,8 +28,6 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -119,9 +115,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             if (arg instanceof ArrayCreationNode) {
                 ArrayCreationNode aNode = (ArrayCreationNode) arg;
                 List<Node> args = aNode.getInitializers();
-                // if there is only one argument which is an array that subclasses an object array (so Not primitive component)
-                // then the size of that array is the size of the array.asList
-                // otherwise it is treated as varargs and the resulting list's size is the number of arguments
+                // if there is only one argument arg; and if arg is an array of T (T[] arg); and if T is not a primitive
+                // then array.asList(arg).size() == arg.length
+                // otherwise it is treated as varargs and array.asList(arg).size() == the number of arguments
                 if (args.size() == 1
                         && args.get(0).getType().getKind().equals(TypeKind.ARRAY)
                         && !((ArrayType) args.get(0).getType())
@@ -146,14 +142,12 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     /**
-     *  This struct contains all of the information that the refinement
-     *  functions need. It's called by each node function (i.e. greater
-     *  than node, less than node, etc.) and then the results are passed
-     *  to the refinement function in whatever order is appropriate for
-     *  that node. Its constructor contains all of its logic.
-     *  I originally wrote this for LowerBoundTransfer but I'm duplicating it
-     *  here since I need it again...maybe it should live elsewhere and be
-     *  shared? I don't know where though.
+     * This struct contains all of the information that the refinement functions need. It's called
+     * by each node function (i.e. greater than node, less than node, etc.) and then the results are
+     * passed to the refinement function in whatever order is appropriate for that node. Its
+     * constructor contains all of its logic. I originally wrote this for LowerBoundTransfer but I'm
+     * duplicating it here since I need it again...maybe it should live elsewhere and be shared? I
+     * don't know where though.
      */
     private class RefinementInfo {
         public Node left, right;

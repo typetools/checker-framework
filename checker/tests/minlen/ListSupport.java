@@ -50,4 +50,19 @@ class ListSupport {
 
         @MinLen(0) List<Integer> list3 = list;
     }
+
+    void listRemoveArrayAlter(@MinLen(10) List<Integer> lst) {
+        int[] arr = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        int @MinLen(10) [] arr1 = arr;
+        List<Integer> list = lst;
+        @MinLen(10) List<Integer> list2 = list;
+
+        list2.remove(0);
+
+        //:: error: (assignment.type.incompatible)
+        @MinLen(10) List<Integer> list3 = list;
+
+        int @MinLen(10) [] arr2 = arr;
+        @MinLen(9) List<Integer> list4 = list;
+    }
 }
