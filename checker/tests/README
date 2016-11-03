@@ -158,9 +158,9 @@ To create tests for a new checker, mimic some existing checker's tests:
    checker-framework/checker/tests/regex for the test cases
  * create a top-level JUnit test, such as:
    checker-framework/checker/tests/src/tests/RegexTest.java
-   It is a subclass of CheckerFrameworkTest, and its list of checker
+   It is a subclass of CheckerFrameworkPerDirectoryTest, and its list of checker
    options must include "-Anomsgtext".  (See the API documentation for
-   CheckerFrameworkTest for more detailed information.)
+   CheckerFrameworkPerDirectoryTest for more detailed information.)
  * include "all-systems" as a test directy by adding it to the array created
    in getTestDirs in the new test class.  See
    checkerframework/framework/tests/all-systems/README for more details about
