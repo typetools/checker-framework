@@ -2,6 +2,7 @@ package org.checkerframework.checker.lowerbound;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
+import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.lowerbound.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -18,7 +19,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
     /* This is a key into the messages.properties file in the same
      * directory, which includes the actual text of the warning.
      */
-    private static final /*@CompilerMessageKey*/ String LOWER_BOUND = "array.access.unsafe.low";
+    private static final @CompilerMessageKey String LOWER_BOUND = "array.access.unsafe.low";
 
     public LowerBoundVisitor(BaseTypeChecker checker) {
         super(checker);
