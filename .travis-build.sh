@@ -91,6 +91,6 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
 
   # jsr308-langtools documentation (it's kept at Bitbucket rather than GitHub)
   hevea -version
-  make -C ../jsr308-langtools/docs
+  make -C ../jsr308-langtools/doc
 
 fi
