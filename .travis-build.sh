@@ -90,6 +90,6 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   make -C checker/manual all
 
   # jsr308-langtools documentation (it's kept at Bitbucket rather than GitHub)
-  make -C ../jsr308-langtools/docs
+  make -C ../jsr308-langtools/doc
 
 fi
