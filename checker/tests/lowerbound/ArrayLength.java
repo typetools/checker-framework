@@ -1,6 +1,7 @@
 import java.util.Date;
 import org.checkerframework.checker.lowerbound.qual.*;
 
+@SuppressWarnings("array.access.unsafe.high")
 public class ArrayLength {
 
     public static Date[] add_date(Date[] dates, Date new_date) {

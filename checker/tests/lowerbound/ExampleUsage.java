@@ -1,5 +1,5 @@
 
-
+@SuppressWarnings("array.access.unsafe.high")
 public class ExampleUsage {
     /**
      * this class contains a set of test methods that are supposed to show how the lowerbound
