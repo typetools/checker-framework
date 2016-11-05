@@ -90,6 +90,9 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   make -C checker/manual all
 
   # jsr308-langtools documentation (it's kept at Bitbucket rather than GitHub)
-  make -C ../jsr308-langtools/doc
+  # Not just "make" because the invocations of "hevea -exec xxcharset.exe" fail.
+  # I cannot reproduce the problem locally and it isn't important enough to fix.
+  # make -C ../jsr308-langtools/doc
+  make -C ../jsr308-langtools/doc pdf
 
 fi
