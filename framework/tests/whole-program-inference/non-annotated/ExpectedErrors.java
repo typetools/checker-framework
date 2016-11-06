@@ -1,8 +1,7 @@
 import java.lang.reflect.Field;
 import tests.wholeprograminference.qual.*;
 /**
- * This file contains expected errors that should exist even after the jaif type
- * inference occurs.
+ * This file contains expected errors that should exist even after the jaif type inference occurs.
  */
 public class ExpectedErrors {
 
@@ -108,14 +107,21 @@ public class ExpectedErrors {
     }
 
     void expectsSibling1(@Sibling1 int t) {}
+
     void expectsSibling2(@Sibling2 int t) {}
+
     void expectsBottom(@WholeProgramInferenceBottom int t) {}
+
     void expectsBottom(@WholeProgramInferenceBottom String t) {}
+
     void expectsTop(@Top int t) {}
+
     void expectsParent(@Parent int t) {}
+
     static @Sibling1 int getSibling1() {
         return 0;
     }
+
     static @Sibling2 int getSibling2() {
         return 0;
     }
@@ -123,6 +129,7 @@ public class ExpectedErrors {
     @WholeProgramInferenceBottom int getBottom() {
         return 0;
     }
+
     @Top int getTop() {
         return 0;
     }
@@ -142,6 +149,7 @@ public class ExpectedErrors {
         // Tests that whole-program inference in a @SuppressWarnings block is ignored.
         private int i;
         private int i2;
+
         @SuppressWarnings("")
         public void suppressWarningsTest() {
             i = (@Sibling1 int) 0;
@@ -180,8 +188,7 @@ public class ExpectedErrors {
         // Verified manually that in the "annotated" folder param's type wasn't
         // updated.
         @SuppressWarnings("")
-        public void suppressWarningsMethodParams(int param) {
-        }
+        public void suppressWarningsMethodParams(int param) {}
     }
 
     @SuppressWarnings("")
@@ -214,6 +221,7 @@ public class ExpectedErrors {
 
     class IgnoreMetaAnnotationTest2 {
         @ToIgnore int field;
+
         void foo() {
             field = getSibling1();
         }

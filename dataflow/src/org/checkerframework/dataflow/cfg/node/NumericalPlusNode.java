@@ -16,7 +16,6 @@ import org.checkerframework.javacutil.InternalUtils;
  *
  * @author Stefan Heule
  * @author Charlie Garrett
- *
  */
 public class NumericalPlusNode extends Node {
 

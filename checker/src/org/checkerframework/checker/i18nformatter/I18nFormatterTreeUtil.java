@@ -51,11 +51,10 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * This class provides a collection of utilities to ease working with syntax
- * trees that have something to do with I18nFormatters.
+ * This class provides a collection of utilities to ease working with syntax trees that have
+ * something to do with I18nFormatters.
  *
- * @checker_framework.manual #i18n-formatter-checker Internationalization
- *                           Format String Checker
+ * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  * @author Siwakorn Srisakaokul
  */
 public class I18nFormatterTreeUtil {
@@ -67,10 +66,7 @@ public class I18nFormatterTreeUtil {
         this.processingEnv = checker.getProcessingEnvironment();
     }
 
-    /**
-     * Describe the format annotation type
-     *
-     */
+    /** Describe the format annotation type */
     public enum FormatType {
         I18NINVALID,
         I18NFORMAT,
@@ -78,19 +74,17 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes an exception that describes an invalid formatter string and
-     * returns a syntax trees element that represents a
-     * {@link I18nInvalidFormat} annotation with the exception's error message
-     * as value.
+     * Takes an exception that describes an invalid formatter string and returns a syntax trees
+     * element that represents a {@link I18nInvalidFormat} annotation with the exception's error
+     * message as value.
      */
     public AnnotationMirror exceptionToInvalidFormatAnnotation(IllegalArgumentException ex) {
         return stringToInvalidFormatAnnotation(ex.getMessage());
     }
 
     /**
-     * Takes an invalid formatter string and returns a syntax trees element
-     * that represents a {@link I18nInvalidFormat} annotation with the invalid
-     * formatter string as value.
+     * Takes an invalid formatter string and returns a syntax trees element that represents a {@link
+     * I18nInvalidFormat} annotation with the invalid formatter string as value.
      */
     // package-private
     AnnotationMirror stringToInvalidFormatAnnotation(String invalidFormatString) {
@@ -101,17 +95,16 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes a syntax tree element that represents a {@link I18nInvalidFormat} annotation,
-     * and returns its value.
+     * Takes a syntax tree element that represents a {@link I18nInvalidFormat} annotation, and
+     * returns its value.
      */
     public String invalidFormatAnnotationToErrorMessage(AnnotationMirror anno) {
         return "\"" + AnnotationUtils.getElementValue(anno, "value", String.class, true) + "\"";
     }
 
     /**
-     * Takes a list of ConversionCategory elements, and returns a syntax tree
-     * element that represents a {@link I18nFormat} annotation with the list as
-     * value.
+     * Takes a list of ConversionCategory elements, and returns a syntax tree element that
+     * represents a {@link I18nFormat} annotation with the list as value.
      */
     public AnnotationMirror categoriesToFormatAnnotation(I18nConversionCategory[] args) {
         AnnotationBuilder builder =
@@ -121,8 +114,8 @@ public class I18nFormatterTreeUtil {
     }
 
     /**
-     * Takes a syntax tree element that represents a {@link I18nFormat}
-     * annotation, and returns its value.
+     * Takes a syntax tree element that represents a {@link I18nFormat} annotation, and returns its
+     * value.
      */
     public I18nConversionCategory[] formatAnnotationToCategories(AnnotationMirror anno) {
         List<I18nConversionCategory> list =
@@ -164,9 +157,7 @@ public class I18nFormatterTreeUtil {
         }
     }
 
-    /**
-     * Reports an error. Takes a {@link Result} to report the location.
-     */
+    /** Reports an error. Takes a {@link Result} to report the location. */
     public final <E> void failure(
             Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
         checker.report(
@@ -174,9 +165,7 @@ public class I18nFormatterTreeUtil {
                 ((ResultImpl<E>) res).location);
     }
 
-    /**
-     * Reports an warning. Takes a {@link Result} to report the location.
-     */
+    /** Reports an warning. Takes a {@link Result} to report the location. */
     public final <E> void warning(
             Result<E> res, /*@CompilerMessageKey*/ String msg, Object... args) {
         checker.report(
@@ -232,9 +221,7 @@ public class I18nFormatterTreeUtil {
         return ret;
     }
 
-    /**
-     * Returns an I18nFormatCall instance, only if FormatFor is called. Otherwise, returns null.
-     */
+    /** Returns an I18nFormatCall instance, only if FormatFor is called. Otherwise, returns null. */
     public I18nFormatCall createFormatForCall(
             MethodInvocationTree tree,
             MethodInvocationNode node,
@@ -253,7 +240,7 @@ public class I18nFormatterTreeUtil {
     /**
      * Represents a format method invocation in the syntax tree.
      *
-     * An I18nFormatCall instance can only be instantiated by createFormatForCall method
+     * <p>An I18nFormatCall instance can only be instantiated by createFormatForCall method
      */
     public class I18nFormatCall {
 
@@ -284,9 +271,8 @@ public class I18nFormatterTreeUtil {
         }
 
         /**
-         * This method checks the validity of the FormatFor.
-         * If it is valid, this.args will be set to the correct parameter arguments.
-         * Otherwise, it will be still null.
+         * This method checks the validity of the FormatFor. If it is valid, this.args will be set
+         * to the correct parameter arguments. Otherwise, it will be still null.
          */
         private void initialCheck(
                 List<? extends ExpressionTree> theargs,

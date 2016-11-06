@@ -20,15 +20,15 @@ import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-/**
- *  A class used to determine the greatest lower bounds for a set of AnnotatedTypeMirrors.
- */
+/** A class used to determine the greatest lower bounds for a set of AnnotatedTypeMirrors. */
 public class GlbUtil {
 
     /**
      * Note: This method can be improved for wildcards and type variables.
-     * @return the greatest lower bound of typeMirrors.  If any of the type mirrors are incomparable, use
-     * an AnnotatedNullType that will contain the greatest lower bounds of the primary annotations of typeMirrors
+     *
+     * @return the greatest lower bound of typeMirrors. If any of the type mirrors are incomparable,
+     *     use an AnnotatedNullType that will contain the greatest lower bounds of the primary
+     *     annotations of typeMirrors
      */
     public static AnnotatedTypeMirror glbAll(
             final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> typeMirrors,
@@ -118,9 +118,7 @@ public class GlbUtil {
         return glbType;
     }
 
-    /**
-     * Returns an AnnotatedNullType with the given annotations as primaries
-     */
+    /** Returns an AnnotatedNullType with the given annotations as primaries */
     private static AnnotatedNullType createBottom(
             final AnnotatedTypeFactory typeFactory, final Set<? extends AnnotationMirror> annos) {
         return typeFactory.getAnnotatedNullType(annos);
@@ -129,10 +127,8 @@ public class GlbUtil {
     /**
      * Sort the list of type mirrors, placing supertypes first and subtypes last.
      *
-     * E.g.
-     * the list:  {@code ArrayList<String>, List<String>, AbstractList<String>}
-     * becomes:   {@code List<String>, AbstractList<String>, ArrayList<String>}
-     *
+     * <p>E.g. the list: {@code ArrayList<String>, List<String>, AbstractList<String>} becomes:
+     * {@code List<String>, AbstractList<String>, ArrayList<String>}
      */
     public static void sortForGlb(
             final List<? extends AnnotatedTypeMirror> typeMirrors,

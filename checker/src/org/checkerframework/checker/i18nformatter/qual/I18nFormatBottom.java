@@ -12,8 +12,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 /**
  * Represents the bottom of the Internationalization Format String type hierarchy.
  *
- * @checker_framework.manual #i18n-formatter-checker Internationalization
- *                           Format String Checker
+ * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  * @author Siwakorn Srisakaokul
  */
 @SubtypeOf({I18nFormat.class, I18nInvalidFormat.class, I18nFormatFor.class})

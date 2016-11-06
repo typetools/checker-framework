@@ -41,8 +41,10 @@ public class KeyForTransfer extends CFTransfer {
 
     /*
      * Provided that m is of a type that implements interface java.util.Map:
-     * -Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
-     * -Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
+     * <ul>
+     * <li>Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
+     * <li>Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
+     * </ul>
      */
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
@@ -111,9 +113,7 @@ public class KeyForTransfer extends CFTransfer {
         return result;
     }
 
-    /**
-     * @return the String value of a KeyFor, this will throw an exception
-     */
+    /** @return the String value of a KeyFor, this will throw an exception */
     private Set<String> getKeys(final AnnotationMirror keyFor) {
         if (keyFor.getElementValues().size() == 0) {
             return new LinkedHashSet<>();

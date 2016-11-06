@@ -5,9 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * JUnit tests for the Interning Checker, which tests the Interned annotation.
- */
+/** JUnit tests for the Interning Checker, which tests the Interned annotation. */
 public class InterningTest extends CheckerFrameworkPerDirectoryTest {
 
     public InterningTest(List<File> testFiles) {

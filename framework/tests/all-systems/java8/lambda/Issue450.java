@@ -1,4 +1,3 @@
-import java.lang.CharSequence;
 
 class Issue450 {
 
@@ -13,7 +12,7 @@ class Issue450 {
     }
 
     interface Sub extends Top {
-        default public void otherMethod() {}
+        public default void otherMethod() {}
     }
 
     interface Consumer<T> {

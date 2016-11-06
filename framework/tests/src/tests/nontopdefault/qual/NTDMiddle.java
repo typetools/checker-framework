@@ -9,9 +9,7 @@ import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchyInUncheckedCode;
 import org.checkerframework.framework.qual.SubtypeOf;
 
-/**
- * Middle is the default type in hierarchy.
- */
+/** Middle is the default type in hierarchy. */
 @SubtypeOf(NTDTop.class)
 @DefaultQualifierInHierarchy
 @DefaultQualifierInHierarchyInUncheckedCode

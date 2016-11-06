@@ -1,9 +1,8 @@
 package org.checkerframework.javacutil;
 
 /**
- * An implementation of the ErrorHandler interface can be registered
- * with the ErrorReporter class to change the default behavior on
- * errors.
+ * An implementation of the ErrorHandler interface can be registered with the ErrorReporter class to
+ * change the default behavior on errors.
  */
 public interface ErrorHandler {
 

@@ -805,9 +805,7 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /**
-     *  A TypeArgumentInference implementation that canonicalizes keyfor values.
-     */
+    /** A TypeArgumentInference implementation that canonicalizes keyfor values. */
     class KeyForTypeArgumentInference extends DefaultTypeArgumentInference {
 
         @Override
@@ -861,10 +859,9 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Immediately before AnnotatedTypes.findTypeArguments we canonicalize flow
-     * expressions using the parameters for the current method (not the one
-     * being invoked but the one in which it is contained) and otherwise the
-     * flow expression context from the invocation expression.
+     * Immediately before AnnotatedTypes.findTypeArguments we canonicalize flow expressions using
+     * the parameters for the current method (not the one being invoked but the one in which it is
+     * contained) and otherwise the flow expression context from the invocation expression.
      */
     public void canonicalizeForViewpointAdaptation(
             ExpressionTree invocation, AnnotatedTypeMirror type) {

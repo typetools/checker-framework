@@ -8,17 +8,14 @@ import java.lang.annotation.Target;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
- * A polymorphic qualifier for the units-of-measure type system implemented
- * by the Units Checker.
- * <p>
+ * A polymorphic qualifier for the units-of-measure type system implemented by the Units Checker.
  *
- * Any method written using @PolyUnit conceptually has many versions:  in
- * each one, every instance of @PolyUnit has been replaced by a different
- * unit qualifier such as @kg (kilograms) or @h (hours).
- * <p>
+ * <p>Any method written using @PolyUnit conceptually has many versions: in each one, every instance
+ * of @PolyUnit has been replaced by a different unit qualifier such as @kg (kilograms) or @h
+ * (hours).
  *
- * The following example shows how method {@code triplePolyUnit} can be
- * used to process either meters or seconds:
+ * <p>The following example shows how method {@code triplePolyUnit} can be used to process either
+ * meters or seconds:
  *
  * <pre> {@literal @}PolyUnit int triplePolyUnit(@PolyUnit int amount) {
  *    return 3*amount;

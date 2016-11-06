@@ -22,13 +22,12 @@ import org.checkerframework.framework.type.visitor.AbstractAtmComboVisitor;
 import org.checkerframework.framework.type.visitor.VisitHistory;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * Helper class to compute the least upper bound of two AnnotatedTypeMirrors.
  *
- * This class should only be used by
- * {@link AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory, AnnotatedTypeMirror, AnnotatedTypeMirror)}.
+ * <p>This class should only be used by {@link AnnotatedTypes#leastUpperBound(AnnotatedTypeFactory,
+ * AnnotatedTypeMirror, AnnotatedTypeMirror)}.
  */
 class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
@@ -43,9 +42,9 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
 
     /**
      * Returns an ATM that is the least upper bound of type1 and type2 and whose Java type is
-     * lubJavaType.  lubJavaType must be a super type or convertible to the Java types of type1 and
+     * lubJavaType. lubJavaType must be a super type or convertible to the Java types of type1 and
      * type2.
-     **/
+     */
     AnnotatedTypeMirror lub(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, TypeMirror lubJavaType) {
         AnnotatedTypeMirror lub = AnnotatedTypeMirror.createType(lubJavaType, atypeFactory, false);
@@ -102,8 +101,8 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
     }
 
     /**
-     * Replaces the primary annotations of lub with the lub of the primary annotations of type1
-     * and type2.
+     * Replaces the primary annotations of lub with the lub of the primary annotations of type1 and
+     * type2.
      */
     private void lubPrimaryAnnotations(
             AnnotatedTypeMirror type1, AnnotatedTypeMirror type2, AnnotatedTypeMirror lub) {
@@ -112,15 +111,12 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         lub.replaceAnnotations(lubSet);
     }
 
-    /**
-     * Casts lub to the type of type and issues an error if type and lub are not the same kind.
-     */
+    /** Casts lub to the type of type and issues an error if type and lub are not the same kind. */
     private <T extends AnnotatedTypeMirror> T castLub(T type, AnnotatedTypeMirror lub) {
         if (type.getKind() != lub.getKind()) {
             ErrorReporter.errorAbort(
                     "AtmLubVisitor: unexpected type. Found: %s Required %s",
-                    lub.getKind(),
-                    type.getKind());
+                    lub.getKind(), type.getKind());
         }
         @SuppressWarnings("unchecked")
         T castedLub = (T) lub;
@@ -348,10 +344,6 @@ class AtmLubVisitor extends AbstractAtmComboVisitor<Void, AnnotatedTypeMirror> {
         return String.format(
                 "AtmLubVisitor: Unexpected combination: type1: %s type2: %s.\ntype1: %s"
                         + "\ntype2: %s\nlub: %s",
-                type1.getKind(),
-                type2.getKind(),
-                type1,
-                type2,
-                lub);
+                type1.getKind(), type2.getKind(), type1, type2, lub);
     }
 }

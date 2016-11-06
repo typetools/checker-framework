@@ -8,29 +8,30 @@ import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- * TargetConstraints represents the set of all TUConstraints for which target was the type parameter,
- * i.e. the T in the TUConstraint.  Unlike AF/TU Constraints, this class holds multiple constraints and
- * is mutated during solving (where the TU/AF Constraints are immutable).
+ * TargetConstraints represents the set of all TUConstraints for which target was the type
+ * parameter, i.e. the T in the TUConstraint. Unlike AF/TU Constraints, this class holds multiple
+ * constraints and is mutated during solving (where the TU/AF Constraints are immutable).
+ *
  * @see org.checkerframework.framework.util.typeinference.solver.ConstraintMap
  */
 public class TargetConstraints {
     /**
-     * The type parameter for which we are inferring a type argument.  All constraints in this
-     * object are related to this target.
+     * The type parameter for which we are inferring a type argument. All constraints in this object
+     * are related to this target.
      */
     public final TypeVariable target;
 
     public final Equalities equalities;
 
     /**
-     * The target is the supertype in this case, that these are supertype constraints in which target is
-     * the supertype.  These are NOT supertypes of the target.
+     * The target is the supertype in this case, that these are supertype constraints in which
+     * target is the supertype. These are NOT supertypes of the target.
      */
     public final Supertypes supertypes;
 
     /**
-     * The target is the supertype in this case, that these are subtype constraints in which target is
-     * the subtype.  These are NOT subtypes of the target.
+     * The target is the supertype in this case, that these are subtype constraints in which target
+     * is the subtype. These are NOT subtypes of the target.
      */
     public final Subtypes subtypes;
 

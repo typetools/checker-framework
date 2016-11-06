@@ -26,16 +26,18 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
- * A set of utility methods to find the necessary JSR 308 jars and to resolve any sources/classes needed
- * for compilation and checking
+ * A set of utility methods to find the necessary JSR 308 jars and to resolve any sources/classes
+ * needed for compilation and checking
+ *
  * @author Adam Warski (adam at warski dot org)
  */
 public class PathUtils {
-    private final static String CHECKER_FRAMEWORK_GROUPD_ID = "org.checkerframework";
-    private final static String DEFAULT_INCLUSION_PATTERN = "**/*.java";
+    private static final String CHECKER_FRAMEWORK_GROUPD_ID = "org.checkerframework";
+    private static final String DEFAULT_INCLUSION_PATTERN = "**/*.java";
 
     /**
      * Gets the path to the jsr308-all jar.
+     *
      * @param checkerFrameworkVersion Version of the Checker Framework to use.
      * @param artifactFactory Dependency.
      * @param artifactResolver Dependency.
@@ -123,6 +125,7 @@ public class PathUtils {
 
     /**
      * Gets the path to the given executable, looking it up in the toolchain.
+     *
      * @param executable Name of the executable.
      * @param toolchainManager Dependency.
      * @param session Dependency.
@@ -147,10 +150,12 @@ public class PathUtils {
     }
 
     /**
-     * Scans the given compile source roots for sources, taking into account the given includes and excludes.
+     * Scans the given compile source roots for sources, taking into account the given includes and
+     * excludes.
+     *
      * @param compileSourceRoots A list of source roots.
-     * @param sourceIncludes Includes specification.  Defaults to DEFAULT_INCLUSION_PATTERN if no sourceIncludes are
-     *                       specified
+     * @param sourceIncludes Includes specification. Defaults to DEFAULT_INCLUSION_PATTERN if no
+     *     sourceIncludes are specified
      * @param sourceExcludes Excludes specification.
      * @return A list of included sources from the given source roots.
      */
@@ -179,8 +184,10 @@ public class PathUtils {
     }
 
     /**
-     * Scans a single source dir for sources and includes only the files whose name match the patterns in
-     * sourceIncludes and excludes all files whose names match the patterns in sourceExcludes
+     * Scans a single source dir for sources and includes only the files whose name match the
+     * patterns in sourceIncludes and excludes all files whose names match the patterns in
+     * sourceExcludes
+     *
      * @param sourceDir The directory to scan
      * @param sourceIncludes Only include a file if its name matches a pattern in sourceIncludes
      * @param sourceExcludes Exclude a file if its name matches a pattern in sourceExcludes

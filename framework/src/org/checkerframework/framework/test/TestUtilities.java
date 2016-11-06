@@ -81,6 +81,7 @@ public class TestUtilities {
     /**
      * Returns a list where each item is a list of Java files, excluding any skip tests, for each
      * subdirectory of {@code dir} and also a list of Java files in dir.
+     *
      * @param dir Directory in which to search for Java files
      * @return a list of list of Java test files
      */
@@ -112,9 +113,7 @@ public class TestUtilities {
         return files;
     }
 
-    /**
-     * Traverses the directories listed looking for java test files
-     */
+    /** Traverses the directories listed looking for java test files */
     public static List<File> getJavaFilesAsArgumentList(File... dirs) {
         List<File> arguments = new ArrayList<File>();
         for (File dir : dirs) {
@@ -127,9 +126,7 @@ public class TestUtilities {
         return arguments;
     }
 
-    /**
-     * Returns all the java files that are descendants of the given directory
-     */
+    /** Returns all the java files that are descendants of the given directory */
     public static List<File> deeplyEnclosedJavaTestFiles(File directory) {
         if (!directory.exists()) {
             throw new IllegalArgumentException(
@@ -403,12 +400,11 @@ public class TestUtilities {
     }
 
     /**
-     * TODO: REDO COMMENT
-     * Compares the result of the compiler against an array of Strings.
+     * TODO: REDO COMMENT Compares the result of the compiler against an array of Strings.
      *
-     * In a checker, we treat a more specific error message as subsumed by a general one.
-     * For example, "new.array.type.invalid" is subsumed by "type.invalid".
-     * This is not the case in the test framework; the exact error key is expected.
+     * <p>In a checker, we treat a more specific error message as subsumed by a general one. For
+     * example, "new.array.type.invalid" is subsumed by "type.invalid". This is not the case in the
+     * test framework; the exact error key is expected.
      */
     public static void assertResultsAreValid(TypecheckResult testResult) {
         if (testResult.didTestFail()) {

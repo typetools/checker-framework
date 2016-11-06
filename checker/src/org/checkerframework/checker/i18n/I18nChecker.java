@@ -9,9 +9,9 @@ import org.checkerframework.framework.source.SourceChecker;
  * A type-checker that enforces (and finds the violations of) two properties:
  *
  * <ol>
- * <li value="1">Only localized output gets emitted to the user</li>
- * <li value="2">Only localizable keys (i.e. keys found in localizing resource
- * bundles) get used as such.</li>
+ *   <li value="1">Only localized output gets emitted to the user
+ *   <li value="2">Only localizable keys (i.e. keys found in localizing resource bundles) get used
+ *       as such.
  * </ol>
  *
  * @see I18nSubchecker

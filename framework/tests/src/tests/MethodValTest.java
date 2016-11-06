@@ -9,7 +9,6 @@ import org.junit.runners.Parameterized.Parameters;
  * Tests the MethodVal Checker.
  *
  * @author smillst
- *
  */
 public class MethodValTest extends CheckerFrameworkPerDirectoryTest {
 
