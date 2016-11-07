@@ -10,26 +10,23 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
- * Utility class for the Nullness Checker, providing every method in
- * {@link java.util.Optional}, but written for possibly-null references
- * rather than for the {@code Optional} type.
- * <p>
+ * Utility class for the Nullness Checker, providing every method in {@link java.util.Optional}, but
+ * written for possibly-null references rather than for the {@code Optional} type.
  *
- * To avoid the need to write the {@code Opt} class name at invocation sites, do:
+ * <p>To avoid the need to write the {@code Opt} class name at invocation sites, do:
+ *
  * <pre>import static org.checkerframework.checker.nullness.Opt.orElse;</pre>
+ *
  * or
+ *
  * <pre>import static org.checkerframework.checker.nullness.Opt.*;</pre>
- * <p>
  *
- * <b>Runtime Dependency</b>
- * <p>
+ * <p><b>Runtime Dependency</b>
  *
- * Please note that using this class introduces a runtime dependency.
- * This means that you need to distribute (or link to) the Checker
- * Framework, along with your binaries.
+ * <p>Please note that using this class introduces a runtime dependency. This means that you need to
+ * distribute (or link to) the Checker Framework, along with your binaries.
  *
- * To eliminate this dependency, you can simply copy this class into your
- * own project.
+ * <p>To eliminate this dependency, you can simply copy this class into your own project.
  *
  * @see java.util.Optional
  */
@@ -41,6 +38,7 @@ public final class Opt {
 
     /**
      * If primary is non-null, returns it, otherwise throws NoSuchElementException.
+     *
      * @see java.util.Optional#get()
      */
     public static <T> @NonNull T get(T primary) {
@@ -52,6 +50,7 @@ public final class Opt {
 
     /**
      * Returns true if primary is non-null, false if primary is null.
+     *
      * @see java.util.Optional#isPresent()
      */
     @EnsuresNonNullIf(expression = "#1", result = true)
@@ -61,6 +60,7 @@ public final class Opt {
 
     /**
      * If primary is non-null, invoke the specified consumer with the value, otherwise do nothing.
+     *
      * @see java.util.Optional#ifPresent(Consumer)
      */
     public static <T> void ifPresent(T primary, Consumer<@NonNull ? super @NonNull T> consumer) {
@@ -70,8 +70,9 @@ public final class Opt {
     }
 
     /**
-     * If primary is non-null, and its value matches the given predicate, return the value.
-     * If primary is null or its non-null value does not match the predicate, return null.
+     * If primary is non-null, and its value matches the given predicate, return the value. If
+     * primary is null or its non-null value does not match the predicate, return null.
+     *
      * @see java.util.Optional#filter(Predicate)
      */
     public static <T> @Nullable T filter(
@@ -84,8 +85,9 @@ public final class Opt {
     }
 
     /**
-     * If primary is non-null, apply the provided mapping function to it and return the result.
-     * If primary is null, return null.
+     * If primary is non-null, apply the provided mapping function to it and return the result. If
+     * primary is null, return null.
+     *
      * @see java.util.Optional#map(Function)
      */
     public static <T, U> @Nullable U map(
@@ -100,8 +102,8 @@ public final class Opt {
     // flatMap would have the same signature and implementation as map
 
     /**
-     * Return primary if it is non-null.
-     * If primary is null, return other.
+     * Return primary if it is non-null. If primary is null, return other.
+     *
      * @see java.util.Optional#orElse(Object)
      */
     public static <T> @NonNull T orElse(T primary, @NonNull T other) {
@@ -109,8 +111,9 @@ public final class Opt {
     }
 
     /**
-     * Return primary if it is non-null.
-     * If primary is null, invoke {@code other} and return the result of that invocation.
+     * Return primary if it is non-null. If primary is null, invoke {@code other} and return the
+     * result of that invocation.
+     *
      * @see java.util.Optional#orElseGet(Supplier)
      */
     public static <T> @NonNull T orElseGet(T primary, Supplier<? extends @NonNull T> other) {
@@ -118,8 +121,9 @@ public final class Opt {
     }
 
     /**
-     * Return primary if it is non-null.
-     * If primary is null, return an exception to be created by the provided supplier.
+     * Return primary if it is non-null. If primary is null, return an exception to be created by
+     * the provided supplier.
+     *
      * @see java.util.Optional#orElseThrow(Supplier)
      */
     public static <T, X extends @NonNull Throwable> @NonNull T orElseThrow(

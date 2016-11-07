@@ -23,7 +23,6 @@ import org.checkerframework.javacutil.InternalUtils;
  * We allow assignments without corresponding AST {@link Tree}s.
  *
  * @author Stefan Heule
- *
  */
 public class AssignmentNode extends Node {
 

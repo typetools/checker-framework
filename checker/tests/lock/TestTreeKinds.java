@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.*;
@@ -448,7 +447,8 @@ public class TestTreeKinds {
     void testExplicitLockSynchronized() {
         final ReentrantLock lock = new ReentrantLock();
         //:: error: (explicit.lock.synchronized)
-        synchronized (lock) {}
+        synchronized (lock) {
+        }
     }
 
     void testPrimitiveTypeGuardedby() {

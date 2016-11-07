@@ -2,13 +2,12 @@ package org.checkerframework.checker.signature.qual;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.signature.qual.BinaryName;
-import org.checkerframework.checker.signature.qual.FullyQualifiedName;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * A source name is a string that is a valid {@linkplain FullyQualifiedName
- * fully qualified name} and a valid {@linkplain BinaryName binary name}.
+ * A source name is a string that is a valid {@linkplain
+ * org.checkerframework.checker.signature.qual.FullyQualifiedName fully qualified name} and a valid
+ * {@linkplain org.checkerframework.checker.signature.qual.BinaryName binary name}.
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

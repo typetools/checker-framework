@@ -5,9 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * Created by jburke on 9/29/14.
- */
+/** Created by jburke on 9/29/14. */
 public class DefaultingLowerBoundTest extends CheckerFrameworkPerDirectoryTest {
 
     public DefaultingLowerBoundTest(List<File> testFiles) {

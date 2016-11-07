@@ -3,9 +3,6 @@
 
 // @skip-test Commented out until the bug is fixed
 
-import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.framework.qual.PolyAll;
-
 class Issue653 {
 
     public static /*@PolyAll*/ String[] concat(

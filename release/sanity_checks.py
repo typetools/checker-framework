@@ -60,8 +60,8 @@ def javac_sanity_check(checker_framework_website, release_version):
     cmd = sanity_javac + " -processor org.checkerframework.checker.nullness.NullnessChecker " + nullness_example + " -Anomsgtext"
     execute_write_to_file(cmd, nullness_output, False)
     check_results("Javac sanity check", nullness_output, [
-        "NullnessExampleWithWarnings.java:26: error: (assignment.type.incompatible)",
-        "NullnessExampleWithWarnings.java:36: error: (argument.type.incompatible)"
+        "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
+        "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)"
     ])
 
     # this is a smoke test for the built-in checker shorthand feature
@@ -70,8 +70,8 @@ def javac_sanity_check(checker_framework_website, release_version):
     cmd = sanity_javac + " -processor NullnessChecker " + nullness_example + " -Anomsgtext"
     execute_write_to_file(cmd, nullness_shorthand_output, False)
     check_results("Javac Shorthand Sanity Check", nullness_shorthand_output, [
-        "NullnessExampleWithWarnings.java:26: error: (assignment.type.incompatible)",
-        "NullnessExampleWithWarnings.java:36: error: (argument.type.incompatible)"
+        "NullnessExampleWithWarnings.java:23: error: (assignment.type.incompatible)",
+        "NullnessExampleWithWarnings.java:33: error: (argument.type.incompatible)"
     ])
 
 def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
@@ -113,7 +113,7 @@ def maven_sanity_check(sub_sanity_dir_name, repo_url, release_version):
     execute_write_to_file("mvn compile", output_log, False, maven_example_dir)
     os.environ['JAVA_HOME'] = os.environ['JAVA_7_HOME']
     check_results("Maven sanity check", output_log, [
-        "MavenExample.java:[24,29] error: [assignment.type.incompatible] incompatible types in assignment."
+        "MavenExample.java:[25,29] error: [assignment.type.incompatible] incompatible types in assignment."
     ])
 
     delete_path(path_to_artifacts)

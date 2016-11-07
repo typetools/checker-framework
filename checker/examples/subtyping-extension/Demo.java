@@ -1,13 +1,14 @@
 import java.util.LinkedList;
 import java.util.List;
 import qual.Encrypted;
-import qual.PossiblyUnencrypted;
 
 abstract class EncryptionDemo {
 
     public @Encrypted String encrypt(String text) {
         byte[] b = text.getBytes();
-        for (int i = 0; i < b.length; b[i++]++) ;
+        for (int i = 0; i < b.length; b[i++]++) {
+            // side effect is in increment expression of for loop
+        }
         //:: warning: (cast.unsafe)
         return (@Encrypted String) new String(b);
     }

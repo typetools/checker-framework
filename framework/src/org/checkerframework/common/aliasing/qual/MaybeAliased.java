@@ -11,9 +11,8 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * An expression with this type might have an alias.  In other words, some
- * other expression, evaluated at the same program point, might evaluate to
- * the exact same object value.
+ * An expression with this type might have an alias. In other words, some other expression,
+ * evaluated at the same program point, might evaluate to the exact same object value.
  *
  * @see Unique
  * @checker_framework.manual #aliasing-checker Aliasing Checker

@@ -7,11 +7,8 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
-import org.checkerframework.framework.qual.Unqualified;
 
-/**
- * Denotes that the representation of an object is encrypted.
- */
+/** Denotes that the representation of an object is encrypted. */
 @SubtypeOf(PossiblyUnencrypted.class)
 @ImplicitFor(literals = {LiteralKind.NULL})
 @DefaultFor({TypeUseLocation.LOWER_BOUND})

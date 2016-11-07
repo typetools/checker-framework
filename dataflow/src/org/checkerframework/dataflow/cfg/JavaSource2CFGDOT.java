@@ -31,8 +31,7 @@ import org.checkerframework.javacutil.BasicTypeProcessor;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * Class to generate the DOT representation of the control flow graph of a given
- * method.
+ * Class to generate the DOT representation of the control flow graph of a given method.
  *
  * @author Stefan Heule
  */
@@ -76,7 +75,7 @@ public class JavaSource2CFGDOT {
                 i++;
                 clas = args[i];
             } else {
-                printError("Unknown command line argument: " + args[i]);
+                printError("Unknown command-line argument: " + args[i]);
                 error = true;
             }
         }
@@ -114,17 +113,12 @@ public class JavaSource2CFGDOT {
     /**
      * Generate the DOT representation of the CFG for a method.
      *
-     * @param inputFile
-     *            Java source input file.
-     * @param outputDir
-     *            Source output directory.
-     * @param method
-     *            Method name to generate the CFG for.
-     * @param pdf
-     *            Also generate a PDF?
-     * @param analysis
-     *            Analysis to perform befor the visualization (or
-     *            {@code null} if no analysis is to be performed).
+     * @param inputFile Java source input file
+     * @param outputDir Source output directory.
+     * @param method Method name to generate the CFG for
+     * @param pdf Also generate a PDF?
+     * @param analysis Analysis to perform befor the visualization (or {@code null} if no analysis
+     *     is to be performed).
      */
     public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>
             void generateDOTofCFG(
@@ -177,9 +171,7 @@ public class JavaSource2CFGDOT {
         }
     }
 
-    /**
-     * Invoke DOT to generate a PDF.
-     */
+    /** Invoke DOT to generate a PDF. */
     protected static void producePDF(String file) {
         try {
             String command = "dot -Tpdf \"" + file + ".txt\" -o \"" + file + ".pdf\"";
@@ -192,8 +184,8 @@ public class JavaSource2CFGDOT {
     }
 
     /**
-     * @return the AST of a specific method in a specific class in a specific
-     *         file (or null if no such method exists)
+     * @return the AST of a specific method in a specific class in a specific file (or null if no
+     *     such method exists)
      */
     public static /*@Nullable*/ MethodTree getMethodTree(
             String file, final String method, String clas) {
@@ -201,9 +193,8 @@ public class JavaSource2CFGDOT {
     }
 
     /**
-     * @return the AST of a specific method in a specific class as well as the
-     *         {@link CompilationUnitTree} in a specific file (or null they do
-     *         not exist).
+     * @return the AST of a specific method in a specific class as well as the {@link
+     *     CompilationUnitTree} in a specific file (or null they do not exist).
      */
     public static Entry</*@Nullable*/ MethodTree, /*@Nullable*/ CompilationUnitTree>
             getMethodTreeAndCompilationUnit(String file, final String method, String clas) {

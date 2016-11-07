@@ -16,21 +16,20 @@ public class Varargs {
         moreVarargs(new @Odd String(), new @Odd String());
         //:: error: (argument.type.incompatible)
         moreVarargs(new String(), new @Odd String());
-        //:: error: (argument.type.incompatible)
-        moreVarargs(new String(),
-                    //:: error: (argument.type.incompatible)
+        moreVarargs(
+                //:: error: (argument.type.incompatible)
+                new String(),
+                //:: error: (argument.type.incompatible)
                 new String());
     }
 
     /* ------------------------------------------------------------ */
 
-    public void aVarargsMethod(@Odd String s, @Odd String ... more) {
-    }
+    public void aVarargsMethod(@Odd String s, @Odd String... more) {}
 
-    public void moreVarargs(@Odd String ... args) {
-    }
+    public void moreVarargs(@Odd String... args) {}
 
-    Varargs(String ...args) { }
+    Varargs(String... args) {}
 
     void test() {
         new Varargs("m", "n");

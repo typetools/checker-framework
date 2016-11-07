@@ -1,7 +1,6 @@
 
 // Test file for nullness parameter and return checks.
 
-import java.lang.Thread;
 import org.checkerframework.checker.nullness.qual.*;
 
 interface Noop {
@@ -32,7 +31,9 @@ class LambdaNullness {
     LambdaNullness(FunctionNull<String, String> f, Object e) {}
 
     // No parameters; result is void
-    Noop f1 = () -> {};
+    Noop f1 =
+            () -> {
+            };
     // No parameters, expression body
     Supplier<Integer> f2a = () -> 42;
 

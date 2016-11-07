@@ -7,8 +7,9 @@ import org.checkerframework.framework.qual.SubtypeOf;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * Toy type system for testing reflection resolution.
- * Uses org.checkerframework.framework.qual.Bottom as bottom
+ * Toy type system for testing reflection resolution. Uses
+ * org.checkerframework.framework.qual.Bottom as bottom
+ *
  * @see Sibling1, Sibling2
  */
 @SubtypeOf({Sibling1.class, Sibling2.class})

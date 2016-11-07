@@ -17,16 +17,10 @@ import org.apache.commons.logging.LogFactory;
 import org.checkerframework.checker.tainting.qual.Untainted;
 
 /**
- *
  * @author NEyde
- *
- *
- * When the user selects a date, they will get the previous 25 posts
- * from the date selected.
- *
- * When a user selects a specific post, they will see that post only.
- *
- * When a user selects a month, they will get all the posts for the month.
+ *     <p>When the user selects a date, they will get the previous 25 posts from the date selected.
+ *     <p>When a user selects a specific post, they will see that post only.
+ *     <p>When a user selects a month, they will get all the posts for the month.
  */
 public class PersonalBlogService {
     // Installation State
@@ -77,9 +71,7 @@ public class PersonalBlogService {
     SimpleDateFormat qf = new SimpleDateFormat("yyyy-MM-dd", myLocale);
     SimpleDateFormat monthNav = new SimpleDateFormat("yyyyMM", myLocale);
 
-    /**
-     * Constructor for PersonalBlogService.
-     */
+    /** Constructor for PersonalBlogService. */
     protected PersonalBlogService(Properties conn) throws InitializationException {
         log.debug("initialization - constructor");
 
@@ -107,9 +99,7 @@ public class PersonalBlogService {
         }
     }
 
-    /**
-     * Singleton  getInstance method
-     */
+    /** Singleton getInstance method */
     public static PersonalBlogService getInstance() throws ServiceException {
         if (service == null) {
             try {

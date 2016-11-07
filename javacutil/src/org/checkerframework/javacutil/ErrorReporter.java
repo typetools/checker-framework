@@ -1,25 +1,22 @@
 package org.checkerframework.javacutil;
 
 /**
- * Handle errors detected in utility classes.  By default, the error reporter
- * throws a RuntimeException, but clients of the utility library may register
- * a handler to change the behavior.  For example, type checkers can direct
- * errors to the org.checkerframework.framework.source.SourceChecker class.
+ * Handle errors detected in utility classes. By default, the error reporter throws a
+ * RuntimeException, but clients of the utility library may register a handler to change the
+ * behavior. For example, type checkers can direct errors to the
+ * org.checkerframework.framework.source.SourceChecker class.
  */
 public class ErrorReporter {
 
     protected static ErrorHandler handler = null;
 
-    /**
-     * Register a handler to customize error reporting.
-     */
+    /** Register a handler to customize error reporting. */
     public static void setHandler(ErrorHandler h) {
         handler = h;
     }
 
     /**
-     * Log an error message and abort processing.
-     * Call this method instead of raising an exception.
+     * Log an error message and abort processing. Call this method instead of raising an exception.
      *
      * @param msg the error message to log
      */
@@ -32,9 +29,8 @@ public class ErrorReporter {
     }
 
     /**
-     * Log an error message use {@link String#format(String, Object...)}}
-     * and abort processing.
-     * Call this method instead of raising an exception.
+     * Log an error message use {@link String#format(String, Object...)}} and abort processing. Call
+     * this method instead of raising an exception.
      *
      * @param format A format string
      * @param args Arguments to the format string

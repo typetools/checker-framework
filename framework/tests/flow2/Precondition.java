@@ -119,7 +119,7 @@ class Precondition {
         requiresF4();
     }
 
-    /***** multiple preconditions ******/
+    /** *** multiple preconditions ***** */
     @RequiresQualifiers({
         @RequiresQualifier(expression = "f1", qualifier = Value.class),
         @RequiresQualifier(expression = "f2", qualifier = Odd.class)

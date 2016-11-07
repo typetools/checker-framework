@@ -8,8 +8,7 @@ import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * The bottom qualifier in the Unsigned Type
- * System.  It is only assigned to a value in error.
+ * The bottom qualifier in the Unsigned Type System. It is only assigned to a value in error.
  *
  * @checker_framework.manual #signedness-checker Signedness Checker
  */

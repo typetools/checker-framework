@@ -32,9 +32,8 @@ public class FenumAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Copied from SubtypingChecker.
-     * Instead of returning an empty set if no "quals" option is given,
-     * we return Fenum as the only qualifier.
+     * Copied from SubtypingChecker. Instead of returning an empty set if no "quals" option is
+     * given, we return Fenum as the only qualifier.
      */
     @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {

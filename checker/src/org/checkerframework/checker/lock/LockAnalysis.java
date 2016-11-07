@@ -14,8 +14,8 @@ import org.checkerframework.javacutil.Pair;
 /**
  * The analysis class for the lock type system.
  *
- * This class extends {@link CFAbstractAnalysis} so that {@link LockStore} is used rather than
- * {@link CFStore};
+ * <p>This class extends {@link CFAbstractAnalysis} so that {@link LockStore} is used rather than
+ * {@link CFStore}.
  */
 public class LockAnalysis extends CFAbstractAnalysis<CFValue, LockStore, LockTransfer> {
 
