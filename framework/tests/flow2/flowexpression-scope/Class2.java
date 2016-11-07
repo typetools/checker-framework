@@ -1,9 +1,9 @@
 package pkg2;
 
 import pkg1.Class1;
-import tests.util.EnsuresOdd;
-import tests.util.Odd;
-import tests.util.RequiresOdd;
+import testlib.util.EnsuresOdd;
+import testlib.util.Odd;
+import testlib.util.RequiresOdd;
 
 public class Class2 {
     @RequiresOdd("Class1.field")

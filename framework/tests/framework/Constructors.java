@@ -1,4 +1,4 @@
-import tests.util.Odd;
+import testlib.util.Odd;
 
 public class Constructors {
     public Constructors(Constructors con) {}

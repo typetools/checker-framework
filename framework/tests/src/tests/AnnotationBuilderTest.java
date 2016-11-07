@@ -14,9 +14,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.junit.Ignore;
 import org.junit.Test;
-import tests.util.AnnoWithStringArg;
-import tests.util.Encrypted;
-import tests.util.TestChecker;
+import testlib.util.AnnoWithStringArg;
+import testlib.util.Encrypted;
+import testlib.util.TestChecker;
 
 public class AnnotationBuilderTest {
 

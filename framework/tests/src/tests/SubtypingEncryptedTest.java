@@ -14,7 +14,7 @@ public class SubtypingEncryptedTest extends CheckerFrameworkPerDirectoryTest {
                 org.checkerframework.common.subtyping.SubtypingChecker.class,
                 "subtyping",
                 "-Anomsgtext",
-                "-Aquals=tests.util.Encrypted,tests.util.PolyEncrypted,org.checkerframework.framework.qual.Unqualified");
+                "-Aquals=testlib.util.Encrypted,testlib.util.PolyEncrypted,org.checkerframework.framework.qual.Unqualified");
     }
 
     @Parameters

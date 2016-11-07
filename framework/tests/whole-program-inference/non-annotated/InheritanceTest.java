@@ -1,7 +1,7 @@
 //@skip-test
 // TODO: Enable this test when whole-program inference is working correctly for cases
 // involving inheritance.
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
 
 class IParent {
     int field;

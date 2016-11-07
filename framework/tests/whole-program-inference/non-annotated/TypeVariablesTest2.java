@@ -1,6 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
 
 public class TypeVariablesTest2<K extends String, V extends Integer> {
 

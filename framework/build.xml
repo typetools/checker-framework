@@ -262,7 +262,7 @@
         <pathconvert pathsep=" " property="framework.src.tests">
             <path>
                 <fileset dir="${tests}">
-                    <include name="src/tests/**/*.java"/>
+                    <include name="src/**/*.java"/>
                     <include name="test-lubglb/**/*.java"/>
                     <include name="test-polyall/**/*.java"/>
                 </fileset>
@@ -364,20 +364,17 @@
           <formatter type="brief" usefile="false"/>
 
           <batchtest todir="${build.reports}">
-              <fileset dir="${tests}/${src}">
-                  <include name="**/*Test.java"/>
-                  <exclude name="**/AllTests.java"/>
-
-                  <!-- Framework classes -->
-                  <exclude name="**/CheckerTest.java"/>
-                  <exclude name="**/ParameterizedCheckerTest.java"/>
+              <fileset dir="${tests}/${src}/">
+                  <!-- The include name must start with tests or else Junit assumes
+                       the classes are not in a package. -->
+                  <include name="tests/*.java"/>
 
                   <!-- Tests that fail by design -->
-                  <exclude name="**/SubtypingStringPatternsPartialTest.java"/>
+                  <exclude name="tests/SubtypingStringPatternsPartialTest.java"/>
                   <!-- Whole-Program inference tests depends on the
                        whole-program-inference-tests target, so we added that target
                        to the depends group and excluded it here.-->
-                  <exclude name="**/WholeProgramInference*.java"/>
+                  <exclude name="tests/WholeProgramInference*.java"/>
 
               </fileset>
           </batchtest>
