@@ -388,7 +388,6 @@ public class WholeProgramInferenceScenesHelper {
             for (TypeKind tk : types) {
                 if (tk == atmKind) return true;
             }
-            // TODO: Handle implicitFor.literals()
 
             try {
                 Class<?>[] names = implicitFor.typeNames();
