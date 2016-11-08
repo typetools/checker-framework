@@ -25,6 +25,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
@@ -544,6 +545,10 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final AnnotatedTypeMirror substitution = receiverTypeArgs.get(i);
             if (substitution.getKind() == TypeKind.DECLARED) {
                 afConstraints.add(new FIsA(annotatedTypeVars.get(i), substitution));
+            } else if (substitution.getKind() == TypeKind.WILDCARD) {
+                final AnnotatedWildcardType wildcardArg = (AnnotatedWildcardType) substitution;
+                constraints.add(new A2F(wildcardArg.getSuperBound(), annotatedTypeVars.get(i)));
+                constraints.add(new F2A(annotatedTypeVars.get(i), wildcardArg.getExtendsBound()));
             }
         }
 
