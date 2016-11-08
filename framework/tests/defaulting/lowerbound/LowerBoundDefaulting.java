@@ -2,7 +2,7 @@ package defaulting.lowerbound;
 
 // this tests sole purpose is to check that implicit and explicit LOWER_BOUND defaulting work as expected
 
-import tests.defaulting.LowerBoundQual.*;
+import testlib.defaulting.LowerBoundQual.*;
 
 class MyArrayList<MAL extends String> {}
 

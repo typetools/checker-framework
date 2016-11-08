@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
 
 /**
  * Tests whole-program inference with the aid of .jaif files.
@@ -17,12 +18,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class WholeProgramInferenceTest extends CheckerFrameworkPerDirectoryTest {
 
     public WholeProgramInferenceTest(List<File> testFiles) {
-        super(
-                testFiles,
-                tests.wholeprograminference.WholeProgramInferenceTestChecker.class,
-                "value",
-                "-Anomsgtext",
-                "-Ainfer");
+        super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext", "-Ainfer");
     }
 
     @Parameters

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+import testlib.reflection.ReflectionTestChecker;
 
 /**
  * Tests the reflection resolution using a toy type system.
@@ -16,7 +17,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class ReflectionTest extends CheckerFrameworkPerDirectoryTest {
 
     public ReflectionTest(List<File> testFiles) {
-        super(testFiles, tests.reflection.ReflectionTestChecker.class, "reflection", "-Anomsgtext");
+        super(testFiles, ReflectionTestChecker.class, "reflection", "-Anomsgtext");
     }
 
     @Parameters

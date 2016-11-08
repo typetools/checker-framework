@@ -1,8 +1,8 @@
 
 import java.lang.reflect.Constructor;
-import tests.reflection.qual.Sibling1;
-import tests.reflection.qual.Sibling2;
-import tests.reflection.qual.Top;
+import testlib.reflection.qual.Sibling1;
+import testlib.reflection.qual.Sibling2;
+import testlib.reflection.qual.Top;
 
 class ConstructorTest {
     @Sibling1 int sibling1;

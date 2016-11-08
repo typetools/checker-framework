@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+import testlib.util.FlowTestChecker;
 
 /**
  * Tests for the flow-sensitive part of the framework. These tests complement the tests of {@link
@@ -15,12 +16,7 @@ import org.junit.runners.Parameterized.Parameters;
 public class Flow2Test extends CheckerFrameworkPerDirectoryTest {
 
     public Flow2Test(List<File> testFiles) {
-        super(
-                testFiles,
-                tests.util.FlowTestChecker.class,
-                "flow",
-                "-Anomsgtext",
-                "-AcheckPurityAnnotations");
+        super(testFiles, FlowTestChecker.class, "flow", "-Anomsgtext", "-AcheckPurityAnnotations");
     }
 
     @Parameters

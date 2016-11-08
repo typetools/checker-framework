@@ -1,8 +1,8 @@
 import java.lang.reflect.Method;
-import tests.reflection.qual.ReflectBottom;
-import tests.reflection.qual.Sibling1;
-import tests.reflection.qual.Sibling2;
-import tests.reflection.qual.Top;
+import testlib.reflection.qual.ReflectBottom;
+import testlib.reflection.qual.Sibling1;
+import testlib.reflection.qual.Sibling2;
+import testlib.reflection.qual.Top;
 
 public class AnonymousClassTest {
     /**
