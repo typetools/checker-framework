@@ -547,8 +547,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 afConstraints.add(new FIsA(annotatedTypeVars.get(i), substitution));
             } else if (substitution.getKind() == TypeKind.WILDCARD) {
                 final AnnotatedWildcardType wildcardArg = (AnnotatedWildcardType) substitution;
-                constraints.add(new A2F(wildcardArg.getSuperBound(), annotatedTypeVars.get(i)));
-                constraints.add(new F2A(annotatedTypeVars.get(i), wildcardArg.getExtendsBound()));
+                afConstraints.add(new A2F(wildcardArg.getSuperBound(), annotatedTypeVars.get(i)));
+                afConstraints.add(new F2A(annotatedTypeVars.get(i), wildcardArg.getExtendsBound()));
             }
         }
 
