@@ -121,14 +121,14 @@ public class TypeArgInferenceUtil {
      * @return type that it path leaf is assigned to
      */
     public static AnnotatedTypeMirror assignedTo(
-        final AnnotatedTypeFactory atypeFactory, final TreePath path
-    ) {
+            final AnnotatedTypeFactory atypeFactory, final TreePath path) {
         return assignedTo(atypeFactory, path, false);
     }
 
     public static AnnotatedTypeMirror assignedTo(
-        final AnnotatedTypeFactory atypeFactory, final TreePath path, final boolean useUninferredParameters
-    ) {
+            final AnnotatedTypeFactory atypeFactory,
+            final TreePath path,
+            final boolean useUninferredParameters) {
         Tree assignmentContext = TreeUtils.getAssignmentContext(path);
         if (assignmentContext == null) {
             return null;
@@ -149,7 +149,12 @@ public class TypeArgInferenceUtil {
             ExecutableElement methodElt = TreeUtils.elementFromUse(methodInvocation);
             AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(methodInvocation);
             return assignedToExecutable(
-                    atypeFactory, path, methodElt, receiver, methodInvocation.getArguments(), useUninferredParameters);
+                    atypeFactory,
+                    path,
+                    methodElt,
+                    receiver,
+                    methodInvocation.getArguments(),
+                    useUninferredParameters);
         } else if (assignmentContext instanceof NewArrayTree) {
             //TODO: I left the previous implementation below, it definitely caused infinite loops if you
             //TODO: called it from places like the TreeAnnotator
@@ -167,7 +172,12 @@ public class TypeArgInferenceUtil {
             ExecutableElement constructorElt = InternalUtils.constructor(newClassTree);
             AnnotatedTypeMirror receiver = atypeFactory.fromNewClass(newClassTree);
             return assignedToExecutable(
-                    atypeFactory, path, constructorElt, receiver, newClassTree.getArguments(), false);
+                    atypeFactory,
+                    path,
+                    constructorElt,
+                    receiver,
+                    newClassTree.getArguments(),
+                    false);
         } else if (assignmentContext instanceof ReturnTree) {
             HashSet<Kind> kinds = new HashSet<>(Arrays.asList(Kind.LAMBDA_EXPRESSION, Kind.METHOD));
             Tree enclosing = TreeUtils.enclosingOfKind(path, kinds);
@@ -224,8 +234,7 @@ public class TypeArgInferenceUtil {
         // would require solving the constraints for both type argument inferences simultaneously
         if (paramType == null) {
             return null;
-        }
-        else if (containsUninferredTypeParameter(paramType, method) && !useUninferredParameters) {
+        } else if (containsUninferredTypeParameter(paramType, method) && !useUninferredParameters) {
             return null;
         }
 
@@ -410,7 +419,6 @@ public class TypeArgInferenceUtil {
      * type} replace uses of typeVariable with the corresponding annotated type using normal
      * substitution rules (@see TypeVariableSubstitutor) Return the copy
      */
-
     public static AnnotatedTypeMirror substitute(
             Map<TypeVariable, AnnotatedTypeMirror> substitutions,
             final AnnotatedTypeMirror toModify) {
