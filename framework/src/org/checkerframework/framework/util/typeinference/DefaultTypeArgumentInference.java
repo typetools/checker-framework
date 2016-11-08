@@ -1,6 +1,7 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -516,9 +517,13 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             final ExpressionTree expressionTree,
             final AnnotatedExecutableType methodType) {
         // Try to detect a receiver type
+        final TreePath path = typeFactory.getPath(expressionTree);
+        if (path == null) {
+            return Collections.emptySet();
+        }
+
         final AnnotatedTypeMirror receiverType =
-                TypeArgInferenceUtil.assignedTo(
-                        typeFactory, typeFactory.getPath(expressionTree), true);
+                TypeArgInferenceUtil.assignedTo(typeFactory, path, true);
         if (receiverType == null || receiverType.getKind() != TypeKind.DECLARED) {
             return Collections.emptySet();
         }
