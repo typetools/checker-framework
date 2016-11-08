@@ -2,7 +2,6 @@
 // https://github.com/typetools/checker-framework/issues/953
 // @below-java8-jdk-skip-test
 
-// @skip-test
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
