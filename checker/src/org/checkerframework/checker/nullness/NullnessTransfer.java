@@ -2,13 +2,6 @@ package org.checkerframework.checker.nullness;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.InitializationTransfer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -35,7 +28,13 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
+
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Transfer function for the non-null type system. Performs the following refinements:
@@ -227,49 +226,28 @@ public class NullnessTransfer
             }
         }
 
-        // Handle KeyFor annotations
+        // Refine result to @NonNull if n is an invocation of Map.get and the argument is a key for
+        // the map.
+        if (keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
+            Node receiver = n.getTarget().getReceiver();
+            String mapName =
+                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver).toString();
+            AnnotationMirror keyForMapName =
+                    keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName);
 
-        String methodName = n.getTarget().getMethod().toString();
+            AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
 
-        // First verify if the method name is get. This is an inexpensive check.
+            if (type != null
+                    && keyForTypeFactory.keyForValuesSubtypeCheck(keyForMapName, type, tree, n)) {
+                makeNonNull(result, n);
 
-        if (methodName.startsWith("get(")) {
-            // Now verify that the receiver of the method invocation is of a type
-            // that extends that java.util.Map interface. This is a more expensive check.
-
-            javax.lang.model.util.Types types = analysis.getTypes();
-
-            TypeMirror mapInterfaceTypeMirror =
-                    types.erasure(
-                            TypesUtils.typeFromClass(
-                                    types, analysis.getEnv().getElementUtils(), Map.class));
-
-            TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
-
-            if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
-                Node receiver = n.getTarget().getReceiver();
-                Receiver internalReceiver =
-                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver);
-
-                String mapName = internalReceiver.toString();
-                AnnotationMirror keyForMapName =
-                        keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName);
-
-                AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
-
-                if (type != null
-                        && keyForTypeFactory.keyForValuesSubtypeCheck(
-                                keyForMapName, type, tree, n)) {
-                    makeNonNull(result, n);
-
-                    NullnessValue oldResultValue = result.getResultValue();
-                    NullnessValue refinedResultValue =
-                            analysis.createSingleAnnotationValue(
-                                    NONNULL, oldResultValue.getUnderlyingType());
-                    NullnessValue newResultValue =
-                            refinedResultValue.mostSpecific(oldResultValue, null);
-                    result.setResultValue(newResultValue);
-                }
+                NullnessValue oldResultValue = result.getResultValue();
+                NullnessValue refinedResultValue =
+                        analysis.createSingleAnnotationValue(
+                                NONNULL, oldResultValue.getUnderlyingType());
+                NullnessValue newResultValue =
+                        refinedResultValue.mostSpecific(oldResultValue, null);
+                result.setResultValue(newResultValue);
             }
         }
 

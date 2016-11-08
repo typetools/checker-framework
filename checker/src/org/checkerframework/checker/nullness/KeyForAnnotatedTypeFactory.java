@@ -15,21 +15,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.nullness.KeyForPropagator.PropagationDirection;
 import org.checkerframework.checker.nullness.qual.Covariant;
 import org.checkerframework.checker.nullness.qual.KeyFor;
@@ -78,6 +63,25 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
+import org.jetbrains.annotations.NotNull;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
@@ -936,5 +940,35 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                             new LocalVariableNode(param, receiver)));
         }
         return new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+    }
+
+    private TypeMirror erasedMapType = null;
+
+    protected boolean isInvocationOfMapMethod(MethodInvocationNode n, String methodName) {
+        String invokedMethod = getMethodName(n);
+        // First verify if the method name is correct. This is an inexpensive check.
+        if (invokedMethod.equals(methodName)) {
+            // Now verify that the receiver of the method invocation is of a type
+            // that extends that java.util.Map interface. This is a more expensive check.
+            if (erasedMapType == null) {
+                TypeMirror mapType = TypesUtils.typeFromClass(types, elements, Map.class);
+                erasedMapType = types.erasure(mapType);
+            }
+
+            TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
+
+            if (types.isSubtype(receiverType, erasedMapType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected String getMethodName(MethodInvocationNode n) {
+        String invokedMethod = n.getTarget().getMethod().toString();
+        int index = invokedMethod.indexOf("(");
+        assert index != -1 : this.getClass() +": expected method name to contain (";
+        invokedMethod = invokedMethod.substring(0,index);
+        return invokedMethod;
     }
 }
