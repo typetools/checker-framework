@@ -249,7 +249,7 @@ public class TestUtilities {
             if (first) {
                 first = false;
             } else {
-                listStrBuilder.append(" ,");
+                listStrBuilder.append(", ");
             }
             listStrBuilder.append(file.getAbsolutePath());
         }
