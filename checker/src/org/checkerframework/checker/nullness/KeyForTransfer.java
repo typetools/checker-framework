@@ -1,5 +1,8 @@
 package org.checkerframework.checker.nullness;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -14,11 +17,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
-
-import java.util.LinkedHashSet;
-import java.util.Set;
-import javax.lang.model.element.AnnotationMirror;
 
 /*
  * KeyForTransfer ensures that java.util.Map.put and containsKey
