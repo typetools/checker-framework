@@ -261,7 +261,7 @@ public class MinLenAnnotatedTypeFactory
                 AnnotationMirror dimType =
                         getAnnotatedType(MST.getExpression()).getAnnotation(MinLen.class);
                 // If it doesnt have this annotation it will be null.
-                if (type != null) {
+                if (dimType != null) {
                     type.addAnnotation(dimType);
                 }
             }
