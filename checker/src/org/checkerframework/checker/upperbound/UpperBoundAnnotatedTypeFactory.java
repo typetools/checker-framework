@@ -188,8 +188,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
         HashSet<String> newValues = new HashSet<String>(Math.min(a1Names.size(), a2Names.size()));
 
-        for (String s: a1Names) {
-            if (a2Names.contains(s)){
+        for (String s : a1Names) {
+            if (a2Names.contains(s)) {
                 newValues.add(s);
             }
         }
