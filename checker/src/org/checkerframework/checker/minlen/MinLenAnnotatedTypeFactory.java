@@ -92,7 +92,7 @@ public class MinLenAnnotatedTypeFactory
     }
 
     @Override
-1    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new MinLenQualifierHierarchy(factory);
     }
 
