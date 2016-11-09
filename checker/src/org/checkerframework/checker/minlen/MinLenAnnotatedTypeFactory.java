@@ -92,7 +92,7 @@ public class MinLenAnnotatedTypeFactory
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
+1    public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new MinLenQualifierHierarchy(factory);
     }
 
@@ -128,9 +128,9 @@ public class MinLenAnnotatedTypeFactory
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
                 Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
                 if (a1Val >= a2Val) {
-                    return a2;
-                } else {
                     return a1;
+                } else {
+                    return a2;
                 }
             } else {
                 // One of these is bottom. GLB of anything and bottom is the anything.
