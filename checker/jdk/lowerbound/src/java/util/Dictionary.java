@@ -63,7 +63,7 @@ class Dictionary<K,V> {
      *
      * @return  the number of keys in this dictionary.
      */
-    abstract public @nonNegative int size();
+    abstract public @NonNegative int size();
 
     /**
      * Tests if this dictionary maps no keys to value. The general contract

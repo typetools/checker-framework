@@ -110,7 +110,7 @@ public class AtomicLongArray implements java.io.Serializable {
      * @param i the index
      * @return the current value
      */
-    public final long get(@NonNegative @NonNegative int i) {
+    public final long get(@NonNegative int i) {
         return getRaw(checkedByteOffset(i));
     }
 
