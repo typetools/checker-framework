@@ -5,7 +5,6 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -72,9 +71,7 @@ public class KeyForTransfer extends CFTransfer {
             AnnotationMirror am = factory.createKeyForAnnotationMirrorWithValue(keyForMaps);
 
             if (factory.getMethodName(node).equals("containsKey")) {
-                ConditionalTransferResult<CFValue, CFStore> conditionalResult =
-                        (ConditionalTransferResult<CFValue, CFStore>) result;
-                conditionalResult.getThenStore().insertValue(keyReceiver, am);
+                result.getThenStore().insertValue(keyReceiver, am);
             } else { // method name is "put"
                 result.getThenStore().insertValue(keyReceiver, am);
                 result.getElseStore().insertValue(keyReceiver, am);
