@@ -2,6 +2,7 @@ package org.checkerframework.checker.lowerbound;
 
 import java.util.LinkedHashSet;
 import org.checkerframework.checker.minlen.MinLenChecker;
+import org.checkerframework.checker.upperbound.UpperBoundChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
 
@@ -19,6 +20,10 @@ public class LowerBoundChecker extends BaseTypeChecker {
                 super.getImmediateSubcheckerClasses();
         checkers.add(ValueChecker.class);
         checkers.add(MinLenChecker.class);
+        checkers.add(
+                UpperBoundChecker
+                        .class); // Temporary hack to make this the "index checker," because proper
+        // compound aggregate checkers aren't working.
         return checkers;
     }
 }

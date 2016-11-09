@@ -20,6 +20,7 @@ import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
@@ -180,6 +181,27 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return names;
     }
 
+    private String[] getIntersectingNames(AnnotationMirror a1, AnnotationMirror a2) {
+        List<String> a1Names =
+                AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
+        List<String> a2Names =
+                AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+        HashSet<String> newValues = new HashSet<String>(Math.min(a1Names.size(), a2Names.size()));
+
+        for (String s : a1Names) {
+            if (a2Names.contains(s)) {
+                newValues.add(s);
+            }
+        }
+
+        Object[] values = newValues.toArray();
+        String[] names = new String[values.length];
+        for (int i = 0; i < names.length; i++) {
+            names[i] = values[i].toString();
+        }
+        return names;
+    }
+
     /**
      * The qualifier hierarchy for the upperbound type system. The qh is responsible for determining
      * the relationships within the qualifiers - especially subtyping relations.
@@ -197,6 +219,10 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return a1;
             } else if (isSubtype(a2, a1)) {
                 return a2;
+            } else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
+
+                String[] names = getCombinedNames(a1, a2);
+                return createAnnotation(a1.getAnnotationType().toString(), names);
             } else {
                 /* If the two are unrelated, then the type hierarchy implies
                    that one is LTL and the other is EL, meaning that the GLB
@@ -228,7 +254,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // If both are the same type, determine the type and merge:
             else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
 
-                String[] names = getCombinedNames(a1, a2);
+                String[] names = getIntersectingNames(a1, a2);
                 return createAnnotation(a1.getAnnotationType().toString(), names);
             }
             // Annotations are in this hierarchy, but they are not the same.
@@ -308,7 +334,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new UpperBoundTreeAnnotator(this), new PropagationTreeAnnotator(this));
+                new UpperBoundTreeAnnotator(this),
+                new PropagationTreeAnnotator(this),
+                new ImplicitsTreeAnnotator(this));
     }
 
     protected class UpperBoundTreeAnnotator extends TreeAnnotator {
