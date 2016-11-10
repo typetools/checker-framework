@@ -3,6 +3,7 @@ package org.checkerframework.framework.test;
 import static org.checkerframework.framework.test.TestConfigurationBuilder.buildDefaultConfiguration;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -71,7 +72,9 @@ public abstract class CheckerFrameworkPerDirectoryTest {
         this.testFiles = testFiles;
         this.checkerName = checker.getName();
         this.testDir = "tests" + File.separator + testDir;
-        this.checkerOptions = Arrays.asList(checkerOptions);
+        this.checkerOptions = new ArrayList<>();
+        this.checkerOptions.addAll(Arrays.asList(checkerOptions));
+        this.checkerOptions.add("-AprintErrorStack");
     }
 
     @Test
