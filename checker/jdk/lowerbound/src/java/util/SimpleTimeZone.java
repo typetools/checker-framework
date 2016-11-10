@@ -946,7 +946,7 @@ public class SimpleTimeZone extends TimeZone {
      * @return a string representation of this time zone.
      */
     public String toString() {
-        return getClass().getName() +
+        return getClass().getName()/* +
             "[id=" + getID() +
             ",offset=" + rawOffset +
             ",dstSavings=" + dstSavings +
@@ -963,7 +963,7 @@ public class SimpleTimeZone extends TimeZone {
             ",endDay=" + endDay +
             ",endDayOfWeek=" + endDayOfWeek +
             ",endTime=" + endTime +
-            ",endTimeMode=" + endTimeMode + ']';
+            ",endTimeMode=" + endTimeMode + ']'*/;
     }
 
     // =======================privates===============================
