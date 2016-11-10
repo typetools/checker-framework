@@ -179,7 +179,8 @@ public class TestDiagnosticUtils {
         String trimmed = original;
         String filename = "";
         if (noMsgText) {
-            if (!trimmed.contains("unexpected Throwable")) {
+            if (!trimmed.contains("unexpected Throwable")
+                    && !trimmed.contains("Compilation unit")) {
                 if (trimmed.contains("\n")) {
                     trimmed = trimmed.substring(0, trimmed.indexOf('\n'));
                 }
