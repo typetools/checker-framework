@@ -72,6 +72,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public Integer minLenFromExpressionTree(ExpressionTree tree) {
         AnnotatedTypeMirror minLenType = minLenAnnotatedTypeFactory.getAnnotatedType(tree);
         AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
+        if (anm == null) {
+            return null;   
+        }
         Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
         return minLen;
     }
@@ -128,6 +131,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return annotation given by name with names=values, or UNKNOWN
      */
     private static AnnotationMirror createAnnotation(String name, String[] names) {
+        if (names == null) {
+            names = new String[0];   
+        }
         if (name.equals("LessThanLength")) {
             return createLessThanLengthAnnotation(names);
         } else if (name.equals("LessThanOrEqualToLength")) {
