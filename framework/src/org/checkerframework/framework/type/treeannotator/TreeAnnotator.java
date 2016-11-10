@@ -1,5 +1,6 @@
 package org.checkerframework.framework.type.treeannotator;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.SimpleTreeVisitor;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -31,5 +32,15 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
     @Override
     public Void visitMethod(MethodTree node, AnnotatedTypeMirror p) {
         return super.visitMethod(node, p);
+    }
+
+    /**
+     * When overriding this method, getAnnotatedType on the left and right operands should only be
+     * called when absolutely necessary. Otherwise, the checker will be very slow on heavily nested
+     * binary trees. (For example, a + b + c + d + e + f + g + h)
+     */
+    @Override
+    public Void visitBinary(BinaryTree node, AnnotatedTypeMirror mirror) {
+        return super.visitBinary(node, mirror);
     }
 }
