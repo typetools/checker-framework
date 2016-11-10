@@ -1,7 +1,5 @@
 package org.checkerframework.framework.type.treeannotator;
 
-import static sun.jvm.hotspot.oops.CellTypeState.top;
-
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionTree;
