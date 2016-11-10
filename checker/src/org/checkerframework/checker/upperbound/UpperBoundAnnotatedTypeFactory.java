@@ -145,6 +145,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     static AnnotationMirror createLessThanLengthAnnotation(String[] names) {
         AnnotationBuilder builder = new AnnotationBuilder(env, LessThanLength.class);
+        if (names == null) {
+            names = new String[0];   
+        }
         builder.setValue("value", names);
         return builder.build();
     }
@@ -156,6 +159,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String[] names) {
         AnnotationBuilder builder = new AnnotationBuilder(env, LessThanOrEqualToLength.class);
+        if (names == null) {
+            names = new String[0];   
+        }
         builder.setValue("value", names);
         return builder.build();
     }
