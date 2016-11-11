@@ -1,5 +1,8 @@
 // Test to check for common problem with BinaryTrees.
 // See comment on TreeAnnotator#visitBinary.
+
+// Checkers may correctly issue errors
+@SuppressWarnings("")
 public class BigBinaryTrees {
     String string1;
     String string2;
