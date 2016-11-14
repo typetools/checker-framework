@@ -274,7 +274,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             // Check if this is a string concatenation. If so, bail.
             if (TreeUtils.isStringConcatenation(tree)) {
-                type.replaceAnnotation(UNKNOWN);
+                type.addAnnotation(UNKNOWN);
                 return super.visitBinary(tree, type);
             }
 

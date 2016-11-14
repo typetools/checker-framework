@@ -402,7 +402,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             // A few small rules for addition/subtraction by 0/1, etc.
             if (TreeUtils.isStringConcatenation(tree)) {
-                type.replaceAnnotation(UNKNOWN);
+                type.addAnnotation(UNKNOWN);
                 return visitBinary(tree, type);
             }
 
