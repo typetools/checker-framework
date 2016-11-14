@@ -5,11 +5,22 @@ import java.util.Collection;
 import java.util.LinkedList;
 import org.checkerframework.javacutil.InternalUtils;
 
+/**
+ * A node for a binary expression.
+ *
+ * For example:
+ * <pre>
+ *   <em>lefOperandNode</em> <em>operator</em> <em>rightOperandNode</em>
+ * </pre>
+ *
+ * @author charleszhuochen
+ *
+ */
 public abstract class BinaryOperationNode extends Node {
 
-    protected BinaryTree tree;
-    protected Node left;
-    protected Node right;
+    final protected BinaryTree tree;
+    final protected Node left;
+    final protected Node right;
 
     public BinaryOperationNode(BinaryTree tree, Node left, Node right) {
         super(InternalUtils.typeOf(tree));
