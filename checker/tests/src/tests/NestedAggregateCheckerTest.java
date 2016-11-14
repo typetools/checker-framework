@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+import testlib.NestedAggregateChecker;
 
 public class NestedAggregateCheckerTest extends CheckerFrameworkPerDirectoryTest {
 

@@ -17,7 +17,7 @@ import javax.lang.model.type.TypeKind;
  * <p>For example, the {@code Nullable} annotation is annotated with
  *
  * <pre>
- *   &#064;ImplicitFor(trees={Tree.Kind.NULL_LITERAL})
+ *   &#064;ImplicitFor(literals = LiteralKind.NULL)
  * </pre>
  *
  * to denote that the literal {@code null} always has the type qualifier {@code @Nullable}.

@@ -21,9 +21,11 @@
     <property name="api.doc" value="api"/>
 
     <property environment="env"/>
+
     <tstamp>
         <format property="timestamp" pattern="yy-MM-dd-HH-mm-ss-SS" />
     </tstamp>
+
     <!-- Prevent printing a literal ${env.BUILD_NUMBER} if it's not in env-->
     <property name="env.EXECUTOR_NUMBER" value="" />
 

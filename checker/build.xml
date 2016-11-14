@@ -588,9 +588,7 @@
         <pathconvert pathsep=" " property="src.tests">
             <path>
                 <fileset dir="${tests}">
-                    <include name="src/tests/**/*.java"/>
-                    <include name="test-lubglb/**/*.java"/>
-                    <include name="test-polyall/**/*.java"/>
+                    <include name="src/**/*.java"/>
                 </fileset>
             </path>
         </pathconvert>
@@ -741,12 +739,7 @@
 
             <batchtest todir="${build.reports}">
                 <fileset dir="${tests}/${src}">
-                    <include name="**/*Test.java"/>
-                    <exclude name="**/AllTests.java"/>
-
-                    <!-- Framework classes -->
-                    <exclude name="**/CheckerTest.java"/>
-                    <exclude name="**/ParameterizedCheckerTest.java"/>
+                    <include name="tests/*.java"/>
                 </fileset>
             </batchtest>
         </junit>

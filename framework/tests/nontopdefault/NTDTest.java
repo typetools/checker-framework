@@ -1,8 +1,6 @@
 // Testcase for Issue 948:
 // https://github.com/typetools/checker-framework/issues/948
 
-import tests.nontopdefault.qual.*;
-
 // Problem: @DefaultFor TypeUseLocation.RECEIVER is not applied to inner class constructor
 // receivers. The inner class constructor receivers currently take on the default qualifier of
 // the hierarchy. All other methods take on the default qualifier set by TypeUseLocation.RECEIVER.

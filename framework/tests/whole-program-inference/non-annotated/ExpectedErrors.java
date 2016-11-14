@@ -1,5 +1,5 @@
 import java.lang.reflect.Field;
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
 /**
  * This file contains expected errors that should exist even after the jaif type inference occurs.
  */

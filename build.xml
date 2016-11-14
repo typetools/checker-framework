@@ -106,13 +106,12 @@
       <ant dir="checker">
           <target name="dist-release"/>
       </ant>
-
       <ant dir="javacutil">
           <target name="sources-jar"/>
       </ant>
       <ant dir="javacutil">
         <target name="javadoc-jar" />
-    </ant>
+      </ant>
       <ant dir="dataflow">
           <target name="sources-jar"/>
       </ant>

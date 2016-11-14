@@ -1,4 +1,4 @@
-import tests.util.*;
+import testlib.util.*;
 
 public class StringPatternsUsage {
 
@@ -25,7 +25,7 @@ public class StringPatternsUsage {
         String e = "";
 
         // This should produce the following diagnostic:
-        // :-1: other: error: Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition: inferred type for "A" is [@tests.util.PatternBottomPartial] which is a subtype of [@tests.util.PatternBC] but its pattern does not match the string.  matches = [[@tests.util.PatternAC], [@tests.util.PatternAB]]; nonMatches = [[@tests.util.PatternBC]]
+        // :-1: other: error: Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition: inferred type for "A" is [@PatternBottomPartial] which is a subtype of [@PatternBC] but its pattern does not match the string.  matches = [[@PatternAC], [@PatternAB]]; nonMatches = [[@PatternBC]]
 
         requiresA(a);
     }
