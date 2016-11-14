@@ -605,6 +605,53 @@ If a user specifies
 then the default would apply to every
 type system that uses \<@Unqualified>, which is unlikely to be desired.
 
+\subsection{Java expression annotations\label{expression-annotations}}
+The Checker Framework has functionality to support Java expression annotations
+used as type qualifiers.  An expression annotation must have one attribute,
+\<value>, that is an array of strings.
+Section~\ref{java-expressions-as-arguments} explains what expression can be
+represented by the strings.
+
+The Checker Framework
+verifies that expression strings in annotations are valid expressions.  If
+the expression is not valid, an error is issued and the string in the
+annotation is changed to indicate that the expression is not valid.
+
+The Checker Framework standardize the expression strings in annotations such
+that comparisons, such as isSubtype, can be implemented as string comparisons.
+For example, a field \<f> can be referred to in an annotation as both ``f'' and
+``this.f''.  The Checker Framework will change ``f'' to ``this.f''.
+
+The Checker Framework viewpoint adapts type annotations on method, constructor,
+and field declarations at uses for those methods.  For example, given the
+following class
+
+\begin{Verbatim}
+class MyClass {
+   Object field = ...;
+   @Anno("this.field") Object field2 = ...;
+}
+\end{Verbatim}
+and assuming the variable \<myClass> is of type \<MyClass>, then the type of
+\<myClass.field> is viewpoint adapted to \<@Anno("myClass.field")>.
+
+To use this built in functionality, override
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createExpressionAnnoHelper}{--}
+and return a new ExpressionAnnotationHelper that has been initialized with the
+expression annotations for your checker.
+
+Checkers with expression annotations usually need to create expression
+annotations for a given tree or node, and to compare the expression string to a
+tree or node.  To do this, first convert the tree or node to a standardized
+expression string by create a
+\refclass{dataflow/analysis}{FlowExpressions.Receiver} object by calling
+\refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{internalReprOf(AnnotationProvider,
+ExpressionTree)} or
+\refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{internalReprOf(AnnotationProvider,
+Node)} then call ``toString'' on that object.  This string can either be used
+to create an expression annotation or compared to a string in an expression
+annotation.
+
 
 \section{Visitor: Type rules\label{extending-visitor}}
 
