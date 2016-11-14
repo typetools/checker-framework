@@ -29,6 +29,8 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
+
 /**
  * Implements the introduction rules for the Lower Bound Checker.
  *
@@ -270,6 +272,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+            // Check if this is a string concatenation. If so, bail.
+            if (TreeUtils.isStringConcatenation(tree)) {
+                type.replaceAnnotation(UNKNOWN);
+                return super.visitBinary(tree, type);
+            }
+
             // Check if the Value Checker's information puts it into a single type.
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
             AnnotationMirror lowerBoundAnm = lowerBoundAnmFromValueType(valueType);
