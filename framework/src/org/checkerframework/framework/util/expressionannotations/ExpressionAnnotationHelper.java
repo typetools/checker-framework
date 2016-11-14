@@ -63,7 +63,7 @@ import org.checkerframework.javacutil.TreeUtils;
  *
  * <p>Steps 3 and 4 are separated so that an error is issued only once per invalid expression string
  * rather than every time the expression string is parsed. (The expression string is parsed multiple
- * times because annotated types are created mulitple times.)
+ * times because annotated types are created multiple times.)
  */
 public class ExpressionAnnotationHelper {
     protected final AnnotatedTypeFactory factory;
