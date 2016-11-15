@@ -46,9 +46,14 @@ public class ContractsUtils {
 
     public abstract static class Contract {
         public enum Kind {
-            PRECONDITION,
-            POSTCONDTION,
-            CONDITIONALPOSTCONDTION;
+            PRECONDITION("precondition"),
+            POSTCONDTION("postcondition"),
+            CONDITIONALPOSTCONDTION("conditional.postcondition");
+            public String errorKey;
+
+            Kind(String errorKey) {
+                this.errorKey = errorKey;
+            }
         }
         /**
          * The expression for which the condition must hold, such as {@code "foo"} in
@@ -149,7 +154,6 @@ public class ContractsUtils {
             }
 
             ConditionalPostcondition that = (ConditionalPostcondition) o;
-
             return annoResult == that.annoResult;
         }
 
@@ -349,7 +353,7 @@ public class ContractsUtils {
         if (ensuresAnnotationIf == null) {
             return Collections.emptySet();
         }
-        Set<ConditionalPostcondition> result = new LinkedHashSet<ConditionalPostcondition>();
+        Set<ConditionalPostcondition> result = new LinkedHashSet<>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresAnnotationIf, "expression", String.class, false);

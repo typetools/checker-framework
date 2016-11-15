@@ -513,7 +513,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     methodElement.getModifiers().contains(Modifier.ABSTRACT)
                             || methodElement.getModifiers().contains(Modifier.NATIVE);
             List<String> formalParamNames = verifyParameterAnnotationsForParameterNames(node);
-            checkContracts(node, methodElement, formalParamNames, abstractMethod);
+            checkContractsAtMethodDeclaration(
+                    node, methodElement, formalParamNames, abstractMethod);
 
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
@@ -555,7 +556,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    protected void checkContracts(
+    protected void checkContractsAtMethodDeclaration(
             MethodTree node,
             ExecutableElement methodElement,
             List<String> formalParamNames,
@@ -582,33 +583,35 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 expr =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
+                if (!abstractMethod) {
+                    switch (contract.kind) {
+                        case POSTCONDTION:
+                            checkPostcondition(node, annotation, expr);
+                            break;
+                        case CONDITIONALPOSTCONDTION:
+                            checkConditionalPostcondition(
+                                    node, annotation, expr, (ConditionalPostcondition) contract);
+                            break;
+                            // case PRECONDITION:
+                            // Preconditions are checked at method invocations, not declarations
+                    }
+                }
             } catch (FlowExpressionParseException e) {
                 checker.report(e.getResult(), node);
-                continue;
-            }
-            if (!abstractMethod) {
-                switch (contract.kind) {
-                    case POSTCONDTION:
-                        checkPostcondition(node, annotation, expr);
-                        break;
-                    case CONDITIONALPOSTCONDTION:
-                        checkConditionalPostcondition(
-                                node, annotation, expr, (ConditionalPostcondition) contract);
-                        break;
-                        // case PRECONDITION:
-                        // Preconditions are checked at method invocations, not declarations
-                }
             }
             if (formalParamNames != null && formalParamNames.contains(expression)) {
                 checker.report(
                         Result.warning(
-                                "contracts.postcondition.expression.parameter.name",
+                                "contracts."
+                                        + contract.kind.errorKey
+                                        + ".expression.parameter.name",
                                 node.getName().toString(),
                                 expression,
                                 formalParamNames.indexOf(expression) + 1,
                                 expression),
                         node);
             }
+
             checkFlowExprParameters(methodElement, expression);
         }
     }
