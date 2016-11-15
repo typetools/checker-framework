@@ -103,7 +103,9 @@ import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
+import org.checkerframework.framework.util.ContractsUtils.Contract;
+import org.checkerframework.framework.util.ContractsUtils.Postcondition;
+import org.checkerframework.framework.util.ContractsUtils.Precondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -572,9 +574,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
     protected void checkPostconditions(MethodTree node, ExecutableElement methodElement) {
         FlowExpressionContext flowExprContext = null;
-        Set<PreOrPostcondition> postconditions = contractsUtils.getPostconditions(methodElement);
+        Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
 
-        for (PreOrPostcondition p : postconditions) {
+        for (Postcondition p : postconditions) {
             String expression = p.expression;
             AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
 
@@ -635,9 +637,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkPostconditionsConsistency(
             MethodTree node, ExecutableElement methodElement, List<String> formalParamNames) {
         FlowExpressionContext flowExprContext = null;
-        Set<PreOrPostcondition> postconditions = contractsUtils.getPostconditions(methodElement);
+        Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
 
-        for (PreOrPostcondition p : postconditions) {
+        for (Postcondition p : postconditions) {
             String expression = p.expression;
             AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
 
@@ -992,7 +994,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param tree the Tree immediately prior to which the preconditions must hold true
      * @param preconditions the preconditions to be checked
      */
-    protected void checkPreconditions(Tree tree, Set<PreOrPostcondition> preconditions) {
+    protected void checkPreconditions(Tree tree, Set<Precondition> preconditions) {
         // This check is needed for the GUI effects and Units Checkers tests to pass.
         // TODO: Remove this check and investigate the root cause.
         if (preconditions.isEmpty()) {
@@ -1012,7 +1014,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * @param preconditions the preconditions to be checked
      */
     protected void checkPreconditions(
-            Tree treeForErrorReporting, Node node, Set<PreOrPostcondition> preconditions) {
+            Tree treeForErrorReporting, Node node, Set<Precondition> preconditions) {
         if (preconditions.isEmpty()) {
             return;
         }
@@ -1026,7 +1028,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        for (PreOrPostcondition p : preconditions) {
+        for (Precondition p : preconditions) {
             String expression = p.expression;
             AnnotationMirror anno = AnnotationUtils.fromName(elements, p.annotationString);
 
@@ -1164,9 +1166,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     protected void checkPreconditionsConsistency(
             MethodTree node, ExecutableElement methodElement, List<String> formalParamNames) {
         FlowExpressionContext flowExprContext = null;
-        Set<PreOrPostcondition> preconditions = contractsUtils.getPreconditions(methodElement);
+        Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
 
-        for (PreOrPostcondition p : preconditions) {
+        for (Precondition p : preconditions) {
             String expression = p.expression;
             AnnotationMirror anno = AnnotationUtils.fromName(elements, p.annotationString);
 
@@ -2648,9 +2650,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // Check postconditions
             ContractsUtils contracts = ContractsUtils.getInstance(atypeFactory);
-            Set<PreOrPostcondition> superPost =
-                    contracts.getPostconditions(overridden.getElement());
-            Set<PreOrPostcondition> subPost = contracts.getPostconditions(overrider.getElement());
+            Set<Postcondition> superPost = contracts.getPostconditions(overridden.getElement());
+            Set<Postcondition> subPost = contracts.getPostconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPost2 =
                     resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
@@ -2666,8 +2667,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     postmsg);
 
             // Check preconditions
-            Set<PreOrPostcondition> superPre = contracts.getPreconditions(overridden.getElement());
-            Set<PreOrPostcondition> subPre = contracts.getPreconditions(overrider.getElement());
+            Set<Precondition> superPre = contracts.getPreconditions(overridden.getElement());
+            Set<Precondition> subPre = contracts.getPreconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPre2 =
                     resolveContracts(superPre, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
@@ -2688,9 +2689,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<ConditionalPostcondition> subCPost =
                     contracts.getConditionalPostconditions(overrider.getElement());
             // consider only 'true' postconditions
-            Set<PreOrPostcondition> superCPostTrue =
-                    filterConditionalPostconditions(superCPost, true);
-            Set<PreOrPostcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
+            Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
+            Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
             Set<Pair<Receiver, AnnotationMirror>> superCPostTrue2 =
                     resolveContracts(superCPostTrue, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subCPostTrue2 =
@@ -2708,10 +2708,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     posttruemsg);
 
             // consider only 'false' postconditions
-            Set<PreOrPostcondition> superCPostFalse =
-                    filterConditionalPostconditions(superCPost, false);
-            Set<PreOrPostcondition> subCPostFalse =
-                    filterConditionalPostconditions(subCPost, false);
+            Set<Postcondition> superCPostFalse = filterConditionalPostconditions(superCPost, false);
+            Set<Postcondition> subCPostFalse = filterConditionalPostconditions(subCPost, false);
             Set<Pair<Receiver, AnnotationMirror>> superCPostFalse2 =
                     resolveContracts(superCPostFalse, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subCPostFalse2 =
@@ -3028,12 +3026,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * {@code @EnsuresNonNullIf(expression="#1", result=true)}<br>
      * {@code boolean equals(@Nullable Object o)}
      */
-    private Set<PreOrPostcondition> filterConditionalPostconditions(
+    private Set<Postcondition> filterConditionalPostconditions(
             Set<ConditionalPostcondition> conditionalPostconditions, boolean b) {
-        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
+        Set<Postcondition> result = new LinkedHashSet<>();
         for (ConditionalPostcondition p : conditionalPostconditions) {
             if (p.annoResult == b) {
-                result.add(new PreOrPostcondition(p.expression, p.annotationString));
+                result.add(new Postcondition(p.expression, p.annotationString));
             }
         }
         return result;
@@ -3088,12 +3086,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * them to the correct {@link Receiver} and {@link AnnotationMirror}.
      */
     private Set<Pair<Receiver, AnnotationMirror>> resolveContracts(
-            Set<PreOrPostcondition> contractSet, AnnotatedExecutableType method) {
+            Set<? extends Contract> contractSet, AnnotatedExecutableType method) {
         Set<Pair<Receiver, AnnotationMirror>> result = new HashSet<>();
         MethodTree methodTree = visitorState.getMethodTree();
         TreePath path = atypeFactory.getPath(methodTree);
         FlowExpressionContext flowExprContext = null;
-        for (PreOrPostcondition p : contractSet) {
+        for (Contract p : contractSet) {
             String expression = p.expression;
             AnnotationMirror annotation =
                     AnnotationUtils.fromName(atypeFactory.getElementUtils(), p.annotationString);

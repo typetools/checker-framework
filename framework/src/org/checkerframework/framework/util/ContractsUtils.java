@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -43,16 +44,12 @@ public class ContractsUtils {
         return instance;
     }
 
-    /**
-     * Represents a pre- or postcondition that must be verified by {@code BaseTypeVisitor} or one of
-     * its subclasses. Automatically extracted from annotations with meta-annotations
-     * {@code @PreconditionAnnotation} or {@code @PostconditionAnnotation}, such as
-     * {@code @RequiresNonNull} and {@code @EnsuresNonNull}. Can also be generated, such as in
-     * {@code LockVisitor.generatePreconditionsBasedOnGuards}.
-     */
-    // When making changes, make also the appropriate changes
-    // to class ConditionalPostcondition.
-    public static class PreOrPostcondition {
+    public abstract static class Contract {
+        public enum Kind {
+            PRECONTION,
+            POSTCONDTION,
+            CONDITIONALPOSTCONDTION;
+        }
         /**
          * The expression for which the condition must hold, such as {@code "foo"} in
          * {@code @RequiresNonNull("foo")}.
@@ -62,9 +59,56 @@ public class ContractsUtils {
         /** The name of the qualifier class that describes the condition that must hold. */
         public final String annotationString;
 
-        public PreOrPostcondition(String expression, String annotationString) {
+        public final Kind kind;
+
+        public Contract(String expression, String annotationString, Kind kind) {
             this.expression = expression;
             this.annotationString = annotationString;
+            this.kind = kind;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            Contract contract = (Contract) o;
+
+            if (expression != null
+                    ? !expression.equals(contract.expression)
+                    : contract.expression != null) {
+                return false;
+            }
+            if (annotationString != null
+                    ? !annotationString.equals(contract.annotationString)
+                    : contract.annotationString != null) {
+                return false;
+            }
+            return kind == contract.kind;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = expression != null ? expression.hashCode() : 0;
+            result = 31 * result + (annotationString != null ? annotationString.hashCode() : 0);
+            result = 31 * result + (kind != null ? kind.hashCode() : 0);
+            return result;
+        }
+    }
+
+    public static class Precondition extends Contract {
+        public Precondition(String expression, String annotationString) {
+            super(expression, annotationString, Kind.PRECONTION);
+        }
+    }
+
+    public static class Postcondition extends Contract {
+        public Postcondition(String expression, String annotationString) {
+            super(expression, annotationString, Kind.POSTCONDTION);
         }
     }
 
@@ -75,12 +119,7 @@ public class ContractsUtils {
      */
     // When making changes, make also the appropriate changes
     // to class PreOrPostcondition.
-    public static class ConditionalPostcondition {
-        /**
-         * The expression for which the conditional postcondition must hold, such as {@code "foo"}
-         * in {@code @EnsuresNonNullIf(expression="foo", result=true)}.
-         */
-        public final String expression;
+    public static class ConditionalPostcondition extends Contract {
 
         /**
          * The return value for the annotated method that ensures that the conditional postcondition
@@ -91,23 +130,50 @@ public class ContractsUtils {
          */
         public final boolean annoResult;
 
-        /** The name of the qualifier class that describes the condition that must hold. */
-        public final String annotationString;
-
         public ConditionalPostcondition(
                 String expression, boolean annoResult, String annotationString) {
-            this.expression = expression;
+            super(expression, annotationString, Kind.CONDITIONALPOSTCONDTION);
             this.annoResult = annoResult;
-            this.annotationString = annotationString;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
+
+            ConditionalPostcondition that = (ConditionalPostcondition) o;
+
+            return annoResult == that.annoResult;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = super.hashCode();
+            result = 31 * result + (annoResult ? 1 : 0);
+            return result;
         }
     }
 
+    public List<Contract> getContracts(ExecutableElement element) {
+        List<Contract> contracts = new ArrayList<>();
+        contracts.addAll(getPreconditions(element));
+        contracts.addAll(getPostconditions(element));
+        contracts.addAll(getConditionalPostconditions(element));
+        return contracts;
+    }
     /**
      * Returns a set of pairs {@code (expr, annotation)} of preconditions on the element {@code
      * element}.
      */
-    public Set<PreOrPostcondition> getPreconditions(Element element) {
-        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
+    public Set<Precondition> getPreconditions(Element element) {
+        Set<Precondition> result = new LinkedHashSet<>();
         // Check for a single contract.
         AnnotationMirror requiresAnnotation =
                 factory.getDeclAnnotation(element, RequiresQualifier.class);
@@ -138,7 +204,7 @@ public class ContractsUtils {
                     AnnotationUtils.getElementValueClassName(metaAnno, "qualifier", false)
                             .toString();
             for (String expr : expressions) {
-                result.add(new PreOrPostcondition(expr, annotationString));
+                result.add(new Precondition(expr, annotationString));
             }
         }
         return result;
@@ -148,11 +214,11 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of preconditions according to the given
      * {@link RequiresQualifier}.
      */
-    private Set<PreOrPostcondition> getPrecondition(AnnotationMirror requiresAnnotation) {
+    private Set<Precondition> getPrecondition(AnnotationMirror requiresAnnotation) {
         if (requiresAnnotation == null) {
             return Collections.emptySet();
         }
-        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
+        Set<Precondition> result = new LinkedHashSet<Precondition>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         requiresAnnotation, "expression", String.class, false);
@@ -160,7 +226,7 @@ public class ContractsUtils {
                 AnnotationUtils.getElementValueClassName(requiresAnnotation, "qualifier", false)
                         .toString();
         for (String expr : expressions) {
-            result.add(new PreOrPostcondition(expr, annotation));
+            result.add(new Precondition(expr, annotation));
         }
         return result;
     }
@@ -169,8 +235,8 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of postconditions on the method {@code
      * methodElement}.
      */
-    public Set<PreOrPostcondition> getPostconditions(ExecutableElement methodElement) {
-        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
+    public Set<Postcondition> getPostconditions(ExecutableElement methodElement) {
+        Set<Postcondition> result = new LinkedHashSet<>();
         // Check for a single contract.
         AnnotationMirror ensuresAnnotation =
                 factory.getDeclAnnotation(methodElement, EnsuresQualifier.class);
@@ -201,7 +267,7 @@ public class ContractsUtils {
                     AnnotationUtils.getElementValueClassName(metaAnno, "qualifier", false)
                             .toString();
             for (String expr : expressions) {
-                result.add(new PreOrPostcondition(expr, annotationString));
+                result.add(new Postcondition(expr, annotationString));
             }
         }
         return result;
@@ -211,11 +277,11 @@ public class ContractsUtils {
      * Returns a set of pairs {@code (expr, annotation)} of postconditions according to the given
      * {@link EnsuresQualifier}.
      */
-    private Set<PreOrPostcondition> getPostcondition(AnnotationMirror ensuresAnnotation) {
+    private Set<Postcondition> getPostcondition(AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation == null) {
             return Collections.emptySet();
         }
-        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
+        Set<Postcondition> result = new LinkedHashSet<>();
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresAnnotation, "expression", String.class, false);
@@ -223,7 +289,7 @@ public class ContractsUtils {
                 AnnotationUtils.getElementValueClassName(ensuresAnnotation, "qualifier", false)
                         .toString();
         for (String expr : expressions) {
-            result.add(new PreOrPostcondition(expr, annotation));
+            result.add(new Postcondition(expr, annotation));
         }
         return result;
     }

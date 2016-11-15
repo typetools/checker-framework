@@ -66,7 +66,8 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
+import org.checkerframework.framework.util.ContractsUtils.Postcondition;
+import org.checkerframework.framework.util.ContractsUtils.Precondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -503,9 +504,9 @@ public abstract class CFAbstractTransfer<
             ExecutableElement methodElement) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
-        Set<PreOrPostcondition> preconditions = contracts.getPreconditions(methodElement);
+        Set<Precondition> preconditions = contracts.getPreconditions(methodElement);
 
-        for (PreOrPostcondition p : preconditions) {
+        for (Precondition p : preconditions) {
             String expression = p.expression;
             AnnotationMirror annotation =
                     AnnotationUtils.fromName(
@@ -961,11 +962,11 @@ public abstract class CFAbstractTransfer<
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<PreOrPostcondition> postconditions = contracts.getPostconditions(methodElement);
+        Set<Postcondition> postconditions = contracts.getPostconditions(methodElement);
 
         FlowExpressionContext flowExprContext = null;
 
-        for (PreOrPostcondition p : postconditions) {
+        for (Postcondition p : postconditions) {
             String expression = p.expression.trim();
             AnnotationMirror anno =
                     AnnotationUtils.fromName(
