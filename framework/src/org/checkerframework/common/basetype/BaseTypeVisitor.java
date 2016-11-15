@@ -566,13 +566,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         for (Contract contract : contracts) {
             String expression = contract.expression;
-            AnnotationMirror annotation =
-                    AnnotationUtils.fromName(elements, contract.annotationString);
+            AnnotationMirror annotation = contract.annotation;
 
-            // Only check if the contract concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
-                continue;
-            }
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodDeclaration(
@@ -711,6 +706,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         // effectively final, so that they cannot be modified
         List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
         for (Integer idx : parameterIndices) {
+            if (idx > method.getParameters().size()) {
+                continue;
+            }
             VariableElement parameter = method.getParameters().get(idx - 1);
             if (!ElementUtils.isEffectivelyFinal(parameter)) {
                 checker.report(
@@ -901,12 +899,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         for (Precondition p : preconditions) {
             String expression = p.expression;
-            AnnotationMirror anno = AnnotationUtils.fromName(elements, p.annotationString);
-
-            // Only check the precondition if it concerns this checker
-            if (!atypeFactory.isSupportedQualifier(anno)) {
-                continue;
-            }
+            AnnotationMirror anno = p.annotation;
 
             try {
                 FlowExpressions.Receiver expr =
@@ -2852,7 +2845,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         Set<Postcondition> result = new LinkedHashSet<>();
         for (ConditionalPostcondition p : conditionalPostconditions) {
             if (p.annoResult == b) {
-                result.add(new Postcondition(p.expression, p.annotationString));
+                result.add(new Postcondition(p.expression, p.annotation));
             }
         }
         return result;
@@ -2914,13 +2907,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         FlowExpressionContext flowExprContext = null;
         for (Contract p : contractSet) {
             String expression = p.expression;
-            AnnotationMirror annotation =
-                    AnnotationUtils.fromName(atypeFactory.getElementUtils(), p.annotationString);
-
-            // Only check if the postcondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
-                continue;
-            }
+            AnnotationMirror annotation = p.annotation;
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodDeclaration(

@@ -1,5 +1,6 @@
 package org.checkerframework.framework.util;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -61,14 +62,13 @@ public class ContractsUtils {
          */
         public final String expression;
 
-        /** The name of the qualifier class that describes the condition that must hold. */
-        public final String annotationString;
+        public final AnnotationMirror annotation;
 
         public final Kind kind;
 
-        public Contract(String expression, String annotationString, Kind kind) {
+        public Contract(String expression, AnnotationMirror annotation, Kind kind) {
             this.expression = expression;
-            this.annotationString = annotationString;
+            this.annotation = annotation;
             this.kind = kind;
         }
 
@@ -88,9 +88,9 @@ public class ContractsUtils {
                     : contract.expression != null) {
                 return false;
             }
-            if (annotationString != null
-                    ? !annotationString.equals(contract.annotationString)
-                    : contract.annotationString != null) {
+            if (annotation != null
+                    ? !annotation.equals(contract.annotation)
+                    : contract.annotation != null) {
                 return false;
             }
             return kind == contract.kind;
@@ -99,21 +99,21 @@ public class ContractsUtils {
         @Override
         public int hashCode() {
             int result = expression != null ? expression.hashCode() : 0;
-            result = 31 * result + (annotationString != null ? annotationString.hashCode() : 0);
+            result = 31 * result + (annotation != null ? annotation.hashCode() : 0);
             result = 31 * result + (kind != null ? kind.hashCode() : 0);
             return result;
         }
     }
 
     public static class Precondition extends Contract {
-        public Precondition(String expression, String annotationString) {
-            super(expression, annotationString, Kind.PRECONDITION);
+        public Precondition(String expression, AnnotationMirror annotation) {
+            super(expression, annotation, Kind.PRECONDITION);
         }
     }
 
     public static class Postcondition extends Contract {
-        public Postcondition(String expression, String annotationString) {
-            super(expression, annotationString, Kind.POSTCONDTION);
+        public Postcondition(String expression, AnnotationMirror annotation) {
+            super(expression, annotation, Kind.POSTCONDTION);
         }
     }
 
@@ -136,8 +136,8 @@ public class ContractsUtils {
         public final boolean annoResult;
 
         public ConditionalPostcondition(
-                String expression, boolean annoResult, String annotationString) {
-            super(expression, annotationString, Kind.CONDITIONALPOSTCONDTION);
+                String expression, boolean annoResult, AnnotationMirror annotation) {
+            super(expression, annotation, Kind.CONDITIONALPOSTCONDTION);
             this.annoResult = annoResult;
         }
 
@@ -204,14 +204,28 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-            String annotationString =
-                    AnnotationUtils.getElementValueClassName(metaAnno, "qualifier", false)
-                            .toString();
+            AnnotationMirror precondtionAnno = getAnnotationMirror(metaAnno);
+            if (precondtionAnno == null) {
+                continue;
+            }
             for (String expr : expressions) {
-                result.add(new Precondition(expr, annotationString));
+                result.add(new Precondition(expr, precondtionAnno));
             }
         }
         return result;
+    }
+
+    private AnnotationMirror getAnnotationMirror(AnnotationMirror metaAnno) {
+        @SuppressWarnings("unchecked")
+        Class<? extends Annotation> c =
+                (Class<? extends Annotation>)
+                        AnnotationUtils.getElementValueClass(metaAnno, "qualifier", false);
+        AnnotationMirror anno = AnnotationUtils.fromClass(factory.getElementUtils(), c);
+        if (factory.isSupportedQualifier(anno)) {
+            return anno;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -226,11 +240,12 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         requiresAnnotation, "expression", String.class, false);
-        String annotation =
-                AnnotationUtils.getElementValueClassName(requiresAnnotation, "qualifier", false)
-                        .toString();
+        AnnotationMirror postcondAnno = getAnnotationMirror(requiresAnnotation);
+        if (postcondAnno == null) {
+            return result;
+        }
         for (String expr : expressions) {
-            result.add(new Precondition(expr, annotation));
+            result.add(new Precondition(expr, postcondAnno));
         }
         return result;
     }
@@ -267,11 +282,12 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-            String annotationString =
-                    AnnotationUtils.getElementValueClassName(metaAnno, "qualifier", false)
-                            .toString();
+            AnnotationMirror postcondAnno = getAnnotationMirror(metaAnno);
+            if (postcondAnno == null) {
+                continue;
+            }
             for (String expr : expressions) {
-                result.add(new Postcondition(expr, annotationString));
+                result.add(new Postcondition(expr, postcondAnno));
             }
         }
         return result;
@@ -289,11 +305,12 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresAnnotation, "expression", String.class, false);
-        String annotation =
-                AnnotationUtils.getElementValueClassName(ensuresAnnotation, "qualifier", false)
-                        .toString();
+        AnnotationMirror postcondAnno = getAnnotationMirror(ensuresAnnotation);
+        if (postcondAnno == null) {
+            return result;
+        }
         for (String expr : expressions) {
-            result.add(new Postcondition(expr, annotation));
+            result.add(new Postcondition(expr, postcondAnno));
         }
         return result;
     }
@@ -332,13 +349,14 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "expression", String.class, false);
-            String annotationString =
-                    AnnotationUtils.getElementValueClassName(metaAnno, "qualifier", false)
-                            .toString();
+            AnnotationMirror postcondAnno = getAnnotationMirror(metaAnno);
+            if (postcondAnno == null) {
+                continue;
+            }
             boolean annoResult =
                     AnnotationUtils.getElementValue(anno, "result", Boolean.class, false);
             for (String expr : expressions) {
-                result.add(new ConditionalPostcondition(expr, annoResult, annotationString));
+                result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno));
             }
         }
         return result;
@@ -357,14 +375,15 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresAnnotationIf, "expression", String.class, false);
-        String annotation =
-                AnnotationUtils.getElementValueClassName(ensuresAnnotationIf, "qualifier", false)
-                        .toString();
+        AnnotationMirror postcondAnno = getAnnotationMirror(ensuresAnnotationIf);
+        if (postcondAnno == null) {
+            return result;
+        }
         boolean annoResult =
                 AnnotationUtils.getElementValue(
                         ensuresAnnotationIf, "result", Boolean.class, false);
         for (String expr : expressions) {
-            result.add(new ConditionalPostcondition(expr, annoResult, annotation));
+            result.add(new ConditionalPostcondition(expr, annoResult, postcondAnno));
         }
         return result;
     }

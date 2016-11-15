@@ -42,7 +42,6 @@ import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByBottom;
 import org.checkerframework.checker.lock.qual.Holding;
-import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
@@ -352,8 +351,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
                         for (String lockExpression : guardedByValue) {
                             preconditions.add(
-                                    new Precondition(
-                                            lockExpression, LockHeld.class.getCanonicalName()));
+                                    new Precondition(lockExpression, atypeFactory.LOCKHELD));
                         }
                     }
                 }
