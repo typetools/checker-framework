@@ -46,7 +46,7 @@ public class ContractsUtils {
 
     public abstract static class Contract {
         public enum Kind {
-            PRECONTION,
+            PRECONDITION,
             POSTCONDTION,
             CONDITIONALPOSTCONDTION;
         }
@@ -102,7 +102,7 @@ public class ContractsUtils {
 
     public static class Precondition extends Contract {
         public Precondition(String expression, String annotationString) {
-            super(expression, annotationString, Kind.PRECONTION);
+            super(expression, annotationString, Kind.PRECONDITION);
         }
     }
 

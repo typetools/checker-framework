@@ -512,21 +512,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             boolean abstractMethod =
                     methodElement.getModifiers().contains(Modifier.ABSTRACT)
                             || methodElement.getModifiers().contains(Modifier.NATIVE);
-
-            if (!abstractMethod) {
-                // check postcondition annotations
-                checkPostconditions(node, methodElement);
-
-                // check conditional method postcondition
-                checkConditionalPostconditions(node, methodElement);
-            }
-
-            // check well-formedness of pre/postcondition
             List<String> formalParamNames = verifyParameterAnnotationsForParameterNames(node);
-
-            checkPreconditionsConsistency(node, methodElement, formalParamNames);
-            checkPostconditionsConsistency(node, methodElement, formalParamNames);
-            checkConditionalPostconditionsConsistency(node, methodElement, formalParamNames);
+            checkContracts(node, methodElement, formalParamNames, abstractMethod);
 
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
@@ -568,19 +555,20 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /**
-     * Checks all (non-conditional) postcondition on the method {@code node} with element {@code
-     * methodElement}.
-     */
-    protected void checkPostconditions(MethodTree node, ExecutableElement methodElement) {
+    protected void checkContracts(
+            MethodTree node,
+            ExecutableElement methodElement,
+            List<String> formalParamNames,
+            boolean abstractMethod) {
         FlowExpressionContext flowExprContext = null;
-        Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
+        List<Contract> contracts = contractsUtils.getContracts(methodElement);
 
-        for (Postcondition p : postconditions) {
-            String expression = p.expression;
-            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
+        for (Contract contract : contracts) {
+            String expression = contract.expression;
+            AnnotationMirror annotation =
+                    AnnotationUtils.fromName(elements, contract.annotationString);
 
-            // Only check if the postcondition concerns this checker
+            // Only check if the contract concerns this checker
             if (!atypeFactory.isSupportedQualifier(annotation)) {
                 continue;
             }
@@ -589,71 +577,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         FlowExpressionContext.buildContextForMethodDeclaration(
                                 node, getCurrentPath(), checker.getContext());
             }
-
-            FlowExpressions.Receiver expr = null;
+            FlowExpressions.Receiver expr;
             try {
-                // TODO: currently, these expressions are parsed at the
-                // declaration (i.e. here) and for every use. this could be
-                // optimized to store the result the first time. (same for
-                // other annotations)
                 expr =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
-
-                CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(node);
-                if (exitStore == null) {
-                    // if there is no regular exitStore, then the method
-                    // cannot reach the regular exit and there is no need to
-                    // check anything
-                } else {
-                    CFAbstractValue<?> value = exitStore.getValue(expr);
-                    AnnotationMirror inferredAnno = null;
-                    if (value != null) {
-                        QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
-                        Set<AnnotationMirror> annos = value.getAnnotations();
-                        inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
-                    }
-                    if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
-                        checker.report(
-                                Result.failure(
-                                        "contracts.postcondition.not.satisfied", expr.toString()),
-                                node);
-                    }
-                }
-
             } catch (FlowExpressionParseException e) {
-                // report errors here
                 checker.report(e.getResult(), node);
-            }
-        }
-    }
-
-    /**
-     * Checks all (non-conditional) postcondition on the method {@code node} with element {@code
-     * methodElement} for consistency, i.e. that no formal parameter names are mentioned in the
-     * postconditions (an index such as "#1" should be used instead), and that all formal parameters
-     * referred to by an index in the postconditions are effectively final.
-     */
-    protected void checkPostconditionsConsistency(
-            MethodTree node, ExecutableElement methodElement, List<String> formalParamNames) {
-        FlowExpressionContext flowExprContext = null;
-        Set<Postcondition> postconditions = contractsUtils.getPostconditions(methodElement);
-
-        for (Postcondition p : postconditions) {
-            String expression = p.expression;
-            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
-
-            if (flowExprContext == null) {
-                flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
-                                node, getCurrentPath(), checker.getContext());
-            }
-
-            // Only check if the postcondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
                 continue;
             }
-
+            if (!abstractMethod) {
+                switch (contract.kind) {
+                    case POSTCONDTION:
+                        checkPostcondition(node, annotation, expr);
+                        break;
+                    case CONDITIONALPOSTCONDTION:
+                        checkConditionalPostcondition(
+                                node, annotation, expr, (ConditionalPostcondition) contract);
+                        break;
+                        // case PRECONDITION:
+                        // Preconditions are checked at method invocations, not declarations
+                }
+            }
             if (formalParamNames != null && formalParamNames.contains(expression)) {
                 checker.report(
                         Result.warning(
@@ -664,74 +609,48 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 expression),
                         node);
             }
-
-            try {
-                FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath(), false);
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
-
-                // ignore expressions that do not parse
-                continue;
-            }
             checkFlowExprParameters(methodElement, expression);
         }
     }
 
-    /**
-     * Checks all conditional postcondition on the method {@code node} with element {@code
-     * methodElement}.
-     */
-    protected void checkConditionalPostconditions(
-            MethodTree node, ExecutableElement methodElement) {
-        FlowExpressionContext flowExprContext = null;
-        Set<ConditionalPostcondition> conditionalPostconditions =
-                contractsUtils.getConditionalPostconditions(methodElement);
-
-        for (ConditionalPostcondition p : conditionalPostconditions) {
-            String expression = p.expression;
-            boolean result = p.annoResult;
-            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
-
-            // Only check if the postcondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
-                continue;
+    private void checkPostcondition(MethodTree node, AnnotationMirror annotation, Receiver expr) {
+        CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(node);
+        if (exitStore == null) {
+            // if there is no regular exitStore, then the method
+            // cannot reach the regular exit and there is no need to
+            // check anything
+        } else {
+            CFAbstractValue<?> value = exitStore.getValue(expr);
+            AnnotationMirror inferredAnno = null;
+            if (value != null) {
+                QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                Set<AnnotationMirror> annos = value.getAnnotations();
+                inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
             }
-            if (flowExprContext == null) {
-                flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
-                                node, getCurrentPath(), checker.getContext());
-            }
-
-            FlowExpressions.Receiver expr = null;
-            try {
-                // TODO: currently, these expressions are parsed at the
-                // declaration (i.e. here) and for every use. this could be
-                // optimized to store the result the first time. (same for
-                // other annotations)
-                expr =
-                        FlowExpressionParseUtil.parse(
-                                expression, flowExprContext, getCurrentPath(), false);
-
-                // check return type of method
-                boolean booleanReturnType =
-                        TypesUtils.isBooleanType(InternalUtils.typeOf(node.getReturnType()));
-                if (!booleanReturnType) {
-                    checker.report(
-                            Result.failure(
-                                    "contracts.conditional.postcondition.invalid.returntype"),
-                            node);
-                    // No reason to go ahead with further checking. The
-                    // annotation is invalid.
-                    continue;
-                }
-                checkConditionalPostconditionAtReturnStatements(result, annotation, expr, node);
-
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
+            if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
+                checker.report(
+                        Result.failure("contracts.postcondition.not.satisfied", expr.toString()),
+                        node);
             }
         }
+    }
+
+    private void checkConditionalPostcondition(
+            MethodTree node,
+            AnnotationMirror annotation,
+            Receiver expr,
+            ConditionalPostcondition contract) {
+        boolean booleanReturnType =
+                TypesUtils.isBooleanType(InternalUtils.typeOf(node.getReturnType()));
+        if (!booleanReturnType) {
+            checker.report(
+                    Result.failure("contracts.conditional.postcondition.invalid.returntype"), node);
+            // No reason to go ahead with further checking. The
+            // annotation is invalid.
+            return;
+        }
+        checkConditionalPostconditionAtReturnStatements(
+                contract.annoResult, annotation, expr, node);
     }
 
     private void checkConditionalPostconditionAtReturnStatements(
@@ -777,57 +696,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                                 expr.toString()),
                         returnStmt.getTree());
             }
-        }
-    }
-
-    /**
-     * Checks all conditional postcondition on the method with element {@code methodElement} for
-     * consistency, i.e. that no formal parameter names are mentioned in the conditional
-     * postconditions (an index such as "#1" should be used instead), and that all formal parameters
-     * referred to by an index in the conditional postconditions are effectively final.
-     */
-    protected void checkConditionalPostconditionsConsistency(
-            MethodTree node, ExecutableElement methodElement, List<String> formalParamNames) {
-        FlowExpressionContext flowExprContext = null;
-        Set<ConditionalPostcondition> conditionalPostconditions =
-                contractsUtils.getConditionalPostconditions(methodElement);
-
-        for (ConditionalPostcondition p : conditionalPostconditions) {
-            String expression = p.expression;
-            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
-
-            if (flowExprContext == null) {
-                flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
-                                node, getCurrentPath(), checker.getContext());
-            }
-
-            // Only check if the postcondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
-                continue;
-            }
-
-            if (formalParamNames != null && formalParamNames.contains(expression)) {
-                checker.report(
-                        Result.warning(
-                                "contracts.conditional.postcondition.expression.parameter.name",
-                                node.getName().toString(),
-                                expression,
-                                formalParamNames.indexOf(expression) + 1,
-                                expression),
-                        node);
-            }
-
-            try {
-                FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath(), false);
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
-
-                // ignore expressions that do not parse
-                continue;
-            }
-            checkFlowExprParameters(methodElement, expression);
         }
     }
 
@@ -1155,56 +1023,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             boolean use)
             throws FlowExpressionParseException {
         return FlowExpressionParseUtil.parse(expression, flowExprContext, path, use);
-    }
-
-    /**
-     * Checks all the preconditions of the method with element {@code methodElement} for
-     * consistency, i.e. that no formal parameter names are mentioned in the preconditions (an index
-     * such as "#1" should be used instead), and that all formal parameters referred to by an index
-     * in the preconditions are effectively final.
-     */
-    protected void checkPreconditionsConsistency(
-            MethodTree node, ExecutableElement methodElement, List<String> formalParamNames) {
-        FlowExpressionContext flowExprContext = null;
-        Set<Precondition> preconditions = contractsUtils.getPreconditions(methodElement);
-
-        for (Precondition p : preconditions) {
-            String expression = p.expression;
-            AnnotationMirror anno = AnnotationUtils.fromName(elements, p.annotationString);
-
-            if (flowExprContext == null) {
-                flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
-                                node, getCurrentPath(), checker.getContext());
-            }
-
-            // Only check if the precondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(anno)) {
-                return;
-            }
-
-            if (formalParamNames != null && formalParamNames.contains(expression)) {
-                checker.report(
-                        Result.warning(
-                                "contracts.precondition.expression.parameter.name",
-                                node.getName().toString(),
-                                expression,
-                                formalParamNames.indexOf(expression) + 1,
-                                expression),
-                        node);
-            }
-
-            try {
-                FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath(), false);
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
-
-                // ignore expressions that do not parse
-                continue;
-            }
-            checkFlowExprParameters(methodElement, expression);
-        }
     }
 
     /**
