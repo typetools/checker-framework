@@ -64,7 +64,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
+import org.checkerframework.framework.util.ContractsUtils.Precondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -337,9 +337,9 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
      *     expression preconditions.
      * @return a set of lock expression preconditions that can be processed by checkPreconditions
      */
-    private Set<PreOrPostcondition> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
+    private Set<Precondition> generatePreconditionsBasedOnGuards(AnnotatedTypeMirror atm) {
         Set<AnnotationMirror> amList = atm.getAnnotations();
-        Set<PreOrPostcondition> preconditions = new LinkedHashSet<PreOrPostcondition>();
+        Set<Precondition> preconditions = new LinkedHashSet<>();
 
         if (amList != null) {
             for (AnnotationMirror annotationMirror : amList) {
@@ -352,7 +352,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
 
                         for (String lockExpression : guardedByValue) {
                             preconditions.add(
-                                    new PreOrPostcondition(
+                                    new Precondition(
                                             lockExpression, LockHeld.class.getCanonicalName()));
                         }
                     }
@@ -556,8 +556,7 @@ public class LockVisitor extends BaseTypeVisitor<LockAnnotatedTypeFactory> {
             }
 
             if (AnnotationUtils.areSameByClass(gb, checkerGuardedByClass)) {
-                Set<PreOrPostcondition> preconditions =
-                        generatePreconditionsBasedOnGuards(atmOfReceiver);
+                Set<Precondition> preconditions = generatePreconditionsBasedOnGuards(atmOfReceiver);
                 checkPreconditions(treeToReportErrorAt, expressionNode, preconditions);
             } else if (AnnotationUtils.areSameByClass(gb, checkerGuardSatisfiedClass)) {
                 // Can always dereference if type is @GuardSatisfied
