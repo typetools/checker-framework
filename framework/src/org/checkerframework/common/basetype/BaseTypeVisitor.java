@@ -595,11 +595,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 checker.report(e.getResult(), node);
             }
             if (formalParamNames != null && formalParamNames.contains(expression)) {
+                @SuppressWarnings("CompilerMessages")
+                /*@CompilerMessageKey*/ String key =
+                        "contracts." + contract.kind.errorKey + ".expression.parameter.name";
                 checker.report(
                         Result.warning(
-                                "contracts."
-                                        + contract.kind.errorKey
-                                        + ".expression.parameter.name",
+                                key,
                                 node.getName().toString(),
                                 expression,
                                 formalParamNames.indexOf(expression) + 1,
