@@ -179,6 +179,8 @@ public class TestDiagnosticUtils {
         String trimmed = original;
         String filename = "";
         if (noMsgText) {
+            // Only keep the first line of the error or warning, unless it is a thrown exception
+            // "unexpected Throwable" or it is an Checker Error (contains "Compilation unit").
             if (!trimmed.contains("unexpected Throwable")
                     && !trimmed.contains("Compilation unit")) {
                 if (trimmed.contains("\n")) {
