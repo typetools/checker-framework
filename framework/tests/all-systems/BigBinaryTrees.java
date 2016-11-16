@@ -1,7 +1,7 @@
-// Test to check for common problem with BinaryTrees.
-// See comment on TreeAnnotator#visitBinary.
+// Test to ensure that checkers can type-check big binary trees in an
+// exceptable amount of time.  See comment on TreeAnnotator#visitBinary.
 
-// Checkers may correctly issue errors
+// Checkers may correctly issue errors, so suppress them.
 @SuppressWarnings("")
 public class BigBinaryTrees {
     String string1;
