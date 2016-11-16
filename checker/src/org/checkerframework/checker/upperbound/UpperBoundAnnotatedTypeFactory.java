@@ -403,7 +403,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // A few small rules for addition/subtraction by 0/1, etc.
             if (TreeUtils.isStringConcatenation(tree)) {
                 type.addAnnotation(UNKNOWN);
-                return visitBinary(tree, type);
+                return super.visitBinary(tree, type);
             }
 
             ExpressionTree left = tree.getLeftOperand();
