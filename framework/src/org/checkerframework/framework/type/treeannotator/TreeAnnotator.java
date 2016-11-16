@@ -41,8 +41,8 @@ public abstract class TreeAnnotator extends SimpleTreeVisitor<Void, AnnotatedTyp
      *
      * <p>If a checker's performance is still too slow, the types of binary trees could be computed
      * in a subclass of {@link org.checkerframework.framework.flow.CFTransfer}. When computing the
-     * types in a transfer, look up in the value in the store rather than the AnnotatedTypeFactory.
-     * Then this method should annotated binary trees with top so that the type applied in the
+     * types in a transfer, look up the value in the store rather than the AnnotatedTypeFactory.
+     * Then this method should annotate binary trees with top so that the type applied in the
      * transfer is always a subtype of the type the AnnotatedTypeFactory computes.
      */
     @Override
