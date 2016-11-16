@@ -1125,12 +1125,6 @@ The set of permitted expressions is a subset of all Java expressions:
   static fields or methods.  For a field, \<this> is the field's
   receiver, i.e. its container.  For a local variable, it is the
   method's receiver.
-  Note that assignment of type qualifier annotations with argument
-  \<this> is conservatively disallowed because the receiver may fall
-  out of scope.  For example, suppose the annotation on \<obj2.key>
-  has been refined to \<@KeyFor("this")>.  Then the assignment
-  \code{obj1.key = obj2.key} is disallowed, because \<obj2> may
-  fall out of scope while \<obj1> is still in use.
 
 \item
   the receiver object as seen from the superclass, \<super>.  This can be used
@@ -1162,17 +1156,15 @@ The set of permitted expressions is a subset of all Java expressions:
 % \<.class> file, so we cannot rely on the checker to translate names to
 % indices.
 
-% This is not implemented at the moment, as KeyFor does not use flow expressions yet.
-%\item
-%  a local variable.  This is not applicable for method annotations, but is
-%  applicable to type annotations such as
-%  \refqualclass{checker/nullness/qual}{KeyFor}.  Write the variable name.  For
-%  example: \<myLocalVar>.
+\item
+  a local variable.  This is not applicable for method annotations, but is
+  applicable to type annotations such as
+  \refqualclass{checker/nullness/qual}{KeyFor}.  Write the variable name.  For
+  example: \<myLocalVar>.
+
 \item
   a static variable.  Write the class name and the variable, as in
   \<System.out>.
-  % It may also work to use an instance variable and the static variable
-  % name, but I'm not sure about that.
 
 \item
   a field of any expression.  For example:  \<next>,
@@ -1183,7 +1175,7 @@ The set of permitted expressions is a subset of all Java expressions:
 \item
   an array access.  For example:  \<this.myArray[i]>, \<vals[\#1]>.
 
-\item literals: string, integer, long, null.
+\item literals: string, integer, long, null, class literals.
 
 \item a method invocation on any expression.
   This even works for overloaded methods and methods with type parameters.
@@ -1225,7 +1217,7 @@ The following Java expressions may not currently be written:
 % The Checker Framework is best at reasoning about Java expressions that
 % are variable references, but these expressions are not.
 \begin{itemize}
-\item Some literals:  floats, doubles, chars, and class literals.
+\item Some literals:  floats, doubles, and chars.
 \item String concatenation expressions.
 \item Mathematical operators (plus, minus, division, ...).
 \item Comparisons (equality, less than, etc.).

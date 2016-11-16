@@ -1,4 +1,4 @@
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
 
 public class StringConcatenationTest {
 

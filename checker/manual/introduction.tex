@@ -208,7 +208,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-2.1.4.zip}
+  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-2.1.5.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -604,7 +604,8 @@ Unsound checking: ignore some errors
 \item \<-Awarns>
   Treat checker errors as warnings.  If you use this, you
   may wish to also supply \code{-Xmaxwarns 10000}, because by default
-  \<javac> prints at most 100 warnings.
+  \<javac> prints at most 100 warnings.  Don't supply \code{-Werror},
+  which is a javac argument to halt compilation if a warning is issued.
 \end{itemize}
 
 \label{unsound-by-default}

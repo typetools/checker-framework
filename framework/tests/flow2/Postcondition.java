@@ -4,7 +4,7 @@ import org.checkerframework.framework.qual.EnsuresQualifierIf;
 import org.checkerframework.framework.qual.EnsuresQualifiers;
 import org.checkerframework.framework.qual.EnsuresQualifiersIf;
 import org.checkerframework.framework.test.*;
-import tests.util.*;
+import testlib.util.*;
 
 class Postcondition {
 

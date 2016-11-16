@@ -1,4 +1,4 @@
-import tests.lib.UncheckedByteCode;
+import testlib.lib.UncheckedByteCode;
 
 public class TestUncheckedByteCode {
     Object field;

@@ -73,7 +73,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedTypeMirror minLenType = minLenAnnotatedTypeFactory.getAnnotatedType(tree);
         AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
         if (anm == null) {
-            return null;   
+            return null;
         }
         Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
         return minLen;
@@ -132,7 +132,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private static AnnotationMirror createAnnotation(String name, String[] names) {
         if (names == null) {
-            names = new String[0];   
+            names = new String[0];
         }
         if (name.equals("LessThanLength")) {
             return createLessThanLengthAnnotation(names);
@@ -146,7 +146,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     static AnnotationMirror createLessThanLengthAnnotation(String[] names) {
         AnnotationBuilder builder = new AnnotationBuilder(env, LessThanLength.class);
         if (names == null) {
-            names = new String[0];   
+            names = new String[0];
         }
         builder.setValue("value", names);
         return builder.build();
@@ -160,7 +160,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String[] names) {
         AnnotationBuilder builder = new AnnotationBuilder(env, LessThanOrEqualToLength.class);
         if (names == null) {
-            names = new String[0];   
+            names = new String[0];
         }
         builder.setValue("value", names);
         return builder.build();
@@ -401,6 +401,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             // A few small rules for addition/subtraction by 0/1, etc.
+            if (TreeUtils.isStringConcatenation(tree)) {
+                type.addAnnotation(UNKNOWN);
+                return visitBinary(tree, type);
+            }
+
             ExpressionTree left = tree.getLeftOperand();
             ExpressionTree right = tree.getRightOperand();
             switch (tree.getKind()) {
