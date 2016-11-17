@@ -127,13 +127,13 @@ class Adler32 implements Checksum {
     }
 
     // Set up JavaUtilZipAccess in SharedSecrets
-    static {
+/*    static {
        sun.misc.SharedSecrets.setJavaUtilZipAccess(new sun.misc.JavaUtilZipAccess() {
            public void update(Adler32 adler32, ByteBuffer buf) {
                adler32.update(buf);
            }
         });
-    }
+    }*/
 
     private native static int update(int adler, int b);
     private native static int updateBytes(int adler, byte[] b, int off,
