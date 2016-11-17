@@ -1522,8 +1522,6 @@ You can correct the problem in multiple ways.
 One solution is to not call methods that can be overridden from the
 constructor:  move the call to \<process()> to after the constructor has
 completed.
-% TODO: is it possible fix ths by proventing subclasses from overriding
-% \<process()> by using final on the class or method?
 
 Another solution is to change the declaration of \<process()>:
 
@@ -1534,18 +1532,29 @@ Another solution is to change the declaration of \<process()>:
 If you choose this solution, you will need to rewrite the definition of
 \<B.process()> so that it is consistent with the declared receiver type.
 
+A non-solution is to prevent subclasses from overriding \<process()> by
+using final on the class or method.  This doesn't work because even if
+\<process()> is not overridden, it might call other methods that are
+overridden.
+
+% TODO: One could imagine having an annotation indicating that the routine
+% is "truly final":  it is final and it never calls, directly, or
+% indirectly, any routine that might be overridden.  I'm not sure how you
+% would confirm that, given the existence of callbacks from other code.
+
+
 
 \subsection{Initialization of circular data structures\label{circular-initialization}}
 
-There is one final aspect of the initialization type system to be considered:
-the rules governing reading and writing to objects that are currently under
-initialization (both reading from fields of objects under initialization, as well as
-writing objects under initialization to fields).
-By default, only fully-initialized objects can be stored in a
-field of another object.  If this was the only option, then it would not be
-possible to create circular data structures (such as a doubly-linked list) where
-fields have a \refqualclass{checker/nullness/qual}{NonNull} type.
-However, the annotation
+There is one final aspect of the initialization type system to be
+considered:  the rules governing reading and writing to objects that are
+currently under initialization (both reading from fields of objects under
+initialization, as well as writing objects under initialization to fields).
+By default, only fully-initialized objects can be stored in a field of
+another object.  If this was the only option, then it would not be possible
+to create circular data structures (such as a doubly-linked list) where
+fields have a \refqualclass{checker/nullness/qual}{NonNull} type.  However,
+the annotation
 \refqualclass{checker/initialization/qual}{NotOnlyInitialized} can be used to
 indicate that a field can store objects that are currently under initialization.
 In this case, the rules for reading and writing to that field become a little
