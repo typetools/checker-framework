@@ -1499,10 +1499,9 @@ Here is a subclass and client code that crashes with a \<NullPointerException>.
 \begin{Verbatim}
 class B extends A {
   List<Integer> processed;
-  Object bField;
   B() {
     super();
-    bField = new Object();
+    processed = new ArrayList<Integer>();
   }
   @Override
   public void process(int arg) {
