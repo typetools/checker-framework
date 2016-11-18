@@ -5,8 +5,8 @@ import testlib.flowexpression.qual.FlowExp;
 public class SimpleVPA {
 
     class MyClass {
-        @FlowExp("this.bad")
         //:: error: (expression.unparsable.type.invalid)
+        @FlowExp("this.bad")
         Object field;
     }
 

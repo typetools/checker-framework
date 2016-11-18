@@ -1,13 +1,16 @@
 package org.checkerframework.framework.util.expressionannotations;
 
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
@@ -22,7 +25,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
@@ -224,26 +226,15 @@ public class ExpressionAnnotationHelper {
         }.visit(viewpointAdaptedType, typeFromUse);
     }
 
-    private List<FlowExpressions.Receiver> getParametersOfEnclosingMethod(TreePath path) {
-        MethodTree methodTree = TreeUtils.enclosingMethod(path);
-        if (methodTree == null) {
-            return null;
-        }
-        List<FlowExpressions.Receiver> internalArguments = new ArrayList<>();
-        for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(
-                    FlowExpressions.internalReprOf(factory, new LocalVariableNode(arg)));
-        }
-        return internalArguments;
-    }
-
     public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
         TreePath path = factory.getPath(tree);
         FlowExpressions.Receiver r =
                 FlowExpressions.internalRepOfImplicitReceiver(TreeUtils.elementFromUse(tree));
         FlowExpressionContext context =
                 new FlowExpressionContext(
-                        r, getParametersOfEnclosingMethod(path), factory.getContext());
+                        r,
+                        FlowExpressions.getParametersOfEnclosingMethod(factory, path),
+                        factory.getContext());
         standardizeUseLocals(context, path, type);
     }
 
@@ -293,7 +284,8 @@ public class ExpressionAnnotationHelper {
                 TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                 FlowExpressions.Receiver receiver =
                         FlowExpressions.internalRepOfPseudoReceiver(node, path, enclosingType);
-                List<Receiver> params = getParametersOfEnclosingMethod(path);
+                List<Receiver> params =
+                        FlowExpressions.getParametersOfEnclosingMethod(factory, path);
                 FlowExpressionContext localContext =
                         new FlowExpressionContext(receiver, params, factory.getContext());
                 standardizeUseLocals(localContext, path, type);
@@ -349,7 +341,9 @@ public class ExpressionAnnotationHelper {
 
         FlowExpressionContext localContext =
                 new FlowExpressionContext(
-                        receiver, getParametersOfEnclosingMethod(path), factory.getContext());
+                        receiver,
+                        FlowExpressions.getParametersOfEnclosingMethod(factory, path),
+                        factory.getContext());
         standardizeUseLocals(localContext, path, annotatedType);
     }
 
@@ -384,6 +378,26 @@ public class ExpressionAnnotationHelper {
         // localScope is null in dataflow when creating synthetic trees for enhanced for loops.
         if (localScope != null) {
             new StandardizeTypeAnnotator(context, localScope, useLocalScope).visit(type);
+        }
+    }
+
+    protected String standardizeString(
+            String expression,
+            FlowExpressionContext context,
+            TreePath localScope,
+            boolean useLocalScope) {
+        if (ExpressionAnnotationError.isExpressionError(expression)) {
+            return expression;
+        }
+        try {
+            FlowExpressions.Receiver result =
+                    FlowExpressionParseUtil.parse(expression, context, localScope, useLocalScope);
+            if (result == null) {
+                return new ExpressionAnnotationError(expression, " ").toString();
+            }
+            return result.toString();
+        } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+            return new ExpressionAnnotationError(expression, e).toString();
         }
     }
 
@@ -428,27 +442,6 @@ public class ExpressionAnnotationHelper {
                 }
             }
             return false;
-        }
-
-        private String standardizeString(
-                String expression,
-                FlowExpressionContext context,
-                TreePath localScope,
-                boolean useLocalScope) {
-            if (ExpressionAnnotationError.isExpressionError(expression)) {
-                return expression;
-            }
-            try {
-                FlowExpressions.Receiver result =
-                        FlowExpressionParseUtil.parse(
-                                expression, context, localScope, useLocalScope);
-                if (result == null) {
-                    return new ExpressionAnnotationError(expression, " ").toString();
-                }
-                return result.toString();
-            } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
-                return new ExpressionAnnotationError(expression, e).toString();
-            }
         }
 
         @Override
@@ -504,6 +497,25 @@ public class ExpressionAnnotationHelper {
     public void checkType(AnnotatedTypeMirror atm, Tree errorTree) {
         List<ExpressionAnnotationError> errors = new ExpressionErrorChecker().visit(atm);
         if (errors == null || errors.isEmpty()) {
+            return;
+        }
+        if (errorTree.getKind() == Kind.VARIABLE) {
+            ModifiersTree modifiers = ((VariableTree) errorTree).getModifiers();
+            errorTree = ((VariableTree) errorTree).getType();
+            for (AnnotationTree annoTree : modifiers.getAnnotations()) {
+                for (Class<?> annoClazz : expressionAnnos) {
+                    if (annoTree.toString().contains(annoClazz.getSimpleName())) {
+                        errorTree = annoTree;
+                        break;
+                    }
+                }
+            }
+        }
+        reportErrors(errorTree, errors);
+    }
+
+    protected void reportErrors(Tree errorTree, List<ExpressionAnnotationError> errors) {
+        if (errors.isEmpty()) {
             return;
         }
         SourceChecker checker = factory.getContext().getChecker();

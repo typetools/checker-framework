@@ -23,8 +23,8 @@ public class ExpressionAnnotationError {
         return matcher.matches() && matcher.groupCount() == 2;
     }
 
-    final String expression;
-    final String error;
+    public final String expression;
+    public final String error;
 
     public ExpressionAnnotationError(String expression, String error) {
         this.expression = expression;
