@@ -1,5 +1,5 @@
 // Test to ensure that checkers can type-check big binary trees in an
-// exceptable amount of time.  See comment on TreeAnnotator#visitBinary.
+// acceptable amount of time.  See comment on TreeAnnotator#visitBinary.
 
 // Checkers may correctly issue errors, so suppress them.
 @SuppressWarnings("")

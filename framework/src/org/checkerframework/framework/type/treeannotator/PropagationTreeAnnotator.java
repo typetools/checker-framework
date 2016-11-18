@@ -113,7 +113,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
         if (hasPrimaryAnnotationInAllHierarchies(type)) {
-            // If the type is already has a primary annotation in all hierarchies, then the
+            // If the type already has a primary annotation in all hierarchies, then the
             // propagated annotations won't be applied.  So don't compute them.
             return null;
         }
@@ -128,7 +128,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
         if (hasPrimaryAnnotationInAllHierarchies(type)) {
-            // If the type is already has a primary annotation in all hierarchies, then the
+            // If the type already has a primary annotation in all hierarchies, then the
             // propagated annotations won't be applied.  So don't compute them.
             // Also, calling getAnnotatedType on the left and right operands is potentially
             // expensive.
@@ -147,7 +147,7 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
     @Override
     public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
         if (hasPrimaryAnnotationInAllHierarchies(type)) {
-            // If the type is already has a primary annotation in all hierarchies, then the
+            // If the type already has a primary annotation in all hierarchies, then the
             // propagated annotations won't be applied.  So don't compute them.
             return null;
         }
