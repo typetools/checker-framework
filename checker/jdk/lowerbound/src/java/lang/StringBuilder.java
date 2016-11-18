@@ -142,8 +142,8 @@ public final class StringBuilder
             return append("null");
         int len = sb.length();
         int newcount = count + len;
-        if (newcount > value.length)
-            expandCapacity(newcount);
+/*        if (newcount > value.length)
+            expandCapacity(newcount);*/
         sb.getChars(0, len, value, count);
         count = newcount;
         return this;

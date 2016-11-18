@@ -709,7 +709,7 @@ class MethodType implements java.io.Serializable {
 
     /*non-public*/
     boolean isViewableAs(MethodType newType) {
-        if (!VerifyType.isNullConversion(returnType(), newType.returnType()))
+/*        if (!VerifyType.isNullConversion(returnType(), newType.returnType()))
             return false;
         int argc = parameterCount();
         if (argc != newType.parameterCount())
@@ -717,7 +717,7 @@ class MethodType implements java.io.Serializable {
         for (int i = 0; i < argc; i++) {
             if (!VerifyType.isNullConversion(newType.parameterType(i), parameterType(i)))
                 return false;
-        }
+        }*/
         return true;
     }
     /*non-public*/

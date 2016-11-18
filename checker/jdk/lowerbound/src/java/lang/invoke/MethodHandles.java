@@ -1637,7 +1637,8 @@ publicLookup().findVirtual(MethodHandle.class, "invoke", type)
      */
     static public
     MethodHandle invoker(MethodType type) {
-        return type.invokers().generalInvoker();
+        // return type.invokers().generalInvoker();
+    	return null;
     }
 
     static /*non-public*/
@@ -1693,10 +1694,11 @@ publicLookup().findVirtual(MethodHandle.class, "invoke", type)
      */
     public static
     MethodHandle explicitCastArguments(MethodHandle target, MethodType newType) {
-        if (!target.type().isCastableTo(newType)) {
+/*        if (!target.type().isCastableTo(newType)) {
             throw new WrongMethodTypeException("cannot explicitly cast "+target+" to "+newType);
         }
-        return MethodHandleImpl.makePairwiseConvert(target, newType, 2);
+        return MethodHandleImpl.makePairwiseConvert(target, newType, 2);*/
+    	return null;
     }
 
     /**
@@ -1824,14 +1826,15 @@ assert((int)twice.invokeExact(21) == 42);
      */
     public static
     MethodHandle identity(Class<?> type) {
-        if (type == void.class)
+/*        if (type == void.class)
             throw newIllegalArgumentException("void type");
         else if (type == Object.class)
             return ValueConversions.identity();
         else if (type.isPrimitive())
             return ValueConversions.identity(Wrapper.forPrimitiveType(type));
         else
-            return MethodHandleImpl.makeReferenceIdentity(type);
+            return MethodHandleImpl.makeReferenceIdentity(type);*/
+    	return null;
     }
 
     /**

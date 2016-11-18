@@ -153,9 +153,9 @@ import org.checkerframework.checker.lowerbound.qual.*;
 
 
     public synchronized void ensureCapacity(int minimumCapacity) {
-        if (minimumCapacity > value.length) {
+/*        if (minimumCapacity > value.length) {
             expandCapacity(minimumCapacity);
-        }
+        }*/
     }
 
     /**

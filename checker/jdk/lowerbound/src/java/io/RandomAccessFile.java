@@ -239,7 +239,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
             throw new FileNotFoundException("Invalid file path");
         }
         fd = new FileDescriptor();
-        fd.incrementAndGetUseCount();
+        //fd.incrementAndGetUseCount();
         this.path = name;
         open(name, imode);
     }
@@ -289,7 +289,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
                  * method will result in decrementing the use count set for
                  * the channel.
                  */
-                fd.incrementAndGetUseCount();
+                //fd.incrementAndGetUseCount();
             }
             return channel;
         }
@@ -636,7 +636,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
              * count is incremented whenever a new channel is obtained from
              * this stream.
              */
-            fd.decrementAndGetUseCount();
+            //fd.decrementAndGetUseCount();
             channel.close();
         }
 
@@ -644,7 +644,7 @@ public class RandomAccessFile implements DataOutput, DataInput, Closeable {
          * Decrement FD use count associated with this stream.
          * The count got incremented by FileDescriptor during its construction.
          */
-        fd.decrementAndGetUseCount();
+        //fd.decrementAndGetUseCount();
         close0();
     }
 

@@ -1166,7 +1166,7 @@ public final class System {
         current.getThreadGroup().add(current);
 
         // register shared secrets
-        setJavaLangAccess();
+        //setJavaLangAccess();
 
         // Subsystems that are invoked during initialization can invoke
         // sun.misc.VM.isBooted() in order to avoid doing things that should
@@ -1175,7 +1175,7 @@ public final class System {
         sun.misc.VM.booted();
     }
 
-    private static void setJavaLangAccess() {
+/*    private static void setJavaLangAccess() {
         // Allow privileged classes outside of java.lang
         sun.misc.SharedSecrets.setJavaLangAccess(new sun.misc.JavaLangAccess(){
             public sun.reflect.ConstantPool getConstantPool(Class klass) {
@@ -1216,5 +1216,5 @@ public final class System {
                 o.finalize();
             }
         });
-    }
+    }*/
 }

@@ -219,7 +219,7 @@ class FileOutputStream extends OutputStream
         this.fd = new FileDescriptor();
         this.append = append;
         this.path = name;
-        fd.incrementAndGetUseCount();
+        //fd.incrementAndGetUseCount();
         open(name, append);
     }
 
@@ -263,7 +263,7 @@ class FileOutputStream extends OutputStream
          * Ensure that it's GC'ed only when all the streams/channels are done
          * using it.
          */
-        fd.incrementAndGetUseCount();
+        //fd.incrementAndGetUseCount();
     }
 
     /**
@@ -378,22 +378,19 @@ class FileOutputStream extends OutputStream
              * The use count is incremented whenever a new channel
              * is obtained from this stream.
              */
-            fd.decrementAndGetUseCount();
+            //fd.decrementAndGetUseCount();
             channel.close();
         }
 
         /*
          * Decrement FD use count associated with this stream
-         */
         int useCount = fd.decrementAndGetUseCount();
 
-        /*
          * If FileDescriptor is still in use by another stream, the finalizer
          * will not close it.
-         */
         if ((useCount <= 0) || !isRunningFinalize()) {
             close0();
-        }
+        }*/
     }
 
     /**
@@ -438,7 +435,7 @@ class FileOutputStream extends OutputStream
                  * method will result in decrementing the use count set for
                  * the channel.
                  */
-                fd.incrementAndGetUseCount();
+                //fd.incrementAndGetUseCount();
             }
             return channel;
         }

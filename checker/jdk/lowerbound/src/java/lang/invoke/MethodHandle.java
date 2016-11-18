@@ -591,7 +591,7 @@ public abstract class MethodHandle {
      * @see MethodHandles#spreadInvoker
      */
     public Object invokeWithArguments(Object... arguments) throws Throwable {
-        int argc = arguments == null ? 0 : arguments.length;
+/*        int argc = arguments == null ? 0 : arguments.length;
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         MethodType type = type();
         if (type.parameterCount() != argc || isVarargsCollector()) {
@@ -599,7 +599,8 @@ public abstract class MethodHandle {
             return asType(MethodType.genericMethodType(argc)).invokeWithArguments(arguments);
         }
         MethodHandle invoker = type.invokers().varargsInvoker();
-        return invoker.invokeExact(this, arguments);
+        return invoker.invokeExact(this, arguments);*/
+    	return null;
     }
 
     /**
@@ -931,13 +932,14 @@ assertEquals("[123]", (String) longsToString.invokeExact((long)123));
      * @see #asVarargsCollector
      */
     public MethodHandle asCollector(Class<?> arrayType, @NonNegative int arrayLength) {
-        asCollectorChecks(arrayType, arrayLength);
+/*        asCollectorChecks(arrayType, arrayLength);
         int collectArgPos = type().parameterCount()-1;
         MethodHandle target = this;
         if (arrayType != type().parameterType(collectArgPos))
             target = convertArguments(type().changeParameterType(collectArgPos, arrayType));
         MethodHandle collector = ValueConversions.varargsArray(arrayType, arrayLength);
-        return MethodHandles.collectArguments(target, collectArgPos, collector);
+        return MethodHandles.collectArguments(target, collectArgPos, collector);*/
+    	return null;
     }
 
     // private API: return true if last param exactly matches arrayType
@@ -1263,7 +1265,8 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
     /*non-public*/
     MethodHandle viewAsType(MethodType newType) {
         // No actual conversions, just a new view of the same method.
-        return MethodHandleImpl.makePairwiseConvert(this, newType, 0);
+        // return MethodHandleImpl.makePairwiseConvert(this, newType, 0);
+    	return null;
     }
 
     // Decoding
@@ -1295,7 +1298,8 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
 
     /*non-public*/ MethodHandle convertArguments(MethodType newType) {
         // Override this if it can be improved.
-        return MethodHandleImpl.makePairwiseConvert(this, newType, 1);
+        //return MethodHandleImpl.makePairwiseConvert(this, newType, 1);
+    	return null;
     }
 
     /*non-public*/
@@ -1318,10 +1322,11 @@ assertEquals("[three, thee, tee]", asListFix.invoke((Object)argv).toString());
 
         // CURRENT RESTRICTIONS
         // * only for pos 0 and UNSAFE (position is adjusted in MHImpl to make API usable for others)
-        assert pos == 0 && basicType == 'L' && value instanceof Unsafe;
+/*        assert pos == 0 && basicType == 'L' && value instanceof Unsafe;
         MethodType type2 = type.dropParameterTypes(pos, pos + 1); // adjustment: ignore receiver!
         LambdaForm form2 = form.bindImmediate(pos + 1, basicType, value); // adjust pos to form-relative pos
-        return copyWith(type2, form2);
+        return copyWith(type2, form2);*/
+    	return null;
     }
 
     /*non-public*/

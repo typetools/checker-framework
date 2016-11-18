@@ -99,7 +99,7 @@ final class MethodTypeForm {
         assert(erasedType == basicType) : "erasedType: " + erasedType + " != basicType: " + basicType;  // primitives must be flattened also
         MethodHandle invoker = basicInvoker;
         if (invoker != null)  return invoker;
-        invoker = basicType.invokers().makeBasicInvoker();
+        // invoker = basicType.invokers().makeBasicInvoker();
         basicInvoker = invoker;
         return invoker;
     }

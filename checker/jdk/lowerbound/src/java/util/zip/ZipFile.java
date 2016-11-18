@@ -534,7 +534,7 @@ class ZipFile implements ZipConstants, Closeable {
                 e.name = zc.toString(bname, bname.length);
             }
         }
-        e.time = getEntryTime(jzentry);
+        //e.time = getEntryTime(jzentry);
         e.crc = getEntryCrc(jzentry);
         e.size = getEntrySize(jzentry);
         e. csize = getEntryCSize(jzentry);

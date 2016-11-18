@@ -153,15 +153,16 @@ public final class LocaleServiceProviderPool {
                 java.util.spi.CurrencyNameProvider.class,
                 java.util.spi.LocaleNameProvider.class,
                 java.util.spi.TimeZoneNameProvider.class };
-            Set<Locale> all = new HashSet<Locale>(Arrays.asList(
+/*            Set<Locale> all = new HashSet<Locale>(Arrays.asList(
                     LocaleData.getAvailableLocales())
-            );
-            for (Class providerClass : providerClasses) {
+            );*/
+/*            for (Class providerClass : providerClasses) {
                 LocaleServiceProviderPool pool =
                     LocaleServiceProviderPool.getPool(providerClass);
                 all.addAll(pool.getProviderLocales());
             }
-            allAvailableLocales = all.toArray(new Locale[0]);
+            allAvailableLocales = all.toArray(new Locale[0]);*/
+            allAvailableLocales = new Locale[0];
         }
     }
 
@@ -233,10 +234,10 @@ public final class LocaleServiceProviderPool {
      * @return list of the available JRE locales
      */
     private synchronized List<Locale> getJRELocales() {
-        if (availableJRELocales == null) {
+/*        if (availableJRELocales == null) {
             availableJRELocales =
                 Arrays.asList(LocaleData.getAvailableLocales());
-        }
+        }*/
         return availableJRELocales;
     }
 
@@ -320,7 +321,7 @@ public final class LocaleServiceProviderPool {
                                      OpenListResourceBundle bundle,
                                      String key,
                                      Object... params) {
-        if (hasProviders()) {
+/*        if (hasProviders()) {
             if (bundleKey == null) {
                 bundleKey = key;
             }
@@ -369,9 +370,9 @@ public final class LocaleServiceProviderPool {
                 }
 
                 // try parent bundle
-                bundle = bundle.getParent();
+                //bundle = bundle.getParent();
             }
-        }
+        }*/
 
         // not found.
         return null;

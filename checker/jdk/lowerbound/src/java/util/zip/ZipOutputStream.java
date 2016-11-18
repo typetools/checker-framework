@@ -179,9 +179,9 @@ class ZipOutputStream extends DeflaterOutputStream implements ZipConstants {
         if (current != null) {
             closeEntry();       // close previous entry
         }
-        if (e.time == -1) {
+/*        if (e.time == -1) {
             e.setTime(System.currentTimeMillis());
-        }
+        }*/
         if (e.method == -1) {
             e.method = method;  // use default method
         }
@@ -380,7 +380,7 @@ class ZipOutputStream extends DeflaterOutputStream implements ZipConstants {
             writeShort(version(e));     // version needed to extract
             writeShort(flag);           // general purpose bit flag
             writeShort(e.method);       // compression method
-            writeInt(e.time);           // last modification time
+            //writeInt(e.time);           // last modification time
 
             // store size, uncompressed size, and crc-32 in data descriptor
             // immediately following compressed entry data
@@ -396,7 +396,7 @@ class ZipOutputStream extends DeflaterOutputStream implements ZipConstants {
             }
             writeShort(flag);           // general purpose bit flag
             writeShort(e.method);       // compression method
-            writeInt(e.time);           // last modification time
+            //writeInt(e.time);           // last modification time
             writeInt(e.crc);            // crc-32
             if (hasZip64) {
                 writeInt(ZIP64_MAGICVAL);
@@ -477,7 +477,7 @@ class ZipOutputStream extends DeflaterOutputStream implements ZipConstants {
         }
         writeShort(flag);           // general purpose bit flag
         writeShort(e.method);       // compression method
-        writeInt(e.time);           // last modification time
+        // writeInt(e.time);           // last modification time
         writeInt(e.crc);            // crc-32
         writeInt(csize);            // compressed size
         writeInt(size);             // uncompressed size

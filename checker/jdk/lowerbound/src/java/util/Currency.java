@@ -474,7 +474,7 @@ public final class Currency implements Serializable {
      * @exception NullPointerException if <code>locale</code> is null
      */
     public String getSymbol(Locale locale) {
-        try {
+/*        try {
             // Check whether a provider can provide an implementation that's closer
             // to the requested locale than what the Java runtime itself can provide.
             LocaleServiceProviderPool pool =
@@ -499,8 +499,8 @@ public final class Currency implements Serializable {
             return bundle.getString(currencyCode);
         } catch (MissingResourceException e) {
             // use currency code as symbol of last resort
-            return currencyCode;
-        }
+*/            return currencyCode;
+//        }
     }
 
     /**
@@ -550,7 +550,7 @@ public final class Currency implements Serializable {
      * @since 1.7
      */
     public String getDisplayName(Locale locale) {
-        try {
+        /*try {
             OpenListResourceBundle bundle = LocaleData.getCurrencyNames(locale);
             String result = null;
             String bundleKey = currencyCode.toLowerCase(Locale.ROOT);
@@ -574,7 +574,7 @@ public final class Currency implements Serializable {
             }
         } catch (MissingResourceException e) {
             // fall through
-        }
+        }*/
 
         // use currency code as symbol of last resort
         return currencyCode;
@@ -735,12 +735,12 @@ public final class Currency implements Serializable {
 
     private static void info(String message, Throwable t) {
         PlatformLogger logger = PlatformLogger.getLogger("java.util.Currency");
-        if (logger.isLoggable(PlatformLogger.INFO)) {
+/*        if (logger.isLoggable(PlatformLogger.INFO)) {
             if (t != null) {
                 logger.info(message, t);
             } else {
                 logger.info(message);
             }
-        }
+        }*/
     }
 }
