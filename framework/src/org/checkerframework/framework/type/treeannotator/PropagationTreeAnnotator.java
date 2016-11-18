@@ -112,6 +112,11 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
+        if (hasPrimaryAnnotationInAllHierarchies(type)) {
+            // If the type already has a primary annotation in all hierarchies, then the
+            // propagated annotations won't be applied.  So don't compute them.
+            return null;
+        }
         AnnotatedTypeMirror rhs = atypeFactory.getAnnotatedType(node.getExpression());
         AnnotatedTypeMirror lhs = atypeFactory.getAnnotatedType(node.getVariable());
         Set<? extends AnnotationMirror> lubs =
@@ -122,6 +127,14 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitBinary(BinaryTree node, AnnotatedTypeMirror type) {
+        if (hasPrimaryAnnotationInAllHierarchies(type)) {
+            // If the type already has a primary annotation in all hierarchies, then the
+            // propagated annotations won't be applied.  So don't compute them.
+            // Also, calling getAnnotatedType on the left and right operands is potentially
+            // expensive.
+            return null;
+        }
+
         AnnotatedTypeMirror a = atypeFactory.getAnnotatedType(node.getLeftOperand());
         AnnotatedTypeMirror b = atypeFactory.getAnnotatedType(node.getRightOperand());
         Set<? extends AnnotationMirror> lubs =
@@ -133,6 +146,12 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
+        if (hasPrimaryAnnotationInAllHierarchies(type)) {
+            // If the type already has a primary annotation in all hierarchies, then the
+            // propagated annotations won't be applied.  So don't compute them.
+            return null;
+        }
+
         AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
         type.addMissingAnnotations(exp.getAnnotations());
         return null;
@@ -153,6 +172,11 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitTypeCast(TypeCastTree node, AnnotatedTypeMirror type) {
+        if (hasPrimaryAnnotationInAllHierarchies(type)) {
+            // If the type is already has a primary annotation in all hierarchies, then the
+            // propagated annotations won't be applied.  So don't compute them.
+            return null;
+        }
 
         AnnotatedTypeMirror exprType = atypeFactory.getAnnotatedType(node.getExpression());
         if (type.getKind() == TypeKind.TYPEVAR) {
@@ -169,5 +193,15 @@ public class PropagationTreeAnnotator extends TreeAnnotator {
             type.addMissingAnnotations(exprType.getEffectiveAnnotations());
         }
         return null;
+    }
+
+    private boolean hasPrimaryAnnotationInAllHierarchies(AnnotatedTypeMirror type) {
+        boolean annotated = true;
+        for (AnnotationMirror top : qualHierarchy.getTopAnnotations()) {
+            if (type.getEffectiveAnnotationInHierarchy(top) == null) {
+                annotated = false;
+            }
+        }
+        return annotated;
     }
 }
