@@ -1,11 +1,8 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import java.util.Collection;
-import java.util.Collections;
+import com.sun.source.tree.UnaryTree;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for the bitwise complement operation:
@@ -17,25 +14,11 @@ import org.checkerframework.javacutil.InternalUtils;
  * @author Stefan Heule
  * @author Charlie Garrett
  */
-public class BitwiseComplementNode extends Node {
+public class BitwiseComplementNode extends UnaryOperationNode {
 
-    protected Tree tree;
-    protected Node operand;
-
-    public BitwiseComplementNode(Tree tree, Node operand) {
-        super(InternalUtils.typeOf(tree));
+    public BitwiseComplementNode(UnaryTree tree, Node operand) {
+        super(tree, operand);
         assert tree.getKind() == Kind.BITWISE_COMPLEMENT;
-        this.tree = tree;
-        this.operand = operand;
-    }
-
-    public Node getOperand() {
-        return operand;
-    }
-
-    @Override
-    public Tree getTree() {
-        return tree;
     }
 
     @Override
@@ -60,10 +43,5 @@ public class BitwiseComplementNode extends Node {
     @Override
     public int hashCode() {
         return HashCodeUtils.hash(getOperand());
-    }
-
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.singletonList(getOperand());
     }
 }
