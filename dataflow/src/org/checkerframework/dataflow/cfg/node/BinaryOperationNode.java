@@ -8,19 +8,19 @@ import org.checkerframework.javacutil.InternalUtils;
 /**
  * A node for a binary expression.
  *
- * For example:
+ * <p>For example:
+ *
  * <pre>
  *   <em>lefOperandNode</em> <em>operator</em> <em>rightOperandNode</em>
  * </pre>
  *
  * @author charleszhuochen
- *
  */
 public abstract class BinaryOperationNode extends Node {
 
-    final protected BinaryTree tree;
-    final protected Node left;
-    final protected Node right;
+    protected final BinaryTree tree;
+    protected final Node left;
+    protected final Node right;
 
     public BinaryOperationNode(BinaryTree tree, Node left, Node right) {
         super(InternalUtils.typeOf(tree));
