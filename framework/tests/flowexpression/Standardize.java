@@ -115,4 +115,14 @@ public class Standardize {
         Map<@FlowExp("this.dict") String, String> that =
                 new HashMap<@FlowExp("dict") String, String>();
     }
+
+    void newArray() {
+        @FlowExp("this.dict")
+        String[] s = new @FlowExp("dict") String[1];
+    }
+
+    void clasLiteral(@FlowExp("java.lang.String.class") String param) {
+        @FlowExp("String.class")
+        String s = param;
+    }
 }

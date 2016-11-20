@@ -2,6 +2,7 @@ package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
@@ -338,20 +339,22 @@ public class FlowExpressions {
         if (enclosingMethod != null) {
             return enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC);
         }
-        // no enclosing method, must be in static or initailizer block
+        // no enclosing method, check for static or initailizer block
         BlockTree block = TreeUtils.enclosingTopLevelBlock(path);
         if (block != null) {
             return block.isStatic();
         }
 
-        if (t.getKind() != Tree.Kind.VARIABLE) {
-            t = TreeUtils.enclosingVariable(path);
-            if (t == null) {
-                ErrorReporter.errorAbort("Unexpected tree.");
-                return false;
-            }
+        // check if its in a variable intializer
+        t = TreeUtils.enclosingVariable(path);
+        if (t != null) {
+            return ((VariableTree) t).getModifiers().getFlags().contains((Modifier.STATIC));
         }
-        return ((VariableTree) t).getModifiers().getFlags().contains((Modifier.STATIC));
+        ClassTree classTree = TreeUtils.enclosingClass(path);
+        if (classTree != null) {
+            return classTree.getModifiers().getFlags().contains((Modifier.STATIC));
+        }
+        return false;
     }
 
     private static Receiver internalRepOfMemberSelect(
@@ -379,6 +382,19 @@ public class FlowExpressions {
                         "Unexpected element kind: %s element: %s", ele.getKind(), ele);
                 return null;
         }
+    }
+
+    public static List<Receiver> getParametersOfEnclosingMethod(
+            AnnotationProvider factory, TreePath path) {
+        MethodTree methodTree = TreeUtils.enclosingMethod(path);
+        if (methodTree == null) {
+            return null;
+        }
+        List<Receiver> internalArguments = new ArrayList<>();
+        for (VariableTree arg : methodTree.getParameters()) {
+            internalArguments.add(internalReprOf(factory, new LocalVariableNode(arg)));
+        }
+        return internalArguments;
     }
 
     public abstract static class Receiver {
@@ -502,7 +518,11 @@ public class FlowExpressions {
 
         @Override
         public String toString() {
-            return receiver + "." + field;
+            if (receiver instanceof ClassName) {
+                return receiver.getType() + "." + field;
+            } else {
+                return receiver + "." + field;
+            }
         }
 
         @Override
@@ -582,7 +602,7 @@ public class FlowExpressions {
 
         @Override
         public String toString() {
-            return getType().toString();
+            return getType().toString() + ".class";
         }
 
         @Override
@@ -912,7 +932,11 @@ public class FlowExpressions {
         @Override
         public String toString() {
             StringBuilder result = new StringBuilder();
-            result.append(receiver.toString());
+            if (receiver instanceof ClassName) {
+                result.append(receiver.getType());
+            } else {
+                result.append(receiver);
+            }
             result.append(".");
             String methodName = method.getSimpleName().toString();
             result.append(methodName);

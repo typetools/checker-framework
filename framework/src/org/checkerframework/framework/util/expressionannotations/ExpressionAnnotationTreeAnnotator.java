@@ -2,6 +2,7 @@ package org.checkerframework.framework.util.expressionannotations;
 
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.VariableTree;
@@ -19,6 +20,12 @@ public class ExpressionAnnotationTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeFactory atypeFactory, ExpressionAnnotationHelper helper) {
         super(atypeFactory);
         this.helper = helper;
+    }
+
+    @Override
+    public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror annotatedType) {
+        helper.standardizeExpression(node, annotatedType);
+        return super.visitNewArray(node, annotatedType);
     }
 
     @Override

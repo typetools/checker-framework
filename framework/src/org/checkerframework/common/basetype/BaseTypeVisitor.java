@@ -818,7 +818,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             if (atypeFactory.getExpressionAnnotationHelper() != null) {
                 atypeFactory
                         .getExpressionAnnotationHelper()
-                        .checkType(visitorState.getAssignmentContext().second, node.getType());
+                        .checkType(visitorState.getAssignmentContext().second, node);
             }
             // If there's no assignment in this variable declaration, skip it.
             if (node.getInitializer() != null) {
@@ -1519,9 +1519,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitNewArray(NewArrayTree node, Void p) {
         boolean valid = validateTypeOf(node);
-        if (valid && node.getType() != null && node.getInitializers() != null) {
+
+        if (valid && node.getType() != null) {
             AnnotatedArrayType arrayType = atypeFactory.getAnnotatedType(node);
-            checkArrayInitialization(arrayType.getComponentType(), node.getInitializers());
+            if (atypeFactory.getExpressionAnnotationHelper() != null) {
+                atypeFactory.getExpressionAnnotationHelper().checkType(arrayType, node);
+            }
+            if (node.getInitializers() != null) {
+                checkArrayInitialization(arrayType.getComponentType(), node.getInitializers());
+            }
         }
 
         return super.visitNewArray(node, p);
