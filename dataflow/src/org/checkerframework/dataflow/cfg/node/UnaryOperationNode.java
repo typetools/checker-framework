@@ -5,9 +5,11 @@ import java.util.Collection;
 import java.util.Collections;
 import org.checkerframework.javacutil.InternalUtils;
 
-/**A node for a postfix or an unary expression.
+/**
+ * A node for a postfix or an unary expression.
  *
- * For example:
+ * <p>For example:
+ *
  * <pre>
  *   <em>operator</em> <em>expressionNode</em>
  *
@@ -15,12 +17,11 @@ import org.checkerframework.javacutil.InternalUtils;
  * </pre>
  *
  * @author charleszhuochen
- *
  */
 public abstract class UnaryOperationNode extends Node {
 
-    final protected UnaryTree tree;
-    final protected Node operand;
+    protected final UnaryTree tree;
+    protected final Node operand;
 
     public UnaryOperationNode(UnaryTree tree, Node operand) {
         super(InternalUtils.typeOf(tree));
