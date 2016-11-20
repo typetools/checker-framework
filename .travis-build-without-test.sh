@@ -5,6 +5,8 @@ set -e
 
 export SHELLOPTS
 
+export TRAVIS_REPO_SLUG
+
 ## Build annotation-tools (Annotation File Utilities)
 if [ -d ../annotation-tools ] ; then
     # Older versions of git don't support the -C command-line option
