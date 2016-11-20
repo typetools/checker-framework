@@ -48,16 +48,16 @@ import org.checkerframework.javacutil.TreeUtils;
  * A class that helps checkers use qualifiers that are represented by annotations with Java
  * expression strings. This class preforms four main functions:
  *
- * <p>1. Standardizes the expressions in the annotations such that two expression strings that are
- * equivalent are made to be equal. For example, an instance field f may be appear in an expression
- * string as "f" or "this.f"; this class standardizes both strings to "this.f".
+ * <p>1. Standardizes/canonicalizes the expressions in the annotations such that two expression
+ * strings that are equivalent are made to be equal. For example, an instance field f may be appear
+ * in an expression string as "f" or "this.f"; this class standardizes both strings to "this.f".
  *
- * <p>2. Viewpoint adapts annotations on field or method declarations at field accesses or method
+ * <p>2. Viewpoint-adapts annotations on field or method declarations at field accesses or method
  * invocations.
  *
- * <p>3. Changes invalid expressions strings to an error string that includes the reason why the
+ * <p>3. Changes invalid expression strings to an error string that includes the reason why the
  * expression is in valid. For example, {@code @KeyFor("m")} would be changed to
- * {@code @KeyFor("[error for expression: m error: m: identifier not found]")} is m is not a valid
+ * {@code @KeyFor("[error for expression: m error: m: identifier not found]")} if m is not a valid
  * identifier.
  *
  * <p>4. Checks annotated types for error strings that have been added by this class and issues an
