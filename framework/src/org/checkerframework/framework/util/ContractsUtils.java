@@ -62,6 +62,7 @@ public class ContractsUtils {
          */
         public final String expression;
 
+        /** The annotation that must be on the type of expression as part of this contract. */
         public final AnnotationMirror annotation;
 
         public final Kind kind;
@@ -122,8 +123,6 @@ public class ContractsUtils {
      * one of its subclasses. Automatically extracted from annotations with meta-annotation
      * {@code @ConditionalPostconditionAnnotation}, such as {@code EnsuresNonNullIf}.
      */
-    // When making changes, make also the appropriate changes
-    // to class PreOrPostcondition.
     public static class ConditionalPostcondition extends Contract {
 
         /**
@@ -172,10 +171,7 @@ public class ContractsUtils {
         contracts.addAll(getConditionalPostconditions(element));
         return contracts;
     }
-    /**
-     * Returns a set of pairs {@code (expr, annotation)} of preconditions on the element {@code
-     * element}.
-     */
+    /** Returns the set preconditions on the element {@code element}. */
     public Set<Precondition> getPreconditions(Element element) {
         Set<Precondition> result = new LinkedHashSet<>();
         // Check for a single contract.
@@ -204,7 +200,7 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-            AnnotationMirror precondtionAnno = getAnnotationMirror(metaAnno);
+            AnnotationMirror precondtionAnno = getAnnotationMirrorOfQualifier(metaAnno);
             if (precondtionAnno == null) {
                 continue;
             }
@@ -215,7 +211,8 @@ public class ContractsUtils {
         return result;
     }
 
-    private AnnotationMirror getAnnotationMirror(AnnotationMirror metaAnno) {
+    /** Returns that annotation mirror as specified by the "qualifier" value in metaAnno. */
+    private AnnotationMirror getAnnotationMirrorOfQualifier(AnnotationMirror metaAnno) {
         @SuppressWarnings("unchecked")
         Class<? extends Annotation> c =
                 (Class<? extends Annotation>)
@@ -228,10 +225,7 @@ public class ContractsUtils {
         }
     }
 
-    /**
-     * Returns a set of pairs {@code (expr, annotation)} of preconditions according to the given
-     * {@link RequiresQualifier}.
-     */
+    /** Returns the set of preconditions according to the given {@link RequiresQualifier}. */
     private Set<Precondition> getPrecondition(AnnotationMirror requiresAnnotation) {
         if (requiresAnnotation == null) {
             return Collections.emptySet();
@@ -240,7 +234,7 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         requiresAnnotation, "expression", String.class, false);
-        AnnotationMirror postcondAnno = getAnnotationMirror(requiresAnnotation);
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(requiresAnnotation);
         if (postcondAnno == null) {
             return result;
         }
@@ -250,10 +244,7 @@ public class ContractsUtils {
         return result;
     }
 
-    /**
-     * Returns a set of pairs {@code (expr, annotation)} of postconditions on the method {@code
-     * methodElement}.
-     */
+    /** Returns the set of postconditions on the method {@code methodElement}. */
     public Set<Postcondition> getPostconditions(ExecutableElement methodElement) {
         Set<Postcondition> result = new LinkedHashSet<>();
         // Check for a single contract.
@@ -282,7 +273,7 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
-            AnnotationMirror postcondAnno = getAnnotationMirror(metaAnno);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(metaAnno);
             if (postcondAnno == null) {
                 continue;
             }
@@ -293,10 +284,7 @@ public class ContractsUtils {
         return result;
     }
 
-    /**
-     * Returns a set of pairs {@code (expr, annotation)} of postconditions according to the given
-     * {@link EnsuresQualifier}.
-     */
+    /** Returns the set of postconditions according to the given {@link EnsuresQualifier}. */
     private Set<Postcondition> getPostcondition(AnnotationMirror ensuresAnnotation) {
         if (ensuresAnnotation == null) {
             return Collections.emptySet();
@@ -305,7 +293,7 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresAnnotation, "expression", String.class, false);
-        AnnotationMirror postcondAnno = getAnnotationMirror(ensuresAnnotation);
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(ensuresAnnotation);
         if (postcondAnno == null) {
             return result;
         }
@@ -349,7 +337,7 @@ public class ContractsUtils {
             AnnotationMirror metaAnno = r.second;
             List<String> expressions =
                     AnnotationUtils.getElementValueArray(anno, "expression", String.class, false);
-            AnnotationMirror postcondAnno = getAnnotationMirror(metaAnno);
+            AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(metaAnno);
             if (postcondAnno == null) {
                 continue;
             }
@@ -375,7 +363,7 @@ public class ContractsUtils {
         List<String> expressions =
                 AnnotationUtils.getElementValueArray(
                         ensuresAnnotationIf, "expression", String.class, false);
-        AnnotationMirror postcondAnno = getAnnotationMirror(ensuresAnnotationIf);
+        AnnotationMirror postcondAnno = getAnnotationMirrorOfQualifier(ensuresAnnotationIf);
         if (postcondAnno == null) {
             return result;
         }

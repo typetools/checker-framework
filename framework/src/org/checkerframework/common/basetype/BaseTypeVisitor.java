@@ -573,27 +573,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         FlowExpressionContext.buildContextForMethodDeclaration(
                                 node, getCurrentPath(), checker.getContext());
             }
-            FlowExpressions.Receiver expr;
+            FlowExpressions.Receiver expr = null;
             try {
                 expr =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
-                if (!abstractMethod) {
-                    switch (contract.kind) {
-                        case POSTCONDTION:
-                            checkPostcondition(node, annotation, expr);
-                            break;
-                        case CONDITIONALPOSTCONDTION:
-                            checkConditionalPostcondition(
-                                    node, annotation, expr, (ConditionalPostcondition) contract);
-                            break;
-                            // case PRECONDITION:
-                            // Preconditions are checked at method invocations, not declarations
-                    }
-                }
             } catch (FlowExpressionParseException e) {
                 checker.report(e.getResult(), node);
             }
+            if (expr != null && !abstractMethod) {
+                switch (contract.kind) {
+                    case POSTCONDTION:
+                        checkPostcondition(node, annotation, expr);
+                        break;
+                    case CONDITIONALPOSTCONDTION:
+                        checkConditionalPostcondition(
+                                node, annotation, expr, (ConditionalPostcondition) contract);
+                        break;
+                        // case PRECONDITION:
+                        // Preconditions are checked at method invocations, not declarations
+                }
+            }
+
             if (formalParamNames != null && formalParamNames.contains(expression)) {
                 @SuppressWarnings("CompilerMessages")
                 /*@CompilerMessageKey*/ String key =
@@ -608,37 +609,75 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         node);
             }
 
-            checkFlowExprParameters(methodElement, expression);
+            checkParametersAreEffectivelyFinal(methodElement, expression);
         }
     }
 
-    private void checkPostcondition(MethodTree node, AnnotationMirror annotation, Receiver expr) {
-        CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(node);
+    /**
+     * Check that the parameters used in {@code stringExpr} are effectively final for method {@code
+     * method}.
+     */
+    private void checkParametersAreEffectivelyFinal(ExecutableElement method, String stringExpr) {
+        // check that all parameters used in the expression are
+        // effectively final, so that they cannot be modified
+        List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
+        for (Integer idx : parameterIndices) {
+            if (idx > method.getParameters().size()) {
+                // If the index is too big, a parse error was issued in checkContractsAtMethodDeclaration
+                continue;
+            }
+            VariableElement parameter = method.getParameters().get(idx - 1);
+            if (!ElementUtils.isEffectivelyFinal(parameter)) {
+                checker.report(
+                        Result.failure("flowexpr.parameter.not.final", "#" + idx, stringExpr),
+                        method);
+            }
+        }
+    }
+
+    /**
+     * Check that the expression's type is annotated with {@code annotation} at the regular exit
+     * store.
+     *
+     * @param methodTree Declaration of the method
+     * @param annotation expression's type must have this annotation
+     * @param expression the expression that the postcondition concerns
+     */
+    protected void checkPostcondition(
+            MethodTree methodTree, AnnotationMirror annotation, Receiver expression) {
+        CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(methodTree);
         if (exitStore == null) {
             // if there is no regular exitStore, then the method
             // cannot reach the regular exit and there is no need to
             // check anything
         } else {
-            CFAbstractValue<?> value = exitStore.getValue(expr);
+            CFAbstractValue<?> value = exitStore.getValue(expression);
             AnnotationMirror inferredAnno = null;
             if (value != null) {
                 QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
                 Set<AnnotationMirror> annos = value.getAnnotations();
                 inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
             }
-            if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
+            if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
                 checker.report(
-                        Result.failure("contracts.postcondition.not.satisfied", expr.toString()),
-                        node);
+                        Result.failure(
+                                "contracts.postcondition.not.satisfied", expression.toString()),
+                        methodTree);
             }
         }
     }
 
-    private void checkConditionalPostcondition(
-            MethodTree node,
-            AnnotationMirror annotation,
-            Receiver expr,
-            ConditionalPostcondition contract) {
+    /**
+     * Check that the expression's type is annotated with {@code annotation} at every regular exit
+     * that returns {@code result}
+     *
+     * @param node tree of method with the postcondition
+     * @param annotation expression's type must have this annotation
+     * @param expression the expression that the postcondition concerns
+     * @param result result for which the postcondition is valid
+     */
+    protected void checkConditionalPostcondition(
+            MethodTree node, AnnotationMirror annotation, Receiver expression, boolean result) {
         boolean booleanReturnType =
                 TypesUtils.isBooleanType(InternalUtils.typeOf(node.getReturnType()));
         if (!booleanReturnType) {
@@ -648,15 +687,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             // annotation is invalid.
             return;
         }
-        checkConditionalPostconditionAtReturnStatements(
-                contract.annoResult, annotation, expr, node);
-    }
 
-    private void checkConditionalPostconditionAtReturnStatements(
-            boolean result, AnnotationMirror annotation, Receiver expr, MethodTree methodTree) {
-        for (Object r : atypeFactory.getReturnStatementStores(methodTree)) {
-            Pair<?, ?> pair = (Pair<?, ?>) r;
-            ReturnNode returnStmt = (ReturnNode) pair.first;
+        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(node)) {
+            ReturnNode returnStmt = pair.first;
 
             Node retValNode = returnStmt.getResult();
             Boolean retVal =
@@ -674,7 +707,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             (result
                                     ? transferResult.getThenStore()
                                     : transferResult.getElseStore());
-            CFAbstractValue<?> value = exitStore.getValue(expr);
+            CFAbstractValue<?> value = exitStore.getValue(expression);
 
             // don't check if return statement certainly does not match 'result'. at the moment,
             // this means the result is a boolean literal
@@ -688,33 +721,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
             }
 
-            if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
+            if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
                 checker.report(
                         Result.failure(
                                 "contracts.conditional.postcondition.not.satisfied",
-                                expr.toString()),
+                                expression.toString()),
                         returnStmt.getTree());
-            }
-        }
-    }
-
-    /**
-     * Check that the parameters used in {@code stringExpr} are effectively final for method {@code
-     * method}.
-     */
-    protected void checkFlowExprParameters(ExecutableElement method, String stringExpr) {
-        // check that all parameters used in the expression are
-        // effectively final, so that they cannot be modified
-        List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
-        for (Integer idx : parameterIndices) {
-            if (idx > method.getParameters().size()) {
-                continue;
-            }
-            VariableElement parameter = method.getParameters().get(idx - 1);
-            if (!ElementUtils.isEffectivelyFinal(parameter)) {
-                checker.report(
-                        Result.failure("flowexpr.parameter.not.final", "#" + idx, stringExpr),
-                        method);
             }
         }
     }
