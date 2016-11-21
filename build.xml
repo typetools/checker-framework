@@ -134,6 +134,9 @@
 
   <fileset id="formatted.java.files" dir="." includes="**/*.java" excludes="**/checker/jdk/,**/stubparser/,**/eclipse/,**/nullness-javac-errors/"/>
 
+  <property name="checkerframework" value="${basedir}/../checker-framework"/>
+  <property file="${checkerframework}/build-common.properties"/>
+
   <import file="./build-styleguide.xml"/>
 
 
