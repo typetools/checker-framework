@@ -44,7 +44,7 @@
       <arg line="${style.grep.args}"/>
       <arg value="[^\\]\b\(else\|finally\|try\){\|}\(catch\|else\|finally\)\b\|){\($\|[^0-9]\)\|\b\(catch\|for\|if\|while\)("/>
       <arg line="${style.grep.files}"/>
-      <arg line="--exclude=build.xml --exclude=Makefile"/>
+      <arg line="--exclude=build-styleguide.xml --exclude=Makefile"/>
     </exec>
     <fail message="Missing space:${line.separator}${missingspace}">
       <condition>
