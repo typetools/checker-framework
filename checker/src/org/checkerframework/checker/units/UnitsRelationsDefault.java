@@ -56,7 +56,8 @@ public class UnitsRelationsDefault implements UnitsRelations {
      * provided Units
      */
     @Override
-    public /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
+    public /*@Nullable*/ AnnotationMirror multiplication(
+            AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
         // TODO: does this handle scaling correctly?
 
         // length * length => area
@@ -102,7 +103,8 @@ public class UnitsRelationsDefault implements UnitsRelations {
      * Units
      */
     @Override
-    public /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
+    public /*@Nullable*/ AnnotationMirror division(
+            AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
         if (havePairOfUnits(lht, m, rht, s)) {
             // m / s => mPERs
             return mPERs;
