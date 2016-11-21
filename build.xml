@@ -15,6 +15,9 @@
         basedir=".">
   <property file="${basedir}/local.properties"/>
 
+  <property name="checkerframework" value="${basedir}/../checker-framework"/>
+  <property file="${checkerframework}/build-common.properties"/>
+
   <target name="dist"
           description="Compile and jar all subprojects">
     <ant dir="checker">
@@ -133,9 +136,6 @@
 
 
   <fileset id="formatted.java.files" dir="." includes="**/*.java" excludes="**/checker/jdk/,**/stubparser/,**/eclipse/,**/nullness-javac-errors/"/>
-
-  <property name="checkerframework" value="${basedir}/../checker-framework"/>
-  <property file="${checkerframework}/build-common.properties"/>
 
   <import file="./build-styleguide.xml"/>
 
