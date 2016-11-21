@@ -305,7 +305,7 @@ class ZipInputStream extends InflaterInputStream implements ZipConstants {
             throw new ZipException("encrypted ZIP entry not supported");
         }
         e.method = get16(tmpbuf, LOCHOW);
-        e.time = get32(tmpbuf, LOCTIM);
+        // e.time = get32(tmpbuf, LOCTIM);
         if ((flag & 8) == 8) {
             /* "Data Descriptor" present */
             if (e.method != DEFLATED) {

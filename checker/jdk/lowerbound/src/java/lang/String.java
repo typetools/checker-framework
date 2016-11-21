@@ -3087,7 +3087,7 @@ public final class String
         int h = hash32;
         if (0 == h) {
            // harmless data race on hash32 here.
-           h = sun.misc.Hashing.murmur3_32(HASHING_SEED, value, 0, value.length);
+           // h = sun.misc.Hashing.murmur3_32(HASHING_SEED, value, 0, value.length);
 
            // ensure result is not zero to avoid recalcing
            h = (0 != h) ? h : 1;

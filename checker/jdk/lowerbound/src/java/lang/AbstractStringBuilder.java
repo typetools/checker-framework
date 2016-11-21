@@ -657,7 +657,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  a reference to this object.
      */
     public AbstractStringBuilder append(float f) {
-        new FloatingDecimal(f).appendTo(this);
+        //new FloatingDecimal(f).appendTo(this);
         return this;
     }
 
@@ -674,7 +674,7 @@ abstract class AbstractStringBuilder implements Appendable, CharSequence {
      * @return  a reference to this object.
      */
     public AbstractStringBuilder append(double d) {
-        new FloatingDecimal(d).appendTo(this);
+        //new FloatingDecimal(d).appendTo(this);
         return this;
     }
 
