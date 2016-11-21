@@ -1,11 +1,8 @@
 package org.checkerframework.dataflow.cfg.node;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import java.util.Collection;
-import java.util.Collections;
+import com.sun.source.tree.UnaryTree;
 import org.checkerframework.dataflow.util.HashCodeUtils;
-import org.checkerframework.javacutil.InternalUtils;
 
 /**
  * A node for the unary plus operation:
@@ -17,25 +14,11 @@ import org.checkerframework.javacutil.InternalUtils;
  * @author Stefan Heule
  * @author Charlie Garrett
  */
-public class NumericalPlusNode extends Node {
+public class NumericalPlusNode extends UnaryOperationNode {
 
-    protected Tree tree;
-    protected Node operand;
-
-    public NumericalPlusNode(Tree tree, Node operand) {
-        super(InternalUtils.typeOf(tree));
+    public NumericalPlusNode(UnaryTree tree, Node operand) {
+        super(tree, operand);
         assert tree.getKind() == Kind.UNARY_PLUS;
-        this.tree = tree;
-        this.operand = operand;
-    }
-
-    public Node getOperand() {
-        return operand;
-    }
-
-    @Override
-    public Tree getTree() {
-        return tree;
     }
 
     @Override
@@ -60,10 +43,5 @@ public class NumericalPlusNode extends Node {
     @Override
     public int hashCode() {
         return HashCodeUtils.hash(getOperand());
-    }
-
-    @Override
-    public Collection<Node> getOperands() {
-        return Collections.singletonList(getOperand());
     }
 }

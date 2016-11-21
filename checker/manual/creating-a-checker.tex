@@ -1,5 +1,6 @@
 \htmlhr
-\chapter{How to create a new checker\label{writing-a-checker}}
+\chapter{How to create a new checker\label{creating-a-checker}}
+\label{writing-a-checker} % to handle links that use old name
 
 \newcommand{\TreeAPIBase}{https://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/com/sun/source}
 \newcommand{\refTreeclass}[2]{\href{\TreeAPIBase{}/#1/#2.html?is-external=true}{\<#2>}}
@@ -70,7 +71,7 @@ it from the webpages, or include it in the Checker Framework distribution.
 For examples, see \chapterpageref{third-party-checkers}.
 
 
-\section{How checkers build on the Checker Framework\label{tool-relationships}}
+\section{How checkers build on the Checker Framework\label{creating-tool-relationships}}
 
 This table shows the relationship among tools that the Checker Framework
 builds on or that are built on the Checker Framework.
@@ -120,24 +121,24 @@ providing type qualifiers on the command line.
 You usually want to build your checker on the Base Checker.
 
 
-\section{The parts of a checker\label{parts-of-a-checker}}
+\section{The parts of a checker\label{creating-parts-of-a-checker}}
 
 The Checker Framework provides abstract base classes (default
 implementations), and a specific checker overrides as little or as much of
 the default implementations as necessary.
 %
-Sections~\ref{writing-typequals}--\ref{writing-compiler-interface} describe
+Sections~\ref{creating-typequals}--\ref{creating-compiler-interface} describe
 the components of a type system as written using the Checker Framework:
 
 \begin{description}
 
-\item{\ref{writing-typequals}}
+\item{\ref{creating-typequals}}
   \textbf{Type qualifiers and hierarchy.}  You define the annotations for
   the type system and the subtyping relationships among qualified types
   (for instance, that \<@NonNull Object> is a subtype of \<@Nullable
   Object>).
 
-\item{\ref{extending-visitor}}
+\item{\ref{creating-extending-visitor}}
   \textbf{Type rules.}  You specify the type system semantics (type
   rules), violation of which yields a type error.  There are two types of
   rules.
@@ -154,7 +155,7 @@ the components of a type system as written using the Checker Framework:
   write these additional rules yourself.
 \end{itemize}
 
-\item{\ref{writing-type-introduction}}
+\item{\ref{creating-type-introduction}}
   \textbf{Type introduction rules.}  For some types and
   expressions, a qualifier should be treated as implicitly present even if a
   programmer did not explicitly write it.  For example, in the Nullness
@@ -162,18 +163,18 @@ the components of a type system as written using the Checker Framework:
   other than \<null> has a \refqualclass{checker/nullness/qual}{NonNull} type;
   examples of literals include \code{"some string"} and \<java.util.Date.class>.
 
-\item{\ref{dataflow}}
+\item{\ref{creating-dataflow}}
   \textbf{Dataflow rules.}  These optional rules enhance flow-sensitive
   type qualifier inference (local variable type inference).
 
-\item{\ref{writing-compiler-interface}}
+\item{\ref{creating-compiler-interface}}
   \textbf{Interface to the compiler.}  The compiler interface indicates
   which annotations are part of the type system, which command-line options
   and \<@SuppressWarnings> annotations the checker recognizes, etc.
 \end{description}
 
 
-\subsection{Tips for creating a checker\label{writing-tips}}
+\subsection{Tips for creating a checker\label{creating-tips}}
 
 To make your job easier, we recommend that you build your type-checker
 incrementally, testing at each phase rather than trying to build the whole
@@ -188,7 +189,7 @@ Here is an example of one good way to proceed.
   view of a user.
   This will help you flesh out your goals and the concepts, which are
   easier to understand and change in text than in an imprementation.
-  Section~\ref{documenting-a-checker} gives a suggested structure for the
+  Section~\ref{creating-documenting-a-checker} gives a suggested structure for the
   manual chapter, which will help you avoid omitting any parts.
 
   Once you have designed and documented the parts of your type system, you
@@ -199,7 +200,7 @@ Here is an example of one good way to proceed.
 
 \item
   Implement the type qualifiers and hierarchy
-  (Section~\ref{writing-typequals}).
+  (Section~\ref{creating-typequals}).
 
   Write simple test cases to test your type hierarchy.  For instance, if
   your type hierarchy consists of a supertype \<@UnknownSign> and a subtype
@@ -219,12 +220,12 @@ Here is an example of one good way to proceed.
 
 \item
   Write the checker class itself
-  (Section~\ref{writing-compiler-interface}).
+  (Section~\ref{creating-compiler-interface}).
   Ensure that you can still type-check your test files and that the results
   are the same.
 
 \item
-  Implement type rules, if any (Section~\ref{extending-visitor}).
+  Implement type rules, if any (Section~\ref{creating-extending-visitor}).
 
   Write simple test cases to test the type rules, and ensure that the
   typechecker behaves as expected on those test files.
@@ -239,7 +240,7 @@ Here is an example of one good way to proceed.
 \end{Verbatim}
 
 \item
-  Implement and test type introduction rules, if any (Section~\ref{writing-type-introduction}).
+  Implement and test type introduction rules, if any (Section~\ref{creating-type-introduction}).
 
   For example, if your type system sets the qualifier for manifest literal
   integers and for array lengths, you would write a test case like the following:
@@ -255,7 +256,7 @@ Here is an example of one good way to proceed.
 
 \item
   Optionally, implement and test dataflow refinement rules
-  (Section~\ref{dataflow}).
+  (Section~\ref{creating-dataflow}).
 
   For instance, if after an arithmetic comparison, your type system infers
   which expressions are now known to be non-negative, you could write a
@@ -286,19 +287,19 @@ Here is an example of one good way to proceed.
 
 
 
-\section{Annotations: Type qualifiers and hierarchy\label{writing-typequals}}
+\section{Annotations: Type qualifiers and hierarchy\label{creating-typequals}}
 
-A type system designer specifies the qualifiers in the type system (Section~\ref{define-type-qualifiers})
+A type system designer specifies the qualifiers in the type system (Section~\ref{creating-define-type-qualifiers})
 and
 the type hierarchy that relates them.
 The type hierarchy --- the subtyping relationships among the qualifiers ---
 can be defined either
-declaratively via meta-annotations (Section~\ref{declarative-hierarchy}), or procedurally through
+declaratively via meta-annotations (Section~\ref{creating-declarative-hierarchy}), or procedurally through
 subclassing \refclass{framework/type}{QualifierHierarchy} or
-\refclass{framework/type}{TypeHierarchy} (Section~\ref{procedural-hierarchy}).
+\refclass{framework/type}{TypeHierarchy} (Section~\ref{creating-procedural-hierarchy}).
 
 
-\subsection{Defining the type qualifiers\label{define-type-qualifiers}}
+\subsection{Defining the type qualifiers\label{creating-define-type-qualifiers}}
 
 %% True, but seems irrelevant here, so it detracts from the message.
 % Each qualifier restricts the values that
@@ -353,7 +354,7 @@ directory \<.../nullness/qual>.
 
 The Checker Framework automatically treats any annotation that has this value
 and is declared in the qual package as a type qualifier.
-(See Section \ref{indicating-supported-annotations} for more details.)
+(See Section \ref{creating-indicating-supported-annotations} for more details.)
 
 % \noindent
 % The \<@Target({ElementType.TYPE\_USE})> meta-annotation
@@ -366,12 +367,12 @@ and is declared in the qual package as a type qualifier.
 % exceptions, such as \<@SuppressWarnings>).
 
 Your type system should include a top qualifier and a bottom qualifier
-(Section~\ref{bottom-and-top-qualifier}).  You should also define a
+(Section~\ref{creating-bottom-and-top-qualifier}).  You should also define a
 polymorphic qualifier \<@Poly\emph{MyTypeSystem}>
 (Section~\ref{qualifier-polymorphism}).
 
 
-\subsection{Declaratively defining the qualifier hierarchy\label{declarative-hierarchy}}
+\subsection{Declaratively defining the qualifier hierarchy\label{creating-declarative-hierarchy}}
 
 Declaratively, the type system designer uses two meta-annotations (written
 on the declaration of qualifier annotations) to specify the qualifier
@@ -446,13 +447,13 @@ hierarchy.
 The declarative and procedural mechanisms for specifying the hierarchy can
 be used together.  In particular, when using the \refqualclass{framework/qual}{SubtypeOf}
 meta-annotation, further customizations may be
-performed procedurally (Section~\ref{procedural-hierarchy})
+performed procedurally (Section~\ref{creating-procedural-hierarchy})
 by overriding the \refmethodterse{framework/util}{GraphQualifierHierarchy}{isSubtype}{-java.util.Collection-java.util.Collection-} method in the checker class
-(Section~\ref{writing-compiler-interface}).
+(Section~\ref{creating-compiler-interface}).
 However, the declarative mechanism is sufficient for most type systems.
 
 
-\subsection{Procedurally defining the qualifier hierarchy\label{procedural-hierarchy}}
+\subsection{Procedurally defining the qualifier hierarchy\label{creating-procedural-hierarchy}}
 
 While the declarative syntax suffices for many cases, more complex
 type hierarchies can be expressed by overriding, in your subclass of \refclass{common/basetype}{BaseTypeVisitor},
@@ -484,7 +485,7 @@ generic \code{List}.
 (In the technical jargon, the generic arguments are ``invariant'' or ``novariant''.)
 
 
-\subsection{Defining a default annotation\label{typesystem-defaults}}
+\subsection{Defining a default annotation\label{creating-typesystem-defaults}}
 
 A type system applies a default qualifier where the user has not written a
 qualifier (and no implicit qualifier is applicable), as explained in
@@ -507,14 +508,16 @@ qualifier hierarchy.
 
 If the default qualifier in the type hierarchy requires a value, there are ways for the type system designer to specify a default value both declaratively and procedurally, as well. To do so declaratively, append the string ``default <value>'' where ``<value>'' is the actual value you want to be the default, after the declaration of the value in the qualifier file. For instance, \code{int value() default 0;} would make \code{value} default to zero. Alternatively, the procedural method described above can be used.
 
-\subsection{Relevant Java types\label{relevant-java-types}}
+
+\subsection{Relevant Java types\label{creating-relevant-java-types}}
 
 A checker can use the \refqualclass{framework/qual}{RelevantJavaTypes}
 annotation on the checker class to specify which Java types are relevant to the
 checker.  All irrelevant types without explicit annotations are defaulted to
 the top annotation.
 
-\subsection{Do not re-use type qualifiers\label{do-not-re-use-type-qualifiers}}
+
+\subsection{Do not re-use type qualifiers\label{creating-do-not-re-use-type-qualifiers}}
 
 Every annotation should belong to only one type system.  No annotation
 should be used by multiple type systems.  This is true even of annotations
@@ -533,7 +536,7 @@ qualifier on every type --- a defaulted or inferred type qualifier if the
 programmer didn't write a type qualifier explicitly.
 
 
-\subsection{Completeness of the type hierarchy\label{bottom-and-top-qualifier}}
+\subsection{Completeness of the type hierarchy\label{creating-bottom-and-top-qualifier}}
 
 When you define a type system, its type hierarchy must be a
 complete lattice --- that is, there must be a top type that is a
@@ -551,7 +554,7 @@ would have its own top qualifier and its own bottom qualifier; they don't
 all have to share a single top qualifier or a single bottom qualifier.
 
 
-\paragraph{Bottom qualifier\label{bottom-qualifier}}
+\paragraph{Bottom qualifier\label{creating-bottom-qualifier}}
 Your type hierarchy must have a bottom qualifier
 --- a qualifier that is a (direct or indirect) subtype of every other
 qualifier.
@@ -583,7 +586,7 @@ The hierarchy shown in Figure~\ref{fig-initialization-hierarchy} lacks
 a bottom qualifier, but the actual implementation does contain a (non-user-visible) bottom qualifier.
 
 
-\paragraph{Top qualifier\label{top-qualifier}}
+\paragraph{Top qualifier\label{creating-top-qualifier}}
 Your type hierarchy must have a top qualifier
 --- a qualifier that is a (direct or indirect) supertype of every other
 qualifier.
@@ -606,7 +609,7 @@ then the default would apply to every
 type system that uses \<@Unqualified>, which is unlikely to be desired.
 
 
-\section{Visitor: Type rules\label{extending-visitor}}
+\section{Visitor: Type rules\label{creating-extending-visitor}}
 
 A type system's rules define which operations on values of a
 particular type are forbidden.
@@ -682,7 +685,7 @@ similar to Java subtype rules, but taking the type qualifiers into account.
 \end{itemize}
 
 
-\subsection{AST traversal\label{ast-traversal}}
+\subsection{AST traversal\label{creating-ast-traversal}}
 
 The Checker Framework needs to do its own traversal of the AST even though
 it operates as an ordinary annotation processor~\cite{JSR269}.  Annotation
@@ -705,7 +708,7 @@ is not deeply integrated with Eclipse, but runs as an external tool (see
 Section~\ref{eclipse}).
 
 
-\subsection{Avoid hardcoding\label{avoid-hardcoding}}
+\subsection{Avoid hardcoding\label{creating-avoid-hardcoding}}
 
 It may be tempting to write a type-checking rule for method invocation,
 where your rule checks the name of the method being called and then treats
@@ -715,7 +718,7 @@ is better to write annotations, in a stub file
 type-checking rules.
 
 
-\section{Type factory: Implicit annotations (type introduction rules)\label{writing-type-introduction}}
+\section{Type factory: Implicit annotations (type introduction rules)\label{creating-type-introduction}}
 
 For some types and expressions, a qualifier should be treated as present
 even if a programmer did not explicitly write it.  For example, every
@@ -724,13 +727,13 @@ Section~\ref{effective-qualifier} explains the meaning of implicit
 qualifiers, such as that they cannot be overridden.
 
 The implicit annotations may be specified declaratively
-(Section~\ref{declarative-type-introduction}) and/or procedurally
-(Section~\ref{procedurally-specifying-implicit-annotations}).
+(Section~\ref{creating-declarative-type-introduction}) and/or procedurally
+(Section~\ref{creating-procedurally-specifying-implicit-annotations}).
 It is easiest to specify them declaratively, when the declarative method is
 sufficiently expressive.
 
 
-\subsection{Declaratively specifying implicit annotations\label{declarative-type-introduction}}
+\subsection{Declaratively specifying implicit annotations\label{creating-declarative-type-introduction}}
 
 The \refqualclass{framework/qual}{ImplicitFor} meta-annotation indicates
 implicit annotations.
@@ -780,10 +783,10 @@ as the
 and
 \refModelclass{type}{TypeKind}
 enums.  All the information you need is in the Javadoc, and
-Section~\ref{javac-tips} can help you get started.
+Section~\ref{creating-javac-tips} can help you get started.
 
 
-\subsection{Procedurally specifying implicit annotations\label{procedurally-specifying-implicit-annotations}}
+\subsection{Procedurally specifying implicit annotations\label{creating-procedurally-specifying-implicit-annotations}}
 
 If the \<@ImplicitFor> annotation is not sufficiently expressive, then you
 can write code to set implicit annotations.  To do so, create a subclass of
@@ -809,7 +812,7 @@ which is the Checker Framework's representation of an annotated type.
 
 
 
-\section{Dataflow: enhancing flow-sensitive type qualifier inference\label{dataflow}}
+\section{Dataflow: enhancing flow-sensitive type qualifier inference\label{creating-dataflow}}
 
 By default, every checker performs automatic type refinement, also known as
 flow inference, as described
@@ -845,13 +848,13 @@ Framework's dataflow framework.
 
 The steps to customizing type refinement are:
 \begin{enumerate}
-\item{\ref{dataflow-create-classes}} Create required class and configure its
+\item{\ref{creating-dataflow-create-classes}} Create required class and configure its
     use
-\item{\ref{dataflow-override-methods}} Override methods that handle
+\item{\ref{creating-dataflow-override-methods}} Override methods that handle
     \refclass{dataflow/cfg/node}{Node}s of interest
-\item{\ref{dataflow-determine-expressions}} Determine which expressions will be
+\item{\ref{creating-dataflow-determine-expressions}} Determine which expressions will be
     refined
-\item{\ref{dataflow-implement-refinement}} Implement the refinement
+\item{\ref{creating-dataflow-implement-refinement}} Implement the refinement
 \end{enumerate}
 
 The Regex Checker's dataflow customization for the
@@ -859,7 +862,7 @@ The Regex Checker's dataflow customization for the
 run-time check is used as an example throughout the steps.
 
 
-\subsection{Create required class and configure its use\label{dataflow-create-classes}}
+\subsection{Create required class and configure its use\label{creating-dataflow-create-classes}}
 
 The following class must be created to customize dataflow. This class must
 be included on the classpath like other components of your checker.
@@ -964,7 +967,7 @@ of the extended \refclass{framework/flow}{CFTransfer}.
 
 \end{enumerate}
 
-\subsection{Override methods that handle Nodes of interest\label{dataflow-override-methods}}
+\subsection{Override methods that handle Nodes of interest\label{creating-dataflow-override-methods}}
 
 At this point, your checker is configured to use your extended
 \refclass{framework/flow}{CFTransfer}, but it uses only the default
@@ -975,7 +978,7 @@ types.
 
 A \refclass{dataflow/cfg/node}{Node} is basically equivalent to a javac compiler
 \refTreeclass{tree}{Tree}.  A tree is a node in the abstract syntax tree of the
-program being checked. See Section~\ref{javac-tips} for more information about trees.
+program being checked. See Section~\ref{creating-javac-tips} for more information about trees.
 
 As an example, for the statement \<String a = "";>, the corresponding
 abstract syntax tree structure is:
@@ -1021,7 +1024,7 @@ The Regex Checker refines the type of a run-time test method call, so
 \end{smaller}
 %END LATEX
 
-\subsection{Determine the expressions to refine the types of\label{dataflow-determine-expressions}}
+\subsection{Determine the expressions to refine the types of\label{creating-dataflow-determine-expressions}}
 
 There are usually multiple expressions used in a run-time check or run-time
 operation; determine which expression the customization will refine.  This is
@@ -1081,7 +1084,7 @@ type of the \code{RegexUtils.asRegex} invocation when its
 \refTreeclass{tree}{Tree} is looked up by the
 \refclass{framework/type}{AnnotatedTypeFactory}.  Regex Checker's
 \code{visitMethodInvocation} is shown in more detail in
-Section~\ref{dataflow-implement-refinement}.
+Section~\ref{creating-dataflow-implement-refinement}.
 
 \item Changing the store to refine the estimate of some other expression, such
     as \code{a} or \code{b}.
@@ -1114,7 +1117,7 @@ binary expressions or casts, cannot be stored in the
 \end{enumerate}
 
 
-\subsection{Implement the refinement\label{dataflow-implement-refinement}}
+\subsection{Implement the refinement\label{creating-dataflow-implement-refinement}}
 
 \begin{sloppypar}
 This section details implementing the visitor method
@@ -1212,7 +1215,7 @@ If the integer argument was not a literal integer, the
 \item \textbf{Return a \refclass{dataflow/analysis}{TransferResult} with the
     refined types}
 
-As discussed in Section~\ref{dataflow-determine-expressions}, the type of an
+As discussed in Section~\ref{creating-dataflow-determine-expressions}, the type of an
 expression is refined by modifying the
 \refclass{dataflow/analysis}{TransferResult}.  Since the
 \refclass{checker/regex}{RegexTransfer} is updating the type of the run-time
@@ -1254,7 +1257,7 @@ the value of the integer parameter at compile time.
 \end{enumerate}
 
 
-\section{The checker class:  Compiler interface\label{writing-compiler-interface}}
+\section{The checker class:  Compiler interface\label{creating-compiler-interface}}
 
 A checker's entry point is a subclass of
 \refclass{framework/source}{SourceChecker}, and is usually a direct subclass
@@ -1311,7 +1314,7 @@ is rarely needed.
 For more details about message keys, see Section~\refwithpageparen{compiler-message-keys}.
 \end{sloppypar}
 
-\subsection{Indicating supported annotations\label{indicating-supported-annotations}}
+\subsection{Indicating supported annotations\label{creating-indicating-supported-annotations}}
 
 A checker must indicate the annotations that it supports (make up its type
 hierarchy), including whether it supports the polymorphic qualifier
@@ -1338,7 +1341,7 @@ type qualifiers, but each of its component checkers should do so.
 
 
 
-\subsection{Bundling multiple checkers\label{bundling-multiple-checkers}}
+\subsection{Bundling multiple checkers\label{creating-bundling-multiple-checkers}}
 
 Sometimes, multiple checkers work together and should always be run
 together.  There are two different ways to bundle multiple checkers
@@ -1408,14 +1411,14 @@ determine the types of variables.
 
 
 
-\subsection{Providing command-line options\label{providing-command-line-options}}
+\subsection{Providing command-line options\label{creating-providing-command-line-options}}
 
 A checker can provide two kinds of command-line options:
 boolean flags and
 named string values (the standard annotation processor
 options).
 
-\subsubsection{Boolean flags\label{providing-command-line-options-boolean-flags}}
+\subsubsection{Boolean flags\label{creating-providing-command-line-options-boolean-flags}}
 
 To specify a simple boolean flag, add:
 
@@ -1439,7 +1442,7 @@ javac -processor MyChecker -Alint=myflag
 \end{Verbatim}
 
 
-\subsubsection{Named string values\label{providing-command-line-options-named-string-values}}
+\subsubsection{Named string values\label{creating-providing-command-line-options-named-string-values}}
 
 For more complicated options, one can use the standard annotation
 processing \code{@SupportedOptions} annotation on the checker, as in:
@@ -1467,7 +1470,7 @@ required parsing of the option.
 % TODO: describe -ANullnessChecker_option=value mechanism.
 
 
-\section{Annotated JDK\label{writing-a-checker-annotated-jdk}}
+\section{Annotated JDK\label{creating-a-checker-annotated-jdk}}
 
 You will need to supply annotations for relevant parts of the JDK;
 otherwise, your type-checker may produce spurious warnings for code that
@@ -1486,7 +1489,7 @@ You should list them in a
 class, so that they will also be automatically used.
 
 
-\section{Testing framework\label{testing-framework}}
+\section{Testing framework\label{creating-testing-framework}}
 
 \begin{sloppypar}
 The Checker Framework provides a convenient way to write tests for your
@@ -1496,14 +1499,14 @@ It is extensively documented in file \<checker-framework/checker/tests/README>.
 \end{sloppypar}
 
 
-\section{Debugging options\label{debugging-options}}
+\section{Debugging options\label{creating-debugging-options}}
 
 The Checker Framework provides debugging options that can be helpful when
 writing a checker. These are provided via the standard \code{javac} ``\code{-A}''
 switch, which is used to pass options to an annotation processor.
 
 
-\subsection{Amount of detail in messages\label{debugging-options-detail}}
+\subsection{Amount of detail in messages\label{creating-debugging-options-detail}}
 
 \begin{itemize}
 \item \code{-AprintAllQualifiers}: print all type qualifiers, including
@@ -1526,7 +1529,7 @@ changed if the English message is updated.
 
 \end{itemize}
 
-\subsection{Stub and JDK libraries\label{debugging-options-libraries}}
+\subsection{Stub and JDK libraries\label{creating-debugging-options-libraries}}
 
 \begin{itemize}
 
@@ -1543,7 +1546,7 @@ changed if the English message is updated.
 
 \end{itemize}
 
-\subsection{Progress tracing\label{debugging-options-progress}}
+\subsection{Progress tracing\label{creating-debugging-options-progress}}
 
 \begin{itemize}
 
@@ -1552,11 +1555,11 @@ changed if the English message is updated.
 \item \code{-Ashowchecks}: print debugging information for each
 pseudo-assignment check (as performed by
 \refclass{common/basetype}{BaseTypeVisitor}; see
-Section~\ref{extending-visitor}).
+Section~\ref{creating-extending-visitor}).
 
 \end{itemize}
 
-\subsection{Saving the command-line arguments to a file\label{debugging-options-output-args}}
+\subsection{Saving the command-line arguments to a file\label{creating-debugging-options-output-args}}
 
 \begin{itemize}
 
@@ -1571,7 +1574,7 @@ Section~\ref{extending-visitor}).
 
 \end{itemize}
 
-\subsection{Miscellaneous debugging options\label{debugging-options-misc}}
+\subsection{Miscellaneous debugging options\label{creating-debugging-options-misc}}
 
 \begin{itemize}
 
@@ -1590,7 +1593,7 @@ Section~\ref{extending-visitor}).
 \item \code{-Acfgviz=\emph{VizClassName}[,\emph{opts},...]}:
   Mechanism to visualize the control flow graph (CFG) of
   all the methods and code fragments
-  analyzed by the dataflow analysis (Section~\ref{dataflow}).
+  analyzed by the dataflow analysis (Section~\ref{creating-dataflow}).
   The graph also contains information about flow-sensitively refined
   types of various expressions at many program points.
 
@@ -1613,7 +1616,7 @@ dot -Tpdf -o myfile.pdf myfile.dot
 \end{Verbatim}
 
 
-\subsection{Examples\label{debugging-options-examples}}
+\subsection{Examples\label{creating-debugging-options-examples}}
 
 The following example demonstrates how these options are used:
 
@@ -1643,7 +1646,7 @@ examples/InterningExampleWithWarnings.java:21: (not.interned)
 \end{smaller}
 %END LATEX
 
-\subsection{Using an external debugger\label{debugging-options-external}}
+\subsection{Using an external debugger\label{creating-debugging-options-external}}
 
 \begin{sloppypar}
 You can use any standard debugger to observe the execution of your checker.
@@ -1730,7 +1733,7 @@ java -jar $CHECKERFRAMEWORK/framework/dist/framework.jar \
 
 
 
-\section{Documenting the checker\label{documenting-a-checker}}
+\section{Documenting the checker\label{creating-documenting-a-checker}}
 
 This section describes how to write a chapter for this manual that
 describes a new type-checker.  This is a prerequisite to having your
@@ -1812,7 +1815,7 @@ There are several other miscellaneous tasks:
 \end{itemize}
 
 
-\section{javac implementation survival guide\label{javac-tips}}
+\section{javac implementation survival guide\label{creating-javac-tips}}
 
 Since this section of the manual was written, the useful ``The Hitchhiker's
 Guide to javac'' has become available at
@@ -1828,13 +1831,13 @@ This section describes those interfaces.
 
 
 
-\subsection{Checker access to compiler information\label{compiler-information}}
+\subsection{Checker access to compiler information\label{creating-compiler-information}}
 
 The compiler uses and exposes three hierarchies to model the Java
 source code and classfiles.
 
 
-\subsubsection{Types --- Java Language Model API\label{javac-types}}
+\subsubsection{Types --- Java Language Model API\label{creating-javac-types}}
 
 A \refModelclass{type}{TypeMirror} represents a Java type.
 % Java declaration, statement, or expression.
@@ -1854,7 +1857,7 @@ associated with the type.
 The Checker Framework and the checkers use the types API extensively.
 
 
-\subsubsection{Elements --- Java Language Model API\label{javac-elements}}
+\subsubsection{Elements --- Java Language Model API\label{creating-javac-elements}}
 
 An \refModelclass{element}{Element} represents a potentially-public
 declaration that can be accessed from elsewhere:  classes, interfaces, methods, constructors, and
@@ -1877,7 +1880,7 @@ Example: retrieve declaration annotations, check variable
 modifiers (e.g., \code{strictfp}, \code{synchronized})
 
 
-\subsubsection{Trees --- Compiler Tree API\label{javac-trees}}
+\subsubsection{Trees --- Compiler Tree API\label{creating-javac-trees}}
 
 A \refTreeclass{tree}{Tree} represents a syntactic unit in the source code,
 like a method declaration, statement, block, \<for> loop, etc. Trees only
@@ -1894,7 +1897,7 @@ traverse the source code and retrieve the types/elements corresponding to
 them.  Then, the checker performs any needed checks on the types/elements instead.
 
 
-\subsubsection{Using the APIs\label{using-the-apis}}
+\subsubsection{Using the APIs\label{creating-using-the-apis}}
 
 The three APIs use some common idioms and conventions; knowing them will
 help you to create your checker.
@@ -1925,7 +1928,7 @@ the utility class for a \code{Foo} hierarchy is \code{Foos} (e.g.,
 notable exception: \refclass{framework/util}{AnnotatedTypes}.
 
 
-\subsection{How a checker fits in the compiler as an annotation processor\label{checker-as-annotation-processor}}
+\subsection{How a checker fits in the compiler as an annotation processor\label{creating-checker-as-annotation-processor}}
 
 The Checker Framework builds on the Annotation Processing API
 introduced in Java 6.  A type annotation processor is one that extends
@@ -1950,11 +1953,11 @@ In the future, the Checker Framework
 can be migrated to use the Java Model AST of JSR 198 (Extension API for
 Integrated Development Environments)~\cite{JSR198}, which gives access to
 the source code of a method.  But, at present no tools
-implement JSR~198.  Also see Section~\ref{ast-traversal}.
+implement JSR~198.  Also see Section~\ref{creating-ast-traversal}.
 
 
 
-\subsubsection{Learning more about javac\label{learning-more-about-javac}}
+\subsubsection{Learning more about javac\label{creating-learning-more-about-javac}}
 
 Sun's javac compiler interfaces can be daunting to a
 newcomer, and its documentation is a bit sparse. The Checker Framework
@@ -1971,7 +1974,7 @@ mailing list archives at
 \url{http://mail.openjdk.java.net/mailman/listinfo/compiler-dev}).
 
 
-\section{Integrating a checker with the Checker Framework\label{integrating-a-checker}}
+\section{Integrating a checker with the Checker Framework\label{creating-integrating-a-checker}}
 
 % First version of how to integrate a new checker into the release.
 % TODO: what steps are missing?
