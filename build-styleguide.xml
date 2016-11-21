@@ -116,7 +116,7 @@
           description="Obtain or update run-google-java-format project">
     <exec executable="/bin/sh">
       <arg value="-c"/>
-      <arg value="cd ${checker.loc}/bin-devel &amp;&amp; (git -C .run-google-java-format pull -q || git clone -q https://github.com/plume-lib/run-google-java-format.git .run-google-java-format)"/>
+      <arg value="cd ${checker.loc}/bin-devel &amp;&amp; ((cd .run-google-java-format &amp;&amp; git pull -q) || git clone -q https://github.com/plume-lib/run-google-java-format.git .run-google-java-format)"/>
     </exec>
   </target>
 
