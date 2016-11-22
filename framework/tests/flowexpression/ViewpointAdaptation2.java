@@ -22,20 +22,24 @@ public class ViewpointAdaptation2 {
 
         @FlowExp("lockExample1.myLock")
         Object o2 = lockExample1.locked2;
-        //:: error: (assignment.type.incompatible)
+
         @FlowExp("myLock")
-        Object o3 = lockExample1.locked;
         //:: error: (assignment.type.incompatible)
+        Object o3 = lockExample1.locked;
+
         @FlowExp("this.myLock")
+        //:: error: (assignment.type.incompatible)
         Object o4 = lockExample1.locked2;
 
         @FlowExp("lockExample1.myLock")
         Object oM1 = lockExample1.getLocked();
-        //:: error: (assignment.type.incompatible)
+
         @FlowExp("myLock")
-        Object oM2 = lockExample1.getLocked();
         //:: error: (assignment.type.incompatible)
+        Object oM2 = lockExample1.getLocked();
+
         @FlowExp("this.myLock")
+        //:: error: (assignment.type.incompatible)
         Object oM3 = lockExample1.getLocked();
 
         void uses() {
