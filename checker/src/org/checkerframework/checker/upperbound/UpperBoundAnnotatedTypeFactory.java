@@ -232,14 +232,21 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a2;
             } else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-
+                // This only works for LTL and LTEL. It must be one of the two.
                 String[] names = getCombinedNames(a1, a2);
-                return createAnnotation(a1.getAnnotationType().toString(), names);
+
+                if (AnnotationUtils.areSameByClass(a1, LessThanLength.class)) {
+                    return createLessThanLengthAnnotation(names);
+                } else {
+                    // This needs to be LTEL. If we change the type hierarchy, this has to change.
+                    return createLessThanOrEqualToLengthAnnotation(names);
+                }
             } else {
                 /* If the two are unrelated, then the type hierarchy implies
-                   that one is LTL and the other is EL, meaning that the GLB
+                   that one is LTL and the other is LTEL, with different arrays,
+                   meaning that the GLB
                    is LTEL of every array that is in either - since LTEL
-                   is the bottom type.
+                   is effectively the bottom type.
                 */
                 String[] names = getCombinedNames(a1, a2);
                 return createLessThanOrEqualToLengthAnnotation(names);
