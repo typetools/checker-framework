@@ -1134,10 +1134,10 @@ you how to run it.
 \subsection{Why is there no declarative syntax for writing type rules?\label{faq-declarative-syntax-for-type-rules}}
 
 A type system implementer can declaratively specify the type qualifier
-hierarchy (Section~\ref{declarative-hierarchy}) and the type introduction rules
-(Section~\ref{declarative-type-introduction}).  However, the Checker
+hierarchy (Section~\ref{creating-declarative-hierarchy}) and the type introduction rules
+(Section~\ref{creating-declarative-type-introduction}).  However, the Checker
 Framework uses a procedural syntax for specifying type-checking
-rules (Section~\ref{extending-visitor}).
+rules (Section~\ref{creating-extending-visitor}).
 A declarative syntax might be more concise, more readable, and more
 verifiable than a procedural syntax.
 
@@ -1159,7 +1159,7 @@ support it.
 Pluggable type-checking finds more bugs than a bug detector does, for any
 given variety of bug.
 
-A bug detector like \href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
+A bug detector like \href{creating-http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
 \href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
 \href{http://pmd.sourceforge.net/}{PMD}~\cite{Copeland2005} aims to find \emph{some}
 of the most obvious bugs in your program.  It uses a lightweight analysis,
