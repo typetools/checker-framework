@@ -584,6 +584,9 @@ applied where you did not write a type; see Section~\ref{defaults}.  In
 other cases, this is because flow-sensitive type refinement has given an
 expression a more specific type than you wrote or than was defaulted; see
 Section~\ref{type-refinement}.
+Note that an invocation of an impure method may cause the loss of all
+information that was determined via flow-sensitive type refinement; see
+Section~\ref{type-refinement-purity}.
 
 
 \subsection{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
