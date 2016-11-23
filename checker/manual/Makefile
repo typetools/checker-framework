@@ -54,6 +54,9 @@ manual.pdf: bib-update figures-all check-labels
 html: manual.html
 manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 	hevea -fix -exec xxdate.exe manual.tex
+# I'm not sure why this is necessary; "hevea -fix" should run it automatically.
+# Also, you need ImageMagick 6.8.0-2 Beta or later to avoid a bug.
+	imagen manual
 	./add-favicon-to-manual
 # The following three lines are only necessary when using Hevea before version 2.04
 # With version 2.04 they have no effect but do no harm.

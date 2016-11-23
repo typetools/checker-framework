@@ -2,7 +2,7 @@ package defaulting.upperbound;
 
 // this tests sole purpose is to check that implicit and explicit LOWER_BOUND defaulting work as expected
 
-import tests.defaulting.UpperBoundQual.*;
+import testlib.defaulting.UpperBoundQual.*;
 
 class MyArrayList<MAL extends String> {}
 

@@ -31,9 +31,7 @@ class LambdaNullness {
     LambdaNullness(FunctionNull<String, String> f, Object e) {}
 
     // No parameters; result is void
-    Noop f1 =
-            () -> {
-            };
+    Noop f1 = () -> {};
     // No parameters, expression body
     Supplier<Integer> f2a = () -> 42;
 

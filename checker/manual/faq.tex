@@ -71,6 +71,7 @@ fully-qualified type name?
 \faqtocpara{\ref{faq-other-tools-section}: Relationship to other tools}
 \\ \ref{faq-type-checking-vs-bug-detectors}: Why not just use a bug detector (like FindBugs)?
 \\ \ref{faq-eclipse}: How does the Checker Framework compare with Eclipse's Null Analysis?
+\\ \ref{faq-optional}: How does the Checker Framework compare with the JDK's \<Optional> type?
 \\ \ref{faq-jml}: How does pluggable type-checking compare with JML?
 \\ \ref{faq-checker-framework-part-of-java}: Is the Checker Framework an official part of Java?
 \\ \ref{faq-jsr-305}: What is the relationship between the Checker Framework and JSR 305?
@@ -583,6 +584,9 @@ applied where you did not write a type; see Section~\ref{defaults}.  In
 other cases, this is because flow-sensitive type refinement has given an
 expression a more specific type than you wrote or than was defaulted; see
 Section~\ref{type-refinement}.
+Note that an invocation of an impure method may cause the loss of all
+information that was determined via flow-sensitive type refinement; see
+Section~\ref{type-refinement-purity}.
 
 
 \subsection{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
@@ -1133,10 +1137,10 @@ you how to run it.
 \subsection{Why is there no declarative syntax for writing type rules?\label{faq-declarative-syntax-for-type-rules}}
 
 A type system implementer can declaratively specify the type qualifier
-hierarchy (Section~\ref{declarative-hierarchy}) and the type introduction rules
-(Section~\ref{declarative-type-introduction}).  However, the Checker
+hierarchy (Section~\ref{creating-declarative-hierarchy}) and the type introduction rules
+(Section~\ref{creating-declarative-type-introduction}).  However, the Checker
 Framework uses a procedural syntax for specifying type-checking
-rules (Section~\ref{extending-visitor}).
+rules (Section~\ref{creating-extending-visitor}).
 A declarative syntax might be more concise, more readable, and more
 verifiable than a procedural syntax.
 
@@ -1158,7 +1162,7 @@ support it.
 Pluggable type-checking finds more bugs than a bug detector does, for any
 given variety of bug.
 
-A bug detector like \href{http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
+A bug detector like \href{creating-http://findbugs.sourceforge.net/}{FindBugs}~\cite{HovemeyerP2004,HovemeyerSP2005},
 \href{http://jlint.sourceforge.net/}{Jlint}~\cite{Artho2001}, or
 \href{http://pmd.sourceforge.net/}{PMD}~\cite{Copeland2005} aims to find \emph{some}
 of the most obvious bugs in your program.  It uses a lightweight analysis,
@@ -1230,7 +1234,7 @@ Its IDE integration is tighter and slicker.
 checker-framework-dev@googlegroups.com so we can update the manual.)
 
 
-\subsection{How does the Checker Framework compare with the JDK's \<Optional> type?\label{faq-eclipse}}
+\subsection{How does the Checker Framework compare with the JDK's \<Optional> type?\label{faq-optional}}
 
 JDK 8 introduced the \sunjavadoc{java/util/Optional.html}{\code{Optional}}
 class, a container that is either empty or contains a non-null value.
