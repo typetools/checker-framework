@@ -120,6 +120,11 @@ public class MinLenAnnotatedTypeFactory
         }
 
         @Override
+        public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
+            return createMinLen(0);
+        }
+
+        @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
@@ -182,19 +187,12 @@ public class MinLenAnnotatedTypeFactory
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
                 // Implies both are MinLen since that's the only other type.
-                // But we're going to check anyway to make sure they both have
-                // values to avoid crashing.
-                if (AnnotationUtils.hasElementValue(rhs, "value")
-                        && AnnotationUtils.hasElementValue(lhs, "value")) {
-                    Integer rhsVal =
-                            AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
-                    Integer lhsVal =
-                            AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
-                    return rhsVal >= lhsVal;
-                } else {
-                    // They aren't subtypes is one doesn't have a value.
-                    return true;
-                }
+                // There used to be a check to see if these values existed.
+                // It's been removed; if they don't exist, we should get the default (0).
+
+                Integer rhsVal = AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
+                Integer lhsVal = AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
+                return rhsVal >= lhsVal;
             }
             return false;
         }
