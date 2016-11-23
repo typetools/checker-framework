@@ -131,16 +131,16 @@ public class MinLenAnnotatedTypeFactory
                     return a2;
                 }
             } else {
-                // One of these is bottom. GLB of anything and bottom is the anything.
+                // One of these is bottom. GLB of anything and bottom is bottom.
                 if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
-                    return a2;
-                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
                     return a1;
+                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                    return a2;
                 }
             }
 
-            // This should be unreachable but we want the function to be complete.
-            return createMinLen(0);
+            // This should be unreachable but we want the function to be complete, so return bottom.
+            return createMinLenBottom();
         }
 
         @Override
@@ -155,15 +155,15 @@ public class MinLenAnnotatedTypeFactory
                     return a2;
                 }
             } else {
-                // One of these is bottom. LUB of anything and bottom is bottom.
+                // One of these is bottom. LUB of anything and bottom is the anything.
                 if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
-                    return a1;
-                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
                     return a2;
+                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                    return a1;
                 }
             }
 
-            // This should be unreachable but we want the function to be complete.
+            // This should be unreachable but we want the function to be complete, so we return top.
             return createMinLen(0);
         }
 
