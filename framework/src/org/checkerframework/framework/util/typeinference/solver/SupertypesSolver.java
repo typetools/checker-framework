@@ -100,7 +100,7 @@ public class SupertypesSolver {
 
             boolean failed = false;
             for (final AnnotationMirror top : tops) {
-                if (!equalityAnnos.contains(top)) {
+                if (!AnnotationUtils.containsSame(equalityAnnos, top)) {
                     final AnnotationMirror lubAnno = lub.getAnnotationInHierarchy(top);
                     if (lubAnno == null) {
                         // If the LUB and the Equality were the SAME typevar, and the lub was unannotated
@@ -155,7 +155,7 @@ public class SupertypesSolver {
 
             boolean failed = false;
             for (final AnnotationMirror top : tops) {
-                if (!equalityAnnos.contains(top)) {
+                if (!AnnotationUtils.containsSame(equalityAnnos, top)) {
                     final AnnotationMirror lubAnno = lubAnnos.get(top);
                     if (lubAnno == null) {
                         failed = true;
@@ -332,7 +332,7 @@ public class SupertypesSolver {
         final Set<AnnotationMirror> presentHierarchies = typeToHierarchies.getValue();
         final Set<AnnotationMirror> missingAnnos = new LinkedHashSet<>();
         for (AnnotationMirror top : lowerBoundAnnos.keySet()) {
-            if (!presentHierarchies.contains(top)) {
+            if (!AnnotationUtils.containsSame(presentHierarchies, top)) {
                 missingAnnos.add(lowerBoundAnnos.get(top));
             }
         }
