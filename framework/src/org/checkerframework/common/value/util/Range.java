@@ -183,6 +183,7 @@ public class Range {
         return new Range(from, to);
     }
 
+    // to prevent overflow/underflow
     public BigInteger numberOfPossibleValues() {
         return BigInteger.valueOf(to).subtract(BigInteger.valueOf(from)).add(BigInteger.valueOf(1));
     }
@@ -190,6 +191,7 @@ public class Range {
     public boolean isWiderThan(int value) {
         return numberOfPossibleValues().compareTo(BigInteger.valueOf(value)) == 1;
     }
+
     /*
      * TODO:
      * How to handle overflow/underflow?

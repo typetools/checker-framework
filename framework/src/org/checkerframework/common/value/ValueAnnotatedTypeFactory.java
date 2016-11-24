@@ -173,14 +173,33 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * If any constant-value annotation has &gt; MAX_VALUES number of values provided, treats
          * the value as UnknownVal. Works together with ValueVisitor.visitAnnotation, which issues a
          * warning to the user in this case.
+         *
+         * <p>Additional rules applied for IntVal and IntRange annotations: if anno is IntVal and
+         * the number of values provided is &gt; MAX_VALUES, replace with IntRange; if anno is
+         * IntRange and the range is &le; MAX_VALUES, replace with IntVal
          */
         private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
 
             if (anno != null && anno.getElementValues().size() > 0) {
                 if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
-
+                    Range range = getIntRange(anno);
+                    if (range.to > range.from && !range.isWiderThan(10)) {
+                        List<Long> values = new ArrayList<>();
+                        for (long value = range.from; value <= range.to; value++) {
+                            values.add(value);
+                        }
+                        atm.replaceAnnotation(createIntValAnnotation(values));
+                    }
                 } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
+                    List<Long> values =
+                            AnnotationUtils.getElementValueArray(anno, "value", Long.class, true);
+                    if (values != null && values.size() > MAX_VALUES) {
+                        long annoMinVal = Collections.min(new ArrayList<>(values));
+                        long annoMaxVal = Collections.max(new ArrayList<>(values));
+                        atm.replaceAnnotation(
+                                createIntRangeAnnotation(new Range(annoMinVal, annoMaxVal)));
+                    }
 
                 } else {
                     List<Object> values =
@@ -381,16 +400,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<Long> rhsValues =
                         AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
                 Range lhsRange = getIntRange(lhs);
-                long rhsMinVal = Long.MAX_VALUE;
-                long rhsMaxVal = Long.MIN_VALUE;
-                for (Long rhsLong : rhsValues) {
-                    if (rhsLong > rhsMaxVal) {
-                        rhsMaxVal = rhsLong;
-                    }
-                    if (rhsLong < rhsMinVal) {
-                        rhsMinVal = rhsLong;
-                    }
-                }
+                long rhsMinVal = Collections.min(new ArrayList<>(rhsValues));
+                long rhsMaxVal = Collections.max(new ArrayList<>(rhsValues));
                 if (rhsMinVal >= lhsRange.from && rhsMaxVal <= lhsRange.to) {
                     return true;
                 } else {
@@ -970,6 +981,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         throw new UnsupportedOperationException(
                 "ValueAnnotatedTypeFactory: unexpected class: " + first.getClass());
+    }
+
+    public AnnotationMirror createIntRangeAnnotation(Range range) {
+        if (range.from > range.to || range.from == Long.MIN_VALUE && range.to == Long.MAX_VALUE) {
+            return UNKNOWNVAL;
+        }
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
+        builder.setValue("from", range.from);
+        builder.setValue("to", range.to);
+        return builder.build();
     }
 
     /**
