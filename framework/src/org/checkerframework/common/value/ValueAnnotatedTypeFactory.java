@@ -27,10 +27,12 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
+import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -155,14 +157,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Void p) {
-            replaceWithUnknownValIfTooManyValues(type);
+            replaceWithNewAnnoInSpecialCases(type);
 
             return super.visitPrimitive(type, p);
         }
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-            replaceWithUnknownValIfTooManyValues(type);
+            replaceWithNewAnnoInSpecialCases(type);
 
             return super.visitDeclared(type, p);
         }
@@ -172,14 +174,21 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * the value as UnknownVal. Works together with ValueVisitor.visitAnnotation, which issues a
          * warning to the user in this case.
          */
-        private void replaceWithUnknownValIfTooManyValues(AnnotatedTypeMirror atm) {
+        private void replaceWithNewAnnoInSpecialCases(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
 
             if (anno != null && anno.getElementValues().size() > 0) {
-                List<Object> values =
-                        AnnotationUtils.getElementValueArray(anno, "value", Object.class, false);
-                if (values != null && values.size() > MAX_VALUES) {
-                    atm.replaceAnnotation(UNKNOWNVAL);
+                if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
+
+                } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {
+
+                } else {
+                    List<Object> values =
+                            AnnotationUtils.getElementValueArray(
+                                    anno, "value", Object.class, false);
+                    if (values != null && values.size() > MAX_VALUES) {
+                        atm.replaceAnnotation(UNKNOWNVAL);
+                    }
                 }
             }
         }
@@ -291,6 +300,16 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
                 // Same type, so might be subtype
+                if (AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
+                    // Special case for IntRange
+                    Range lhsRange = getIntRange(lhs);
+                    Range rhsRange = getIntRange(rhs);
+                    if (lhsRange.from <= rhsRange.from && lhsRange.to >= rhsRange.to) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
                 List<Object> lhsValues =
                         AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
                 List<Object> rhsValues =
@@ -315,6 +334,68 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
                 return same;
+            } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
+                Range rhsRange = getIntRange(rhs);
+                List<Double> lhsValues =
+                        AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
+                if (rhsRange.isWiderThan(lhsValues.size())) {
+                    // cannot be subtype if the number of possible values of intrange is greater
+                    return false;
+                }
+                boolean same = false;
+                for (Long rhsLong = rhsRange.from; rhsLong <= rhsRange.to; rhsLong++) {
+                    for (Double lhsDbl : lhsValues) {
+                        if (lhsDbl.doubleValue() == rhsLong.doubleValue()) {
+                            same = true;
+                            break;
+                        }
+                    }
+                    if (!same) {
+                        return false;
+                    }
+                }
+                return same;
+            } else if (AnnotationUtils.areSameByClass(lhs, IntVal.class)
+                    && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
+                Range rhsRange = getIntRange(rhs);
+                List<Long> lhsValues =
+                        AnnotationUtils.getElementValueArray(lhs, "value", Long.class, true);
+                if (rhsRange.isWiderThan(lhsValues.size())) {
+                    return false;
+                }
+                boolean same = false;
+                for (Long rhsLong = rhsRange.from; rhsLong <= rhsRange.to; rhsLong++) {
+                    for (Long lhsLong : lhsValues) {
+                        if (lhsLong == rhsLong) {
+                            same = true;
+                            break;
+                        }
+                    }
+                    if (!same) {
+                        return false;
+                    }
+                }
+            } else if (AnnotationUtils.areSameByClass(lhs, IntRange.class)
+                    && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
+                List<Long> rhsValues =
+                        AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
+                Range lhsRange = getIntRange(lhs);
+                long rhsMinVal = Long.MAX_VALUE;
+                long rhsMaxVal = Long.MIN_VALUE;
+                for (Long rhsLong : rhsValues) {
+                    if (rhsLong > rhsMaxVal) {
+                        rhsMaxVal = rhsLong;
+                    }
+                    if (rhsLong < rhsMinVal) {
+                        rhsMinVal = rhsLong;
+                    }
+                }
+                if (rhsMinVal >= lhsRange.from && rhsMaxVal <= lhsRange.to) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
             return false;
         }
@@ -889,6 +970,18 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         throw new UnsupportedOperationException(
                 "ValueAnnotatedTypeFactory: unexpected class: " + first.getClass());
+    }
+
+    /**
+     * For Annotation that are IntRange get the integer range
+     *
+     * @param rangeAnno Assume to be the same as IntRange.class
+     * @return Integer Range represented by the annotation
+     */
+    public static Range getIntRange(AnnotationMirror rangeAnno) {
+        return new Range(
+                AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
+                AnnotationUtils.getElementValue(rangeAnno, "to", Long.class, true));
     }
 
     public static List<Long> getIntValues(AnnotationMirror intAnno) {
