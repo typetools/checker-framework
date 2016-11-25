@@ -255,30 +255,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             // If both are the same type, determine the type and merge:
             else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-                List<Object> a1Values =
-                        AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
-                List<Object> a2Values =
-                        AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
-                HashSet<Object> newValues = new HashSet<Object>(a1Values.size() + a2Values.size());
+                if (AnnotationUtils.areSameByClass(a1, IntRange.class)) {
+                    // special handling for IntRange
+                    Range range1 = getIntRange(a1);
+                    Range range2 = getIntRange(a2);
+                    return createIntRangeAnnotation(range1.union(range2));
+                } else {
+                    List<Object> a1Values =
+                            AnnotationUtils.getElementValueArray(a1, "value", Object.class, true);
+                    List<Object> a2Values =
+                            AnnotationUtils.getElementValueArray(a2, "value", Object.class, true);
+                    HashSet<Object> newValues =
+                            new HashSet<Object>(a1Values.size() + a2Values.size());
 
-                newValues.addAll(a1Values);
-                newValues.addAll(a2Values);
+                    newValues.addAll(a1Values);
+                    newValues.addAll(a2Values);
 
-                return createAnnotation(a1.getAnnotationType().toString(), newValues);
+                    return createAnnotation(a1.getAnnotationType().toString(), newValues);
+                }
             }
             // Annotations are in this hierarchy, but they are not the same
             else {
-                // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then
-                // the LUB is
-                // UnknownVal
-                if (!((AnnotationUtils.areSameByClass(a1, IntVal.class)
+                if ((AnnotationUtils.areSameByClass(a1, IntVal.class)
                                 || AnnotationUtils.areSameByClass(a1, DoubleVal.class))
                         && (AnnotationUtils.areSameByClass(a2, IntVal.class)
-                                || AnnotationUtils.areSameByClass(a2, DoubleVal.class)))) {
-                    return UNKNOWNVAL;
-                } else {
-                    // At this point one of them must be a DoubleVal and one an
-                    // IntVal
+                                || AnnotationUtils.areSameByClass(a2, DoubleVal.class))) {
                     AnnotationMirror doubleAnno;
                     AnnotationMirror intAnno;
 
@@ -297,6 +298,35 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
 
                     return createDoubleValAnnotation(doubleVals);
+                } else if ((AnnotationUtils.areSameByClass(a1, IntVal.class)
+                                || AnnotationUtils.areSameByClass(a1, IntRange.class))
+                        && (AnnotationUtils.areSameByClass(a2, IntVal.class)
+                                || AnnotationUtils.areSameByClass(a2, IntRange.class))) {
+                    AnnotationMirror rangeAnno;
+                    AnnotationMirror valAnno;
+
+                    if (AnnotationUtils.areSameByClass(a2, IntRange.class)) {
+                        rangeAnno = a2;
+                        valAnno = a1;
+                    } else {
+                        rangeAnno = a1;
+                        valAnno = a2;
+                    }
+                    // The range of IntRange must be greater than 10 at this point.
+                    // Thus the LUB must be IntRange.
+                    List<Long> values = getIntValues(valAnno);
+                    Range valueRange =
+                            new Range(
+                                    Collections.min(new ArrayList<>(values)),
+                                    Collections.max(new ArrayList<>(values)));
+                    Range range = getIntRange(rangeAnno);
+                    return createIntRangeAnnotation(range.union(valueRange));
+
+                } else {
+                    // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then
+                    // the LUB is
+                    // UnknownVal
+                    return UNKNOWNVAL;
                 }
             }
         }
@@ -359,7 +389,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<Double> lhsValues =
                         AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
                 if (rhsRange.isWiderThan(lhsValues.size())) {
-                    // cannot be subtype if the number of possible values of intrange is greater
+                    // cannot be subtype if the number of possible values of
+                    // intrange is greater
                     return false;
                 }
                 boolean same = false;
@@ -592,10 +623,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private List<?> getValues(AnnotatedTypeMirror type, TypeMirror castTo) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(UNKNOWNVAL);
             if (anno == null) {
-                // if type is an AnnotatedTypeVariable (or other type without a primary annotation)
-                // then anno will be null. It would be safe to use the annotation on the upper bound;
-                //  however, unless the upper bound was explicitly annotated, it will be unknown.
-                // AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch, top)
+                // if type is an AnnotatedTypeVariable (or other type without a
+                // primary annotation)
+                // then anno will be null. It would be safe to use the
+                // annotation on the upper bound;
+                // however, unless the upper bound was explicitly annotated, it
+                // will be unknown.
+                // AnnotatedTypes.findEffectiveAnnotationInHierarchy(, toSearch,
+                // top)
                 return new ArrayList<>();
             }
             return ValueCheckerUtils.getValuesCastedToType(anno, castTo);
