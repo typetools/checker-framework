@@ -275,6 +275,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 String[] names = getIntersectingNames(a1, a2);
                 return createAnnotation(a1.getAnnotationType().toString(), names);
+            } else if ((AnnotationUtils.areSameByClass(a1, LessThanLength.class)
+                            && AnnotationUtils.areSameByClass(a2, LessThanOrEqualToLength.class))
+                    || (AnnotationUtils.areSameByClass(a1, LessThanOrEqualToLength.class)
+                            && AnnotationUtils.areSameByClass(a2, LessThanLength.class))) {
+                // In this case, the result should be LTEL of the intersection of the names.
+                // Fixes issue 20.
+                String[] names = getIntersectingNames(a1, a2);
+                return createLessThanOrEqualToLengthAnnotation(names);
             }
             // Annotations are in this hierarchy, but they are not the same.
             else {
