@@ -184,7 +184,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (anno != null && anno.getElementValues().size() > 0) {
                 if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
                     Range range = getIntRange(anno);
-                    if (range.to > range.from && !range.isWiderThan(10)) {
+                    if (range.to > range.from && !range.isWiderThan(MAX_VALUES)) {
                         List<Long> values = new ArrayList<>();
                         for (long value = range.from; value <= range.to; value++) {
                             values.add(value);
@@ -930,8 +930,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public AnnotationMirror createIntValAnnotation(List<Long> intValues) {
         intValues = ValueCheckerUtils.removeDuplicates(intValues);
-        if (intValues.isEmpty() || intValues.size() > MAX_VALUES) {
+        if (intValues.isEmpty()) {
             return UNKNOWNVAL;
+        } else if (intValues.size() > MAX_VALUES) {
+            long valMin = Collections.min(new ArrayList<>(intValues));
+            long valMax = Collections.max(new ArrayList<>(intValues));
+            return createIntRangeAnnotation(new Range(valMin, valMax));
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
         builder.setValue("value", intValues);
@@ -1021,6 +1025,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotationMirror createIntRangeAnnotation(Range range) {
         if (range.from > range.to || range.from == Long.MIN_VALUE && range.to == Long.MAX_VALUE) {
             return UNKNOWNVAL;
+        } else if (!range.isWiderThan(MAX_VALUES)) {
+            List<Long> values = new ArrayList<>();
+            for (long value = range.from; value <= range.to; value++) {
+                values.add(value);
+            }
+            return createIntValAnnotation(values);
         }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
         builder.setValue("from", range.from);
