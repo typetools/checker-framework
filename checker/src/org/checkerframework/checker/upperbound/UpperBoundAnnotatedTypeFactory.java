@@ -176,6 +176,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new UpperBoundQualifierHierarchy(factory);
     }
 
+    /**
+     * This function finds the union of the values of two annotations. Both annotations must have a
+     * value field; otherwise the function will fail.
+     *
+     * @param a1 an annotation with a value field
+     * @param a2 an annotation with a value field
+     * @return the set union of the two value fields
+     */
     private String[] getCombinedNames(AnnotationMirror a1, AnnotationMirror a2) {
         List<String> a1Names =
                 AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
@@ -193,7 +201,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return names;
     }
 
+    /**
+     * This function finds the intersection of the values of two annotations. Both annotations must
+     * have a value field; otherwise the function will fail.
+     *
+     * @param a1 an annotation with a value field
+     * @param a2 an annotation with a value field
+     * @return the set intersection of the two value fields
+     */
     private String[] getIntersectingNames(AnnotationMirror a1, AnnotationMirror a2) {
+
         List<String> a1Names =
                 AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
         List<String> a2Names =
