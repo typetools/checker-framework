@@ -255,8 +255,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Determines the least upper bound of a1 and a2. If a1 and a2 are both the same type of
-         * Value annotation, then the LUB is the result of taking all values from both a1 and a2 and
-         * removing duplicates.
+         * Value annotation, then the LUB is the result of taking the intersection of values from
+         * both a1 and a2.
          *
          * @return the least upper bound of a1 and a2
          */
