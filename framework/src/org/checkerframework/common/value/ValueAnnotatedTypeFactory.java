@@ -984,16 +984,14 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public AnnotationMirror createCharAnnotation(List<Character> values) {
         values = ValueCheckerUtils.removeDuplicates(values);
-        if (values.isEmpty() || values.size() > MAX_VALUES) {
+        if (values.isEmpty()) {
             return UNKNOWNVAL;
         }
         List<Long> longValues = new ArrayList<>();
         for (char value : values) {
             longValues.add((long) value);
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
-        builder.setValue("value", longValues);
-        return builder.build();
+        return createIntValAnnotation(longValues);
     }
 
     private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
