@@ -32,7 +32,7 @@ fi
 # This also builds jsr308-langtools
 echo "Running:  (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 (cd ../annotation-tools/ && ./.travis-build-without-test.sh)
-echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)
+echo "... done: (cd ../annotation-tools/ && ./.travis-build-without-test.sh)"
 
 ## Compile
 echo "running \"ant dist\" for checker-framework"
