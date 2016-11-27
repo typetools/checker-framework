@@ -17,16 +17,13 @@ else
     set +e
     echo "Running: git ls-remote https://github.com/${SLUGOWNER}/annotation-tools.git &>-"
     git ls-remote https://github.com/${SLUGOWNER}/annotation-tools.git &>-
-    if [ "$?" -eq 0 ]; then
-        echo "Running:  (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)"
-        (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)
-        echo "... done: (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)"
-    else
-        echo "Running: (cd .. && git clone --depth 1 https://github.com/typetools/annotation-tools.git)"
-        (cd .. && git clone --depth 1 https://github.com/typetools/annotation-tools.git)
-        echo "... done: (cd .. && git clone --depth 1 https://github.com/typetools/annotation-tools.git)"
+    if [ "$?" -ne 0 ]; then
+        SLUGOWNER=typetools
     fi
     set -e
+    echo "Running:  (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)"
+    (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)
+    echo "... done: (cd .. && git clone --depth 1 https://github.com/${SLUGOWNER}/annotation-tools.git)"
 fi
 
 # This also builds jsr308-langtools
