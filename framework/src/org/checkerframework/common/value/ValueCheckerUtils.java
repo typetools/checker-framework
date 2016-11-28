@@ -13,6 +13,7 @@ import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -97,7 +98,8 @@ public class ValueCheckerUtils {
         } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
             values = convertBottomVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)
-                || AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
+                || AnnotationUtils.areSameByClass(anno, ArrayLen.class)
+                || AnnotationUtils.areSameByClass(anno, IntRange.class)) {
             values = new ArrayList<>();
         }
         return values;
