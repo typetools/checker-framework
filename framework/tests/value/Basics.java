@@ -118,21 +118,21 @@ class Basics {
         @StringVal({"test1"}) String c = (java.lang.String) b;
     }
 
-    void tooManyValuesInt() {
-        //:: warning: (too.many.values.given)
-        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}) int a = 8;
-
-        @UnknownVal int b = a; // This should always succeed
-
-        @UnknownVal int c = 0;
-
-        a = c; // This should succeed if a is treated as @UnknownVal
-
-        //:: warning: (too.many.values.given)
-        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}) int d = 8;
-
-        d = 2 * d; // This should succeed since d is @UnknownVal
-    }
+    //    void tooManyValuesInt() {
+    //        //:: warning: (too.many.values.given)
+    //        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}) int a = 8;
+    //
+    //        @UnknownVal int b = a; // This should always succeed
+    //
+    //        @UnknownVal int c = 0;
+    //
+    //        a = c; // This should succeed if a is treated as @UnknownVal
+    //
+    //        //:: warning: (too.many.values.given)
+    //        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}) int d = 8;
+    //
+    //        d = 2 * d; // This should succeed since d is @UnknownVal
+    //    }
 
     void tooManyValuesDouble() {
         //:: warning: (too.many.values.given)
