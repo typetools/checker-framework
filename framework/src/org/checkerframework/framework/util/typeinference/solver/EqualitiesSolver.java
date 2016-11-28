@@ -16,6 +16,7 @@ import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredTarget;
 import org.checkerframework.framework.util.typeinference.solver.InferredValue.InferredType;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Equalities;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
 /**
@@ -303,7 +304,7 @@ public class EqualitiesSolver {
 
             Set<AnnotationMirror> found = new HashSet<>();
             for (AnnotationMirror top : missingAnnos) {
-                if (currentHierarchies.contains(top)) {
+                if (AnnotationUtils.containsSame(currentHierarchies, top)) {
                     final AnnotationMirror newAnno = currentType.getAnnotationInHierarchy(top);
                     if (newAnno != null) {
                         mergedType.replaceAnnotation(newAnno);
