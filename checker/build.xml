@@ -821,6 +821,13 @@
         </antcall>
     </target>
 
+    <target name="index-tests" depends="jar,build-tests"
+            description="Run tests for the Index Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.IndexTest"/>
+        </antcall>
+    </target>
+
     <target name="lowerbound-tests" depends="jar,build-tests"
             description="Run tests for the Lower Bound Checker">
         <antcall target="-run-tests">
