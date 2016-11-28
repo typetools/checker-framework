@@ -111,6 +111,15 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
+    public AnnotationMirror aliasedAnnotation(AnnotationMirror anno) {
+        if (AnnotationUtils.areSameByClass(anno, android.support.annotation.IntRange.class)) {
+            Range range = getIntRange(anno);
+            return createIntRangeAnnotation(range);
+        }
+        return super.aliasedAnnotation(anno);
+    }
+
+    @Override
     public CFTransfer createFlowTransferFunction(
             CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         return new ValueTransfer(analysis);
