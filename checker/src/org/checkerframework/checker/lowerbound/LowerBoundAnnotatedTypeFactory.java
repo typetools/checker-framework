@@ -615,6 +615,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
                 addAnnotationForLiteralDivideRight(maybeValRight, leftType, type);
+                return;
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
@@ -624,6 +625,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
             if (maybeValLeft != null) {
                 addAnnotationForLiteralDivideLeft(maybeValLeft, leftType, type);
+                return;
             }
 
             /* This section handles generic annotations:
