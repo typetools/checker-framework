@@ -193,7 +193,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected void postInit() {
         super.postInit();
 
-        this.expressionAnnotationHelper = createExpressionAnnoHelper();
+        this.expressionAnnotationHelper = createExpressionAnnotationHelper();
         this.defaults = createQualifierDefaults();
         this.treeAnnotator = createTreeAnnotator();
         this.typeAnnotator = createTypeAnnotator();
@@ -420,7 +420,7 @@ public abstract class GenericAnnotatedTypeFactory<
      *
      * @return a new {@link ExpressionAnnotationHelper}
      */
-    protected ExpressionAnnotationHelper createExpressionAnnoHelper() {
+    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
         return null;
     }
 

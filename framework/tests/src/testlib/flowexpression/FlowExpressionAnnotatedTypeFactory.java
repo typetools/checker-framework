@@ -24,7 +24,7 @@ public class FlowExpressionAnnotatedTypeFactory extends BaseAnnotatedTypeFactory
     }
 
     @Override
-    protected ExpressionAnnotationHelper createExpressionAnnoHelper() {
+    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
         return new ExpressionAnnotationHelper(this, FlowExp.class);
     }
 

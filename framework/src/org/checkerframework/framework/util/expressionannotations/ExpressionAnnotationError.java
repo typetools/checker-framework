@@ -8,8 +8,9 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 
 /** Helper class for creating expression annotation error strings. */
 public class ExpressionAnnotationError {
-    static final String formatString = "[error for expression: %s error: %s]";
-    static final Pattern p = Pattern.compile("\\[error for expression: (.*) error: (.*)\\]");
+    private static final String formatString = "[error for expression: %s error: %s]";
+    private static final Pattern p =
+            Pattern.compile("\\[error for expression: (.*) error: (.*)\\]");
 
     /**
      * Returns whether or not the given expression string is an error. That is whether it is a

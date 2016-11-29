@@ -179,51 +179,7 @@ public class ExpressionAnnotationHelper {
         AnnotatedExecutableType viewpointAdaptedType =
                 (AnnotatedExecutableType) factory.getAnnotatedType(element);
         standardizeDoNotUseLocals(context, currentPath, viewpointAdaptedType);
-        new AnnotatedTypeComparer<Void>() {
-            @Override
-            protected Void scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
-                if (type == null || p == null) {
-                    return null;
-                }
-                Set<AnnotationMirror> replacement = AnnotationUtils.createAnnotationSet();
-                for (Class<? extends Annotation> vpa : expressionAnnos) {
-                    AnnotationMirror anno = type.getAnnotation(vpa);
-                    if (anno != null) {
-                        // Only replace annotations that might have been changed.
-                        replacement.add(anno);
-                    }
-                }
-                p.replaceAnnotations(replacement);
-                if (type.getKind() != p.getKind()) {
-                    // if the underlying types don't match, then this type has be substituted for a
-                    // type variable, so don't recur. The primary annotation was copied because
-                    // if the type variable might have had a primary annotation at a use.
-                    // For example:
-                    // <T> void method(@KeyFor("a") T t) {...}
-                    // void use(@KeyFor("b") String s) {
-                    //      method(s);  // the type of the parameter should be @KeyFor("a") String
-                    // }
-                    return null;
-                }
-                return super.scan(type, p);
-            }
-
-            @Override
-            protected Void compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
-                if (type == null || p == null) {
-                    return null;
-                }
-                if (type.getKind() != p.getKind()) {
-                    ErrorReporter.errorAbort("Should be the same. type: %s p: %s ", type, p);
-                }
-                return null;
-            }
-
-            @Override
-            protected Void combineRs(Void r1, Void r2) {
-                return null;
-            }
-        }.visit(viewpointAdaptedType, typeFromUse);
+        new ViewpointAdaptedCopier().visit(viewpointAdaptedType, typeFromUse);
     }
 
     public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
@@ -626,6 +582,53 @@ public class ExpressionAnnotationHelper {
                 }
             }
             return errors;
+        }
+    }
+
+    /** Copies annotations that might have been viewpoint adapted from type to the parameter. */
+    private class ViewpointAdaptedCopier extends AnnotatedTypeComparer<Void> {
+        @Override
+        protected Void scan(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
+            if (type == null || p == null) {
+                return null;
+            }
+            Set<AnnotationMirror> replacement = AnnotationUtils.createAnnotationSet();
+            for (Class<? extends Annotation> vpa : expressionAnnos) {
+                AnnotationMirror anno = type.getAnnotation(vpa);
+                if (anno != null) {
+                    // Only replace annotations that might have been changed.
+                    replacement.add(anno);
+                }
+            }
+            p.replaceAnnotations(replacement);
+            if (type.getKind() != p.getKind()) {
+                // if the underlying types don't match, then this type has be substituted for a
+                // type variable, so don't recur. The primary annotation was copied because
+                // if the type variable might have had a primary annotation at a use.
+                // For example:
+                // <T> void method(@KeyFor("a") T t) {...}
+                // void use(@KeyFor("b") String s) {
+                //      method(s);  // the type of the parameter should be @KeyFor("a") String
+                // }
+                return null;
+            }
+            return super.scan(type, p);
+        }
+
+        @Override
+        protected Void compare(AnnotatedTypeMirror type, AnnotatedTypeMirror p) {
+            if (type == null || p == null) {
+                return null;
+            }
+            if (type.getKind() != p.getKind()) {
+                ErrorReporter.errorAbort("Should be the same. type: %s p: %s ", type, p);
+            }
+            return null;
+        }
+
+        @Override
+        protected Void combineRs(Void r1, Void r2) {
+            return null;
         }
     }
 }

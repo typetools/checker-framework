@@ -121,7 +121,7 @@ public class KeyForAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected ExpressionAnnotationHelper createExpressionAnnoHelper() {
+    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
         return new ExpressionAnnotationHelper(this, KeyFor.class);
     }
 

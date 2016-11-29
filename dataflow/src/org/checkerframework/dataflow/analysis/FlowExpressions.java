@@ -194,6 +194,10 @@ public class FlowExpressions {
         return receiver;
     }
 
+    /**
+     * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
+     *     Might contain {@link Unknown}.
+     */
     public static Receiver internalReprOf(
             AnnotationProvider provider, ExpressionTree receiverTree) {
         return internalReprOf(provider, receiverTree, true);
@@ -202,8 +206,8 @@ public class FlowExpressions {
      * We ignore operations such as widening and narrowing when computing the internal
      * representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any {@link Node}. Might contain
-     *     {@link Unknown}.
+     * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
+     *     Might contain {@link Unknown}.
      */
     public static Receiver internalReprOf(
             AnnotationProvider provider,
@@ -298,7 +302,7 @@ public class FlowExpressions {
      * Returns the implicit receiver of ele.
      *
      * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static
-     * or not. The passed element must be a filed, method, or class.
+     * or not. The passed element must be a field, method, or class.
      *
      * @param ele field, method, or class
      * @return either a new ClassName or a new ThisReference depending on whether ele is static or
@@ -339,7 +343,7 @@ public class FlowExpressions {
         if (enclosingMethod != null) {
             return enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC);
         }
-        // no enclosing method, check for static or initailizer block
+        // no enclosing method, check for static or initializer block
         BlockTree block = TreeUtils.enclosingTopLevelBlock(path);
         if (block != null) {
             return block.isStatic();

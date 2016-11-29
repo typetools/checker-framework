@@ -12,7 +12,10 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
 
-/** Standardizes Java expressions in annotations and also view points adapts field accesses. */
+/**
+ * Standardizes Java expressions in annotations and also view points adapts field accesses. (Other
+ * viewpoint adaption is handled in {@link ExpressionAnnotationHelper}
+ */
 public class ExpressionAnnotationTreeAnnotator extends TreeAnnotator {
     private final ExpressionAnnotationHelper helper;
 

@@ -86,7 +86,7 @@ public class MultiGraphQualifierHierarchy extends QualifierHierarchy {
          */
         public void addQualifier(AnnotationMirror qual) {
             assertNotBuilt();
-            if (AnnotationUtils.containsSame(supertypes.keySet(),qual)) {
+            if (AnnotationUtils.containsSame(supertypes.keySet(), qual)) {
                 return;
             }
 
