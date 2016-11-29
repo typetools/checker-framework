@@ -2486,7 +2486,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
             @SuppressWarnings("CompilerMessages")
-            /*@CompilerMessageKey*/ String postmsg = "contracts.postcondition." + msgKey + ".invalid";
+            /*@CompilerMessageKey*/ String postmsg =
+                    "contracts.postcondition." + msgKey + ".invalid";
             checkContractsSubset(
                     overriderMeth,
                     overriderTyp,
