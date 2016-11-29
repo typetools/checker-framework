@@ -14,4 +14,9 @@ public class IndexChecker extends LowerBoundChecker {
     // it's subcheckers while retaining the benefits of being a compound checker - basically, what
     // we'd like is an aggregate checker that will run its subcheckers each only once in an order
     // that makes sense.
+
+    @Override
+    protected boolean isIndexChecker() {
+        return true;
+    }
 }
