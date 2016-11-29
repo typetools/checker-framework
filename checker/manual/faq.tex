@@ -22,7 +22,7 @@ the answers, or other questions to include here.
 \textbf{Contents:}
 
 \faqtocpara{\ref{faq-motivation-section}: Motivation for pluggable type-checking}
-\\ \ref{never-make-type-errors}: I don't make type errors, so would pluggable type-checking help me?
+\\ \ref{faq-never-make-type-errors}: I don't make type errors, so would pluggable type-checking help me?
 \\ \ref{faq-qualifiers-vs-subclasses}: When should I use type qualifiers, and when should I use subclasses?
 
 \faqtocpara{\ref{faq-getting-started-section}: Getting started}
@@ -80,7 +80,7 @@ fully-qualified type name?
 
 \section{Motivation for pluggable type-checking\label{faq-motivation-section}}
 
-\subsection{I don't make type errors, so would pluggable type-checking help me?\label{never-make-type-errors}}
+\subsection{I don't make type errors, so would pluggable type-checking help me?\label{faq-never-make-type-errors}}
 
 Occasionally, a developer says that he makes no errors that type-checking
 could catch, or that any such errors are unimportant because they have low
@@ -584,6 +584,9 @@ applied where you did not write a type; see Section~\ref{defaults}.  In
 other cases, this is because flow-sensitive type refinement has given an
 expression a more specific type than you wrote or than was defaulted; see
 Section~\ref{type-refinement}.
+Note that an invocation of an impure method may cause the loss of all
+information that was determined via flow-sensitive type refinement; see
+Section~\ref{type-refinement-purity}.
 
 
 \subsection{How can I do run-time monitoring of properties that were not statically checked?\label{faq-run-time-checking}}
