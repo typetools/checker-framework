@@ -66,11 +66,11 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
+import org.checkerframework.framework.util.ContractsUtils.Postcondition;
+import org.checkerframework.framework.util.ContractsUtils.Precondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
@@ -503,31 +503,24 @@ public abstract class CFAbstractTransfer<
             ExecutableElement methodElement) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
-        Set<PreOrPostcondition> preconditions = contracts.getPreconditions(methodElement);
+        Set<Precondition> preconditions = contracts.getPreconditions(methodElement);
 
-        for (PreOrPostcondition p : preconditions) {
+        for (Precondition p : preconditions) {
             String expression = p.expression;
-            AnnotationMirror annotation =
-                    AnnotationUtils.fromName(
-                            analysis.getTypeFactory().getElementUtils(), p.annotationString);
+            AnnotationMirror annotation = p.annotation;
 
-            // Only check if the postcondition concerns this checker
-            if (!analysis.getTypeFactory().isSupportedQualifier(annotation)) {
-                continue;
-            }
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodDeclaration(
                                 methodTree, method.getClassTree(), analysis.checker.getContext());
             }
 
-            FlowExpressions.Receiver expr = null;
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                expr =
+                FlowExpressions.Receiver expr =
                         FlowExpressionParseUtil.parse(
                                 expression,
                                 flowExprContext,
@@ -961,20 +954,14 @@ public abstract class CFAbstractTransfer<
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<PreOrPostcondition> postconditions = contracts.getPostconditions(methodElement);
+        Set<Postcondition> postconditions = contracts.getPostconditions(methodElement);
 
         FlowExpressionContext flowExprContext = null;
 
-        for (PreOrPostcondition p : postconditions) {
+        for (Postcondition p : postconditions) {
             String expression = p.expression.trim();
-            AnnotationMirror anno =
-                    AnnotationUtils.fromName(
-                            analysis.getTypeFactory().getElementUtils(), p.annotationString);
+            AnnotationMirror anno = p.annotation;
 
-            // Only check if the postcondition concerns this checker
-            if (!analysis.getTypeFactory().isSupportedQualifier(anno)) {
-                continue;
-            }
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodUse(
@@ -1014,15 +1001,9 @@ public abstract class CFAbstractTransfer<
 
         for (ConditionalPostcondition p : conditionalPostconditions) {
             String expression = p.expression;
-            AnnotationMirror anno =
-                    AnnotationUtils.fromName(
-                            analysis.getTypeFactory().getElementUtils(), p.annotationString);
+            AnnotationMirror anno = p.annotation;
             boolean result = p.annoResult;
 
-            // Only check if the postcondition concerns this checker
-            if (!analysis.getTypeFactory().isSupportedQualifier(anno)) {
-                continue;
-            }
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodUse(
