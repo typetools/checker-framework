@@ -556,7 +556,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    protected void checkContractsAtMethodDeclaration(
+    private void checkContractsAtMethodDeclaration(
             MethodTree node,
             ExecutableElement methodElement,
             List<String> formalParamNames,
