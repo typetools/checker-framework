@@ -5,7 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/** JUnit tests for the Lower Bound checker. */
+/** JUnit tests for the Index Checker. */
 public class IndexTest extends CheckerFrameworkPerDirectoryTest {
 
     public IndexTest(List<File> testFiles) {
@@ -18,6 +18,6 @@ public class IndexTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"index"};
+        return new String[] {"index", "all-systems"};
     }
 }
