@@ -20,10 +20,15 @@ public class LowerBoundChecker extends BaseTypeChecker {
                 super.getImmediateSubcheckerClasses();
         checkers.add(ValueChecker.class);
         checkers.add(MinLenChecker.class);
-        checkers.add(
-                UpperBoundChecker
-                        .class); // Temporary hack to make this the "index checker," because proper
-        // compound aggregate checkers aren't working.
+        if (isIndexChecker()) {
+            // Temporary hack to make this the "index checker," because proper
+            // compound aggregate checkers aren't working.
+            checkers.add(UpperBoundChecker.class);
+        }
         return checkers;
+    }
+
+    protected boolean isIndexChecker() {
+        return false;
     }
 }
