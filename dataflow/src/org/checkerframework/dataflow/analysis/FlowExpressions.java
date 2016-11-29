@@ -1,15 +1,12 @@
 package org.checkerframework.dataflow.analysis;
 
 import com.sun.source.tree.ArrayAccessTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
@@ -18,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -323,42 +319,16 @@ public class FlowExpressions {
      * <p>The Tree should be an expression or a statement that does not have a receiver (or an
      * implicit receiver). For example, a local variable declaration.
      *
-     * @param tree an expression or statement that does not have a receiver (or an implicit
-     *     receiver)
      * @param path TreePath to tree
      * @param enclosingType type of the enclosing type
      * @return a new ClassName or ThisReference that is the pseudo receiver of tree
      */
-    public static Receiver internalRepOfPseudoReceiver(
-            Tree tree, TreePath path, TypeMirror enclosingType) {
-        MethodTree methodTree = TreeUtils.enclosingMethod(path);
-        if (isTreeInStaticScope(tree, methodTree, path)) {
+    public static Receiver internalRepOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
+        if (TreeUtils.isTreeInStaticScope(path)) {
             return new ClassName(enclosingType);
         } else {
             return new ThisReference(enclosingType);
         }
-    }
-
-    private static boolean isTreeInStaticScope(Tree t, MethodTree enclosingMethod, TreePath path) {
-        if (enclosingMethod != null) {
-            return enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC);
-        }
-        // no enclosing method, check for static or initializer block
-        BlockTree block = TreeUtils.enclosingTopLevelBlock(path);
-        if (block != null) {
-            return block.isStatic();
-        }
-
-        // check if its in a variable intializer
-        t = TreeUtils.enclosingVariable(path);
-        if (t != null) {
-            return ((VariableTree) t).getModifiers().getFlags().contains((Modifier.STATIC));
-        }
-        ClassTree classTree = TreeUtils.enclosingClass(path);
-        if (classTree != null) {
-            return classTree.getModifiers().getFlags().contains((Modifier.STATIC));
-        }
-        return false;
     }
 
     private static Receiver internalRepOfMemberSelect(

@@ -239,7 +239,7 @@ public class ExpressionAnnotationHelper {
             case EXCEPTION_PARAMETER:
                 TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
                 FlowExpressions.Receiver receiver =
-                        FlowExpressions.internalRepOfPseudoReceiver(node, path, enclosingType);
+                        FlowExpressions.internalRepOfPseudoReceiver(path, enclosingType);
                 List<Receiver> params =
                         FlowExpressions.getParametersOfEnclosingMethod(factory, path);
                 FlowExpressionContext localContext =
@@ -293,7 +293,7 @@ public class ExpressionAnnotationHelper {
         TypeMirror enclosingType = InternalUtils.typeOf(enclosingClass);
 
         FlowExpressions.Receiver receiver =
-                FlowExpressions.internalRepOfPseudoReceiver(tree, path, enclosingType);
+                FlowExpressions.internalRepOfPseudoReceiver(path, enclosingType);
 
         FlowExpressionContext localContext =
                 new FlowExpressionContext(
