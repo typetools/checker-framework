@@ -171,7 +171,7 @@ public class ContractsUtils {
         contracts.addAll(getConditionalPostconditions(element));
         return contracts;
     }
-    /** Returns the set preconditions on the element {@code element}. */
+    /** Returns the set of preconditions on the element {@code element}. */
     public Set<Precondition> getPreconditions(Element element) {
         Set<Precondition> result = new LinkedHashSet<>();
         // Check for a single contract.
@@ -211,7 +211,7 @@ public class ContractsUtils {
         return result;
     }
 
-    /** Returns that annotation mirror as specified by the "qualifier" value in metaAnno. */
+    /** Returns the annotation mirror as specified by the "qualifier" value in metaAnno. */
     private AnnotationMirror getAnnotationMirrorOfQualifier(AnnotationMirror metaAnno) {
         @SuppressWarnings("unchecked")
         Class<? extends Annotation> c =
