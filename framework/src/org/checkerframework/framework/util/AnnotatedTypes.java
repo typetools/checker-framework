@@ -955,7 +955,7 @@ public class AnnotatedTypes {
             }
             n++;
             AnnotationMirror top = qualifierHierarchy.getTopAnnotation(anno);
-            if (seenTops.contains(top)) {
+            if (AnnotationUtils.containsSame(seenTops, top)) {
                 return false;
             }
             seenTops.add(top);
