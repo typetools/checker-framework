@@ -12,16 +12,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.LessThanNode;
-import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -69,7 +60,7 @@ public class UpperBoundTransfer extends CFTransfer {
         return result;
     }
 
-    /** Makes array.length have type EL(array). */
+    /** Makes array.length have type LTEL(array). */
     @Override
     public TransferResult<CFValue, CFStore> visitFieldAccess(
             FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
@@ -236,15 +227,18 @@ public class UpperBoundTransfer extends CFTransfer {
         if (AnnotationUtils.containsSameByClass(leftType, LessThanLength.class)
                 || AnnotationUtils.containsSameByClass(leftType, LessThanOrEqualToLength.class)) {
             // Create an LTL for the right type.
-            // There's a slight danger of losing information here:
-            // if the two annotations are LTL(a) and EL(b), for instance,
-            // we lose some information.
+
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             String[] names =
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-            store.insertValue(
-                    rightRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+
+            store.insertValue(rightRec, newType);
             return;
         }
     }
@@ -268,8 +262,13 @@ public class UpperBoundTransfer extends CFTransfer {
             String[] names =
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-            store.insertValue(
-                    rightRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+
+            store.insertValue(rightRec, newType);
             return;
         } else if (AnnotationUtils.containsSameByClass(leftType, LessThanOrEqualToLength.class)) {
             // Create an LTL for the right type.
@@ -280,9 +279,14 @@ public class UpperBoundTransfer extends CFTransfer {
             String[] names =
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-            store.insertValue(
-                    rightRec,
-                    UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
+
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(
+                                    names));
+
+            store.insertValue(rightRec, newType);
             return;
         }
     }
@@ -300,9 +304,13 @@ public class UpperBoundTransfer extends CFTransfer {
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
 
-            store.insertValue(
-                    rightRec,
-                    UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(
+                                    names));
+
+            store.insertValue(rightRec, newType);
         }
         if (AnnotationUtils.containsSameByClass(rightType, LessThanOrEqualToLength.class)) {
             Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
@@ -310,9 +318,13 @@ public class UpperBoundTransfer extends CFTransfer {
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN));
 
-            store.insertValue(
-                    leftRec,
-                    UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(names));
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(
+                                    names));
+
+            store.insertValue(leftRec, newType);
         }
         if (AnnotationUtils.containsSameByClass(leftType, LessThanLength.class)
                 && fOnlyUnknown(rightType)) {
@@ -320,8 +332,13 @@ public class UpperBoundTransfer extends CFTransfer {
             String[] names =
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-            store.insertValue(
-                    rightRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+
+            store.insertValue(rightRec, newType);
         }
         if (AnnotationUtils.containsSameByClass(rightType, LessThanLength.class)
                 && fOnlyUnknown(leftType)) {
@@ -329,8 +346,13 @@ public class UpperBoundTransfer extends CFTransfer {
             String[] names =
                     UpperBoundUtils.getValue(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-            store.insertValue(
-                    leftRec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+
+            store.insertValue(leftRec, newType);
         }
     }
 

@@ -176,6 +176,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new UpperBoundQualifierHierarchy(factory);
     }
 
+    /**
+     * This function finds the union of the values of two annotations. Both annotations must have a
+     * value field; otherwise the function will fail.
+     *
+     * @param a1 an annotation with a value field
+     * @param a2 an annotation with a value field
+     * @return the set union of the two value fields
+     */
     private String[] getCombinedNames(AnnotationMirror a1, AnnotationMirror a2) {
         List<String> a1Names =
                 AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
@@ -193,7 +201,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return names;
     }
 
+    /**
+     * This function finds the intersection of the values of two annotations. Both annotations must
+     * have a value field; otherwise the function will fail.
+     *
+     * @param a1 an annotation with a value field
+     * @param a2 an annotation with a value field
+     * @return the set intersection of the two value fields
+     */
     private String[] getIntersectingNames(AnnotationMirror a1, AnnotationMirror a2) {
+
         List<String> a1Names =
                 AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
         List<String> a2Names =
@@ -232,14 +249,21 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else if (isSubtype(a2, a1)) {
                 return a2;
             } else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
-
+                // This only works for LTL and LTEL. It must be one of the two.
                 String[] names = getCombinedNames(a1, a2);
-                return createAnnotation(a1.getAnnotationType().toString(), names);
+
+                if (AnnotationUtils.areSameByClass(a1, LessThanLength.class)) {
+                    return createLessThanLengthAnnotation(names);
+                } else {
+                    // This needs to be LTEL. If we change the type hierarchy, this has to change.
+                    return createLessThanOrEqualToLengthAnnotation(names);
+                }
             } else {
                 /* If the two are unrelated, then the type hierarchy implies
-                   that one is LTL and the other is EL, meaning that the GLB
+                   that one is LTL and the other is LTEL, with different arrays,
+                   meaning that the GLB
                    is LTEL of every array that is in either - since LTEL
-                   is the bottom type.
+                   is effectively the bottom type.
                 */
                 String[] names = getCombinedNames(a1, a2);
                 return createLessThanOrEqualToLengthAnnotation(names);
@@ -248,8 +272,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         /**
          * Determines the least upper bound of a1 and a2. If a1 and a2 are both the same type of
-         * Value annotation, then the LUB is the result of taking all values from both a1 and a2 and
-         * removing duplicates.
+         * Value annotation, then the LUB is the result of taking the intersection of values from
+         * both a1 and a2.
          *
          * @return the least upper bound of a1 and a2
          */
@@ -268,6 +292,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 String[] names = getIntersectingNames(a1, a2);
                 return createAnnotation(a1.getAnnotationType().toString(), names);
+            } else if ((AnnotationUtils.areSameByClass(a1, LessThanLength.class)
+                            && AnnotationUtils.areSameByClass(a2, LessThanOrEqualToLength.class))
+                    || (AnnotationUtils.areSameByClass(a1, LessThanOrEqualToLength.class)
+                            && AnnotationUtils.areSameByClass(a2, LessThanLength.class))) {
+                // In this case, the result should be LTEL of the intersection of the names.
+                // Fixes issue 20.
+                String[] names = getIntersectingNames(a1, a2);
+                return createLessThanOrEqualToLengthAnnotation(names);
             }
             // Annotations are in this hierarchy, but they are not the same.
             else {

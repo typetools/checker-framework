@@ -122,6 +122,11 @@ public class MinLenAnnotatedTypeFactory
         }
 
         @Override
+        public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
+            return createMinLen(0);
+        }
+
+        @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
             if (AnnotationUtils.hasElementValue(a1, "value")
                     && AnnotationUtils.hasElementValue(a2, "value")) {
@@ -133,16 +138,16 @@ public class MinLenAnnotatedTypeFactory
                     return a2;
                 }
             } else {
-                // One of these is bottom. GLB of anything and bottom is the anything.
+                // One of these is bottom. GLB of anything and bottom is bottom.
                 if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
-                    return a2;
-                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
                     return a1;
+                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                    return a2;
                 }
             }
 
-            // This should be unreachable but we want the function to be complete.
-            return createMinLen(0);
+            // This should be unreachable but we want the function to be complete, so return bottom.
+            return createMinLenBottom();
         }
 
         @Override
@@ -157,15 +162,15 @@ public class MinLenAnnotatedTypeFactory
                     return a2;
                 }
             } else {
-                // One of these is bottom. LUB of anything and bottom is bottom.
+                // One of these is bottom. LUB of anything and bottom is the anything.
                 if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
-                    return a1;
-                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
                     return a2;
+                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                    return a1;
                 }
             }
 
-            // This should be unreachable but we want the function to be complete.
+            // This should be unreachable but we want the function to be complete, so we return top.
             return createMinLen(0);
         }
 
@@ -184,19 +189,12 @@ public class MinLenAnnotatedTypeFactory
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
                 // Implies both are MinLen since that's the only other type.
-                // But we're going to check anyway to make sure they both have
-                // values to avoid crashing.
-                if (AnnotationUtils.hasElementValue(rhs, "value")
-                        && AnnotationUtils.hasElementValue(lhs, "value")) {
-                    Integer rhsVal =
-                            AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
-                    Integer lhsVal =
-                            AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
-                    return rhsVal >= lhsVal;
-                } else {
-                    // They aren't subtypes is one doesn't have a value.
-                    return true;
-                }
+                // There used to be a check to see if these values existed.
+                // It's been removed; if they don't exist, we should get the default (0).
+
+                Integer rhsVal = AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
+                Integer lhsVal = AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
+                return rhsVal >= lhsVal;
             }
             return false;
         }
