@@ -6,16 +6,22 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
+import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
 import org.checkerframework.checker.lowerbound.qual.LowerBoundUnknown;
 import org.checkerframework.checker.lowerbound.qual.NonNegative;
 import org.checkerframework.checker.lowerbound.qual.Positive;
-import org.checkerframework.checker.minlen.*;
-import org.checkerframework.checker.minlen.qual.*;
+import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
+import org.checkerframework.checker.minlen.MinLenChecker;
+import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -74,7 +80,19 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
+        addAliasedAnnotation(IndexFor.class, NN);
         this.postInit();
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        // Because the Index Checker is a subclass, the qualifiers have to be explicitly defined.
+        return new LinkedHashSet<>(
+                Arrays.asList(
+                        Positive.class,
+                        NonNegative.class,
+                        GTENegativeOne.class,
+                        LowerBoundUnknown.class));
     }
 
     @Override
@@ -597,6 +615,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Integer maybeValRight = maybeValFromValueType(valueTypeRight);
             if (maybeValRight != null) {
                 addAnnotationForLiteralDivideRight(maybeValRight, leftType, type);
+                return;
             }
 
             AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
@@ -606,6 +625,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Integer maybeValLeft = maybeValFromValueType(valueTypeLeft);
             if (maybeValLeft != null) {
                 addAnnotationForLiteralDivideLeft(maybeValLeft, leftType, type);
+                return;
             }
 
             /* This section handles generic annotations:
