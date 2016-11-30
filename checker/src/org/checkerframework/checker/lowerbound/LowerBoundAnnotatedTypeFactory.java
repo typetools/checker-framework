@@ -1,11 +1,6 @@
 package org.checkerframework.checker.lowerbound;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
@@ -197,6 +193,38 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     break;
             }
             return super.visitUnary(tree, typeDst);
+        }
+
+        /**
+         * Special handling for min and max from Math. Min is LUB, max is GLB.
+         *
+         * @param tree
+         * @param type
+         * @return
+         */
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
+
+            ExecutableElement min = TreeUtils.getMethod("java.lang.Math", "min", 2, processingEnv);
+            ExecutableElement max = TreeUtils.getMethod("java.lang.Math", "max", 2, processingEnv);
+
+            if (TreeUtils.isMethodInvocation(tree, min, processingEnv)) {
+                ExpressionTree left = tree.getArguments().get(0);
+                ExpressionTree right = tree.getArguments().get(1);
+                type.replaceAnnotation(
+                        qualHierarchy.leastUpperBound(
+                                getAnnotatedType(left).getAnnotationInHierarchy(POS),
+                                getAnnotatedType(right).getAnnotationInHierarchy(POS)));
+            }
+            if (TreeUtils.isMethodInvocation(tree, max, processingEnv)) {
+                ExpressionTree left = tree.getArguments().get(0);
+                ExpressionTree right = tree.getArguments().get(1);
+                type.replaceAnnotation(
+                        qualHierarchy.greatestLowerBound(
+                                getAnnotatedType(left).getAnnotationInHierarchy(POS),
+                                getAnnotatedType(right).getAnnotationInHierarchy(POS)));
+            }
+            return super.visitMethodInvocation(tree, type);
         }
 
         /** Get the list of possible values from a Value Checker type. May return null. */
