@@ -13,7 +13,16 @@ import java.lang.annotation.Target;
  * qualifier must hold after the methods execution are indicated by {@code expression} and are
  * specified using a string. The qualifier is specified by {@code qualifier}.
  *
+ * <p>Here is an example use:
+ * <pre>
+ *    {@literal @}EnsuresQualifierIf(result = true, expression = "#1", qualifier = Odd.class)
+ *    boolean isOdd(final int p1, int p2) {
+ *        return p1 % 2 == 1;
+ *    }
+ * <pre>
+ *
  * @author Stefan Heule
+ * @see EnsuresQualifiers
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
 @Documented
