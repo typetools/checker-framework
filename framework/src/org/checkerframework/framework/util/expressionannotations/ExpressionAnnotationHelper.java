@@ -178,11 +178,19 @@ public class ExpressionAnnotationHelper {
         Element element = TreeUtils.elementFromUse(tree);
         AnnotatedExecutableType viewpointAdaptedType =
                 (AnnotatedExecutableType) factory.getAnnotatedType(element);
+        if (!hasExAnno(viewpointAdaptedType)) {
+            return;
+        }
+
         standardizeDoNotUseLocals(context, currentPath, viewpointAdaptedType);
         new ViewpointAdaptedCopier().visit(viewpointAdaptedType, typeFromUse);
     }
 
     public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
+        if (!hasExAnno(type)) {
+            return;
+        }
+
         TreePath path = factory.getPath(tree);
         FlowExpressions.Receiver r =
                 FlowExpressions.internalRepOfImplicitReceiver(TreeUtils.elementFromUse(tree));
@@ -198,6 +206,9 @@ public class ExpressionAnnotationHelper {
         if (atm.getKind() == TypeKind.NONE) {
             return;
         }
+        if (!hasExAnno(atm)) {
+            return;
+        }
 
         Element ele = TreeUtils.elementFromDeclaration(m);
         TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
@@ -209,6 +220,10 @@ public class ExpressionAnnotationHelper {
     }
 
     public void standardizeVariable(Tree node, AnnotatedTypeMirror type, Element ele) {
+        if (!hasExAnno(type)) {
+            return;
+        }
+
         TreePath path = factory.getPath(node);
         if (path == null) {
             return;
@@ -266,6 +281,10 @@ public class ExpressionAnnotationHelper {
     }
 
     public void standardizeFieldAccess(MemberSelectTree node, AnnotatedTypeMirror type) {
+        if (!hasExAnno(type)) {
+            return;
+        }
+
         if (TreeUtils.isClassLiteral(node)) {
             return;
         }
@@ -282,6 +301,9 @@ public class ExpressionAnnotationHelper {
     }
 
     public void standardizeExpression(ExpressionTree tree, AnnotatedTypeMirror annotatedType) {
+        if (!hasExAnno(annotatedType)) {
+            return;
+        }
         TreePath path = factory.getPath(tree);
         if (path == null) {
             return;
@@ -304,6 +326,10 @@ public class ExpressionAnnotationHelper {
     }
 
     public void standardizeVariable(AnnotatedTypeMirror type, Element elt) {
+        if (!hasExAnno(type)) {
+            return;
+        }
+
         switch (elt.getKind()) {
             case LOCAL_VARIABLE:
             case RESOURCE_VARIABLE:
@@ -631,6 +657,53 @@ public class ExpressionAnnotationHelper {
         @Override
         protected Void combineRs(Void r1, Void r2) {
             return null;
+        }
+    }
+
+    private boolean hasExAnno(AnnotatedTypeMirror atm) {
+        if (atm == null) return false;
+        Boolean b = new HasExpAnno().visit(atm);
+        if (b == null) {
+            return false;
+        }
+        return b;
+    }
+
+    private class HasExpAnno extends AnnotatedTypeScanner<Boolean, Void> {
+        @Override
+        protected Boolean scan(AnnotatedTypeMirror type, Void aVoid) {
+            if (type == null) {
+                return false;
+            }
+            for (AnnotationMirror am : type.getAnnotations()) {
+                if (isExpressionAnno(am)) {
+                    return true;
+                }
+            }
+            return super.scan(type, aVoid);
+        }
+
+        boolean isExpressionAnno(AnnotationMirror am) {
+            for (Class<? extends Annotation> clazz : expressionAnnos) {
+                if (AnnotationUtils.areSameByClass(am, clazz)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        protected Boolean reduce(Boolean r1, Boolean r2) {
+            if (r1 != null && r2 != null) {
+                // if either have an expression anno, return true;
+                return r1 || r2;
+            } else if (r1 != null) {
+                return r1;
+            } else if (r2 != null) {
+                return r2;
+            } else {
+                return false;
+            }
         }
     }
 }
