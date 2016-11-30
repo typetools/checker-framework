@@ -1,5 +1,7 @@
 package org.checkerframework.checker.upperbound;
 
+import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
+
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -9,6 +11,7 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.minlen.qual.*;
@@ -62,7 +65,18 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         minLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
         env = checker.getProcessingEnvironment();
+        addAliasedAnnotation(IndexFor.class, createLessThanLengthAnnotation(new String[0]));
         this.postInit();
+    }
+
+    @Override
+    public AnnotationMirror aliasedAnnotation(AnnotationMirror a) {
+        if (AnnotationUtils.areSameByClass(a, IndexFor.class)) {
+            List<String> stringList =
+                    AnnotationUtils.getElementValueArray(a, "value", String.class, true);
+            return createLessThanLengthAnnotation(stringList.toArray(new String[0]));
+        }
+        return super.aliasedAnnotation(a);
     }
 
     /**
@@ -185,10 +199,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return the set union of the two value fields
      */
     private String[] getCombinedNames(AnnotationMirror a1, AnnotationMirror a2) {
-        List<String> a1Names =
-                AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
-        List<String> a2Names =
-                AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+        List<String> a1Names = getElementValueArray(a1, "value", String.class, true);
+        List<String> a2Names = getElementValueArray(a2, "value", String.class, true);
         HashSet<String> newValues = new HashSet<String>(a1Names.size() + a2Names.size());
 
         newValues.addAll(a1Names);
@@ -211,10 +223,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private String[] getIntersectingNames(AnnotationMirror a1, AnnotationMirror a2) {
 
-        List<String> a1Names =
-                AnnotationUtils.getElementValueArray(a1, "value", String.class, true);
-        List<String> a2Names =
-                AnnotationUtils.getElementValueArray(a2, "value", String.class, true);
+        List<String> a1Names = getElementValueArray(a1, "value", String.class, true);
+        List<String> a2Names = getElementValueArray(a2, "value", String.class, true);
         HashSet<String> newValues = new HashSet<String>(Math.min(a1Names.size(), a2Names.size()));
 
         for (String s : a1Names) {
@@ -327,19 +337,15 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(lhs, rhs)) {
                 // Same type, so might be subtype.
-                List<Object> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
-                List<Object> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
+                List<Object> lhsValues = getElementValueArray(lhs, "value", Object.class, true);
+                List<Object> rhsValues = getElementValueArray(rhs, "value", Object.class, true);
                 return rhsValues.containsAll(lhsValues);
             } else if (isSubtypeRelaxed(rhs, lhs)) {
                 /* Different types that are subtypes of each other ->
                  * rhs is a subtype of lhs iff lhs.value contains rhs.value.
                  */
-                List<Object> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
-                List<Object> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
+                List<Object> lhsValues = getElementValueArray(lhs, "value", Object.class, true);
+                List<Object> rhsValues = getElementValueArray(rhs, "value", Object.class, true);
                 return rhsValues.containsAll(lhsValues);
             }
             return false;
