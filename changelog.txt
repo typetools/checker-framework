@@ -1,5 +1,13 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.6, 1 December 2016
+
+Closed issues:
+
+412, 475.
+
+---------------------------------------------------------------------------
+
 Version 2.1.5, 2 November 2016
 
 The new class org.checkerframework.checker.nullness.Opt provides every
