@@ -8,7 +8,7 @@ import org.checkerframework.framework.qual.*;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SubtypeOf(LessThanLength.class)
+@SubtypeOf(LtLength.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND, TypeUseLocation.EXPLICIT_UPPER_BOUND})

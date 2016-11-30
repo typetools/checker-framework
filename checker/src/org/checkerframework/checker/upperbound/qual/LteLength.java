@@ -13,6 +13,6 @@ import org.checkerframework.framework.qual.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface LessThanOrEqualToLength {
+public @interface LteLength {
     public String[] value();
 }

@@ -1,4 +1,3 @@
-import org.checkerframework.checker.lowerbound.qual.*;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
 
@@ -22,8 +21,9 @@ public class Subtraction {
         int N = 8;
         int @MinLen(8) [] grid = new int[N];
         @SuppressWarnings("upperbound")
-        @LessThanLength("grid") int zero = 0;
-        for (@LessThanLength("grid") int i = zero; i < N; i++) {
+        @LtLength("grid")
+        int zero = 0;
+        for (@LtLength("grid") int i = zero; i < N; i++) {
             System.out.println(grid[(N - 1) - i]);
             System.out.println(grid[(N - i)]);
             System.out.println(grid[(N - i) - 1]);

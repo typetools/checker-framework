@@ -9,9 +9,9 @@ import org.checkerframework.framework.qual.*;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
-@SubtypeOf(LessThanOrEqualToLength.class)
+@SubtypeOf(LteLength.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface LessThanLength {
+public @interface LtLength {
     public String[] value();
 }
