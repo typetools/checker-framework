@@ -224,8 +224,8 @@ public class UpperBoundTransfer extends CFTransfer {
             Set<AnnotationMirror> rightType,
             CFStore store) {
         // First, check if the left type is one of the ones that tells us something.
-        if (AnnotationUtils.containsSameByClass(leftType, LessThanLength.class)
-                || AnnotationUtils.containsSameByClass(leftType, LessThanOrEqualToLength.class)) {
+        if (AnnotationUtils.containsSameByClass(leftType, LtLength.class)
+                || AnnotationUtils.containsSameByClass(leftType, LteLength.class)) {
             // Create an LTL for the right type.
 
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -253,7 +253,7 @@ public class UpperBoundTransfer extends CFTransfer {
             Node right,
             Set<AnnotationMirror> rightType,
             CFStore store) {
-        if (AnnotationUtils.containsSameByClass(leftType, LessThanLength.class)) {
+        if (AnnotationUtils.containsSameByClass(leftType, LtLength.class)) {
             // Create an LTL for the right type.
             // There's a slight danger of losing information here:
             // if the two annotations are LTL(a) and EL(b), for instance,
@@ -270,7 +270,7 @@ public class UpperBoundTransfer extends CFTransfer {
 
             store.insertValue(rightRec, newType);
             return;
-        } else if (AnnotationUtils.containsSameByClass(leftType, LessThanOrEqualToLength.class)) {
+        } else if (AnnotationUtils.containsSameByClass(leftType, LteLength.class)) {
             // Create an LTL for the right type.
             // There's a slight danger of losing information here:
             // if the two annotations are LTL(a) and EL(b), for instance,
@@ -298,7 +298,7 @@ public class UpperBoundTransfer extends CFTransfer {
             Set<AnnotationMirror> rightType,
             CFStore store) {
         // LTEL always implies that the other is LTEL.
-        if (AnnotationUtils.containsSameByClass(leftType, LessThanOrEqualToLength.class)) {
+        if (AnnotationUtils.containsSameByClass(leftType, LteLength.class)) {
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             String[] names =
                     UpperBoundUtils.getValue(
@@ -312,7 +312,7 @@ public class UpperBoundTransfer extends CFTransfer {
 
             store.insertValue(rightRec, newType);
         }
-        if (AnnotationUtils.containsSameByClass(rightType, LessThanOrEqualToLength.class)) {
+        if (AnnotationUtils.containsSameByClass(rightType, LteLength.class)) {
             Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
             String[] names =
                     UpperBoundUtils.getValue(
@@ -326,7 +326,7 @@ public class UpperBoundTransfer extends CFTransfer {
 
             store.insertValue(leftRec, newType);
         }
-        if (AnnotationUtils.containsSameByClass(leftType, LessThanLength.class)
+        if (AnnotationUtils.containsSameByClass(leftType, LtLength.class)
                 && fOnlyUnknown(rightType)) {
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             String[] names =
@@ -340,7 +340,7 @@ public class UpperBoundTransfer extends CFTransfer {
 
             store.insertValue(rightRec, newType);
         }
-        if (AnnotationUtils.containsSameByClass(rightType, LessThanLength.class)
+        if (AnnotationUtils.containsSameByClass(rightType, LtLength.class)
                 && fOnlyUnknown(leftType)) {
             Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
             String[] names =
