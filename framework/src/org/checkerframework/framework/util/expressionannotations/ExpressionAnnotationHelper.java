@@ -443,7 +443,9 @@ public class ExpressionAnnotationHelper {
                 // See PR #674
                 // https://github.com/typetools/checker-framework/pull/674
                 // Work around this bug by remove all annotations of the same class.
-                while (type.removeAnnotation(anno)) {}
+                if (type.removeAnnotation(anno)) {
+                    type.removeAnnotation(anno);
+                }
             }
             type.addAnnotations(newAnnos);
             return super.scan(type, aVoid);
