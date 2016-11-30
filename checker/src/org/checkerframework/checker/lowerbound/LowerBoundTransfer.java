@@ -11,11 +11,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.LessThanNode;
-import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -225,6 +221,54 @@ public class LowerBoundTransfer extends CFTransfer {
         return rfi.newResult;
     }
 
+    /**
+     * This function handles the problems described in issues 25 and 29 in the issue tracker. It
+     * returns a flag that reports whether it made a change to the store.
+     *
+     * @param mLiteral a potential literal
+     * @param otherNode the node on the other side of the ==/!=
+     * @param otherType the type of the other side of the ==/!=
+     * @param store
+     * @return whether the store was modified
+     */
+    private boolean isRelevantLiteralForEquals(
+            Node mLiteral, Node otherNode, Set<AnnotationMirror> otherType, CFStore store) {
+        if (!(mLiteral instanceof IntegerLiteralNode)) {
+            return false;
+        }
+        IntegerLiteralNode integerLiteral = (IntegerLiteralNode) mLiteral;
+        if (integerLiteral.getValue() == 0) {
+            if (AnnotationUtils.containsSame(otherType, NN)) {
+                Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
+                store.insertValue(rec, POS);
+                return true;
+            } else {
+                return false;
+            }
+        } else if (integerLiteral.getValue() == -1) {
+            if (AnnotationUtils.containsSame(otherType, GTEN1)) {
+                Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
+                store.insertValue(rec, NN);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Implements the transfer rules for both equal nodes and not-equals nodes.
+     *
+     * @param result
+     * @param firstNode
+     * @param secondNode
+     * @param firstValue
+     * @param secondValue
+     * @param notEqualTo
+     * @return
+     */
     @Override
     protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
             TransferResult<CFValue, CFStore> result,
@@ -242,6 +286,14 @@ public class LowerBoundTransfer extends CFTransfer {
 
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
+            // Special processing for literals:
+            if (isRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore)) {
+                return rfi.newResult;
+            }
+            if (isRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore)) {
+                return rfi.newResult;
+            }
+
             refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
             return rfi.newResult;
@@ -254,6 +306,14 @@ public class LowerBoundTransfer extends CFTransfer {
              */
 
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
+
+            // Special processing for literals:
+            if (isRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore)) {
+                return rfi.newResult;
+            }
+            if (isRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore)) {
+                return rfi.newResult;
+            }
 
             refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
