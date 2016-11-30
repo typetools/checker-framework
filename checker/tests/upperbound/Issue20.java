@@ -5,7 +5,7 @@ class Issue20 {
     int[] a, b;
 
     void test(
-            @LessThanLength("a") int i, @LessThanOrEqualToLength({"a", "b"}) int j, boolean flag) {
-        @LessThanOrEqualToLength("a") int k = flag ? i : j;
+            @LTLengthOf("a") int i, @LTEqLengthOf({"a", "b"}) int j, boolean flag) {
+        @LTEqLengthOf("a") int k = flag ? i : j;
     }
 }
