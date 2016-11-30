@@ -7,7 +7,6 @@ public class ArrayLength2 {
     public static void main(String[] args) {
         int N = 8;
         int @MinLen(8) [] Grid = new int[N];
-        @LtLength("Grid")
-        int i = 0;
+        @LessThanLength("Grid") int i = 0;
     }
 }
