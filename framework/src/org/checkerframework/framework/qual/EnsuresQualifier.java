@@ -14,12 +14,13 @@ import java.lang.annotation.Target;
  * specified using a string. The qualifier is specified by {@code qualifier}.
  *
  * <p>Here is an example use:
+ *
  * <pre>
  *    {@literal @}EnsuresQualifierIf(result = true, expression = "#1", qualifier = Odd.class)
  *    boolean isOdd(final int p1, int p2) {
  *        return p1 % 2 == 1;
  *    }
- * <pre>
+ * </pre>
  *
  * @author Stefan Heule
  * @see EnsuresQualifiers

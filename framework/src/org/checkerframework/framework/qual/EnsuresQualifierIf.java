@@ -15,12 +15,13 @@ import java.lang.annotation.Target;
  * by the {@code qualifier} annotation argument.
  *
  * <p>Here is an example use:
+ *
  * <pre>
  *   {@literal @}EnsuresQualifier(expression = "p.f1", qualifier = Odd.class)
  *   void oddF1_1() {
  *       p.f1 = null;
  *   }
- * <pre>
+ * </pre>
  *
  * <p>This annotation is only applicable to methods with a boolean return type.
  *
