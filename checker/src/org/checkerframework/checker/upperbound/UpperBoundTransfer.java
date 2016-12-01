@@ -55,7 +55,7 @@ public class UpperBoundTransfer extends CFTransfer {
             String[] names = {name};
 
             store.insertValue(
-                    rec, UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+                    rec, UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
         }
         return result;
     }
@@ -69,7 +69,7 @@ public class UpperBoundTransfer extends CFTransfer {
                 && node.getReceiver().getType().getKind() == TypeKind.ARRAY) {
             String arrName = node.getReceiver().toString();
             AnnotationMirror anm =
-                    UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(arrName);
+                    UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(arrName);
             CFValue newResultValue =
                     analysis.createSingleAnnotationValue(
                             anm, result.getResultValue().getUnderlyingType());
@@ -236,7 +236,7 @@ public class UpperBoundTransfer extends CFTransfer {
             AnnotationMirror newType =
                     qualifierHierarchy.greatestLowerBound(
                             qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+                            UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
 
             store.insertValue(rightRec, newType);
             return;
@@ -266,7 +266,7 @@ public class UpperBoundTransfer extends CFTransfer {
             AnnotationMirror newType =
                     qualifierHierarchy.greatestLowerBound(
                             qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+                            UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
 
             store.insertValue(rightRec, newType);
             return;
@@ -283,8 +283,7 @@ public class UpperBoundTransfer extends CFTransfer {
             AnnotationMirror newType =
                     qualifierHierarchy.greatestLowerBound(
                             qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(
-                                    names));
+                            UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(names));
 
             store.insertValue(rightRec, newType);
             return;
@@ -307,8 +306,7 @@ public class UpperBoundTransfer extends CFTransfer {
             AnnotationMirror newType =
                     qualifierHierarchy.greatestLowerBound(
                             qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(
-                                    names));
+                            UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(names));
 
             store.insertValue(rightRec, newType);
         }
@@ -321,8 +319,7 @@ public class UpperBoundTransfer extends CFTransfer {
             AnnotationMirror newType =
                     qualifierHierarchy.greatestLowerBound(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLessThanOrEqualToLengthAnnotation(
-                                    names));
+                            UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(names));
 
             store.insertValue(leftRec, newType);
         }
@@ -336,7 +333,7 @@ public class UpperBoundTransfer extends CFTransfer {
             AnnotationMirror newType =
                     qualifierHierarchy.greatestLowerBound(
                             qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+                            UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
 
             store.insertValue(rightRec, newType);
         }
@@ -350,7 +347,7 @@ public class UpperBoundTransfer extends CFTransfer {
             AnnotationMirror newType =
                     qualifierHierarchy.greatestLowerBound(
                             qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLessThanLengthAnnotation(names));
+                            UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
 
             store.insertValue(leftRec, newType);
         }
