@@ -65,7 +65,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         minLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
         env = checker.getProcessingEnvironment();
-        addAliasedAnnotation(IndexFor.class, createLessThanLengthAnnotation(new String[0]));
+        addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(new String[0]));
         this.postInit();
     }
 
@@ -74,7 +74,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (AnnotationUtils.areSameByClass(a, IndexFor.class)) {
             List<String> stringList =
                     AnnotationUtils.getElementValueArray(a, "value", String.class, true);
-            return createLessThanLengthAnnotation(stringList.toArray(new String[0]));
+            return createLTLengthOfAnnotation(stringList.toArray(new String[0]));
         }
         return super.aliasedAnnotation(a);
     }
@@ -148,17 +148,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (names == null) {
             names = new String[0];
         }
-        if (name.equals("LessThanLength")) {
-            return createLessThanLengthAnnotation(names);
-        } else if (name.equals("LessThanOrEqualToLength")) {
-            return createLessThanOrEqualToLengthAnnotation(names);
+        if (name.equals("LTLengthOf")) {
+            return createLTLengthOfAnnotation(names);
+        } else if (name.equals("LTEqLengthOf")) {
+            return createLTEqLengthOfAnnotation(names);
         } else {
             return UNKNOWN;
         }
     }
 
-    static AnnotationMirror createLessThanLengthAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanLength.class);
+    static AnnotationMirror createLTLengthOfAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, LTLengthOf.class);
         if (names == null) {
             names = new String[0];
         }
@@ -166,13 +166,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
-    static AnnotationMirror createLessThanLengthAnnotation(String name) {
+    static AnnotationMirror createLTLengthOfAnnotation(String name) {
         String[] names = {name};
-        return createLessThanLengthAnnotation(names);
+        return createLTLengthOfAnnotation(names);
     }
 
-    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, LessThanOrEqualToLength.class);
+    static AnnotationMirror createLTEqLengthOfAnnotation(String[] names) {
+        AnnotationBuilder builder = new AnnotationBuilder(env, LTEqLengthOf.class);
         if (names == null) {
             names = new String[0];
         }
@@ -180,9 +180,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
-    static AnnotationMirror createLessThanOrEqualToLengthAnnotation(String name) {
+    static AnnotationMirror createLTEqLengthOfAnnotation(String name) {
         String[] names = {name};
-        return createLessThanOrEqualToLengthAnnotation(names);
+        return createLTEqLengthOfAnnotation(names);
     }
 
     @Override
@@ -262,11 +262,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // This only works for LTL and LTEL. It must be one of the two.
                 String[] names = getCombinedNames(a1, a2);
 
-                if (AnnotationUtils.areSameByClass(a1, LessThanLength.class)) {
-                    return createLessThanLengthAnnotation(names);
+                if (AnnotationUtils.areSameByClass(a1, LTLengthOf.class)) {
+                    return createLTLengthOfAnnotation(names);
                 } else {
                     // This needs to be LTEL. If we change the type hierarchy, this has to change.
-                    return createLessThanOrEqualToLengthAnnotation(names);
+                    return createLTEqLengthOfAnnotation(names);
                 }
             } else {
                 /* If the two are unrelated, then the type hierarchy implies
@@ -276,7 +276,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                    is effectively the bottom type.
                 */
                 String[] names = getCombinedNames(a1, a2);
-                return createLessThanOrEqualToLengthAnnotation(names);
+                return createLTEqLengthOfAnnotation(names);
             }
         }
 
@@ -302,14 +302,14 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 String[] names = getIntersectingNames(a1, a2);
                 return createAnnotation(a1.getAnnotationType().toString(), names);
-            } else if ((AnnotationUtils.areSameByClass(a1, LessThanLength.class)
-                            && AnnotationUtils.areSameByClass(a2, LessThanOrEqualToLength.class))
-                    || (AnnotationUtils.areSameByClass(a1, LessThanOrEqualToLength.class)
-                            && AnnotationUtils.areSameByClass(a2, LessThanLength.class))) {
+            } else if ((AnnotationUtils.areSameByClass(a1, LTLengthOf.class)
+                            && AnnotationUtils.areSameByClass(a2, LTEqLengthOf.class))
+                    || (AnnotationUtils.areSameByClass(a1, LTEqLengthOf.class)
+                            && AnnotationUtils.areSameByClass(a2, LTLengthOf.class))) {
                 // In this case, the result should be LTEL of the intersection of the names.
                 // Fixes issue 20.
                 String[] names = getIntersectingNames(a1, a2);
-                return createLessThanOrEqualToLengthAnnotation(names);
+                return createLTEqLengthOfAnnotation(names);
             }
             // Annotations are in this hierarchy, but they are not the same.
             else {
@@ -364,9 +364,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return false;
             }
             // Neither is UB Unknown.
-            if (AnnotationUtils.areSameByClass(lhs, LessThanOrEqualToLength.class)) {
+            if (AnnotationUtils.areSameByClass(lhs, LTEqLengthOf.class)) {
                 return true;
-            } else if (AnnotationUtils.areSameByClass(rhs, LessThanOrEqualToLength.class)) {
+            } else if (AnnotationUtils.areSameByClass(rhs, LTEqLengthOf.class)) {
                 return false;
             }
 
@@ -417,20 +417,20 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return super.visitMethodInvocation(tree, type);
                 }
                 // Now, both rightType and leftType are either LTL or LTEL.
-                if (leftType.hasAnnotation(LessThanLength.class)
-                        && rightType.hasAnnotation(LessThanLength.class)) {
+                if (leftType.hasAnnotation(LTLengthOf.class)
+                        && rightType.hasAnnotation(LTLengthOf.class)) {
                     // Both are LTL -> the result is LTL of the union.
                     AnnotationMirror leftAnno = leftType.getAnnotationInHierarchy(UNKNOWN);
                     AnnotationMirror rightAnno = rightType.getAnnotationInHierarchy(UNKNOWN);
                     String[] names = getCombinedNames(leftAnno, rightAnno);
-                    type.replaceAnnotation(createLessThanLengthAnnotation(names));
+                    type.replaceAnnotation(createLTLengthOfAnnotation(names));
                 } else {
                     // Otherwise, one must be LTEL. This means that
                     // the result is LTEL of the union of the arrays.
                     AnnotationMirror leftAnno = leftType.getAnnotationInHierarchy(UNKNOWN);
                     AnnotationMirror rightAnno = rightType.getAnnotationInHierarchy(UNKNOWN);
                     String[] names = getCombinedNames(leftAnno, rightAnno);
-                    type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+                    type.replaceAnnotation(createLTEqLengthOfAnnotation(names));
                 }
             }
             return super.visitMethodInvocation(tree, type);
@@ -466,24 +466,24 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return;
             }
             if (val == 1) {
-                if (nonLiteralType.hasAnnotation(LessThanLength.class)) {
+                if (nonLiteralType.hasAnnotation(LTLengthOf.class)) {
                     String[] names =
                             UpperBoundUtils.getValue(
                                     nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
-                    type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+                    type.replaceAnnotation(createLTEqLengthOfAnnotation(names));
                     return;
                 }
                 type.addAnnotation(UNKNOWN);
                 return;
             }
             if (val < 0) {
-                if (nonLiteralType.hasAnnotation(LessThanLength.class)
-                        || nonLiteralType.hasAnnotation(LessThanOrEqualToLength.class)) {
+                if (nonLiteralType.hasAnnotation(LTLengthOf.class)
+                        || nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
 
                     String[] names =
                             UpperBoundUtils.getValue(
                                     nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
-                    type.replaceAnnotation(createLessThanLengthAnnotation(names));
+                    type.replaceAnnotation(createLTLengthOfAnnotation(names));
                     return;
                 }
                 type.addAnnotation(UNKNOWN);
@@ -556,16 +556,16 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // AnnotatedTypeMirror rightType = getAnnotatedType(rightExpr);
             // if (rightType.hasAnnotation(EqualToLength.class)) {
             //     if (leftType.hasAnnotation(EqualToLength.class)
-            //             || leftType.hasAnnotation(LessThanLength.class)) {
+            //             || leftType.hasAnnotation(LTLengthOf.class)) {
             //         String[] names =
             //                 UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
-            //         type.replaceAnnotation(createLessThanLengthAnnotation(names));
+            //         type.replaceAnnotation(createLTLengthOfAnnotation(names));
             //         return;
             //     }
-            //     if (leftType.hasAnnotation(LessThanOrEqualToLength.class)) {
+            //     if (leftType.hasAnnotation(LTEqLengthOf.class)) {
             //         String[] names =
             //                 UpperBoundUtils.getValue(leftType.getAnnotationInHierarchy(UNKNOWN));
-            //         type.replaceAnnotation(createLessThanOrEqualToLengthAnnotation(names));
+            //         type.replaceAnnotation(createLTEqLengthOfAnnotation(names));
             //         return;
             //     }
             // }

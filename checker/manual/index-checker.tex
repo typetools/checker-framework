@@ -88,18 +88,18 @@ fields and method signatures, because the Upper Bound Checker infers
 qualifiers within method bodies.
 
 \begin{description}
-\item[\refqualclasswithparams{checker/upperbound/qual}{LessThanLength}{String[] names}]
+\item[\refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}]
   An expression with this type
   has value less than the length of each sequence listed in \<names>.
   The expression may be used as an index into any of those sequences.
-  \code{@LessThanLength({``a'', ``b''})} is a subtype of both
-  \code{@LessThanLength(``a'')} and \code{@LessThanLength(``b'')}.
-\item[\refqualclasswithparams{checker/upperbound/qual}{LessThanOrEqualToLength}{String[] names}]
+  \code{@LTLengthOf({``a'', ``b''})} is a subtype of both
+  \code{@LTLengthOf(``a'')} and \code{@LTLengthOf(``b'')}.
+\item[\refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}]
   An expression with this type
   has value less than or equal to the length of each sequence listed in \<names>.
   It may not be used as an index for a sequence, because it might be too high.
-  \code{@LessThanOrEqualToLength({``a'', ``b''})} is a subtype of both
-  \code{@LessThanOrEqualToLength(``a'')} and \code{@LessThanOrEqualToLength(``b'')}.
+  \code{@LTEqLengthOf({``a'', ``b''})} is a subtype of both
+  \code{@LTEqLengthOf(``a'')} and \code{@LTEqLengthOf(``b'')}.
 \item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
   There is no information about the value of an expression with this type.
   It may not be used as an index for a sequence, because it might be too high.
@@ -121,8 +121,8 @@ qualifiers within method bodies.
 % precisely the value of particular indexes, and uses the MinLen checker both in the way
 % described above (for constant indexes) and to determine when potential indexes should
 % be assigned
-% \refqualclasswithparams{checker/upperbound/qual}{LessThanLength}{String[] names}] or
-% \refqualclasswithparams{checker/upperbound/qual}{LessThanOrEqualToLength}{String[] names}].
+% \refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}] or
+% \refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}].
 
 
 \section{The MinLen Checker\label{index-minlen}}
@@ -138,7 +138,7 @@ not too large:
 \begin{itemize}
 \item
   when \<i> is known to be less than the length of \<arr> independent of the length of
-  \<arr>.  This fact is represented by giving \<i> the type \refqualclasswithparams{checker/upperbound/qual}{LessThanLength}{"arr"}.
+  \<arr>.  This fact is represented by giving \<i> the type \refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{"arr"}.
 \item
   when \<i> is a compile-time constant but the length of \<arr> is known to
   be greater.  For example, consider the following code:

@@ -21,7 +21,7 @@ public class UpperBoundUtils {
 
     /** Determines if the given string is a member of the LTL annotation attached to type. */
     public static boolean hasValue(AnnotatedTypeMirror type, String name) {
-        String[] rgst = getValue(type.getAnnotation(LessThanLength.class));
+        String[] rgst = getValue(type.getAnnotation(LTLengthOf.class));
         for (String st : rgst) {
             if (st.equals(name)) {
                 return true;
@@ -32,8 +32,8 @@ public class UpperBoundUtils {
 
     /** Checks if a given annotation is one of those that can have a value. */
     public static boolean hasValueMethod(AnnotationMirror anno) {
-        boolean fLTL = AnnotationUtils.areSameByClass(anno, LessThanLength.class);
-        boolean fLTEL = AnnotationUtils.areSameByClass(anno, LessThanOrEqualToLength.class);
+        boolean fLTL = AnnotationUtils.areSameByClass(anno, LTLengthOf.class);
+        boolean fLTEL = AnnotationUtils.areSameByClass(anno, LTEqLengthOf.class);
         return fLTL || fLTEL;
     }
 }

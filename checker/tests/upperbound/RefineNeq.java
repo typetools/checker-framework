@@ -3,36 +3,36 @@ import org.checkerframework.checker.upperbound.qual.*;
 class RefineNeq {
     void testLTL() {
         //:: error: (assignment.type.incompatible)
-        @LessThanLength("arr") int a = Integer.parseInt("1");
+        @LTLengthOf("arr") int a = Integer.parseInt("1");
 
         int b = 1;
         if (a != b) {
             //:: error: (assignment.type.incompatible)
-            @LessThanLength("arr") int e = b;
+            @LTLengthOf("arr") int e = b;
 
         } else {
 
-            @LessThanLength("arr") int c = b;
+            @LTLengthOf("arr") int c = b;
         }
         //:: error: (assignment.type.incompatible)
-        @LessThanLength("arr") int d = b;
+        @LTLengthOf("arr") int d = b;
     }
 
     void testLTEL() {
         //:: error: (assignment.type.incompatible)
-        @LessThanOrEqualToLength("arr") int a = Integer.parseInt("1");
+        @LTEqLengthOf("arr") int a = Integer.parseInt("1");
 
         int b = 1;
         if (a != b) {
             //:: error: (assignment.type.incompatible)
-            @LessThanOrEqualToLength("arr") int e = b;
+            @LTEqLengthOf("arr") int e = b;
         } else {
-            @LessThanOrEqualToLength("arr") int c = b;
+            @LTEqLengthOf("arr") int c = b;
 
             //:: error: (assignment.type.incompatible)
-            @LessThanLength("arr") int g = b;
+            @LTLengthOf("arr") int g = b;
         }
         //:: error: (assignment.type.incompatible)
-        @LessThanOrEqualToLength("arr") int d = b;
+        @LTEqLengthOf("arr") int d = b;
     }
 }
