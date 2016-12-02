@@ -42,6 +42,22 @@ public class UpperBoundTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitAssignment(
             AssignmentNode node, TransferInput<CFValue, CFStore> in) {
         TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
+
+        // When an existing array is assigned into, we need to blow up the store -
+        // that is, we need to remove every instance of LTL and LTEL, since arrays
+        // might be aliased, and when an array is modified to be a different length,
+        // that could cause any of our information about arrays to be wrong.
+        if (node.getTarget().getType().getKind() == TypeKind.ARRAY) {
+            // This means that the existing store needs to be invalidated.
+            // As far as I can tell the easiest way to do this is to just
+            // create a new TransferResult.
+            TransferResult<CFValue, CFStore> newResult =
+                    new RegularTransferResult<CFValue, CFStore>(
+                            result.getResultValue(), new CFStore(analysis, true));
+            result = newResult;
+        }
+
+        // This handles when a new array is created.
         if (node.getExpression() instanceof ArrayCreationNode) {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
             CFStore store = result.getRegularStore();
