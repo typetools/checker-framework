@@ -38,7 +38,8 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeVariableSubstitutor;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.framework.util.AnnotationMirrorMap;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -311,9 +312,9 @@ public class TypeArgInferenceUtil {
      * Take a set of annotations and separate them into a mapping of ({@code hierarchy top &rArr;
      * annotations in hierarchy})
      */
-    public static Map<AnnotationMirror, AnnotationMirror> createHierarchyMap(
-            final Set<AnnotationMirror> annos, final QualifierHierarchy qualifierHierarchy) {
-        Map<AnnotationMirror, AnnotationMirror> result = AnnotationUtils.createAnnotationMap();
+    public static AnnotationMirrorMap<AnnotationMirror> createHierarchyMap(
+            final AnnotationMirrorSet annos, final QualifierHierarchy qualifierHierarchy) {
+        AnnotationMirrorMap<AnnotationMirror> result = new AnnotationMirrorMap<>();
 
         for (AnnotationMirror anno : annos) {
             result.put(qualifierHierarchy.getTopAnnotation(anno), anno);

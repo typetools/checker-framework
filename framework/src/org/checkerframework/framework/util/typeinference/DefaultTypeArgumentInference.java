@@ -26,6 +26,7 @@ import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.typeinference.constraint.A2F;
 import org.checkerframework.framework.util.typeinference.constraint.A2FReducer;
@@ -418,7 +419,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             List<AnnotatedTypeVariable> targetDeclarations,
             AnnotatedTypeFactory typeFactory) {
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
-        final Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+        final AnnotationMirrorSet tops =
+                new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
 
         for (AnnotatedTypeVariable targetDecl : targetDeclarations) {
             InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());

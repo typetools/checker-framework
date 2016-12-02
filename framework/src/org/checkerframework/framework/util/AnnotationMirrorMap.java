@@ -1,0 +1,111 @@
+package org.checkerframework.framework.util;
+
+import static org.checkerframework.javacutil.AnnotationUtils.annotationOrdering;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
+
+/**
+ * Implements the Map interface where the keys to the map are AnnotationMirrors. This classes uses
+ * {@link AnnotationUtils#areSame(AnnotationMirror, AnnotationMirror)} instead of {@link
+ * AnnotationMirror#equals(Object)}.
+ *
+ * <p>AnnotationMirror is an interface and not all implementing classes provide a correct equals
+ * method; therefore, the existing implementations of Set cannot be used.
+ */
+public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
+    private final Map<AnnotationMirror, V> shadowMap = new TreeMap<>(annotationOrdering());
+
+    public AnnotationMirrorMap() {}
+
+    public AnnotationMirrorMap(Map<AnnotationMirror, ? extends V> primaries) {
+        this.putAll(primaries);
+    }
+
+    @Override
+    public int size() {
+        return shadowMap.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return shadowMap.isEmpty();
+    }
+
+    @Override
+    public boolean containsKey(Object key) {
+        if (key instanceof AnnotationMirror) {
+            return AnnotationUtils.containsSame(shadowMap.keySet(), (AnnotationMirror) key);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean containsValue(Object value) {
+        return shadowMap.containsValue(value);
+    }
+
+    @Override
+    public V get(Object key) {
+        if (key instanceof AnnotationMirror) {
+            for (AnnotationMirror k : shadowMap.keySet()) {
+                if (AnnotationUtils.areSame(k, (AnnotationMirror) key)) {
+                    return shadowMap.get(k);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public V put(AnnotationMirror key, V value) {
+        V pre = get(key);
+        remove(key);
+        shadowMap.put(key, value);
+        return pre;
+    }
+
+    @Override
+    public V remove(Object key) {
+        if (key instanceof AnnotationMirror) {
+            for (AnnotationMirror k : shadowMap.keySet()) {
+                if (AnnotationUtils.areSame(k, (AnnotationMirror) key)) {
+                    return shadowMap.remove(k);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void putAll(Map<? extends AnnotationMirror, ? extends V> m) {
+        for (Entry<? extends AnnotationMirror, ? extends V> entry : m.entrySet()) {
+            put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    @Override
+    public void clear() {
+        shadowMap.clear();
+    }
+
+    @Override
+    public Set<AnnotationMirror> keySet() {
+        return new AnnotationMirrorSet(shadowMap.keySet());
+    }
+
+    @Override
+    public Collection<V> values() {
+        return shadowMap.values();
+    }
+
+    @Override
+    public Set<Entry<AnnotationMirror, V>> entrySet() {
+        return shadowMap.entrySet();
+    }
+}
