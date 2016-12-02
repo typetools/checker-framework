@@ -1513,6 +1513,10 @@ switch, which is used to pass options to an annotation processor.
 qualifiers like \code{@Unqualified} which are usually not shown.
 (Use the \code{@InvisibleQualifier} meta-annotation on a qualifier to hide it.)
 
+\item \code{-AprintVerboseGenerics}: print more information about type
+  parameters and wildcards when they appear in warning messages.  This
+  produces a subset of the information than \code{-AprintAllQualifiers} does.
+
 \item \code{-Adetailedmsgtext}: Output error/warning messages in a
   stylized format that is easy for tools to parse.  This is useful for
   tools that run the Checker Framework and parse its output, such as IDE
@@ -1574,7 +1578,7 @@ Section~\ref{creating-extending-visitor}).
 
 \end{itemize}
 
-\subsection{Miscellaneous debugging options\label{creating-debugging-options-misc}}
+\subsection{Visualizing the dataflow graph\label{creating-debugging-dataflow-graph}}
 
 \begin{itemize}
 
@@ -1603,9 +1607,6 @@ Section~\ref{creating-extending-visitor}).
   that should be used. The remaining values or key-value pairs are
   passed to \<CFGVisualizer.init>.
 
-\item \code{-AresourceStats}:
-  Whether to output resource statistics at JVM shutdown.
-
 \end{itemize}
 
 You can visualize \<.dot> graph files with the \ahref{http://www.graphviz.org}{Graphviz} program.  For
@@ -1614,6 +1615,15 @@ example, to convert a \<.dot> file to PDF:
 \begin{Verbatim}
 dot -Tpdf -o myfile.pdf myfile.dot
 \end{Verbatim}
+
+\subsection{Miscellaneous debugging options\label{creating-debugging-options-misc}}
+
+\begin{itemize}
+
+\item \code{-AresourceStats}:
+  Whether to output resource statistics at JVM shutdown.
+
+\end{itemize}
 
 
 \subsection{Examples\label{creating-debugging-options-examples}}
