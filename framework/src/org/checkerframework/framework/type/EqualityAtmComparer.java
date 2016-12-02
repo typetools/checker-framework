@@ -6,8 +6,9 @@ import org.checkerframework.javacutil.AnnotationUtils;
 /**
  * Compares two annotated type mirrors for structural equality using only the primary annotations
  * and underlying types of the two input types and their component types. Note, this leaves out
- * other fields specific to some AnnotatedTypeMirrors (like directSuperTypes, wasRaw, isTypeArgHack
- * etc...). Ideally, both EqualityAtmComparer and HashcodeAtmVisitor would visit relevant fields.
+ * other fields specific to some AnnotatedTypeMirrors (like directSuperTypes, wasRaw,
+ * isUninferredTypeArgument etc...). Ideally, both EqualityAtmComparer and HashcodeAtmVisitor would
+ * visit relevant fields.
  *
  * <p>This class is used by AnnotatedTypeMirror#equals
  *
