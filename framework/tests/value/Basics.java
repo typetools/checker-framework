@@ -88,6 +88,13 @@ class Basics {
 
         //:: error: (assignment.type.incompatible)
         @IntVal({0}) int c = a;
+
+        @IntRange(from = 0, to = 20)
+        int d = a;
+
+        @IntRange(from = 1, to = 100)
+        //:: error: (assignment.type.incompatible)
+        int e = a;
     }
 
     public void IntegerTest() {
@@ -99,6 +106,13 @@ class Basics {
 
         //:: error: (assignment.type.incompatible)
         @IntVal({0}) Integer c = a;
+
+        @IntRange(from = 0, to = 20)
+        Integer d = a;
+
+        @IntRange(from = 1, to = 100)
+        //:: error: (assignment.type.incompatible)
+        Integer e = a;
     }
 
     public void stringTest() {
@@ -118,21 +132,34 @@ class Basics {
         @StringVal({"test1"}) String c = (java.lang.String) b;
     }
 
-    //    void tooManyValuesInt() {
-    //        //:: warning: (too.many.values.given)
-    //        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}) int a = 8;
-    //
-    //        @UnknownVal int b = a; // This should always succeed
-    //
-    //        @UnknownVal int c = 0;
-    //
-    //        a = c; // This should succeed if a is treated as @UnknownVal
-    //
-    //        //:: warning: (too.many.values.given)
-    //        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}) int d = 8;
-    //
-    //        d = 2 * d; // This should succeed since d is @UnknownVal
-    //    }
+    void tooManyValuesInt() {
+        //:: warning: (too.many.values.given)
+        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 100}) int a = 8;
+
+        @UnknownVal int b = a; // This should always succeed
+
+        @UnknownVal int c = 20;
+
+        a = c; // This should succeed if a is treated as @IntRange(from=1, to=100)
+
+        //:: warning: (too.many.values.given)
+        @IntVal({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
+        //:: error: (assignment.type.incompatible)
+        int d = a; // d is @IntRange(from=1, to=12), a is @IntVal({20});
+    }
+
+    void tooNarrowIntRange(@IntRange(from = 1, to = 4) int a) {
+
+        @IntVal({2, 4, 6, 8}) int b;
+
+        b = a * 2; // should be succeed if a is treated as @IntVal({1, 2, 3, 4})
+
+        @IntRange(from = 3, to = 8)
+        int c;
+
+        //:: error: (assignment.type.incompatible)
+        c = a * 2; // should not be succeed
+    }
 
     void tooManyValuesDouble() {
         //:: warning: (too.many.values.given)

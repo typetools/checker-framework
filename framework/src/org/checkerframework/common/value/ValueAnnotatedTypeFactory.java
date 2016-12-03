@@ -332,8 +332,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return createIntRangeAnnotation(range.union(valueRange));
 
                 } else {
-                    // If either is UNKNOWNVAL, ARRAYLEN, STRINGVAL, or BOOLEAN then
-                    // the LUB is
+                    // In all other cases, the LUB is
                     // UnknownVal
                     return UNKNOWNVAL;
                 }
@@ -398,8 +397,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<Double> lhsValues =
                         AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
                 if (rhsRange.isWiderThan(lhsValues.size())) {
-                    // cannot be subtype if the number of possible values of
-                    // intrange is greater
+                    // This seems to be always the case if
+                    // we consider the replacement between
+                    // IntRange and IntVal
                     return false;
                 }
                 boolean same = false;
@@ -421,6 +421,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 List<Long> lhsValues =
                         AnnotationUtils.getElementValueArray(lhs, "value", Long.class, true);
                 if (rhsRange.isWiderThan(lhsValues.size())) {
+                    // This seems to be always the case if
+                    // we consider the replacement between
+                    // IntRange and IntVal
                     return false;
                 }
                 boolean same = false;
