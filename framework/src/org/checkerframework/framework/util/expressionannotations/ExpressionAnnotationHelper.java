@@ -178,7 +178,7 @@ public class ExpressionAnnotationHelper {
         Element element = TreeUtils.elementFromUse(tree);
         AnnotatedExecutableType viewpointAdaptedType =
                 (AnnotatedExecutableType) factory.getAnnotatedType(element);
-        if (!hasExAnno(viewpointAdaptedType)) {
+        if (!hasExpressionAnnotation(viewpointAdaptedType)) {
             return;
         }
 
@@ -187,7 +187,7 @@ public class ExpressionAnnotationHelper {
     }
 
     public void standardizeNewClassTree(NewClassTree tree, AnnotatedDeclaredType type) {
-        if (!hasExAnno(type)) {
+        if (!hasExpressionAnnotation(type)) {
             return;
         }
 
@@ -206,7 +206,7 @@ public class ExpressionAnnotationHelper {
         if (atm.getKind() == TypeKind.NONE) {
             return;
         }
-        if (!hasExAnno(atm)) {
+        if (!hasExpressionAnnotation(atm)) {
             return;
         }
 
@@ -220,7 +220,7 @@ public class ExpressionAnnotationHelper {
     }
 
     public void standardizeVariable(Tree node, AnnotatedTypeMirror type, Element ele) {
-        if (!hasExAnno(type)) {
+        if (!hasExpressionAnnotation(type)) {
             return;
         }
 
@@ -281,7 +281,7 @@ public class ExpressionAnnotationHelper {
     }
 
     public void standardizeFieldAccess(MemberSelectTree node, AnnotatedTypeMirror type) {
-        if (!hasExAnno(type)) {
+        if (!hasExpressionAnnotation(type)) {
             return;
         }
 
@@ -301,7 +301,7 @@ public class ExpressionAnnotationHelper {
     }
 
     public void standardizeExpression(ExpressionTree tree, AnnotatedTypeMirror annotatedType) {
-        if (!hasExAnno(annotatedType)) {
+        if (!hasExpressionAnnotation(annotatedType)) {
             return;
         }
         TreePath path = factory.getPath(tree);
@@ -326,7 +326,7 @@ public class ExpressionAnnotationHelper {
     }
 
     public void standardizeVariable(AnnotatedTypeMirror type, Element elt) {
-        if (!hasExAnno(type)) {
+        if (!hasExpressionAnnotation(type)) {
             return;
         }
 
@@ -660,16 +660,22 @@ public class ExpressionAnnotationHelper {
         }
     }
 
-    private boolean hasExAnno(AnnotatedTypeMirror atm) {
+    /**
+     * Whether or not atm has an expression annotation. If an annotated type does not have an
+     * expression annotation, then no standardization or viewpoint adaption is performed. (This
+     * check avoids calling time intensive methods unless absolutely required.)
+     */
+    private boolean hasExpressionAnnotation(AnnotatedTypeMirror atm) {
         if (atm == null) return false;
-        Boolean b = new HasExpAnno().visit(atm);
+        Boolean b = new ExpressionAnnotationExists().visit(atm);
         if (b == null) {
             return false;
         }
         return b;
     }
 
-    private class HasExpAnno extends AnnotatedTypeScanner<Boolean, Void> {
+    /** Checks whether or not an annotated type contains an expression annotation. */
+    private class ExpressionAnnotationExists extends AnnotatedTypeScanner<Boolean, Void> {
         @Override
         protected Boolean scan(AnnotatedTypeMirror type, Void aVoid) {
             if (type == null) {
