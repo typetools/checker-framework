@@ -1740,7 +1740,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         String varTypeString = varType.toString();
 
         // If both types as strings are the same, try printing verbosely.
-        if (valueTypeString.equals(varTypeString)) {
+        if (valueTypeString.equals(varTypeString)
+                // or if neither string contains an annotation
+                || (!valueTypeString.contains("@") && !varTypeString.contains("@"))) {
             valueTypeString = valueType.toString(true);
             varTypeString = varType.toString(true);
         }
