@@ -159,6 +159,17 @@ class Basics {
 
         //:: error: (assignment.type.incompatible)
         c = a * 2; // should not be succeed
+
+        @IntRange(from = 2, to = 2)
+        int d = 2;
+        b = d * 2; // should be succeed if d is treated as @IntVal({2});
+    }
+
+    void fromGreaterThanTo() {
+        @IntRange(from = 2, to = 0)
+        int a;
+
+        a = 3; //should be succeed if a is treated as @UnknownVal
     }
 
     void tooManyValuesDouble() {
