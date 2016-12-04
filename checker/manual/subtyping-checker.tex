@@ -247,11 +247,27 @@ Creating a new type makes your code easier to understand by conveying the
 intended use of each variable.  It also prevents errors that come from
 using the wrong type or from mixing incompatible types in an operation.
 
-If you want to create a type alias or typedef, you have two options:  using
-the Fake Enum Checker (\chapterpageref{fenum-checker}) or using the
-Subtyping Checker.
+If you want to create a type alias or typedef, you have multiple options:
+a regular Java subtype,
+the Units Checker (\chapterpageref{units-checker}),
+the Fake Enum Checker (\chapterpageref{fenum-checker}), or
+the Subtyping Checker.
 
-The Fake Enum Checker builds in a set of assumptions.  If those fit your
+A Java subtype is easy to create and does not require a tool such as the
+Checker Framework; for instance, you would declare \<class Address extends
+String>.  There are a number of limitations to this ``pseudo-typedef'',
+however~\cite{Goetz2006:typedef}.
+Primitive types and final types (including \<String>) cannot be extended.
+Equality and identity tests can return incorrect results when a wrapper
+object is used.  Existing return types in code would need to be changed,
+which is easy with an annotation but disruptive to change the Java type.
+Therefore, it is best to avoid the pseudo-typedef antipattern.
+
+The Units Checker (\chapterpageref{units-checker}) is useful for the
+particular case of units of measurement, such as kilometers verses miles.
+
+The Fake Enum Checker (\chapterpageref{fenum-checker})
+builds in a set of assumptions.  If those fit your
 use case, then it's easiest to use the Fake Enum Checker (though you can
 achieve them using the Subtyping Checker).  The Fake Enum Checker forbids
 mixing of fenums of different types, or fenums and unannotated types.  For
