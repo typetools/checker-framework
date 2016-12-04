@@ -11,6 +11,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.qual.IndexFor;
+import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
 import org.checkerframework.checker.lowerbound.qual.LowerBoundUnknown;
 import org.checkerframework.checker.lowerbound.qual.NonNegative;
@@ -77,6 +78,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         addAliasedAnnotation(IndexFor.class, NN);
+        addAliasedAnnotation(IndexOrHigh.class, NN);
         this.postInit();
     }
 
