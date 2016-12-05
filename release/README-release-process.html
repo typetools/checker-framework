@@ -318,16 +318,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
   </p>
 
 <ol>
-  <li>All <a href="http://tern.cs.washington.edu:8080/view/CF%20Release/">the Jenkins projects
-           under &quot;CF Release&quot;</a> should be green.</li>
-  <li>All
-           <a href="http://tern.cs.washington.edu:8080/view/CF%20Release/">the Jenkins projects under &quot;CF Release&quot;</a>
-           should not have performance regressions compared to the previous release (this list may be narrowed down to fewer
-           projects in the future). Open the <a href="http://tern.cs.washington.edu:8080/plugin/global-build-stats/">Global Build Stats</a>
-           page (you will be prompted for your Jenkins credentials if you are not logged in). The charts may take a few seconds
-           to load. For each project, look at the average build time in recent days and in days approximately 30 days ago,
-           and look for any differences in the trend.</li>
-  <li id="travis">The following Travis builds should be passing (refresh this page to see the latest status)::
+  <li id="travis">The following Travis builds should be passing (refresh this page to see the latest status):
   <ul>
     <li>Annotation File Utilities: <img src="https://travis-ci.org/typetools/annotation-tools.svg?branch=master" alt="Travis typetools/annotation-tools status"/></li>
     <li>Checker Framework: <img src="https://travis-ci.org/typetools/checker-framework.svg?branch=master" alt="Travis typetools/checker-framework status"/></li>
@@ -335,15 +326,12 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     <li>checker-framework-inference: <img src="https://travis-ci.org/typetools/checker-framework-inference.svg?branch=master" alt="Travis typetools/checker-framework-inference status"/></li>
     <li>Daikon: <img src="https://travis-ci.org/codespecs/daikon.svg?branch=master" alt="Travis codespecs/daikon status"/></li>
     <li>daikon-typecheck: <img src="https://travis-ci.org/typetests/daikon-typecheck.svg?branch=master" alt="Travis typetests/daikon-typecheck status"/></li>
-    <li>daikon-typecheck-formatter: <img src="https://travis-ci.org/typetests/daikon-typecheck-formatter.svg?branch=master" alt="Travis typetests/daikon-typecheck-formatter status"/></li>
-    <li>daikon-typecheck-interning: <img src="https://travis-ci.org/typetests/daikon-typecheck-interning.svg?branch=master" alt="Travis typetests/daikon-typecheck-interning status"/></li>
-    <li>daikon-typecheck-lock: <img src="https://travis-ci.org/typetests/daikon-typecheck-lock.svg?branch=master" alt="Travis typetests/daikon-typecheck-lock status"/></li>
-    <li>daikon-typecheck-nullness: <img src="https://travis-ci.org/typetests/daikon-typecheck-nullness.svg?branch=master" alt="Travis typetests/daikon-typecheck-lock status"/></li>
-    <li>daikon-typecheck-regex: <img src="https://travis-ci.org/typetests/daikon-typecheck-regex.svg?branch=master" alt="Travis typetests/daikon-typecheck-nullness status"/></li>
-    <li>daikon-typecheck-signature: <img src="https://travis-ci.org/typetests/daikon-typecheck-signature.svg?branch=master" alt="Travis typetests/daikon-typecheck-signature status"/></li>
     <li>plume-lib: <img src="https://travis-ci.org/mernst/plume-lib.svg?branch=master" alt="Travis mernst/plume-lib status"/></li>
     <li>plume-lib-typecheck: <img src="https://travis-ci.org/typetests/plume-lib-typecheck.svg?branch=master" alt="Travis typetests/plume-lib-typecheck status"/></li>
+    <li>Sparta: <img src="https://travis-ci.org/typetools/sparta.svg?branch=master" alt="Travis typetools/sparta status"/></li>
   </ul>
+  </li>
+  <li> Check that <a href="https://travis-ci.org/typetests/daikon-typecheck/builds">a daikon-typecheck Travis job</a> was triggered by the last commit of the Checker Framework before the code freeze.
   </li>
 </ol>
 
@@ -420,8 +408,8 @@ miss a step if you only read the paragraph asking you to say 'yes'.
     </tr>
     <tr>
       <td>8.</td>
-      <td><strong>Ensure that you can see the status of all Travis and Jenkins builds relevant to the release</strong><br/>
-        Ensure that the status of all the Travis projects listed <a href="#continuous-integration">here</a> is displayed correctly.  You will need an account on Jenkins.  Someone with an account can create one for you <a href="http://tern.cs.washington.edu:8080/securityRealm/addUser">here</a>.
+      <td><strong>Ensure that you can see the status of all Travis relevant to the release</strong><br/>
+        Ensure that the status of all the Travis projects listed <a href="#continuous-integration">here</a> is displayed correctly.
       </td>
     </tr>
     <tr>
