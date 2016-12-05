@@ -92,14 +92,14 @@ qualifiers within method bodies.
   An expression with this type
   has value less than the length of each sequence listed in \<names>.
   The expression may be used as an index into any of those sequences.
-  \code{@LTLengthOf({``a'', ``b''})} is a subtype of both
-  \code{@LTLengthOf(``a'')} and \code{@LTLengthOf(``b'')}.
+  \code{@LTLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTLengthOf("a")} and \code{@LTLengthOf("b")}.
 \item[\refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}]
   An expression with this type
   has value less than or equal to the length of each sequence listed in \<names>.
   It may not be used as an index for a sequence, because it might be too high.
-  \code{@LTEqLengthOf({``a'', ``b''})} is a subtype of both
-  \code{@LTEqLengthOf(``a'')} and \code{@LTEqLengthOf(``b'')}.
+  \code{@LTEqLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
 \item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
   There is no information about the value of an expression with this type.
   It may not be used as an index for a sequence, because it might be too high.
