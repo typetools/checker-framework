@@ -460,10 +460,47 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case MINUS:
                     addAnnotationForMinus(left, right, type);
                     break;
+                case DIVIDE:
+                    addAnnotationForDivide(left, right, type);
+                    break;
                 default:
                     break;
             }
             return super.visitBinary(tree, type);
+        }
+
+        /** Handles these cases: LTL / 1+ -> LTL LTEL / 2+ -> LTL LTEL / 1 -> LTEL */
+        private void addAnnotationForDivide(
+                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            // Check if the right side's value is known at compile time.
+            AnnotatedTypeMirror valueTypeRight = valueAnnotatedTypeFactory.getAnnotatedType(right);
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                AnnotatedTypeMirror leftType = getAnnotatedType(left);
+                addAnnotationForLiteralDivide(maybeValRight, leftType, type);
+                return;
+            }
+        }
+
+        private void addAnnotationForLiteralDivide(
+                int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
+            if (nonLiteralType.hasAnnotation(LTLengthOf.class)) {
+                if (val >= 1) {
+                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    return;
+                }
+            } else if (nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
+                if (val >= 2) {
+                    String[] names =
+                            UpperBoundUtils.getValue(
+                                    nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    type.replaceAnnotation(createLTLengthOfAnnotation(names));
+                    return;
+                } else if (val == 1) {
+                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    return;
+                }
+            }
         }
 
         private void addAnnotationForLiteralPlus(
