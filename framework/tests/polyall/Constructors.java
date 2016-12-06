@@ -42,9 +42,9 @@ class Constructors {
 
         //:: error: (assignment.type.incompatible)
         @H1S2 @H2S1 Constructors e1 = new Constructors(p);
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (constructor.invocation.invalid)
         @H1S2 @H2S1 Constructors e2 = new @H1S2 @H2S2 Constructors(p);
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (constructor.invocation.invalid)
         @H1S2 @H2S1 Constructors e3 = new @H1S2 Constructors(p);
 
         //:: error: (constructor.invocation.invalid)
@@ -53,10 +53,10 @@ class Constructors {
         @H1S2 @H2S2 Constructors e5 = new @H1S2 Constructors(p);
     }
 
-    @tests.util.Encrypted @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s, int i) {}
+    @testlib.util.Encrypted @H1Poly @H2Poly Constructors(@H1Poly @H2Poly String s, int i) {}
 
     void test4(@H1S1 @H2S2 String p) {
         @H1S1 @H2S2 Constructors c1 = new Constructors(p, 4);
-        @H1S1 @H2S2 Constructors c2 = new @tests.util.Encrypted Constructors(p);
+        @H1S1 @H2S2 Constructors c2 = new @testlib.util.Encrypted Constructors(p);
     }
 }

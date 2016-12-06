@@ -209,7 +209,7 @@
         <!-- With Ant 1.9.4 or later, add
             failonwarning="true"
             but Travis is stuck on Ant 1.8.2 as of 6/2016 -->
-        <javadoc sourcepath="${src}:${checker.loc}/${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}"
+        <javadoc sourcepath="${src}:${javacutil.loc}/${src}:${stubparser}/${src}:${dataflow.loc}/${src}:${annotation-file-utilities.loc}/${src}"
                  destdir="${api.doc}"
                  private="${javadoc.private}"
                  encoding="UTF-8"
@@ -223,9 +223,13 @@
             <package name="org.checkerframework.dataflow.*"/>
             <package name="org.checkerframework.stubparser.*"/>
             <package name="org.checkerframework.framework.*"/>
-            <package name="org.checkerframework.qualframework.*"/>
             <package name="org.checkerframework.common.*"/>
             <package name="org.checkerframework.checker.*"/>
+
+            <fileset dir="${checker.loc}/${src}">
+                <include name="**/*.java"/>
+                <exclude name="${checker.jdk8orhigher.sources}" if="${jdk7orlower}"/>
+            </fileset>
 
             <link href="http://docs.oracle.com/javase/8/docs/api/"/>
             <link href="http://docs.oracle.com/javase/8/docs/jdk/api/javac/tree/"/>
@@ -258,7 +262,7 @@
         <pathconvert pathsep=" " property="framework.src.tests">
             <path>
                 <fileset dir="${tests}">
-                    <include name="src/tests/**/*.java"/>
+                    <include name="src/**/*.java"/>
                     <include name="test-lubglb/**/*.java"/>
                     <include name="test-polyall/**/*.java"/>
                 </fileset>
@@ -360,20 +364,17 @@
           <formatter type="brief" usefile="false"/>
 
           <batchtest todir="${build.reports}">
-              <fileset dir="${tests}/${src}">
-                  <include name="**/*Test.java"/>
-                  <exclude name="**/AllTests.java"/>
-
-                  <!-- Framework classes -->
-                  <exclude name="**/CheckerTest.java"/>
-                  <exclude name="**/ParameterizedCheckerTest.java"/>
+              <fileset dir="${tests}/${src}/">
+                  <!-- The include name must start with tests or else Junit assumes
+                       the classes are not in a package. -->
+                  <include name="tests/*.java"/>
 
                   <!-- Tests that fail by design -->
-                  <exclude name="**/SubtypingStringPatternsPartialTest.java"/>
+                  <exclude name="tests/SubtypingStringPatternsPartialTest.java"/>
                   <!-- Whole-Program inference tests depends on the
                        whole-program-inference-tests target, so we added that target
                        to the depends group and excluded it here.-->
-                  <exclude name="**/WholeProgramInference*.java"/>
+                  <exclude name="tests/WholeProgramInference*.java"/>
 
               </fileset>
           </batchtest>
@@ -490,6 +491,13 @@
             description="Run tests for the MethodVal Checker ">
         <antcall target="-run-tests">
             <param name="param" value="tests.MethodValTest"/>
+        </antcall>
+    </target>
+
+    <target name="nontopdefault-tests" depends="jar,build-tests"
+            description="Run tests for the NonTopDefault Checker ">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.NonTopDefaultTest"/>
         </antcall>
     </target>
 
@@ -680,7 +688,7 @@
                     workDir="${build.jtreg.dir}/@{name}/work"
                     reportDir="${build.jtreg.dir}/@{name}/report"
                     samevm="@{samevm}" verbose="@{verbose}"
-                    failonerror="false" resultproperty="jtreg.@{name}.result"
+                    failonerror="true" resultproperty="jtreg.@{name}.result"
                     javacoptions="-g"
                     vmoptions="${coverage.options} -Xbootclasspath/p:${coverage.classpath}:${build}:${checkers.classpath} @{jpda.jvmargs}">
                     <arg line="@{keywords}"/>

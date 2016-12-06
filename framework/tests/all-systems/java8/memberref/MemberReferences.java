@@ -51,7 +51,7 @@ class SuperWithArg<U> {
 }
 
 /** Type # instMethod */
-// UNBOUND(ReferenceMode.INVOKE, true),
+// UNBOUNDED(ReferenceMode.INVOKE, true),
 class Unbound {
     <T> T func1(T o) {
         return o;

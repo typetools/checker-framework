@@ -7,7 +7,6 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
-import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -18,7 +17,6 @@ import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.IntegerLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodAccessNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
@@ -113,7 +111,7 @@ public class RegexTransfer extends CFTransfer {
 
             CFValue newResultValue =
                     analysis.createSingleAnnotationValue(
-                            regexAnnotation, result.getResultValue().getType().getUnderlyingType());
+                            regexAnnotation, result.getResultValue().getUnderlyingType());
             return new RegularTransferResult<>(newResultValue, result.getRegularStore());
         }
         return result;
@@ -155,11 +153,8 @@ public class RegexTransfer extends CFTransfer {
     }
 
     /**
-     * See whether possibleMatcher is a call of groupCount on a Matcher and
-     * possibleConstant is a constant.
-     * If so, annotate the matcher as
-     * constant + 1 if !isAlsoEqual
-     * constant if isAlsoEqual
+     * See whether possibleMatcher is a call of groupCount on a Matcher and possibleConstant is a
+     * constant. If so, annotate the matcher as constant + 1 if !isAlsoEqual constant if isAlsoEqual
      *
      * @param possibleMatcher the Node that might be a call of Matcher.groupCount()
      * @param possibleConstant the Node that might be a constant
@@ -224,9 +219,7 @@ public class RegexTransfer extends CFTransfer {
         }
         return false;
     }
-    /**
-     * Returns true if the given receiver is a class named "RegexUtil".
-     */
+    /** Returns true if the given receiver is a class named "RegexUtil". */
     private boolean isRegexUtil(String receiver) {
         return receiver.equals("RegexUtil") || receiver.endsWith(".RegexUtil");
     }

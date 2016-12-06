@@ -24,17 +24,16 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.WildcardTree;
-import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
@@ -44,9 +43,7 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-/**
- * Converts ExpressionTrees into AnnotatedTypeMirrors
- */
+/** Converts ExpressionTrees into AnnotatedTypeMirrors */
 class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
     @Override
@@ -99,40 +96,15 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
     @Override
     public AnnotatedTypeMirror visitConditionalExpression(
             ConditionalExpressionTree node, AnnotatedTypeFactory f) {
-
         // The Java type of a conditional expression is generally the LUB of the boxed types
         // of the true and false expressions, but with a few exceptions. See JLS 15.25.
         // So, use the type of the ConditionalExpressionTree instead of InternalUtils#leastUpperBound
-        AnnotatedTypeMirror alub = f.type(node);
+        TypeMirror alub = InternalUtils.typeOf(node);
 
         AnnotatedTypeMirror trueType = f.getAnnotatedType(node.getTrueExpression());
         AnnotatedTypeMirror falseType = f.getAnnotatedType(node.getFalseExpression());
 
-        if (trueType.getKind() == TypeKind.NULL) {
-            AnnotatedTypeMirror falseTypeAsLub = AnnotatedTypes.asSuper(f, falseType, alub);
-            return AnnotatedTypes.lubWithNull((AnnotatedNullType) trueType, falseTypeAsLub, f);
-        } else if (falseType.getKind() == TypeKind.NULL) {
-            AnnotatedTypeMirror trueTypeAsLub = AnnotatedTypes.asSuper(f, trueType, alub);
-            return AnnotatedTypes.lubWithNull((AnnotatedNullType) falseType, trueTypeAsLub, f);
-        }
-
-        if (trueType.equals(falseType)) {
-            return trueType;
-        }
-
-        trueType = AnnotatedTypes.asSuper(f, trueType, alub);
-        falseType = AnnotatedTypes.asSuper(f, falseType, alub);
-
-        if (trueType.equals(falseType)) {
-            return trueType;
-        }
-
-        List<AnnotatedTypeMirror> types = new ArrayList<AnnotatedTypeMirror>(2);
-        types.add(trueType);
-        types.add(falseType);
-        AnnotatedTypes.annotateAsLub(f.processingEnv, f, alub, types);
-
-        return alub;
+        return AnnotatedTypes.leastUpperBound(f, trueType, falseType, alub);
     }
 
     @Override
@@ -262,11 +234,14 @@ class TypeFromExpressionVisitor extends TypeFromTreeVisitor {
 
     /**
      * Creates an AnnotatedDeclaredType for the NewClassTree and adds, for each hierarchy, one of:
+     *
      * <ul>
-     *   <li>an explicit annotation on the new class expression ({@code new @HERE MyClass()} ), or</li>
-     *   <li>an explicit annotation on the declaration of the class ({@code @HERE class MyClass {}} ), or</li>
-     *   <li>an explicit annotation on the declaration of the constructor ({@code @HERE public MyClass() {}} ), or</li>
-     *   <li>no annotation for a this hierarchy.</li>
+     *   <li>an explicit annotation on the new class expression ({@code new @HERE MyClass()} ), or
+     *   <li>an explicit annotation on the declaration of the class ({@code @HERE class MyClass {}}
+     *       ), or
+     *   <li>an explicit annotation on the declaration of the constructor ({@code @HERE public
+     *       MyClass() {}} ), or
+     *   <li>no annotation for a this hierarchy.
      * </ul>
      *
      * @param node NewClassTree

@@ -24,8 +24,8 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * A store that extends {@code CFAbstractStore} and additionally tracks which
- * fields of the 'self' reference have been initialized.
+ * A store that extends {@code CFAbstractStore} and additionally tracks which fields of the 'self'
+ * reference have been initialized.
  *
  * @author Stefan Heule
  * @see InitializationTransfer
@@ -44,9 +44,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     /**
      * {@inheritDoc}
      *
-     * <p>
-     * If the receiver is a field, and has an invariant annotation, then it can
-     * be considered initialized.
+     * <p>If the receiver is a field, and has an invariant annotation, then it can be considered
+     * initialized.
      */
     @Override
     public void insertValue(Receiver r, V value) {
@@ -60,7 +59,7 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
                 (InitializationAnnotatedTypeFactory<?, ?, ?, ?>) analysis.getTypeFactory();
         QualifierHierarchy qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         AnnotationMirror invariantAnno = atypeFactory.getFieldInvariantAnnotation();
-        for (AnnotationMirror a : value.getType().getAnnotations()) {
+        for (AnnotationMirror a : value.getAnnotations()) {
             if (qualifierHierarchy.isSubtype(a, invariantAnno)) {
                 if (r instanceof FieldAccess) {
                     FieldAccess fa = (FieldAccess) r;
@@ -76,9 +75,8 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     /**
      * {@inheritDoc}
      *
-     * <p>
-     * Additionally, the {@link InitializationStore} keeps all field values for
-     * fields that have the 'invariant' annotation.
+     * <p>Additionally, the {@link InitializationStore} keeps all field values for fields that have
+     * the 'invariant' annotation.
      */
     @Override
     public void updateForMethodCall(
@@ -114,9 +112,9 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     }
 
     /**
-     * Mark the field identified by the element {@code field} as initialized (if
-     * it belongs to the current class, or is static (in which case there is no
-     * aliasing issue and we can just add all static fields).
+     * Mark the field identified by the element {@code field} as initialized (if it belongs to the
+     * current class, or is static (in which case there is no aliasing issue and we can just add all
+     * static fields).
      */
     public void addInitializedField(FieldAccess field) {
         boolean fieldOnThisReference = field.getReceiver() instanceof ThisReference;
@@ -127,17 +125,14 @@ public class InitializationStore<V extends CFAbstractValue<V>, S extends Initial
     }
 
     /**
-     * Mark the field identified by the element {@code f} as initialized (the
-     * caller needs to ensure that the field belongs to the current class, or is
-     * a static field).
+     * Mark the field identified by the element {@code f} as initialized (the caller needs to ensure
+     * that the field belongs to the current class, or is a static field).
      */
     public void addInitializedField(VariableElement f) {
         initializedFields.add(f);
     }
 
-    /**
-     * Is the field identified by the element {@code f} initialized?
-     */
+    /** Is the field identified by the element {@code f} initialized? */
     public boolean isFieldInitialized(Element f) {
         return initializedFields.contains(f);
     }

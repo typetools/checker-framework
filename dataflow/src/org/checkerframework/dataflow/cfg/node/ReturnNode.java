@@ -25,7 +25,6 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
  * </pre>
  *
  * @author Stefan Heule
- *
  */
 public class ReturnNode extends Node {
 

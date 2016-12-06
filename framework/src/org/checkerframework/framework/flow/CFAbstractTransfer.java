@@ -66,30 +66,27 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
+import org.checkerframework.framework.util.ContractsUtils.Postcondition;
+import org.checkerframework.framework.util.ContractsUtils.Precondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * The default analysis transfer function for the Checker Framework propagates
- * information through assignments and uses the {@link AnnotatedTypeFactory} to
- * provide checker-specific logic how to combine types (e.g., what is the type
- * of a string concatenation, given the types of the two operands) and as an
- * abstraction function (e.g., determine the annotations on literals).
- * <p>
+ * The default analysis transfer function for the Checker Framework propagates information through
+ * assignments and uses the {@link AnnotatedTypeFactory} to provide checker-specific logic how to
+ * combine types (e.g., what is the type of a string concatenation, given the types of the two
+ * operands) and as an abstraction function (e.g., determine the annotations on literals).
  *
- * Design note:  CFAbstractTransfer and its subclasses are supposed to act
- * as transfer functions.  But, since the AnnotatedTypeFactory already
- * existed and performed checker-independent type propagation,
- * CFAbstractTransfer delegates work to it instead of duplicating some
- * logic in CFAbstractTransfer.  The checker-specific subclasses of
- * CFAbstractTransfer do implement transfer function logic themselves.
+ * <p>Design note: CFAbstractTransfer and its subclasses are supposed to act as transfer functions.
+ * But, since the AnnotatedTypeFactory already existed and performed checker-independent type
+ * propagation, CFAbstractTransfer delegates work to it instead of duplicating some logic in
+ * CFAbstractTransfer. The checker-specific subclasses of CFAbstractTransfer do implement transfer
+ * function logic themselves.
  *
  * @author Charlie Garrett
  * @author Stefan Heule
@@ -101,20 +98,16 @@ public abstract class CFAbstractTransfer<
         extends AbstractNodeVisitor<TransferResult<V, S>, TransferInput<V, S>>
         implements TransferFunction<V, S> {
 
-    /**
-     * The analysis class this store belongs to.
-     */
+    /** The analysis class this store belongs to. */
     protected CFAbstractAnalysis<V, S, T> analysis;
 
     /**
-     * Should the analysis use sequential Java semantics (i.e., assume that only
-     * one thread is running at all times)?
+     * Should the analysis use sequential Java semantics (i.e., assume that only one thread is
+     * running at all times)?
      */
     protected final boolean sequentialSemantics;
 
-    /**
-     * Indicates that the whole-program inference is on.
-     */
+    /** Indicates that the whole-program inference is on. */
     private final boolean infer;
 
     public CFAbstractTransfer(CFAbstractAnalysis<V, S, T> analysis) {
@@ -124,12 +117,13 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Constructor that allows forcing concurrent semantics to be on for this instance of CFAbstractTransfer.
+     * Constructor that allows forcing concurrent semantics to be on for this instance of
+     * CFAbstractTransfer.
      *
-     * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on.
-     * If false, concurrent semantics are turned off by default, but the user can
-     * still turn them on via -AconcurrentSemantics.
-     * If true, the user cannot turn off concurrent semantics.
+     * @param forceConcurrentSemantics whether concurrent semantics should be forced to be on. If
+     *     false, concurrent semantics are turned off by default, but the user can still turn them
+     *     on via {@code -AconcurrentSemantics}. If true, the user cannot turn off concurrent
+     *     semantics.
      */
     public CFAbstractTransfer(
             CFAbstractAnalysis<V, S, T> analysis, boolean forceConcurrentSemantics) {
@@ -140,38 +134,36 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * @return true if the transfer function uses sequential semantics, false if it uses concurrent semantics.
-     * Useful when creating an empty store, since a store makes different decisions depending on whether
-     * sequential or concurrent semantics are used.
+     * @return true if the transfer function uses sequential semantics, false if it uses concurrent
+     *     semantics. Useful when creating an empty store, since a store makes different decisions
+     *     depending on whether sequential or concurrent semantics are used.
      */
     public boolean usesSequentialSemantics() {
         return sequentialSemantics;
     }
 
     /**
-     * This method is called before returning the abstract value {@code value}
-     * as the result of the transfer function. By default, the value is not
-     * changed but subclasses might decide to implement some functionality. The
-     * store at this position is also passed.
+     * This method is called before returning the abstract value {@code value} as the result of the
+     * transfer function. By default, the value is not changed but subclasses might decide to
+     * implement some functionality. The store at this position is also passed.
      */
     protected V finishValue(V value, S store) {
         return value;
     }
 
     /**
-     * This method is called before returning the abstract value {@code value}
-     * as the result of the transfer function. By default, the value is not
-     * changed but subclasses might decide to implement some functionality. The
-     * store at this position is also passed (two stores, as the result is a
-     * {@link ConditionalTransferResult}.
+     * This method is called before returning the abstract value {@code value} as the result of the
+     * transfer function. By default, the value is not changed but subclasses might decide to
+     * implement some functionality. The store at this position is also passed (two stores, as the
+     * result is a {@link ConditionalTransferResult}.
      */
     protected V finishValue(V value, S thenStore, S elseStore) {
         return value;
     }
 
     /**
-     * @return the abstract value of a non-leaf tree {@code tree}, as computed
-     *         by the {@link AnnotatedTypeFactory}.
+     * @return the abstract value of a non-leaf tree {@code tree}, as computed by the {@link
+     *     AnnotatedTypeFactory}.
      */
     protected V getValueFromFactory(Tree tree, Node node) {
         GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
@@ -214,31 +206,24 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * @return an abstract value with the given {@code type} and the annotations
-     *         from {@code annotatedValue}.
+     * @return an abstract value with the given {@code type} and the annotations from {@code
+     *     annotatedValue}.
      */
     protected V getValueWithSameAnnotations(TypeMirror type, V annotatedValue) {
-        if (annotatedValue == null) return null;
-        GenericAnnotatedTypeFactory<V, S, T, ? extends CFAbstractAnalysis<V, S, T>> factory =
-                analysis.atypeFactory;
-        AnnotatedTypeMirror at = AnnotatedTypeMirror.createType(type, factory, false);
-        at.replaceAnnotations(annotatedValue.getType().getAnnotations());
-        return analysis.createAbstractValue(at);
+        if (annotatedValue == null) {
+            return null;
+        }
+        return analysis.createAbstractValue(annotatedValue.getAnnotations(), type);
     }
 
     private S fixedInitialStore = null;
 
-    /**
-     * Set a fixed initial Store.
-     */
+    /** Set a fixed initial Store. */
     public void setFixedInitialStore(S s) {
         fixedInitialStore = s;
     }
 
-    /**
-     * The initial store maps method formal parameters to their currently most
-     * refined type.
-     */
+    /** The initial store maps method formal parameters to their currently most refined type. */
     @Override
     public S initialStore(
             UnderlyingAST underlyingAST, /*@Nullable */ List<LocalVariableNode> parameters) {
@@ -501,18 +486,14 @@ public abstract class CFAbstractTransfer<
         }
     }
 
-    /**
-     * Returns true if the receiver of a method might not yet be fully
-     * initialized.
-     */
+    /** Returns true if the receiver of a method might not yet be fully initialized. */
     protected boolean isNotFullyInitializedReceiver(MethodTree methodTree) {
         return TreeUtils.isConstructor(methodTree);
     }
 
     /**
-     * Add the information from all the preconditions of the method
-     * {@code method} with corresponding tree {@code methodTree} to the store
-     * {@code info}.
+     * Add the information from all the preconditions of the method {@code method} with
+     * corresponding tree {@code methodTree} to the store {@code info}.
      */
     protected void addInformationFromPreconditions(
             S info,
@@ -522,31 +503,24 @@ public abstract class CFAbstractTransfer<
             ExecutableElement methodElement) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
         FlowExpressionContext flowExprContext = null;
-        Set<PreOrPostcondition> preconditions = contracts.getPreconditions(methodElement);
+        Set<Precondition> preconditions = contracts.getPreconditions(methodElement);
 
-        for (PreOrPostcondition p : preconditions) {
+        for (Precondition p : preconditions) {
             String expression = p.expression;
-            AnnotationMirror annotation =
-                    AnnotationUtils.fromName(
-                            analysis.getTypeFactory().getElementUtils(), p.annotationString);
+            AnnotationMirror annotation = p.annotation;
 
-            // Only check if the postcondition concerns this checker
-            if (!analysis.getTypeFactory().isSupportedQualifier(annotation)) {
-                continue;
-            }
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodDeclaration(
                                 methodTree, method.getClassTree(), analysis.checker.getContext());
             }
 
-            FlowExpressions.Receiver expr = null;
             try {
                 // TODO: currently, these expressions are parsed at the
                 // declaration (i.e. here) and for every use. this could
                 // be optimized to store the result the first time.
                 // (same for other annotations)
-                expr =
+                FlowExpressions.Receiver expr =
                         FlowExpressionParseUtil.parse(
                                 expression,
                                 flowExprContext,
@@ -561,8 +535,8 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * The default visitor returns the input information unchanged, or in the
-     * case of conditional input information, merged.
+     * The default visitor returns the input information unchanged, or in the case of conditional
+     * input information, merged.
      */
     @Override
     public TransferResult<V, S> visitNode(Node n, TransferInput<V, S> in) {
@@ -637,9 +611,7 @@ public abstract class CFAbstractTransfer<
         return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
-    /**
-     * Use the most specific type information available according to the store.
-     */
+    /** Use the most specific type information available according to the store. */
     @Override
     public TransferResult<V, S> visitLocalVariable(LocalVariableNode n, TransferInput<V, S> in) {
         S store = in.getRegularStore();
@@ -670,10 +642,7 @@ public abstract class CFAbstractTransfer<
         return new RegularTransferResult<>(finishValue(value, store), store);
     }
 
-    /**
-     * The resulting abstract value is the merge of the 'then' and 'else'
-     * branch.
-     */
+    /** The resulting abstract value is the merge of the 'then' and 'else' branch. */
     @Override
     public TransferResult<V, S> visitTernaryExpression(
             TernaryExpressionNode n, TransferInput<V, S> p) {
@@ -688,9 +657,7 @@ public abstract class CFAbstractTransfer<
         return new RegularTransferResult<>(finishValue(resultValue, store), store);
     }
 
-    /**
-     * Revert the role of the 'thenStore' and 'elseStore'.
-     */
+    /** Revert the role of the 'thenStore' and 'elseStore'. */
     @Override
     public TransferResult<V, S> visitConditionalNot(ConditionalNotNode n, TransferInput<V, S> p) {
         TransferResult<V, S> result = super.visitConditionalNot(n, p);
@@ -733,19 +700,15 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Refine the annotation of {@code secondNode} if the annotation
-     * {@code secondValue} is less precise than {@code firstvalue}. This is
-     * possible, if {@code secondNode} is an expression that is tracked by the
-     * store (e.g., a local variable or a field).
+     * Refine the annotation of {@code secondNode} if the annotation {@code secondValue} is less
+     * precise than {@code firstvalue}. This is possible, if {@code secondNode} is an expression
+     * that is tracked by the store (e.g., a local variable or a field).
      *
-     * @param res
-     *            The previous result.
-     * @param notEqualTo
-     *            If true, indicates that the logic is flipped (i.e., the
-     *            information is added to the {@code elseStore} instead of the
-     *            {@code thenStore}) for a not-equal comparison.
-     * @return the conditional transfer result (if information has been added),
-     *         or {@code null}.
+     * @param res The previous result.
+     * @param notEqualTo If true, indicates that the logic is flipped (i.e., the information is
+     *     added to the {@code elseStore} instead of the {@code thenStore}) for a not-equal
+     *     comparison.
+     * @return the conditional transfer result (if information has been added), or {@code null}.
      */
     protected TransferResult<V, S> strengthenAnnotationOfEqualTo(
             TransferResult<V, S> res,
@@ -779,9 +742,9 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Takes a node, and either returns the node itself again (as a singleton
-     * list), or if the node is an assignment node, returns the lhs and rhs
-     * (where splitAssignments is applied recursively to the rhs).
+     * Takes a node, and either returns the node itself again (as a singleton list), or if the node
+     * is an assignment node, returns the lhs and rhs (where splitAssignments is applied recursively
+     * to the rhs).
      */
     protected List<Node> splitAssignments(Node node) {
         if (node instanceof AssignmentNode) {
@@ -880,8 +843,8 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Determine abstract value of right-hand side and update the store
-     * accordingly to the assignment.
+     * Determine abstract value of right-hand side and update the store accordingly to the
+     * assignment.
      */
     protected void processCommonAssignment(
             TransferInput<V, S> in, Node lhs, Node rhs, S info, V rhsValue) {
@@ -954,18 +917,16 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Returns true if whole-program inference should be performed.
-     * If the tree is in the scope of a @SuppressWarning,
-     * then this method returns false.
+     * Returns true if whole-program inference should be performed. If the tree is in the scope of
+     * a @SuppressWarning, then this method returns false.
      */
     private boolean shouldPerformWholeProgramInference(Tree tree) {
         return infer && (tree == null || !analysis.checker.shouldSuppressWarnings(tree, null));
     }
 
     /**
-     * Returns true if whole-program inference should be performed.
-     * If the expressionTree or lhsTree is in the scope of a @SuppressWarning,
-     * then this method returns false.
+     * Returns true if whole-program inference should be performed. If the expressionTree or lhsTree
+     * is in the scope of a @SuppressWarning, then this method returns false.
      */
     private boolean shouldPerformWholeProgramInference(Tree expressionTree, Tree lhsTree) {
         // Check that infer is true and the tree isn't in scope of a @SuppressWarning
@@ -978,9 +939,8 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Returns true if whole-program inference should be performed.
-     * If the tree or element is in the scope of a @SuppressWarning,
-     * then this method returns false.
+     * Returns true if whole-program inference should be performed. If the tree or element is in the
+     * scope of a @SuppressWarning, then this method returns false.
      */
     private boolean shouldPerformWholeProgramInference(Tree tree, Element elt) {
         return shouldPerformWholeProgramInference(tree)
@@ -988,26 +948,20 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Add information based on all postconditions of method {@code n} with tree
-     * {@code tree} and element {@code method} to the store {@code store}.
+     * Add information based on all postconditions of method {@code n} with tree {@code tree} and
+     * element {@code method} to the store {@code store}.
      */
     protected void processPostconditions(
             MethodInvocationNode n, S store, ExecutableElement methodElement, Tree tree) {
         ContractsUtils contracts = ContractsUtils.getInstance(analysis.atypeFactory);
-        Set<PreOrPostcondition> postconditions = contracts.getPostconditions(methodElement);
+        Set<Postcondition> postconditions = contracts.getPostconditions(methodElement);
 
         FlowExpressionContext flowExprContext = null;
 
-        for (PreOrPostcondition p : postconditions) {
+        for (Postcondition p : postconditions) {
             String expression = p.expression.trim();
-            AnnotationMirror anno =
-                    AnnotationUtils.fromName(
-                            analysis.getTypeFactory().getElementUtils(), p.annotationString);
+            AnnotationMirror anno = p.annotation;
 
-            // Only check if the postcondition concerns this checker
-            if (!analysis.getTypeFactory().isSupportedQualifier(anno)) {
-                continue;
-            }
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodUse(
@@ -1030,9 +984,8 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * Add information based on all conditional postconditions of method
-     * {@code n} with tree {@code tree} and element {@code method} to the
-     * appropriate store.
+     * Add information based on all conditional postconditions of method {@code n} with tree {@code
+     * tree} and element {@code method} to the appropriate store.
      */
     protected void processConditionalPostconditions(
             MethodInvocationNode n,
@@ -1048,15 +1001,9 @@ public abstract class CFAbstractTransfer<
 
         for (ConditionalPostcondition p : conditionalPostconditions) {
             String expression = p.expression;
-            AnnotationMirror anno =
-                    AnnotationUtils.fromName(
-                            analysis.getTypeFactory().getElementUtils(), p.annotationString);
+            AnnotationMirror anno = p.annotation;
             boolean result = p.annoResult;
 
-            // Only check if the postcondition concerns this checker
-            if (!analysis.getTypeFactory().isSupportedQualifier(anno)) {
-                continue;
-            }
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodUse(
@@ -1085,8 +1032,8 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * A case produces no value, but it may imply some facts about the argument
-     * to the switch statement.
+     * A case produces no value, but it may imply some facts about the argument to the switch
+     * statement.
      */
     @Override
     public TransferResult<V, S> visitCase(CaseNode n, TransferInput<V, S> in) {
@@ -1095,10 +1042,9 @@ public abstract class CFAbstractTransfer<
     }
 
     /**
-     * In a cast {@code (@A C) e} of some expression {@code e} to a new type
-     * {@code @A C}, we usually take the annotation of the type {@code C} (here
-     * {@code @A}). However, if the inferred annotation of {@code e} is more
-     * precise, we keep that one.
+     * In a cast {@code (@A C) e} of some expression {@code e} to a new type {@code @A C}, we
+     * usually take the annotation of the type {@code C} (here {@code @A}). However, if the inferred
+     * annotation of {@code e} is more precise, we keep that one.
      */
     // @Override
     // public TransferResult<V, S> visitTypeCast(TypeCastNode n,
@@ -1114,8 +1060,8 @@ public abstract class CFAbstractTransfer<
     // }
 
     /**
-     * Returns the abstract value of {@code (value1, value2)} that is more
-     * specific. If the two are incomparable, then {@code value1} is returned.
+     * Returns the abstract value of {@code (value1, value2)} that is more specific. If the two are
+     * incomparable, then {@code value1} is returned.
      */
     public V moreSpecificValue(V value1, V value2) {
         if (value1 == null) {
@@ -1164,9 +1110,7 @@ public abstract class CFAbstractTransfer<
         return result;
     }
 
-    /**
-     * @see CFAbstractAnalysis#getTypeFactoryOfSubchecker(Class)
-     */
+    /** @see CFAbstractAnalysis#getTypeFactoryOfSubchecker(Class) */
     public <W extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
             W getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         return analysis.getTypeFactoryOfSubchecker(checkerClass);

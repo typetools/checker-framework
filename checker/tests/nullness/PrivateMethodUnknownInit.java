@@ -13,8 +13,7 @@ public class PrivateMethodUnknownInit {
     }
 
     private void m1(
-                    @UnknownInitialization(PrivateMethodUnknownInit.class) @Raw(PrivateMethodUnknownInit.class) PrivateMethodUnknownInit
-                    this) {}
+                    @UnknownInitialization(PrivateMethodUnknownInit.class) @Raw(PrivateMethodUnknownInit.class) PrivateMethodUnknownInit this) {}
 
     public void m2() {}
 }

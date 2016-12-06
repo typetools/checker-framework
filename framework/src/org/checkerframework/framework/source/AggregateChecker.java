@@ -17,32 +17,25 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
 /**
- * An aggregate checker that packages multiple checkers together.  The
- * resulting checker invokes the component checkers in turn on the processed
- * files.
- * <p>
+ * An aggregate checker that packages multiple checkers together. The resulting checker invokes the
+ * component checkers in turn on the processed files.
  *
- * There is no communication, interaction, or cooperation between the
- * component checkers, even to the extent of being able to read one
- * another's qualifiers.  An aggregate checker is merely shorthand to
- * invoke a sequence of checkers.
- * <p>
+ * <p>There is no communication, interaction, or cooperation between the component checkers, even to
+ * the extent of being able to read one another's qualifiers. An aggregate checker is merely
+ * shorthand to invoke a sequence of checkers.
  *
- * This class delegates {@code AbstractTypeProcessor} responsibilities to each
- * component checker.
- * <p>
+ * <p>This class delegates {@code AbstractTypeProcessor} responsibilities to each component checker.
  *
- * Checker writers need to subclass this class and only override
- * {@link #getSupportedCheckers()} to indicate the classes of the checkers
- * to be bundled.
+ * <p>Checker writers need to subclass this class and only override {@link #getSupportedCheckers()}
+ * to indicate the classes of the checkers to be bundled.
  */
 public abstract class AggregateChecker extends SourceChecker {
 
     protected final List<SourceChecker> checkers;
 
     /**
-     * Returns the list of supported checkers to be run together.
-     * Subclasses need to override this method.
+     * Returns the list of supported checkers to be run together. Subclasses need to override this
+     * method.
      */
     protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
 
@@ -62,12 +55,9 @@ public abstract class AggregateChecker extends SourceChecker {
     }
 
     /**
-     * processingEnv needs to be set on each checker since
-     * we are not calling init on the checker, which leaves
-     * it null.
-     * If one of checkers is an AggregateChecker, its
-     * visitors will try use checker's processing env which
-     * should not be null.
+     * processingEnv needs to be set on each checker since we are not calling init on the checker,
+     * which leaves it null. If one of checkers is an AggregateChecker, its visitors will try use
+     * checker's processing env which should not be null.
      */
     @Override
     protected void setProcessingEnvironment(ProcessingEnvironment env) {

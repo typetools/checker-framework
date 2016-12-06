@@ -1,13 +1,10 @@
 package org.checkerframework.checker.nullness;
 
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.UnknownKeyFor;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -19,7 +16,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /*
  * KeyForTransfer ensures that java.util.Map.put and containsKey
@@ -41,76 +37,51 @@ public class KeyForTransfer extends CFTransfer {
 
     /*
      * Provided that m is of a type that implements interface java.util.Map:
-     * -Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
-     * -Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
+     * <ul>
+     * <li>Given a call m.containsKey(k), ensures that k is @KeyFor("m") in the thenStore of the transfer result.
+     * <li>Given a call m.put(k, ...), ensures that k is @KeyFor("m") in the thenStore and elseStore of the transfer result.
+     * </ul>
      */
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
             MethodInvocationNode node, TransferInput<CFValue, CFStore> in) {
 
         TransferResult<CFValue, CFStore> result = super.visitMethodInvocation(node, in);
+        KeyForAnnotatedTypeFactory factory = (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
+        if (factory.isInvocationOfMapMethod(node, "containsKey")
+                || factory.isInvocationOfMapMethod(node, "put")) {
 
-        String methodName = node.getTarget().getMethod().toString();
+            Node receiver = node.getTarget().getReceiver();
+            Receiver internalReceiver = FlowExpressions.internalReprOf(factory, receiver);
+            String mapName = internalReceiver.toString();
+            Receiver keyReceiver = FlowExpressions.internalReprOf(factory, node.getArgument(0));
 
-        // First verify if the method name is containsKey or put. This is an inexpensive check.
+            LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
+            keyForMaps.add(mapName);
 
-        boolean containsKey = methodName.startsWith("containsKey(");
-        boolean put = methodName.startsWith("put(");
-
-        if (containsKey || put) {
-            // Now verify that the receiver of the method invocation is of a type
-            // that extends that java.util.Map interface. This is a more expensive check.
-
-            javax.lang.model.util.Types types = analysis.getTypes();
-
-            TypeMirror mapInterfaceTypeMirror =
-                    types.erasure(
-                            TypesUtils.typeFromClass(
-                                    types, analysis.getEnv().getElementUtils(), Map.class));
-
-            TypeMirror receiverType = types.erasure(node.getTarget().getReceiver().getType());
-
-            if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
-                KeyForAnnotatedTypeFactory atypeFactory =
-                        (KeyForAnnotatedTypeFactory) analysis.getTypeFactory();
-                Node receiver = node.getTarget().getReceiver();
-                Receiver internalReceiver = FlowExpressions.internalReprOf(atypeFactory, receiver);
-                String mapName = internalReceiver.toString();
-                Receiver keyReceiver =
-                        FlowExpressions.internalReprOf(atypeFactory, node.getArgument(0));
-
-                LinkedHashSet<String> keyForMaps = new LinkedHashSet<>();
-                keyForMaps.add(mapName);
-
-                final CFValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
-                if (previousKeyValue != null) {
-                    final AnnotationMirror prevAm =
-                            previousKeyValue.getType().getAnnotationInHierarchy(KEYFOR);
+            final CFValue previousKeyValue = in.getValueOfSubNode(node.getArgument(0));
+            if (previousKeyValue != null) {
+                for (AnnotationMirror prevAm : previousKeyValue.getAnnotations()) {
                     if (prevAm != null && AnnotationUtils.areSameByClass(prevAm, KeyFor.class)) {
                         keyForMaps.addAll(getKeys(prevAm));
                     }
                 }
+            }
 
-                AnnotationMirror am =
-                        atypeFactory.createKeyForAnnotationMirrorWithValue(keyForMaps);
+            AnnotationMirror am = factory.createKeyForAnnotationMirrorWithValue(keyForMaps);
 
-                if (containsKey) {
-                    ConditionalTransferResult<CFValue, CFStore> conditionalResult =
-                            (ConditionalTransferResult<CFValue, CFStore>) result;
-                    conditionalResult.getThenStore().insertValue(keyReceiver, am);
-                } else if (put) {
-                    result.getThenStore().insertValue(keyReceiver, am);
-                    result.getElseStore().insertValue(keyReceiver, am);
-                }
+            if (factory.getMethodName(node).equals("containsKey")) {
+                result.getThenStore().insertValue(keyReceiver, am);
+            } else { // method name is "put"
+                result.getThenStore().insertValue(keyReceiver, am);
+                result.getElseStore().insertValue(keyReceiver, am);
             }
         }
 
         return result;
     }
 
-    /**
-     * @return the String value of a KeyFor, this will throw an exception
-     */
+    /** @return the String value of a KeyFor, this will throw an exception */
     private Set<String> getKeys(final AnnotationMirror keyFor) {
         if (keyFor.getElementValues().size() == 0) {
             return new LinkedHashSet<>();

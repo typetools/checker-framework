@@ -11,14 +11,12 @@ import org.checkerframework.javacutil.TypesUtils;
  * A utility class to operate on a given {@link Node}.
  *
  * @author Stefan Heule
- *
  */
 public class NodeUtils {
 
     /**
-     * @return true iff {@code node} corresponds to a boolean typed
-     *         expression (either the primitive type {@code boolean}, or
-     *         class type {@link java.lang.Boolean})
+     * @return true iff {@code node} corresponds to a boolean typed expression (either the primitive
+     *     type {@code boolean}, or class type {@link java.lang.Boolean})
      */
     public static boolean isBooleanTypeNode(Node node) {
 

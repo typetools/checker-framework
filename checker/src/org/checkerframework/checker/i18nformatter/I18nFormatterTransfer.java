@@ -18,9 +18,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.util.AnnotationBuilder;
 
 /**
- *
- * @checker_framework.manual #i18n-formatter-checker Internationalization
- *                           Format String Checker
+ * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  * @author Siwakorn Srisakaokul
  */
 public class I18nFormatterTransfer extends CFTransfer {
@@ -84,7 +82,7 @@ public class I18nFormatterTransfer extends CFTransfer {
                         atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
                 CFValue newResultValue =
                         analysis.createSingleAnnotationValue(
-                                anno, result.getResultValue().getType().getUnderlyingType());
+                                anno, result.getResultValue().getUnderlyingType());
                 return new RegularTransferResult<>(newResultValue, result.getRegularStore());
             }
         }

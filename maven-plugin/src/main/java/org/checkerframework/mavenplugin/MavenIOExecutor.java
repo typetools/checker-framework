@@ -13,7 +13,9 @@ import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
 /**
- * A CommandLineExecutor that formats warning and error messages in a similar style to the maven-compiler-plugin.
+ * A CommandLineExecutor that formats warning and error messages in a similar style to the
+ * maven-compiler-plugin.
+ *
  * @see org.checkerframework.mavenplugin.CommandLineExceutor
  */
 public class MavenIOExecutor implements CommandLineExceutor {
@@ -23,9 +25,7 @@ public class MavenIOExecutor implements CommandLineExceutor {
         this.pathToExecutable = pathToExecutable;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     public void executeCommandLine(final Commandline cl, final Log log, final boolean failOnError)
             throws MojoExecutionException, MojoFailureException {
         CommandLineUtils.StringStreamConsumer out = new CommandLineUtils.StringStreamConsumer();
@@ -100,8 +100,9 @@ public class MavenIOExecutor implements CommandLineExceutor {
     }
 
     /**
-     * Print a header with the given label and print all errors similar to the style
-     * maven itself uses
+     * Print a header with the given label and print all errors similar to the style maven itself
+     * uses
+     *
      * @param errors Errors to print
      * @param label The label (usually ERRORS or WARNINGS) to head the error list
      * @param log The log to which the messages are printed

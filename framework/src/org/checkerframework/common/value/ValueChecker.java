@@ -8,7 +8,6 @@ import org.checkerframework.framework.source.SupportedOptions;
 
 /**
  * @author plvines
- *
  * @checker_framework.manual #constant-value-checker Constant Value Checker
  */
 @StubFiles("statically-executable.astub")

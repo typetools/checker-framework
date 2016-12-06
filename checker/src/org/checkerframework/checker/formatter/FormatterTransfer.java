@@ -19,8 +19,7 @@ public class FormatterTransfer extends CFTransfer {
     }
 
     /**
-     * Makes it so that the {@link FormatUtil#asFormat} method returns
-     * a correctly annotated String.
+     * Makes it so that the {@link FormatUtil#asFormat} method returns a correctly annotated String.
      */
     @Override
     public TransferResult<CFValue, CFStore> visitMethodInvocation(
@@ -39,7 +38,7 @@ public class FormatterTransfer extends CFTransfer {
                         atypeFactory.treeUtil.categoriesToFormatAnnotation(cats.value());
                 CFValue newResultValue =
                         analysis.createSingleAnnotationValue(
-                                anno, result.getResultValue().getType().getUnderlyingType());
+                                anno, result.getResultValue().getUnderlyingType());
                 return new RegularTransferResult<>(newResultValue, result.getRegularStore());
             }
         }

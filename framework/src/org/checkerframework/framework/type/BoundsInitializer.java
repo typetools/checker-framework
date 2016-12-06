@@ -33,9 +33,10 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * BoundsInitializer creates AnnotatedTypeMirrors (without annotations) for the bounds of type variables and wildcards.
- * Its static helper methods are called from AnnotatedTypeMirror.  When an initializer method is called for a particular
- * bound, the entirety of that bound, including circular references, will be created.
+ * BoundsInitializer creates AnnotatedTypeMirrors (without annotations) for the bounds of type
+ * variables and wildcards. Its static helper methods are called from AnnotatedTypeMirror. When an
+ * initializer method is called for a particular bound, the entirety of that bound, including
+ * circular references, will be created.
  */
 public class BoundsInitializer {
     //==================================================================================================================
@@ -43,8 +44,9 @@ public class BoundsInitializer {
     //==================================================================================================================
 
     /**
-     * Create the entire lower bound and upper bound, with no missing information, for typeVar.  If a typeVar is recursive
-     * the appropriate cycles will be introduced in the type
+     * Create the entire lower bound and upper bound, with no missing information, for typeVar. If a
+     * typeVar is recursive the appropriate cycles will be introduced in the type
+     *
      * @param typeVar the type variable whose lower bound is being initialized
      */
     public static void initializeBounds(final AnnotatedTypeVariable typeVar) {
@@ -64,17 +66,18 @@ public class BoundsInitializer {
     }
 
     /**
-     * If we are initializing a type variable with a primary annotation than we should first initialize it
-     * as if it were a declaration (i.e. as if it had no primary annotations) and then apply the primary
-     * annotations.  We do this so that when we make copies of the original type to represent recursive references
-     * the recursive references don't have the primary annotation.
+     * If we are initializing a type variable with a primary annotation than we should first
+     * initialize it as if it were a declaration (i.e. as if it had no primary annotations) and then
+     * apply the primary annotations. We do this so that when we make copies of the original type to
+     * represent recursive references the recursive references don't have the primary annotation.
      *
+     * <pre>{@code
      * e.g.   given the declaration {@code <E extends List<E>>}
      *        if we do not do this, the NonNull on the use @NonNull E
      *        would be copied to the primary annotation on E in the bound {@code List<E>}
      *        i.e. the use would be {@code <@NonNull E extends @NonNull List<@NonNull E>>}
      *             rather than      {@code <@NonNull E extends @NonNull List<E>>}
-     *
+     * }</pre>
      */
     private static Set<AnnotationMirror> saveAnnotations(final AnnotatedTypeMirror type) {
         if (!type.getAnnotationsField().isEmpty()) {
@@ -94,8 +97,9 @@ public class BoundsInitializer {
     }
 
     /**
-     * Create the entire super bound, with no missing information, for wildcard.  If a wildcard is recursive
-     * the appropriate cycles will be introduced in the type
+     * Create the entire super bound, with no missing information, for wildcard. If a wildcard is
+     * recursive the appropriate cycles will be introduced in the type
+     *
      * @param wildcard the wildcard whose lower bound is being initialized
      */
     public static void initializeSuperBound(final AnnotatedWildcardType wildcard) {
@@ -109,8 +113,9 @@ public class BoundsInitializer {
     }
 
     /**
-     * Create the entire extends bound, with no missing information, for wildcard.  If a wildcard is recursive
-     * the appropriate cycles will be introduced in the type
+     * Create the entire extends bound, with no missing information, for wildcard. If a wildcard is
+     * recursive the appropriate cycles will be introduced in the type
+     *
      * @param wildcard the wildcard whose extends bound is being initialized
      */
     public static void initializeExtendsBound(final AnnotatedWildcardType wildcard) {
@@ -127,16 +132,17 @@ public class BoundsInitializer {
     //==================================================================================================================
 
     /**
-     * Creates the AnnotatedTypeMirrors (without annotations) for the bounds of all type variables and wildcards in a
-     * given type.  If the type is recursive, {@code T extends Comparable<T>}, then all references to the same type
-     * variable are references to the same AnnotatedTypeMirror.
+     * Creates the AnnotatedTypeMirrors (without annotations) for the bounds of all type variables
+     * and wildcards in a given type. If the type is recursive, {@code T extends Comparable<T>},
+     * then all references to the same type variable are references to the same AnnotatedTypeMirror.
      */
     private static class InitializerVisitor implements AnnotatedTypeVisitor<Void, Void> {
         /**
          * The BoundStructure starting from the first wildcard or type variable bound initialization
-         * that kicked  this visitation off
+         * that kicked this visitation off
          */
         private final BoundStructure topLevelStructure;
+
         private BoundStructure currentStructure = null;
 
         private final Map<TypeVariable, TypeVariableStructure> typeVarToStructure = new HashMap<>();
@@ -516,8 +522,8 @@ public class BoundsInitializer {
         }
 
         /**
-         * A mapping of paths to the type that should be placed at the end of that path
-         * for all atvs that of sourceType
+         * A mapping of paths to the type that should be placed at the end of that path for all atvs
+         * that of sourceType
          */
         @SuppressWarnings("serial")
         private class ReferenceMap extends LinkedHashMap<BoundPath, AnnotatedTypeVariable> {
@@ -621,11 +627,11 @@ public class BoundsInitializer {
         return false;
     }
 
-    private static abstract class BoundStructure {
+    private abstract static class BoundStructure {
 
         /**
-         * A mapping of all BoundPaths to TypeVariables for all type variables contained
-         * within annotatedTypeVar
+         * A mapping of all BoundPaths to TypeVariables for all type variables contained within
+         * annotatedTypeVar
          */
         public final Map<BoundPath, TypeVariable> pathToTypeVar = new LinkedHashMap<>();
 
@@ -641,29 +647,26 @@ public class BoundsInitializer {
     private static class WildcardStructure extends BoundStructure {}
 
     private static class TypeVariableStructure extends BoundStructure {
-        /**
-         * The type variable whose structure is being described
-         */
+        /** The type variable whose structure is being described */
         public final TypeVariable typeVar;
 
         /**
-         * The first annotated type variable that was encountered and traversed
-         * in order to describe typeVar.  It is expanded during visitation and it is later
-         * used as a template for other uses of typeVar
+         * The first annotated type variable that was encountered and traversed in order to describe
+         * typeVar. It is expanded during visitation and it is later used as a template for other
+         * uses of typeVar
          */
         public final AnnotatedTypeVariable annotatedTypeVar;
 
-        /**
-         * The boundStructure that was active before this one
-         */
+        /** The boundStructure that was active before this one */
         private final BoundStructure parent;
 
         /**
-         * If this type variable is upper or lower bounded by another type variable (not a declared type or intersection)
-         * then this variable will contain the path to that type variable //TODO: Add link to explanation
+         * If this type variable is upper or lower bounded by another type variable (not a declared
+         * type or intersection) then this variable will contain the path to that type variable
+         * //TODO: Add link to explanation
          *
-         * e.g. T extends E  &rArr; The structure for T will have an immediateBoundTypeVars = List(UpperBound)
-         * The BoundPaths here must exist in pathToTypeVar
+         * <p>e.g. {@code T extends E} &rArr; The structure for T will have an
+         * immediateBoundTypeVars = List(UpperBound) The BoundPaths here must exist in pathToTypeVar
          */
         public Set<BoundPath> immediateBoundTypeVars = new LinkedHashSet<>();
 
@@ -685,9 +688,7 @@ public class BoundsInitializer {
         }
     }
 
-    /**
-     * An array list of BoundPathNodes whose equals method is a referential equality check
-     */
+    /** An array list of BoundPathNodes whose equals method is a referential equality check */
     @SuppressWarnings("serial")
     private static class BoundPath extends LinkedList<BoundPathNode> {
 
@@ -712,7 +713,7 @@ public class BoundsInitializer {
     }
 
     // BoundPathNode's are a step in a "type path" that are used to
-    private static abstract class BoundPathNode {
+    private abstract static class BoundPathNode {
         enum Kind {
             Extends,
             Super,

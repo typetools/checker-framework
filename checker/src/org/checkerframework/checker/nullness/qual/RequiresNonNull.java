@@ -5,15 +5,15 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 /**
- * Indicates a method precondition:  the method expects the specified
- * expressions to be non-null when the annotated method is invoked.
+ * Indicates a method precondition: the method expects the specified expressions to be non-null when
+ * the annotated method is invoked.
  *
  * <p>For example:
  * <!-- The "&nbsp;" is to hide the at-signs from Javadoc. -->
+ *
  * <pre>
  * &nbsp;@Nullable Object field1;
  * &nbsp;@Nullable Object field2;
@@ -40,7 +40,8 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 @PreconditionAnnotation(qualifier = NonNull.class)
 public @interface RequiresNonNull {
     /**
-     * The Java expressions that need to be {@link NonNull}.
+     * The Java expressions that need to be {@link
+     * org.checkerframework.checker.nullness.qual.NonNull}.
      *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */

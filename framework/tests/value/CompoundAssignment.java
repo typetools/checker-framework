@@ -13,7 +13,7 @@ public class CompoundAssignment {
         field = "hello";
         //:: error: (compound.assignment.type.incompatible)
         field += method();
-        //:: error: (assignment.type.incompatible)
+        //:: error: (assignment.type.incompatible) :: error: (compound.assignment.type.incompatible)
         @StringVal("hellohellohello") String test = field += method();
     }
 

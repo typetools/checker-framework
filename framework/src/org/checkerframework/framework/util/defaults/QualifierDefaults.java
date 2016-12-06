@@ -49,10 +49,11 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Determines the default qualifiers on a type.
- * Default qualifiers are specified via the {@link org.checkerframework.framework.qual.DefaultQualifier} annotation.
+ * Determines the default qualifiers on a type. Default qualifiers are specified via the {@link
+ * org.checkerframework.framework.qual.DefaultQualifier} annotation.
  *
  * @see org.checkerframework.framework.qual.DefaultQualifier
  */
@@ -63,19 +64,21 @@ public class QualifierDefaults {
     // TODO try to remove some dependencies (e.g. on factory)
 
     /**
-     * This field indicates whether or not a default should be applied to type vars
-     * located in the type being default.  This should only ever be true when the type variable
-     * is a local variable, non-component use, i.e.
+     * This field indicates whether or not a default should be applied to type vars located in the
+     * type being default. This should only ever be true when the type variable is a local variable,
+     * non-component use, i.e.
+     *
      * <pre>{@code
      * <T> void method(@NOT_HERE T tIn) {
      *     T t = tIn;
      * }
      * }</pre>
      *
-     * The local variable T will be defaulted in order to allow dataflow to refine T.
-     * This variable will be false if dataflow is not in use.
+     * The local variable T will be defaulted in order to allow dataflow to refine T. This variable
+     * will be false if dataflow is not in use.
      */
     private boolean applyToTypeVar = false;
+
     private final Elements elements;
     private final AnnotatedTypeFactory atypeFactory;
     private final List<String> upstreamCheckerNames;
@@ -85,25 +88,21 @@ public class QualifierDefaults {
 
     /** Mapping from an Element to the source Tree of the declaration. */
     private static final int CACHE_SIZE = 300;
+
     protected static final Map<Element, BoundType> elementToBoundType =
             CollectionUtils.createLRUCache(CACHE_SIZE);
 
     /**
-     * Defaults that apply for a certain Element.
-     * On the one hand this is used for caching (an earlier name for the field was
-     * "qualifierCache"). It can also be used by type systems to set defaults for
-     * certain Elements.
+     * Defaults that apply for a certain Element. On the one hand this is used for caching (an
+     * earlier name for the field was "qualifierCache"). It can also be used by type systems to set
+     * defaults for certain Elements.
      */
     private final Map<Element, DefaultSet> elementDefaults = new IdentityHashMap<>();
 
-    /**
-     * A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system.
-     */
+    /** A mapping of Element &rarr; Whether or not that element is AnnotatedFor this type system. */
     private final Map<Element, Boolean> elementAnnotatedFors = new IdentityHashMap<>();
 
-    /**
-     * CLIMB locations whose standard default is top for a given type system.
-     */
+    /** CLIMB locations whose standard default is top for a given type system. */
     public static final TypeUseLocation[] standardClimbDefaultsTop = {
         TypeUseLocation.LOCAL_VARIABLE,
         TypeUseLocation.RESOURCE_VARIABLE,
@@ -111,16 +110,12 @@ public class QualifierDefaults {
         TypeUseLocation.IMPLICIT_UPPER_BOUND
     };
 
-    /**
-     * CLIMB locations whose standard default is bottom for a given type system.
-     */
+    /** CLIMB locations whose standard default is bottom for a given type system. */
     public static final TypeUseLocation[] standardClimbDefaultsBottom = {
         TypeUseLocation.IMPLICIT_LOWER_BOUND
     };
 
-    /**
-     * List of TypeUseLocations that are valid for unchecked code defaults.
-     */
+    /** List of TypeUseLocations that are valid for unchecked code defaults. */
     private static final TypeUseLocation[] validUncheckedCodeDefaultLocations = {
         TypeUseLocation.FIELD,
         TypeUseLocation.PARAMETER,
@@ -132,9 +127,7 @@ public class QualifierDefaults {
         TypeUseLocation.ALL
     };
 
-    /**
-     * Standard unchecked default locations that should be top
-     */
+    /** Standard unchecked default locations that should be top */
     // Fields are defaulted to top so that warnings are issued at field reads, which we believe are more common
     // than field writes. Future work is to specify different defaults for field reads and field writes.
     // (When a field is written to, its type should be bottom.)
@@ -142,9 +135,7 @@ public class QualifierDefaults {
         TypeUseLocation.RETURN, TypeUseLocation.FIELD, TypeUseLocation.UPPER_BOUND
     };
 
-    /**
-     * Standard unchecked default locations that should be bottom
-     */
+    /** Standard unchecked default locations that should be bottom */
     public static final TypeUseLocation[] standardUncheckedDefaultsBottom = {
         TypeUseLocation.PARAMETER, TypeUseLocation.LOWER_BOUND
     };
@@ -153,9 +144,9 @@ public class QualifierDefaults {
     private final boolean useUncheckedCodeDefaultsBytecode;
 
     /**
-     * Returns an array of locations that are valid for the unchecked value
-     * defaults.  These are simply by syntax, since an entire file is typechecked,
-     * it is not possible for local variables to be unchecked.
+     * Returns an array of locations that are valid for the unchecked value defaults. These are
+     * simply by syntax, since an entire file is typechecked, it is not possible for local variables
+     * to be unchecked.
      */
     public static TypeUseLocation[] validLocationsForUncheckedCodeDefaults() {
         return validUncheckedCodeDefaultLocations;
@@ -198,7 +189,22 @@ public class QualifierDefaults {
     }
 
     /**
+     * Check that a default with TypeUseLocation OTHERWISE or ALL is specified.
+     *
+     * @return whether we found a Default with location OTHERWISE or ALL
+     */
+    public boolean hasDefaultsForCheckedCode() {
+        for (Default def : checkedCodeDefaults) {
+            if (def.location == TypeUseLocation.OTHERWISE || def.location == TypeUseLocation.ALL) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Add standard unchecked defaults that do not conflict with previously added defaults.
+     *
      * @param tops AnnotationMirrors that are top
      * @param bottoms AnnotationMirrors that are bottom
      */
@@ -227,7 +233,7 @@ public class QualifierDefaults {
     /**
      * Add standard CLIMB defaults that do not conflict with previously added defaults.
      *
-     * @param tops    AnnotationMirrors that are top
+     * @param tops AnnotationMirrors that are top
      * @param bottoms AnnotationMirrors that are bottom
      */
     public void addClimbStandardDefaults(
@@ -253,8 +259,8 @@ public class QualifierDefaults {
     }
 
     /**
-     * Sets the default annotations.  A programmer may override this by
-     * writing the @DefaultQualifier annotation on an element.
+     * Sets the default annotations. A programmer may override this by writing the @DefaultQualifier
+     * annotation on an element.
      */
     public void addCheckedCodeDefault(
             AnnotationMirror absoluteDefaultAnno, TypeUseLocation location) {
@@ -262,9 +268,7 @@ public class QualifierDefaults {
         checkedCodeDefaults.add(new Default(absoluteDefaultAnno, location));
     }
 
-    /**
-     * Sets the default annotation for unchecked elements.
-     */
+    /** Sets the default annotation for unchecked elements. */
     public void addUncheckedCodeDefault(
             AnnotationMirror uncheckedDefaultAnno, TypeUseLocation location) {
         checkDuplicates(uncheckedCodeDefaults, uncheckedDefaultAnno, location);
@@ -273,9 +277,7 @@ public class QualifierDefaults {
         uncheckedCodeDefaults.add(new Default(uncheckedDefaultAnno, location));
     }
 
-    /**
-     * Sets the default annotation for unchecked elements, with specific locations.
-     */
+    /** Sets the default annotation for unchecked elements, with specific locations. */
     public void addUncheckedCodeDefaults(
             AnnotationMirror absoluteDefaultAnno, TypeUseLocation[] locations) {
         for (TypeUseLocation location : locations) {
@@ -290,9 +292,7 @@ public class QualifierDefaults {
         }
     }
 
-    /**
-     * Sets the default annotations for a certain Element.
-     */
+    /** Sets the default annotations for a certain Element. */
     public void addElementDefault(
             Element elem, AnnotationMirror elementDefaultAnno, TypeUseLocation location) {
         DefaultSet prevset = elementDefaults.get(elem);
@@ -371,12 +371,10 @@ public class QualifierDefaults {
     }
 
     /**
-     * Determines the nearest enclosing element for a tree by climbing the tree
-     * toward the root and obtaining the element for the first declaration
-     * (variable, method, or class) that encloses the tree.
-     * Initializers of local variables are handled in a special way:
-     * within an initializer we look for the DefaultQualifier(s) annotation and
-     * keep track of the previously visited tree.
+     * Determines the nearest enclosing element for a tree by climbing the tree toward the root and
+     * obtaining the element for the first declaration (variable, method, or class) that encloses
+     * the tree. Initializers of local variables are handled in a special way: within an initializer
+     * we look for the DefaultQualifier(s) annotation and keep track of the previously visited tree.
      * TODO: explain the behavior better.
      *
      * @param tree the tree
@@ -432,20 +430,18 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies default annotations to a type.
-     * A {@link com.sun.source.tree.Tree} that determines the appropriate scope for defaults.
-     * <p>
+     * Applies default annotations to a type. A {@link com.sun.source.tree.Tree} that determines the
+     * appropriate scope for defaults.
      *
-     * For instance, if the tree is associated with a declaration (e.g., it's
-     * the use of a field, or a method invocation), defaults in the scope of the
-     * <i>declaration</i> are used; if the tree is not associated with a
-     * declaration (e.g., a typecast), defaults in the scope of the tree are
-     * used.
+     * <p>For instance, if the tree is associated with a declaration (e.g., it's the use of a field,
+     * or a method invocation), defaults in the scope of the <i>declaration</i> are used; if the
+     * tree is not associated with a declaration (e.g., a typecast), defaults in the scope of the
+     * tree are used.
      *
      * @param tree the tree associated with the type
      * @param type the type to which defaults will be applied
-     *
-     * @see #applyDefaultsElement(javax.lang.model.element.Element, org.checkerframework.framework.type.AnnotatedTypeMirror)
+     * @see #applyDefaultsElement(javax.lang.model.element.Element,
+     *     org.checkerframework.framework.type.AnnotatedTypeMirror)
      */
     private void applyDefaults(Tree tree, AnnotatedTypeMirror type) {
 
@@ -684,18 +680,17 @@ public class QualifierDefaults {
     }
 
     /**
-     * Applies default annotations to a type. Conservative defaults are applied first
-     * as appropriate, followed by source code defaults.
-     * <p>
+     * Applies default annotations to a type. Conservative defaults are applied first as
+     * appropriate, followed by source code defaults.
      *
-     * For a discussion on the rules for application of source code and conservative defaults,
+     * <p>For a discussion on the rules for application of source code and conservative defaults,
      * please see the linked manual sections.
      *
-     * @param annotationScope the element representing the nearest enclosing
-     *        default annotation scope for the type
+     * @param annotationScope the element representing the nearest enclosing default annotation
+     *     scope for the type
      * @param type the type to which defaults will be applied
-     *
-     * @checker_framework.manual #effective-qualifier The effective qualifier on a type (defaults and inference)
+     * @checker_framework.manual #effective-qualifier The effective qualifier on a type (defaults
+     *     and inference)
      * @checker_framework.manual #annotating-libraries Annotating libraries
      */
     private void applyDefaultsElement(
@@ -705,17 +700,17 @@ public class QualifierDefaults {
                 new DefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
 
         for (Default def : defaults) {
-            applier.apply(def);
+            applier.applyDefault(def);
         }
 
         if (applyUncheckedCodeDefaults(annotationScope)) {
             for (Default def : uncheckedCodeDefaults) {
-                applier.apply(def);
+                applier.applyDefault(def);
             }
         }
 
         for (Default def : checkedCodeDefaults) {
-            applier.apply(def);
+            applier.applyDefault(def);
         }
     }
 
@@ -725,7 +720,9 @@ public class QualifierDefaults {
         private final Element scope;
         private final AnnotatedTypeMirror type;
 
-        // Should only be set by {@link apply}
+        /**
+         * Location to which to apply the default. (Should only be set by the applyDefault method.)
+         */
         private TypeUseLocation location;
 
         private final DefaultApplierElementImpl impl;
@@ -754,14 +751,19 @@ public class QualifierDefaults {
             this.defaultableTypeVar = (applyToTypeVar) ? (AnnotatedTypeVariable) type : null;
         }
 
-        public void apply(Default def) {
+        /**
+         * Apply default to the type.
+         *
+         * @param def Default to apply
+         */
+        public void applyDefault(Default def) {
             this.location = def.location;
             impl.visit(type, def.anno);
         }
 
         /**
-         * Returns true if the given qualifier should be applied to the given type.  Currently we do not
-         * apply defaults to void types, packages, wildcards, and type variables.
+         * Returns true if the given qualifier should be applied to the given type. Currently we do
+         * not apply defaults to void types, packages, wildcards, and type variables.
          *
          * @param type type to which qual would be applied
          * @return true if this application should proceed
@@ -770,17 +772,23 @@ public class QualifierDefaults {
                 final AnnotatedTypeMirror type, final boolean applyToTypeVar) {
 
             return !(type == null
-                    ||
                     // TODO: executables themselves should not be annotated
-                    // For some reason polyall-tests failes with this.
-                    // type.getKind() == TypeKind.EXECUTABLE ||
-                    type.getKind() == TypeKind.NONE
+                    // For some reason polyall-tests fails with this.
+                    // || type.getKind() == TypeKind.EXECUTABLE
+                    || type.getKind() == TypeKind.NONE
                     || type.getKind() == TypeKind.WILDCARD
                     || (type.getKind() == TypeKind.TYPEVAR && !applyToTypeVar)
                     || type instanceof AnnotatedNoType);
         }
 
-        private static void doApply(AnnotatedTypeMirror type, AnnotationMirror qual) {
+        /**
+         * Add the qualifier to the type if it does not already have an annotation in the same
+         * hierarchy as qual.
+         *
+         * @param type Type to add qual
+         * @param qual Annotation to add
+         */
+        private static void addAnnotation(AnnotatedTypeMirror type, AnnotationMirror qual) {
             // Add the default annotation, but only if no other
             // annotation is present.
             if (!type.isAnnotatedInHierarchy(qual)) {
@@ -818,7 +826,7 @@ public class QualifierDefaults {
                             if (scope != null
                                     && scope.getKind() == ElementKind.FIELD
                                     && t == type) {
-                                doApply(t, qual);
+                                addAnnotation(t, qual);
                             }
                             break;
                         }
@@ -828,7 +836,7 @@ public class QualifierDefaults {
                                     && scope.getKind() == ElementKind.LOCAL_VARIABLE
                                     && t == type) {
                                 // TODO: how do we determine that we are in a cast or instanceof type?
-                                doApply(t, qual);
+                                addAnnotation(t, qual);
                             }
                             break;
                         }
@@ -837,7 +845,7 @@ public class QualifierDefaults {
                             if (scope != null
                                     && scope.getKind() == ElementKind.RESOURCE_VARIABLE
                                     && t == type) {
-                                doApply(t, qual);
+                                addAnnotation(t, qual);
                             }
                             break;
                         }
@@ -846,12 +854,12 @@ public class QualifierDefaults {
                             if (scope != null
                                     && scope.getKind() == ElementKind.EXCEPTION_PARAMETER
                                     && t == type) {
-                                doApply(t, qual);
+                                addAnnotation(t, qual);
                                 if (t.getKind() == TypeKind.UNION) {
                                     AnnotatedUnionType aut = (AnnotatedUnionType) t;
                                     // Also apply the default to the alternative types
                                     for (AnnotatedDeclaredType anno : aut.getAlternatives()) {
-                                        doApply(anno, qual);
+                                        addAnnotation(anno, qual);
                                     }
                                 }
                             }
@@ -862,7 +870,7 @@ public class QualifierDefaults {
                             if (scope != null
                                     && scope.getKind() == ElementKind.PARAMETER
                                     && t == type) {
-                                doApply(t, qual);
+                                addAnnotation(t, qual);
                             } else if (scope != null
                                     && (scope.getKind() == ElementKind.METHOD
                                             || scope.getKind() == ElementKind.CONSTRUCTOR)
@@ -872,7 +880,7 @@ public class QualifierDefaults {
                                 for (AnnotatedTypeMirror atm :
                                         ((AnnotatedExecutableType) t).getParameterTypes()) {
                                     if (shouldBeAnnotated(atm, false)) {
-                                        doApply(atm, qual);
+                                        addAnnotation(atm, qual);
                                     }
                                 }
                             }
@@ -883,10 +891,11 @@ public class QualifierDefaults {
                             if (scope != null
                                     && scope.getKind() == ElementKind.PARAMETER
                                     && t == type
-                                    && "this".equals(scope.getSimpleName())) {
+                                    && scope.getSimpleName().contentEquals("this")) {
                                 // TODO: comparison against "this" is ugly, won't work
                                 // for all possible names for receiver parameter.
-                                doApply(t, qual);
+                                // Comparison to Names._this might be a bit faster.
+                                addAnnotation(t, qual);
                             } else if (scope != null
                                     && (scope.getKind() == ElementKind.METHOD)
                                     && t.getKind() == TypeKind.EXECUTABLE
@@ -895,7 +904,7 @@ public class QualifierDefaults {
                                 final AnnotatedDeclaredType receiver =
                                         ((AnnotatedExecutableType) t).getReceiverType();
                                 if (shouldBeAnnotated(receiver, false)) {
-                                    doApply(receiver, qual);
+                                    addAnnotation(receiver, qual);
                                 }
                             }
                             break;
@@ -909,7 +918,7 @@ public class QualifierDefaults {
                                 final AnnotatedTypeMirror returnType =
                                         ((AnnotatedExecutableType) t).getReturnType();
                                 if (shouldBeAnnotated(returnType, false)) {
-                                    doApply(returnType, qual);
+                                    addAnnotation(returnType, qual);
                                 }
                             }
                             break;
@@ -918,11 +927,8 @@ public class QualifierDefaults {
                     case IMPLICIT_LOWER_BOUND:
                         {
                             if (isLowerBound
-                                    && boundType.isOneOf(
-                                            BoundType.UNBOUND,
-                                            BoundType.UPPER,
-                                            BoundType.UNKNOWN)) {
-                                doApply(t, qual);
+                                    && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.UPPER)) {
+                                addAnnotation(t, qual);
                             }
                             break;
                         }
@@ -930,7 +936,7 @@ public class QualifierDefaults {
                     case EXPLICIT_LOWER_BOUND:
                         {
                             if (isLowerBound && boundType.isOneOf(BoundType.LOWER)) {
-                                doApply(t, qual);
+                                addAnnotation(t, qual);
                             }
                             break;
                         }
@@ -938,7 +944,7 @@ public class QualifierDefaults {
                     case LOWER_BOUND:
                         {
                             if (isLowerBound) {
-                                doApply(t, qual);
+                                addAnnotation(t, qual);
                             }
                             break;
                         }
@@ -946,23 +952,22 @@ public class QualifierDefaults {
                     case IMPLICIT_UPPER_BOUND:
                         {
                             if (isUpperBound
-                                    && boundType.isOneOf(BoundType.UNBOUND, BoundType.LOWER)) {
-                                doApply(t, qual);
+                                    && boundType.isOneOf(BoundType.UNBOUNDED, BoundType.LOWER)) {
+                                addAnnotation(t, qual);
                             }
                             break;
                         }
                     case EXPLICIT_UPPER_BOUND:
                         {
-                            if (isUpperBound
-                                    && boundType.isOneOf(BoundType.UPPER, BoundType.UNKNOWN)) {
-                                doApply(t, qual);
+                            if (isUpperBound && boundType.isOneOf(BoundType.UPPER)) {
+                                addAnnotation(t, qual);
                             }
                             break;
                         }
                     case UPPER_BOUND:
                         {
                             if (this.isUpperBound) {
-                                doApply(t, qual);
+                                addAnnotation(t, qual);
                             }
                             break;
                         }
@@ -970,7 +975,7 @@ public class QualifierDefaults {
                     case ALL:
                         {
                             // TODO: forbid ALL if anything else was given.
-                            doApply(t, qual);
+                            addAnnotation(t, qual);
                             break;
                         }
                     default:
@@ -990,7 +995,7 @@ public class QualifierDefaults {
                 super.reset();
                 impl.isLowerBound = false;
                 impl.isUpperBound = false;
-                impl.boundType = BoundType.UNBOUND;
+                impl.boundType = BoundType.UNBOUNDED;
             }
 
             // are we currently defaulting the lower bound of a type variable or wildcard
@@ -1000,7 +1005,7 @@ public class QualifierDefaults {
             private boolean isUpperBound = false;
 
             // the bound type of the current wildcard or type variable being defaulted
-            private BoundType boundType = BoundType.UNBOUND;
+            private BoundType boundType = BoundType.UNBOUNDED;
 
             @Override
             public Void visitTypeVariable(AnnotatedTypeVariable type, AnnotationMirror qual) {
@@ -1023,8 +1028,8 @@ public class QualifierDefaults {
             }
 
             /**
-             * Visit the bounds of a type variable or a wildcard and potentially apply qual
-             * to those bounds.  This method will also update the boundType, isLowerBound, and isUpperbound
+             * Visit the bounds of a type variable or a wildcard and potentially apply qual to those
+             * bounds. This method will also update the boundType, isLowerBound, and isUpperbound
              * fields.
              */
             protected void visitBounds(
@@ -1061,28 +1066,24 @@ public class QualifierDefaults {
         }
     }
 
+    /**
+     * Specifies whether the type variable or wildcard has an explicit upper bound (UPPER), an
+     * explicit lower bound (LOWER), or no explicit bounds (UNBOUNDED).
+     */
     enum BoundType {
 
-        /**
-         * Indicates an upper bounded type variable or wildcard
-         */
+        /** Indicates an upper bounded type variable or wildcard */
         UPPER,
 
-        /**
-         * Indicates a lower bounded type variable or wildcard
-         */
+        /** Indicates a lower bounded type variable or wildcard */
         LOWER,
 
         /**
-         * Neither bound is specified, BOTH are implicit
+         * Neither bound is specified, BOTH are implicit. (If a type variable is declared in
+         * bytecode and the type of the upper bound is Object, then the checker assumes that the
+         * bound was not explicitly written in source code.)
          */
-        UNBOUND,
-
-        /**
-         * For bytecode, or trees for which we no longer have the compilation unit.
-         * We treat UNKNOWN bounds as if they are an UPPER bound.
-         */
-        UNKNOWN;
+        UNBOUNDED;
 
         public boolean isOneOf(final BoundType... choices) {
             for (final BoundType choice : choices) {
@@ -1096,8 +1097,8 @@ public class QualifierDefaults {
     }
 
     /**
-     * @param type the type whose boundType is returned.
-     *             type must be an AnnotatedWildcardType or AnnotatedTypeVariable
+     * @param type the type whose boundType is returned. type must be an AnnotatedWildcardType or
+     *     AnnotatedTypeVariable
      * @return the boundType for type
      */
     private static BoundType getBoundType(
@@ -1114,18 +1115,15 @@ public class QualifierDefaults {
         return null; // dead code
     }
 
-    /**
-     * @return the bound type of the input typeVar
-     */
+    /** @return the bound type of the input typeVar */
     private static BoundType getTypeVarBoundType(
             final AnnotatedTypeVariable typeVar, final AnnotatedTypeFactory typeFactory) {
         return getTypeVarBoundType(
                 (TypeParameterElement) typeVar.getUnderlyingType().asElement(), typeFactory);
     }
 
-    /**
-     * @return the boundType (UPPER, UNBOUND, or UNKNOWN) of the declaration of typeParamElem
-     */
+    /** @return the boundType (UPPER or UNBOUNDED) of the declaration of typeParamElem */
+    // Results are cached in {@link elementToBoundType}.
     private static BoundType getTypeVarBoundType(
             final TypeParameterElement typeParamElem, final AnnotatedTypeFactory typeFactory) {
         final BoundType prev = elementToBoundType.get(typeParamElem);
@@ -1140,7 +1138,16 @@ public class QualifierDefaults {
         if (typeParamDecl == null) {
             // This is not only for elements from binaries, but also
             // when the compilation unit is no-longer available.
-            boundType = BoundType.UNKNOWN;
+            if (typeParamElem.getBounds().size() == 1
+                    && TypesUtils.isObject(typeParamElem.getBounds().get(0))) {
+                // If the bound was Object, then it may or may not have been explicitly written.
+                // Assume that it was not.
+                boundType = BoundType.UNBOUNDED;
+            } else {
+                // The bound is not Object, so it must have been explicitly written and thus the
+                // type variable has an upper bound.
+                boundType = BoundType.UPPER;
+            }
 
         } else {
             if (typeParamDecl.getKind() == Tree.Kind.TYPE_PARAMETER) {
@@ -1150,7 +1157,7 @@ public class QualifierDefaults {
                 if (bnds != null && !bnds.isEmpty()) {
                     boundType = BoundType.UPPER;
                 } else {
-                    boundType = BoundType.UNBOUND;
+                    boundType = BoundType.UNBOUNDED;
                 }
             } else {
                 ErrorReporter.errorAbort(
@@ -1168,8 +1175,8 @@ public class QualifierDefaults {
     }
 
     /**
-     * @return the BoundType of annotatedWildcard.  If it is unbounded, use the type parameter to
-     * which its an argument
+     * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to
+     *     which its an argument
      */
     public static BoundType getWildcardBoundType(
             final AnnotatedWildcardType annotatedWildcard, final AnnotatedTypeFactory typeFactory) {

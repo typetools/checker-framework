@@ -1,8 +1,6 @@
 import org.checkerframework.checker.lock.qual.GuardSatisfied;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByUnknown;
-import org.checkerframework.checker.lock.qual.Holding;
-import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 
 public class GuardSatisfiedTest {
@@ -279,8 +277,7 @@ class Foo {
     }
 
     void m3(@GuardSatisfied Foo f) {
-        // TODO: Fix: This should error with method.invocation.invalid but it gets swallowed and only method.guarantee.violated is output.
-        //:: error: (method.guarantee.violated)
+        //:: error: (method.guarantee.violated) :: error: (method.invocation.invalid)
         f.m1();
     }
 

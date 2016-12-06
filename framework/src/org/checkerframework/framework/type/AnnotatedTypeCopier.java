@@ -17,25 +17,27 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeVisitor;
 
 /**
- * AnnotatedTypeCopier is a visitor that deep copies an AnnotatedTypeMirror exactly, including any lazily initialized
- * fields.  That is, if a field has already been initialized, it will be initialized in the copied type.
+ * AnnotatedTypeCopier is a visitor that deep copies an AnnotatedTypeMirror exactly, including any
+ * lazily initialized fields. That is, if a field has already been initialized, it will be
+ * initialized in the copied type.
  *
- * When making copies, a map of encountered {@literal references -> copied} types is maintained.  This ensures that, if a
- * reference appears in multiple locations in the original type, a corresponding copy of the original type
- * appears in the same locations in the output copy.  This ensures that the recursive loops in the input type
- * are preserved in its output copy (see makeOrReturnCopy)
+ * <p>When making copies, a map of encountered {@literal references &rArr; copied} types is
+ * maintained. This ensures that, if a reference appears in multiple locations in the original type,
+ * a corresponding copy of the original type appears in the same locations in the output copy. This
+ * ensures that the recursive loops in the input type are preserved in its output copy (see
+ * makeOrReturnCopy)
  *
- * In general, AnnotatedTypeMirrors should be copied via AnnotatedTypeMirror#deepCopy and AnnotatedTypeMirror#shallowCopy.
- * AnnotatedTypeMirror#deepCopy makes use of AnnotatedTypeCopier under the covers.  However, this visitor and
- * its subclasses can be invoked as follows:
+ * <p>In general, AnnotatedTypeMirrors should be copied via AnnotatedTypeMirror#deepCopy and
+ * AnnotatedTypeMirror#shallowCopy. AnnotatedTypeMirror#deepCopy makes use of AnnotatedTypeCopier
+ * under the covers. However, this visitor and its subclasses can be invoked as follows:
  *
- * new AnnotatedTypeCopier().visit(myTypeVar);
+ * <pre>{@code new AnnotatedTypeCopier().visit(myTypeVar);}</pre>
  *
- * Note: There are methods that may require a copy of a type mirror with slight changes.  It is intended that this
- * class can be overridden for these cases.
+ * Note: There are methods that may require a copy of a type mirror with slight changes. It is
+ * intended that this class can be overridden for these cases.
+ *
  * @see org.checkerframework.framework.type.TypeVariableSubstitutor
  * @see org.checkerframework.framework.type.AnnotatedTypeReplacer
- *
  */
 public class AnnotatedTypeCopier
         implements AnnotatedTypeVisitor<
@@ -43,27 +45,30 @@ public class AnnotatedTypeCopier
 
     /**
      * This is a hack to handle the curious behavior of substitution on an AnnotatedExecutableType.
-     * @see org.checkerframework.framework.type.TypeVariableSubstitutor
-     * It is poor form to include such a flag on the base class for exclusive use in a subclass
-     * but it is the least bad option in this case.
+     *
+     * @see org.checkerframework.framework.type.TypeVariableSubstitutor It is poor form to include
+     *     such a flag on the base class for exclusive use in a subclass but it is the least bad
+     *     option in this case.
      */
     protected boolean visitingExecutableTypeParam = false;
 
-    /**
-     * @see #AnnotatedTypeCopier(boolean)
-     */
+    /** @see #AnnotatedTypeCopier(boolean) */
     protected final boolean copyAnnotations;
 
     /**
-     * Creates an AnnotatedTypeCopier that may or may not copyAnnotations
-     * By default AnnotatedTypeCopier provides two major properties in its copies:
-     *   1) Structure preservation - the exact structure of the original AnnotatedTypeMirror is preserved in the copy
-     *      including all component types.
-     *   2) Annotation preservation - All of the annotations from the original AnnotatedTypeMirror and its components
-     *      have been copied to the new type.
+     * Creates an AnnotatedTypeCopier that may or may not copyAnnotations By default
+     * AnnotatedTypeCopier provides two major properties in its copies:
      *
-     * If copyAnnotations is set to false, the second property, annotation preservation, is removed.  This is useful
-     * for cases in which the user may want to copy the structure of a type exactly but NOT its annotations.
+     * <ol>
+     *   <li> Structure preservation -- the exact structure of the original AnnotatedTypeMirror is
+     *       preserved in the copy including all component types.
+     *   <li> Annotation preservation -- All of the annotations from the original
+     *       AnnotatedTypeMirror and its components have been copied to the new type.
+     * </ol>
+     *
+     * If copyAnnotations is set to false, the second property, annotation preservation, is removed.
+     * This is useful for cases in which the user may want to copy the structure of a type exactly
+     * but NOT its annotations.
      */
     public AnnotatedTypeCopier(final boolean copyAnnotations) {
         this.copyAnnotations = copyAnnotations;
@@ -72,6 +77,7 @@ public class AnnotatedTypeCopier
     /**
      * Creates an AnnotatedTypeCopier that copies both the structure and annotations of the source
      * AnnotatedTypeMirror
+     *
      * @see #AnnotatedTypeCopier(boolean)
      */
     public AnnotatedTypeCopier() {
@@ -345,17 +351,19 @@ public class AnnotatedTypeCopier
     }
 
     /**
-     * For any given object in the type being copied, we only want to generate one copy of that object.
-     * When that object is encountered again, using the previously generated copy will preserve
-     * the structure of the original AnnotatedTypeMirror.
+     * For any given object in the type being copied, we only want to generate one copy of that
+     * object. When that object is encountered again, using the previously generated copy will
+     * preserve the structure of the original AnnotatedTypeMirror.
      *
-     * makeOrReturnCopy first checks to see if an object has been encountered before.
-     * If so, it returns the previously generated duplicate of that object
-     * if not, it creates a duplicate of the object and stores it in the history, originalToCopy
+     * <p>makeOrReturnCopy first checks to see if an object has been encountered before. If so, it
+     * returns the previously generated duplicate of that object if not, it creates a duplicate of
+     * the object and stores it in the history, originalToCopy
      *
      * @param original a reference to a type to copy
-     * @param originalToCopy a mapping of previously encountered references to the copies made for those references
-     * @param <T> The type of original copy, this is a shortcut to avoid having to insert casts all over the visitor
+     * @param originalToCopy a mapping of previously encountered references to the copies made for
+     *     those references
+     * @param <T> The type of original copy, this is a shortcut to avoid having to insert casts all
+     *     over the visitor
      * @return a copy of original
      */
     @SuppressWarnings("unchecked")
@@ -387,8 +395,9 @@ public class AnnotatedTypeCopier
 
     /**
      * This method is called in any location in which a primary annotation would be copied from
-     * source to dest.  Note, this method obeys the copyAnnotations field.  Subclasses of
+     * source to dest. Note, this method obeys the copyAnnotations field. Subclasses of
      * AnnotatedTypeCopier can use this method to customize annotations before copying.
+     *
      * @param source the type whose primary annotations are being copied
      * @param dest a copy of source that should receive its primary annotations
      */

@@ -103,7 +103,9 @@ import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
-import org.checkerframework.framework.util.ContractsUtils.PreOrPostcondition;
+import org.checkerframework.framework.util.ContractsUtils.Contract;
+import org.checkerframework.framework.util.ContractsUtils.Postcondition;
+import org.checkerframework.framework.util.ContractsUtils.Precondition;
 import org.checkerframework.framework.util.FlowExpressionParseUtil;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionParseException;
@@ -118,42 +120,33 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * A {@link SourceVisitor} that performs assignment and pseudo-assignment
- * checking, method invocation checking, and assignability checking.
+ * A {@link SourceVisitor} that performs assignment and pseudo-assignment checking, method
+ * invocation checking, and assignability checking.
  *
- * <p>
+ * <p>This implementation uses the {@link AnnotatedTypeFactory} implementation provided by an
+ * associated {@link BaseTypeChecker}; its visitor methods will invoke this factory on parts of the
+ * AST to determine the "annotated type" of an expression. Then, the visitor methods will check the
+ * types in assignments and pseudo-assignments using {@link #commonAssignmentCheck}, which
+ * ultimately calls the {@link TypeHierarchy#isSubtype} method and reports errors that violate
+ * Java's rules of assignment.
  *
- * This implementation uses the {@link AnnotatedTypeFactory} implementation
- * provided by an associated {@link BaseTypeChecker}; its visitor methods will
- * invoke this factory on parts of the AST to determine the "annotated type" of
- * an expression. Then, the visitor methods will check the types in assignments
- * and pseudo-assignments using {@link #commonAssignmentCheck}, which ultimately
- * calls the {@link TypeHierarchy#isSubtype} method and reports errors that
- * violate Java's rules of assignment.
+ * <p>Note that since this implementation only performs assignment and pseudo-assignment checking,
+ * other rules for custom type systems must be added in subclasses (e.g., dereference checking in
+ * the {@link org.checkerframework.checker.nullness.NullnessChecker} is implemented in the {@link
+ * org.checkerframework.checker.nullness.NullnessChecker}'s {@link TreeScanner#visitMemberSelect}
+ * method).
  *
- * <p>
+ * <p>This implementation does the following checks:
  *
- * Note that since this implementation only performs assignment and
- * pseudo-assignment checking, other rules for custom type systems must be added
- * in subclasses (e.g., dereference checking in the {@link org.checkerframework.checker.nullness.NullnessChecker} is
- * implemented in the {@link org.checkerframework.checker.nullness.NullnessChecker}'s
- * {@link TreeScanner#visitMemberSelect} method).
- *
- * <p>
- *
- * This implementation does the following checks:
- * 1. <b>Assignment and Pseudo-Assignment Check</b>:
- *    It verifies that any assignment type-checks, using
- *    {@code TypeHierarchy.isSubtype} method. This includes method invocation and
- *    method overriding checks.
- *
- * 2. <b>Type Validity Check</b>:
- *    It verifies that any user-supplied type is a valid type, using
- *    {@code isValidUse} method.
- *
- * 3. <b>(Re-)Assignability Check</b>:
- *    It verifies that any assignment is valid, using
- *    {@code Checker.isAssignable} method.
+ * <ol>
+ *   <li> <b>Assignment and Pseudo-Assignment Check</b>: It verifies that any assignment
+ *       type-checks, using {@code TypeHierarchy.isSubtype} method. This includes method invocation
+ *       and method overriding checks.
+ *   <li> <b>Type Validity Check</b>: It verifies that any user-supplied type is a valid type, using
+ *       {@code isValidUse} method.
+ *   <li> <b>(Re-)Assignability Check</b>: It verifies that any assignment is valid, using {@code
+ *       Checker.isAssignable} method.
+ * </ol>
  *
  * @see "JLS $4"
  * @see TypeHierarchy#isSubtype(AnnotatedTypeMirror, AnnotatedTypeMirror)
@@ -163,7 +156,9 @@ import org.checkerframework.javacutil.TypesUtils;
  * Note how the handling of VisitorState is duplicated in AbstractFlow. In
  * particular, the handling of the assignment context has to be done correctly
  * in both classes. This is a pain and we should see how to handle this in the
- * DFF version. TODO: missing assignment context: - array initializer
+ * DFF version.
+ *
+ * TODO: missing assignment context: array initializer
  * expressions should have the component type as context
  */
 public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?, ?>>
@@ -178,16 +173,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /** For obtaining line numbers in -Ashowchecks debugging output. */
     protected final SourcePositions positions;
 
-    /** For storing visitor state. **/
+    /** For storing visitor state. * */
     protected final VisitorState visitorState;
 
     /** An instance of the {@link ContractsUtils} helper class. */
     protected final ContractsUtils contractsUtils;
 
     /**
-     * @param checker
-     *            the type-checker associated with this visitor (for callbacks to
-     *            {@link TypeHierarchy#isSubtype})
+     * @param checker the type-checker associated with this visitor (for callbacks to {@link
+     *     TypeHierarchy#isSubtype})
      */
     public BaseTypeVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -214,17 +208,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Constructs an instance of the appropriate type factory for the
-     * implemented type system.
+     * Constructs an instance of the appropriate type factory for the implemented type system.
      *
-     * The default implementation uses the checker naming convention to create
-     * the appropriate type factory.  If no factory is found, it returns
-     * {@link BaseAnnotatedTypeFactory}.  It reflectively invokes the
-     * constructor that accepts this checker and compilation unit tree
-     * (in that order) as arguments.
+     * <p>The default implementation uses the checker naming convention to create the appropriate
+     * type factory. If no factory is found, it returns {@link BaseAnnotatedTypeFactory}. It
+     * reflectively invokes the constructor that accepts this checker and compilation unit tree (in
+     * that order) as arguments.
      *
-     * Subclasses have to override this method to create the appropriate
-     * visitor if they do not follow the checker naming convention.
+     * <p>Subclasses have to override this method to create the appropriate visitor if they do not
+     * follow the checker naming convention.
      *
      * @return the appropriate type factory
      */
@@ -392,19 +384,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Performs pseudo-assignment check: checks that the method obeys override
-     * and subtype rules to all overridden methods.
+     * Performs pseudo-assignment check: checks that the method obeys override and subtype rules to
+     * all overridden methods.
      *
-     * The override rule specifies that a method, m1, may override a method
-     * m2 only if:
+     * <p>The override rule specifies that a method, m1, may override a method m2 only if:
+     *
      * <ul>
-     *  <li> m1 return type is a subtype of m2 </li>
-     *  <li> m1 receiver type is a supertype of m2 </li>
-     *  <li> m1 parameters are supertypes of corresponding m2 parameters </li>
+     *   <li> m1 return type is a subtype of m2
+     *   <li> m1 receiver type is a supertype of m2
+     *   <li> m1 parameters are supertypes of corresponding m2 parameters
      * </ul>
      *
-     * Also, it issues a "missing.this" error for static method annotated
-     * receivers.
+     * Also, it issues a "missing.this" error for static method annotated receivers.
      */
     @Override
     public Void visitMethod(MethodTree node, Void p) {
@@ -521,30 +512,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             boolean abstractMethod =
                     methodElement.getModifiers().contains(Modifier.ABSTRACT)
                             || methodElement.getModifiers().contains(Modifier.NATIVE);
-
-            if (!abstractMethod) {
-                // check postcondition annotations
-                checkPostconditions(node, methodElement);
-
-                // check conditional method postcondition
-                checkConditionalPostconditions(node, methodElement);
-            }
-
-            // check well-formedness of pre/postcondition
             List<String> formalParamNames = verifyParameterAnnotationsForParameterNames(node);
-
-            checkPreconditionsConsistency(node, methodElement, formalParamNames);
-            checkPostconditionsConsistency(node, methodElement, formalParamNames);
-            checkConditionalPostconditionsConsistency(node, methodElement, formalParamNames);
+            checkContractsAtMethodDeclaration(
+                    node, methodElement, formalParamNames, abstractMethod);
 
             visitorState.setMethodReceiver(preMRT);
             visitorState.setMethodTree(preMT);
         }
     }
 
-    /**
-     * Reports errors found during purity checking.
-     */
+    /** Reports errors found during purity checking. */
     protected void reportPurityErrors(
             PurityResult result, MethodTree node, Collection<Pure.Kind> expectedTypes) {
         assert !result.isPure(expectedTypes);
@@ -579,96 +556,55 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         }
     }
 
-    /**
-     * Checks all (non-conditional) postcondition on the method {@code node}
-     * with element {@code methodElement}.
-     */
-    protected void checkPostconditions(MethodTree node, ExecutableElement methodElement) {
+    private void checkContractsAtMethodDeclaration(
+            MethodTree node,
+            ExecutableElement methodElement,
+            List<String> formalParamNames,
+            boolean abstractMethod) {
         FlowExpressionContext flowExprContext = null;
-        Set<PreOrPostcondition> postconditions = contractsUtils.getPostconditions(methodElement);
+        List<Contract> contracts = contractsUtils.getContracts(methodElement);
 
-        for (PreOrPostcondition p : postconditions) {
-            String expression = p.expression;
-            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
+        for (Contract contract : contracts) {
+            String expression = contract.expression;
+            AnnotationMirror annotation = contract.annotation;
 
-            // Only check if the postcondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
-                continue;
-            }
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodDeclaration(
                                 node, getCurrentPath(), checker.getContext());
             }
-
             FlowExpressions.Receiver expr = null;
             try {
-                // TODO: currently, these expressions are parsed at the
-                // declaration (i.e. here) and for every use. this could be
-                // optimized to store the result the first time. (same for
-                // other annotations)
                 expr =
                         FlowExpressionParseUtil.parse(
                                 expression, flowExprContext, getCurrentPath(), false);
-
-                CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(node);
-                if (exitStore == null) {
-                    // if there is no regular exitStore, then the method
-                    // cannot reach the regular exit and there is no need to
-                    // check anything
-                } else {
-                    CFAbstractValue<?> value = exitStore.getValue(expr);
-                    AnnotationMirror inferredAnno =
-                            value == null
-                                    ? null
-                                    : value.getType().getAnnotationInHierarchy(annotation);
-                    if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
-                        checker.report(
-                                Result.failure(
-                                        "contracts.postcondition.not.satisfied", expr.toString()),
-                                node);
-                    }
-                }
-
             } catch (FlowExpressionParseException e) {
-                // report errors here
                 checker.report(e.getResult(), node);
             }
-        }
-    }
-
-    /**
-     * Checks all (non-conditional) postcondition on the method {@code node}
-     * with element {@code methodElement} for consistency, i.e.
-     * that no formal parameter names are mentioned in the postconditions
-     * (an index such as "#1" should be used instead), and that all
-     * formal parameters referred to by an index in the postconditions are
-     * effectively final.
-     */
-    protected void checkPostconditionsConsistency(
-            MethodTree node, ExecutableElement methodElement, List<String> formalParamNames) {
-        FlowExpressionContext flowExprContext = null;
-        Set<PreOrPostcondition> postconditions = contractsUtils.getPostconditions(methodElement);
-
-        for (PreOrPostcondition p : postconditions) {
-            String expression = p.expression;
-            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
-
-            if (flowExprContext == null) {
-                flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
-                                node, getCurrentPath(), checker.getContext());
-            }
-
-            // Only check if the postcondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
-                continue;
+            if (expr != null && !abstractMethod) {
+                switch (contract.kind) {
+                    case POSTCONDTION:
+                        checkPostcondition(node, annotation, expr);
+                        break;
+                    case CONDITIONALPOSTCONDTION:
+                        checkConditionalPostcondition(
+                                node,
+                                annotation,
+                                expr,
+                                ((ConditionalPostcondition) contract).annoResult);
+                        break;
+                        // case PRECONDITION:
+                        // Preconditions are checked at method invocations, not declarations
+                }
             }
 
             if (formalParamNames != null && formalParamNames.contains(expression)) {
+                @SuppressWarnings("CompilerMessages")
+                /*@CompilerMessageKey*/ String key =
+                        "contracts." + contract.kind.errorKey + ".expression.parameter.name";
                 checker.report(
                         Result.warning(
-                                "contracts.postcondition.expression.parameter.name",
+                                key,
                                 node.getName().toString(),
                                 expression,
                                 formalParamNames.indexOf(expression) + 1,
@@ -676,80 +612,87 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                         node);
             }
 
-            try {
-                FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath(), false);
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
-
-                // ignore expressions that do not parse
-                continue;
-            }
-            checkFlowExprParameters(methodElement, expression);
+            checkParametersAreEffectivelyFinal(methodElement, expression);
         }
     }
 
     /**
-     * Checks all conditional postcondition on the method {@code node} with
-     * element {@code methodElement}.
+     * Check that the parameters used in {@code stringExpr} are effectively final for method {@code
+     * method}.
      */
-    protected void checkConditionalPostconditions(
-            MethodTree node, ExecutableElement methodElement) {
-        FlowExpressionContext flowExprContext = null;
-        Set<ConditionalPostcondition> conditionalPostconditions =
-                contractsUtils.getConditionalPostconditions(methodElement);
-
-        for (ConditionalPostcondition p : conditionalPostconditions) {
-            String expression = p.expression;
-            boolean result = p.annoResult;
-            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
-
-            // Only check if the postcondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
+    private void checkParametersAreEffectivelyFinal(ExecutableElement method, String stringExpr) {
+        // check that all parameters used in the expression are
+        // effectively final, so that they cannot be modified
+        List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
+        for (Integer idx : parameterIndices) {
+            if (idx > method.getParameters().size()) {
+                // If the index is too big, a parse error was issued in checkContractsAtMethodDeclaration
                 continue;
             }
-            if (flowExprContext == null) {
-                flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
-                                node, getCurrentPath(), checker.getContext());
-            }
-
-            FlowExpressions.Receiver expr = null;
-            try {
-                // TODO: currently, these expressions are parsed at the
-                // declaration (i.e. here) and for every use. this could be
-                // optimized to store the result the first time. (same for
-                // other annotations)
-                expr =
-                        FlowExpressionParseUtil.parse(
-                                expression, flowExprContext, getCurrentPath(), false);
-
-                // check return type of method
-                boolean booleanReturnType =
-                        TypesUtils.isBooleanType(InternalUtils.typeOf(node.getReturnType()));
-                if (!booleanReturnType) {
-                    checker.report(
-                            Result.failure(
-                                    "contracts.conditional.postcondition.invalid.returntype"),
-                            node);
-                    // No reason to go ahead with further checking. The
-                    // annotation is invalid.
-                    continue;
-                }
-                checkConditionalPostconditionAtReturnStatements(result, annotation, expr, node);
-
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
+            VariableElement parameter = method.getParameters().get(idx - 1);
+            if (!ElementUtils.isEffectivelyFinal(parameter)) {
+                checker.report(
+                        Result.failure("flowexpr.parameter.not.final", "#" + idx, stringExpr),
+                        method);
             }
         }
     }
 
-    private void checkConditionalPostconditionAtReturnStatements(
-            boolean result, AnnotationMirror annotation, Receiver expr, MethodTree methodTree) {
-        for (Object r : atypeFactory.getReturnStatementStores(methodTree)) {
-            Pair<?, ?> pair = (Pair<?, ?>) r;
-            ReturnNode returnStmt = (ReturnNode) pair.first;
+    /**
+     * Check that the expression's type is annotated with {@code annotation} at the regular exit
+     * store.
+     *
+     * @param methodTree Declaration of the method
+     * @param annotation expression's type must have this annotation
+     * @param expression the expression that the postcondition concerns
+     */
+    protected void checkPostcondition(
+            MethodTree methodTree, AnnotationMirror annotation, Receiver expression) {
+        CFAbstractStore<?, ?> exitStore = atypeFactory.getRegularExitStore(methodTree);
+        if (exitStore == null) {
+            // if there is no regular exitStore, then the method
+            // cannot reach the regular exit and there is no need to
+            // check anything
+        } else {
+            CFAbstractValue<?> value = exitStore.getValue(expression);
+            AnnotationMirror inferredAnno = null;
+            if (value != null) {
+                QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                Set<AnnotationMirror> annos = value.getAnnotations();
+                inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+            }
+            if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
+                checker.report(
+                        Result.failure(
+                                "contracts.postcondition.not.satisfied", expression.toString()),
+                        methodTree);
+            }
+        }
+    }
+
+    /**
+     * Check that the expression's type is annotated with {@code annotation} at every regular exit
+     * that returns {@code result}
+     *
+     * @param node tree of method with the postcondition
+     * @param annotation expression's type must have this annotation
+     * @param expression the expression that the postcondition concerns
+     * @param result result for which the postcondition is valid
+     */
+    protected void checkConditionalPostcondition(
+            MethodTree node, AnnotationMirror annotation, Receiver expression, boolean result) {
+        boolean booleanReturnType =
+                TypesUtils.isBooleanType(InternalUtils.typeOf(node.getReturnType()));
+        if (!booleanReturnType) {
+            checker.report(
+                    Result.failure("contracts.conditional.postcondition.invalid.returntype"), node);
+            // No reason to go ahead with further checking. The
+            // annotation is invalid.
+            return;
+        }
+
+        for (Pair<ReturnNode, ?> pair : atypeFactory.getReturnStatementStores(node)) {
+            ReturnNode returnStmt = pair.first;
 
             Node retValNode = returnStmt.getResult();
             Boolean retVal =
@@ -767,92 +710,26 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             (result
                                     ? transferResult.getThenStore()
                                     : transferResult.getElseStore());
-            CFAbstractValue<?> value = exitStore.getValue(expr);
+            CFAbstractValue<?> value = exitStore.getValue(expression);
 
             // don't check if return statement certainly does not match 'result'. at the moment,
             // this means the result is a boolean literal
             if (!(retVal == null || retVal == result)) {
                 continue;
             }
-            AnnotationMirror inferredAnno =
-                    value == null ? null : value.getType().getAnnotationInHierarchy(annotation);
-            if (!checkContract(expr, annotation, inferredAnno, exitStore)) {
+            AnnotationMirror inferredAnno = null;
+            if (value != null) {
+                QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                Set<AnnotationMirror> annos = value.getAnnotations();
+                inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, annotation);
+            }
+
+            if (!checkContract(expression, annotation, inferredAnno, exitStore)) {
                 checker.report(
                         Result.failure(
                                 "contracts.conditional.postcondition.not.satisfied",
-                                expr.toString()),
+                                expression.toString()),
                         returnStmt.getTree());
-            }
-        }
-    }
-
-    /**
-     * Checks all conditional postcondition on the method with element
-     * {@code methodElement} for consistency, i.e. that no formal parameter
-     * names are mentioned in the conditional postconditions (an index such
-     * as "#1" should be used instead), and that all formal parameters
-     * referred to by an index in the conditional postconditions are
-     * effectively final.
-     */
-    protected void checkConditionalPostconditionsConsistency(
-            MethodTree node, ExecutableElement methodElement, List<String> formalParamNames) {
-        FlowExpressionContext flowExprContext = null;
-        Set<ConditionalPostcondition> conditionalPostconditions =
-                contractsUtils.getConditionalPostconditions(methodElement);
-
-        for (ConditionalPostcondition p : conditionalPostconditions) {
-            String expression = p.expression;
-            AnnotationMirror annotation = AnnotationUtils.fromName(elements, p.annotationString);
-
-            if (flowExprContext == null) {
-                flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
-                                node, getCurrentPath(), checker.getContext());
-            }
-
-            // Only check if the postcondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
-                continue;
-            }
-
-            if (formalParamNames != null && formalParamNames.contains(expression)) {
-                checker.report(
-                        Result.warning(
-                                "contracts.conditional.postcondition.expression.parameter.name",
-                                node.getName().toString(),
-                                expression,
-                                formalParamNames.indexOf(expression) + 1,
-                                expression),
-                        node);
-            }
-
-            try {
-                FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath(), false);
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
-
-                // ignore expressions that do not parse
-                continue;
-            }
-            checkFlowExprParameters(methodElement, expression);
-        }
-    }
-
-    /**
-     * Check that the parameters used in {@code stringExpr} are effectively final for method
-     * {@code method}.
-     */
-    protected void checkFlowExprParameters(ExecutableElement method, String stringExpr) {
-        // check that all parameters used in the expression are
-        // effectively final, so that they cannot be modified
-        List<Integer> parameterIndices = FlowExpressionParseUtil.parameterIndices(stringExpr);
-        for (Integer idx : parameterIndices) {
-            VariableElement parameter = method.getParameters().get(idx - 1);
-            if (!ElementUtils.isEffectivelyFinal(parameter)) {
-                checker.report(
-                        Result.failure("flowexpr.parameter.not.final", "#" + idx, stringExpr),
-                        method);
             }
         }
     }
@@ -895,10 +772,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Performs two checks: subtyping and assignability checks, using
-     * {@link #commonAssignmentCheck(Tree, ExpressionTree, String)}.
+     * Performs two checks: subtyping and assignability checks, using {@link
+     * #commonAssignmentCheck(Tree, ExpressionTree, String)}.
      *
-     * If the subtype check fails, it issues a "assignment.type.incompatible" error.
+     * <p>If the subtype check fails, it issues a "assignment.type.incompatible" error.
      */
     @Override
     public Void visitAssignment(AssignmentTree node, Void p) {
@@ -917,11 +794,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Performs a subtype check, to test whether the node expression
-     * iterable type is a subtype of the variable type in the enhanced for
-     * loop.
+     * Performs a subtype check, to test whether the node expression iterable type is a subtype of
+     * the variable type in the enhanced for loop.
      *
-     * If the subtype check fails, it issues a "enhancedfor.type.incompatible" error.
+     * <p>If the subtype check fails, it issues a "enhancedfor.type.incompatible" error.
      */
     @Override
     public Void visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
@@ -941,12 +817,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Performs a method invocation check.
      *
-     * An invocation of a method, m, on the receiver, r is valid only if:
+     * <p>An invocation of a method, m, on the receiver, r is valid only if:
+     *
      * <ul>
-     *  <li> passed arguments are subtypes of corresponding m parameters </li>
-     *  <li> r is a subtype of m receiver type </li>
-     *  <li> if m is generic, passed type arguments are subtypes
-     *      of m type variables </li>
+     *   <li> passed arguments are subtypes of corresponding m parameters
+     *   <li> r is a subtype of m receiver type
+     *   <li> if m is generic, passed type arguments are subtypes of m type variables
      * </ul>
      */
     @Override
@@ -997,13 +873,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks that all the given {@code preconditions} hold true immediately prior to
-     * the method invocation or variable access at {@code tree}.
+     * Checks that all the given {@code preconditions} hold true immediately prior to the method
+     * invocation or variable access at {@code tree}.
      *
      * @param tree the Tree immediately prior to which the preconditions must hold true
      * @param preconditions the preconditions to be checked
      */
-    protected void checkPreconditions(Tree tree, Set<PreOrPostcondition> preconditions) {
+    protected void checkPreconditions(Tree tree, Set<Precondition> preconditions) {
         // This check is needed for the GUI effects and Units Checkers tests to pass.
         // TODO: Remove this check and investigate the root cause.
         if (preconditions.isEmpty()) {
@@ -1014,16 +890,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks that all the given {@code preconditions} hold true immediately prior to
-     * the method invocation or variable access at {@code node}.  Errors are reported
-     * with respect to {@code treeForErrorReporting}, which does not need to correspond to {@code node}.
+     * Checks that all the given {@code preconditions} hold true immediately prior to the method
+     * invocation or variable access at {@code node}. Errors are reported with respect to {@code
+     * treeForErrorReporting}, which does not need to correspond to {@code node}.
      *
      * @param treeForErrorReporting the Tree used to report the error via checker.report.
      * @param node the Node immediately prior to which the preconditions must hold true
      * @param preconditions the preconditions to be checked
      */
     protected void checkPreconditions(
-            Tree treeForErrorReporting, Node node, Set<PreOrPostcondition> preconditions) {
+            Tree treeForErrorReporting, Node node, Set<Precondition> preconditions) {
         if (preconditions.isEmpty()) {
             return;
         }
@@ -1037,14 +913,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return;
         }
 
-        for (PreOrPostcondition p : preconditions) {
+        for (Precondition p : preconditions) {
             String expression = p.expression;
-            AnnotationMirror anno = AnnotationUtils.fromName(elements, p.annotationString);
-
-            // Only check the precondition if it concerns this checker
-            if (!atypeFactory.isSupportedQualifier(anno)) {
-                continue;
-            }
+            AnnotationMirror anno = p.annotation;
 
             try {
                 FlowExpressions.Receiver expr =
@@ -1061,11 +932,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 CFAbstractValue<?> value = store.getValue(expr);
 
                 AnnotationMirror inferredAnno = null;
-
                 if (value != null) {
-                    inferredAnno = value.getType().getAnnotationInHierarchy(anno);
+                    QualifierHierarchy hierarchy = atypeFactory.getQualifierHierarchy();
+                    Set<AnnotationMirror> annos = value.getAnnotations();
+                    inferredAnno = hierarchy.findAnnotationInSameHierarchy(annos, anno);
                 }
-
                 if (!checkContract(expr, anno, inferredAnno, store)) {
                     checker.report(
                             Result.failure(
@@ -1084,10 +955,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Returns a flow expression context corresponding to the given {@code node}.
-     * Only handles the kinds of Nodes for which a precondition check is applicable
-     * and for which values are stored in {@link CFAbstractStore}. Returns null
-     * if the Node kind is not handled.
+     * Returns a flow expression context corresponding to the given {@code node}. Only handles the
+     * kinds of Nodes for which a precondition check is applicable and for which values are stored
+     * in {@link CFAbstractStore}. Returns null if the Node kind is not handled.
      *
      * @param node the Node to generate the flow expression context for
      * @return the resulting flow expression context, or null if the Node kind is not handled.
@@ -1139,20 +1009,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return flowExprContext;
     }
 
-    /***
-     * Returns the flow expression receiver for the {@code expression} given the
-     * {@code flowExprContext}. The expression "this" is allowed and is handled.
-     * {@code node} refers to the method invocation or variable access being analyzed.
-     * It can be used by an overriding method for special handling of expressions
-     * such as {@code "<self>"} which may indicate a reference to {@code node}.
+    /**
+     * * Returns the flow expression receiver for the {@code expression} given the {@code
+     * flowExprContext}. The expression "this" is allowed and is handled. {@code node} refers to the
+     * method invocation or variable access being analyzed. It can be used by an overriding method
+     * for special handling of expressions such as {@code "<self>"} which may indicate a reference
+     * to {@code node}.
      *
      * @param expression the flow expression string to be parsed
-     * @param flowExprContext the flow expression context with respect to which the expression string is to be evaluated
-     * @param node the Node immediately prior to which the preconditions checked by the calling method must hold true.
-     * Used by overriding implementations. Allowed to be null.
-     * @param path the TreePath from which to obtain the scope relative to which local variables are parsed
-     * @param treeForErrorReporting the Tree used to report parsing errors via checker.report.
-     * Used by overriding implementations.
+     * @param flowExprContext the flow expression context with respect to which the expression
+     *     string is to be evaluated
+     * @param node the Node immediately prior to which the preconditions checked by the calling
+     *     method must hold true. Used by overriding implementations. Allowed to be null.
+     * @param path the TreePath from which to obtain the scope relative to which local variables are
+     *     parsed
+     * @param treeForErrorReporting the Tree used to report parsing errors via checker.report. Used
+     *     by overriding implementations.
      */
     protected FlowExpressions.Receiver parseExpressionString(
             String expression,
@@ -1166,64 +1038,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks all the preconditions of the method with element
-     * {@code methodElement} for consistency, i.e. that no formal
-     * parameter names are mentioned in the preconditions
-     * (an index such as "#1" should be used instead), and that all
-     * formal parameters referred to by an index in the preconditions are
-     * effectively final.
-     */
-    protected void checkPreconditionsConsistency(
-            MethodTree node, ExecutableElement methodElement, List<String> formalParamNames) {
-        FlowExpressionContext flowExprContext = null;
-        Set<PreOrPostcondition> preconditions = contractsUtils.getPreconditions(methodElement);
-
-        for (PreOrPostcondition p : preconditions) {
-            String expression = p.expression;
-            AnnotationMirror anno = AnnotationUtils.fromName(elements, p.annotationString);
-
-            if (flowExprContext == null) {
-                flowExprContext =
-                        FlowExpressionContext.buildContextForMethodDeclaration(
-                                node, getCurrentPath(), checker.getContext());
-            }
-
-            // Only check if the precondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(anno)) {
-                return;
-            }
-
-            if (formalParamNames != null && formalParamNames.contains(expression)) {
-                checker.report(
-                        Result.warning(
-                                "contracts.precondition.expression.parameter.name",
-                                node.getName().toString(),
-                                expression,
-                                formalParamNames.indexOf(expression) + 1,
-                                expression),
-                        node);
-            }
-
-            try {
-                FlowExpressionParseUtil.parse(expression, flowExprContext, getCurrentPath(), false);
-            } catch (FlowExpressionParseException e) {
-                // report errors here
-                checker.report(e.getResult(), node);
-
-                // ignore expressions that do not parse
-                continue;
-            }
-            checkFlowExprParameters(methodElement, expression);
-        }
-    }
-
-    /**
-     * Returns true if and only if {@code inferredAnnotation} is valid for a
-     * given expression to match the {@code necessaryAnnotation}.
+     * Returns true if and only if {@code inferredAnnotation} is valid for a given expression to
+     * match the {@code necessaryAnnotation}.
      *
-     * <p>
-     * By default, {@code inferredAnnotation} must be a subtype of
-     * {@code necessaryAnnotation}, but subclasses might override this behavior.
+     * <p>By default, {@code inferredAnnotation} must be a subtype of {@code necessaryAnnotation},
+     * but subclasses might override this behavior.
      */
     protected boolean checkContract(
             Receiver expr,
@@ -1239,9 +1058,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Handle case Vector.copyInto()
     private final AnnotatedDeclaredType vectorType;
 
-    /**
-     * Returns true if the method symbol represents {@code Vector.copyInto}
-     */
+    /** Returns true if the method symbol represents {@code Vector.copyInto} */
     protected boolean isVectorCopyInto(AnnotatedExecutableType method) {
         ExecutableElement elt = method.getElement();
         if (elt.getSimpleName().contentEquals("copyInto") && elt.getParameters().size() == 1)
@@ -1253,21 +1070,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Type checks the method arguments of {@code Vector.copyInto()}.
      *
-     * The Checker Framework special-cases the method invocation, as it is
-     * type safety cannot be expressed by Java's type system.
+     * <p>The Checker Framework special-cases the method invocation, as it is type safety cannot be
+     * expressed by Java's type system.
      *
-     * For a Vector {@code v} of type {@code Vectory<E>}, the method
-     * invocation {@code v.copyInto(arr)} is type-safe iff {@code arr}
-     * is a array of type {@code T[]}, where {@code T} is a subtype of
-     * {@code E}.
+     * <p>For a Vector {@code v} of type {@code Vectory<E>}, the method invocation {@code
+     * v.copyInto(arr)} is type-safe iff {@code arr} is a array of type {@code T[]}, where {@code T}
+     * is a subtype of {@code E}.
      *
-     * In other words, this method checks that the type argument of the
-     * receiver method is a subtype of the component type of the passed array
-     * argument.
+     * <p>In other words, this method checks that the type argument of the receiver method is a
+     * subtype of the component type of the passed array argument.
      *
-     * @param node   a method invocation of {@code Vector.copyInto()}
+     * @param node a method invocation of {@code Vector.copyInto()}
      * @param params the types of the parameters of {@code Vectory.copyInto()}
-     *
      */
     protected void typeCheckVectorCopyIntoArgument(
             MethodInvocationTree node, List<? extends AnnotatedTypeMirror> params) {
@@ -1296,11 +1110,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Performs a new class invocation check.
      *
-     * An invocation of a constructor, c, is valid only if:
+     * <p>An invocation of a constructor, c, is valid only if:
+     *
      * <ul>
-     *  <li> passed arguments are subtypes of corresponding c parameters </li>
-     *  <li> if c is generic, passed type arguments are subtypes
-     *      of c type variables </li>
+     *   <li> passed arguments are subtypes of corresponding c parameters
+     *   <li> if c is generic, passed type arguments are subtypes of c type variables
      * </ul>
      */
     @Override
@@ -1377,9 +1191,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks that the type of the return expression is a subtype of the
-     * enclosing method required return type.  If not, it issues a
-     * "return.type.incompatible" error.
+     * Checks that the type of the return expression is a subtype of the enclosing method required
+     * return type. If not, it issues a "return.type.incompatible" error.
      */
     @Override
     public Void visitReturn(ReturnTree node, Void p) {
@@ -1429,8 +1242,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      */
 
     /**
-     * Ensure that the annotation arguments comply to their declarations. This
-     * needs some special casing, as annotation arguments form special trees.
+     * Ensure that the annotation arguments comply to their declarations. This needs some special
+     * casing, as annotation arguments form special trees.
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
@@ -1533,9 +1346,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * If the computation of the type of the ConditionalExpressionTree in
-     * org.checkerframework.framework.type.TypeFromTree.TypeFromExpression.visitConditionalExpression(ConditionalExpressionTree, AnnotatedTypeFactory)
-     * is correct, the following checks are redundant.
-     * However, let's add another failsafe guard and do the checks.
+     * org.checkerframework.framework.type.TypeFromTree.TypeFromExpression.visitConditionalExpression(ConditionalExpressionTree,
+     * AnnotatedTypeFactory) is correct, the following checks are redundant. However, let's add
+     * another failsafe guard and do the checks.
      */
     @Override
     public Void visitConditionalExpression(ConditionalExpressionTree node, Void p) {
@@ -1551,8 +1364,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // **********************************************************************
 
     /**
-     * Performs assignability check using
-     * {@link #checkAssignability(AnnotatedTypeMirror, Tree)}.
+     * Performs assignability check using {@link #checkAssignability(AnnotatedTypeMirror, Tree)}.
      */
     @Override
     public Void visitUnary(UnaryTree node, Void p) {
@@ -1567,8 +1379,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Performs assignability check using
-     * {@link #checkAssignability(AnnotatedTypeMirror, Tree)}.
+     * Performs assignability check using {@link #checkAssignability(AnnotatedTypeMirror, Tree)}.
      */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
@@ -1596,10 +1407,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Do not override this method!
-     * Previously, this method contained some logic, but the main modifier of types was missing.
-     * It has been merged with the TypeValidator below.
-     * This method doesn't need to do anything, as the type is already validated.
+     * Do not override this method! Previously, this method contained some logic, but the main
+     * modifier of types was missing. It has been merged with the TypeValidator below. This method
+     * doesn't need to do anything, as the type is already validated.
      */
     @Override
     public final Void visitParameterizedType(ParameterizedTypeTree node, Void p) {
@@ -1729,9 +1539,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks the type of the exception parameter
-     * Subclasses should override checkExceptionParameter(CatchTree node)
-     * rather than this method to change the behavior of this check.
+     * Checks the type of the exception parameter Subclasses should override
+     * checkExceptionParameter(CatchTree node) rather than this method to change the behavior of
+     * this check.
      */
     @Override
     public Void visitCatch(CatchTree node, Void p) {
@@ -1741,8 +1551,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks the type of a thrown exception. Subclasses should override
-     * checkThrownExpression(ThrowTree node) rather than this method to change
-     * the behavior of this check.
+     * checkThrownExpression(ThrowTree node) rather than this method to change the behavior of this
+     * check.
      */
     @Override
     public Void visitThrow(ThrowTree node, Void p) {
@@ -1755,19 +1565,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // **********************************************************************
 
     /**
-     * Issue error if the exception parameter is not a supertype of the
-     * annotation specified by
-     * {@link #getExceptionParameterLowerBoundAnnotations()},
-     * which is top by default.
-     * <p>
+     * Issue error if the exception parameter is not a supertype of the annotation specified by
+     * {@link #getExceptionParameterLowerBoundAnnotations()}, which is top by default.
      *
-     * Subclasses may override this method to change the behavior of
-     * this check. Subclasses wishing to enforce that exception parameter be
-     * annotated with other annotations can just override
-     * {@link #getExceptionParameterLowerBoundAnnotations()}.
+     * <p>Subclasses may override this method to change the behavior of this check. Subclasses
+     * wishing to enforce that exception parameter be annotated with other annotations can just
+     * override {@link #getExceptionParameterLowerBoundAnnotations()}.
      *
-     * @param node
-     *            CatchTree to check
+     * @param node CatchTree to check
      */
     protected void checkExceptionParameter(CatchTree node) {
 
@@ -1800,17 +1605,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Returns a set of AnnotationMirrors that is a lower bound for exception
-     * parameters.
+     * Returns a set of AnnotationMirrors that is a lower bound for exception parameters.
      *
-     * Note: by default this method is called by getThrowUpperBoundAnnotations(), so that
-     * this annotation is enforced.
+     * <p>Note: by default this method is called by getThrowUpperBoundAnnotations(), so that this
+     * annotation is enforced.
      *
-     * (Default is top)
+     * <p>(Default is top)
      *
-     * @return set of annotation mirrors, one per hierarchy, that from a lower
-     *         bound of annotations that can be written on an exception
-     *         parameter
+     * @return set of annotation mirrors, one per hierarchy, that from a lower bound of annotations
+     *     that can be written on an exception parameter
      */
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
         return atypeFactory.getQualifierHierarchy().getTopAnnotations();
@@ -1818,21 +1621,17 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     /**
      * Checks the type of the thrown expression.
-     * <p>
      *
-     * By default, this method checks that the thrown expression is a subtype of top.
-     * <p>
+     * <p>By default, this method checks that the thrown expression is a subtype of top.
      *
-     * Issue error if the thrown expression is not a sub type of the
-     * the annotation given by {@link #getThrowUpperBoundAnnotations()},
-     * the same as {@link #getExceptionParameterLowerBoundAnnotations()}
-     * by default.
-     * <p>
+     * <p>Issue error if the thrown expression is not a sub type of the the annotation given by
+     * {@link #getThrowUpperBoundAnnotations()}, the same as {@link
+     * #getExceptionParameterLowerBoundAnnotations()} by default.
      *
-     * Subclasses may override this method to change the behavior of this check.
-     * Subclasses wishing to enforce that the thrown expression be a subtype of a type besides
-     * {@link #getExceptionParameterLowerBoundAnnotations}, should override
-     * {@link #getThrowUpperBoundAnnotations()}.
+     * <p>Subclasses may override this method to change the behavior of this check. Subclasses
+     * wishing to enforce that the thrown expression be a subtype of a type besides {@link
+     * #getExceptionParameterLowerBoundAnnotations}, should override {@link
+     * #getThrowUpperBoundAnnotations()}.
      *
      * @param node ThrowTree to check
      */
@@ -1886,30 +1685,28 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Returns a set of AnnotationMirrors that is a upper bound for thrown
-     * exceptions.
+     * Returns a set of AnnotationMirrors that is a upper bound for thrown exceptions.
      *
-     * Note: by default this method is returns by getExceptionParameterLowerBoundAnnotations(), so that
-     * this annotation is enforced.
+     * <p>Note: by default this method is returns by getExceptionParameterLowerBoundAnnotations(),
+     * so that this annotation is enforced.
      *
-     * (Default is top)
+     * <p>(Default is top)
      *
-     * @return set of annotation mirrors, one per hierarchy, that form an upper
-     *         bound of thrown expressions
+     * @return set of annotation mirrors, one per hierarchy, that form an upper bound of thrown
+     *     expressions
      */
     protected Set<? extends AnnotationMirror> getThrowUpperBoundAnnotations() {
         return getExceptionParameterLowerBoundAnnotations();
     }
 
     /**
-     * Checks the validity of an assignment (or pseudo-assignment) from a value
-     * to a variable and emits an error message (through the compiler's
-     * messaging interface) if it is not valid.
+     * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
+     * emits an error message (through the compiler's messaging interface) if it is not valid.
      *
      * @param varTree the AST node for the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
-     * @param errorKey the error message to use if the check fails (must be a
-     *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
+     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     *     see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      */
     protected void commonAssignmentCheck(
             Tree varTree, ExpressionTree valueExp, /*@CompilerMessageKey*/ String errorKey) {
@@ -1926,14 +1723,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks the validity of an assignment (or pseudo-assignment) from a value
-     * to a variable and emits an error message (through the compiler's
-     * messaging interface) if it is not valid.
+     * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
+     * emits an error message (through the compiler's messaging interface) if it is not valid.
      *
      * @param varType the annotated type of the lvalue (usually a variable)
      * @param valueExp the AST node for the rvalue (the new value)
-     * @param errorKey the error message to use if the check fails (must be a
-     *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
+     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     *     see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      */
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
@@ -1960,15 +1756,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks the validity of an assignment (or pseudo-assignment) from a value
-     * to a variable and emits an error message (through the compiler's
-     * messaging interface) if it is not valid.
+     * Checks the validity of an assignment (or pseudo-assignment) from a value to a variable and
+     * emits an error message (through the compiler's messaging interface) if it is not valid.
      *
      * @param varType the annotated type of the variable
      * @param valueType the annotated type of the value
      * @param valueTree the location to use when reporting the error message
-     * @param errorKey the error message to use if the check fails (must be a
-     *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
+     * @param errorKey the error message to use if the check fails (must be a compiler message key,
+     *     see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      */
     protected void commonAssignmentCheck(
             AnnotatedTypeMirror varType,
@@ -1980,7 +1775,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         String varTypeString = varType.toString();
 
         // If both types as strings are the same, try printing verbosely.
-        if (valueTypeString.equals(varTypeString)) {
+        if (valueTypeString.equals(varTypeString)
+                // or if neither string contains an annotation
+                || (!valueTypeString.contains("@") && !varTypeString.contains("@"))) {
             valueTypeString = valueType.toString(true);
             varTypeString = varType.toString(true);
         }
@@ -2050,10 +1847,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Checks that the annotations on the type arguments supplied to a type or a
-     * method invocation are within the bounds of the type variables as
-     * declared, and issues the "type.argument.type.incompatible" error if they are
-     * not.
+     * Checks that the annotations on the type arguments supplied to a type or a method invocation
+     * are within the bounds of the type variables as declared, and issues the
+     * "type.argument.type.incompatible" error if they are not.
      *
      * @param toptree the tree for error reporting, only used for inferred type arguments
      * @param paramBounds the bounds of the type parameters from a class or method declaration
@@ -2134,8 +1930,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     //TODO: This may not occur only in places where capture conversion occurs but in those cases
     //TODO: The containment check provided by this method should be enough
     /**
-     * Identifies cases that would not happen if capture conversion were implemented.  These special cases
-     * should be removed when capture conversion is implemented.
+     * Identifies cases that would not happen if capture conversion were implemented. These special
+     * cases should be removed when capture conversion is implemented.
      */
     private boolean shouldBeCaptureConverted(
             final AnnotatedTypeMirror typeArg, final AnnotatedTypeParameterBounds bounds) {
@@ -2219,16 +2015,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     */
 
     /**
-     * Indicates whether to skip subtype checks on the receiver when
-     * checking method invocability. A visitor may, for example,
-     * allow a method to be invoked even if the receivers are siblings
-     * in a hierarchy, provided that some other condition (implemented
-     * by the visitor) is satisfied.
+     * Indicates whether to skip subtype checks on the receiver when checking method invocability. A
+     * visitor may, for example, allow a method to be invoked even if the receivers are siblings in
+     * a hierarchy, provided that some other condition (implemented by the visitor) is satisfied.
      *
-     * @param node                        the method invocation node
-     * @param methodDefinitionReceiver    the ATM of the receiver of the method definition
-     * @param methodCallReceiver          the ATM of the receiver of the method call
-     *
+     * @param node the method invocation node
+     * @param methodDefinitionReceiver the ATM of the receiver of the method definition
+     * @param methodCallReceiver the ATM of the receiver of the method call
      * @return whether to skip subtype checks on the receiver
      */
     protected boolean skipReceiverSubtypeCheck(
@@ -2239,16 +2032,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests whether the method can be invoked using the receiver of the 'node'
-     * method invocation, and issues a "method.invocation.invalid" if the
-     * invocation is invalid.
+     * Tests whether the method can be invoked using the receiver of the 'node' method invocation,
+     * and issues a "method.invocation.invalid" if the invocation is invalid.
      *
-     * This implementation tests whether the receiver in the method invocation
-     * is a subtype of the method receiver type. This behavior can be specialized
-     * by overriding skipReceiverSubtypeCheck.
+     * <p>This implementation tests whether the receiver in the method invocation is a subtype of
+     * the method receiver type. This behavior can be specialized by overriding
+     * skipReceiverSubtypeCheck.
      *
-     * @param method    the type of the invoked method
-     * @param node      the method invocation node
+     * @param method the type of the invoked method
+     * @param node the method invocation node
      */
     protected void checkMethodInvocability(
             AnnotatedExecutableType method, MethodInvocationTree node) {
@@ -2323,15 +2115,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * A helper method to check that each passed argument is a subtype of the
-     * corresponding required argument, and issues "argument.invalid" error
-     * for each passed argument that not a subtype of the required one.
+     * A helper method to check that each passed argument is a subtype of the corresponding required
+     * argument, and issues "argument.invalid" error for each passed argument that not a subtype of
+     * the required one.
      *
-     * Note this method requires the lists to have the same length, as it
-     * does not handle cases like var args.
+     * <p>Note this method requires the lists to have the same length, as it does not handle cases
+     * like var args.
      *
-     * @param requiredArgs  the required types
-     * @param passedArgs    the expressions passed to the corresponding types
+     * @param requiredArgs the required types
+     * @param passedArgs the expressions passed to the corresponding types
      */
     protected void checkArguments(
             List<? extends AnnotatedTypeMirror> requiredArgs,
@@ -2361,12 +2153,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * @return true if both types are type variables and outer contains inner
-     * Outer contains inner implies:
-     * {@literal
-     *     inner.upperBound <: outer.upperBound
-     *     outer.lowerBound <: inner.lowerBound
-     * }
+     * @return true if both types are type variables and outer contains inner Outer contains inner
+     *     implies: {@literal inner.upperBound <: outer.upperBound outer.lowerBound <:
+     *     inner.lowerBound }
      */
     protected boolean testTypevarContainment(
             final AnnotatedTypeMirror inner, final AnnotatedTypeMirror outer) {
@@ -2387,8 +2176,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Type checks that a method may override another method.
-     * Uses the OverrideChecker class.
+     * Type checks that a method may override another method. Uses the OverrideChecker class.
      *
      * @param overriderTree declaration tree of overriding method
      * @param overridingType type of overriding class
@@ -2428,8 +2216,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     private static boolean typeArgumentInferenceCheck = false;
 
     /**
-     * Check that a method reference is allowed.
-     * Using the OverrideChecker class.
+     * Check that a method reference is allowed. Using the OverrideChecker class.
      *
      * @param memberReferenceTree the tree for the method reference
      * @return true if the method reference is allowed
@@ -2509,10 +2296,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         return overrideChecker.checkOverride();
     }
 
-    /**
-     * Check if method reference type argument inference is required.  Issue an error if
-     * is is.
-     */
+    /** Check if method reference type argument inference is required. Issue an error if is is. */
     private boolean checkMethodReferenceInference(
             MemberReferenceTree memberReferenceTree,
             AnnotatedExecutableType memberReferenceType,
@@ -2562,22 +2346,19 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Class to perform method override and method reference checks.
      *
-     * Method references are checked similarly to method overrides, with the
-     * method reference viewed as overriding the functional interface's method.
+     * <p>Method references are checked similarly to method overrides, with the method reference
+     * viewed as overriding the functional interface's method.
      *
-     * Checks that an overriding method's return type, parameter types, and
-     * receiver type are correct with respect to the annotations on the
-     * overridden method's return type, parameter types, and receiver type.
+     * <p>Checks that an overriding method's return type, parameter types, and receiver type are
+     * correct with respect to the annotations on the overridden method's return type, parameter
+     * types, and receiver type.
      *
-     * <p>
-     * Furthermore, any contracts on the method must satisfy behavioral
-     * subtyping, that is, postconditions must be at least as strong as the
-     * postcondition on the superclass, and preconditions must be at most as
-     * strong as the condition on the superclass.
+     * <p>Furthermore, any contracts on the method must satisfy behavioral subtyping, that is,
+     * postconditions must be at least as strong as the postcondition on the superclass, and
+     * preconditions must be at most as strong as the condition on the superclass.
      *
-     * <p>
-     * This method returns the result of the check, but also emits error
-     * messages as a side effect.
+     * <p>This method returns the result of the check, but also emits error messages as a side
+     * effect.
      */
     private class OverrideChecker {
         // Strings for printing
@@ -2599,25 +2380,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         /**
          * Create an OverrideChecker.
          *
-         * Notice that the return types are passed in separately. This is to
-         * support some types of method references where the overrider's return
-         * type is not the appropriate type to check.
+         * <p>Notice that the return types are passed in separately. This is to support some types
+         * of method references where the overrider's return type is not the appropriate type to
+         * check.
          *
-         * @param overriderTree
-         *            the AST node of the overriding method or method reference
-         * @param overrider
-         *            the type of the overriding method
-         * @param overridingType
-         *            the type enclosing the overrider method, usually an AnnotatedDeclaredType;
-         *            for Method References may be something else.
-         * @param overridingReturnType
-         *            the return type of the overriding method
-         * @param overridden
-         *            the type of the overridden method
-         * @param overriddenType
-         *            the declared type enclosing the overridden method
-         * @param overriddenReturnType
-         *            the return type of the overridden method
+         * @param overriderTree the AST node of the overriding method or method reference
+         * @param overrider the type of the overriding method
+         * @param overridingType the type enclosing the overrider method, usually an
+         *     AnnotatedDeclaredType; for Method References may be something else
+         * @param overridingReturnType the return type of the overriding method
+         * @param overridden the type of the overridden method
+         * @param overriddenType the declared type enclosing the overridden method
+         * @param overriddenReturnType the return type of the overridden method
          */
         OverrideChecker(
                 Tree overriderTree,
@@ -2708,9 +2482,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
             // Check postconditions
             ContractsUtils contracts = ContractsUtils.getInstance(atypeFactory);
-            Set<PreOrPostcondition> superPost =
-                    contracts.getPostconditions(overridden.getElement());
-            Set<PreOrPostcondition> subPost = contracts.getPostconditions(overrider.getElement());
+            Set<Postcondition> superPost = contracts.getPostconditions(overridden.getElement());
+            Set<Postcondition> subPost = contracts.getPostconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPost2 =
                     resolveContracts(superPost, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPost2 = resolveContracts(subPost, overrider);
@@ -2727,8 +2500,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     postmsg);
 
             // Check preconditions
-            Set<PreOrPostcondition> superPre = contracts.getPreconditions(overridden.getElement());
-            Set<PreOrPostcondition> subPre = contracts.getPreconditions(overrider.getElement());
+            Set<Precondition> superPre = contracts.getPreconditions(overridden.getElement());
+            Set<Precondition> subPre = contracts.getPreconditions(overrider.getElement());
             Set<Pair<Receiver, AnnotationMirror>> superPre2 =
                     resolveContracts(superPre, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subPre2 = resolveContracts(subPre, overrider);
@@ -2749,9 +2522,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Set<ConditionalPostcondition> subCPost =
                     contracts.getConditionalPostconditions(overrider.getElement());
             // consider only 'true' postconditions
-            Set<PreOrPostcondition> superCPostTrue =
-                    filterConditionalPostconditions(superCPost, true);
-            Set<PreOrPostcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
+            Set<Postcondition> superCPostTrue = filterConditionalPostconditions(superCPost, true);
+            Set<Postcondition> subCPostTrue = filterConditionalPostconditions(subCPost, true);
             Set<Pair<Receiver, AnnotationMirror>> superCPostTrue2 =
                     resolveContracts(superCPostTrue, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subCPostTrue2 =
@@ -2769,10 +2541,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     posttruemsg);
 
             // consider only 'false' postconditions
-            Set<PreOrPostcondition> superCPostFalse =
-                    filterConditionalPostconditions(superCPost, false);
-            Set<PreOrPostcondition> subCPostFalse =
-                    filterConditionalPostconditions(subCPost, false);
+            Set<Postcondition> superCPostFalse = filterConditionalPostconditions(superCPost, false);
+            Set<Postcondition> subCPostFalse = filterConditionalPostconditions(subCPost, false);
             Set<Pair<Receiver, AnnotationMirror>> superCPostFalse2 =
                     resolveContracts(superCPostFalse, overridden);
             Set<Pair<Receiver, AnnotationMirror>> subCPostFalse2 =
@@ -3083,28 +2853,27 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Filters the set of conditional postconditions to return only those whose
-     * annotation result value matches the value of the given boolean {@code b}.
-     * For example, if {@code b == true}, then the following {@code @EnsuresNonNullIf}
-     * conditional postcondition would match:<br>
+     * Filters the set of conditional postconditions to return only those whose annotation result
+     * value matches the value of the given boolean {@code b}. For example, if {@code b == true},
+     * then the following {@code @EnsuresNonNullIf} conditional postcondition would match:<br>
      * {@code @EnsuresNonNullIf(expression="#1", result=true)}<br>
      * {@code boolean equals(@Nullable Object o)}
      */
-    private Set<PreOrPostcondition> filterConditionalPostconditions(
+    private Set<Postcondition> filterConditionalPostconditions(
             Set<ConditionalPostcondition> conditionalPostconditions, boolean b) {
-        Set<PreOrPostcondition> result = new LinkedHashSet<PreOrPostcondition>();
+        Set<Postcondition> result = new LinkedHashSet<>();
         for (ConditionalPostcondition p : conditionalPostconditions) {
             if (p.annoResult == b) {
-                result.add(new PreOrPostcondition(p.expression, p.annotationString));
+                result.add(new Postcondition(p.expression, p.annotation));
             }
         }
         return result;
     }
 
     /**
-     * Checks that {@code mustSubset} is a subset of {@code set} in the
-     * following sense: For every expression in {@code mustSubset} there must be the
-     * same expression in {@code set}, with the same (or a stronger) annotation.
+     * Checks that {@code mustSubset} is a subset of {@code set} in the following sense: For every
+     * expression in {@code mustSubset} there must be the same expression in {@code set}, with the
+     * same (or a stronger) annotation.
      */
     private void checkContractsSubset(
             String overriderMeth,
@@ -3146,25 +2915,18 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Takes a set of contracts identified by their expression and annotation
-     * strings and resolves them to the correct {@link Receiver} and
-     * {@link AnnotationMirror}.
+     * Takes a set of contracts identified by their expression and annotation strings and resolves
+     * them to the correct {@link Receiver} and {@link AnnotationMirror}.
      */
     private Set<Pair<Receiver, AnnotationMirror>> resolveContracts(
-            Set<PreOrPostcondition> contractSet, AnnotatedExecutableType method) {
+            Set<? extends Contract> contractSet, AnnotatedExecutableType method) {
         Set<Pair<Receiver, AnnotationMirror>> result = new HashSet<>();
         MethodTree methodTree = visitorState.getMethodTree();
         TreePath path = atypeFactory.getPath(methodTree);
         FlowExpressionContext flowExprContext = null;
-        for (PreOrPostcondition p : contractSet) {
+        for (Contract p : contractSet) {
             String expression = p.expression;
-            AnnotationMirror annotation =
-                    AnnotationUtils.fromName(atypeFactory.getElementUtils(), p.annotationString);
-
-            // Only check if the postcondition concerns this checker
-            if (!atypeFactory.isSupportedQualifier(annotation)) {
-                continue;
-            }
+            AnnotationMirror annotation = p.annotation;
             if (flowExprContext == null) {
                 flowExprContext =
                         FlowExpressionContext.buildContextForMethodDeclaration(
@@ -3190,11 +2952,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests, for a re-assignment, whether the variable is assignable or not. If
-     * not, it emits an assignability.invalid error.
+     * Tests, for a re-assignment, whether the variable is assignable or not. If not, it emits an
+     * assignability.invalid error.
      *
-     * @param varType   the type of the variable being re-assigned
-     * @param varTree   the tree used to access the variable in the assignment
+     * @param varType the type of the variable being re-assigned
+     * @param varTree the tree used to access the variable in the assignment
      */
     protected void checkAssignability(AnnotatedTypeMirror varType, Tree varTree) {
         if (TreeUtils.isExpressionTree(varTree)) {
@@ -3209,15 +2971,14 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests whether the variable accessed is an assignable variable or not,
-     * given the current scope
+     * Tests whether the variable accessed is an assignable variable or not, given the current scope
      *
-     * TODO: document which parameters are nullable; e.g. receiverType is null in
-     * many cases, e.g. local variables.
+     * <p>TODO: document which parameters are nullable; e.g. receiverType is null in many cases,
+     * e.g. local variables.
      *
-     * @param varType   the annotated variable type
-     * @param variable  tree used to access the variable
-     * @return  true iff variable is assignable in the current scope
+     * @param varType the annotated variable type
+     * @param variable tree used to access the variable
+     * @return true iff variable is assignable in the current scope
      */
     protected boolean isAssignable(
             AnnotatedTypeMirror varType, AnnotatedTypeMirror receiverType, Tree variable) {
@@ -3300,20 +3061,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests that the qualifiers present on the useType are valid qualifiers,
-     * given the qualifiers on the declaration of the type, declarationType.
+     * Tests that the qualifiers present on the useType are valid qualifiers, given the qualifiers
+     * on the declaration of the type, declarationType.
      *
-     * <p>
+     * <p>The check is shallow, as it does not descend into generic or array types (i.e. only
+     * performing the validity check on the raw type or outermost array dimension). {@link
+     * BaseTypeVisitor#validateTypeOf(Tree)} would call this for each type argument or array
+     * dimension separately.
      *
-     * The check is shallow, as it does not descend into generic or array
-     * types (i.e. only performing the validity check on the raw type or
-     * outermost array dimension).  {@link BaseTypeVisitor#validateTypeOf(Tree)}
-     * would call this for each type argument or array dimension separately.
-     *
-     * <p>
-     *
-     * In most cases, {@code useType} simply needs to be a subtype of
-     * {@code declarationType}, but there are exceptions.
+     * <p>In most cases, {@code useType} simply needs to be a subtype of {@code declarationType},
+     * but there are exceptions.
      *
      * @param declarationType the type of the class (TypeElement)
      * @param useType the use of the class (instance type)
@@ -3330,9 +3087,8 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     /**
      * Tests that the qualifiers present on the primitive type are valid.
      *
-     * The default implementation always returns true.
-     * Subclasses should override this method to limit what annotations are
-     * allowed on primitive types.
+     * <p>The default implementation always returns true. Subclasses should override this method to
+     * limit what annotations are allowed on primitive types.
      *
      * @param type the use of the primitive type
      * @param tree the tree where the type is used
@@ -3343,13 +3099,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests that the qualifiers present on the array type are valid.
-     * This method will be invoked for each array level independently, i.e. this
-     * method only needs to check the top-level qualifiers of an array.
+     * Tests that the qualifiers present on the array type are valid. This method will be invoked
+     * for each array level independently, i.e. this method only needs to check the top-level
+     * qualifiers of an array.
      *
-     * The default implementation always returns true.
-     * Subclasses should override this method to limit what annotations are
-     * allowed on array types.
+     * <p>The default implementation always returns true. Subclasses should override this method to
+     * limit what annotations are allowed on array types.
      *
      * @param type the array type use
      * @param tree the tree where the type is used
@@ -3360,11 +3115,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests whether the tree expressed by the passed type tree is a valid type,
-     * and emits an error if that is not the case (e.g. '@Mutable String').
-     * If the tree is a method or constructor, check the return type.
+     * Tests whether the tree expressed by the passed type tree is a valid type, and emits an error
+     * if that is not the case (e.g. '@Mutable String'). If the tree is a method or constructor,
+     * check the return type.
      *
-     * @param tree  the AST type supplied by the user
+     * @param tree the AST type supplied by the user
      */
     public boolean validateTypeOf(Tree tree) {
         AnnotatedTypeMirror type;
@@ -3396,12 +3151,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     }
 
     /**
-     * Tests whether the type and corresponding type tree is a valid type,
-     * and emits an error if that is not the case (e.g. '@Mutable String').
-     * If the tree is a method or constructor, check the return type.
+     * Tests whether the type and corresponding type tree is a valid type, and emits an error if
+     * that is not the case (e.g. '@Mutable String'). If the tree is a method or constructor, check
+     * the return type.
      *
-     * @param tree  the type tree supplied by the user
-     * @param type  the type corresponding to tree
+     * @param tree the type tree supplied by the user
+     * @param type the type corresponding to tree
      */
     public boolean validateType(Tree tree, AnnotatedTypeMirror type) {
         // basic consistency checks
@@ -3427,15 +3182,13 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // **********************************************************************
 
     /**
-     * Tests whether the expression should not be checked because of the tree
-     * referring to unannotated classes, as specified in
-     * the {@code checker.skipUses} property.
+     * Tests whether the expression should not be checked because of the tree referring to
+     * unannotated classes, as specified in the {@code checker.skipUses} property.
      *
-     * It returns true if exprTree is a method invocation or a field access
-     * to a class whose qualified name matches @{link checker.skipUses}
-     * expression.
+     * <p>It returns true if exprTree is a method invocation or a field access to a class whose
+     * qualified name matches @{link checker.skipUses} expression.
      *
-     * @param exprTree  any expression tree
+     * @param exprTree any expression tree
      * @return true if checker should not test exprTree
      */
     protected final boolean shouldSkipUses(ExpressionTree exprTree) {
@@ -3466,9 +3219,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     // Overriding to avoid visit part of the tree
     // **********************************************************************
 
-    /**
-     * Override Compilation Unit so we won't visit package names or imports
-     */
+    /** Override Compilation Unit so we won't visit package names or imports */
     @Override
     public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
         Void r = scan(node.getPackageAnnotations(), p);

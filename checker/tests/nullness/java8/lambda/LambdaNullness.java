@@ -1,7 +1,6 @@
 
 // Test file for nullness parameter and return checks.
 
-import java.lang.Thread;
 import org.checkerframework.checker.nullness.qual.*;
 
 interface Noop {

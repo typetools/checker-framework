@@ -2,7 +2,7 @@
 // TODO: Reenable this test after a @GuardedByName annotation is implemented that can guard primitives,
 // and uncomment all the @GuardedByName annotations below.
 
-// Note that testing of the primitive.type.guardedby error message is done in TestTreeKinds.java
+// Note that testing of the immutable.type.guardedby error message is done in TestTreeKinds.java
 
 class Primitives {
     //@GuardedByName("lock")
