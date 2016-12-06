@@ -31,8 +31,8 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     private final Types types;
     private final AnnotatedTypeFactory annotatedTypeFactory;
     /**
-     * If the type being visited is an uniferred type argument, then the underlying type may not
-     * have the correct relationship with the super type.*
+     * Whether or not the type being visited is an uninferred type argument. If true, then the
+     * underlying type may not have the correct relationship with the supertype.
      */
     private boolean isUninferredTypeAgrument = false;
 

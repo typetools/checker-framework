@@ -3033,7 +3033,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * inferred. The wildcard will be marked as an uninferred wildcard so that {@link
      * AnnotatedWildcardType#isUninferredTypeArgument()} returns true.
      *
-     * <p>This method should only be used for type argument inference or raw types:
+     * <p>This method should only be used by type argument inference or for type arguments to raw
+     * types:
      * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment,
      * AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
      * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
