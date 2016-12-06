@@ -65,33 +65,28 @@ import org.checkerframework.javacutil.TypesUtils;
 import org.checkerframework.javacutil.trees.TreeBuilder;
 
 /**
- * Builds the control flow graph of some Java code (either a method, or an
- * arbitrary statement).
+ * Builds the control flow graph of some Java code (either a method, or an arbitrary statement).
  *
- * <p>
+ * <p>The translation of the AST to the CFG is split into three phases:
  *
- * The translation of the AST to the CFG is split into three phases:
  * <ol>
- * <li><em>Phase one.</em> In the first phase, the AST is translated into a
- * sequence of {@link org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode}s. An extended node can either be a
- * {@link Node}, or one of several meta elements such as a conditional or
- * unconditional jump or a node with additional information about exceptions.
- * Some of the extended nodes contain labels (e.g., for the jump target), and
- * phase one additionally creates a mapping from labels to extended nodes.
- * Finally, the list of leaders is computed: A leader is an extended node which
- * will give rise to a basic block in phase two.</li>
- * <li><em>Phase two.</em> In this phase, the sequence of extended nodes is
- * translated to a graph of control flow blocks that contain nodes. The meta
- * elements from phase one are translated into the correct edges.</li>
- * <li><em>Phase three.</em> The control flow graph generated in phase two can
- * contain degenerate basic blocks such as empty regular basic blocks or
- * conditional basic blocks that have the same block as both 'then' and 'else'
- * successor. This phase removes these cases while preserving the control flow
- * structure.</li>
+ *   <li><em>Phase one.</em> In the first phase, the AST is translated into a sequence of {@link
+ *       org.checkerframework.dataflow.cfg.CFGBuilder.ExtendedNode}s. An extended node can either be
+ *       a {@link Node}, or one of several meta elements such as a conditional or unconditional jump
+ *       or a node with additional information about exceptions. Some of the extended nodes contain
+ *       labels (e.g., for the jump target), and phase one additionally creates a mapping from
+ *       labels to extended nodes. Finally, the list of leaders is computed: A leader is an extended
+ *       node which will give rise to a basic block in phase two.
+ *   <li><em>Phase two.</em> In this phase, the sequence of extended nodes is translated to a graph
+ *       of control flow blocks that contain nodes. The meta elements from phase one are translated
+ *       into the correct edges.
+ *   <li><em>Phase three.</em> The control flow graph generated in phase two can contain degenerate
+ *       basic blocks such as empty regular basic blocks or conditional basic blocks that have the
+ *       same block as both 'then' and 'else' successor. This phase removes these cases while
+ *       preserving the control flow structure.
  * </ol>
  *
  * @author Stefan Heule
- *
  */
 public class CFGBuilder {
 
@@ -108,8 +103,8 @@ public class CFGBuilder {
     }
 
     /**
-     * Class declarations that have been encountered when building the
-     * control-flow graph for a method.
+     * Class declarations that have been encountered when building the control-flow graph for a
+     * method.
      */
     protected final List<ClassTree> declaredClasses = new LinkedList<>();
 
@@ -118,8 +113,8 @@ public class CFGBuilder {
     }
 
     /**
-     * Lambdas encountered when building the control-flow graph for
-     * a method, variable initializer, or initializer.
+     * Lambdas encountered when building the control-flow graph for a method, variable initializer,
+     * or initializer.
      */
     protected final List<LambdaExpressionTree> declaredLambdas = new LinkedList<>();
 
@@ -127,9 +122,7 @@ public class CFGBuilder {
         return declaredLambdas;
     }
 
-    /**
-     * Build the control flow graph of some code.
-     */
+    /** Build the control flow graph of some code. */
     public static ControlFlowGraph build(
             CompilationUnitTree root,
             ProcessingEnvironment env,
@@ -141,8 +134,8 @@ public class CFGBuilder {
     }
 
     /**
-     * Build the control flow graph of some code (method, initializer block, ...).
-     * bodyPath is the TreePath to the body of that code.
+     * Build the control flow graph of some code (method, initializer block, ...). bodyPath is the
+     * TreePath to the body of that code.
      */
     public static ControlFlowGraph build(
             TreePath bodyPath,
@@ -154,9 +147,7 @@ public class CFGBuilder {
                 .run(bodyPath, env, underlyingAST);
     }
 
-    /**
-     * Build the control flow graph of a method.
-     */
+    /** Build the control flow graph of a method. */
     public static ControlFlowGraph build(
             CompilationUnitTree root,
             ProcessingEnvironment env,
@@ -168,17 +159,13 @@ public class CFGBuilder {
                 .run(root, env, tree, classTree);
     }
 
-    /**
-     * Build the control flow graph of some code.
-     */
+    /** Build the control flow graph of some code. */
     public static ControlFlowGraph build(
             CompilationUnitTree root, ProcessingEnvironment env, UnderlyingAST underlyingAST) {
         return new CFGBuilder(false, false).run(root, env, underlyingAST);
     }
 
-    /**
-     * Build the control flow graph of a method.
-     */
+    /** Build the control flow graph of a method. */
     public static ControlFlowGraph build(
             CompilationUnitTree root,
             ProcessingEnvironment env,
@@ -187,9 +174,7 @@ public class CFGBuilder {
         return new CFGBuilder(false, false).run(root, env, tree, classTree);
     }
 
-    /**
-     * Build the control flow graph of some code.
-     */
+    /** Build the control flow graph of some code. */
     public ControlFlowGraph run(
             CompilationUnitTree root, ProcessingEnvironment env, UnderlyingAST underlyingAST) {
         declaredClasses.clear();
@@ -212,8 +197,8 @@ public class CFGBuilder {
     }
 
     /**
-     * Build the control flow graph of some code (method, initializer block, ...).
-     * bodyPath is the TreePath to the body of that code.
+     * Build the control flow graph of some code (method, initializer block, ...). bodyPath is the
+     * TreePath to the body of that code.
      */
     public ControlFlowGraph run(
             TreePath bodyPath, ProcessingEnvironment env, UnderlyingAST underlyingAST) {
@@ -234,9 +219,7 @@ public class CFGBuilder {
         return phase3result;
     }
 
-    /**
-     * Build the control flow graph of a method.
-     */
+    /** Build the control flow graph of a method. */
     public ControlFlowGraph run(
             CompilationUnitTree root,
             ProcessingEnvironment env,
@@ -257,25 +240,21 @@ public class CFGBuilder {
     protected final Label regularExitLabel = new Label();
 
     /**
-     * An extended node can be one of several things (depending on its
-     * {@code type}):
+     * An extended node can be one of several things (depending on its {@code type}):
+     *
      * <ul>
-     * <li><em>NODE</em>. An extended node of this type is just a wrapper for a
-     * {@link Node} (that cannot throw exceptions).</li>
-     * <li><em>EXCEPTION_NODE</em>. A wrapper for a {@link Node} which can throw
-     * exceptions. It contains a label for every possible exception type the
-     * node might throw.</li>
-     * <li><em>UNCONDITIONAL_JUMP</em>. An unconditional jump to a label.</li>
-     * <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>. A conditional jump with two
-     * targets for both the 'then' and 'else' branch.</li>
+     *   <li><em>NODE</em>. An extended node of this type is just a wrapper for a {@link Node} (that
+     *       cannot throw exceptions).
+     *   <li><em>EXCEPTION_NODE</em>. A wrapper for a {@link Node} which can throw exceptions. It
+     *       contains a label for every possible exception type the node might throw.
+     *   <li><em>UNCONDITIONAL_JUMP</em>. An unconditional jump to a label.
+     *   <li><em>TWO_TARGET_CONDITIONAL_JUMP</em>. A conditional jump with two targets for both the
+     *       'then' and 'else' branch.
      * </ul>
      */
-    protected static abstract class ExtendedNode {
+    protected abstract static class ExtendedNode {
 
-        /**
-         * The basic block this extended node belongs to (as determined in phase
-         * two).
-         */
+        /** The basic block this extended node belongs to (as determined in phase two). */
         protected BlockImpl block;
 
         /** Type of this node. */
@@ -309,8 +288,8 @@ public class CFGBuilder {
         }
 
         /**
-         * @return the node contained in this extended node (only applicable if
-         *         the type is {@code NODE} or {@code EXCEPTION_NODE}).
+         * @return the node contained in this extended node (only applicable if the type is {@code
+         *     NODE} or {@code EXCEPTION_NODE}).
          */
         public Node getNode() {
             assert false;
@@ -318,9 +297,8 @@ public class CFGBuilder {
         }
 
         /**
-         * @return the label associated with this extended node (only applicable
-         *         if type is {@link ExtendedNodeType#CONDITIONAL_JUMP} or
-         *         {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
+         * @return the label associated with this extended node (only applicable if type is {@link
+         *     ExtendedNodeType#CONDITIONAL_JUMP} or {@link ExtendedNodeType#UNCONDITIONAL_JUMP}).
          */
         public Label getLabel() {
             assert false;
@@ -341,9 +319,7 @@ public class CFGBuilder {
         }
     }
 
-    /**
-     * An extended node of type {@code NODE}.
-     */
+    /** An extended node of type {@code NODE}. */
     protected static class NodeHolder extends ExtendedNode {
 
         protected Node node;
@@ -364,15 +340,13 @@ public class CFGBuilder {
         }
     }
 
-    /**
-     * An extended node of type {@code EXCEPTION_NODE}.
-     */
+    /** An extended node of type {@code EXCEPTION_NODE}. */
     protected static class NodeWithExceptionsHolder extends ExtendedNode {
 
         protected Node node;
         /**
-         * Map from exception type to labels of successors that may
-         * be reached as a result of that exception.
+         * Map from exception type to labels of successors that may be reached as a result of that
+         * exception.
          */
         protected Map<TypeMirror, Set<Label>> exceptions;
 
@@ -400,13 +374,10 @@ public class CFGBuilder {
     /**
      * An extended node of type {@link ExtendedNodeType#CONDITIONAL_JUMP}.
      *
-     * <p>
-     *
-     * <em>Important:</em> In the list of extended nodes, there should not be
-     * any labels that point to a conditional jump. Furthermore, the node
-     * directly ahead of any conditional jump has to be a
-     * {@link NodeWithExceptionsHolder} or {@link NodeHolder}, and the node held
-     * by that extended node is required to be of boolean type.
+     * <p><em>Important:</em> In the list of extended nodes, there should not be any labels that
+     * point to a conditional jump. Furthermore, the node directly ahead of any conditional jump has
+     * to be a {@link NodeWithExceptionsHolder} or {@link NodeHolder}, and the node held by that
+     * extended node is required to be of boolean type.
      */
     protected static class ConditionalJump extends ExtendedNode {
 
@@ -452,9 +423,7 @@ public class CFGBuilder {
         }
     }
 
-    /**
-     * An extended node of type {@link ExtendedNodeType#UNCONDITIONAL_JUMP}.
-     */
+    /** An extended node of type {@link ExtendedNodeType#UNCONDITIONAL_JUMP}. */
     protected static class UnconditionalJump extends ExtendedNode {
 
         protected Label jumpTarget;
@@ -476,9 +445,9 @@ public class CFGBuilder {
     }
 
     /**
-     * A label is used to refer to other extended nodes using a mapping from
-     * labels to extended nodes. Labels get their names either from labeled
-     * statements in the source code or from internally generated unique names.
+     * A label is used to refer to other extended nodes using a mapping from labels to extended
+     * nodes. Labels get their names either from labeled statements in the source code or from
+     * internally generated unique names.
      */
     protected static class Label {
         private static int uid = 0;
@@ -499,8 +468,7 @@ public class CFGBuilder {
         }
 
         /**
-         * Return a new unique label name that cannot be confused with a Java
-         * source code label.
+         * Return a new unique label name that cannot be confused with a Java source code label.
          *
          * @return a new unique label name
          */
@@ -510,22 +478,21 @@ public class CFGBuilder {
     }
 
     /**
-     * A TryFrame takes a thrown exception type and maps it to a set
-     * of possible control-flow successors.
+     * A TryFrame takes a thrown exception type and maps it to a set of possible control-flow
+     * successors.
      */
     protected static interface TryFrame {
         /**
-         * Given a type of thrown exception, add the set of possible control
-         * flow successor {@link Label}s to the argument set.  Return true
-         * if the exception is known to be caught by one of those labels and
-         * false if it may propagate still further.
+         * Given a type of thrown exception, add the set of possible control flow successor {@link
+         * Label}s to the argument set. Return true if the exception is known to be caught by one of
+         * those labels and false if it may propagate still further.
          */
         public boolean possibleLabels(TypeMirror thrown, Set<Label> labels);
     }
 
     /**
-     * A TryCatchFrame contains an ordered list of catch labels that apply
-     * to exceptions with specific types.
+     * A TryCatchFrame contains an ordered list of catch labels that apply to exceptions with
+     * specific types.
      */
     protected static class TryCatchFrame implements TryFrame {
         protected Types types;
@@ -539,10 +506,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Given a type of thrown exception, add the set of possible control
-         * flow successor {@link Label}s to the argument set.  Return true
-         * if the exception is known to be caught by one of those labels and
-         * false if it may propagate still further.
+         * Given a type of thrown exception, add the set of possible control flow successor {@link
+         * Label}s to the argument set. Return true if the exception is known to be caught by one of
+         * those labels and false if it may propagate still further.
          */
         @Override
         public boolean possibleLabels(TypeMirror thrown, Set<Label> labels) {
@@ -613,9 +579,7 @@ public class CFGBuilder {
         }
     }
 
-    /**
-     * A TryFinallyFrame applies to exceptions of any type
-     */
+    /** A TryFinallyFrame applies to exceptions of any type */
     protected class TryFinallyFrame implements TryFrame {
         protected Label finallyLabel;
 
@@ -631,9 +595,8 @@ public class CFGBuilder {
     }
 
     /**
-     * An exception stack represents the set of all try-catch blocks
-     * in effect at a given point in a program.  It maps an exception
-     * type to a set of Labels and it maps a block exit (via return or
+     * An exception stack represents the set of all try-catch blocks in effect at a given point in a
+     * program. It maps an exception type to a set of Labels and it maps a block exit (via return or
      * fall-through) to a single Label.
      */
     protected static class TryStack {
@@ -654,8 +617,8 @@ public class CFGBuilder {
         }
 
         /**
-         * Returns the set of possible {@link Label}s where control may
-         * transfer when an exception of the given type is thrown.
+         * Returns the set of possible {@link Label}s where control may transfer when an exception
+         * of the given type is thrown.
          */
         public Set<Label> possibleLabels(TypeMirror thrown) {
             // Work up from the innermost frame until the exception is known to
@@ -676,31 +639,29 @@ public class CFGBuilder {
     /* --------------------------------------------------------- */
 
     /**
-     * Class that performs phase three of the translation process. In
-     * particular, the following degenerate cases of basic blocks are removed:
+     * Class that performs phase three of the translation process. In particular, the following
+     * degenerate cases of basic blocks are removed:
      *
      * <ol>
-     * <li>Empty regular basic blocks: These blocks will be removed and their
-     * predecessors linked directly to the successor.</li>
-     * <li>Conditional basic blocks that have the same basic block as the 'then'
-     * and 'else' successor: The conditional basic block will be removed in this
-     * case.</li>
-     * <li>Two consecutive, non-empty, regular basic blocks where the second
-     * block has exactly one predecessor (namely the other of the two blocks):
-     * In this case, the two blocks are merged.</li>
-     * <li>Some basic blocks might not be reachable from the entryBlock. These
-     * basic blocks are removed, and the list of predecessors (in the
-     * doubly-linked structure of basic blocks) are adapted correctly.</li>
+     *   <li>Empty regular basic blocks: These blocks will be removed and their predecessors linked
+     *       directly to the successor.
+     *   <li>Conditional basic blocks that have the same basic block as the 'then' and 'else'
+     *       successor: The conditional basic block will be removed in this case.
+     *   <li>Two consecutive, non-empty, regular basic blocks where the second block has exactly one
+     *       predecessor (namely the other of the two blocks): In this case, the two blocks are
+     *       merged.
+     *   <li>Some basic blocks might not be reachable from the entryBlock. These basic blocks are
+     *       removed, and the list of predecessors (in the doubly-linked structure of basic blocks)
+     *       are adapted correctly.
      * </ol>
      *
-     * Eliminating the second type of degenerate cases might introduce cases of
-     * the third problem. These are also removed.
+     * Eliminating the second type of degenerate cases might introduce cases of the third problem.
+     * These are also removed.
      */
     public static class CFGTranslationPhaseThree {
 
         /**
-         * A simple wrapper object that holds a basic block and allows to set
-         * one of its successors.
+         * A simple wrapper object that holds a basic block and allows to set one of its successors.
          */
         protected interface PredecessorHolder {
             void setSuccessor(BlockImpl b);
@@ -711,10 +672,9 @@ public class CFGBuilder {
         /**
          * Perform phase three on the control flow graph {@code cfg}.
          *
-         * @param cfg
-         *            The control flow graph. Ownership is transfered to this
-         *            method and the caller is not allowed to read or modify
-         *            {@code cfg} after the call to {@code process} any more.
+         * @param cfg The control flow graph. Ownership is transfered to this method and the caller
+         *     is not allowed to read or modify {@code cfg} after the call to {@code process} any
+         *     more.
          * @return the resulting control flow graph
          */
         public static ControlFlowGraph process(ControlFlowGraph cfg) {
@@ -799,20 +759,14 @@ public class CFGBuilder {
         }
 
         /**
-         * Compute the set of empty regular basic blocks {@code empty}, starting
-         * at {@code start} and going both forward and backwards. Furthermore,
-         * compute the predecessors of these empty blocks ({@code predecessors}
-         * ), and their single successor (return value).
+         * Compute the set of empty regular basic blocks {@code empty}, starting at {@code start}
+         * and going both forward and backwards. Furthermore, compute the predecessors of these
+         * empty blocks ({@code predecessors} ), and their single successor (return value).
          *
-         * @param start
-         *            The starting point of the search (an empty, regular basic
-         *            block).
-         * @param empty
-         *            An empty set to be filled by this method with all empty
-         *            basic blocks found (including {@code start}).
-         * @param predecessors
-         *            An empty set to be filled by this method with all
-         *            predecessors.
+         * @param start The starting point of the search (an empty, regular basic block)
+         * @param empty An empty set to be filled by this method with all empty basic blocks found
+         *     (including {@code start}).
+         * @param predecessors An empty set to be filled by this method with all predecessors
          * @return the single successor of the set of the empty basic blocks
          */
         protected static BlockImpl computeNeighborhoodOfEmptyBlock(
@@ -843,19 +797,14 @@ public class CFGBuilder {
         }
 
         /**
-         * Compute the set of empty regular basic blocks {@code empty}, starting
-         * at {@code start} and looking only backwards in the control flow
-         * graph. Furthermore, compute the predecessors of these empty blocks (
-         * {@code predecessors}).
+         * Compute the set of empty regular basic blocks {@code empty}, starting at {@code start}
+         * and looking only backwards in the control flow graph. Furthermore, compute the
+         * predecessors of these empty blocks ( {@code predecessors}).
          *
-         * @param start
-         *            The starting point of the search (an empty, regular basic
-         *            block).
-         * @param empty
-         *            A set to be filled by this method with all empty basic
-         *            blocks found (including {@code start}).
-         * @param predecessors
-         *            A set to be filled by this method with all predecessors.
+         * @param start The starting point of the search (an empty, regular basic block)
+         * @param empty A set to be filled by this method with all empty basic blocks found
+         *     (including {@code start}).
+         * @param predecessors A set to be filled by this method with all predecessors
          */
         protected static void computeNeighborhoodOfEmptyBlockBackwards(
                 RegularBlockImpl start,
@@ -895,10 +844,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Return a predecessor holder that can be used to set the successor of
-         * {@code pred} in the place where previously the edge pointed to
-         * {@code cur}. Additionally, the predecessor holder also takes care of
-         * unlinking (i.e., removing the {@code pred} from {@code cur's}
+         * Return a predecessor holder that can be used to set the successor of {@code pred} in the
+         * place where previously the edge pointed to {@code cur}. Additionally, the predecessor
+         * holder also takes care of unlinking (i.e., removing the {@code pred} from {@code cur's}
          * predecessors).
          */
         protected static PredecessorHolder getPredecessorHolder(
@@ -973,8 +921,8 @@ public class CFGBuilder {
         }
 
         /**
-         * @return a {@link PredecessorHolder} that sets the successor of a
-         *         single successor block {@code s}.
+         * @return a {@link PredecessorHolder} that sets the successor of a single successor block
+         *     {@code s}.
          */
         protected static PredecessorHolder singleSuccessorHolder(
                 final SingleSuccessorBlockImpl s, final BlockImpl old) {
@@ -1015,9 +963,7 @@ public class CFGBuilder {
         }
     }
 
-    /**
-     * Class that performs phase two of the translation process.
-     */
+    /** Class that performs phase two of the translation process. */
     public class CFGTranslationPhaseTwo {
 
         public CFGTranslationPhaseTwo() {}
@@ -1025,12 +971,10 @@ public class CFGBuilder {
         /**
          * Perform phase two of the translation.
          *
-         * @param in
-         *            The result of phase one.
-         * @return a control flow graph that might still contain degenerate
-         *         basic block (such as empty regular basic blocks or
-         *         conditional blocks with the same block as 'then' and 'else'
-         *         sucessor)
+         * @param in The result of phase one
+         * @return a control flow graph that might still contain degenerate basic block (such as
+         *     empty regular basic blocks or conditional blocks with the same block as 'then' and
+         *     'else' sucessor)
          */
         public ControlFlowGraph process(PhaseOneResult in) {
 
@@ -1210,8 +1154,8 @@ public class CFGBuilder {
     /* --------------------------------------------------------- */
 
     /**
-     * A wrapper object to pass around the result of phase one. For a
-     * documentation of the fields see {@link CFGTranslationPhaseOne}.
+     * A wrapper object to pass around the result of phase one. For a documentation of the fields
+     * see {@link CFGTranslationPhaseOne}.
      */
     protected static class PhaseOneResult {
 
@@ -1275,40 +1219,32 @@ public class CFGBuilder {
     }
 
     /**
-     * Class that performs phase one of the translation process. It generates
-     * the following information:
+     * Class that performs phase one of the translation process. It generates the following
+     * information:
+     *
      * <ul>
-     * <li>A sequence of extended nodes.</li>
-     * <li>A set of bindings from {@link Label}s to positions in the node
-     * sequence.</li>
-     * <li>A set of leader nodes that give rise to basic blocks in phase two.</li>
-     * <li>A lookup map that gives the mapping from AST tree nodes to
-     * {@link Node}s.</li>
+     *   <li>A sequence of extended nodes.
+     *   <li>A set of bindings from {@link Label}s to positions in the node sequence.
+     *   <li>A set of leader nodes that give rise to basic blocks in phase two.
+     *   <li>A lookup map that gives the mapping from AST tree nodes to {@link Node}s.
      * </ul>
      *
-     * <p>
+     * <p>The return type of this scanner is {@link Node}. For expressions, the corresponding node
+     * is returned to allow linking between different nodes.
      *
-     * The return type of this scanner is {@link Node}. For expressions, the
-     * corresponding node is returned to allow linking between different nodes.
+     * <p>However, for statements there is usually no single {@link Node} that is created, and thus
+     * no node is returned (rather, null is returned).
      *
-     * However, for statements there is usually no single {@link Node} that is
-     * created, and thus no node is returned (rather, null is returned).
-     *
-     * <p>
-     *
-     * Every {@code visit*} method is assumed to add at least one extended node
-     * to the list of nodes (which might only be a jump).
-     *
+     * <p>Every {@code visit*} method is assumed to add at least one extended node to the list of
+     * nodes (which might only be a jump).
      */
     public class CFGTranslationPhaseOne extends TreePathScanner<Node, Void> {
 
         public CFGTranslationPhaseOne() {}
 
-        /**
-         * Annotation processing environment and its associated type and tree
-         * utilities.
-         */
+        /** Annotation processing environment and its associated type and tree utilities. */
         protected ProcessingEnvironment env;
+
         protected Elements elements;
         protected Types types;
         protected Trees trees;
@@ -1316,38 +1252,35 @@ public class CFGBuilder {
         protected AnnotationProvider annotationProvider;
 
         /**
-         * Current {@link Label} to which a break statement with no label should
-         * jump, or null if there is no valid destination.
+         * Current {@link Label} to which a break statement with no label should jump, or null if
+         * there is no valid destination.
          */
         protected /*@Nullable*/ Label breakTargetL;
 
         /**
-         * Map from AST label Names to CFG {@link Label}s for breaks. Each
-         * labeled statement creates two CFG {@link Label}s, one for break and
-         * one for continue.
+         * Map from AST label Names to CFG {@link Label}s for breaks. Each labeled statement creates
+         * two CFG {@link Label}s, one for break and one for continue.
          */
         protected Map<Name, Label> breakLabels;
 
         /**
-         * Current {@link Label} to which a continue statement with no label
-         * should jump, or null if there is no valid destination.
+         * Current {@link Label} to which a continue statement with no label should jump, or null if
+         * there is no valid destination.
          */
         protected /*@Nullable*/ Label continueTargetL;
 
         /**
-         * Map from AST label Names to CFG {@link Label}s for continues. Each
-         * labeled statement creates two CFG {@link Label}s, one for break and
-         * one for continue.
+         * Map from AST label Names to CFG {@link Label}s for continues. Each labeled statement
+         * creates two CFG {@link Label}s, one for break and one for continue.
          */
         protected Map<Name, Label> continueLabels;
 
         /**
-         * Maps from AST {@link Tree}s to {@link Node}s.  Every Tree that produces
-         * a value will have at least one corresponding Node.  Trees
-         * that undergo conversions, such as boxing or unboxing, can map to two
-         * distinct Nodes.  The Node for the pre-conversion value is stored
-         * in the treeLookupMap, while the Node for the post-conversion value
-         * is stored in the convertedTreeLookupMap.
+         * Maps from AST {@link Tree}s to {@link Node}s. Every Tree that produces a value will have
+         * at least one corresponding Node. Trees that undergo conversions, such as boxing or
+         * unboxing, can map to two distinct Nodes. The Node for the pre-conversion value is stored
+         * in the treeLookupMap, while the Node for the post-conversion value is stored in the
+         * convertedTreeLookupMap.
          */
         protected IdentityHashMap<Tree, Node> treeLookupMap;
 
@@ -1357,43 +1290,30 @@ public class CFGBuilder {
         /** The list of extended nodes. */
         protected ArrayList<ExtendedNode> nodeList;
 
-        /**
-         * The bindings of labels to positions (i.e., indices) in the
-         * {@code nodeList}.
-         */
+        /** The bindings of labels to positions (i.e., indices) in the {@code nodeList}. */
         protected Map<Label, Integer> bindings;
 
         /** The set of leaders (represented as indices into {@code nodeList}). */
         protected Set<Integer> leaders;
 
         /**
-         * All return nodes (if any) encountered. Only includes return
-         * statements that actually return something
+         * All return nodes (if any) encountered. Only includes return statements that actually
+         * return something
          */
         private List<ReturnNode> returnNodes;
 
-        /**
-         * Nested scopes of try-catch blocks in force at the current
-         * program point.
-         */
+        /** Nested scopes of try-catch blocks in force at the current program point. */
         private TryStack tryStack;
 
         /**
          * Performs the actual work of phase one.
          *
-         * @param bodyPath
-         *            path to the body of the underlying AST's method
-         * @param env
-         *            annotation processing environment containing type
-         *            utilities
-         * @param underlyingAST
-         *            the AST for which the CFG is to be built
-         * @param exceptionalExitLabel
-         *            the label for exceptional exits from the CFG
-         * @param treeBuilder
-         *            builder for new AST nodes
-         * @param annotationProvider
-         *            extracts annotations from AST nodes
+         * @param bodyPath path to the body of the underlying AST's method
+         * @param env annotation processing environment containing type utilities
+         * @param underlyingAST the AST for which the CFG is to be built
+         * @param exceptionalExitLabel the label for exceptional exits from the CFG
+         * @param treeBuilder builder for new AST nodes
+         * @param annotationProvider extracts annotations from AST nodes
          * @return the result of phase one
          */
         public PhaseOneResult process(
@@ -1460,10 +1380,10 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform any actions required when CFG translation creates a
-         * new Tree that is not part of the original AST.
+         * Perform any actions required when CFG translation creates a new Tree that is not part of
+         * the original AST.
          *
-         * @param tree  the newly created Tree
+         * @param tree the newly created Tree
          */
         public void handleArtificialTree(Tree tree) {}
 
@@ -1474,8 +1394,7 @@ public class CFGBuilder {
         /**
          * Add a node to the lookup map if it not already present.
          *
-         * @param node
-         *            The node to add to the lookup map.
+         * @param node The node to add to the lookup map
          */
         protected void addToLookupMap(Node node) {
             Tree tree = node.getTree();
@@ -1494,13 +1413,11 @@ public class CFGBuilder {
         }
 
         /**
-         * Add a node in the post-conversion lookup map. The node
-         * should refer to a Tree and that Tree should already be in
-         * the pre-conversion lookup map. This method is used to
-         * update the Tree-Node mapping with conversion nodes.
+         * Add a node in the post-conversion lookup map. The node should refer to a Tree and that
+         * Tree should already be in the pre-conversion lookup map. This method is used to update
+         * the Tree-Node mapping with conversion nodes.
          *
-         * @param node
-         *            The node to add to the lookup map.
+         * @param node The node to add to the lookup map
          */
         protected void addToConvertedLookupMap(Node node) {
             Tree tree = node.getTree();
@@ -1508,15 +1425,12 @@ public class CFGBuilder {
         }
 
         /**
-         * Add a node in the post-conversion lookup map. The tree
-         * argument should already be in the pre-conversion lookup
-         * map. This method is used to update the Tree-Node mapping
-         * with conversion nodes.
+         * Add a node in the post-conversion lookup map. The tree argument should already be in the
+         * pre-conversion lookup map. This method is used to update the Tree-Node mapping with
+         * conversion nodes.
          *
-         * @param tree
-         *            The tree used as a key in the map.
-         * @param node
-         *            The node to add to the lookup map.
+         * @param tree The tree used as a key in the map
+         * @param node The node to add to the lookup map.
          */
         protected void addToConvertedLookupMap(Tree tree, Node node) {
             assert tree != null;
@@ -1527,8 +1441,7 @@ public class CFGBuilder {
         /**
          * Extend the list of extended nodes with a node.
          *
-         * @param node
-         *            The node to add.
+         * @param node The node to add
          * @return the same node (for convenience)
          */
         protected <T extends Node> T extendWithNode(T node) {
@@ -1538,13 +1451,11 @@ public class CFGBuilder {
         }
 
         /**
-         * Extend the list of extended nodes with a node, where
-         * {@code node} might throw the exception {@code cause}.
+         * Extend the list of extended nodes with a node, where {@code node} might throw the
+         * exception {@code cause}.
          *
-         * @param node
-         *            The node to add.
-         * @param cause
-         *            An exception that the node might throw.
+         * @param node The node to add
+         * @param cause An exception that the node might throw.
          * @return the node holder
          */
         protected NodeWithExceptionsHolder extendWithNodeWithException(
@@ -1554,14 +1465,11 @@ public class CFGBuilder {
         }
 
         /**
-         * Extend the list of extended nodes with a node, where
-         * {@code node} might throw any of the exception in
-         * {@code causes}.
+         * Extend the list of extended nodes with a node, where {@code node} might throw any of the
+         * exception in {@code causes}.
          *
-         * @param node
-         *            The node to add.
-         * @param causes
-         *            Set of exceptions that the node might throw.
+         * @param node The node to add
+         * @param causes Set of exceptions that the node might throw.
          * @return the node holder
          */
         protected NodeWithExceptionsHolder extendWithNodeWithExceptions(
@@ -1577,14 +1485,11 @@ public class CFGBuilder {
         }
 
         /**
-         * Insert {@code node} after {@code pred} in
-         * the list of extended nodes, or append to the list if
-         * {@code pred} is not present.
+         * Insert {@code node} after {@code pred} in the list of extended nodes, or append to the
+         * list if {@code pred} is not present.
          *
-         * @param node
-         *            The node to add.
-         * @param pred
-         *            The desired predecessor of node.
+         * @param node The node to add
+         * @param pred The desired predecessor of node.
          * @return the node holder
          */
         protected <T extends Node> T insertNodeAfter(T node, Node pred) {
@@ -1594,17 +1499,12 @@ public class CFGBuilder {
         }
 
         /**
-         * Insert a {@code node} that might throw the exception
-         * {@code cause} after {@code pred} in the list of
-         * extended nodes, or append to the list if {@code pred}
-         * is not present.
+         * Insert a {@code node} that might throw the exception {@code cause} after {@code pred} in
+         * the list of extended nodes, or append to the list if {@code pred} is not present.
          *
-         * @param node
-         *            The node to add.
-         * @param causes
-         *            Set of exceptions that the node might throw.
-         * @param pred
-         *            The desired predecessor of node.
+         * @param node The node to add
+         * @param causes Set of exceptions that the node might throw.
+         * @param pred The desired predecessor of node
          * @return the node holder
          */
         protected NodeWithExceptionsHolder insertNodeWithExceptionsAfter(
@@ -1622,22 +1522,18 @@ public class CFGBuilder {
         /**
          * Extend the list of extended nodes with an extended node.
          *
-         * @param n
-         *            The extended node.
+         * @param n The extended node
          */
         protected void extendWithExtendedNode(ExtendedNode n) {
             nodeList.add(n);
         }
 
         /**
-         * Insert {@code n} after the node {@code pred} in the
-         * list of extended nodes, or append {@code n} if {@code pred}
-         * is not present.
+         * Insert {@code n} after the node {@code pred} in the list of extended nodes, or append
+         * {@code n} if {@code pred} is not present.
          *
-         * @param n
-         *            The extended node.
-         * @param pred
-         *            The desired predecessor.
+         * @param n The extended node
+         * @param pred The desired predecessor.
          */
         protected void insertExtendedNodeAfter(ExtendedNode n, Node pred) {
             int index = -1;
@@ -1674,8 +1570,7 @@ public class CFGBuilder {
         }
 
         /**
-         * Add the label {@code l} to the extended node that will be placed next
-         * in the sequence.
+         * Add the label {@code l} to the extended node that will be placed next in the sequence.
          */
         protected void addLabelForNextNode(Label l) {
             leaders.add(nodeList.size());
@@ -1693,13 +1588,12 @@ public class CFGBuilder {
         }
 
         /**
-         * If the input node is an unboxed primitive type, insert a call to the
-         * appropriate valueOf method, otherwise leave it alone.
+         * If the input node is an unboxed primitive type, insert a call to the appropriate valueOf
+         * method, otherwise leave it alone.
          *
-         * @param node
-         *            in input node
-         * @return a Node representing the boxed version of the input, which may
-         *         simply be the input node
+         * @param node in input node
+         * @return a Node representing the boxed version of the input, which may simply be the input
+         *     node
          */
         protected Node box(Node node) {
             // For boxing conversion, see JLS 5.1.7
@@ -1743,13 +1637,11 @@ public class CFGBuilder {
         }
 
         /**
-         * If the input node is a boxed type, unbox it, otherwise leave it
-         * alone.
+         * If the input node is a boxed type, unbox it, otherwise leave it alone.
          *
-         * @param node
-         *            in input node
-         * @return a Node representing the unboxed version of the input, which
-         *         may simply be the input node
+         * @param node in input node
+         * @return a Node representing the unboxed version of the input, which may simply be the
+         *     input node
          */
         protected Node unbox(Node node) {
             if (TypesUtils.isBoxedPrimitive(node.getType())) {
@@ -1817,9 +1709,7 @@ public class CFGBuilder {
             };
         }
 
-        /**
-         * @return the unboxed tree if necessary, as described in JLS 5.1.8
-         */
+        /** @return the unboxed tree if necessary, as described in JLS 5.1.8 */
         private Node unboxAsNeeded(Node node, boolean boxed) {
             return boxed ? unbox(node) : node;
         }
@@ -1827,10 +1717,8 @@ public class CFGBuilder {
         /**
          * Convert the input node to String type, if it isn't already.
          *
-         * @param node
-         *            an input node
-         * @return a Node with the value promoted to String, which may be the
-         *         input node
+         * @param node an input node
+         * @return a Node with the value promoted to String, which may be the input node
          */
         protected Node stringConversion(Node node) {
             // For string conversion, see JLS 5.1.11
@@ -1849,11 +1737,9 @@ public class CFGBuilder {
         /**
          * Perform unary numeric promotion on the input node.
          *
-         * @param node
-         *            a node producing a value of numeric primitive or boxed
-         *            type
-         * @return a Node with the value promoted to the int, long float or
-         *         double, which may be the input node
+         * @param node a node producing a value of numeric primitive or boxed type
+         * @return a Node with the value promoted to the int, long float or double, which may be the
+         *     input node
          */
         protected Node unaryNumericPromotion(Node node) {
             // For unary numeric promotion, see JLS 5.6.1
@@ -1879,8 +1765,8 @@ public class CFGBuilder {
         }
 
         /**
-         * Returns true if the argument type is a numeric primitive or
-         * a boxed numeric primitive and false otherwise.
+         * Returns true if the argument type is a numeric primitive or a boxed numeric primitive and
+         * false otherwise.
          */
         protected boolean isNumericOrBoxed(TypeMirror type) {
             if (TypesUtils.isBoxedPrimitive(type)) {
@@ -1890,12 +1776,12 @@ public class CFGBuilder {
         }
 
         /**
-         * Compute the type to which two numeric types must be promoted
-         * before performing a binary numeric operation on them.  The
-         * input types must both be numeric and the output type is primitive.
+         * Compute the type to which two numeric types must be promoted before performing a binary
+         * numeric operation on them. The input types must both be numeric and the output type is
+         * primitive.
          *
-         * @param left   the type of the left operand
-         * @param right  the type of the right operand
+         * @param left the type of the left operand
+         * @param right the type of the right operand
          * @return a TypeMirror representing the binary numeric promoted type
          */
         protected TypeMirror binaryPromotedType(TypeMirror left, TypeMirror right) {
@@ -1910,16 +1796,11 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform binary numeric promotion on the input node to make it match
-         * the expression type.
+         * Perform binary numeric promotion on the input node to make it match the expression type.
          *
-         * @param node
-         *            a node producing a value of numeric primitive or boxed
-         *            type
-         * @param exprType
-         *            the type to promote the value to
-         * @return a Node with the value promoted to the exprType, which may be
-         *         the input node
+         * @param node a node producing a value of numeric primitive or boxed type
+         * @param exprType the type to promote the value to
+         * @return a Node with the value promoted to the exprType, which may be the input node
          */
         protected Node binaryNumericPromotion(Node node, TypeMirror exprType) {
             // For binary numeric promotion, see JLS 5.6.2
@@ -1936,15 +1817,12 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform widening primitive conversion on the input node to make it
-         * match the destination type.
+         * Perform widening primitive conversion on the input node to make it match the destination
+         * type.
          *
-         * @param node
-         *            a node producing a value of numeric primitive type
-         * @param destType
-         *            the type to widen the value to
-         * @return a Node with the value widened to the exprType, which may be
-         *         the input node
+         * @param node a node producing a value of numeric primitive type
+         * @param destType the type to widen the value to
+         * @return a Node with the value widened to the exprType, which may be the input node
          */
         protected Node widen(Node node, TypeMirror destType) {
             // For widening conversion, see JLS 5.1.2
@@ -1962,15 +1840,11 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform narrowing conversion on the input node to make it match the
-         * destination type.
+         * Perform narrowing conversion on the input node to make it match the destination type.
          *
-         * @param node
-         *            a node producing a value of numeric primitive type
-         * @param destType
-         *            the type to narrow the value to
-         * @return a Node with the value narrowed to the exprType, which may be
-         *         the input node
+         * @param node a node producing a value of numeric primitive type
+         * @param destType the type to narrow the value to
+         * @return a Node with the value narrowed to the exprType, which may be the input node
          */
         protected Node narrow(Node node, TypeMirror destType) {
             // For narrowing conversion, see JLS 5.1.3
@@ -1988,15 +1862,13 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform narrowing conversion and optionally boxing conversion on the
-         * input node to make it match the destination type.
+         * Perform narrowing conversion and optionally boxing conversion on the input node to make
+         * it match the destination type.
          *
-         * @param node
-         *            a node producing a value of numeric primitive type
-         * @param destType
-         *            the type to narrow the value to (possibly boxed)
-         * @return a Node with the value narrowed and boxed to the destType,
-         *         which may be the input node
+         * @param node a node producing a value of numeric primitive type
+         * @param destType the type to narrow the value to (possibly boxed)
+         * @return a Node with the value narrowed and boxed to the destType, which may be the input
+         *     node
          */
         protected Node narrowAndBox(Node node, TypeMirror destType) {
             if (TypesUtils.isBoxedPrimitive(destType)) {
@@ -2007,12 +1879,11 @@ public class CFGBuilder {
         }
 
         /**
-         * Return whether a conversion from the type of the node to varType
-         * requires narrowing.
+         * Return whether a conversion from the type of the node to varType requires narrowing.
          *
-         * @param varType  the type of a variable (or general LHS) to be converted to
-         * @param node     a node whose value is being converted
-         * @return  whether this conversion requires narrowing to succeed
+         * @param varType the type of a variable (or general LHS) to be converted to
+         * @param node a node whose value is being converted
+         * @return whether this conversion requires narrowing to succeed
          */
         protected boolean conversionRequiresNarrowing(TypeMirror varType, Node node) {
             // Narrowing is restricted to cases where the left hand side
@@ -2030,19 +1901,15 @@ public class CFGBuilder {
         }
 
         /**
-         * Assignment conversion and method invocation conversion are almost
-         * identical, except that assignment conversion allows narrowing. We
-         * factor out the common logic here.
+         * Assignment conversion and method invocation conversion are almost identical, except that
+         * assignment conversion allows narrowing. We factor out the common logic here.
          *
-         * @param node
-         *            a Node producing a value
-         * @param varType
-         *            the type of a variable
-         * @param contextAllowsNarrowing
-         *            whether to allow narrowing (for assignment conversion) or
-         *            not (for method invocation conversion)
-         * @return a Node with the value converted to the type of the variable,
-         *         which may be the input node itself
+         * @param node a Node producing a value
+         * @param varType the type of a variable
+         * @param contextAllowsNarrowing whether to allow narrowing (for assignment conversion) or
+         *     not (for method invocation conversion)
+         * @return a Node with the value converted to the type of the variable, which may be the
+         *     input node itself
          */
         protected Node commonConvert(
                 Node node, TypeMirror varType, boolean contextAllowsNarrowing) {
@@ -2102,47 +1969,39 @@ public class CFGBuilder {
         }
 
         /**
-         * Perform assignment conversion so that it can be assigned to a
-         * variable of the given type.
+         * Perform assignment conversion so that it can be assigned to a variable of the given type.
          *
-         * @param node
-         *            a Node producing a value
-         * @param varType
-         *            the type of a variable
-         * @return a Node with the value converted to the type of the variable,
-         *         which may be the input node itself
+         * @param node a Node producing a value
+         * @param varType the type of a variable
+         * @return a Node with the value converted to the type of the variable, which may be the
+         *     input node itself
          */
         protected Node assignConvert(Node node, TypeMirror varType) {
             return commonConvert(node, varType, true);
         }
 
         /**
-         * Perform method invocation conversion so that the node can be passed
-         * as a formal parameter of the given type.
+         * Perform method invocation conversion so that the node can be passed as a formal parameter
+         * of the given type.
          *
-         * @param node
-         *            a Node producing a value
-         * @param formalType
-         *            the type of a formal parameter
-         * @return a Node with the value converted to the type of the formal,
-         *         which may be the input node itself
+         * @param node a Node producing a value
+         * @param formalType the type of a formal parameter
+         * @return a Node with the value converted to the type of the formal, which may be the input
+         *     node itself
          */
         protected Node methodInvocationConvert(Node node, TypeMirror formalType) {
             return commonConvert(node, formalType, false);
         }
 
         /**
-         * Given a method element and as list of argument expressions, return a
-         * list of {@link Node}s representing the arguments converted for a call
-         * of the method. This method applies to both method invocations and
-         * constructor calls.
+         * Given a method element and as list of argument expressions, return a list of {@link
+         * Node}s representing the arguments converted for a call of the method. This method applies
+         * to both method invocations and constructor calls.
          *
-         * @param method
-         *            an ExecutableElement representing a method to be called
-         * @param actualExprs
-         *            a List of argument expressions to a call
-         * @return a List of {@link Node}s representing arguments after
-         *         conversions required by a call to this method.
+         * @param method an ExecutableElement representing a method to be called
+         * @param actualExprs a List of argument expressions to a call
+         * @return a List of {@link Node}s representing arguments after conversions required by a
+         *     call to this method.
          */
         protected List<Node> convertCallArguments(
                 ExecutableElement method, List<? extends ExpressionTree> actualExprs) {
@@ -2226,16 +2085,11 @@ public class CFGBuilder {
         }
 
         /**
-         * Convert an operand of a conditional expression to the type of the
-         * whole expression.
+         * Convert an operand of a conditional expression to the type of the whole expression.
          *
-         * @param node
-         *            a node occurring as the second or third operand of
-         *            a conditional expression
-         * @param destType
-         *            the type to promote the value to
-         * @return a Node with the value promoted to the destType, which may be
-         *         the input node
+         * @param node a node occurring as the second or third operand of a conditional expression
+         * @param destType the type to promote the value to
+         * @return a Node with the value promoted to the destType, which may be the input node
          */
         protected Node conditionalExprPromotion(Node node, TypeMirror destType) {
             // For rules on converting operands of conditional expressions,
@@ -2297,8 +2151,8 @@ public class CFGBuilder {
         }
 
         /**
-         * Returns the label {@link Name} of the leaf in the argument path, or
-         * null if the leaf is not a labeled statement.
+         * Returns the label {@link Name} of the leaf in the argument path, or null if the leaf is
+         * not a labeled statement.
          */
         protected /*@Nullable*/ Name getLabel(TreePath path) {
             if (path.getParentPath() != null) {
@@ -2449,22 +2303,19 @@ public class CFGBuilder {
         }
 
         /**
-         * Should assertions be assumed to be executed for a given
-         * {@link AssertTree}? False by default.
+         * Should assertions be assumed to be executed for a given {@link AssertTree}? False by
+         * default.
          */
         protected boolean assumeAssertionsEnabledFor(AssertTree tree) {
             return false;
         }
 
-        /**
-         * The {@link VariableTree} that indicates whether assertions are
-         * enabled or not.
-         */
+        /** The {@link VariableTree} that indicates whether assertions are enabled or not. */
         protected VariableTree ea = null;
 
         /**
-         * Get a synthetic {@link VariableTree} that indicates whether assertions are
-         * enabled or not.
+         * Get a synthetic {@link VariableTree} that indicates whether assertions are enabled or
+         * not.
          */
         protected VariableTree getAssertionsEnabledVariable() {
             if (ea == null) {
@@ -2486,8 +2337,8 @@ public class CFGBuilder {
         }
 
         /**
-         * Translates an assertion statement to the correct CFG nodes. The
-         * translation assumes that assertions are enabled.
+         * Translates an assertion statement to the correct CFG nodes. The translation assumes that
+         * assertions are enabled.
          */
         protected void translateAssertWithAssertionsEnabled(AssertTree tree) {
 
@@ -2568,17 +2419,13 @@ public class CFGBuilder {
             return assignmentNode;
         }
 
-        /**
-         * Translate an assignment.
-         */
+        /** Translate an assignment. */
         protected AssignmentNode translateAssignment(Tree tree, Node target, ExpressionTree rhs) {
             Node expression = scan(rhs, null);
             return translateAssignment(tree, target, expression);
         }
 
-        /**
-         * Translate an assignment where the RHS has already been scanned.
-         */
+        /** Translate an assignment where the RHS has already been scanned. */
         protected AssignmentNode translateAssignment(Tree tree, Node target, Node expression) {
             assert tree instanceof AssignmentTree || tree instanceof VariableTree;
             target.setLValue();
@@ -2589,15 +2436,12 @@ public class CFGBuilder {
         }
 
         /**
-         * Note 1: Requires {@code tree} to be a field or method access
-         * tree.
-         * <p>
-         * Note 2: Visits the receiver and adds all necessary blocks to the CFG.
+         * Note 1: Requires {@code tree} to be a field or method access tree.
          *
-         * @param tree
-         *            the field access tree containing the receiver
-         * @param classTree
-         *            the ClassTree enclosing the field access
+         * <p>Note 2: Visits the receiver and adds all necessary blocks to the CFG.
+         *
+         * @param tree the field access tree containing the receiver
+         * @param classTree the ClassTree enclosing the field access
          * @return the receiver of the field access
          */
         private Node getReceiver(ExpressionTree tree, ClassTree classTree) {
@@ -2622,10 +2466,9 @@ public class CFGBuilder {
         }
 
         /**
-         * Map an operation with assignment to the corresponding operation
-         * without assignment.
+         * Map an operation with assignment to the corresponding operation without assignment.
          *
-         * @param kind  a Tree.Kind representing an operation with assignment
+         * @param kind a Tree.Kind representing an operation with assignment
          * @return the Tree.Kind for the same operation without assignment
          */
         protected Tree.Kind withoutAssignment(Tree.Kind kind) {
@@ -3162,9 +3005,9 @@ public class CFGBuilder {
         }
 
         private class SwitchBuilder {
-            final private SwitchTree switchTree;
-            final private Label[] caseBodyLabels;
-            final private Void p;
+            private final SwitchTree switchTree;
+            private final Label[] caseBodyLabels;
+            private final Void p;
             private Node switchExpr;
 
             private SwitchBuilder(SwitchTree tree, Void p) {
@@ -3521,7 +3364,7 @@ public class CFGBuilder {
                 // Declare and initialize the loop index variable
                 TypeMirror intType = types.getPrimitiveType(TypeKind.INT);
 
-                LiteralTree zero = treeBuilder.buildLiteral(new Integer(0));
+                LiteralTree zero = treeBuilder.buildLiteral(Integer.valueOf(0));
                 handleArtificialTree(zero);
 
                 VariableTree indexVariable =
@@ -3954,10 +3797,10 @@ public class CFGBuilder {
         /**
          * Maps a {@code Tree} its directly enclosing {@code ParenthesizedTree} if one exists.
          *
-         * This map is used by {@link CFGTranslationPhaseOne#addToLookupMap(Node)} to
-         * associate a {@code ParenthesizedTree} with the dataflow {@code Node} that was used
-         * during inference. This map is necessary because dataflow does
-         * not create a {@code Node} for a {@code ParenthesizedTree.}
+         * <p>This map is used by {@link CFGTranslationPhaseOne#addToLookupMap(Node)} to associate a
+         * {@code ParenthesizedTree} with the dataflow {@code Node} that was used during inference.
+         * This map is necessary because dataflow does not create a {@code Node} for a {@code
+         * ParenthesizedTree.}
          */
         private final Map<Tree, ParenthesizedTree> parenMapping = new HashMap<>();
 
@@ -4459,9 +4302,7 @@ public class CFGBuilder {
         }
     }
 
-    /**
-     * A tuple with 4 named elements.
-     */
+    /** A tuple with 4 named elements. */
     private interface TreeInfo {
         boolean isBoxed();
 
@@ -4487,8 +4328,8 @@ public class CFGBuilder {
     /* --------------------------------------------------------- */
 
     /**
-     * Print a set of {@link Block}s and the edges between them. This is useful
-     * for examining the results of phase two.
+     * Print a set of {@link Block}s and the edges between them. This is useful for examining the
+     * results of phase two.
      */
     protected static void printBlocks(Set<Block> blocks) {
         for (Block b : blocks) {

@@ -5,10 +5,7 @@ import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- * Test suite for the Subtyping Checker, using a simple {@link Encrypted}
- * annotation.
- */
+/** Test suite for the Subtyping Checker, using a simple {@link Encrypted} annotation. */
 public class SubtypingStringPatternsPartialTest extends CheckerFrameworkPerDirectoryTest {
 
     public SubtypingStringPatternsPartialTest(List<File> testFiles) {
@@ -17,7 +14,7 @@ public class SubtypingStringPatternsPartialTest extends CheckerFrameworkPerDirec
                 org.checkerframework.common.subtyping.SubtypingChecker.class,
                 "stringpatterns/stringpatterns-partial",
                 "-Anomsgtext",
-                "-Aquals=tests.util.PatternUnknown,tests.util.PatternAB,tests.util.PatternBC,tests.util.PatternAC,tests.util.PatternBottomPartial");
+                "-Aquals=testlib.util.PatternUnknown,testlib.util.PatternAB,testlib.util.PatternBC,testlib.util.PatternAC,testlib.util.PatternBottomPartial");
     }
 
     @Parameters

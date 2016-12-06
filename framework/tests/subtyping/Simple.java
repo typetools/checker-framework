@@ -1,6 +1,6 @@
 import java.util.LinkedList;
 import java.util.List;
-import tests.util.Encrypted;
+import testlib.util.Encrypted;
 
 abstract class BasicFunctionality {
 

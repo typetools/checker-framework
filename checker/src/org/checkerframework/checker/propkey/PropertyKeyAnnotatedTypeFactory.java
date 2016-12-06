@@ -25,8 +25,8 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * This AnnotatedTypeFactory adds PropertyKey annotations to String literals
- * that contain values from lookupKeys.
+ * This AnnotatedTypeFactory adds PropertyKey annotations to String literals that contain values
+ * from lookupKeys.
  *
  * @author wmdietl
  */
@@ -53,8 +53,8 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * This TreeAnnotator checks for every String literal whether it is included in the lookup
-     * keys. If it is, the given annotation is added to the literal; otherwise, nothing happens.
+     * This TreeAnnotator checks for every String literal whether it is included in the lookup keys.
+     * If it is, the given annotation is added to the literal; otherwise, nothing happens.
      * Subclasses of this AnnotatedTypeFactory can directly reuse this class and use a different
      * annotation as parameter.
      */
@@ -97,12 +97,11 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Instead of a precise comparison, we incrementally remove leading dot-separated
-     * strings until we find a match.
-     * For example if messages contains "y.z" and we look for "x.y.z" we find a match
-     * after removing the first "x.".
+     * Instead of a precise comparison, we incrementally remove leading dot-separated strings until
+     * we find a match. For example if messages contains "y.z" and we look for "x.y.z" we find a
+     * match after removing the first "x.".
      *
-     * Compare to SourceChecker.fullMessageOf.
+     * <p>Compare to SourceChecker.fullMessageOf.
      */
     private static boolean strContains(Set<String> messages, String messageKey) {
         String key = messageKey;
@@ -118,9 +117,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } while (true);
     }
 
-    /**
-     * Returns a set of the valid keys that can be used.
-     */
+    /** Returns a set of the valid keys that can be used. */
     public Set<String> getLookupKeys() {
         return this.lookupKeys;
     }

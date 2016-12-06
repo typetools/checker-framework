@@ -3,15 +3,13 @@ package org.checkerframework.checker.nullness;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.initialization.InitializationTransfer;
-import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.NonRaw;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -36,19 +34,16 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * Transfer function for the non-null type system. Performs the following
- * refinements:
+ * Transfer function for the non-null type system. Performs the following refinements:
+ *
  * <ol>
- * <li>After an expression is compared with the {@code null} literal, then that
- * expression can safely be considered {@link NonNull} if the result of the
- * comparison is false.
- * <li>If an expression is dereferenced, then it can safely be assumed to
- * non-null in the future. If it would not be, then the dereference would have
- * raised a {@link NullPointerException}.
- * <li>Tracks whether {@link PolyNull} is known to be {@link Nullable}.
+ *   <li>After an expression is compared with the {@code null} literal, then that expression can
+ *       safely be considered {@link NonNull} if the result of the comparison is false.
+ *   <li>If an expression is dereferenced, then it can safely be assumed to non-null in the future.
+ *       If it would not be, then the dereference would have raised a {@link NullPointerException}.
+ *   <li>Tracks whether {@link PolyNull} is known to be {@link Nullable}.
  * </ol>
  *
  * @author Stefan Heule
@@ -79,18 +74,15 @@ public class NullnessTransfer
     }
 
     /**
-     * Sets a given {@link Node} to non-null in the given {@code store}. Calls
-     * to this method implement case 2.
+     * Sets a given {@link Node} to non-null in the given {@code store}. Calls to this method
+     * implement case 2.
      */
     protected void makeNonNull(NullnessStore store, Node node) {
         Receiver internalRepr = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
         store.insertValue(internalRepr, NONNULL);
     }
 
-    /**
-     * Sets a given {@link Node} {@code node} to non-null in the given
-     * {@link TransferResult}.
-     */
+    /** Sets a given {@link Node} {@code node} to non-null in the given {@link TransferResult}. */
     protected void makeNonNull(TransferResult<NullnessValue, NullnessStore> result, Node node) {
         if (result.containsTwoStores()) {
             makeNonNull(result.getThenStore(), node);
@@ -112,10 +104,9 @@ public class NullnessTransfer
     /**
      * {@inheritDoc}
      *
-     * <p>
-     * Furthermore, this method refines the type to {@code NonNull} for the
-     * appropriate branch if an expression is compared to the {@code null}
-     * literal (listed as case 1 in the class description).
+     * <p>Furthermore, this method refines the type to {@code NonNull} for the appropriate branch if
+     * an expression is compared to the {@code null} literal (listed as case 1 in the class
+     * description).
      */
     @Override
     protected TransferResult<NullnessValue, NullnessStore> strengthenAnnotationOfEqualTo(
@@ -147,9 +138,12 @@ public class NullnessTransfer
                 }
             }
 
-            if (secondValue != null
-                    && (secondValue.getType().hasAnnotation(PolyNull.class)
-                            || secondValue.getType().hasAnnotation(PolyAll.class))) {
+            Set<AnnotationMirror> secondAnnos =
+                    secondValue != null
+                            ? secondValue.getAnnotations()
+                            : AnnotationUtils.createAnnotationSet();
+            if (AnnotationUtils.containsSameByClass(secondAnnos, PolyNull.class)
+                    || AnnotationUtils.containsSameByClass(secondAnnos, PolyAll.class)) {
                 thenStore = thenStore == null ? res.getThenStore() : thenStore;
                 elseStore = elseStore == null ? res.getElseStore() : elseStore;
                 thenStore.setPolyNullNull(true);
@@ -206,7 +200,9 @@ public class NullnessTransfer
 
     /*
      * Provided that m is of a type that implements interface java.util.Map:
-     * -Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the thenStore and elseStore of the transfer result.
+     * <ul>
+     * <li>Given a call m.get(k), if k is @KeyFor("m"), ensures that the result is @NonNull in the thenStore and elseStore of the transfer result.
+     * </ul>
      */
     @Override
     public TransferResult<NullnessValue, NullnessStore> visitMethodInvocation(
@@ -229,49 +225,28 @@ public class NullnessTransfer
             }
         }
 
-        // Handle KeyFor annotations
+        // Refine result to @NonNull if n is an invocation of Map.get and the argument is a key for
+        // the map.
+        if (keyForTypeFactory.isInvocationOfMapMethod(n, "get")) {
+            Node receiver = n.getTarget().getReceiver();
+            String mapName =
+                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver).toString();
+            AnnotationMirror keyForMapName =
+                    keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName);
 
-        String methodName = n.getTarget().getMethod().toString();
+            AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
 
-        // First verify if the method name is get. This is an inexpensive check.
+            if (type != null
+                    && keyForTypeFactory.keyForValuesSubtypeCheck(keyForMapName, type, tree, n)) {
+                makeNonNull(result, n);
 
-        if (methodName.startsWith("get(")) {
-            // Now verify that the receiver of the method invocation is of a type
-            // that extends that java.util.Map interface. This is a more expensive check.
-
-            javax.lang.model.util.Types types = analysis.getTypes();
-
-            TypeMirror mapInterfaceTypeMirror =
-                    types.erasure(
-                            TypesUtils.typeFromClass(
-                                    types, analysis.getEnv().getElementUtils(), Map.class));
-
-            TypeMirror receiverType = types.erasure(n.getTarget().getReceiver().getType());
-
-            if (types.isSubtype(receiverType, mapInterfaceTypeMirror)) {
-                Node receiver = n.getTarget().getReceiver();
-                Receiver internalReceiver =
-                        FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver);
-
-                String mapName = internalReceiver.toString();
-                AnnotationMirror keyForMapName =
-                        keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName);
-
-                AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
-
-                if (type != null
-                        && keyForTypeFactory.keyForValuesSubtypeCheck(
-                                keyForMapName, type, tree, n)) {
-                    makeNonNull(result, n);
-
-                    NullnessValue oldResultValue = result.getResultValue();
-                    NullnessValue refinedResultValue =
-                            analysis.createSingleAnnotationValue(
-                                    NONNULL, oldResultValue.getType().getUnderlyingType());
-                    NullnessValue newResultValue =
-                            refinedResultValue.mostSpecific(oldResultValue, null);
-                    result.setResultValue(newResultValue);
-                }
+                NullnessValue oldResultValue = result.getResultValue();
+                NullnessValue refinedResultValue =
+                        analysis.createSingleAnnotationValue(
+                                NONNULL, oldResultValue.getUnderlyingType());
+                NullnessValue newResultValue =
+                        refinedResultValue.mostSpecific(oldResultValue, null);
+                result.setResultValue(newResultValue);
             }
         }
 
@@ -296,17 +271,11 @@ public class NullnessTransfer
         }
     }
 
-    /**
-     * Creates a dummy abstract value (whose type is not supposed to be looked at).
-     */
+    /** Creates a dummy abstract value (whose type is not supposed to be looked at). */
     private NullnessValue createDummyValue() {
         TypeMirror dummy = analysis.getEnv().getTypeUtils().getPrimitiveType(TypeKind.BOOLEAN);
-        AnnotatedTypeMirror annotatedDummy =
-                AnnotatedTypeMirror.createType(dummy, analysis.getTypeFactory(), false);
-        annotatedDummy.addAnnotation(NonNull.class);
-        annotatedDummy.addAnnotation(NonRaw.class);
-        annotatedDummy.addAnnotation(Initialized.class);
-        NullnessValue value = new NullnessValue(analysis, annotatedDummy);
-        return value;
+        Set<AnnotationMirror> annos = AnnotationUtils.createAnnotationSet();
+        annos.addAll(analysis.getTypeFactory().getQualifierHierarchy().getBottomAnnotations());
+        return new NullnessValue(analysis, annos, dummy);
     }
 }

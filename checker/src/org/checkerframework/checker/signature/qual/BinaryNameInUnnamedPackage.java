@@ -6,16 +6,11 @@ import org.checkerframework.framework.qual.ImplicitFor;
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Represents a string that is both a {@link BinaryName} and an {@link
- * InternalForm}.  The string represents a class that is in the unnamed
- * package (also known as the default package).
+ * Represents a string that is both a {@link BinaryName} and an {@link InternalForm}. The string
+ * represents a class that is in the unnamed package (also known as the default package).
  *
- * Example: int
- * Example: int[][]
- * Example: MyClass
- * Example: MyClass[]
- * Example: MyClass$22
- * Example: MyClass$22[]
+ * <p>Example: int Example: int[][] Example: MyClass Example: MyClass[] Example: MyClass$22 Example:
+ * MyClass$22[]
  *
  * @checker_framework.manual #signature-checker Signature Checker
  */

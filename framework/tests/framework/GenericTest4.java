@@ -1,5 +1,5 @@
 import java.util.Map;
-import tests.util.*;
+import testlib.util.*;
 
 // Test case for Issue 134:
 // https://github.com/typetools/checker-framework/issues/134

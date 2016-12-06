@@ -1,19 +1,25 @@
 // This test contains the sample code from the Lock Checker manual chapter
 // modified to fit testing instead of illustrative purposes,
 // and contains other miscellaneous Lock Checker testing.
+
 import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.locks.ReentrantLock;
-import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.checker.lock.qual.GuardSatisfied;
+import org.checkerframework.checker.lock.qual.GuardedBy;
+import org.checkerframework.checker.lock.qual.GuardedByBottom;
+import org.checkerframework.checker.lock.qual.GuardedByUnknown;
+import org.checkerframework.checker.lock.qual.Holding;
+import org.checkerframework.checker.lock.qual.LockingFree;
+import org.checkerframework.checker.lock.qual.MayReleaseLocks;
+import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.dataflow.qual.Deterministic;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 class ChapterExamples {
     // This code crashed when there was a bug before issue 524 was fixed.
@@ -296,7 +302,7 @@ class ChapterExamples {
         y5 = x5; // ILLEGAL
     }
 
-    //:: error: (primitive.type.guardedby)
+    //:: error: (immutable.type.guardedby)
     @GuardedBy("a") String s = "string";
 
     @GuardedBy({}) MyClass o1;
@@ -321,7 +327,7 @@ class ChapterExamples {
         o1 = (@GuardedBy({}) MyClass) o2;
     }
 
-    final static Object myLock = new Object();
+    static final Object myLock = new Object();
 
     @GuardedBy("ChapterExamples.myLock") MyClass myMethod3() {
         return new MyClass();
@@ -479,14 +485,14 @@ class ChapterExamples {
     // TODO: For now, boxed types are treated as primitive types. This may change in the future.
     void unboxing() {
         int a = 1;
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy("lock") Integer c;
         synchronized (lock) {
             //:: error: (assignment.type.incompatible)
             c = a;
         }
 
-        //:: error: (primitive.type.guardedby)
+        //:: error: (immutable.type.guardedby)
         @GuardedBy("lock") Integer b = 1;
         int d;
         synchronized (lock) {
@@ -696,18 +702,24 @@ class ChapterExamples {
          *
          * Suppose the following lines from method1 are executed on thread A.
          *
+         * <pre>{@code
          * @GuardedBy("lock1") MyClass local;
          * m = local;
+         * }</pre>
          *
          * Then a context switch occurs to method2 on thread B and the following lines are executed:
          *
+         * <pre>{@code
          * @GuardedBy("lock2") MyClass local;
          * m = local;
+         * }</pre>
          *
          * Then a context switch back to method1 on thread A occurs and the following lines are executed:
          *
+         * <pre>{@code
          * lock1.lock();
          * m.field = new Object();
+         * }</pre>
          *
          * In this case, it is absolutely critical that the dereference above not be allowed.
          *
@@ -775,30 +787,35 @@ class ChapterExamples {
 
     @MayReleaseLocks
     void mayReleaseLocksMethodWithSynchronizedBlock() {
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     @ReleasesNoLocks
     void releasesNoLocksMethodWithSynchronizedBlock() {
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     @LockingFree
     void lockingFreeMethodWithSynchronizedBlock() {
         //:: error: (synchronized.block.in.lockingfree.method)
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     @SideEffectFree
     void sideEffectFreeMethodWithSynchronizedBlock() {
         //:: error: (synchronized.block.in.lockingfree.method)
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     @Pure
     void pureMethodWithSynchronizedBlock() {
         //:: error: (synchronized.block.in.lockingfree.method)
-        synchronized (this) {}
+        synchronized (this) {
+        }
     }
 
     //:: error: (class.declaration.guardedby.annotation.invalid)
@@ -841,27 +858,33 @@ class ChapterExamples {
 
     // Analogous to testExplicitLockExpressionIsFinal and testGuardedByExpressionIsFinal, but for monitor locks acquired in synchronized blocks.
     void testSynchronizedExpressionIsFinal(boolean b) {
-        synchronized (c1) {}
+        synchronized (c1) {
+        }
 
         Object o1 = new Object(); // o1 is effectively final - it is never reassigned
         Object o2 = new Object(); // o2 is reassigned later - it is not effectively final
-        synchronized (o1) {}
+        synchronized (o1) {
+        }
         //:: error: (lock.expression.not.final)
-        synchronized (o2) {}
+        synchronized (o2) {
+        }
 
         o2 = new Object(); // Reassignment that makes o2 not have been effectively final earlier.
 
         // Tests that package names are considered final.
-        synchronized (java.lang.String.class) {}
+        synchronized (java.lang.String.class) {
+        }
 
         // Test a tree that is not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
         //:: error: (lock.expression.possibly.not.final)
-        synchronized (c1.getFieldPure(b ? c1 : o1, c1)) {}
+        synchronized (c1.getFieldPure(b ? c1 : o1, c1)) {
+        }
 
         synchronized (
                 c1.field.field.field.getFieldPure(
                                 c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field))
-                        .field) {}
+                        .field) {
+        }
 
         // The following negative test cases are the same as the one above but with one modification in each.
 
@@ -869,12 +892,14 @@ class ChapterExamples {
                 //:: error: (lock.expression.not.final)
                 c1.field.field2.field.getFieldPure(
                                 c1.field, c1.getFieldDeterministic().getFieldPure(c1, c1.field))
-                        .field) {}
+                        .field) {
+        }
         synchronized (
                 c1.field.field.field.getFieldPure(
                                 //:: error: (lock.expression.not.final)
                                 c1.field, c1.getField().getFieldPure(c1, c1.field))
-                        .field) {}
+                        .field) {
+        }
     }
 
     class C2 extends ReentrantLock {
@@ -910,15 +935,9 @@ class ChapterExamples {
                 new ReentrantLock(); // rl2 is reassigned later - it is not effectively final
         rl1.lock();
         rl1.unlock();
-        // TODO: The two method.invocation.invalid errors below are due to the fact
-        // that unlock() called above is a non-side-effect-free method
-        // and is due to this line in LockStore.updateForMethodCall:
-        // localVariableValues.clear();
-        // Fix LockStore.updateForMethodCall so it is less conservative and remove
-        // the expected error.
-        //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
+        //:: error: (lock.expression.not.final)
         rl2.lock();
-        //:: error: (lock.expression.not.final) :: error: (method.invocation.invalid)
+        //:: error: (lock.expression.not.final)
         rl2.unlock();
 
         rl2 =
@@ -1116,9 +1135,9 @@ class ChapterExamples {
     void testItselfNonFinalLock() {
         final @GuardedBy("<self>.nonFinalLock") MyClassContainingALock m =
                 new MyClassContainingALock();
-        //:: error: (lock.expression.not.final)
+        //:: error: (lock.expression.not.final) :: error: (contracts.precondition.not.satisfied.field)
         m.field = new Object();
-        //:: error: (lock.expression.not.final)
+        //:: error: (lock.expression.not.final) :: error: (contracts.precondition.not.satisfied.field)
         m.nonFinalLock.lock();
         //:: error: (lock.expression.not.final)
         m.field = new Object();

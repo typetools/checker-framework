@@ -4,17 +4,17 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 
-/**
- * Duplicates annotated types and replaces components according to a replacement map.
- */
+/** Duplicates annotated types and replaces components according to a replacement map. */
 public class AnnotatedTypeReplacer {
 
     /**
      * Return a copy of type after making the specified replacements.
+     *
      * @param type the type that will be copied with replaced components
-     * @param replacementMap a mapping of {@literal referenceToReplace -> referenceOfReplacement}
-     * @return a duplicate of type in which every reference that was a key in replacementMap
-     * has been replaced by its corresponding value
+     * @param replacementMap a mapping of {@literal referenceToReplace &rArr;
+     *     referenceOfReplacement}
+     * @return a duplicate of type in which every reference that was a key in replacementMap has
+     *     been replaced by its corresponding value
      */
     public static AnnotatedTypeMirror replace(
             AnnotatedTypeMirror type,
@@ -23,13 +23,13 @@ public class AnnotatedTypeReplacer {
     }
 
     /**
-     * AnnotatedTypeCopier maintains a mapping of {@literal typeVisited -> copyOfTypeVisited}
+     * AnnotatedTypeCopier maintains a mapping of {@literal typeVisited &rArr; copyOfTypeVisited}
      * When a reference, typeVisited, is encountered again, it will use the recorded reference,
-     * copyOfTypeVisited, instead of generating a new copy of typeVisited.  Visitor pre-populates
+     * copyOfTypeVisited, instead of generating a new copy of typeVisited. Visitor pre-populates
      * this mapping so that references are replaced not by their copies but by those in the
      * replacementMap provided in the constructor.
      *
-     * All types NOT in the replacement map are duplicated as per AnnotatedTypeCopier.visit
+     * <p>All types NOT in the replacement map are duplicated as per AnnotatedTypeCopier.visit
      */
     protected static class Visitor extends AnnotatedTypeCopier {
 
@@ -46,6 +46,7 @@ public class AnnotatedTypeReplacer {
             return type.accept(this, new IdentityHashMap<>(originalMappings));
         }
 
+        @Override
         public AnnotatedTypeMirror visitTypeVariable(
                 AnnotatedTypeVariable original,
                 IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> originalToCopy) {

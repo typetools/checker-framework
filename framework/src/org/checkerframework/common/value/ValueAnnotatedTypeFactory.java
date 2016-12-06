@@ -56,23 +56,23 @@ import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
+ * AnnotatedTypeFactory for the Value type system.
+ *
  * @author plvines
  * @author smillst
- *
- *         AnnotatedTypeFactory for the Value type system.
- *
  */
 public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     protected final AnnotationMirror UNKNOWNVAL, BOTTOMVAL;
     /** The maximum number of values allowed in an annotation's array */
     protected static final int MAX_VALUES = 10;
+
     protected Set<String> coveredClassStrings;
 
-    /** should this type factory report warnings? **/
+    /** should this type factory report warnings? * */
     private final boolean reportEvalWarnings;
 
-    /** Helper class that evaluates statically executable methods, constructor, and fields.*/
+    /** Helper class that evaluates statically executable methods, constructor, and fields. */
     private final ReflectiveEvalutator evalutator;
 
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -115,9 +115,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Creates an annotation of the name given with the set of values given.
-     * Issues a checker warning and return UNKNOWNVAL if values.size &gt;
-     * MAX_VALUES
+     * Creates an annotation of the name given with the set of values given. Issues a checker
+     * warning and return UNKNOWNVAL if values.size &gt; MAX_VALUES
      *
      * @return annotation given by name with values=values, or UNKNOWNVAL
      */
@@ -156,23 +155,22 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public Void visitPrimitive(AnnotatedPrimitiveType type, Void p) {
-            replaceWithUnknownValIfTooManyValues((AnnotatedTypeMirror) type);
+            replaceWithUnknownValIfTooManyValues(type);
 
             return super.visitPrimitive(type, p);
         }
 
         @Override
         public Void visitDeclared(AnnotatedDeclaredType type, Void p) {
-            replaceWithUnknownValIfTooManyValues((AnnotatedTypeMirror) type);
+            replaceWithUnknownValIfTooManyValues(type);
 
             return super.visitDeclared(type, p);
         }
 
         /**
-         * If any constant-value annotation has &gt; MAX_VALUES number of values
-         * provided, treats the value as UnknownVal. Works together with
-         * ValueVisitor.visitAnnotation, which issues a warning to the user in
-         * this case.
+         * If any constant-value annotation has &gt; MAX_VALUES number of values provided, treats
+         * the value as UnknownVal. Works together with ValueVisitor.visitAnnotation, which issues a
+         * warning to the user in this case.
          */
         private void replaceWithUnknownValIfTooManyValues(AnnotatedTypeMirror atm) {
             AnnotationMirror anno = atm.getAnnotationInHierarchy(UNKNOWNVAL);
@@ -187,15 +185,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /**
-     * The qualifier hierarchy for the Value type system
-     */
+    /** The qualifier hierarchy for the Value type system */
     private final class ValueQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
-        /**
-         * @param factory
-         *            MultiGraphFactory to use to construct this
-         */
+        /** @param factory MultiGraphFactory to use to construct this */
         public ValueQualifierHierarchy(MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
             super(factory);
         }
@@ -213,13 +206,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Determines the least upper bound of a1 and a2. If a1 and a2 are both
-         * the same type of Value annotation, then the LUB is the result of
-         * taking all values from both a1 and a2 and removing duplicates. If a1
-         * and a2 are not the same type of Value annotation they may still be
-         * mergeable because some values can be implicitly cast as others. If a1
-         * and a2 are both in {DoubleVal, IntVal} then they will be converted
-         * upwards: IntVal &rarr; DoubleVal to arrive at a common annotation type.
+         * Determines the least upper bound of a1 and a2. If a1 and a2 are both the same type of
+         * Value annotation, then the LUB is the result of taking all values from both a1 and a2 and
+         * removing duplicates. If a1 and a2 are not the same type of Value annotation they may
+         * still be mergeable because some values can be implicitly cast as others. If a1 and a2 are
+         * both in {DoubleVal, IntVal} then they will be converted upwards: IntVal &rarr; DoubleVal
+         * to arrive at a common annotation type.
          *
          * @return the least upper bound of a1 and a2
          */
@@ -282,9 +274,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Computes subtyping as per the subtyping in the qualifier hierarchy
-         * structure unless both annotations are Value. In this case, rhs is a
-         * subtype of lhs iff lhs contains at least every element of rhs
+         * Computes subtyping as per the subtyping in the qualifier hierarchy structure unless both
+         * annotations are Value. In this case, rhs is a subtype of lhs iff lhs contains at least
+         * every element of rhs
          *
          * @return true if rhs is a subtype of lhs, false otherwise
          */
@@ -336,9 +328,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 new ValueTreeAnnotator(this), new ImplicitsTreeAnnotator(this));
     }
 
-    /**
-     * The TreeAnnotator for this AnnotatedTypeFactory
-     */
+    /** The TreeAnnotator for this AnnotatedTypeFactory */
     protected class ValueTreeAnnotator extends TreeAnnotator {
 
         public ValueTreeAnnotator(ValueAnnotatedTypeFactory factory) {
@@ -377,16 +367,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Recursive method to handle array initializations. Recursively
-         * descends the initializer to find each dimension's size and create the
-         * appropriate annotation for it.
+         * Recursive method to handle array initializations. Recursively descends the initializer to
+         * find each dimension's size and create the appropriate annotation for it.
          *
-         * @param dimensions
-         *            a list of ExpressionTrees where each ExpressionTree is a
-         *            specifier of the size of that dimension (should be an
-         *            IntVal).
-         * @param type
-         *            the AnnotatedTypeMirror of the array
+         * @param dimensions a list of ExpressionTrees where each ExpressionTree is a specifier of
+         *     the size of that dimension (should be an IntVal).
+         * @param type the AnnotatedTypeMirror of the array
          */
         private void handleDimensions(
                 List<? extends ExpressionTree> dimensions, AnnotatedArrayType type) {
@@ -424,8 +410,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             List<List<Integer>> summarylengths = new ArrayList<>();
 
             for (ExpressionTree init : initializers) {
-                AnnotatedArrayType subArrayType = (AnnotatedArrayType) getAnnotatedType(init);
-                AnnotatedTypeMirror componentType = subArrayType;
+                AnnotatedTypeMirror componentType = getAnnotatedType(init);
                 int count = 0;
                 while (componentType.getKind() == TypeKind.ARRAY) {
                     AnnotationMirror arrayLen = componentType.getAnnotation(ArrayLen.class);
@@ -446,7 +431,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             AnnotatedTypeMirror componentType = type.getComponentType();
             int i = 0;
-            while (componentType.getKind() == TypeKind.ARRAY) {
+            while (componentType.getKind() == TypeKind.ARRAY && i < summarylengths.size()) {
                 componentType.addAnnotation(createArrayLenAnnotation(summarylengths.get(i)));
                 componentType = ((AnnotatedArrayType) componentType).getComponentType();
                 i++;
@@ -583,9 +568,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Simple method to take a MemberSelectTree representing a method call
-         * and determine if the method's return is annotated with
-         * {@code @StaticallyExecutable}.
+         * Simple method to take a MemberSelectTree representing a method call and determine if the
+         * method's return is annotated with {@code @StaticallyExecutable}.
          */
         private boolean methodIsStaticallyExecutable(Element method) {
             return getDeclAnnotation(method, StaticallyExecutable.class) != null;
@@ -729,8 +713,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         * Overloaded method for convenience of dealing with
-         * AnnotatedTypeMirrors. See isClassCovered(TypeMirror type) below
+         * Overloaded method for convenience of dealing with AnnotatedTypeMirrors. See
+         * isClassCovered(TypeMirror type) below
          */
         private boolean isUnderlyingTypeAValue(AnnotatedTypeMirror type) {
             return coveredClassStrings.contains(type.getUnderlyingType().toString());
@@ -739,11 +723,9 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Overloaded version to accept an AnnotatedTypeMirror
          *
-         * @param resultType
-         *            is evaluated using getClass to derived a Class object for
-         *            passing to the other resultAnnotationHandler function
-         * @param tree
-         *            location for error reporting
+         * @param resultType is evaluated using getClass to derived a Class object for passing to
+         *     the other resultAnnotationHandler function
+         * @param tree location for error reporting
          */
         private AnnotationMirror resultAnnotationHandler(
                 TypeMirror resultType, List<?> results, Tree tree) {

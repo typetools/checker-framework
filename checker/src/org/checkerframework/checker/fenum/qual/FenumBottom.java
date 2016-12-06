@@ -13,8 +13,7 @@ import org.checkerframework.framework.qual.TargetLocations;
 import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
- * The bottom qualifier for fenums, its relationships are setup via the
- * FenumAnnotatedTypeFactory.
+ * The bottom qualifier for fenums, its relationships are setup via the FenumAnnotatedTypeFactory.
  *
  * @checker_framework.manual #propkey-checker Property File Checker
  */

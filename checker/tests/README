@@ -42,7 +42,7 @@ or (to build distribution files but not the JDK)
 or, less commonly (to rebuild the JDK):
 
   cd $CHECKERFRAMEWORK/checker/tests/framework
-  (cd $CHECKERFRAMEWORK && ant -e dist) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor tests.util.TestChecker -implicit:class GenericTest10.java
+  (cd $CHECKERFRAMEWORK && ant -e dist) && $CHECKERFRAMEWORK/checker/bin-devel/javac -processor TestChecker -implicit:class GenericTest10.java
 
 where the specific checker and command-line arguments are often clear from
 the directory name but can also be determined from a file such as
@@ -55,7 +55,7 @@ Writing new tests for an existing checker
 
 To create a new test case, just place a Java file in the test directory,
 whose name usually corresponds to the checker name, such as
-checker-framework/checker/tests/nullness/ . Unless the README file in
+checker-framework/checker/tests/nullness/ .  Unless the README file in
 the test directory specifies otherwise, then the Java file must
 1. Not issue any javac errors.
 2. Not declare a class with the same (fully qualfied) name as any other class in
@@ -155,12 +155,16 @@ Writing tests for a new checker or with different command-line arguments
 
 To create tests for a new checker, mimic some existing checker's tests:
  * create a top-level test directory, such as
-   checker-framework/checker/tests/nullness-reflection, for the test cases
+   checker-framework/checker/tests/regex for the test cases
  * create a top-level JUnit test, such as:
-   checker-framework/checker/tests/src/tests/NullnessReflectionTest.java
-   It is a subclass of CheckerFrameworkTest, and its list of checker
+   checker-framework/checker/tests/src/tests/RegexTest.java
+   It is a subclass of CheckerFrameworkPerDirectoryTest, and its list of checker
    options must include "-Anomsgtext".  (See the API documentation for
-   CheckerFrameworkTest for more detailed information.)
+   CheckerFrameworkPerDirectoryTest for more detailed information.)
+ * include "all-systems" as a test directy by adding it to the array created
+   in getTestDirs in the new test class.  See
+   checkerframework/framework/tests/all-systems/README for more details about
+   the all-systems tests.
  * change checker-framework/checker/build.xml to run those tests
 
 Different test cases may need to pass different command-line arguments

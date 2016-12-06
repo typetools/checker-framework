@@ -1,6 +1,5 @@
 import polyall.quals.*;
 import polyall.quals.H1Invalid;
-import polyall.quals.H1S2;
 
 class TypeRefinement {
 

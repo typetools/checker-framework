@@ -40,15 +40,13 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
         super.commonAssignmentCheck(varType, valueType, valueTree, errorKey);
     }
 
-    /**
-     * The type validator to ensure correct usage of the 'static' modifier.
-     */
+    /** The type validator to ensure correct usage of the 'static' modifier. */
     @Override
     protected BaseTypeValidator createTypeValidator() {
         return new KeyForTypeValidator(checker, this, atypeFactory);
     }
 
-    private final static class KeyForTypeValidator extends BaseTypeValidator {
+    private static final class KeyForTypeValidator extends BaseTypeValidator {
 
         public KeyForTypeValidator(
                 BaseTypeChecker checker,
@@ -121,9 +119,10 @@ public class KeyForVisitor extends BaseTypeVisitor<KeyForAnnotatedTypeFactory> {
 
     /**
      * The constructor type will have its flow expressions parsed and its KeyFor values
-     * canonicalized before this point (in constructorFromUse).  However, the expectedReturnType
-     * will not.  Canonicalize it now.
+     * canonicalized before this point (in constructorFromUse). However, the expectedReturnType will
+     * not. Canonicalize it now.
      */
+    @Override
     protected boolean checkConstructorInvocation(
             AnnotatedDeclaredType expectedReturnType,
             AnnotatedExecutableType constructor,

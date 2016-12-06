@@ -7,4 +7,4 @@ To run the tests, do
 
 To run a single test, do something like:
   cd $CHECKERFRAMEWORK/framework/tests/framework
-  (cd $CHECKERFRAMEWORK && ant -e dist) && (cd $CHECKERFRAMEWORK/framework && ant build-tests) && javac -processor tests.util.TestChecker -classpath $CHECKERFRAMEWORK/framework/tests/build GenericTest10.java
+  (cd $CHECKERFRAMEWORK && ant -e dist) && (cd $CHECKERFRAMEWORK/framework && ant build-tests) && javac -processor TestChecker -classpath $CHECKERFRAMEWORK/framework/tests/build GenericTest10.java

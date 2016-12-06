@@ -24,13 +24,12 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 /**
- * A visitor used to compare two type mirrors for "structural" equality.  Structural equality
- * implies that, for two objects, all fields are also structurally equal and for primitives
- * their values are equal.  One reason this class is necessary is that at the moment
- * we compare wildcards and type variables for "equality".  This occurs because we do not
- * employ capture conversion.
+ * A visitor used to compare two type mirrors for "structural" equality. Structural equality implies
+ * that, for two objects, all fields are also structurally equal and for primitives their values are
+ * equal. One reason this class is necessary is that at the moment we compare wildcards and type
+ * variables for "equality". This occurs because we do not employ capture conversion.
  *
- * See also DefaultTypeHierarchy, and VisitHistory
+ * <p>See also DefaultTypeHierarchy, and VisitHistory
  */
 public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean, VisitHistory> {
 
@@ -65,9 +64,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Returns true if type1 and type2 are structurally equivalent. With one exception,
-     * type1.getClass().equals(type2.getClass()) must be true.  However, because the Checker Framework
-     * sometimes "infers" Typevars to be Wildcards, we allow the combination Wildcard,Typevar.  In this
-     * case, the two types are "equal" if their bounds are.
+     * type1.getClass().equals(type2.getClass()) must be true. However, because the Checker
+     * Framework sometimes "infers" Typevars to be Wildcards, we allow the combination
+     * Wildcard,Typevar. In this case, the two types are "equal" if their bounds are.
+     *
      * @return true if type1 and type2 are equal
      */
     public boolean areEqual(final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
@@ -76,7 +76,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * The same as areEqual(type1, type2) except now a visited is passed along in order to avoid
-     * infinite recursion on recursive bounds.  This method is only used internally to EqualityComparer.
+     * infinite recursion on recursive bounds. This method is only used internally to
+     * EqualityComparer.
      */
     public boolean areEqual(
             final AnnotatedTypeMirror type1,
@@ -109,9 +110,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         return areEqual;
     }
 
-    /**
-     * Return true if type1 and type2 have the same set of annotations.
-     */
+    /** Return true if type1 and type2 have the same set of annotations. */
     protected boolean arePrimeAnnosEqual(
             final AnnotatedTypeMirror type1, final AnnotatedTypeMirror type2) {
         if (currentTop != null) {
@@ -124,8 +123,9 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     /**
-     * Compare each type in types1 and types2 pairwise and return true if they are all equal.  This method
-     * throws an exceptions if types1.size() != types2.size()
+     * Compare each type in types1 and types2 pairwise and return true if they are all equal. This
+     * method throws an exceptions if types1.size() != types2.size()
+     *
      * @param visited a store of what types have already been visited
      * @return true if for each pair (t1 = types1.get(i); t2 = types2.get(i)), areEqual(t1,t2)
      */
@@ -155,8 +155,8 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     /**
-     * First check visited to see if type1 and type2 have been compared once already.
-     * If so return true; otherwise compare them and add them to visited
+     * First check visited to see if type1 and type2 have been compared once already. If so return
+     * true; otherwise compare them and add them to visited
      */
     protected boolean checkOrAreEqual(
             final AnnotatedTypeMirror type1,
@@ -175,6 +175,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     /**
      * Called for every combination in which !type1.getClass().equals(type2.getClass()) except for
      * Wildcard_Typevar.
+     *
      * @return error message explaining the two types' classes are not the same
      */
     @Override
@@ -197,8 +198,11 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two arrays are equal if:
-     *   1) Their sets of primary annotations are equal
-     *   2) Their component types are equal
+     *
+     * <ol>
+     *   <li> Their sets of primary annotations are equal, and
+     *   <li> Their component types are equal
+     * </ol>
      */
     @Override
     public Boolean visitArray_Array(
@@ -214,9 +218,12 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two declared types are equal if:
-     *   1) The types are of the same class/interfaces
-     *   2) Their sets of primary annotations are equal
-     *   3) Their sets of type arguments are equal or one type is raw
+     *
+     * <ol>
+     *   <li> The types are of the same class/interfaces
+     *   <li> Their sets of primary annotations are equal
+     *   <li> Their sets of type arguments are equal or one type is raw
+     * </ol>
      */
     @Override
     public Boolean visitDeclared_Declared(
@@ -235,7 +242,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     /**
-     * A helper class for visitDeclared_Declared.  There are subtypes of DefaultTypeHierarchy that
+     * A helper class for visitDeclared_Declared. There are subtypes of DefaultTypeHierarchy that
      * need to customize the handling of type arguments. This method provides a convenient extension
      * point.
      */
@@ -265,11 +272,14 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     /**
-     * //TODO: SHOULD PRIMARY ANNOTATIONS OVERRIDE INDIVIDUAL BOUND ANNOTATIONS?
-     * //TODO: IF SO THEN WE SHOULD REMOVE THE arePrimeAnnosEqual AND FIX AnnotatedIntersectionType
-     * Two intersection types are equal if:
-     *   1) Their sets of primary annotations are equal
-     *   2) Their sets of bounds (the types being intersected) are equal
+     * //TODO: SHOULD PRIMARY ANNOTATIONS OVERRIDE INDIVIDUAL BOUND ANNOTATIONS? //TODO: IF SO THEN
+     * WE SHOULD REMOVE THE arePrimeAnnosEqual AND FIX AnnotatedIntersectionType Two intersection
+     * types are equal if:
+     *
+     * <ul>
+     *   <li> Their sets of primary annotations are equal
+     *   <li> Their sets of bounds (the types being intersected) are equal
+     * </ul>
      */
     @Override
     public Boolean visitIntersection_Intersection(
@@ -286,7 +296,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two null types are equal if:
-     *   1) Their sets of primary annotations are equal
+     *
+     * <ul>
+     *   <li> Their sets of primary annotations are equal
+     * </ul>
      */
     @Override
     public Boolean visitNull_Null(
@@ -298,7 +311,10 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two primitive types are equal if:
-     *   1) Their sets of primary annotations are equal
+     *
+     * <ul>
+     *   <li> Their sets of primary annotations are equal
+     * </ul>
      */
     @Override
     public Boolean visitPrimitive_Primitive(
@@ -310,9 +326,12 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
 
     /**
      * Two type variables are equal if:
-     *   1) Their bounds are equal
      *
-     * Note:  Primary annotations will be taken into account when the bounds are retrieved
+     * <ul>
+     *   <li> Their bounds are equal
+     * </ul>
+     *
+     * Note: Primary annotations will be taken into account when the bounds are retrieved
      */
     @Override
     public Boolean visitTypevar_Typevar(
@@ -339,13 +358,12 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     }
 
     /**
-     * A temporary solution until we handle CaptureConversion, subtypeAndCompare handles cases
-     * in which we encounter a captured type being compared against a non-captured type.  The
-     * captured type may have type arguments that are subtypes of the other type it is being
-     * compared to.  In these cases, we will convert the bounds via this method to the other
-     * type and then continue on with the equality comparison.  If neither of the type args
-     * can be converted to the other than we just compare the effective annotations on the
-     * two types for equality.
+     * A temporary solution until we handle CaptureConversion, subtypeAndCompare handles cases in
+     * which we encounter a captured type being compared against a non-captured type. The captured
+     * type may have type arguments that are subtypes of the other type it is being compared to. In
+     * these cases, we will convert the bounds via this method to the other type and then continue
+     * on with the equality comparison. If neither of the type args can be converted to the other
+     * than we just compare the effective annotations on the two types for equality.
      */
     boolean subtypeAndCompare(
             final AnnotatedTypeMirror type1,
@@ -394,9 +412,7 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
         return areEqual(t1, t2, visited);
     }
 
-    /**
-     * @return true if the underlying types of the bounds for type1 and type2 are equal
-     */
+    /** @return true if the underlying types of the bounds for type1 and type2 are equal */
     public boolean boundsMatch(
             final AnnotatedTypeVariable type1, final AnnotatedTypeVariable type2) {
         return type1.getUpperBound()
@@ -407,13 +423,17 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
                         .equals(type2.getLowerBound().getUnderlyingType());
     }
     /**
-     * TODO: IDENTIFY TESTS THAT LEAD TO RECURSIVE BOUNDED WILDCARDS, PERHAPS THE RIGHT THING IS TO
-     * TODO: MOVE THE CODE THAT IDENTIFIES REFERENCES TO THE SAME WILDCARD TYPE HERE.
-     * TODO  WOULD WE EVER WANT TO HAVE A REFERENCE TO THE SAME WILDCARD WITH DIFFERENT ANNOTATIONS?
      * Two wildcards are equal if:
-     *   1) Their bounds are equal
      *
-     * Note:  Primary annotations will be taken into account when the bounds are retrieved
+     * <ul>
+     *   <li> Their bounds are equal
+     * </ul>
+     *
+     * Note: Primary annotations will be taken into account when the bounds are retrieved
+     *
+     * <p>TODO: IDENTIFY TESTS THAT LEAD TO RECURSIVE BOUNDED WILDCARDS, PERHAPS THE RIGHT THING IS
+     * TO MOVE THE CODE THAT IDENTIFIES REFERENCES TO THE SAME WILDCARD TYPE HERE. WOULD WE EVER
+     * WANT TO HAVE A REFERENCE TO THE SAME WILDCARD WITH DIFFERENT ANNOTATIONS?
      */
     @Override
     public Boolean visitWildcard_Wildcard(
@@ -454,12 +474,15 @@ public class StructuralEqualityComparer extends AbstractAtmComboVisitor<Boolean,
     // The following methods are because we use WILDCARDS instead of TYPEVARS for capture converted wildcards
     //TODO: REMOVE THE METHOD BELOW WHEN CAPTURE CONVERSION IS IMPLEMENTED
     /**
-     * Since the Checker Framework doesn't engage in capture conversion, and since sometimes type variables
-     * are "inferred" to be wildcards, this method allows the comparison of a wildcard to a type variable even
-     * though they should never truly be equal.
+     * Since the Checker Framework doesn't engage in capture conversion, and since sometimes type
+     * variables are "inferred" to be wildcards, this method allows the comparison of a wildcard to
+     * a type variable even though they should never truly be equal.
      *
-     * A wildcard is equal tyo a type variable if:
-     *   1) The wildcard's bounds are equal to the type variable's bounds
+     * <p>A wildcard is equal tyo a type variable if:
+     *
+     * <ul>
+     *   <li> The wildcard's bounds are equal to the type variable's bounds
+     * </ul>
      */
     @Override
     public Boolean visitWildcard_Typevar(
