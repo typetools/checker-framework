@@ -1,6 +1,6 @@
 // Test case for issue 953
 // https://github.com/typetools/checker-framework/issues/953
-
+// @skip-test Crash will be fixed once both pull request #978 and #977 are merged.
 import java.util.List;
 
 class Issue953 {
