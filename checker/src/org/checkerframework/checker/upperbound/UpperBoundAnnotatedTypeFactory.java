@@ -469,7 +469,13 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitBinary(tree, type);
         }
 
-        /** Handles these cases: LTL / 1+ -> LTL LTEL / 2+ -> LTL LTEL / 1 -> LTEL */
+        /** Handles these cases: 
+          * <pre>
+          *     LTL / 1+ &rarr; LTL 
+          *     LTEL / 2+ &rarr; LTL 
+          *     LTEL / 1 &rarr; LTEL 
+          * </pre>
+          */
         private void addAnnotationForDivide(
                 ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
             // Check if the right side's value is known at compile time.
