@@ -9,8 +9,11 @@ public class IndexForTest {
     // (this).array can be rewritten as just array in both the @IndexFor and in the actual array
     // access.
     // https://github.com/typetools/checker-framework/pull/967
-    void test1(@IndexFor("(this).array") int i) {
-        int x = (this).array[i];
+
+    // I accidentally fixed this particular instance of this problem, at least,
+    // while fixing an issue with array.length, when closing issue 34. -Martin
+    void test1(@IndexFor("array") int i) {
+        int x = array[i];
     }
 
     void callTest1(int x) {

@@ -92,10 +92,17 @@ public class UpperBoundTransfer extends CFTransfer {
             String arrName = node.getReceiver().toString();
             AnnotationMirror anm =
                     UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(arrName);
-            CFValue newResultValue =
-                    analysis.createSingleAnnotationValue(
-                            anm, result.getResultValue().getUnderlyingType());
-            return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+
+            Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
+
+            result.getRegularStore()
+                    .insertValue(
+                            rec,
+                            qualifierHierarchy.greatestLowerBound(
+                                    anm,
+                                    atypeFactory
+                                            .getAnnotatedType(node.getTree())
+                                            .getAnnotationInHierarchy(UNKNOWN)));
         }
         return result;
     }
