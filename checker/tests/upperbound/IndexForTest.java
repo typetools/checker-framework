@@ -25,8 +25,8 @@ public class IndexForTest {
         test1(2);
         //::  error: (argument.type.incompatible)
         test1(array.length);
-        test1(array.length - 1);
-        if (array.length > x) {
+        test1(this.array.length - 1);
+        if (this.array.length > x) {
             test1(x);
         }
 
