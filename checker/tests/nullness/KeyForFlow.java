@@ -93,8 +93,8 @@ public class KeyForFlow extends HashMap<String, Object> {
     }
 
     void testPutForLocalKeyAndLocalMap() {
-        Vector<@KeyFor("m2_local") String> coll_local = new Vector<@KeyFor("m2_local") String>();
         HashMap<String, Object> m2_local = new HashMap<String, Object>();
+        Vector<@KeyFor("m2_local") String> coll_local = new Vector<@KeyFor("m2_local") String>();
         String k2_local = "key2";
 
         m2_local.put(k2_local, new Object());
@@ -109,8 +109,8 @@ public class KeyForFlow extends HashMap<String, Object> {
     }
 
     void testPutForFieldKeyAndLocalMap() {
-        Vector<@KeyFor("m2_local") String> coll_local = new Vector<@KeyFor("m2_local") String>();
         HashMap<String, Object> m2_local = new HashMap<String, Object>();
+        Vector<@KeyFor("m2_local") String> coll_local = new Vector<@KeyFor("m2_local") String>();
 
         m2_local.put(k2, new Object());
         coll_local.add(k2);
@@ -149,8 +149,8 @@ public class KeyForFlow extends HashMap<String, Object> {
     }
 
     void testPutForFieldKeyAndMapFieldOfOtherClass() {
-        Vector<@KeyFor("f.m") String> coll_local = new Vector<@KeyFor("f.m") String>();
         foo f = new foo();
+        Vector<@KeyFor("f.m") String> coll_local = new Vector<@KeyFor("f.m") String>();
         f.m.put(k2, new Object());
         coll_local.add(k2);
     }

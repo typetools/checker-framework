@@ -231,13 +231,8 @@ public class NullnessTransfer
             Node receiver = n.getTarget().getReceiver();
             String mapName =
                     FlowExpressions.internalReprOf(analysis.getTypeFactory(), receiver).toString();
-            AnnotationMirror keyForMapName =
-                    keyForTypeFactory.createKeyForAnnotationMirrorWithValue(mapName);
 
-            AnnotatedTypeMirror type = keyForTypeFactory.getAnnotatedType(methodArgs.get(0));
-
-            if (type != null
-                    && keyForTypeFactory.keyForValuesSubtypeCheck(keyForMapName, type, tree, n)) {
+            if (keyForTypeFactory.isKeyForMap(mapName, methodArgs.get(0))) {
                 makeNonNull(result, n);
 
                 NullnessValue oldResultValue = result.getResultValue();

@@ -1,5 +1,14 @@
 package org.checkerframework.dataflow.analysis;
 
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +36,8 @@ import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.javacutil.AnnotationProvider;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -179,6 +190,187 @@ public class FlowExpressions {
         return receiver;
     }
 
+    /**
+     * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
+     *     Might contain {@link Unknown}.
+     */
+    public static Receiver internalReprOf(
+            AnnotationProvider provider, ExpressionTree receiverTree) {
+        return internalReprOf(provider, receiverTree, true);
+    }
+    /**
+     * We ignore operations such as widening and narrowing when computing the internal
+     * representation.
+     *
+     * @return the internal representation (as {@link Receiver}) of any {@link ExpressionTree}.
+     *     Might contain {@link Unknown}.
+     */
+    public static Receiver internalReprOf(
+            AnnotationProvider provider,
+            ExpressionTree receiverTree,
+            boolean allowNonDeterministic) {
+        Receiver receiver = null;
+        switch (receiverTree.getKind()) {
+            case ARRAY_ACCESS:
+                ArrayAccessTree a = (ArrayAccessTree) receiverTree;
+                Receiver arrayAccessExpression = internalReprOf(provider, a.getExpression());
+                Receiver index = internalReprOf(provider, a.getIndex());
+                receiver = new ArrayAccess(InternalUtils.typeOf(a), arrayAccessExpression, index);
+                break;
+            case BOOLEAN_LITERAL:
+            case CHAR_LITERAL:
+            case DOUBLE_LITERAL:
+            case FLOAT_LITERAL:
+            case INT_LITERAL:
+            case LONG_LITERAL:
+            case NULL_LITERAL:
+            case STRING_LITERAL:
+                LiteralTree vn = (LiteralTree) receiverTree;
+                receiver = new ValueLiteral(InternalUtils.typeOf(receiverTree), vn.getValue());
+                break;
+            case NEW_ARRAY:
+                receiver =
+                        new ArrayCreation(
+                                InternalUtils.typeOf(receiverTree),
+                                Collections.<Node>emptyList(),
+                                Collections.<Node>emptyList());
+                break;
+            case METHOD_INVOCATION:
+                MethodInvocationTree mn = (MethodInvocationTree) receiverTree;
+                ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn);
+                if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterministic) {
+                    List<Receiver> parameters = new ArrayList<>();
+                    for (ExpressionTree p : mn.getArguments()) {
+                        parameters.add(internalReprOf(provider, p));
+                    }
+                    Receiver methodReceiver;
+                    if (ElementUtils.isStatic(invokedMethod)) {
+                        methodReceiver = new ClassName(InternalUtils.typeOf(mn.getMethodSelect()));
+                    } else {
+                        methodReceiver = internalReprOf(provider, mn.getMethodSelect());
+                    }
+                    TypeMirror type = InternalUtils.typeOf(mn);
+                    receiver = new MethodCall(type, invokedMethod, methodReceiver, parameters);
+                }
+                break;
+            case MEMBER_SELECT:
+                receiver = internalRepOfMemberSelect(provider, (MemberSelectTree) receiverTree);
+                break;
+            case IDENTIFIER:
+                IdentifierTree identifierTree = (IdentifierTree) receiverTree;
+                TypeMirror typeOfId = InternalUtils.typeOf(identifierTree);
+                if (identifierTree.getName().contentEquals("this")
+                        || identifierTree.getName().contentEquals("super")) {
+                    receiver = new ThisReference(typeOfId);
+                    break;
+                }
+                Element ele = TreeUtils.elementFromUse(identifierTree);
+                switch (ele.getKind()) {
+                    case LOCAL_VARIABLE:
+                    case RESOURCE_VARIABLE:
+                    case EXCEPTION_PARAMETER:
+                    case PARAMETER:
+                        receiver = new LocalVariable(ele);
+                        break;
+                    case FIELD:
+                        // Implicit access expression, such as "this" or a class name
+                        Receiver fieldAccessExpression;
+                        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+                        if (ElementUtils.isStatic(ele)) {
+                            fieldAccessExpression = new ClassName(enclosingType);
+                        } else {
+                            fieldAccessExpression = new ThisReference(enclosingType);
+                        }
+                        receiver =
+                                new FieldAccess(
+                                        fieldAccessExpression, typeOfId, (VariableElement) ele);
+                        break;
+                }
+        }
+
+        if (receiver == null) {
+            receiver = new Unknown(InternalUtils.typeOf(receiverTree));
+        }
+        return receiver;
+    }
+
+    /**
+     * Returns the implicit receiver of ele.
+     *
+     * <p>Returns either a new ClassName or a new ThisReference depending on whether ele is static
+     * or not. The passed element must be a field, method, or class.
+     *
+     * @param ele field, method, or class
+     * @return either a new ClassName or a new ThisReference depending on whether ele is static or
+     *     not
+     */
+    public static Receiver internalRepOfImplicitReceiver(Element ele) {
+        TypeMirror enclosingType = ElementUtils.enclosingClass(ele).asType();
+        if (ElementUtils.isStatic(ele)) {
+            return new ClassName(enclosingType);
+        } else {
+            return new ThisReference(enclosingType);
+        }
+    }
+
+    /**
+     * Returns either a new ClassName or ThisReference Receiver for the given tree.
+     *
+     * <p>The Tree should be an expression or a statement that does not have a receiver (or an
+     * implicit receiver). For example, a local variable declaration.
+     *
+     * @param path TreePath to tree
+     * @param enclosingType type of the enclosing type
+     * @return a new ClassName or ThisReference that is the pseudo receiver of tree
+     */
+    public static Receiver internalRepOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
+        if (TreeUtils.isTreeInStaticScope(path)) {
+            return new ClassName(enclosingType);
+        } else {
+            return new ThisReference(enclosingType);
+        }
+    }
+
+    private static Receiver internalRepOfMemberSelect(
+            AnnotationProvider provider, MemberSelectTree memberSelectTree) {
+        TypeMirror expressionType = InternalUtils.typeOf(memberSelectTree.getExpression());
+        if (TreeUtils.isClassLiteral(memberSelectTree)) {
+            return new ClassName(expressionType);
+        }
+        Element ele = TreeUtils.elementFromUse(memberSelectTree);
+        switch (ele.getKind()) {
+            case METHOD:
+            case CONSTRUCTOR:
+                return internalReprOf(provider, memberSelectTree.getExpression());
+            case CLASS: // o instanceof MyClass.InnerClass
+            case ENUM:
+            case INTERFACE: // o instanceof MyClass.InnerInterface
+            case ANNOTATION_TYPE:
+                return new ClassName(expressionType);
+            case ENUM_CONSTANT:
+            case FIELD:
+                Receiver r = internalReprOf(provider, memberSelectTree.getExpression());
+                return new FieldAccess(r, ElementUtils.getType(ele), (VariableElement) ele);
+            default:
+                ErrorReporter.errorAbort(
+                        "Unexpected element kind: %s element: %s", ele.getKind(), ele);
+                return null;
+        }
+    }
+
+    public static List<Receiver> getParametersOfEnclosingMethod(
+            AnnotationProvider factory, TreePath path) {
+        MethodTree methodTree = TreeUtils.enclosingMethod(path);
+        if (methodTree == null) {
+            return null;
+        }
+        List<Receiver> internalArguments = new ArrayList<>();
+        for (VariableTree arg : methodTree.getParameters()) {
+            internalArguments.add(internalReprOf(factory, new LocalVariableNode(arg)));
+        }
+        return internalArguments;
+    }
+
     public abstract static class Receiver {
         protected final TypeMirror type;
 
@@ -300,7 +492,11 @@ public class FlowExpressions {
 
         @Override
         public String toString() {
-            return receiver + "." + field;
+            if (receiver instanceof ClassName) {
+                return receiver.getType() + "." + field;
+            } else {
+                return receiver + "." + field;
+            }
         }
 
         @Override
@@ -380,7 +576,7 @@ public class FlowExpressions {
 
         @Override
         public String toString() {
-            return getType().toString();
+            return getType().toString() + ".class";
         }
 
         @Override
@@ -710,7 +906,11 @@ public class FlowExpressions {
         @Override
         public String toString() {
             StringBuilder result = new StringBuilder();
-            result.append(receiver.toString());
+            if (receiver instanceof ClassName) {
+                result.append(receiver.getType());
+            } else {
+                result.append(receiver);
+            }
             result.append(".");
             String methodName = method.getSimpleName().toString();
             result.append(methodName);
