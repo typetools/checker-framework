@@ -469,11 +469,11 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitBinary(tree, type);
         }
 
-        /** Handles these cases: 
+        /** Handles these cases:
           * <pre>
-          *     LTL / 1+ &rarr; LTL 
-          *     LTEL / 2+ &rarr; LTL 
-          *     LTEL / 1 &rarr; LTEL 
+          *     LTL / 1+ &rarr; LTL
+          *     LTEL / 2+ &rarr; LTL
+          *     LTEL / 1 &rarr; LTEL
           * </pre>
           */
         private void addAnnotationForDivide(
