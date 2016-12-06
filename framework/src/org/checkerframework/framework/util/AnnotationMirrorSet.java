@@ -10,9 +10,18 @@ import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Implements the Set interface for AnnotationMirrors that uses {@link
- * AnnotationUtils#areSame(AnnotationMirror, AnnotationMirror)} instead of {@link
- * AnnotationMirror#equals(Object)}.
+ * The Set interface defines many methods with respect to the equals method. This implementation of
+ * Set violates those specifications, but fulfills the same property using AnnotationUtils.areSame
+ * rather than equals.
+ *
+ * <p>For example, the specification for the contains(Object o) method says: "returns true if and
+ * only if this collection contains at least one element e such that (o == null ? e == null : o
+ * .equals(e))." The specification for AnnotationMirrorSet is returns true if and only if this
+ * collection contains at least one element e such that (o == null ? e == null :
+ * AnnotationUtils.areSame(o, e))".
+ *
+ * <p>AnnotationMirror is an interface and not all implementing classes provide a correct equals
+ * method; therefore, existing implementations of Map cannot be used.
  *
  * <p>AnnotationMirror is an interface and not all implementing classes provide a correct equals
  * method; therefore, the existing implementations of Set cannot be used.
