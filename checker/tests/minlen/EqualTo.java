@@ -5,8 +5,8 @@ import org.checkerframework.checker.minlen.qual.*;
 class equalTo {
 
     public static void equalToMinLen(@MinLen(2) String m, @MinLen(0) String r) {
-        if ( r == m ) {
-		@MinLen(2) String j = r;
-	}
+        if (r == m) {
+            @MinLen(2) String j = r;
+        }
     }
 }

@@ -5,10 +5,13 @@ import org.checkerframework.checker.minlen.qual.*;
 class EnumValues {
 
     public static enum Direction {
-        NORTH, SOUTH, EAST, WEST
+        NORTH,
+        SOUTH,
+        EAST,
+        WEST
     };
 
     public static void enumValues() {
-        Direction @MinLen(4)[] arr = Direction.values();
+        Direction @MinLen(4) [] arr = Direction.values();
     }
 }
