@@ -70,8 +70,14 @@ public class UpperBoundTransfer extends CFTransfer {
             String name = node.getTarget().toString();
             String[] names = {name};
 
-            store.insertValue(
-                    rec, UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
+            Set<AnnotationMirror> oldType = in.getValueOfSubNode(dim).getAnnotations();
+
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
+
+            store.insertValue(rec, newType);
         }
         return result;
     }
