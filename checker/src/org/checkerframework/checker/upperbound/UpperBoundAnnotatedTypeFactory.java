@@ -4,6 +4,7 @@ import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArra
 
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import java.util.Collections;
 import java.util.HashSet;
@@ -11,6 +12,7 @@ import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
@@ -32,6 +34,7 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -444,6 +447,19 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
+        public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
+            if (tree.getIdentifier().contentEquals("length")
+                    && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
+                String arrName = tree.getExpression().toString();
+                type.replaceAnnotation(
+                        qualHierarchy.greatestLowerBound(
+                                createLTEqLengthOfAnnotation(arrName),
+                                type.getAnnotationInHierarchy(UNKNOWN)));
+            }
+            return super.visitMemberSelect(tree, type);
+        }
+
+        @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             // A few small rules for addition/subtraction by 0/1, etc.
             if (TreeUtils.isStringConcatenation(tree)) {
@@ -460,10 +476,55 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case MINUS:
                     addAnnotationForMinus(left, right, type);
                     break;
+                case DIVIDE:
+                    addAnnotationForDivide(left, right, type);
+                    break;
                 default:
                     break;
             }
             return super.visitBinary(tree, type);
+        }
+
+        /**
+         * Handles these cases:
+         *
+         * <pre>
+         *     LTL / 1+ &rarr; LTL
+         *     LTEL / 2+ &rarr; LTL
+         *     LTEL / 1 &rarr; LTEL
+         * </pre>
+         */
+        private void addAnnotationForDivide(
+                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            // Check if the right side's value is known at compile time.
+            AnnotatedTypeMirror valueTypeRight = valueAnnotatedTypeFactory.getAnnotatedType(right);
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                AnnotatedTypeMirror leftType = getAnnotatedType(left);
+                addAnnotationForLiteralDivide(maybeValRight, leftType, type);
+                return;
+            }
+        }
+
+        private void addAnnotationForLiteralDivide(
+                int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
+            if (nonLiteralType.hasAnnotation(LTLengthOf.class)) {
+                if (val >= 1) {
+                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    return;
+                }
+            } else if (nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
+                if (val >= 2) {
+                    String[] names =
+                            UpperBoundUtils.getValue(
+                                    nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    type.replaceAnnotation(createLTLengthOfAnnotation(names));
+                    return;
+                } else if (val == 1) {
+                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    return;
+                }
+            }
         }
 
         private void addAnnotationForLiteralPlus(

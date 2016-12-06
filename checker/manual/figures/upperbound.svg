@@ -7,9 +7,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="12.188101cm"
+   width="9.1429348cm"
    height="5.840023cm"
-   viewBox="358 100 383.05459 292.00115"
+   viewBox="358 100 287.34937 292.00115"
    id="svg3577"
    version="1.1"
    inkscape:version="0.91 r13725"
@@ -42,12 +42,12 @@
      id="namedview3689"
      showgrid="false"
      inkscape:zoom="1.1774114"
-     inkscape:cx="184.53441"
-     inkscape:cy="143.8852"
+     inkscape:cx="160.17139"
+     inkscape:cy="81.944806"
      inkscape:window-x="20"
      inkscape:window-y="42"
      inkscape:window-maximized="0"
-     inkscape:current-layer="g3589"
+     inkscape:current-layer="g3631"
      inkscape:connector-spacing="5"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -55,7 +55,7 @@
      fit-margin-bottom="0" />
   <g
      id="g3589"
-     transform="translate(90.225752,-18.999996)">
+     transform="translate(42.97242,-18.999996)">
     <rect
        style="fill:#ffffff"
        x="360"
@@ -86,17 +86,17 @@
   <text
      font-size="12.8"
      style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
-     x="704.34375"
+     x="657.09039"
      y="257.31573"
      id="text3619">
     <tspan
-       x="704.34375"
+       x="657.09039"
        y="257.31573"
        id="tspan3621" />
   </text>
   <g
      id="g3657"
-     transform="translate(90.225752,-17.999787)">
+     transform="translate(42.97242,-17.999787)">
     <line
        style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
        x1="460.5"
@@ -106,34 +106,34 @@
        id="line3659" />
     <polygon
        style="fill:#000000"
-       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
        id="polygon3661" />
     <polygon
        style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2"
-       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
        id="polygon3663" />
   </g>
   <text
      font-size="12.8"
      style="font-style:normal;font-weight:normal;font-size:12.80000019px;font-family:'courier new';text-anchor:start;fill:#000000"
-     x="704.34375"
+     x="657.09039"
      y="257.31573"
      id="text3673">
     <tspan
-       x="704.34375"
+       x="657.09039"
        y="257.31573"
        id="tspan3675" />
   </text>
   <rect
      style="fill:#ffffff"
-     x="450.22577"
+     x="402.97244"
      y="347.00104"
      width="201"
      height="44"
      id="rect3559" />
   <rect
      style="fill:none;fill-opacity:0;stroke:#7f7f7f;stroke-width:2.14008689;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-     x="435.91388"
+     x="388.66055"
      y="347.07095"
      width="230.82231"
      height="43.860157"
@@ -141,25 +141,25 @@
   <text
      font-size="15.8044"
      style="font-style:normal;font-weight:normal;font-size:15.80440044px;font-family:'courier new';text-anchor:middle;fill:#7f7f7f;fill-opacity:1"
-     x="550.72577"
+     x="503.47244"
      y="373.77304"
      id="text3563">
     <tspan
        style="font-size:21.16666603px;fill:#7f7f7f;fill-opacity:1"
-       x="550.72577"
+       x="503.47244"
        y="373.77304"
        id="tspan3565">@UpperBoundBottom</tspan>
   </text>
   <g
      id="g3631"
-     transform="translate(110.39905,149.91457)">
+     transform="translate(63.145718,149.91457)">
     <rect
        id="rect3583"
-       height="42.194717"
-       width="490.53229"
-       y="33.988415"
-       x="195.06055"
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.37053633;stroke-miterlimit:4;stroke-dasharray:none" />
+       height="42.243332"
+       width="455.82483"
+       y="33.964108"
+       x="210.61656"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.32192183;stroke-miterlimit:4;stroke-dasharray:none" />
     <text
        id="text3585"
        y="56.765598"
@@ -170,11 +170,11 @@
          id="tspan3587"
          y="56.765598"
          x="441.76974"
-         style="font-size:21.16666603px">@LTLengthOf({&quot;java.lang.String&quot;})</tspan>
+         style="font-size:21.16666603px">@LTEqLengthOf({&quot;java.lang.String&quot;})</tspan>
     </text>
   </g>
   <g
-     transform="translate(90.225742,146.00089)"
+     transform="translate(42.97241,146.00089)"
      id="g3590">
     <line
        id="line3592"
@@ -185,28 +185,28 @@
        style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
     <polygon
        id="polygon3594"
-       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
        style="fill:#000000" />
     <polygon
        id="polygon3596"
-       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
+       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
        style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
   </g>
   <path
      inkscape:connector-curvature="2"
      inkscape:connector-type="polyline"
      id="path4201"
-     d="m 629.95339,313.6963 0,0"
+     d="m 610.97658,313.6963 0,0"
      style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.41111112px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
   <g
-     transform="translate(81.429772,231.91491)"
+     transform="translate(34.17644,231.91491)"
      id="g4844">
     <rect
-       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.88029528;stroke-miterlimit:4;stroke-dasharray:none"
-       x="164.33513"
-       y="33.833458"
-       width="607.52478"
-       height="42.504642"
+       style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:1.60108316;stroke-miterlimit:4;stroke-dasharray:none"
+       x="250.48653"
+       y="33.693851"
+       width="437.61899"
+       height="42.783855"
        id="rect4846" />
     <text
        font-size="15.8044"
@@ -218,11 +218,11 @@
          x="469.17535"
          y="56.765598"
          id="tspan4850"
-         style="font-size:21.16666603px">@LessThanOrEqaulToLength({&quot;java.lang.String&quot;})</tspan>
+         style="font-size:21.16666603px">@LTLengthOf({&quot;java.lang.String&quot;})</tspan>
     </text>
   </g>
   <g
-     transform="translate(90.225752,64.000556)"
+     transform="translate(42.97242,64.000556)"
      id="g4856">
     <line
        id="line4858"
@@ -233,11 +233,11 @@
        style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
     <polygon
        id="polygon4860"
-       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
        style="fill:#000000" />
     <polygon
        id="polygon4862"
-       points="460.5,166.236 465.5,176.236 460.5,173.736 455.5,176.236 "
+       points="460.5,173.736 455.5,176.236 460.5,166.236 465.5,176.236 "
        style="fill:none;fill-opacity:0;stroke:#000000;stroke-width:2" />
   </g>
 </svg>

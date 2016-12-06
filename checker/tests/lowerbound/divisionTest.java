@@ -1,5 +1,3 @@
-package hw7;
-
 import java.util.*;
 
 class divisionTest {
