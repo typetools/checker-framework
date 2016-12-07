@@ -127,8 +127,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Creates array length annotations for the result of the Enum.values() method, since the length
-     * of the resulting array is known to always be the number of possible values of the enum.
+     * Creates array length annotations for the result of the Enum.values() method, which is the
+     * number of possible values of the enum.
      */
     @Override
     public Pair<AnnotatedTypeMirror.AnnotatedExecutableType, List<AnnotatedTypeMirror>>
