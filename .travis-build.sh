@@ -84,7 +84,7 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ## for example they currently don't need the annotated JDK.)
 
   # Code style and formatting
-  ant check-style
+  ant -d check-style
   release/checkPluginUtil.sh
 
   # Documentation
