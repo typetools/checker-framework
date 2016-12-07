@@ -1,7 +1,7 @@
 
 import java.util.Comparator;
 
-class List<K0> {}
+class MyGen<K0> {}
 
 abstract class Ordering<T> implements Comparator<T> {
     // Natural order
@@ -17,14 +17,14 @@ abstract class Ordering<T> implements Comparator<T> {
 }
 
 class PolyCollectorTypeVars {
-  // Both of these come from the extends Comparable on line 9
-  @SuppressWarnings({"rawtypes","type.argument.type.incompatible"})
-  public static List<Comparable> treeKeys2() {
-      // See Limitation in DefaultTypeArgumentInference on interdependent methods
-      return treeKeys(Ordering.natural());
-  }
+    // Both of these come from the extends Comparable on line 9
+    @SuppressWarnings({"rawtypes", "type.argument.type.incompatible"})
+    public static MyGen<Comparable> treeKeys2() {
+        // See Limitation in DefaultTypeArgumentInference on interdependent methods
+        return treeKeys(Ordering.natural());
+    }
 
-  public static <K0> List<K0> treeKeys(final Comparator<K0> comparator) {
-    return new List<K0>();
-  }
+    public static <K0> MyGen<K0> treeKeys(final Comparator<K0> comparator) {
+        return new MyGen<K0>();
+    }
 }

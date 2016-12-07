@@ -1,14 +1,18 @@
 package org.checkerframework.framework.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A meta-annotation indicating that the annotated annotation is a type
- * qualifier that should not be visible in output.
+ * A meta-annotation indicating that the annotated annotation is a type qualifier that should not be
+ * visible in output.
  *
- * Examples of such qualifiers: {@code @Unqualified}, {@code @Primitive}
+ * <p>Examples of such qualifiers: {@code @Unqualified}, {@code @Primitive}
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.ANNOTATION_TYPE)
-public @interface InvisibleQualifier { }
+public @interface InvisibleQualifier {}

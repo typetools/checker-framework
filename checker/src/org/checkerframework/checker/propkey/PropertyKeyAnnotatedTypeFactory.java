@@ -1,75 +1,68 @@
 package org.checkerframework.checker.propkey;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.util.*;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.tools.Diagnostic.Kind;
-
-import org.checkerframework.checker.propkey.qual.PropertyKey;
-import org.checkerframework.checker.propkey.qual.PropertyKeyBottom;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.*;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.javacutil.AnnotationUtils;
-
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.ResourceBundle;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import javax.tools.Diagnostic.Kind;
+import org.checkerframework.checker.propkey.qual.PropertyKey;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * This AnnotatedTypeFactory adds PropertyKey annotations to String literals
- * that contain values from lookupKeys.
+ * This AnnotatedTypeFactory adds PropertyKey annotations to String literals that contain values
+ * from lookupKeys.
  *
  * @author wmdietl
  */
 public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private final Set<String> lookupKeys;
-    protected AnnotationMirror PROPKEY_BOTTOM;
 
     public PropertyKeyAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         this.lookupKeys = Collections.unmodifiableSet(buildLookupKeys());
-
-        // Reuse the framework Bottom annotation and make it the default for the
-        // null literal.
-        PROPKEY_BOTTOM = AnnotationUtils.fromClass(elements, PropertyKeyBottom.class);
 
         this.postInit();
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        ImplicitsTreeAnnotator implicitsTreeAnnotator = new ImplicitsTreeAnnotator(this);
-        implicitsTreeAnnotator.addTreeKind(Tree.Kind.NULL_LITERAL, PROPKEY_BOTTOM);
-
         return new ListTreeAnnotator(
-                new PropagationTreeAnnotator(this),
-                implicitsTreeAnnotator,
-                new KeyLookupTreeAnnotator(this, PropertyKey.class));
+                super.createTreeAnnotator(), new KeyLookupTreeAnnotator(this, PropertyKey.class));
+    }
+
+    // To allow subclasses access to createTreeAnnotator from the BATF.
+    protected TreeAnnotator createBasicTreeAnnotator() {
+        return super.createTreeAnnotator();
     }
 
     /**
-     * This TreeAnnotator checks for every String literal whether it is included in the lookup
-     * keys. If it is, the given annotation is added to the literal; otherwise, nothing happens.
+     * This TreeAnnotator checks for every String literal whether it is included in the lookup keys.
+     * If it is, the given annotation is added to the literal; otherwise, nothing happens.
      * Subclasses of this AnnotatedTypeFactory can directly reuse this class and use a different
      * annotation as parameter.
      */
     protected class KeyLookupTreeAnnotator extends TreeAnnotator {
         AnnotationMirror theAnnot;
 
-        public KeyLookupTreeAnnotator(BaseAnnotatedTypeFactory atf, Class<? extends Annotation> annot) {
+        public KeyLookupTreeAnnotator(
+                BaseAnnotatedTypeFactory atf, Class<? extends Annotation> annot) {
             super(atf);
             theAnnot = AnnotationUtils.fromClass(elements, annot);
         }
@@ -77,8 +70,8 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
             if (!type.isAnnotatedInHierarchy(theAnnot)
-                && tree.getKind() == Tree.Kind.STRING_LITERAL
-                && strContains(lookupKeys, tree.getValue().toString())) {
+                    && tree.getKind() == Tree.Kind.STRING_LITERAL
+                    && strContains(lookupKeys, tree.getValue().toString())) {
                 type.addAnnotation(theAnnot);
             }
             // A possible extension is to record all the keys that have been used and
@@ -104,12 +97,11 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Instead of a precise comparison, we incrementally remove leading dot-separated
-     * strings until we find a match.
-     * For example if messages contains "y.z" and we look for "x.y.z" we find a match
-     * after removing the first "x.".
+     * Instead of a precise comparison, we incrementally remove leading dot-separated strings until
+     * we find a match. For example if messages contains "y.z" and we look for "x.y.z" we find a
+     * match after removing the first "x.".
      *
-     * Compare to SourceChecker.fullMessageOf.
+     * <p>Compare to SourceChecker.fullMessageOf.
      */
     private static boolean strContains(Set<String> messages, String messageKey) {
         String key = messageKey;
@@ -125,10 +117,7 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } while (true);
     }
 
-
-    /**
-     * Returns a set of the valid keys that can be used.
-     */
+    /** Returns a set of the valid keys that can be used. */
     public Set<String> getLookupKeys() {
         return this.lookupKeys;
     }
@@ -137,10 +126,10 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Set<String> result = new HashSet<String>();
 
         if (checker.hasOption("propfiles")) {
-            result.addAll( keysOfPropertyFiles(checker.getOption("propfiles")) );
+            result.addAll(keysOfPropertyFiles(checker.getOption("propfiles")));
         }
         if (checker.hasOption("bundlenames")) {
-            result.addAll( keysOfResourceBundle(checker.getOption("bundlenames")) );
+            result.addAll(keysOfResourceBundle(checker.getOption("bundlenames")));
         }
 
         return result;
@@ -195,7 +184,8 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // TODO: is there a nicer way to report messages, that are not
                 // connected to an AST node?
                 // One cannot use report, because it needs a node.
-                checker.message(Kind.WARNING, "Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
+                checker.message(
+                        Kind.WARNING, "Exception in PropertyKeyChecker.keysOfPropertyFile: " + e);
                 e.printStackTrace();
             }
         }
@@ -207,7 +197,8 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         String[] namesArr = bundleNames.split(":");
 
         if (namesArr == null) {
-            checker.message(Kind.WARNING, "Couldn't parse the resource bundles: <" + bundleNames + ">");
+            checker.message(
+                    Kind.WARNING, "Couldn't parse the resource bundles: <" + bundleNames + ">");
             return Collections.emptySet();
         }
 
@@ -216,18 +207,18 @@ public class PropertyKeyAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         for (String bundleName : namesArr) {
             ResourceBundle bundle = ResourceBundle.getBundle(bundleName);
             if (bundle == null) {
-                checker.message(Kind.WARNING, "Couldn't find the resource bundle: <" + bundleName
-                    + "> for locale <" + Locale.getDefault() + ">");
+                checker.message(
+                        Kind.WARNING,
+                        "Couldn't find the resource bundle: <"
+                                + bundleName
+                                + "> for locale <"
+                                + Locale.getDefault()
+                                + ">");
                 continue;
             }
 
             result.addAll(bundle.keySet());
         }
         return result;
-    }
-
-    @Override
-    public GraphQualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
-        return new GraphQualifierHierarchy(factory, PROPKEY_BOTTOM);
     }
 }

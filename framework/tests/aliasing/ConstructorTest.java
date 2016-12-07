@@ -20,5 +20,4 @@ public class ConstructorTest {
         //::error: (unique.leaked)
         new ConstructorTest(o3, "someString");
     }
-
 }

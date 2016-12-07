@@ -1,5 +1,5 @@
+import java.util.Collection;
 import org.checkerframework.checker.regex.qual.Regex;
-import java.util.*;
 
 class TypeParamSubtype {
     // These are legal because null null has type @Regex String
@@ -20,5 +20,4 @@ class TypeParamSubtype {
     <T extends String, U extends T> void nullSimpleSubtype(Collection<T> col, U u) {
         col.add(u);
     }
-
 }

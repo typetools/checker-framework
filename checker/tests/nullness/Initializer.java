@@ -1,8 +1,7 @@
-import java.util.ArrayList;
-
-import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
 import org.checkerframework.checker.initialization.qual.*;
+import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.framework.qual.EnsuresQualifier;
+import org.checkerframework.framework.qual.EnsuresQualifierIf;
 
 class Initializer {
 
@@ -22,8 +21,7 @@ class Initializer {
     }
 
     //:: error: (initialization.fields.uninitialized)
-    public Initializer(boolean foo) {
-    }
+    public Initializer(boolean foo) {}
 
     public Initializer(int foo) {
         a = "";
@@ -50,22 +48,45 @@ class Initializer {
         c = "";
     }
 
-    @EnsuresQualifier(expression="a", qualifier=NonNull.class)
+    @EnsuresQualifier(expression = "a", qualifier = NonNull.class)
     public void setField(@UnknownInitialization @Raw Initializer this) {
         a = "";
     }
 
-    @EnsuresQualifierIf(result=true, expression="a", qualifier=NonNull.class)
+    @EnsuresQualifierIf(result = true, expression = "a", qualifier = NonNull.class)
     public boolean setFieldMaybe(@UnknownInitialization @Raw Initializer this) {
         a = "";
         return true;
     }
 
     String f = "";
+
     void t1(@UnknownInitialization @Raw Initializer this) {
-        // this is potentially uninitialized, but the static type of f, as well as
-        // the initializer guarantee that it is initialized.
+        //:: error: (dereference.of.nullable)
         this.f.toString();
     }
 
+    String fieldF = "";
+}
+
+class SubInitializer extends Initializer {
+
+    String f = "";
+
+    void subt1(
+            @UnknownInitialization(Initializer.class) @Raw(Initializer.class) SubInitializer this) {
+        fieldF.toString();
+        super.f.toString();
+        //:: error: (dereference.of.nullable)
+        this.f.toString();
+    }
+
+    void subt2(@UnknownInitialization @Raw SubInitializer this) {
+        //:: error: (dereference.of.nullable)
+        fieldF.toString();
+        //:: error: (dereference.of.nullable)
+        super.f.toString();
+        //:: error: (dereference.of.nullable)
+        this.f.toString();
+    }
 }

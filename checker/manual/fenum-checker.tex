@@ -1,45 +1,45 @@
 \htmlhr
-\chapter{Fake Enum Checker\label{fenum-checker}}
+\chapter{Fake Enum Checker for fake enumerations\label{fenum-checker}}
 
-Java's
-\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.9}{\code{enum}}
-keyword lets you define an enumeration type: a finite set of distinct values
-that are related to one another but are disjoint from all other
-types, including other enumerations.
-Before enums were added to Java, there were two ways to encode an
-enumeration, both of which are error-prone:
+The Fake Enum Checker, or Fenum Checker, enables you to define a type alias
+or typedef, in which two different sets of values have the same
+representation (the same Java type) but are not allowed to be used
+interchangeably.  It is also possible to create a typedef using the
+Subtyping Checker (\chapterpageref{subtyping-checker}), and that approach
+is sometimes more appropriate.
 
-\begin{description}
-\item[the fake enum pattern]  a set of \code{int} or \code{String}
-  constants (as often found in older C code).
+One common use for the Fake Enum Checker is the
+\emph{fake enumeration pattern} (Section~\ref{fenum-pattern}).  For
+example, consider this code adapted from Android's
+\href{https://developer.android.com/reference/android/support/annotation/IntDef.html}{\code{IntDef}}
+documentation:
 
-\item[the \href{http://www.oracle.com/technetwork/java/page1-139488.html}{typesafe
-enum pattern}]  a class with private constructor.
-% This requires
-% \href{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}{careful development}.
-\end{description}
+\begin{Verbatim}
+@NavigationMode int NAVIGATION_MODE_STANDARD = 0;
+@NavigationMode int NAVIGATION_MODE_LIST = 1;
+@NavigationMode int NAVIGATION_MODE_TABS = 2;
 
-Sometimes you need to use the fake enum pattern,
-rather than a real enum or the typesafe enum pattern.
-%
-One reason is backward-compatibility.  A public API that predates Java's
-enum keyword may use \code{int} constants; it cannot be changed, because
-doing so would break existing clients.  For example, Java's JDK still uses
-\code{int} constants in the AWT and Swing frameworks, and Android also uses
-\code{int} constants rather than Java enums.
-%
-Another reason is performance, especially in environments with limited
-resources.  Use of an int instead of an object can
-reduce code size, memory requirements, and run time.
-% Android no longer recommends use of ints instead of enums:  see
-% http://stackoverflow.com/questions/5143256/why-was-avoid-enums-where-you-only-need-ints-removed-from-androids-performanc
+@NavigationMode int getNavigationMode();
 
-In cases when code has to use the fake enum pattern, the Fake Enum Checker,
-or Fenum Checker, gives the same safety guarantees as a true enumeration type.
-The developer can introduce new types that are distinct from all values of the
-base type and from all other fake enums. Fenums can be introduced for
-primitive types as well as for reference types.
+void setNavigationMode(@NavigationMode int mode);
+\end{Verbatim}
 
+The Fake Enum Checker can issue a compile-time warning if the programmer
+ever tries to call \<setNavigationMode> with an \<int> that is not a
+\<@NavigationMode int>.
+
+The Fake Enum Checker gives the same safety guarantees as a true enumeration
+type or typedef, but retaining backward-compatibility with interfaces that
+use existing Java types.  You can apply fenum annotations to any Java type,
+including all primitive types and also reference types.  Thus, you could
+use it (for example) to represent floating-point values between 0 and 1, or
+\<String>s with some particular characteristic.
+(Note that the Fake Enum Checker does not let you create a shorter alias
+for a long type name, as a real typedef would if Java supported it.)
+
+As explained in Section~\ref{fenum-annotations}, you can either define your
+own fenum annotations, such as \<@NavigationMode> above, or you can use the
+existing \refqualclass{checker/fenum/qual}{Fenum} with a string argument.
 Figure~\ref{fig-fenum-hierarchy} shows part of the type hierarchy for the
 Fenum type system.
 
@@ -52,13 +52,16 @@ See Section~\ref{fenum-annotations} for descriptions of how to
 introduce both types of fenums. The type qualifiers in gray
 (\code{@FenumTop}, \code{@FenumUnqualified}, and \code{@FenumBottom})
 should never be written in
-source code; they are used internally by the type system.}
+source code; they are used internally by the type system.
+\<@FenumUnqualified> is the default qualifier for unannotated types, except
+for upper bounds which default to \<@FenumTop>.
+}
 \label{fig-fenum-hierarchy}
 \end{figure}
 
 \section{Fake enum annotations\label{fenum-annotations}}
 
-The checker supports two ways to introduce a new fake enum (fenum):
+The Fake Enum Checker supports two ways to introduce a new fake enum (fenum):
 
 \begin{enumerate}
 \item Introduce your own specialized fenum annotation with code like this in
@@ -67,7 +70,11 @@ file \code{\emph{MyFenum}.java}:
 \begin{alltt}
 package \textit{myModule}.qual;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.checkerframework.checker.fenum.qual.FenumTop;
 import org.checkerframework.framework.qual.SubtypeOf;
 
@@ -82,11 +89,12 @@ You only need to adapt the italicized package, annotation, and file names in the
 
 Note that all custom annotations must have the
 \<@Target(\ttlcb ElementType.TYPE\_USE\ttrcb)> meta-annotation. See section
-\ref{define-type-qualifiers}.
+\ref{creating-define-type-qualifiers}.
 
 \item Use the provided \refqualclass{checker/fenum/qual}{Fenum} annotation, which takes a
-\code{String} argument to distinguish different fenums.
-For example, \code{@Fenum("A")} and \code{@Fenum("B")} are two distinct fenums.
+\code{String} argument to distinguish different fenums or type aliases.
+For example, \code{@Fenum("A")} and \code{@Fenum("B")} are two distinct
+type qualifiers.
 \end{enumerate}
 
 
@@ -98,11 +106,12 @@ your project, whereas the second approach allows quick prototyping.
 \section{What the Fenum Checker checks\label{fenum-checks}}
 
 The Fenum Checker ensures that unrelated types are not mixed.
-All types with a particular fenum annotation, or \code{@Fenum(...)} with a particular \code{String} argument, are
-disjoint from all unannotated types and all types with a different fenum
+All types with a particular fenum annotation, or \code{@Fenum(...)} with a
+particular \code{String} argument, are
+disjoint from all unannotated types and from all types with a different fenum
 annotation or \code{String} argument.
 
-The checker forbids method calls on fenum types and ensures that
+The checker ensures that
 only compatible fenum types are used in comparisons and arithmetic operations
 (if applicable to the annotated type).
 
@@ -123,14 +132,14 @@ If you define your own annotation(s), provide the name(s) of the annotation(s)
 through the \code{-Aquals} option, using a comma-no-space-separated notation:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.fenum.FenumChecker \ttbs
         -Aquals=\textit{myModule.qual.MyFenum} MyFile.java ...
 \end{alltt}
 
 The annotations listed in \code{-Aquals} must be accessible to
 the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac bootclasspath)
+already be compiled (and, typically, be on the javac classpath)
 before you run the Fenum Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
@@ -139,7 +148,7 @@ that contain the annotations through the \code{-AqualDirs} option,
 using a colon-no-space-separated notation. For example:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.fenum.FenumChecker \ttbs
         -AqualDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java ...
 \end{alltt}
@@ -221,6 +230,47 @@ class FenumUser {
 Also, see the example project in the \<checker/examples/fenum-extension> directory.
 
 
+\section{The fake enumeration pattern\label{fenum-pattern}}
+
+Java's
+\href{https://docs.oracle.com/javase/specs/jls/se8/html/jls-8.html#jls-8.9}{\code{enum}}
+keyword lets you define an enumeration type: a finite set of distinct values
+that are related to one another but are disjoint from all other
+types, including other enumerations.
+Before enums were added to Java, there were two ways to encode an
+enumeration, both of which are error-prone:
+
+\begin{description}
+\item[the fake enum pattern]  a set of \code{int} or \code{String}
+  constants (as often found in older C code).
+
+\item[the \href{http://www.oracle.com/technetwork/java/page1-139488.html}{typesafe
+enum pattern}]  a class with private constructor.
+% This requires
+% \href{http://www.javaworld.com/javaworld/javatips/jw-javatip122.html}{careful development}.
+\end{description}
+
+Sometimes you need to use the fake enum pattern,
+rather than a real enum or the typesafe enum pattern.
+%
+One reason is backward-compatibility.  A public API that predates Java's
+enum keyword may use \code{int} constants; it cannot be changed, because
+doing so would break existing clients.  For example, Java's JDK still uses
+\code{int} constants in the AWT and Swing frameworks, and Android also uses
+\code{int} constants rather than Java enums.
+%
+Another reason is performance, especially in environments with limited
+resources.  Use of an int instead of an object can
+reduce code size, memory requirements, and run time.
+% Android no longer recommends use of ints instead of enums:  see
+% http://stackoverflow.com/questions/5143256/why-was-avoid-enums-where-you-only-need-ints-removed-from-androids-performanc
+
+In cases when code has to use the fake enum pattern, the Fake Enum Checker,
+or Fenum Checker, gives the same safety guarantees as a true enumeration type.
+The developer can introduce new types that are distinct from all values of the
+base type and from all other fake enums. Fenums can be introduced for
+primitive types as well as for reference types.
+
 
 \section{References\label{fenum-references}}
 
@@ -244,7 +294,8 @@ Also, see the example project in the \<checker/examples/fenum-extension> directo
 \end{itemize}
 
 % LocalWords:  enums typesafe Fenum Fenums fenum MyFenum quals fenums Aquals
-% LocalWords:  TestStatic FenumC FenumD myModule RetentionPolicy
+% LocalWords:  TestStatic FenumC FenumD myModule RetentionPolicy IntDef
 % LocalWords:  SubtypeOf FenumTop MyFile Enum enum AWT java jls qual
 %  LocalWords:  FenumUnqualified FenumBottom ElementType classpath
 %%  LocalWords:  bootclasspath AqualDirs myProject myLibrary
+%  LocalWords:  setNavigationMode NavigationMode

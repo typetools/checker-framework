@@ -6,11 +6,17 @@ import org.checkerframework.checker.nullness.qual.*;
 public class Issue764 {
     public static @Nullable Object field = null;
 
-    @RequiresNonNull("field")
-    public static void method() { }
-
     static class MyClass {
+        @RequiresNonNull("field")
+        public static void method() {}
+
         public void otherMethod() {
+            field = new Object();
+            method();
+        }
+
+        public void otherMethod2() {
+            //:: error: (contracts.precondition.not.satisfied)
             method();
         }
     }

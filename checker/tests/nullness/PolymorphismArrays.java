@@ -1,5 +1,5 @@
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.PolyAll;
 
 public class PolymorphismArrays {
 
@@ -15,15 +15,17 @@ public class PolymorphismArrays {
 
     public static boolean @PolyNull [] slice(boolean @PolyNull [] seq, int start, int end) {
         // Know from comparison that argument is nullable -> also return is nullable.
-        if (seq == null) { return null; }
-        return new boolean[] { };
+        if (seq == null) {
+            return null;
+        }
+        return new boolean[] {};
     }
 
     public static boolean @PolyNull [] slice(boolean @PolyNull [] seq, long start, int end) {
-        return slice(seq, (int)start, end);
+        return slice(seq, (int) start, end);
     }
 
-    public static @PolyNull String [] intern(@PolyNull String[] a) {
+    public static @PolyNull String[] intern(@PolyNull String[] a) {
         return a;
     }
 
@@ -34,7 +36,7 @@ public class PolymorphismArrays {
     @org.checkerframework.dataflow.qual.Pure
     public PolymorphismArrays clone() {
         PolymorphismArrays result = new PolymorphismArrays(elts.clone());
-        for (int i=0; i < elts.length; i++) {
+        for (int i = 0; i < elts.length; i++) {
             result.elts[i] = intern(elts[i].clone());
         }
         return result;
@@ -47,11 +49,10 @@ public class PolymorphismArrays {
     }
 
     public static <T> int indexOf(T[] a) {
-      return indexOfEq(a);
+        return indexOfEq(a);
     }
 
     public static int indexOfEq(@PolyAll Object[] a) {
         return -1;
     }
-
 }

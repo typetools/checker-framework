@@ -1,23 +1,21 @@
 package org.checkerframework.common.util.count;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.processing.*;
-import javax.lang.model.element.*;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.util.ElementFilter;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.*;
+import javax.lang.model.util.ElementFilter;
 
 /**
- * An annotation processor for counting the occurrences of annotations.
- * To invoke it, use
+ * An annotation processor for counting the occurrences of annotations. To invoke it, use
+ *
  * <pre>
  * javac -proc:only -processor org.checkerframework.common.util.count.AnnotationsCounter <em>MyFile.java ...</em>
  * </pre>
@@ -36,8 +34,7 @@ public class AnnotationsCounter extends AbstractProcessor {
     }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations,
-            RoundEnvironment roundEnv) {
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 
         if (roundEnv.processingOver()) {
             System.out.println("Found annotations: ");
@@ -48,7 +45,7 @@ public class AnnotationsCounter extends AbstractProcessor {
         } else {
             for (TypeElement elem : ElementFilter.typesIn(roundEnv.getRootElements())) {
                 ClassTree tree = Trees.instance(processingEnv).getTree(elem);
-                if (tree!=null) {
+                if (tree != null) {
                     tree.accept(scanner, null);
                 }
             }
@@ -56,13 +53,14 @@ public class AnnotationsCounter extends AbstractProcessor {
         }
     }
 
-    private final TreeScanner<?,?> scanner = new TreeScanner<Void, Void>() {
-        @Override
-        public Void visitAnnotation(AnnotationTree node, Void p) {
-            JCAnnotation anno = (JCAnnotation) node;
-            Name annoName = anno.annotationType.type.tsym.name;
-            incrementCount(annoName);
-            return super.visitAnnotation(node, p);
-        }
-    };
+    private final TreeScanner<?, ?> scanner =
+            new TreeScanner<Void, Void>() {
+                @Override
+                public Void visitAnnotation(AnnotationTree node, Void p) {
+                    JCAnnotation anno = (JCAnnotation) node;
+                    Name annoName = anno.annotationType.type.tsym.name;
+                    incrementCount(annoName);
+                    return super.visitAnnotation(node, p);
+                }
+            };
 }

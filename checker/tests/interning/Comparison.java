@@ -1,7 +1,5 @@
 import org.checkerframework.checker.interning.qual.*;
 
-import java.util.*;
-
 public class Comparison {
 
     void testInterned() {

@@ -9,14 +9,14 @@ public class FlowLoop {
             s = null;
         }
         //:: error: (dereference.of.nullable)
-        s.toString();   // error
+        s.toString(); // error
     }
 
     void whileConditionError() {
         String s = "m";
 
         //:: error: (dereference.of.nullable)
-        while (s.toString() == "m") {  // error
+        while (s.toString() == "m") { // error
             s.toString();
             s = null;
         }
@@ -31,9 +31,9 @@ public class FlowLoop {
 
     void forLoopConditionError() {
         for (String s = "m";
-             //:: error: (dereference.of.nullable)
-             s.toString() != "m";   // error
-             s = null) {
+                //:: error: (dereference.of.nullable)
+                s.toString() != "m"; // error
+                s = null) {
             s.toString();
         }
     }
@@ -41,6 +41,7 @@ public class FlowLoop {
     class Link {
         Object val;
         @Nullable Link next;
+
         public Link(Object val, @Nullable Link next) {
             this.val = val;
             this.next = next;
@@ -49,7 +50,7 @@ public class FlowLoop {
 
     // Both dereferences of l should succeed
     void test(@Nullable Link in) {
-        for (@Nullable Link l=in; l!=null; l=l.next) {
+        for (@Nullable Link l = in; l != null; l = l.next) {
             Object o;
             o = l.val;
         }
@@ -59,7 +60,7 @@ public class FlowLoop {
         String s = "m";
         while (true) {
             //:: error: (dereference.of.nullable)
-            s.toString();   // error
+            s.toString(); // error
             s = null;
         }
     }
@@ -68,7 +69,7 @@ public class FlowLoop {
         String s = "m";
         do {
             //:: error: (dereference.of.nullable)
-            s.toString();   // error
+            s.toString(); // error
             s = null;
         } while (true);
     }
@@ -76,13 +77,13 @@ public class FlowLoop {
     void alwaysRunForLoop() {
         String s = "m";
         for (s = null; s != null; s = "m") {
-            s.toString();   // ok
+            s.toString(); // ok
         }
         //:: error: (dereference.of.nullable)
-        s.toString();   // error
+        s.toString(); // error
     }
 
-    public void badIterator () {
+    public void badIterator() {
         Class<?> opt_doc1 = null;
         //:: error: (dereference.of.nullable)
         opt_doc1.getInterfaces();
@@ -94,7 +95,7 @@ public class FlowLoop {
     }
 
     void testContinue(@Nullable Object o) {
-        for (;;) {
+        for (; ; ) {
             //:: error: (dereference.of.nullable)
             o.toString();
             if (true) continue;
@@ -111,16 +112,16 @@ public class FlowLoop {
 
     void testSimpleNull() {
         String r1 = null;
-        while (r1 != null);
+        while (r1 != null) ;
         //:: error: (dereference.of.nullable)
-        r1.toString();  // error
+        r1.toString(); // error
     }
 
     void testMulticheckNull() {
         String r1 = null;
-        while (r1 != null && r1.equals("m"));
+        while (r1 != null && r1.equals("m")) ;
         //:: error: (dereference.of.nullable)
-        r1.toString();  // error
+        r1.toString(); // error
     }
 
     void testAssignInLoopSimple() {
@@ -129,7 +130,7 @@ public class FlowLoop {
             r1 = null;
         }
         //:: error: (dereference.of.nullable)
-        r1.toString();  // error
+        r1.toString(); // error
     }
 
     void testAssignInLoopMulti() {
@@ -138,7 +139,7 @@ public class FlowLoop {
             r1 = null;
         }
         //:: error: (dereference.of.nullable)
-        r1.toString();  // error
+        r1.toString(); // error
     }
 
     void testBreakWithCheck() {
@@ -158,5 +159,4 @@ public class FlowLoop {
             s.toString();
         }
     }
-
 }

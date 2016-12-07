@@ -3,25 +3,25 @@
 // https://github.com/typetools/checker-framework/issues/577
 class Banana<T extends Number> extends Apple<int[]> {
     @Override
-    void fooOuter(int[] array) {}
+    void fooIssue577Outer(int[] array) {}
+
     class InnerBanana extends InnerApple<long[]> {
         @Override
-        <F2> void foo(int[] array, long[] array2, F2 param3) {
-        }
+        <F2> void foo(int[] array, long[] array2, F2 param3) {}
     }
 }
 
 class Apple<T> {
-    void fooOuter(T param) {}
+    void fooIssue577Outer(T param) {}
+
     class InnerApple<E> {
-        <F> void foo(T param, E param2, F param3) {
-        }
+        <F> void foo(T param, E param2, F param3) {}
     }
 }
 
 class Pineapple<E> extends Apple<E> {
-   @Override
-   void fooOuter(E array) {}
+    @Override
+    void fooIssue577Outer(E array) {}
 }
 
 class IntersectionAsMemberOf {
@@ -49,7 +49,6 @@ class UnionAsMemberOf {
         public String getT() {
             return "t";
         }
-
     }
 
     void bar() throws MyExceptionA, MyExceptionB {}
@@ -63,7 +62,7 @@ class UnionAsMemberOf {
     }
 }
 
-final class Outer<K extends Object> {
+final class Issue577Outer<K extends Object> {
     // TODO: See Issue 724
     // https://github.com/typetools/checker-framework/issues/724
     @SuppressWarnings({"regex:argument.type.incompatible", "tainting:argument.type.incompatible"})
@@ -72,10 +71,8 @@ final class Outer<K extends Object> {
     }
 
     private final class Inner {
-        private Inner(ReferenceQueue<? super K> q) {
-        }
+        private Inner(ReferenceQueue<? super K> q) {}
     }
 }
 
-class ReferenceQueue<T> {
-}
+class ReferenceQueue<T> {}

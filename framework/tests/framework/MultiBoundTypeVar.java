@@ -1,4 +1,4 @@
-import tests.util.*;
+import testlib.util.*;
 
 public class MultiBoundTypeVar {
 
@@ -14,5 +14,4 @@ public class MultiBoundTypeVar {
         Appendable d1 = t;
         @Odd Appendable d2 = t;
     }
-
 }

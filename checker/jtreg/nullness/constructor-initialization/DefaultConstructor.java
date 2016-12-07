@@ -7,8 +7,10 @@
 import org.checkerframework.checker.nullness.qual.*;
 
 public class DefaultConstructor {
-  Object nullObject;
-  @MonotonicNonNull Object lazyField;
+    Object nullObject;
+    @MonotonicNonNull Object lazyField;
 
-  public Object getNull() { return nullObject; }
+    public Object getNull() {
+        return nullObject;
+    }
 }

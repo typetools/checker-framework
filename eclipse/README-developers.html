@@ -348,6 +348,41 @@
     </section>
 </section>
 
+<section id="add_checker">
+    <h2>Adding a checker</h2>
+    <p>In each location the new checker is added, the order of the checkers should match the order of the checkers in
+    the introduction of the manual.  Add the new checker in the following locations:</p>
+    <table class="table">
+        <tr>
+            <td>1.</td>
+            <td><strong>Add checker to CheckerInfo.java</strong><br/>
+            Add the checker to the list in CheckerInfo.initCheckers() in
+            eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/actions/CheckerInfo.java
+            </td>
+        </tr>
+        <tr>
+            <td>2.</td>
+            <td><strong>Add checker to CheckerActions.java</strong><br/>
+            Create a new CheckerAction class in CheckerActions:
+            /eclipse/checker-framework-eclipse-plugin/src/org/checkerframework/eclipse/actions/CheckerActions.java
+            </td>
+        <tr>
+        </tr>
+            <td>3.</td>
+            <td><strong>Add checker to plugin.xml</strong><br/>
+            In eclipse/checker-framework-eclipse-plugin/plugin.xml, add the checked to the both the "org.eclipse.ui.menus"
+            extension point and and the "org.eclipse.ui.commands" extension point.
+            </td>
+        <tr>
+        </tr>
+            <td>4.</td>
+            <td><strong>Build and test the plugin</strong><br/>
+             See the <a href="#building_the_plugin">Building the plugin</a> and <a href="#testing">Testing</a> sections.
+            </td>
+        </tr>
+    </table>
+</section>
+
 <section id="building_the_plugin">
 <h2>Building the Plugin</h2>
 
@@ -359,7 +394,7 @@
                 are included by copying them to the checker-framework-eclipse-plugin/lib directory before the
                 plugin is built.  If you wish to test the plugin with a different set of artifacts, copy them
                 here.  If these artifacts aren't present, the plugin will not build. From the top-level of a
-                Checker Framework clone that has been built:
+                Checker Framework clone that has been built with JDK 7:
 
                 <code><br/>
                 cd eclipse<br/>
@@ -713,6 +748,8 @@
                     <li><a href="#feature_project">Feature Project</a></li>
                     <li><a href="#update_site_project">Update Site Project</a></li>
                 </ul>
+            </li>
+            <li><a href="#add_checker">Adding a checker</a>
             </li>
             <li><a href="#building_the_plugin">Building the Plugin</a>
                 <ul class="nav">

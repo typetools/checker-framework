@@ -6,27 +6,30 @@ public class Synchronization {
     public void bad() {
         Object o = null;
         //:: error: (locking.nullable)
-        synchronized(o) { }   // should emit error
+        synchronized (o) {
+        } // should emit error
     }
 
     public void ok() {
         // NonNull specifically
         @NonNull Object o1 = "m";
-        synchronized(o1) { }
+        synchronized (o1) {
+        }
     }
 
     public void flow() {
         Object o = null;
         o = "m";
-        synchronized(o) { }; // valid
+        synchronized (o) {
+        } // valid
         o = null;
         //:: error: (locking.nullable)
-        synchronized(o) { }; // invalid
+        synchronized (o) {
+        } // invalid
     }
 
     public Synchronization() {
-        synchronized(this) {
+        synchronized (this) {
         }
     }
-
 }

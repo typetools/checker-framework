@@ -4,7 +4,7 @@
 
 import org.checkerframework.checker.nullness.qual.*;
 
-interface Function<T extends @Nullable Object, R> {
+interface FunctionInit<T extends @Nullable Object, R> {
     R apply(T t);
 }
 
@@ -20,166 +20,184 @@ class LambdaInit {
     @Nullable String f3 = "";
 
     String f1b;
-    Function<String, String> ff0 = s -> {
-        //:: error: (dereference.of.nullable)
-        f1.toString();
-        //:: error: (dereference.of.nullable)
-        f1b.toString();
-        f2.toString();
-        //:: error: (dereference.of.nullable)
-        f3.toString();
-        return "";
-    };
-    Object o1 = f1b = ""; // Test field value refinement after initializer. f1b should still be @Nullable in the lambda.
+    FunctionInit<String, String> ff0 =
+            s -> {
+                //:: error: (dereference.of.nullable)
+                f1.toString();
+                //:: error: (dereference.of.nullable)
+                f1b.toString();
+                f2.toString();
+                //:: error: (dereference.of.nullable)
+                f3.toString();
+                return "";
+            };
+    // Test field value refinement after initializer. f1b should still be @Nullable in the lambda.
+    Object o1 = f1b = "";
 
     String f4;
+
     {
         f3 = "";
         f4 = "";
-        Function<String, String> ff0 = s -> {
-            //:: error: (dereference.of.nullable)
-            f1.toString();
-            f2.toString();
-            //:: error: (dereference.of.nullable)
-            f3.toString();
-            f4.toString();
-            return "";
-        };
+        FunctionInit<String, String> ff0 =
+                s -> {
+                    //:: error: (dereference.of.nullable)
+                    f1.toString();
+                    f2.toString();
+                    //:: error: (dereference.of.nullable)
+                    f3.toString();
+                    f4.toString();
+                    return "";
+                };
     }
 
     String f5;
+
     LambdaInit() {
         f5 = "";
-        Function<String, String> ff0 = s -> {
-            //:: error: (dereference.of.nullable)
-            f1.toString();
-            f2.toString();
-            //:: error: (dereference.of.nullable)
-            f3.toString();
-            f5.toString();
-            return "";
-        };
+        FunctionInit<String, String> ff0 =
+                s -> {
+                    //:: error: (dereference.of.nullable)
+                    f1.toString();
+                    f2.toString();
+                    //:: error: (dereference.of.nullable)
+                    f3.toString();
+                    f5.toString();
+                    return "";
+                };
     }
 
-//    // This is a bug
-//    // Could probably be fixed with CommittmentTreeAnnotator::visitMethod
-//    // Or more likely, TypeFromTree::212
-//    // AnnotatedTypeFactory::getImplicitReceiverType::1146(there is a todo...)
-//    Object o = new Object() {
-//        @Override
-//        public String toString() {
-//            f1.toString();
-//            f2.toString();
-//            return "";
-//        }
-//    };
-//
+    //    // This is a bug
+    //    // Could probably be fixed with CommittmentTreeAnnotator::visitMethod
+    //    // Or more likely, TypeFromTree::212
+    //    // AnnotatedTypeFactory::getImplicitReceiverType::1146(there is a todo...)
+    //    Object o = new Object() {
+    //        @Override
+    //        public String toString() {
+    //            f1.toString();
+    //            f2.toString();
+    //            return "";
+    //        }
+    //    };
+    //
 
     //  Works!
     void method() {
-        Function<String, String> ff0 = s -> {
-            f1.toString();
-            f2.toString();
-            //:: error: (dereference.of.nullable)
-            f3.toString();
-            return "";
-        };
+        FunctionInit<String, String> ff0 =
+                s -> {
+                    f1.toString();
+                    f2.toString();
+                    //:: error: (dereference.of.nullable)
+                    f3.toString();
+                    return "";
+                };
     }
-
 
     // Test for nested
     class Nested {
-        Function<String, String> ff0 = s -> {
-            f1.toString();
-            f2.toString();
-            //:: error: (dereference.of.nullable)
-            f3.toString();
-            return "";
-        };
+        FunctionInit<String, String> ff0 =
+                s -> {
+                    f1.toString();
+                    f2.toString();
+                    //:: error: (dereference.of.nullable)
+                    f3.toString();
+                    return "";
+                };
 
         String f4;
+
         {
             f3 = "";
             f4 = "";
-            Function<String, String> ff0 = s -> {
-                f1.toString();
-                f2.toString();
-                //:: error: (dereference.of.nullable)
-                f3.toString();
-                f4.toString();
-                return "";
-            };
+            FunctionInit<String, String> ff0 =
+                    s -> {
+                        f1.toString();
+                        f2.toString();
+                        //:: error: (dereference.of.nullable)
+                        f3.toString();
+                        f4.toString();
+                        return "";
+                    };
         }
+
         String f5;
+
         Nested() {
             f5 = "";
-            Function<String, String> ff0 = s -> {
-                f1.toString();
-                f2.toString();
-                //:: error: (dereference.of.nullable)
-                f3.toString();
-                f5.toString();
-                return "";
-            };
+            FunctionInit<String, String> ff0 =
+                    s -> {
+                        f1.toString();
+                        f2.toString();
+                        //:: error: (dereference.of.nullable)
+                        f3.toString();
+                        f5.toString();
+                        return "";
+                    };
         }
 
         void method() {
-            Function<String, String> ff0 = s -> {
-                f1.toString();
-                f2.toString();
-                //:: error: (dereference.of.nullable)
-                f3.toString();
-                return "";
-            };
+            FunctionInit<String, String> ff0 =
+                    s -> {
+                        f1.toString();
+                        f2.toString();
+                        //:: error: (dereference.of.nullable)
+                        f3.toString();
+                        return "";
+                    };
         }
     }
 
     // Test for nested in a lambda
-    Consumer<String> func = s -> {
-        Consumer<String> ff0 = s2 -> {
-            //:: error: (dereference.of.nullable)
-            f1.toString();
-            f2.toString();
-            //:: error: (dereference.of.nullable)
-            f3.toString();
-        };
-    };
+    Consumer<String> func =
+            s -> {
+                Consumer<String> ff0 =
+                        s2 -> {
+                            //:: error: (dereference.of.nullable)
+                            f1.toString();
+                            f2.toString();
+                            //:: error: (dereference.of.nullable)
+                            f3.toString();
+                        };
+            };
 
     // Tests for static initializers.
     static String sf1;
     static String sf2 = "";
     static @Nullable String sf3 = "";
     static String sf1b;
-    static Function<String, String> sff0 = s -> {
+    static FunctionInit<String, String> sff0 =
+            s -> {
 
-// This is an issue with static initializers in general
-// //:: error: (dereference.of.nullable)
-        sf1.toString();
-// This is an issue with static initializers in general
-// //:: error: (dereference.of.nullable)
-        sf1b.toString();
-        sf2.toString();
-        //:: error: (dereference.of.nullable)
-        sf3.toString();
-        return "";
-    };
-    static Object so1 = sf1b = ""; // Test field value refinement after initializer. f1b should still be null.
+                // This is an issue with static initializers in general
+                // //:: error: (dereference.of.nullable)
+                sf1.toString();
+                // This is an issue with static initializers in general
+                // //:: error: (dereference.of.nullable)
+                sf1b.toString();
+                sf2.toString();
+                //:: error: (dereference.of.nullable)
+                sf3.toString();
+                return "";
+            };
+    // Test field value refinement after initializer. f1b should still be null.
+    static Object so1 = sf1b = "";
 
     static String sf4;
-    static
-    {
+
+    static {
         sf3 = "";
         sf4 = "";
-        Function<String, String> sff0 = s -> {
+        FunctionInit<String, String> sff0 =
+                s -> {
 
-// This is an issue with static initializers in general
-// //:: error: (dereference.of.nullable)
-            sf1.toString();
-            sf2.toString();
-            //:: error: (dereference.of.nullable)
-            sf3.toString();
-            sf4.toString();
-            return "";
-        };
+                    // This is an issue with static initializers in general
+                    // //:: error: (dereference.of.nullable)
+                    sf1.toString();
+                    sf2.toString();
+                    //:: error: (dereference.of.nullable)
+                    sf3.toString();
+                    sf4.toString();
+                    return "";
+                };
     }
 }

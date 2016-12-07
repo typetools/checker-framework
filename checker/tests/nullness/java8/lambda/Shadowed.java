@@ -3,25 +3,27 @@ import org.checkerframework.checker.nullness.qual.*;
 
 // Test shadowing of parameters
 
-interface Consumer {
+interface ConsumerS {
     void take(@Nullable String s);
 }
 
-interface NNConsumer {
+interface NNConsumerS {
     void take(String s);
 }
 
 class Shadowed {
 
-    Consumer c = s -> {
-        //:: error: (dereference.of.nullable)
-        s.toString();
-
-        class Inner {
-            NNConsumer n = s -> {
-                // No error
+    ConsumerS c =
+            s -> {
+                //:: error: (dereference.of.nullable)
                 s.toString();
+
+                class Inner {
+                    NNConsumerS n =
+                            s -> {
+                                // No error
+                                s.toString();
+                            };
+                }
             };
-        }
-    };
 }

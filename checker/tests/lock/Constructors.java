@@ -2,15 +2,22 @@ import org.checkerframework.checker.lock.qual.*;
 
 // Initializers and constructors are synchronized over 'this'
 // but not over their class's fields
-public @GuardedBy({})  class Constructors {
+public @GuardedBy({}) class Constructors {
 
-    static class MyClass { public Object field; }
+    static class MyClass {
+        public Object field;
+    }
 
     final MyClass unlocked = new MyClass();
+
     @GuardedBy("this") MyClass guardedThis = new MyClass();
+
     @GuardedBy("unlocked") MyClass guardedOther = new MyClass();
-    final static MyClass unlockedStatic = new MyClass();
+
+    static final MyClass unlockedStatic = new MyClass();
+
     @GuardedBy("unlockedStatic") MyClass nonstaticGuardedByStatic = new MyClass();
+
     static @GuardedBy("unlocked") MyClass staticGuardedByNonStatic = new MyClass();
     static @GuardedBy("unlockedStatic") MyClass staticGuardedByStatic = new MyClass();
 

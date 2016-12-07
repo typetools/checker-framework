@@ -1,5 +1,4 @@
-import tests.util.*;
-import java.util.*;
+import testlib.util.*;
 
 class Basic {
 
@@ -33,7 +32,6 @@ class Basic {
         String r = local;
     }
 
-
     void testWhile2(@Odd String whileParam) {
         String local = "";
         while (local != "foo") {
@@ -45,7 +43,7 @@ class Basic {
 
     void testCompountAssignment(@Odd String odd) {
         String nonOdd = odd;
-        nonOdd += "kj";     // nonOdd as rValue is not Odd necessarily!
+        nonOdd += "kj"; // nonOdd as rValue is not Odd necessarily!
         nonOdd = "m";
     }
 }

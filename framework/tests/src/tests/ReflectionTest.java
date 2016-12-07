@@ -5,31 +5,30 @@ import java.lang.Override;
 import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+import testlib.reflection.ReflectionTestChecker;
 
 /**
  * Tests the reflection resolution using a toy type system.
  *
  * @author rjust, smillst
- *
  */
-public class ReflectionTest extends CheckerFrameworkTest {
+public class ReflectionTest extends CheckerFrameworkPerDirectoryTest {
 
-    public ReflectionTest(File testFile) {
-        super(testFile, tests.reflection.ReflectionTestChecker.class, "reflection", "-Anomsgtext");
+    public ReflectionTest(List<File> testFiles) {
+        super(testFiles, ReflectionTestChecker.class, "reflection", "-Anomsgtext");
     }
 
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"reflection"};
+    public static String[] getTestDirs() {
+        return new String[] {"reflection"};
     }
 
     @Override
     public List<String> customizeOptions(List<String> previousOptions) {
         final List<String> optionsWithStub = new ArrayList<>(checkerOptions);
-        optionsWithStub.add("-Astubs=" + getFullPath(testFile, "reflection.astub"));
+        optionsWithStub.add("-Astubs=" + getFullPath(testFiles.get(0), "reflection.astub"));
         optionsWithStub.add("-AresolveReflection");
         return optionsWithStub;
     }

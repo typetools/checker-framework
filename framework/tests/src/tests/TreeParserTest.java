@@ -1,11 +1,5 @@
 package tests;
 
-import javax.annotation.processing.ProcessingEnvironment;
-
-import org.checkerframework.javacutil.trees.TreeParser;
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
@@ -14,6 +8,10 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Context;
+import javax.annotation.processing.ProcessingEnvironment;
+import org.checkerframework.javacutil.trees.TreeParser;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class TreeParserTest {
     private final ProcessingEnvironment env;
@@ -46,10 +44,10 @@ public class TreeParserTest {
         ExpressionTree parsed = parser.parseTree(value);
 
         Assert.assertTrue(parsed instanceof MethodInvocationTree);
-        MethodInvocationTree invocation = (MethodInvocationTree)parsed;
+        MethodInvocationTree invocation = (MethodInvocationTree) parsed;
         Assert.assertTrue(invocation.getMethodSelect() instanceof IdentifierTree);
-        Assert.assertEquals("test",
-                ((IdentifierTree)invocation.getMethodSelect()).getName().toString());
+        Assert.assertEquals(
+                "test", ((IdentifierTree) invocation.getMethodSelect()).getName().toString());
     }
 
     @Test
@@ -58,9 +56,9 @@ public class TreeParserTest {
         ExpressionTree parsed = parser.parseTree(value);
 
         Assert.assertTrue(parsed instanceof MethodInvocationTree);
-        MethodInvocationTree invocation = (MethodInvocationTree)parsed;
+        MethodInvocationTree invocation = (MethodInvocationTree) parsed;
         Assert.assertTrue(invocation.getMethodSelect() instanceof MemberSelectTree);
-        MemberSelectTree select = (MemberSelectTree)invocation.getMethodSelect();
+        MemberSelectTree select = (MemberSelectTree) invocation.getMethodSelect();
         Assert.assertEquals("test", select.getIdentifier().toString());
         Assert.assertEquals("Class", select.getExpression().toString());
     }
@@ -71,10 +69,11 @@ public class TreeParserTest {
         ExpressionTree parsed = parser.parseTree(value);
 
         Assert.assertTrue(parsed instanceof ArrayAccessTree);
-        ArrayAccessTree access = (ArrayAccessTree)parsed;
+        ArrayAccessTree access = (ArrayAccessTree) parsed;
 
-        Assert.assertEquals(2, ((LiteralTree)access.getIndex()).getValue());
-        Assert.assertEquals("array", ((IdentifierTree)access.getExpression()).getName().toString());
+        Assert.assertEquals(2, ((LiteralTree) access.getIndex()).getValue());
+        Assert.assertEquals(
+                "array", ((IdentifierTree) access.getExpression()).getName().toString());
     }
 
     @Test
@@ -82,7 +81,7 @@ public class TreeParserTest {
         ExpressionTree parsed = parser.parseTree("Class.method()[4].field[3]");
 
         Assert.assertTrue(parsed instanceof ArrayAccessTree);
-        MemberSelectTree array = (MemberSelectTree)((ArrayAccessTree)parsed).getExpression();
+        MemberSelectTree array = (MemberSelectTree) ((ArrayAccessTree) parsed).getExpression();
         Assert.assertEquals("field", array.getIdentifier().toString());
         Assert.assertTrue(array.getExpression() instanceof ArrayAccessTree);
     }

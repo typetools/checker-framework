@@ -1,5 +1,12 @@
 package org.checkerframework.framework.type;
 
+import com.sun.tools.javac.code.Type;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -16,19 +23,10 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.framework.util.DefaultAnnotationFormatter;
 import org.checkerframework.javacutil.TypeAnnotationUtils;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
-
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeKind;
-
-import com.sun.tools.javac.code.Type;
-
 /**
  * An AnnotatedTypeFormatter used by default by all AnnotatedTypeFactory (and therefore all
  * annotated types).
+ *
  * @see org.checkerframework.framework.type.AnnotatedTypeFormatter
  * @see org.checkerframework.framework.type.AnnotatedTypeMirror#toString
  */
@@ -36,33 +34,41 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
     protected final FormattingVisitor formattingVisitor;
 
     /**
-     * Constructs a DefaultAnnotatedTypeFormatter that does not print invisible annotations by default
+     * Constructs a DefaultAnnotatedTypeFormatter that does not print invisible annotations by
+     * default
      */
     public DefaultAnnotatedTypeFormatter() {
         this(new DefaultAnnotationFormatter(), true, false);
     }
 
     /**
-     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more information
-     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print invisible annotations
+     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more
+     *     information
+     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print
+     *     invisible annotations
      */
-    public DefaultAnnotatedTypeFormatter(boolean printVerboseGenerics, boolean defaultPrintInvisibleAnnos) {
+    public DefaultAnnotatedTypeFormatter(
+            boolean printVerboseGenerics, boolean defaultPrintInvisibleAnnos) {
         this(new DefaultAnnotationFormatter(), printVerboseGenerics, defaultPrintInvisibleAnnos);
     }
 
     /**
      * @param formatter an object that converts annotation mirrors to strings
-     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more information
-     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print invisible annotations
+     * @param printVerboseGenerics for type parameters, their uses, and wildcards, print more
+     *     information
+     * @param defaultPrintInvisibleAnnos whether or not this AnnotatedTypeFormatter should print
+     *     invisible annotations
      */
-    public DefaultAnnotatedTypeFormatter(AnnotationFormatter formatter, boolean printVerboseGenerics,
-                                         boolean defaultPrintInvisibleAnnos) {
+    public DefaultAnnotatedTypeFormatter(
+            AnnotationFormatter formatter,
+            boolean printVerboseGenerics,
+            boolean defaultPrintInvisibleAnnos) {
         this(new FormattingVisitor(formatter, printVerboseGenerics, defaultPrintInvisibleAnnos));
     }
 
     /**
-     * Used by subclasses and other constructors to specify the underlying implementation of
-     * this DefaultAnnotatedTypeFormatter
+     * Used by subclasses and other constructors to specify the underlying implementation of this
+     * DefaultAnnotatedTypeFormatter
      */
     protected DefaultAnnotatedTypeFormatter(FormattingVisitor visitor) {
         this.formattingVisitor = visitor;
@@ -80,42 +86,39 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         return formattingVisitor.visit(type);
     }
 
-    /**
-     * A scanning visitor that prints the entire AnnotatedTypeMirror passed to visit.
-     */
-    protected static class FormattingVisitor implements AnnotatedTypeVisitor<String, Set<AnnotatedTypeMirror>> {
+    /** A scanning visitor that prints the entire AnnotatedTypeMirror passed to visit. */
+    protected static class FormattingVisitor
+            implements AnnotatedTypeVisitor<String, Set<AnnotatedTypeMirror>> {
 
-        /**
-         * The object responsible for converting annotations to strings
-         */
+        /** The object responsible for converting annotations to strings */
         protected final AnnotationFormatter annoFormatter;
 
         /**
-         * Represents whether or not invisible annotations should be printed if the
-         * client of this class does not use the printInvisibleAnnos parameter
+         * Represents whether or not invisible annotations should be printed if the client of this
+         * class does not use the printInvisibleAnnos parameter
          */
         protected final boolean defaultInvisiblesSetting;
 
         /**
-         * For a given call to format, this setting specifies whether or not to printInvisibles.
-         * If a user did not specify a printInvisible parameter in the call to format then this
-         * value will equal DefaultAnnotatedTypeFormatter.defaultInvisibleSettings for this object
+         * For a given call to format, this setting specifies whether or not to printInvisibles. If
+         * a user did not specify a printInvisible parameter in the call to format then this value
+         * will equal DefaultAnnotatedTypeFormatter.defaultInvisibleSettings for this object
          */
         protected boolean currentPrintInvisibleSetting;
 
-        /**
-         * Default value of currentPrintVerboseGenerics
-         */
+        /** Default value of currentPrintVerboseGenerics */
         protected final boolean defaultPrintVerboseGenerics;
 
         /**
-         * Prints type variables in a less ambiguous manner using [] to delimit them.
-         * Always prints both bounds even if they lower bound is an AnnotatedNull type.
+         * Prints type variables in a less ambiguous manner using [] to delimit them. Always prints
+         * both bounds even if they lower bound is an AnnotatedNull type.
          */
         protected boolean currentPrintVerboseGenerics;
 
-        public FormattingVisitor(AnnotationFormatter annoFormatter, boolean printVerboseGenerics,
-                                 boolean defaultInvisiblesSetting) {
+        public FormattingVisitor(
+                AnnotationFormatter annoFormatter,
+                boolean printVerboseGenerics,
+                boolean defaultInvisiblesSetting) {
             this.annoFormatter = annoFormatter;
             this.defaultPrintVerboseGenerics = printVerboseGenerics;
             this.currentPrintVerboseGenerics = printVerboseGenerics;
@@ -123,29 +126,30 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             this.currentPrintInvisibleSetting = false;
         }
 
-        /**
-         * Set the current verbose settings to use while printing
-         */
+        /** Set the current verbose settings to use while printing */
         protected void setVerboseSettings(boolean printVerbose) {
             this.currentPrintInvisibleSetting = printVerbose;
             this.currentPrintVerboseGenerics = printVerbose;
         }
 
-        /**
-         * Set verbose settings to the default
-         */
+        /** Set verbose settings to the default */
         protected void resetPrintVerboseSettings() {
             this.currentPrintInvisibleSetting = defaultInvisiblesSetting;
             this.currentPrintVerboseGenerics = defaultPrintVerboseGenerics;
         }
 
-        /** print to sb keyWord followed by field.  NULL types are substituted with
-         * their annotations followed by " Void"
+        /**
+         * print to sb keyWord followed by field. NULL types are substituted with their annotations
+         * followed by " Void"
          */
         @SideEffectFree
-        protected void printBound(final String keyWord, final AnnotatedTypeMirror field,
-                                  final Set<AnnotatedTypeMirror> visiting, final StringBuilder sb) {
-            if (!currentPrintVerboseGenerics && (field == null || field.getKind() == TypeKind.NULL)) {
+        protected void printBound(
+                final String keyWord,
+                final AnnotatedTypeMirror field,
+                final Set<AnnotatedTypeMirror> visiting,
+                final StringBuilder sb) {
+            if (!currentPrintVerboseGenerics
+                    && (field == null || field.getKind() == TypeKind.NULL)) {
                 return;
             }
 
@@ -158,7 +162,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             } else if (field.getKind() != TypeKind.NULL) {
                 sb.append(visit(field, visiting));
             } else {
-                sb.append(annoFormatter.formatAnnotationString(field.getAnnotations(), currentPrintInvisibleSetting));
+                sb.append(
+                        annoFormatter.formatAnnotationString(
+                                field.getAnnotations(), currentPrintInvisibleSetting));
                 sb.append("Void");
             }
         }
@@ -166,11 +172,14 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @SideEffectFree
         @Override
         public String visit(AnnotatedTypeMirror type) {
-            return type.accept(this, Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>()));
+            return type.accept(
+                    this,
+                    Collections.newSetFromMap(new IdentityHashMap<AnnotatedTypeMirror, Boolean>()));
         }
 
         @Override
-        public String visit(AnnotatedTypeMirror type, Set<AnnotatedTypeMirror> annotatedTypeVariables) {
+        public String visit(
+                AnnotatedTypeMirror type, Set<AnnotatedTypeMirror> annotatedTypeVariables) {
             return type.accept(this, annotatedTypeVariables);
         }
 
@@ -187,7 +196,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
                 // of the element is more useful.
                 smpl = typeElt.toString();
             }
-            sb.append(annoFormatter.formatAnnotationString(type.getAnnotations(), currentPrintInvisibleSetting));
+            sb.append(
+                    annoFormatter.formatAnnotationString(
+                            type.getAnnotations(), currentPrintInvisibleSetting));
             sb.append(smpl);
 
             if (type.typeArgs != null) {
@@ -198,8 +209,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
                     boolean isFirst = true;
                     for (AnnotatedTypeMirror typeArg : typeArgs) {
-                        if (!isFirst)
-                            sb.append(", ");
+                        if (!isFirst) sb.append(", ");
                         sb.append(visit(typeArg, visiting));
                         isFirst = false;
                     }
@@ -210,7 +220,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         }
 
         @Override
-        public String visitIntersection(AnnotatedIntersectionType type, Set<AnnotatedTypeMirror> visiting) {
+        public String visitIntersection(
+                AnnotatedIntersectionType type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
 
             boolean isFirst = true;
@@ -236,7 +247,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         }
 
         @Override
-        public String visitExecutable(AnnotatedExecutableType type, Set<AnnotatedTypeMirror> visiting) {
+        public String visitExecutable(
+                AnnotatedExecutableType type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
             if (!type.getTypeVariables().isEmpty()) {
                 sb.append('<');
@@ -265,8 +277,7 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
             if (!type.getParameterTypes().isEmpty()) {
                 int p = 0;
                 for (AnnotatedTypeMirror atm : type.getParameterTypes()) {
-                    if (rcv != null ||
-                            p > 0) {
+                    if (rcv != null || p > 0) {
                         sb.append(", ");
                     }
                     sb.append(visit(atm, visiting));
@@ -296,7 +307,9 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
                 component = array.getComponentType();
                 if (array.getAnnotations().size() > 0) {
                     sb.append(' ');
-                    sb.append(annoFormatter.formatAnnotationString(array.getAnnotations(), currentPrintInvisibleSetting));
+                    sb.append(
+                            annoFormatter.formatAnnotationString(
+                                    array.getAnnotations(), currentPrintInvisibleSetting));
                 }
                 sb.append("[]");
                 if (!(component instanceof AnnotatedArrayType)) {
@@ -309,7 +322,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         }
 
         @Override
-        public String visitTypeVariable(AnnotatedTypeVariable type, Set<AnnotatedTypeMirror> visiting) {
+        public String visitTypeVariable(
+                AnnotatedTypeVariable type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
             sb.append(type.actualType);
 
@@ -338,7 +352,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
         @SideEffectFree
         @Override
-        public String visitPrimitive(AnnotatedPrimitiveType type, Set<AnnotatedTypeMirror> visiting) {
+        public String visitPrimitive(
+                AnnotatedPrimitiveType type, Set<AnnotatedTypeMirror> visiting) {
             return formatFlatType(type);
         }
 
@@ -351,13 +366,17 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
         @SideEffectFree
         @Override
         public String visitNull(AnnotatedNullType type, Set<AnnotatedTypeMirror> visiting) {
-            return annoFormatter.formatAnnotationString(type.getAnnotations(), currentPrintInvisibleSetting) + " null";
+            return annoFormatter.formatAnnotationString(
+                            type.getAnnotations(), currentPrintInvisibleSetting)
+                    + " null";
         }
 
         @Override
         public String visitWildcard(AnnotatedWildcardType type, Set<AnnotatedTypeMirror> visiting) {
             StringBuilder sb = new StringBuilder();
-            sb.append(annoFormatter.formatAnnotationString(type.getAnnotationsField(), currentPrintInvisibleSetting));
+            sb.append(
+                    annoFormatter.formatAnnotationString(
+                            type.getAnnotationsField(), currentPrintInvisibleSetting));
             sb.append("?");
             if (!visiting.contains(type)) {
 
@@ -382,7 +401,8 @@ public class DefaultAnnotatedTypeFormatter implements AnnotatedTypeFormatter {
 
         @SideEffectFree
         protected String formatFlatType(final AnnotatedTypeMirror flatType) {
-            return annoFormatter.formatAnnotationString(flatType.getAnnotations(), currentPrintInvisibleSetting)
+            return annoFormatter.formatAnnotationString(
+                            flatType.getAnnotations(), currentPrintInvisibleSetting)
                     + TypeAnnotationUtils.unannotatedType((Type) flatType.getUnderlyingType());
         }
     }

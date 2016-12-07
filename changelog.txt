@@ -1,9 +1,79 @@
 ---------------------------------------------------------------------------
 
+Version 2.1.6, 1 December 2016
+
+Closed issues:
+
+412, 475.
+
+---------------------------------------------------------------------------
+
+Version 2.1.5, 2 November 2016
+
+The new class org.checkerframework.checker.nullness.Opt provides every
+method in Java 8's java.util.Optional class, but written for possibly-null
+references rather than for the Optional type.  This can shorten code that
+manipulates possibly-null references.
+
+In bytecode, type variable upper bounds of type Object may or may not have
+been explicitly written.  The Checker Framework now assumes they were not
+written explicitly in source code and defaults them as implicit upper bounds.
+
+The manual describes how to run a checker within the NetBeans IDE.
+
+The manual describes two approaches to creating a type alias or typedef.
+
+Closed issues:
+643, 775, 887, 906, 941.
+
+---------------------------------------------------------------------------
+
+Version 2.1.4, 3 October 2016
+
+Closed issues:
+885, 886, 919.
+
+---------------------------------------------------------------------------
+
+Version 2.1.3, 16 September 2016
+
+Closed issues:
+122, 488, 495, 580, 618, 647, 713, 764, 818, 872, 893, 894, 901, 902, 903,
+905, 913.
+
+---------------------------------------------------------------------------
+
+Version 2.1.2, 1 September 2016
+
+Closed issues:
+182, 367, 712, 811, 846, 857, 858, 863, 870, 871, 878, 883, 888.
+
+---------------------------------------------------------------------------
+
+Version 2.1.1, 1 August 2016
+
+The codebase conforms to a consistent coding style, which is enforced by
+a git pre-commit hook.
+
+AnnotatedTypeFactory#createSupportedTypeQualifiers() must now return a mutable
+list.  Checkers that override this method will have to be changed.
+
+Closed issues:
+384, 590, 681, 790, 805, 809, 810, 820, 824, 826, 829, 838, 845, 850, 856.
+
+---------------------------------------------------------------------------
+
 Version 2.1.0, 1 July 2016
 
-The new Unsignedness Checker prevents mixing of unsigned and signed
+The new Signedness Checker prevents mixing of unsigned and signed
 values and prevents meaningless operations on unsigned values.
+
+The Lock Checker expresses the annotated variable as `<self>`;
+previously it used `itself`, which may conflict with an identifier.
+
+Closed issues:
+166, 273, 358, 408, 471, 484, 594, 625, 692, 700, 701, 711, 717, 752, 756,
+759, 763, 767, 779, 783, 794, 807, 808.
 
 ---------------------------------------------------------------------------
 

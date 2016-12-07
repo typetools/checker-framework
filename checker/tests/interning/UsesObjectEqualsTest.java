@@ -1,8 +1,7 @@
-import org.checkerframework.checker.interning.qual.Interned;
-import org.checkerframework.checker.interning.qual.UsesObjectEquals;
-
 import java.util.LinkedList;
 import java.util.prefs.*;
+import org.checkerframework.checker.interning.qual.Interned;
+import org.checkerframework.checker.interning.qual.UsesObjectEquals;
 
 public class UsesObjectEqualsTest {
 
@@ -10,7 +9,8 @@ public class UsesObjectEqualsTest {
         public A() {}
     }
 
-    @UsesObjectEquals class B extends A {}
+    @UsesObjectEquals
+    class B extends A {}
 
     class B2 extends A {}
 
@@ -19,11 +19,13 @@ public class UsesObjectEqualsTest {
 
     class D {}
 
+    @UsesObjectEquals
     //:: error: (superclass.notannotated)
-    @UsesObjectEquals class E extends D {}
+    class E extends D {}
 
+    @UsesObjectEquals
     //:: error: (overrides.equals)
-    @UsesObjectEquals class TestEquals {
+    class TestEquals {
 
         @org.checkerframework.dataflow.qual.Pure
         public boolean equals(Object o) {
@@ -44,13 +46,12 @@ public class UsesObjectEqualsTest {
                 System.out.println("three");
             }
         }
-
     }
 
-    @UsesObjectEquals class ExtendsInner1 extends UsesObjectEqualsTest.A {}
+    @UsesObjectEquals
+    class ExtendsInner1 extends UsesObjectEqualsTest.A {}
 
     class ExtendsInner2 extends UsesObjectEqualsTest.A {}
 
     class MyList extends LinkedList {}
-
 }

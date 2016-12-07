@@ -15,6 +15,7 @@ build system, or from an IDE\@.  You can skip to the appropriate section:
 \item IntelliJ IDEA (Section~\ref{intellij})
 \item Eclipse (Section~\ref{eclipse})
 \item tIDE (Section~\ref{tide})
+\item NetBeans (Section~\ref{netbeans})
 \end{itemize}
 
 If your build system or IDE is not listed above, you should customize how
@@ -46,14 +47,14 @@ use the last one.
   \item
     Option 1:
     Add directory
-    \code{.../checker-framework-2.0.1/checker/bin} to your path, \emph{before} any other
+    \code{.../checker-framework-2.1.6/checker/bin} to your path, \emph{before} any other
     directory that contains a \<javac> executable.
 
     If you are
     using the bash shell, a way to do this is to add the following to your
     \verb|~/.profile| (or alternately \verb|~/.bash_profle| or \verb|~/.bashrc|) file:
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.0.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.6
   export PATH=${CHECKERFRAMEWORK}/checker/bin:${PATH}
 \end{Verbatim}
     then log out and back in to ensure that the environment variable
@@ -78,7 +79,7 @@ use the last one.
     \verb|~/.bashrc| file:
 % No Windows example because this doesn't work under Windows.
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.0.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.6
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac'
 \end{Verbatim}
 
@@ -86,7 +87,7 @@ use the last one.
     indicate:
 
 \begin{Verbatim}
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.0.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.6
   alias javacheck='$CHECKERFRAMEWORK/checker/bin/javac -source 7 -target 7'
 \end{Verbatim}
 
@@ -112,11 +113,11 @@ use the last one.
 
 \begin{Verbatim}
   # Unix
-  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.0.1
+  export CHECKERFRAMEWORK=${HOME}/checker-framework-2.1.6
   alias javacheck='java -jar $CHECKERFRAMEWORK/checker/dist/checker.jar'
 
   # Windows
-  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.0.1\
+  set CHECKERFRAMEWORK = C:\Program Files\checker-framework-2.1.6\
   doskey javacheck=java -jar %CHECKERFRAMEWORK%\checker\dist\checker.jar $*
 \end{Verbatim}
 
@@ -138,7 +139,7 @@ Framework \<javac> to your path).
 The output should be:
 
 \begin{Verbatim}
-  javac 1.8.0-jsr308-2.0.1
+  javac 1.8.0-jsr308-2.1.6
 \end{Verbatim}
 
 
@@ -326,7 +327,7 @@ corresponding to the two ways to run the Checker Framework:
 \end{itemize}
 
 Please note that the \<-AoutputArgsToFile> command-line option
-(see Section~\ref{debugging-options-output-args}) and shorthands for built-in checkers
+(see Section~\ref{creating-debugging-options-output-args}) and shorthands for built-in checkers
 (see Section~\ref{shorthand-for-checkers}) are not available when
 following these instructions.  Both these features are available only when a checker is
 launched via \<checker.jar> such as when \code{\$CHECKERFRAMEWORK/checker/bin/javac}
@@ -451,7 +452,7 @@ profile, so that the checkers run only if the profile was enabled.
 
 \section{Gradle\label{gradle}}
 
-If you use \href{http://gradle.org/}{Gradle},
+If you use \href{https://gradle.org/}{Gradle},
 then you can run a checker by following the instructions below.
 
 These instructions can be used with Java 7 or Java 8.  If using Java 7, then
@@ -493,7 +494,7 @@ configurations {
     ... existing configurations ...
     if (targetJavaVersion.isJava7()) {
         checkerFrameworkJavac {
-            description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+            description = 'a customization of the OpenJDK javac compiler with additional support for type annotations'
         }
     }
     checkerFrameworkAnnotatedJDK {
@@ -511,7 +512,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.0.1'
+    ext.checkerFrameworkVersion = '2.1.6'
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
 
@@ -575,7 +576,7 @@ repositories {
 configurations {
     ... existing configurations ...
     checkerFrameworkJavac {
-        description = 'a customization of the Open JDK javac compiler with additional support for type annotations'
+        description = 'a customization of the OpenJDK javac compiler with additional support for type annotations'
     }
     checkerFrameworkAnnotatedJDK {
        description = 'a copy of JDK classes with Checker Framework type qualifers inserted'
@@ -593,7 +594,7 @@ configurations {
 \begin{Verbatim}
 dependencies {
     ... existing dependencies...
-    ext.checkerFrameworkVersion = '2.0.1'
+    ext.checkerFrameworkVersion = '2.1.6'
     ext.jdkVersion = JavaVersion.current().isJava7() ? 'jdk7' : 'jdk8'
     checkerFrameworkAnnotatedJDK "org.checkerframework:${jdkVersion}:${checkerFrameworkVersion}"
     checkerFrameworkJavac "org.checkerframework:compiler:${checkerFrameworkVersion}"
@@ -649,51 +650,54 @@ To run a checker within IntelliJ:
 
 \item
   Set the language level for your project to 8.  To do so, go to the
-  "Project Structure" menu via (File>Project Structure) or
-  (Ctrl-Alt-Shift-S), and set the "Project language level" field in the
-  "Project" sub-menu to 8.
+  ``Project Structure'' menu via (File>Project Structure) or
+  (Ctrl-Alt-Shift-S), and set the ``Project language level'' field in the
+  ``Project'' sub-menu to 8.
+
+  Note: under MacOS, the menu is ``Preferences'' rather than ``Project Structure''.
 
 \item
-  Add the Checker Framework libraries.  In this same "Project Structure"
-  menu, navigate to the "Libraries" sub-menu.  Click on the green "+" that
-  appears in this menu, select "Java" in the resulting pop-down menu,
-  select \<CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
-  and click "OK". Repeat this step for
-  \<CHECKERFRAMEWORK/checker/dist/javac.jar>.
+  Add the Checker Framework libraries.  In this same ``Project Structure''
+  menu, navigate to the ``Libraries'' sub-menu.  Click on the green ``+'' that
+  appears in this menu, select ``Java'' in the resulting pop-down menu,
+  select \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> in the resulting menu,
+  and click ``OK''. Repeat this step for
+  \<\$CHECKERFRAMEWORK/checker/dist/javac.jar>.
 
 \item
   Add the annotated JDK library.
-  Go to the "Settings" menu via (File>Settings) or (Ctrl-Alt-S) and
-  navigate to the "Java Compiler" sub-menu via (Build, Execution,
+  Go to the ``Settings'' menu via (File>Settings) or (Ctrl-Alt-S) and
+  navigate to the ``Java Compiler'' sub-menu via (Build, Execution,
   Deployment>Compiler>Java Compiler).  Add the following to the field
-  "Additional command line parameters":
-  \<-Xbootclasspath/p:CHECKERFRAMEWORK/checker/dist/jdk8.jar>
+  ``Additional command line parameters'':
+  \<-Xbootclasspath/p:\$CHECKERFRAMEWORK/checker/dist/jdk8.jar>
 
 \item
   Create an annotation profile and specify which checkers to run.
-  Directly under the "Java Compiler" sub-menu is the "Annotation
-  Processors" sub-menu. Navigate here and click on the green "+" to create
+  Directly under the ``Java Compiler'' sub-menu is the ``Annotation
+  Processors'' sub-menu. Navigate here and click on the green ``+'' to create
   a new Annotation Processor profile. Select the modules you would like to
-  use checkers with from under the "Default" profile and move them to your
-  new profile via the button directly right of the "-" button.
+  use checkers with from under the ``Default'' profile and move them to your
+  new profile via the button directly right of the ``-'' button.
 
-  Now select your new profile and check the "Enable annotation processing"
-  option. Select the "Processor path" radio button and enter
-  \<CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
+  Now select your new profile and check the ``Enable annotation processing''
+  option. Select the ``Processor path'' radio button and enter
+  \<\$CHECKERFRAMEWORK/checker/dist/checker.jar> into the field to the right
   of it. To add a checker to be run during compilation, click on the green
-  "+" in the "Processor FQ Name" section and write that checker's
+  ``+'' in the ``Processor FQ Name'' section and write that checker's
   fully-qualified name
   (\<org.checkerframework.checker.\emph{CHECKER}.\emph{CHECKER}Checker>) in
-  the resulting text field, and press the "ENTER" key.
+  the resulting text field, and press the ``ENTER'' key.
   % Without the ENTER key, the setting won't be saved.
-
-   %% This seems obvious, so I removed it to keep the text shorter
-   % To remove a checker, simply select it from this list and click
-   % the red "-" button.
 
 \end{enumerate}
 
 Now, when you compile your code, the checker will be run.
+
+It is necessary to manually inform the IDE via a plugin if an annotation
+system adds any dependencies beyond those that normally exist in Java.
+For information about the extension points, see
+\url{https://youtrack.jetbrains.com/issue/IDEA-159286}.
 
 
 \section{Eclipse\label{eclipse}}
@@ -715,7 +719,8 @@ and type annotations.
 Even in a version of Eclipse that supports Java 8's type annotations, you
 still need to run the Checker Framework via Ant or via the plug-in, rather
 than by supplying the \<-processor> command-line option to the ejc
-compiler.  The reason is that the Checker Framework is built upon javac,
+compiler, which is also known as eclipsec.
+The reason is that the Checker Framework is built upon javac,
 and ejc represents the Java program differently.  (If both javac and ejc
 implemented JSR 198~\cite{JSR198}, then it would be possible to build
 a type-checking plug-in that works with both compilers.)
@@ -783,9 +788,161 @@ comments (see Section~\ref{annotations-in-comments}).
 \section{tIDE\label{tide}}
 
 \begin{sloppypar}
-tIDE, an open-source Java IDE, supports the Checker Framework.  See its
-documentation at \myurl{http://tide.olympe.in/}.
+tIDE, an open-source Java IDE, supports the Checker Framework.
+You can download it from \myurl{https://sites.google.com/site/tidejava/}.
+% This, and http://tide.olympe-network.com/, are failing as of June 2016.
+% See its documentation at \myurl{http://tide.olympe.in/}.
 \end{sloppypar}
+
+
+\section{NetBeans\label{netbeans}}
+
+There are two approaches to running a checker in Netbeans:  via modifying the project properties, or via a custom ant target.
+
+
+\subsection{Adding a checker via the project properties\label{netbeans-project-properties}}
+
+\begin{enumerate}
+\item
+  Add the Checker Framework libraries to your project's
+  library. First, right click on the project in the Projects panel,
+  and select ``Properties'' in the drop-down menu. Then, in the
+  ``Project Properties'' window, navigate to the ``Libraries'' tab.
+
+\item
+  Add \<checker-qual.jar> to the compile-time libraries. To do so,
+  select the ``Compile'' tab, click the ``Add JAR/Folder'' button on
+  the right and browse to
+  add \<\$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
+
+\item
+  Add \<checker.jar> to the processor-path libraries. To do so, select
+  the ``Processor'' tab, click the ``Add JAR/Folder'' button on the
+  right and browse to
+  add \<\$CHECKERFRAMEWORK/checker/dist/checker-qual.jar>.
+
+\item
+  Enable annotation processor underlining in the editor. Go to
+  ``Build>Compiling'' and check the box ``Enable Annotation
+  Processing,'' and under that, ``Enable Annotation Processing in
+  Editor.''
+
+\item
+  Add the checker to run, by clicking ``Add'' next to the box labeled
+  ``Annotation Processors'' and enter the fully qualified name of the
+  checker (for
+  example, \<org.checkerframework.checker.nullness.NullnessChecker>)
+  and click ``OK'' to add.
+\end{enumerate}
+
+The selected checker should be run on the project either on a save (if
+Compile on Save is enabled), or when the project is built, and
+annotation processor output will appear in the editor.
+
+
+\subsection {Adding a checker via an ant target\label{netbeans-ant-target}}
+
+\begin{enumerate}
+\item
+Set the \code{jsr308javac} property:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <property environment="env"/>
+
+  <property name="checkerframework" value="${env.CHECKERFRAMEWORK}" />
+
+  <!-- On Mac/Linux, use the javac shell script; on Windows, use javac.bat -->
+  <condition property="cfJavac" value="javac.bat" else="javac">
+      <os family="windows" />
+  </condition>
+
+  <presetdef name="jsr308.javac">
+    <javac fork="yes" executable="${checkerframework}/checker/bin/${cfJavac}" >
+      <!-- JSR-308-related compiler arguments -->
+      <compilerarg value="-version"/>
+      <compilerarg value="-implicit:class"/>
+    </javac>
+  </presetdef>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+\item
+Override the \code{-init-macrodef-javac-with-processors} target to
+use \code{jsr308.javac} instead of \code{javac} and to run the checker.
+In this example, a nullness checker is run:
+
+%BEGIN LATEX
+\begin{smaller}
+%END LATEX
+\begin{Verbatim}
+  <target depends="-init-ap-cmdline-properties" if="ap.supported.internal"
+        name="-init-macrodef-javac-with-processors">
+    <echo message = "${checkerframework}"/>
+    <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
+        <attribute default="${src.dir}" name="srcdir"/>
+        <attribute default="${build.classes.dir}" name="destdir"/>
+        <attribute default="${javac.classpath}" name="classpath"/>
+        <attribute default="${javac.processorpath}" name="processorpath"/>
+        <attribute default="${build.generated.sources.dir}/ap-source-output" name="apgeneratedsrcdir"/>
+        <attribute default="${includes}" name="includes"/>
+        <attribute default="${excludes}" name="excludes"/>
+        <attribute default="${javac.debug}" name="debug"/>
+        <attribute default="${empty.dir}" name="sourcepath"/>
+        <attribute default="${empty.dir}" name="gensrcdir"/>
+        <element name="customize" optional="true"/>
+        <sequential>
+            <property location="${build.dir}/empty" name="empty.dir"/>
+            <mkdir dir="${empty.dir}"/>
+            <mkdir dir="@{apgeneratedsrcdir}"/>
+            <jsr308.javac debug="@{debug}" deprecation="${javac.deprecation}"
+                    destdir="@{destdir}" encoding="${source.encoding}"
+                    excludes="@{excludes}" fork="${javac.fork}"
+                    includeantruntime="false" includes="@{includes}"
+                    source="${javac.source}" sourcepath="@{sourcepath}"
+                    srcdir="@{srcdir}" target="${javac.target}"
+                    tempdir="${java.io.tmpdir}">
+		<src>
+                    <dirset dir="@{gensrcdir}" erroronmissingdir="false">
+                        <include name="*"/>
+                    </dirset>
+                </src>
+                <classpath>
+                    <path path="@{classpath}"/>
+                </classpath>
+                <compilerarg line="${endorsed.classpath.cmd.line.arg}"/>
+                <compilerarg line="${javac.profile.cmd.line.arg}"/>
+                <compilerarg line="${javac.compilerargs}"/>
+                <compilerarg value="-processorpath"/>
+                <compilerarg path="@{processorpath}:${empty.dir}"/>
+                <compilerarg line="${ap.processors.internal}"/>
+                <compilerarg line="${annotation.processing.processor.options}"/>
+                <compilerarg value="-s"/>
+                <compilerarg path="@{apgeneratedsrcdir}"/>
+                <compilerarg line="${ap.proc.none.internal}"/>
+                <compilerarg line="-processor org.checkerframework.checker.nullness.NullnessChecker"/>
+                <compilerarg line="-Xmaxerrs 10000"/>
+                <customize/>
+            </jsr308.javac>
+        </sequential>
+    </macrodef>
+  </target>
+  <target name="-post-jar">
+  </target>
+\end{Verbatim}
+%BEGIN LATEX
+\end{smaller}
+%END LATEX
+
+When Build and Clean Project is used, the output of the checker will
+now appear in the build console. However, annotation processor output
+will not appear in the editor.
+
+\end{enumerate}
 
 
 \section{Type inference tools\label{type-inference-varieties}}

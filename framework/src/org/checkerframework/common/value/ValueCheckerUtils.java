@@ -1,5 +1,14 @@
 package org.checkerframework.common.value;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
@@ -11,78 +20,65 @@ import org.checkerframework.common.value.util.NumberUtils;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeMirror;
-
-
 public class ValueCheckerUtils {
     public static Class<?> getClassFromType(TypeMirror type) {
 
         switch (type.getKind()) {
-        case INT:
-            return int.class;
-        case LONG:
-            return long.class;
-        case SHORT:
-            return short.class;
-        case BYTE:
-            return byte.class;
-        case CHAR:
-            return char.class;
-        case DOUBLE:
-            return double.class;
-        case FLOAT:
-            return float.class;
-        case BOOLEAN:
-            return boolean.class;
-        case ARRAY:
-            return getArrayClassObject(((ArrayType) type).getComponentType());
-        case DECLARED:
-            String stringType = TypesUtils.getQualifiedName(
-                    (DeclaredType) type).toString();
-            if (stringType.equals("<nulltype>")) {
-                return Object.class;
-            }
+            case INT:
+                return int.class;
+            case LONG:
+                return long.class;
+            case SHORT:
+                return short.class;
+            case BYTE:
+                return byte.class;
+            case CHAR:
+                return char.class;
+            case DOUBLE:
+                return double.class;
+            case FLOAT:
+                return float.class;
+            case BOOLEAN:
+                return boolean.class;
+            case ARRAY:
+                return getArrayClassObject(((ArrayType) type).getComponentType());
+            case DECLARED:
+                String stringType = TypesUtils.getQualifiedName((DeclaredType) type).toString();
+                if (stringType.equals("<nulltype>")) {
+                    return Object.class;
+                }
 
-            try {
-                return Class.forName(stringType);
-            } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
-                return Object.class;
-            }
+                try {
+                    return Class.forName(stringType);
+                } catch (ClassNotFoundException | UnsupportedClassVersionError e) {
+                    return Object.class;
+                }
 
-        default:
-            return Object.class;
+            default:
+                return Object.class;
         }
     }
 
     public static Class<?> getArrayClassObject(TypeMirror componentType) {
         switch (componentType.getKind()) {
-        case INT:
-            return int[].class;
-        case LONG:
-            return long[].class;
-        case SHORT:
-            return short[].class;
-        case BYTE:
-            return byte[].class;
-        case CHAR:
-            return char[].class;
-        case DOUBLE:
-            return double[].class;
-        case FLOAT:
-            return float[].class;
-        case BOOLEAN:
-            return boolean[].class;
-        default:
-            return Object[].class;
+            case INT:
+                return int[].class;
+            case LONG:
+                return long[].class;
+            case SHORT:
+                return short[].class;
+            case BYTE:
+                return byte[].class;
+            case CHAR:
+                return char[].class;
+            case DOUBLE:
+                return double[].class;
+            case FLOAT:
+                return float[].class;
+            case BOOLEAN:
+                return boolean[].class;
+            default:
+                return Object[].class;
         }
     }
 
@@ -100,15 +96,14 @@ public class ValueCheckerUtils {
             values = convertBoolVal(anno, castType);
         } else if (AnnotationUtils.areSameByClass(anno, BottomVal.class)) {
             values = convertBottomVal(anno, castType);
-        } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class) ||
-                AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
+        } else if (AnnotationUtils.areSameByClass(anno, UnknownVal.class)
+                || AnnotationUtils.areSameByClass(anno, ArrayLen.class)) {
             values = new ArrayList<>();
         }
         return values;
     }
 
-    private static List<?> convertBottomVal(AnnotationMirror anno,
-            Class<?> newClass) {
+    private static List<?> convertBottomVal(AnnotationMirror anno, Class<?> newClass) {
         if (newClass == String.class) {
             return Collections.singletonList("null");
         } else {
@@ -125,8 +120,8 @@ public class ValueCheckerUtils {
     }
 
     private static List<?> convertBoolVal(AnnotationMirror anno, Class<?> newClass) {
-        List<Boolean> bools = AnnotationUtils.getElementValueArray(anno,
-                "value", Boolean.class, true);
+        List<Boolean> bools =
+                AnnotationUtils.getElementValueArray(anno, "value", Boolean.class, true);
 
         if (newClass == String.class) {
             return convertToStringVal(bools);
@@ -134,10 +129,9 @@ public class ValueCheckerUtils {
         return bools;
     }
 
-    private static List<?> convertStringVal(AnnotationMirror anno,
-            Class<?> newClass) {
-        List<String> strings = AnnotationUtils.getElementValueArray(anno,
-                "value", String.class, true);
+    private static List<?> convertStringVal(AnnotationMirror anno, Class<?> newClass) {
+        List<String> strings =
+                AnnotationUtils.getElementValueArray(anno, "value", String.class, true);
 
         if (newClass == byte[].class) {
             List<byte[]> bytes = new ArrayList<>();
@@ -159,7 +153,8 @@ public class ValueCheckerUtils {
         return strings;
     }
 
-    private static List<?> convertIntVal(AnnotationMirror anno, Class<?> newClass, TypeMirror newType) {
+    private static List<?> convertIntVal(
+            AnnotationMirror anno, Class<?> newClass, TypeMirror newType) {
         List<Long> longs = ValueAnnotatedTypeFactory.getIntValues(anno);
 
         if (newClass == String.class) {
@@ -171,13 +166,14 @@ public class ValueCheckerUtils {
             }
             return chars;
         } else if (newClass == Boolean.class) {
-            throw new UnsupportedOperationException("ValueAnnotatedTypeFactory: can't convert double to boolean");
+            throw new UnsupportedOperationException(
+                    "ValueAnnotatedTypeFactory: can't convert double to boolean");
         }
         return NumberUtils.castNumbers(newType, longs);
     }
 
-    private static List<?> convertDoubleVal(AnnotationMirror anno,
-            Class<?> newClass, TypeMirror newType) {
+    private static List<?> convertDoubleVal(
+            AnnotationMirror anno, Class<?> newClass, TypeMirror newType) {
         List<Double> doubles = ValueAnnotatedTypeFactory.getDoubleValues(anno);
         if (newClass == String.class) {
             return convertToStringVal(doubles);
@@ -188,7 +184,8 @@ public class ValueCheckerUtils {
             }
             return chars;
         } else if (newClass == Boolean.class) {
-            throw new UnsupportedOperationException("ValueAnnotatedTypeFactory: can't convert double to boolean");
+            throw new UnsupportedOperationException(
+                    "ValueAnnotatedTypeFactory: can't convert double to boolean");
         }
         return NumberUtils.castNumbers(newType, doubles);
     }
@@ -196,6 +193,5 @@ public class ValueCheckerUtils {
     public static <T extends Comparable<T>> List<T> removeDuplicates(List<T> values) {
         Set<T> set = new TreeSet<>(values);
         return new ArrayList<T>(set);
-
     }
 }

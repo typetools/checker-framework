@@ -1,21 +1,12 @@
 package org.checkerframework.checker.lock;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
 import java.util.List;
-
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeMirror;
-
-import org.checkerframework.framework.flow.CFAbstractTransfer;
-import org.checkerframework.framework.flow.CFValue;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.MethodTree;
-
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -26,15 +17,19 @@ import org.checkerframework.dataflow.cfg.UnderlyingAST.Kind;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.SynchronizedNode;
+import org.checkerframework.framework.flow.CFAbstractTransfer;
+import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /*
  * LockTransfer handles constructors, initializers, synchronized methods, and synchronized blocks.
  */
-public class LockTransfer extends
-    CFAbstractTransfer<CFValue, LockStore, LockTransfer> {
+public class LockTransfer extends CFAbstractTransfer<CFValue, LockStore, LockTransfer> {
 
     /** Type-specific version of super.analysis. */
     protected LockAnalysis analysis;
+
     protected LockChecker checker;
     private LockAnnotatedTypeFactory atypeFactory;
 
@@ -48,21 +43,15 @@ public class LockTransfer extends
         this.atypeFactory = (LockAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
-    /**
-     * Sets a given {@link Node} to @LockHeld in the given {@code store}.
-     */
+    /** Sets a given {@link Node} to @LockHeld in the given {@code store}. */
     protected void makeLockHeld(LockStore store, Node node) {
-        Receiver internalRepr = FlowExpressions.internalReprOf(
-                atypeFactory, node);
+        Receiver internalRepr = FlowExpressions.internalReprOf(atypeFactory, node);
         store.insertValue(internalRepr, atypeFactory.LOCKHELD);
     }
 
-    /**
-     * Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}.
-     */
+    /** Sets a given {@link Node} to @LockPossiblyHeld in the given {@code store}. */
     protected void makeLockPossiblyHeld(LockStore store, Node node) {
-        Receiver internalRepr = FlowExpressions.internalReprOf(
-                atypeFactory, node);
+        Receiver internalRepr = FlowExpressions.internalReprOf(atypeFactory, node);
 
         // insertValue cannot change an annotation to a less
         // specific type (e.g. LockHeld to LockPossiblyHeld),
@@ -70,12 +59,8 @@ public class LockTransfer extends
         store.insertLockPossiblyHeld(internalRepr);
     }
 
-    /**
-     * Sets a given {@link Node} {@code node} to LockHeld in the given
-     * {@link TransferResult}.
-     */
-    protected void makeLockHeld(
-            TransferResult<CFValue, LockStore> result, Node node) {
+    /** Sets a given {@link Node} {@code node} to LockHeld in the given {@link TransferResult}. */
+    protected void makeLockHeld(TransferResult<CFValue, LockStore> result, Node node) {
         if (result.containsTwoStores()) {
             makeLockHeld(result.getThenStore(), node);
             makeLockHeld(result.getElseStore(), node);
@@ -85,11 +70,10 @@ public class LockTransfer extends
     }
 
     /**
-     * Sets a given {@link Node} {@code node} to LockPossiblyHeld in the given
-     * {@link TransferResult}.
+     * Sets a given {@link Node} {@code node} to LockPossiblyHeld in the given {@link
+     * TransferResult}.
      */
-    protected void makeLockPossiblyHeld(
-            TransferResult<CFValue, LockStore> result, Node node) {
+    protected void makeLockPossiblyHeld(TransferResult<CFValue, LockStore> result, Node node) {
         if (result.containsTwoStores()) {
             makeLockPossiblyHeld(result.getThenStore(), node);
             makeLockPossiblyHeld(result.getElseStore(), node);
@@ -99,8 +83,8 @@ public class LockTransfer extends
     }
 
     @Override
-    public LockStore initialStore(UnderlyingAST underlyingAST,
-            /*@Nullable */ List<LocalVariableNode> parameters) {
+    public LockStore initialStore(
+            UnderlyingAST underlyingAST, /*@Nullable */ List<LocalVariableNode> parameters) {
 
         LockStore store = super.initialStore(underlyingAST, parameters);
 
@@ -139,7 +123,8 @@ public class LockTransfer extends
                 TypeMirror classType = InternalUtils.typeOf(classTree);
 
                 if (methodElement.getModifiers().contains(Modifier.STATIC)) {
-                    store.insertValue(new FlowExpressions.ClassName(classType), atypeFactory.LOCKHELD);
+                    store.insertValue(
+                            new FlowExpressions.ClassName(classType), atypeFactory.LOCKHELD);
                 } else {
                     store.insertThisValue(atypeFactory.LOCKHELD, classType);
                 }
@@ -154,11 +139,10 @@ public class LockTransfer extends
     }
 
     @Override
-    public TransferResult<CFValue, LockStore> visitSynchronized(SynchronizedNode n,
-            TransferInput<CFValue, LockStore> p) {
+    public TransferResult<CFValue, LockStore> visitSynchronized(
+            SynchronizedNode n, TransferInput<CFValue, LockStore> p) {
 
-        TransferResult<CFValue, LockStore> result = super.visitSynchronized(n,
-                p);
+        TransferResult<CFValue, LockStore> result = super.visitSynchronized(n, p);
 
         // Handle the entering and leaving of the synchronized block
         if (n.getIsStartOfBlock()) {

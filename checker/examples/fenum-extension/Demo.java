@@ -1,7 +1,7 @@
-import qual.MyFenum;
 import org.checkerframework.checker.fenum.qual.Fenum;
+import qual.MyFenum;
 
-@SuppressWarnings("fenum:assignmenTestStatic.type.incompatible")   // initialization of fake enums
+@SuppressWarnings("fenum:assignmenTestStatic.type.incompatible") // initialization of fake enums
 class TestStatic {
     public static final @Fenum("A") int ACONST1 = 1;
     public static final @Fenum("A") int ACONST2 = 2;
@@ -14,58 +14,54 @@ class TestStatic {
 }
 
 class FenumDemo {
-    @Fenum("A") int state1 = TestStatic.ACONST1;     // ok
-    @Fenum("B") int state2 = TestStatic.ACONST1;     // Incompatible fenums forbidden!
-    @MyFenum int state3 = TestStatic.CCONST1;        // ok
+    @Fenum("A") int state1 = TestStatic.ACONST1; // ok
+
+    @Fenum("B") int state2 = TestStatic.ACONST1; // Incompatible fenums forbidden!
+
+    @MyFenum int state3 = TestStatic.CCONST1; // ok
 
     void fenumArg(@Fenum("A") int p) {}
+
     void myFenumArg(@MyFenum int p) {}
 
     void foo() {
-        state1 = 4;                     // Direct use of value forbidden!
-        state1 = TestStatic.BCONST1;    // Incompatible fenums forbidden!
-        state1 = TestStatic.ACONST2;    // ok
+        state1 = 4; // Direct use of value forbidden!
+        state1 = TestStatic.BCONST1; // Incompatible fenums forbidden!
+        state1 = TestStatic.ACONST2; // ok
 
-        fenumArg(5);                    // Direct use of value forbidden!
-        fenumArg(TestStatic.BCONST1);   // Incompatible fenums forbidden!
-        fenumArg(TestStatic.ACONST1);   // ok
+        fenumArg(5); // Direct use of value forbidden!
+        fenumArg(TestStatic.BCONST1); // Incompatible fenums forbidden!
+        fenumArg(TestStatic.ACONST1); // ok
 
         state3 = 8;
-        state3 = TestStatic.ACONST2;    // Incompatible fenums forbidden!
-        state3 = TestStatic.CCONST2;    // ok
+        state3 = TestStatic.ACONST2; // Incompatible fenums forbidden!
+        state3 = TestStatic.CCONST2; // ok
 
-        myFenumArg(8);                  // Direct use of value forbidden!
+        myFenumArg(8); // Direct use of value forbidden!
         myFenumArg(TestStatic.BCONST2); // Incompatible fenums forbidden!
         myFenumArg(TestStatic.CCONST1); // ok
     }
 
-    void comparisons()
-    {
-        if ( TestStatic.ACONST1 < TestStatic.ACONST2 ) {
+    void comparisons() {
+        if (TestStatic.ACONST1 < TestStatic.ACONST2) {
             // ok
         }
-        if ( TestStatic.CCONST1 > TestStatic.CCONST2 ) {
+        if (TestStatic.CCONST1 > TestStatic.CCONST2) {
             // ok
         }
 
         //:: error: (binary.type.incompatible)
-        if ( TestStatic.ACONST1 < TestStatic.BCONST2  ) {
-        }
+        if (TestStatic.ACONST1 < TestStatic.BCONST2) {}
         //:: error: (binary.type.incompatible)
-        if ( TestStatic.ACONST1 == TestStatic.BCONST2  ) {
-        }
+        if (TestStatic.ACONST1 == TestStatic.BCONST2) {}
         //:: error: (binary.type.incompatible)
-        if ( TestStatic.ACONST1 >= TestStatic.CCONST2  ) {
-        }
+        if (TestStatic.ACONST1 >= TestStatic.CCONST2) {}
 
         //:: error: (binary.type.incompatible)
-        if ( TestStatic.ACONST1 < 5 ) {
-        }
+        if (TestStatic.ACONST1 < 5) {}
         //:: error: (binary.type.incompatible)
-        if ( TestStatic.BCONST1 > 5 ) {
-        }
+        if (TestStatic.BCONST1 > 5) {}
         //:: error: (binary.type.incompatible)
-        if ( TestStatic.CCONST1 == 5 ) {
-        }
+        if (TestStatic.CCONST1 == 5) {}
     }
 }

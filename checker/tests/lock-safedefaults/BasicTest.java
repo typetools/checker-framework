@@ -1,6 +1,6 @@
-import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.framework.qual.*;
 import java.util.concurrent.locks.*;
+import org.checkerframework.checker.lock.qual.*;
+import org.checkerframework.framework.qual.AnnotatedFor;
 
 public class BasicTest {
     class MyClass {
@@ -11,8 +11,7 @@ public class BasicTest {
         return param;
     }
 
-    void myUnannotatedMethod2() {
-    }
+    void myUnannotatedMethod2() {}
 
     @AnnotatedFor("lock")
     MyClass myAnnotatedMethod(MyClass param) {
@@ -20,10 +19,10 @@ public class BasicTest {
     }
 
     @AnnotatedFor("lock")
-    void myAnnotatedMethod2() {
-    }
+    void myAnnotatedMethod2() {}
 
     final @GuardedBy({}) ReentrantLock lockField = new ReentrantLock();
+
     @GuardedBy("lockField") MyClass m;
 
     @GuardedBy({}) MyClass o1 = new MyClass(), p1;
@@ -67,11 +66,13 @@ public class BasicTest {
         lock.lock();
         myAnnotatedMethod2();
         q.field = new Object();
-        myUnannotatedMethod2(); // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        myUnannotatedMethod2();
         //:: error: (contracts.precondition.not.satisfied.field)
         q.field = new Object();
         lock.lock();
-        unannotatedReleaseLock(lock); // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        // Should behave as @MayReleaseLocks, and *should* reset @LockHeld assumption about local variable lock.
+        unannotatedReleaseLock(lock);
         //:: error: (contracts.precondition.not.satisfied.field)
         q.field = new Object();
     }

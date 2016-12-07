@@ -1,14 +1,17 @@
 package org.checkerframework.checker.fenum.qual;
 
-import java.lang.annotation.*;
-
-import org.checkerframework.framework.qual.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * Basic alpha compositing rules for combining source and
- * destination colors to achieve blending and transparency
- * effects with graphics and images (see
- * {@link java.awt.AlphaComposite} for more details).
+ * Basic alpha compositing rules for combining source and destination colors to achieve blending and
+ * transparency effects with graphics and images (see {@link java.awt.AlphaComposite} for more
+ * details).
+ *
  * @see java.awt.AlphaComposite#CLEAR
  * @see java.awt.AlphaComposite#SRC
  * @see java.awt.AlphaComposite#DST

@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -27,16 +26,18 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.StringUtils;
 
 /**
- * A set of utility methods to find the necessary JSR 308 jars and to resolve any sources/classes needed
- * for compilation and checking
+ * A set of utility methods to find the necessary JSR 308 jars and to resolve any sources/classes
+ * needed for compilation and checking
+ *
  * @author Adam Warski (adam at warski dot org)
  */
 public class PathUtils {
-    private final static String CHECKER_FRAMEWORK_GROUPD_ID = "org.checkerframework";
-    private final static String DEFAULT_INCLUSION_PATTERN = "**/*.java";
+    private static final String CHECKER_FRAMEWORK_GROUPD_ID = "org.checkerframework";
+    private static final String DEFAULT_INCLUSION_PATTERN = "**/*.java";
 
     /**
      * Gets the path to the jsr308-all jar.
+     *
      * @param checkerFrameworkVersion Version of the Checker Framework to use.
      * @param artifactFactory Dependency.
      * @param artifactResolver Dependency.
@@ -45,29 +46,48 @@ public class PathUtils {
      * @return Path to the jsr308-all jar.
      * @throws MojoExecutionException
      */
-    public static File getFrameworkJar(final String artifactId, final String checkerFrameworkVersion, final ArtifactFactory artifactFactory,
-                                         final ArtifactResolver artifactResolver, final List<?> remoteArtifactRepositories,
-                                         final ArtifactRepository localRepository) throws MojoExecutionException {
+    public static File getFrameworkJar(
+            final String artifactId,
+            final String checkerFrameworkVersion,
+            final ArtifactFactory artifactFactory,
+            final ArtifactResolver artifactResolver,
+            final List<?> remoteArtifactRepositories,
+            final ArtifactRepository localRepository)
+            throws MojoExecutionException {
         final Artifact checkersArtifact;
         try {
-            checkersArtifact = artifactFactory.createExtensionArtifact(CHECKER_FRAMEWORK_GROUPD_ID, artifactId,
-                    VersionRange.createFromVersionSpec(checkerFrameworkVersion));
+            checkersArtifact =
+                    artifactFactory.createExtensionArtifact(
+                            CHECKER_FRAMEWORK_GROUPD_ID,
+                            artifactId,
+                            VersionRange.createFromVersionSpec(checkerFrameworkVersion));
         } catch (InvalidVersionSpecificationException e) {
-            throw new MojoExecutionException("Wrong version: " + checkerFrameworkVersion + " of Checker Framework specified.", e);
+            throw new MojoExecutionException(
+                    "Wrong version: "
+                            + checkerFrameworkVersion
+                            + " of Checker Framework specified.",
+                    e);
         }
 
         try {
             artifactResolver.resolve(checkersArtifact, remoteArtifactRepositories, localRepository);
         } catch (ArtifactResolutionException e) {
-            throw new MojoExecutionException("Unable to find version " + checkerFrameworkVersion + " of Checker Framework.", e);
+            throw new MojoExecutionException(
+                    "Unable to find version " + checkerFrameworkVersion + " of Checker Framework.",
+                    e);
         } catch (ArtifactNotFoundException e) {
-            throw new MojoExecutionException("Unable to resolve version " + checkerFrameworkVersion + " of Checker Framework.", e);
+            throw new MojoExecutionException(
+                    "Unable to resolve version "
+                            + checkerFrameworkVersion
+                            + " of Checker Framework.",
+                    e);
         }
 
         return checkersArtifact.getFile();
     }
 
-    public static void writeVersion(final File versionFile, final String version) throws IOException {
+    public static void writeVersion(final File versionFile, final String version)
+            throws IOException {
         BufferedWriter bw = null;
         try {
             bw = new BufferedWriter(new FileWriter(versionFile));
@@ -83,7 +103,7 @@ public class PathUtils {
     }
 
     public static String readVersion(final File versionFile) throws IOException {
-        if ( !versionFile.exists() || versionFile.length() == 0) {
+        if (!versionFile.exists() || versionFile.length() == 0) {
             return null;
         }
 
@@ -105,12 +125,16 @@ public class PathUtils {
 
     /**
      * Gets the path to the given executable, looking it up in the toolchain.
+     *
      * @param executable Name of the executable.
      * @param toolchainManager Dependency.
      * @param session Dependency.
      * @return Path to the executable.
      */
-    public static String getExecutablePath(String executable, final ToolchainManager toolchainManager, final MavenSession session) {
+    public static String getExecutablePath(
+            String executable,
+            final ToolchainManager toolchainManager,
+            final MavenSession session) {
         final File execFile = new File(executable);
         if (execFile.exists()) {
             return execFile.getAbsolutePath();
@@ -126,15 +150,19 @@ public class PathUtils {
     }
 
     /**
-     * Scans the given compile source roots for sources, taking into account the given includes and excludes.
+     * Scans the given compile source roots for sources, taking into account the given includes and
+     * excludes.
+     *
      * @param compileSourceRoots A list of source roots.
-     * @param sourceIncludes Includes specification.  Defaults to DEFAULT_INCLUSION_PATTERN if no sourceIncludes are
-     *                       specified
+     * @param sourceIncludes Includes specification. Defaults to DEFAULT_INCLUSION_PATTERN if no
+     *     sourceIncludes are specified
      * @param sourceExcludes Excludes specification.
      * @return A list of included sources from the given source roots.
      */
-    public static List<String> scanForSources(final List<?> compileSourceRoots, final Set<String> sourceIncludes,
-                                              final Set<String> sourceExcludes) {
+    public static List<String> scanForSources(
+            final List<?> compileSourceRoots,
+            final Set<String> sourceIncludes,
+            final Set<String> sourceExcludes) {
         if (sourceIncludes.isEmpty()) {
             sourceIncludes.add(DEFAULT_INCLUSION_PATTERN);
         }
@@ -147,7 +175,8 @@ public class PathUtils {
                     scanForSources(compileSourceRootFile, sourceIncludes, sourceExcludes);
 
             for (final String sourceFromSourceRoot : sourcesFromSourceRoot) {
-                sources.add(new File(compileSourceRootFile, sourceFromSourceRoot).getAbsolutePath());
+                sources.add(
+                        new File(compileSourceRootFile, sourceFromSourceRoot).getAbsolutePath());
             }
         }
 
@@ -155,18 +184,22 @@ public class PathUtils {
     }
 
     /**
-     * Scans a single source dir for sources and includes only the files whose name match the patterns in
-     * sourceIncludes and excludes all files whose names match the patterns in sourceExcludes
+     * Scans a single source dir for sources and includes only the files whose name match the
+     * patterns in sourceIncludes and excludes all files whose names match the patterns in
+     * sourceExcludes
+     *
      * @param sourceDir The directory to scan
      * @param sourceIncludes Only include a file if its name matches a pattern in sourceIncludes
      * @param sourceExcludes Exclude a file if its name matches a pattern in sourceExcludes
      * @return A set of filepath strings
      */
-    private static String[] scanForSources(final File sourceDir, final Set<String> sourceIncludes,
-                                           final Set<String> sourceExcludes) {
+    private static String[] scanForSources(
+            final File sourceDir,
+            final Set<String> sourceIncludes,
+            final Set<String> sourceExcludes) {
         final DirectoryScanner ds = new DirectoryScanner();
-        ds.setFollowSymlinks( true );
-        ds.setBasedir( sourceDir );
+        ds.setFollowSymlinks(true);
+        ds.setBasedir(sourceDir);
 
         ds.setIncludes(sourceIncludes.toArray(new String[sourceIncludes.size()]));
         ds.setExcludes(sourceExcludes.toArray(new String[sourceExcludes.size()]));
@@ -183,21 +216,26 @@ public class PathUtils {
         return ds.getIncludedFiles();
     }
 
-
-    public static final void copyFiles(final File dest, final List<File> inputFiles, final List<String> outputFileNames)
+    public static final void copyFiles(
+            final File dest, final List<File> inputFiles, final List<String> outputFileNames)
             throws IOException {
-        if ( inputFiles.size() != outputFileNames.size() ) {
+        if (inputFiles.size() != outputFileNames.size()) {
 
             final String inputFilePaths = joinFilePaths(inputFiles);
             final String outputFileNamesStr = StringUtils.join(outputFileNames.iterator(), ", ");
 
-            throw new RuntimeException("Number of input files and file names must be equal! "  +
-                    "Dest Dir( " + dest.getAbsolutePath() + ") Input Files (" + inputFilePaths +
-                    " ) OutputFileNames (" + outputFileNamesStr + ")"
-            );
+            throw new RuntimeException(
+                    "Number of input files and file names must be equal! "
+                            + "Dest Dir( "
+                            + dest.getAbsolutePath()
+                            + ") Input Files ("
+                            + inputFilePaths
+                            + " ) OutputFileNames ("
+                            + outputFileNamesStr
+                            + ")");
         }
 
-        for ( int i = 0; i < inputFiles.size(); i++ ) {
+        for (int i = 0; i < inputFiles.size(); i++) {
             FileUtils.copyFile(inputFiles.get(i), new File(dest, outputFileNames.get(i)));
         }
     }
@@ -217,5 +255,4 @@ public class PathUtils {
 
         return inputFilePaths;
     }
-
 }

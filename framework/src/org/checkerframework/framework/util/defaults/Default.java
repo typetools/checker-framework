@@ -1,16 +1,15 @@
 package org.checkerframework.framework.util.defaults;
 
+import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-import javax.lang.model.element.AnnotationMirror;
-
 /**
- * Represents a mapping from an Annotation to a TypeUseLocation it should be applied to during defaulting.
- * The Comparable ordering of this class first tests location then tests annotation ordering (via
- * {@link org.checkerframework.javacutil.AnnotationUtils}).
+ * Represents a mapping from an Annotation to a TypeUseLocation it should be applied to during
+ * defaulting. The Comparable ordering of this class first tests location then tests annotation
+ * ordering (via {@link org.checkerframework.javacutil.AnnotationUtils}).
  *
- * It also has a handy toString method that is useful for debugging.
+ * <p>It also has a handy toString method that is useful for debugging.
  */
 class Default implements Comparable<Default> {
     // please remember to add any fields to the hashcode calculation
@@ -18,7 +17,7 @@ class Default implements Comparable<Default> {
     public final TypeUseLocation location;
 
     public Default(final AnnotationMirror anno, final TypeUseLocation location) {
-        this.anno     = anno;
+        this.anno = anno;
         this.location = location;
     }
 
@@ -47,9 +46,9 @@ class Default implements Comparable<Default> {
 
     @Override
     public int hashCode() {
-        return 13 + (anno == null     ? 0 : 37 * anno.hashCode())
-                  + (location == null ? 0 : 41 * location.hashCode());
-
+        return 13
+                + (anno == null ? 0 : 37 * anno.hashCode())
+                + (location == null ? 0 : 41 * location.hashCode());
     }
 
     @Override

@@ -1,11 +1,18 @@
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
-class MyClass<T extends @Nullable Object> {}
+class MyGenClass<T extends @Nullable Object> {}
 
 @DefaultQualifier(value = Nullable.class, locations = TypeUseLocation.UPPER_BOUND)
 class Varargs {
-  void test() { ignore(newInstance()); }
-  static void ignore(MyClass<?>... consumer) {}
-  static <T> MyClass<T> newInstance() { return new MyClass<T>(); }
+    void test() {
+        ignore(newInstance());
+    }
+
+    static void ignore(MyGenClass<?>... consumer) {}
+
+    static <T> MyGenClass<T> newInstance() {
+        return new MyGenClass<T>();
+    }
 }

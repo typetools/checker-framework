@@ -34,46 +34,50 @@ all: load-from-dir-test load-from-jar-test
 demo1:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	-J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR):$(PROJECTDIR) \
-	-processor org.checkerframework.common.aliasing.AliasingChecker \
-	-Anomsgtext \
-	-AprintErrorStack \
-	-Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
-	LoaderTest.java
+	  -J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR) \
+	  -classpath $(PROJECTDIR) \
+	  -processor org.checkerframework.common.aliasing.AliasingChecker \
+	  -Anomsgtext \
+	  -AprintErrorStack \
+	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
+	  LoaderTest.java
 
 # loads from framework.jar
 demo2:
 	@echo "***** This command is expected to produce an error on line 7:"
 	$(JAVAC) \
-	-J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR):$(PROJECTDIR) \
-	-processor org.checkerframework.common.aliasing.AliasingChecker \
-	-Anomsgtext \
-	-AprintErrorStack \
-	-Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
-	LoaderTest.java
+	  -J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR) \
+	  -classpath :$(PROJECTDIR) \
+	  -processor org.checkerframework.common.aliasing.AliasingChecker \
+	  -Anomsgtext \
+	  -AprintErrorStack \
+	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
+	  LoaderTest.java
 
 # ======================================================
 # ant test usage:
 # loads from build directories
 load-from-dir-test:
-	-$(JAVAC) \
-	-J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR):$(PROJECTDIR) \
-	-processor org.checkerframework.common.aliasing.AliasingChecker \
-	-Anomsgtext \
-	-AprintErrorStack \
-	-Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
-	LoaderTest.java > Out.txt 2>&1
+	$(JAVAC) \
+	  -J-Xbootclasspath/p:$(DATAFLOWBUILD):$(JAVACUTILBUILD):$(STUBPARSERBUILD):$(FRAMEWORKBUILD):$(JAVACJAR) \
+	  -classpath $(PROJECTDIR) \
+	  -processor org.checkerframework.common.aliasing.AliasingChecker \
+	  -Anomsgtext \
+	  -AprintErrorStack \
+	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
+	  LoaderTest.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt
-	-rm Out.txt
+	rm -f Out.txt
 
 # loads from framework.jar
 load-from-jar-test:
-	-$(JAVAC) \
-	-J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR):$(PROJECTDIR) \
-	-processor org.checkerframework.common.aliasing.AliasingChecker \
-	-Anomsgtext \
-	-AprintErrorStack \
-	-Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
-	LoaderTest.java > Out.txt 2>&1
+	$(JAVAC) \
+	  -J-Xbootclasspath/p:$(FRAMEWORKJAR):$(JAVACJAR) \
+	  -classpath $(PROJECTDIR) \
+	  -processor org.checkerframework.common.aliasing.AliasingChecker \
+	  -Anomsgtext \
+	  -AprintErrorStack \
+	  -Astubs=$(PROJECTDIR)/../aliasing/stubfile.astub \
+	  LoaderTest.java > Out.txt 2>&1 || true
 	diff -u Expected.txt Out.txt
-	-rm Out.txt
+	rm -f Out.txt

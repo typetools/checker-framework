@@ -6,9 +6,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
-
-import java.util.*;
-
+import java.util.Set;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
@@ -17,21 +15,15 @@ import javax.lang.model.util.ElementFilter;
 /**
  * A utility class for displaying the structure of the AST of a program.
  *
- * <p>
+ * <p>The class is actually an annotation processor; in order to use it, invoke the compiler on the
+ * source file(s) for which you wish to view the structure of the program. You may also wish to use
+ * the {@code -proc:only} javac option to stop compilation after annotation processing. (But, in
+ * general {@code -proc:only} causes type annotation processors not to be run.)
  *
- * The class is actually an annotation processor; in order to use it, invoke the
- * compiler on the source file(s) for which you wish to view the structure of
- * the program. You may also wish to use the {@code -proc:only} javac option to
- * stop compilation after annotation processing.  (But, in general
- * {@code -proc:only} causes type annotation processors not to be run.)
- *
- * <p>
- *
- * The utility will display the {@link Kind} of each
- * node it encounters while scanning the AST, indented according to its depth in
- * the tree. Additionally, the names of identifiers and member selection trees
- * are displayed (since these names are not tree nodes and therefore not
- * directly visited during AST traversal).
+ * <p>The utility will display the {@link Kind} of each node it encounters while scanning the AST,
+ * indented according to its depth in the tree. Additionally, the names of identifiers and member
+ * selection trees are displayed (since these names are not tree nodes and therefore not directly
+ * visited during AST traversal).
  *
  * @see org.checkerframework.common.util.debug.TreePrinter
  */
@@ -105,9 +97,9 @@ public class TreeDebug extends AbstractProcessor {
 
         @Override
         public Void visitNewArray(NewArrayTree node, Void p) {
-            insert(((JCNewArray)node).annotations);
+            insert(((JCNewArray) node).annotations);
             insert("|");
-            insert(((JCNewArray)node).dimAnnotations);
+            insert(((JCNewArray) node).dimAnnotations);
             return super.visitNewArray(node, p);
         }
 
@@ -119,8 +111,7 @@ public class TreeDebug extends AbstractProcessor {
     }
 
     @Override
-    public boolean process(Set<? extends TypeElement> annotations,
-            RoundEnvironment roundEnv) {
+    public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (TypeElement element : ElementFilter.typesIn(roundEnv.getRootElements())) {
             TreePath path = Trees.instance(processingEnv).getPath(element);
             new Visitor().scan(path, null);

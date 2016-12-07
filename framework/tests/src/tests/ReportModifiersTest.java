@@ -1,21 +1,23 @@
 package tests;
 
 import java.io.File;
-
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class ReportModifiersTest extends CheckerFrameworkTest {
+public class ReportModifiersTest extends CheckerFrameworkPerDirectoryTest {
 
-    public ReportModifiersTest(File testFile) {
-        super(testFile,
+    public ReportModifiersTest(List<File> testFiles) {
+        super(
+                testFiles,
                 org.checkerframework.common.util.report.ReportChecker.class,
                 "report",
-                "-Anomsgtext", "-AreportModifiers=native");
+                "-Anomsgtext",
+                "-AreportModifiers=native");
     }
 
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"reportmodifiers"};
+    public static String[] getTestDirs() {
+        return new String[] {"reportmodifiers"};
     }
 }

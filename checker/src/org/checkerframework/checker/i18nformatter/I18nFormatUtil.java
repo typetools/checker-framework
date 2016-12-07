@@ -11,35 +11,30 @@ import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
 import org.checkerframework.checker.i18nformatter.qual.I18nChecksFormat;
 import org.checkerframework.checker.i18nformatter.qual.I18nConversionCategory;
 import org.checkerframework.checker.i18nformatter.qual.I18nValidFormat;
 
 /**
- * This class provides a collection of utilities to ease working with i18n
- * format strings.
+ * This class provides a collection of utilities to ease working with i18n format strings.
  *
- * @checker_framework.manual #i18n-formatter-checker Internationalization
- *                           Format String Checker
+ * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  * @author Siwakorn Srisakaokul
  */
 public class I18nFormatUtil {
 
-    /**
-     * Throws an exception if the format is not syntactically valid.
-     */
+    /** Throws an exception if the format is not syntactically valid. */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
         MessageFormat.format(format, (Object[]) null);
     }
 
     /**
-     * Returns a {@link I18nConversionCategory} for every conversion found in
-     * the format string.
+     * Returns a {@link I18nConversionCategory} for every conversion found in the format string.
      *
-     * Throws an exception if the format is not syntactically valid.
+     * <p>Throws an exception if the format is not syntactically valid.
      */
-    public static I18nConversionCategory[] formatParameterCategories(String format) throws IllegalFormatException {
+    public static I18nConversionCategory[] formatParameterCategories(String format)
+            throws IllegalFormatException {
         tryFormatSatisfiability(format);
         I18nConversion[] cs = MessageFormatParser.parse(format);
 
@@ -48,8 +43,13 @@ public class I18nFormatUtil {
 
         for (I18nConversion c : cs) {
             int index = c.index;
-            conv.put(index, I18nConversionCategory.intersect(c.category, conv.containsKey(index) ? conv.get(index)
-                    : I18nConversionCategory.UNUSED));
+            conv.put(
+                    index,
+                    I18nConversionCategory.intersect(
+                            c.category,
+                            conv.containsKey(index)
+                                    ? conv.get(index)
+                                    : I18nConversionCategory.UNUSED));
             max_index = Math.max(max_index, index);
         }
 
@@ -61,9 +61,8 @@ public class I18nFormatUtil {
     }
 
     /**
-     * Returns true if the format string is satisfiable, and if the format's
-     * parameters match the passed {@link I18nConversionCategory}s. Otherwise an
-     * error is thrown.
+     * Returns true if the format string is satisfiable, and if the format's parameters match the
+     * passed {@link I18nConversionCategory}s. Otherwise an error is thrown.
      */
     // TODO introduce more such functions, see RegexUtil for examples
     @I18nChecksFormat
@@ -110,29 +109,19 @@ public class I18nFormatUtil {
 
         public static int maxOffset;
 
-        /**
-         * The locale to use for formatting numbers and dates.
-         *
-         */
+        /** The locale to use for formatting numbers and dates. */
         private static Locale locale;
 
-        /**
-         * An array of formatters, which are used to format the arguments.
-         *
-         */
+        /** An array of formatters, which are used to format the arguments. */
         private static List<I18nConversionCategory> categories;
 
         /**
-         * The argument numbers corresponding to each formatter. (The formatters
-         * are stored in the order they occur in the pattern, not in the order
-         * in which the arguments are specified.)
-         *
+         * The argument numbers corresponding to each formatter. (The formatters are stored in the
+         * order they occur in the pattern, not in the order in which the arguments are specified.)
          */
         private static List<Integer> argumentIndices;
 
-        /**
-         * The number of subformats
-         */
+        /** The number of subformats */
         private static int numFormat;
 
         // Indices for segments
@@ -148,18 +137,22 @@ public class I18nFormatUtil {
         private static final int TYPE_TIME = 3;
         private static final int TYPE_CHOICE = 4;
 
-        private static final String[] TYPE_KEYWORDS = { "", "number", "date", "time", "choice" };
+        private static final String[] TYPE_KEYWORDS = {"", "number", "date", "time", "choice"};
 
         // Indices for number modifiers
         private static final int MODIFIER_DEFAULT = 0; // common in number and
-                                                       // date-time
+        // date-time
         private static final int MODIFIER_CURRENCY = 1;
         private static final int MODIFIER_PERCENT = 2;
         private static final int MODIFIER_INTEGER = 3;
 
-        private static final String[] NUMBER_MODIFIER_KEYWORDS = { "", "currency", "percent", "integer" };
+        private static final String[] NUMBER_MODIFIER_KEYWORDS = {
+            "", "currency", "percent", "integer"
+        };
 
-        private static final String[] DATE_TIME_MODIFIER_KEYWORDS = { "", "short", "medium", "long", "full" };
+        private static final String[] DATE_TIME_MODIFIER_KEYWORDS = {
+            "", "short", "medium", "long", "full"
+        };
 
         public static I18nConversion[] parse(String pattern) {
             MessageFormatParser.categories = new ArrayList<I18nConversionCategory>();
@@ -211,46 +204,46 @@ public class I18nFormatUtil {
                         }
                     } else {
                         switch (ch) {
-                        case ',':
-                            if (part < SEG_MODIFIER) {
-                                if (segments[++part] == null) {
-                                    segments[part] = new StringBuilder();
+                            case ',':
+                                if (part < SEG_MODIFIER) {
+                                    if (segments[++part] == null) {
+                                        segments[part] = new StringBuilder();
+                                    }
+                                } else {
+                                    segments[part].append(ch);
                                 }
-                            } else {
+                                break;
+                            case '{':
+                                ++braceStack;
                                 segments[part].append(ch);
-                            }
-                            break;
-                        case '{':
-                            ++braceStack;
-                            segments[part].append(ch);
-                            break;
-                        case '}':
-                            if (braceStack == 0) {
-                                part = SEG_RAW;
-                                makeFormat(i, numFormat, segments);
-                                numFormat++;
-                                // throw away other segments
-                                segments[SEG_INDEX] = null;
-                                segments[SEG_TYPE] = null;
-                                segments[SEG_MODIFIER] = null;
-                            } else {
-                                --braceStack;
+                                break;
+                            case '}':
+                                if (braceStack == 0) {
+                                    part = SEG_RAW;
+                                    makeFormat(i, numFormat, segments);
+                                    numFormat++;
+                                    // throw away other segments
+                                    segments[SEG_INDEX] = null;
+                                    segments[SEG_TYPE] = null;
+                                    segments[SEG_MODIFIER] = null;
+                                } else {
+                                    --braceStack;
+                                    segments[part].append(ch);
+                                }
+                                break;
+                            case ' ':
+                                // Skip any leading space chars for SEG_TYPE.
+                                if (part != SEG_TYPE || segments[SEG_TYPE].length() > 0) {
+                                    segments[part].append(ch);
+                                }
+                                break;
+                            case '\'':
+                                inQuote = true;
                                 segments[part].append(ch);
-                            }
-                            break;
-                        case ' ':
-                            // Skip any leading space chars for SEG_TYPE.
-                            if (part != SEG_TYPE || segments[SEG_TYPE].length() > 0) {
+                                break;
+                            default:
                                 segments[part].append(ch);
-                            }
-                            break;
-                        case '\'':
-                            inQuote = true;
-                            segments[part].append(ch);
-                            break;
-                        default:
-                            segments[part].append(ch);
-                            break;
+                                break;
                         }
                     }
                 }
@@ -261,7 +254,8 @@ public class I18nFormatUtil {
             }
         }
 
-        private static void makeFormat(int position, int offsetNumber, StringBuilder[] textSegments) {
+        private static void makeFormat(
+                int position, int offsetNumber, StringBuilder[] textSegments) {
             String[] segments = new String[textSegments.length];
             for (int i = 0; i < textSegments.length; i++) {
                 StringBuilder oneseg = textSegments[i];
@@ -272,9 +266,10 @@ public class I18nFormatUtil {
             int argumentNumber;
             try {
                 argumentNumber = Integer.parseInt(segments[SEG_INDEX]); // always
-                                                                        // unlocalized!
+                // unlocalized!
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("can't parse argument number: " + segments[SEG_INDEX], e);
+                throw new IllegalArgumentException(
+                        "can't parse argument number: " + segments[SEG_INDEX], e);
             }
             if (argumentNumber < 0) {
                 throw new IllegalArgumentException("negative argument number: " + argumentNumber);
@@ -289,63 +284,68 @@ public class I18nFormatUtil {
             if (segments[SEG_TYPE].length() != 0) {
                 int type = findKeyword(segments[SEG_TYPE], TYPE_KEYWORDS);
                 switch (type) {
-                case TYPE_NULL:
-                    category = I18nConversionCategory.GENERAL;
-                    break;
-                case TYPE_NUMBER:
-                    switch (findKeyword(segments[SEG_MODIFIER], NUMBER_MODIFIER_KEYWORDS)) {
-                    case MODIFIER_DEFAULT:
-                    case MODIFIER_CURRENCY:
-                    case MODIFIER_PERCENT:
-                    case MODIFIER_INTEGER:
+                    case TYPE_NULL:
+                        category = I18nConversionCategory.GENERAL;
                         break;
-                    default: // DecimalFormat pattern
-                        try {
-                            new DecimalFormat(segments[SEG_MODIFIER], DecimalFormatSymbols.getInstance(locale));
-                        } catch (IllegalArgumentException e) {
-                            maxOffset = oldMaxOffset;
-                            // invalid decimal subformat pattern
-                            throw e;
+                    case TYPE_NUMBER:
+                        switch (findKeyword(segments[SEG_MODIFIER], NUMBER_MODIFIER_KEYWORDS)) {
+                            case MODIFIER_DEFAULT:
+                            case MODIFIER_CURRENCY:
+                            case MODIFIER_PERCENT:
+                            case MODIFIER_INTEGER:
+                                break;
+                            default: // DecimalFormat pattern
+                                try {
+                                    new DecimalFormat(
+                                            segments[SEG_MODIFIER],
+                                            DecimalFormatSymbols.getInstance(locale));
+                                } catch (IllegalArgumentException e) {
+                                    maxOffset = oldMaxOffset;
+                                    // invalid decimal subformat pattern
+                                    throw e;
+                                }
+                                break;
                         }
+                        category = I18nConversionCategory.NUMBER;
                         break;
-                    }
-                    category = I18nConversionCategory.NUMBER;
-                    break;
-                case TYPE_DATE:
-                case TYPE_TIME:
-                    int mod = findKeyword(segments[SEG_MODIFIER], DATE_TIME_MODIFIER_KEYWORDS);
-                    if (mod >= 0 && mod < DATE_TIME_MODIFIER_KEYWORDS.length) {
-                        // nothing to do
-                    } else {
-                        // SimpleDateFormat pattern
-                        try {
-                            new SimpleDateFormat(segments[SEG_MODIFIER], locale);
-                        } catch (IllegalArgumentException e) {
-                            maxOffset = oldMaxOffset;
-                            // invalid date subformat pattern
-                            throw e;
+                    case TYPE_DATE:
+                    case TYPE_TIME:
+                        int mod = findKeyword(segments[SEG_MODIFIER], DATE_TIME_MODIFIER_KEYWORDS);
+                        if (mod >= 0 && mod < DATE_TIME_MODIFIER_KEYWORDS.length) {
+                            // nothing to do
+                        } else {
+                            // SimpleDateFormat pattern
+                            try {
+                                new SimpleDateFormat(segments[SEG_MODIFIER], locale);
+                            } catch (IllegalArgumentException e) {
+                                maxOffset = oldMaxOffset;
+                                // invalid date subformat pattern
+                                throw e;
+                            }
                         }
-                    }
-                    category = I18nConversionCategory.DATE;
-                    break;
-                case TYPE_CHOICE:
-                    if (segments[SEG_MODIFIER].length() == 0) {
-                        throw new IllegalArgumentException("Choice Pattern requires Subformat Pattern: "
-                                + segments[SEG_MODIFIER]);
-                    }
-                    try {
-                        // ChoiceFormat pattern
-                        new ChoiceFormat(segments[SEG_MODIFIER]);
-                    } catch (Exception e) {
+                        category = I18nConversionCategory.DATE;
+                        break;
+                    case TYPE_CHOICE:
+                        if (segments[SEG_MODIFIER].length() == 0) {
+                            throw new IllegalArgumentException(
+                                    "Choice Pattern requires Subformat Pattern: "
+                                            + segments[SEG_MODIFIER]);
+                        }
+                        try {
+                            // ChoiceFormat pattern
+                            new ChoiceFormat(segments[SEG_MODIFIER]);
+                        } catch (Exception e) {
+                            maxOffset = oldMaxOffset;
+                            // invalid choice subformat pattern
+                            throw new IllegalArgumentException(
+                                    "Choice Pattern incorrect: " + segments[SEG_MODIFIER], e);
+                        }
+                        category = I18nConversionCategory.NUMBER;
+                        break;
+                    default:
                         maxOffset = oldMaxOffset;
-                        // invalid choice subformat pattern
-                        throw new IllegalArgumentException("Choice Pattern incorrect: " + segments[SEG_MODIFIER], e);
-                    }
-                    category = I18nConversionCategory.NUMBER;
-                    break;
-                default:
-                    maxOffset = oldMaxOffset;
-                    throw new IllegalArgumentException("unknown format type: " + segments[SEG_TYPE]);
+                        throw new IllegalArgumentException(
+                                "unknown format type: " + segments[SEG_TYPE]);
                 }
             } else {
                 category = I18nConversionCategory.GENERAL;

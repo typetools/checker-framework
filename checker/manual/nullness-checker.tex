@@ -302,8 +302,8 @@ appear in your code.
 For example, enum types are implicitly non-null, so you never need to write
 \<@NonNull MyEnumType>.
 
-For a complete description of all implicit nullness qualifiers, see the
-Javadoc for \refclass{checker/nullness}{NullnessAnnotatedTypeFactory}.
+For more information about implicitly-added nullness qualifiers, see the
+implementation of \refclass{checker/nullness}{NullnessAnnotatedTypeFactory}.
 
 
 
@@ -314,7 +314,18 @@ The standard defaulting rule is CLIMB-to-top,  described in
 Section~\ref{climb-to-top}.  Its effect is to default all types to
 \<@NonNull>, except that \<@Nullable> is used for casts, locals,
 instanceof, and implicit bounds.  A user can choose a different defaulting
-rule.
+rule by writing a \refqualclass{framework/qual}{DefaultQualifier} annotation on a
+ package, class, or method.  In the example below, fields are defaulted to
+\<@Nullable> instead of \<@NonNull>.
+
+\begin{Verbatim}
+@DefaultQualifier(value = Nullable.class, locations = TypeUseLocation.FIELD)
+class MyClass {
+    Object nullableField = null;
+    @NonNull Object nonNullField = new Object();
+}
+\end{Verbatim}
+
 
 %% Cut this to shorten the section.  Most users won't care about it.
 % %BEGIN LATEX
@@ -582,7 +593,7 @@ an \<assert> message (see Section~\ref{assumeassertion}).
 If you need to suppress a warning within an expression, then
 sometimes writing an assertion is not convenient.  In such a case,
 you can suppress warnings by writing a call to the
-\refmethod{checker/nullness}{NullnessUtils}{castNonNull}{-T-} method.
+\refmethod{checker/nullness}{NullnessUtil}{castNonNull}{-T-} method.
 The rest of this section discusses the \<castNonNull> method.
 
 The Nullness Checker considers both the return value, and also the
@@ -679,7 +690,7 @@ The Nullness Checker itself.
 
 \item
 The
-\href{http://mernst.github.io/plume-lib/}{Plume-lib library}.
+\href{https://mernst.github.io/plume-lib/}{Plume-lib library}.
 Run the command \code{make check-nullness}.
 
 
@@ -815,7 +826,11 @@ assert var != null : "@AssumeAssertion(nullness)";
 \newcommand{\linktoNullable}{\refclass{checker/nullness/qual}{Nullable}}
 
 The Checker Framework's nullness annotations are similar to annotations used
-in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, NetBeans, and other tools.  Also
+in IntelliJ IDEA, FindBugs, JML, the JSR 305 proposal, NetBeans, and other
+tools.  In particular, IDE tools such as Eclipse and IntelliJ should be
+viewed as bug-finding tools rather than verification tools, since they
+give up precision, soundness, or both in favor of being fast and
+easy to use.  Also
 see Section~\ref{other-tools} for a comparison to other tools.
 
 You might prefer to use the Checker Framework because it has a more
@@ -945,7 +960,7 @@ brief comparison with FindBugs, but similar points apply to other tools.
 
 The Checker Framework has a more powerful nullness analysis; FindBugs misses
 some real
-errors.  However, FindBugs does not require you to annotate your code as
+errors.  FindBugs requires you to annotate your code, but usually not as
 thoroughly as the Checker Framework does.  Depending on the importance of
 your code, you may desire:  no nullness checking, the cursory checking of
 FindBugs, or the thorough checking of the Checker Framework.  You might
@@ -1088,6 +1103,17 @@ The Nullness Checker does not suffer these limitations.  It works with
 existing code and types, it ensures that you check for null wherever
 necessary, and it infers when the check for null is not necessary based on
 previous statements in the method.
+
+See the article
+\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html}{``Nothing
+  is better than Java's \<Optional> class''} for more details and
+explanation of the
+\href{http://homes.cs.washington.edu/~mernst/advice/nothing-is-better-than-optional.html#benefits-of-nullable}{benefits of \<@Nullable> over \<Optional>}.
+
+The \<Optional> class provides utility routines to reduce clutter when
+using \<Optional>.  The Nullness Checker provides an
+\refclass{checker/nullness}{Opt} class that provides all the same methods,
+but written for regular possibly-null Java references.
 
 
 \section{Initialization Checker\label{initialization-checker}}
@@ -1356,16 +1382,16 @@ Consider a simple example:
 
 \begin{Verbatim}
 class A {
-  Object a;
+  Object aField;
   A() {
-    a = new Object();
+    aField = new Object();
   }
 }
 class B extends A {
-  Object b;
+  Object bField;
   B() {
     super();
-    b = new Object();
+    bField = new Object();
   }
 }
 \end{Verbatim}
@@ -1434,17 +1460,100 @@ the type of the object being constructed is:
 \end{enumerate}
 
 
+\subsection{Method calls from the constructor\label{initialization-constructor}}
+
+Consider the following incorrect program.
+
+\begin{Verbatim}
+class A {
+  Object aField;
+  A() {
+    aField = new Object();
+    process(5);  // illegal call
+  }
+  public void process(int arg) { ... }
+}
+\end{Verbatim}
+
+The call to \<process()> is not legal.
+\<process()> is declared to be called on a fully-initialized receiver, which is
+the default if you do not write a different initialization annotation.
+At the call to \<process()>, all the fields of \<A> have been set,
+but \<this> is not fully initialized because fields in subclasses of \<A> have
+not yet been set.  The type of \<this> is \<@UnderInitialization(A.class)>,
+meaning that \<this> is partially-initialized, with the \<A> part of
+initialization done but the initialization of subclasses not yet complete.
+
+The Initialization Checker output indicates this problem:
+
+\begin{Verbatim}
+Client.java:7: error: [method.invocation.invalid] call to process(int) not allowed on the given receiver.
+    process(5);  // illegal call
+           ^
+  found   : @UnderInitialization(A.class) A
+  required: @Initialized A
+\end{Verbatim}
+
+Here is a subclass and client code that crashes with a \<NullPointerException>.
+
+\begin{Verbatim}
+class B extends A {
+  List<Integer> processed;
+  B() {
+    super();
+    processed = new ArrayList<Integer>();
+  }
+  @Override
+  public void process(int arg) {
+    super();
+    processed.add(arg);
+  }
+}
+class Client {
+  public static void main(String[] args) {
+    new B();
+  }
+}
+\end{Verbatim}
+
+You can correct the problem in multiple ways.
+
+One solution is to not call methods that can be overridden from the
+constructor:  move the call to \<process()> to after the constructor has
+completed.
+
+Another solution is to change the declaration of \<process()>:
+
+\begin{Verbatim}
+  public final void process(@UnderInitialization(A.class) A this, int arg) { ... }
+\end{Verbatim}
+
+If you choose this solution, you will need to rewrite the definition of
+\<B.process()> so that it is consistent with the declared receiver type.
+
+A non-solution is to prevent subclasses from overriding \<process()> by
+using final on the class or method.  This doesn't work because even if
+\<process()> is not overridden, it might call other methods that are
+overridden.
+
+% TODO: One could imagine having an annotation indicating that the routine
+% is "truly final":  it is final and it never calls, directly, or
+% indirectly, any routine that might be overridden.  I'm not sure how you
+% would confirm that, given the existence of callbacks from other code.
+
+
+
 \subsection{Initialization of circular data structures\label{circular-initialization}}
 
-There is one final aspect of the initialization type system to be considered:
-the rules governing reading and writing to objects that are currently under
-initialization (both reading from fields of objects under initialization, as well as
-writing objects under initialization to fields).
-By default, only fully-initialized objects can be stored in a
-field of another object.  If this was the only option, then it would not be
-possible to create circular data structures (such as a doubly-linked list) where
-fields have a \refqualclass{checker/nullness/qual}{NonNull} type.
-However, the annotation
+There is one final aspect of the initialization type system to be
+considered:  the rules governing reading and writing to objects that are
+currently under initialization (both reading from fields of objects under
+initialization, as well as writing objects under initialization to fields).
+By default, only fully-initialized objects can be stored in a field of
+another object.  If this was the only option, then it would not be possible
+to create circular data structures (such as a doubly-linked list) where
+fields have a \refqualclass{checker/nullness/qual}{NonNull} type.  However,
+the annotation
 \refqualclass{checker/initialization/qual}{NotOnlyInitialized} can be used to
 indicate that a field can store objects that are currently under initialization.
 In this case, the rules for reading and writing to that field become a little
@@ -2292,11 +2401,11 @@ annotation has nothing to do with the raw types of Java Generics.
 % LocalWords:  Daikon JastAdd javac DefaultQualifier boolean MyEnumType NonRaw
 % LocalWords:  NullnessAnnotatedTypeFactory NullnessVisitor MonotonicNonNull
 % LocalWords:  inferencer Nonnull CheckForNull UnknownNullness rawtypes de ch
-% LocalWords:  castNonNull NullnessUtils assertNotNull codebases checkNotNull
+% LocalWords:  castNonNull NullnessUtil assertNotNull codebases checkNotNull
 % LocalWords:  Nullability typeargs nulltest EnsuresNonNullIf listFiles faq
 % LocalWords:  isDirectory AssertionError intraprocedurally SuppressWarnings rB
 % LocalWords:  FindBugs's getObject RequiresNonNull EnsuresNonNull KeyFor
-% LocalWords:  nonnull EnsuresNonNull arg orElse isPresent
+% LocalWords:  nonnull EnsuresNonNull arg orElse isPresent bField
 % LocalWords:  keySet getField keyfor param TypeName containsValue indexOf nraA
 % LocalWords:  lastIndexOf deref getProperty getProperties classliteral MyClass
 % LocalWords:  typeofthis nraB nrbB rO nroO nroB containsKey enum

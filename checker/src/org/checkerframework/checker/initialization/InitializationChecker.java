@@ -4,21 +4,18 @@ package org.checkerframework.checker.initialization;
 import org.checkerframework.checker.interning.qual.*;
 */
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-
 /**
- * Tracks whether a value is initialized (all its fields are set),
- * and checks that values are initialized before being used.
- * Supports two different type systems for initialization:
+ * Tracks whether a value is initialized (all its fields are set), and checks that values are
+ * initialized before being used. Supports two different type systems for initialization:
  * freedom-before-commitment (which is generally preferred) and rawness.
  *
  * @checker_framework.manual #initialization-checker Initialization Checker
@@ -27,8 +24,8 @@ import com.sun.source.tree.VariableTree;
 public abstract class InitializationChecker extends BaseTypeChecker {
 
     /**
-     * Should the initialization type system be FBC? If not, the rawness type
-     * system is used for initialization.
+     * Should the initialization type system be FBC? If not, the rawness type system is used for
+     * initialization.
      */
     public final boolean useFbc;
 
@@ -50,9 +47,7 @@ public abstract class InitializationChecker extends BaseTypeChecker {
         return result;
     }
 
-    /**
-     * Returns a list of all fields of the given class
-     */
+    /** Returns a list of all fields of the given class */
     public static List<VariableTree> getAllFields(ClassTree clazz) {
         List<VariableTree> fields = new ArrayList<>();
         for (Tree t : clazz.getMembers()) {

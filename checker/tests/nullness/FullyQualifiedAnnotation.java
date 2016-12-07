@@ -1,4 +1,4 @@
-import java.util.*;
+import java.util.Iterator;
 
 class FullyQualifiedAnnotation {
 
@@ -25,5 +25,4 @@ class FullyQualifiedAnnotation {
         @org.checkerframework.checker.nullness.qual.NonNull Object handle2 = i.next();
         handle2.toString();
     }
-
 }

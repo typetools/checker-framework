@@ -1,11 +1,13 @@
 package org.checkerframework.checker.nullness;
 
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import java.util.Collection;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
-
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -13,56 +15,43 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutab
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.TreeUtils;
 
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.Tree;
-
 /**
- * Handles calls to {@link java.util.Collection#toArray()} and determines
- * the appropriate nullness type of the returned value.
+ * Handles calls to {@link java.util.Collection#toArray()} and determines the appropriate nullness
+ * type of the returned value.
  *
- * <p>
- * The semantics of {@link Collection#toArray()} and
- * {@link Collection#toArray(Object[]) Collection.toArray(T[])} cannot be captured by the
- * regular type system.  Namely, the nullness of the returned array
- * component depends on the receiver type argument.  So
+ * <p>The semantics of {@link Collection#toArray()} and {@link Collection#toArray(Object[])
+ * Collection.toArray(T[])} cannot be captured by the regular type system. Namely, the nullness of
+ * the returned array component depends on the receiver type argument. So
  *
  * <pre>{@code
- *     Collection<@NonNull String> c1 = ...;
- *     c1.toArray();    // returns @NonNull Object []
+ * Collection<@NonNull String> c1 = ...;
+ * c1.toArray();    // returns @NonNull Object []
  *
- *     Collection<@Nullable String> c2 = ...;
- *     c2.toArray();    // returns @Nullable Object []
+ * Collection<@Nullable String> c2 = ...;
+ * c2.toArray();    // returns @Nullable Object []
  * }</pre>
  *
- * In the case of {@link Collection#toArray(Object[])
- * Collection.toArray(T[])}, the type of the returned array depends on the
- * passed parameter as well and its size.  In particular, the returned
- * array component would be of type {@code @NonNull} if the following
- * conditions hold:
+ * In the case of {@link Collection#toArray(Object[]) Collection.toArray(T[])}, the type of the
+ * returned array depends on the passed parameter as well and its size. In particular, the returned
+ * array component would be of type {@code @NonNull} if the following conditions hold:
  *
  * <ol>
- * <li value="1">The receiver collection type argument is {@code NonNull}</li>
- * <li value="2">The passed array size is less than the collection size</li>
+ *   <li value="1">The receiver collection type argument is {@code NonNull}
+ *   <li value="2">The passed array size is less than the collection size
  * </ol>
  *
- * While checking for the second condition, requires a runtime check, we
- * provide heuristics to handle the most common cases of {@link
- * Collection#toArray(Object[]) Collection.toArray(T[])}, namely if the
- * passed array is
+ * While checking for the second condition, requires a runtime check, we provide heuristics to
+ * handle the most common cases of {@link Collection#toArray(Object[]) Collection.toArray(T[])},
+ * namely if the passed array is
  *
  * <ol>
- * <li value="1">an empty array initializer, e.g.
- * {@code c.toArray(new String[] { })},</li>
- * <li value="2">array creation tree of size 0, e.g.
- * {@code c.toArray(new String[0])}, or</li>
- * <li value="3">array creation tree of the collection size method invocation
- * {@code c.toArray(new String[c.size()])}</li>
+ *   <li value="1">an empty array initializer, e.g. {@code c.toArray(new String[] { })},
+ *   <li value="2">array creation tree of size 0, e.g. {@code c.toArray(new String[0])}, or
+ *   <li value="3">array creation tree of the collection size method invocation {@code c.toArray(new
+ *       String[c.size()])}
  * </ol>
  *
- * Note: The nullness of the returned array doesn't depend on the passed
- * array nullness.
+ * Note: The nullness of the returned array doesn't depend on the passed array nullness.
  */
 public class CollectionToArrayHeuristics {
     private final ProcessingEnvironment processingEnv;
@@ -73,27 +62,29 @@ public class CollectionToArrayHeuristics {
     private final ExecutableElement size;
     private final AnnotatedDeclaredType collectionType;
 
-    public CollectionToArrayHeuristics(ProcessingEnvironment env,
-            NullnessAnnotatedTypeFactory factory) {
+    public CollectionToArrayHeuristics(
+            ProcessingEnvironment env, NullnessAnnotatedTypeFactory factory) {
         this.processingEnv = env;
         this.atypeFactory = factory;
 
-        this.collectionToArrayObject = TreeUtils.getMethod("java.util.Collection", "toArray", 0, env);
-        this.collectionToArrayE = TreeUtils.getMethod("java.util.Collection", "toArray", 1, env);
-        this.size = TreeUtils.getMethod("java.util.Collection", "size", 0, env);
-        this.collectionType = factory.fromElement(env.getElementUtils().getTypeElement("java.util.Collection"));
+        this.collectionToArrayObject =
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 0, env);
+        this.collectionToArrayE =
+                TreeUtils.getMethod(java.util.Collection.class.getName(), "toArray", 1, env);
+        this.size = TreeUtils.getMethod(java.util.Collection.class.getName(), "size", 0, env);
+        this.collectionType =
+                factory.fromElement(env.getElementUtils().getTypeElement("java.util.Collection"));
     }
 
     /**
-     * Apply the heuristics to the given method invocation and corresponding
-     * {@link Collection#toArray()} type.
+     * Apply the heuristics to the given method invocation and corresponding {@link
+     * Collection#toArray()} type.
      *
-     * If the method invocation is a call to {@code toArray}, then it
-     * manipulates the returned type of {@code method} arg to contain the
-     * appropriate nullness.  Otherwise, it does nothing.
+     * <p>If the method invocation is a call to {@code toArray}, then it manipulates the returned
+     * type of {@code method} arg to contain the appropriate nullness. Otherwise, it does nothing.
      *
-     * @param tree      method invocation tree
-     * @param method    invoked method type
+     * @param tree method invocation tree
+     * @param method invoked method type
      */
     public void handle(MethodInvocationTree tree, AnnotatedExecutableType method) {
         if (TreeUtils.isMethodInvocation(tree, collectionToArrayObject, processingEnv)) {
@@ -103,8 +94,8 @@ public class CollectionToArrayHeuristics {
         } else if (TreeUtils.isMethodInvocation(tree, collectionToArrayE, processingEnv)) {
             assert !tree.getArguments().isEmpty() : tree;
             Tree argument = tree.getArguments().get(0);
-            boolean isArrayCreation = isHandledArrayCreation(argument,
-                    receiver(tree.getMethodSelect()));
+            boolean isArrayCreation =
+                    isHandledArrayCreation(argument, receiver(tree.getMethodSelect()));
             boolean receiver = isNonNullReceiver(tree);
             setComponentNullness(receiver && isArrayCreation, method.getReturnType());
 
@@ -119,30 +110,30 @@ public class CollectionToArrayHeuristics {
     /**
      * Sets the nullness of the component of the array type.
      *
-     * @param isNonNull     indicates which annotation ({@code NonNull}
-     *                      or {@code Nullable}) should be inserted
-     * @param type          the array type
+     * @param isNonNull indicates which annotation ({@code NonNull} or {@code Nullable}) should be
+     *     inserted
+     * @param type the array type
      */
     private void setComponentNullness(boolean isNonNull, AnnotatedTypeMirror type) {
         assert type.getKind() == TypeKind.ARRAY;
-        AnnotatedTypeMirror compType = ((AnnotatedArrayType)type).getComponentType();
+        AnnotatedTypeMirror compType = ((AnnotatedArrayType) type).getComponentType();
         compType.replaceAnnotation(isNonNull ? atypeFactory.NONNULL : atypeFactory.NULLABLE);
     }
 
     /**
-     * Returns true if {@code argument} is one of the array creation trees
-     * that the heuristic handles.
+     * Returns true if {@code argument} is one of the array creation trees that the heuristic
+     * handles.
      *
-     * @param argument  the tree passed to {@link Collection#toArray(Object[]) Collection.toArray(T[])}
-     * @param receiver  the name of the receiver collection
-     * @return true if the argument is handled and assume to return nonnull
-     * elements
+     * @param argument the tree passed to {@link Collection#toArray(Object[])
+     *     Collection.toArray(T[])}
+     * @param receiver the name of the receiver collection
+     * @return true if the argument is handled and assume to return nonnull elements
      */
     private boolean isHandledArrayCreation(Tree argument, String receiver) {
         if (argument.getKind() != Tree.Kind.NEW_ARRAY) {
             return false;
         }
-        NewArrayTree newArr = (NewArrayTree)argument;
+        NewArrayTree newArr = (NewArrayTree) argument;
 
         // case 1: empty array initializer
         if (newArr.getInitializers() != null) {
@@ -159,7 +150,7 @@ public class CollectionToArrayHeuristics {
 
         // case 3: size()-length array creation
         if (TreeUtils.isMethodInvocation(dimension, size, processingEnv)) {
-            MethodInvocationTree invok = (MethodInvocationTree)dimension;
+            MethodInvocationTree invok = (MethodInvocationTree) dimension;
             String invokReceiver = receiver(invok.getMethodSelect());
             return invokReceiver.equals(receiver);
         }
@@ -168,19 +159,22 @@ public class CollectionToArrayHeuristics {
     }
 
     /**
-     * Returns {@code true} if the method invocation tree receiver is
-     * collection who is known to contain non-null elements (i.e. its type
-     * argument is a {@code NonNull}.
+     * Returns {@code true} if the method invocation tree receiver is collection who is known to
+     * contain non-null elements (i.e. its type argument is a {@code NonNull}.
      */
     private boolean isNonNullReceiver(MethodInvocationTree tree) {
         // check receiver
         AnnotatedTypeMirror receiver = atypeFactory.getReceiverType(tree);
-        AnnotatedDeclaredType collection = (AnnotatedDeclaredType) AnnotatedTypes.asSuper(processingEnv.getTypeUtils(), atypeFactory, receiver, collectionType);
-        assert collection != null;
+        AnnotatedDeclaredType collection =
+                AnnotatedTypes.asSuper(atypeFactory, receiver, collectionType);
 
         if (collection.getTypeArguments().isEmpty()
-            || !collection.getTypeArguments().get(0).hasEffectiveAnnotation(atypeFactory.NONNULL))
+                || !collection
+                        .getTypeArguments()
+                        .get(0)
+                        .hasEffectiveAnnotation(atypeFactory.NONNULL)) {
             return false;
+        }
         return true;
     }
 
@@ -192,10 +186,9 @@ public class CollectionToArrayHeuristics {
     // This method is quite sloppy, but works most of the time
     private String receiver(Tree tree) {
         if (tree.getKind() == Tree.Kind.MEMBER_SELECT) {
-            return ((MemberSelectTree)tree).getExpression().toString();
+            return ((MemberSelectTree) tree).getExpression().toString();
         } else {
             return "this";
         }
     }
-
 }

@@ -1,19 +1,18 @@
 package org.checkerframework.checker.nullness;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import org.checkerframework.checker.initialization.InitializationChecker;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.source.SupportedLintOptions;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-
 /**
- * An implementation of the nullness type-system, parameterized by an
- * initialization type-system for safe initialization.  It can use
- * freedom-before-commitment or rawness as its initialization type system.
+ * An implementation of the nullness type-system, parameterized by an initialization type-system for
+ * safe initialization. It can use freedom-before-commitment or rawness as its initialization type
+ * system.
  */
 @SupportedLintOptions({
     AbstractNullnessChecker.LINT_NOINITFORMONOTONICNONNULL,
@@ -25,28 +24,23 @@ import java.util.LinkedHashSet;
     //     http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#nullness-arrays
     // It is permitted temporarily, until we gather more experience.
     // See issues 154, 322, and 433.
-    "forbidnonnullarraycomponents" })
+    "forbidnonnullarraycomponents"
+})
 public abstract class AbstractNullnessChecker extends InitializationChecker {
 
-    /**
-     * Should we be strict about initialization of {@link MonotonicNonNull} variables.
-     */
+    /** Should we be strict about initialization of {@link MonotonicNonNull} variables. */
     public static final String LINT_NOINITFORMONOTONICNONNULL = "noInitForMonotonicNonNull";
 
-    /**
-     * Default for {@link #LINT_NOINITFORMONOTONICNONNULL}.
-     */
+    /** Default for {@link #LINT_NOINITFORMONOTONICNONNULL}. */
     public static final boolean LINT_DEFAULT_NOINITFORMONOTONICNONNULL = false;
 
     /**
-     * Warn about redundant comparisons of expressions with {@code null}, if the
-     * expressions is known to be non-null.
+     * Warn about redundant comparisons of expressions with {@code null}, if the expressions is
+     * known to be non-null.
      */
     public static final String LINT_REDUNDANTNULLCOMPARISON = "redundantNullComparison";
 
-    /**
-     * Default for {@link #LINT_REDUNDANTNULLCOMPARISON}.
-     */
+    /** Default for {@link #LINT_REDUNDANTNULLCOMPARISON}. */
     public static final boolean LINT_DEFAULT_REDUNDANTNULLCOMPARISON = false;
 
     public AbstractNullnessChecker(boolean useFbc) {
@@ -62,8 +56,8 @@ public abstract class AbstractNullnessChecker extends InitializationChecker {
 
     @Override
     protected LinkedHashSet<Class<? extends BaseTypeChecker>> getImmediateSubcheckerClasses() {
-        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers
-            = super.getImmediateSubcheckerClasses();
+        LinkedHashSet<Class<? extends BaseTypeChecker>> checkers =
+                super.getImmediateSubcheckerClasses();
         checkers.add(KeyForSubchecker.class);
         return checkers;
     }

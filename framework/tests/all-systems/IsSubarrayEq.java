@@ -1,8 +1,11 @@
-import java.util.*;
+import java.util.List;
 
 public class IsSubarrayEq {
-  @SuppressWarnings("Interning") // the Interning checker correctly issues an error below, but we would like to keep this test in all-systems.
-  public static boolean isSubarrayEq(Object[] a, List<?> sub) {
-      return (sub.get(0) != a[0]);
-  }
+    // the Interning checker correctly issues an error below, but we would like to keep this test in all-systems.
+    // Fenum Checker should not issue a warning.  See issue 789
+    // https://github.com/typetools/checker-framework/issues/789
+    @SuppressWarnings({"Interning", "fenum:return.type.incompatible"})
+    public static boolean isSubarrayEq(Object[] a, List<?> sub) {
+        return (sub.get(0) != a[0]);
+    }
 }

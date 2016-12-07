@@ -1,35 +1,32 @@
 package org.checkerframework.mavenplugin;
 
+import java.io.*;
+import java.util.*;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactResolver;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.artifact.resolver.ArtifactResolver;
-import org.apache.maven.artifact.factory.ArtifactFactory;
-import org.apache.maven.project.MavenProject;
-import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.project.MavenProject;
 import org.apache.maven.toolchain.ToolchainManager;
-
 import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.cli.Commandline;
 
-import java.io.*;
-import java.util.*;
-
 /**
- * A Mojo is the main goal or task for a maven project.  CheckersMojo runs the Checker Framework with the
- * checkers specified in the plugin configuration in the pom.xml.
+ * A Mojo is the main goal or task for a maven project. CheckersMojo runs the Checker Framework with
+ * the checkers specified in the plugin configuration in the pom.xml.
  *
- * Note: requiresDependencyResolution ensures that the dependencies required for compilation are included in the
- * classPathElements which gets passed to the classpath of the JSR 308 compiler
+ * <p>Note: requiresDependencyResolution ensures that the dependencies required for compilation are
+ * included in the classPathElements which gets passed to the classpath of the JSR 308 compiler
+ *
  * @requiresDependencyResolution compile
  * @goal check
  */
 public class CheckersMojo extends AbstractMojo {
-    /**
-     * PARAMETERS
-     */
+    /** PARAMETERS */
 
     /**
      * The list of checkers for the Checker Framework to run
@@ -40,9 +37,9 @@ public class CheckersMojo extends AbstractMojo {
     private List<String> processors = new ArrayList<String>();
 
     /**
-     * A list of inclusion filters for the compiler.
-     * When CheckersMojo scans the "${compileSourceRoot}" directory for files it will only include those files
-     * that match one of the specified inclusion patterns.  If no patterns are included then
+     * A list of inclusion filters for the compiler. When CheckersMojo scans the
+     * "${compileSourceRoot}" directory for files it will only include those files that match one of
+     * the specified inclusion patterns. If no patterns are included then
      * PathUtils.DEFAULT_INCLUSION_PATTERN is used
      *
      * @parameter
@@ -50,9 +47,9 @@ public class CheckersMojo extends AbstractMojo {
     private Set<String> includes = new HashSet<String>();
 
     /**
-     * A list of exclusion filters for the compiler.  When CheckersMojo scans the "${compileSourceRoot}"
-     * directory for files it will only include those file that DO NOT match any of the
-     * specified exclusion patterns.
+     * A list of exclusion filters for the compiler. When CheckersMojo scans the
+     * "${compileSourceRoot}" directory for files it will only include those file that DO NOT match
+     * any of the specified exclusion patterns.
      *
      * @parameter
      */
@@ -66,59 +63,63 @@ public class CheckersMojo extends AbstractMojo {
     private boolean failOnError;
 
     /**
-     * The path to the java executable to use, default is "java"
-     * This executable is used to call the JSR 308 compiler jar
+     * The path to the java executable to use, default is "java" This executable is used to call the
+     * JSR 308 compiler jar
+     *
      * @parameter
      */
     private String executable;
 
     /**
      * Which version of the Checker Framework to use
+     *
      * @parameter default-value="${plugin.version}"
      */
     private String checkerFrameworkVersion;
 
     /**
      * Java runtime parameters added when running the JSR 308 compiler jar
+     *
      * @parameter
      */
     private String javaParams;
 
     /**
      * Javac params passed to the JSR 308 compiler jar
+     *
      * @parameter
      */
     private String javacParams;
 
     /**
      * Whether to skip execution
+     *
      * @parameter expression="${checkers.skip}" default-value="false"
      */
-     private boolean skip;
+    private boolean skip;
 
     /**
      * Whether to do only checking, without any subsequent compilation
+     *
      * @parameter default-value="true"
      */
-     private boolean procOnly;
-
+    private boolean procOnly;
 
     /**
      * If true, the error reporting output will show the verbatim javac output
+     *
      * @parameter default-value="false"
      */
     private boolean useJavacOutput;
 
-    /**
-     * DEPENDENCIES
-     */
+    /** DEPENDENCIES */
 
     /**
-      * @parameter expression="${project.build.outputDirectory}"
-      * @required
-      * @readonly
-      */
-     private String outputDirectory;
+     * @parameter expression="${project.build.outputDirectory}"
+     * @required
+     * @readonly
+     */
+    private String outputDirectory;
 
     /**
      * The source directories containing the sources to be compiled.
@@ -130,8 +131,7 @@ public class CheckersMojo extends AbstractMojo {
     private List<String> compileSourceRoots;
 
     /**
-     * The current build session instance. This is used for
-     * toolchain manager API calls.
+     * The current build session instance. This is used for toolchain manager API calls.
      *
      * @parameter expression="${session}"
      * @required
@@ -188,25 +188,19 @@ public class CheckersMojo extends AbstractMojo {
      */
     private List<?> classpathElements;
 
-    /**
-     * The location of the Checker Framework jar
-     */
+    /** The location of the Checker Framework jar */
     private File checkerJar;
 
-
-    /**
-     * The location of the compiler jar
-     */
+    /** The location of the compiler jar */
     private File javacJar;
 
-    /**
-     * The location of the annotated jdk jar
-     */
+    /** The location of the annotated jdk jar */
     private File jdkJar;
 
     /**
-     * Main control method for the Checker Maven Plugin.  Scans for sources, resolves classpath, and passes these
-     * arguments to the checker compiler which is run on the command line.
+     * Main control method for the Checker Maven Plugin. Scans for sources, resolves classpath, and
+     * passes these arguments to the checker compiler which is run on the command line.
+     *
      * @throws MojoExecutionException
      * @throws MojoFailureException
      */
@@ -223,7 +217,8 @@ public class CheckersMojo extends AbstractMojo {
 
         log.info("Running Checker Framework version: " + checkerFrameworkVersion);
 
-        final String processor = (processors.size() > 0) ? StringUtils.join(processors.iterator(), ",") : null;
+        final String processor =
+                (processors.size() > 0) ? StringUtils.join(processors.iterator(), ",") : null;
 
         if (processors.size() == 0) {
             log.warn("No checkers have been specified.");
@@ -231,7 +226,8 @@ public class CheckersMojo extends AbstractMojo {
             log.info("Running processor(s): " + processor);
         }
 
-        final List<String> sources = PathUtils.scanForSources(compileSourceRoots, includes, excludes);
+        final List<String> sources =
+                PathUtils.scanForSources(compileSourceRoots, includes, excludes);
 
         if (sources.size() == 0) {
             log.info("No source files found.");
@@ -246,18 +242,22 @@ public class CheckersMojo extends AbstractMojo {
             executable = "java";
         }
 
-        final String executablePath = PathUtils.getExecutablePath(executable, toolchainManager, session);
+        final String executablePath =
+                PathUtils.getExecutablePath(executable, toolchainManager, session);
         cl.setExecutable(executablePath);
 
         //TODO: SEEMS THAT WHEN WE ARE USING @ ARGS THE CLASSPATH FROM THE JAR IS OVERRIDDEN - FIX THIS
         final String classpath =
-                checkerJar.getAbsolutePath() + File.pathSeparator
-                + StringUtils.join(classpathElements.iterator(), File.pathSeparator);
+                checkerJar.getAbsolutePath()
+                        + File.pathSeparator
+                        + StringUtils.join(classpathElements.iterator(), File.pathSeparator);
 
         File srcFofn = null;
         File cpFofn = null;
         try {
-            srcFofn = PluginUtil.writeTmpSrcFofn("CFPlugin-maven-src", true, PluginUtil.toFiles(sources));
+            srcFofn =
+                    PluginUtil.writeTmpSrcFofn(
+                            "CFPlugin-maven-src", true, PluginUtil.toFiles(sources));
             cpFofn = PluginUtil.writeTmpCpFile("CFPlugin-maven-cp", true, classpath);
         } catch (IOException e) {
             if (srcFofn != null && srcFofn.exists()) {
@@ -272,17 +272,27 @@ public class CheckersMojo extends AbstractMojo {
         final File outputDirFile = new File(outputDirectory);
         if (!procOnly && !outputDirFile.exists()) {
             if (!outputDirFile.mkdirs()) {
-                throw new MojoExecutionException("Could not create output directory: " + outputDirFile.getAbsolutePath());
+                throw new MojoExecutionException(
+                        "Could not create output directory: " + outputDirFile.getAbsolutePath());
             }
         }
 
         final Map<PluginUtil.CheckerProp, Object> props = makeProps();
 
-        final List<String> arguments = PluginUtil.getCmdArgsOnly(
-                javacJar, jdkJar,
-                srcFofn, processor, checkerJar.getAbsolutePath(),
-                null, cpFofn, null, props, null,
-                procOnly, outputDirectory);
+        final List<String> arguments =
+                PluginUtil.getCmdArgsOnly(
+                        javacJar,
+                        jdkJar,
+                        srcFofn,
+                        processor,
+                        checkerJar.getAbsolutePath(),
+                        null,
+                        cpFofn,
+                        null,
+                        props,
+                        null,
+                        procOnly,
+                        outputDirectory);
 
         // And executing
         cl.addArguments(arguments.toArray(new String[arguments.size()]));
@@ -293,12 +303,13 @@ public class CheckersMojo extends AbstractMojo {
     }
 
     /**
-     * TODO: Think of a better way to do CheckerProps, it's weird to have some params built in
-     * TODO: and some as MISC_OPTIONS
+     * TODO: Think of a better way to do CheckerProps, it's weird to have some params built in TODO:
+     * and some as MISC_OPTIONS
      */
     private Map<PluginUtil.CheckerProp, Object> makeProps() {
 
-        final String sourcePath = StringUtils.join(compileSourceRoots.iterator(), File.pathSeparator);
+        final String sourcePath =
+                StringUtils.join(compileSourceRoots.iterator(), File.pathSeparator);
 
         final List<String> miscOptions = new ArrayList<String>();
         miscOptions.add("-sourcepath");
@@ -314,33 +325,52 @@ public class CheckersMojo extends AbstractMojo {
             miscOptions.addAll(Arrays.asList(javacParams.split(" ")));
         }
 
-        final Map<PluginUtil.CheckerProp, Object> props = new HashMap<PluginUtil.CheckerProp, Object>();
+        final Map<PluginUtil.CheckerProp, Object> props =
+                new HashMap<PluginUtil.CheckerProp, Object>();
         props.put(PluginUtil.CheckerProp.MISC_COMPILER, miscOptions);
 
         return props;
     }
 
-
     /**
-     * Find the location of all the necessary Checker Framework related artifacts.  If the
-     * artifacts have not been downloaded, download them.  Then copy them to the checker-maven-plugin
-     * directory (overwriting any other version that is there).
+     * Find the location of all the necessary Checker Framework related artifacts. If the artifacts
+     * have not been downloaded, download them. Then copy them to the checker-maven-plugin directory
+     * (overwriting any other version that is there).
+     *
      * @throws MojoExecutionException
      */
     private final void locateArtifacts() throws MojoExecutionException {
-        checkerJar = PathUtils.getFrameworkJar("checker", checkerFrameworkVersion,
-                artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
+        checkerJar =
+                PathUtils.getFrameworkJar(
+                        "checker",
+                        checkerFrameworkVersion,
+                        artifactFactory,
+                        artifactResolver,
+                        remoteArtifactRepositories,
+                        localRepository);
 
-        javacJar    = PathUtils.getFrameworkJar("compiler", checkerFrameworkVersion,
-                artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
+        javacJar =
+                PathUtils.getFrameworkJar(
+                        "compiler",
+                        checkerFrameworkVersion,
+                        artifactFactory,
+                        artifactResolver,
+                        remoteArtifactRepositories,
+                        localRepository);
 
         final String jdkVersionStr = PluginUtil.getJdkJarPrefix();
-        jdkJar = PathUtils.getFrameworkJar(jdkVersionStr, checkerFrameworkVersion,
-                artifactFactory, artifactResolver, remoteArtifactRepositories, localRepository);
+        jdkJar =
+                PathUtils.getFrameworkJar(
+                        jdkVersionStr,
+                        checkerFrameworkVersion,
+                        artifactFactory,
+                        artifactResolver,
+                        remoteArtifactRepositories,
+                        localRepository);
     }
 
     public CommandLineExceutor createCommandLineExecutor() {
-        if ( useJavacOutput ) {
+        if (useJavacOutput) {
             return new JavacIOExecutor(executable);
         } else {
             return new MavenIOExecutor(executable);

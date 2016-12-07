@@ -2,18 +2,22 @@ package org.checkerframework.framework.type;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.*;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeMerger;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.InternalUtils;
 
-import javax.lang.model.element.*;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVariable;
-import java.util.*;
-
 /**
  * Converts type trees into AnnotatedTypeMirrors
+ *
  * @see org.checkerframework.framework.type.TypeFromTree
  */
 class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
@@ -21,11 +25,10 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     private final Map<Tree, AnnotatedTypeMirror> visitedBounds = new HashMap<>();
 
     @Override
-    public AnnotatedTypeMirror visitAnnotatedType(AnnotatedTypeTree node,
-                                                  AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitAnnotatedType(AnnotatedTypeTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror type = visit(node.getUnderlyingType(), f);
         if (type == null) // e.g., for receiver type
-            type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
+        type = f.toAnnotatedType(f.types.getNoType(TypeKind.NONE), false);
         assert AnnotatedTypeFactory.validAnnotatedType(type);
         List<? extends AnnotationMirror> annos = InternalUtils.annotationsFromTree(node);
 
@@ -44,7 +47,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 ((AnnotatedWildcardType) type).getExtendsBound().addMissingAnnotations(annos);
 
             } else {
-                ErrorReporter.errorAbort("Unexpected kind for type!  node=" + node + " type=" + type);
+                ErrorReporter.errorAbort(
+                        "Unexpected kind for type!  node=" + node + " type=" + type);
             }
         } else {
             type.addAnnotations(annos);
@@ -54,13 +58,12 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
-    public AnnotatedTypeMirror visitArrayType(ArrayTypeTree node,
-                                              AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitArrayType(ArrayTypeTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror component = visit(node.getType(), f);
 
         AnnotatedTypeMirror result = f.type(node);
         assert result instanceof AnnotatedArrayType;
-        ((AnnotatedArrayType)result).setComponentType(component);
+        ((AnnotatedArrayType) result).setComponentType(component);
         return result;
     }
 
@@ -80,20 +83,18 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
         if (result instanceof AnnotatedDeclaredType) {
             assert result instanceof AnnotatedDeclaredType : node + " --> " + result;
-            ((AnnotatedDeclaredType)result).setTypeArguments(args);
+            ((AnnotatedDeclaredType) result).setTypeArguments(args);
         }
         return result;
     }
 
     @Override
-    public AnnotatedTypeMirror visitPrimitiveType(PrimitiveTypeTree node,
-                                                  AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitPrimitiveType(PrimitiveTypeTree node, AnnotatedTypeFactory f) {
         return f.type(node);
     }
 
     @Override
-    public AnnotatedTypeMirror visitTypeParameter(TypeParameterTree node,
-                                                  AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitTypeParameter(TypeParameterTree node, AnnotatedTypeFactory f) {
 
         List<AnnotatedTypeMirror> bounds = new LinkedList<AnnotatedTypeMirror>();
         for (Tree t : node.getBounds()) {
@@ -113,18 +114,21 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
         result.getLowerBound().addAnnotations(annotations);
 
         switch (bounds.size()) {
-            case 0: break;
+            case 0:
+                break;
             case 1:
                 // the first call to result.getUpperBound will appropriately initialize the bound
                 // rather than replace it, copy the bounds from bounds.get(0) to the initialized bound
                 AnnotatedTypeMerger.merge(bounds.get(0), result.getUpperBound());
                 break;
             default:
-                AnnotatedIntersectionType upperBound = (AnnotatedIntersectionType) result.getUpperBound();
+                AnnotatedIntersectionType upperBound =
+                        (AnnotatedIntersectionType) result.getUpperBound();
 
-                List<AnnotatedDeclaredType> superBounds = new ArrayList<AnnotatedDeclaredType>(bounds.size());
+                List<AnnotatedDeclaredType> superBounds =
+                        new ArrayList<AnnotatedDeclaredType>(bounds.size());
                 for (AnnotatedTypeMirror b : bounds) {
-                    superBounds.add((AnnotatedDeclaredType)b);
+                    superBounds.add((AnnotatedDeclaredType) b);
                 }
                 upperBound.setDirectSuperTypes(superBounds);
         }
@@ -133,8 +137,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
-    public AnnotatedTypeMirror visitWildcard(WildcardTree node,
-                                             AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitWildcard(WildcardTree node, AnnotatedTypeFactory f) {
 
         AnnotatedTypeMirror bound = visit(node.getBound(), f);
 
@@ -149,23 +152,22 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
 
         } else if (node.getKind() == Tree.Kind.EXTENDS_WILDCARD) {
             ((AnnotatedWildcardType) result).setExtendsBound(bound);
-
         }
         return result;
     }
 
-    private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type,
-                                                AnnotatedTypeFactory f) {
+    private AnnotatedTypeMirror forTypeVariable(AnnotatedTypeMirror type, AnnotatedTypeFactory f) {
         if (type.getKind() != TypeKind.TYPEVAR) {
-            ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: should only be called on type variables");
+            ErrorReporter.errorAbort(
+                    "TypeFromTree.forTypeVariable: should only be called on type variables");
             return null; // dead code
         }
 
-        TypeVariable typeVar = (TypeVariable)type.getUnderlyingType();
-        TypeParameterElement tpe = (TypeParameterElement)typeVar.asElement();
+        TypeVariable typeVar = (TypeVariable) type.getUnderlyingType();
+        TypeParameterElement tpe = (TypeParameterElement) typeVar.asElement();
         Element elt = tpe.getGenericElement();
         if (elt instanceof TypeElement) {
-            TypeElement typeElt = (TypeElement)elt;
+            TypeElement typeElt = (TypeElement) elt;
             int idx = typeElt.getTypeParameters().indexOf(tpe);
             ClassTree cls = (ClassTree) f.declarationFromElement(typeElt);
             if (cls != null) {
@@ -174,22 +176,24 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
                 // of type parameter declarations (`TypeParameterTree`), so this recursive call
                 // to `visit` will return a declaration ATV.  So we must copy the result and set
                 // its `isDeclaration` field to `false`.
-                AnnotatedTypeMirror result = visit(cls.getTypeParameters().get(idx), f).shallowCopy();
-                ((AnnotatedTypeVariable)result).setDeclaration(false);
+                AnnotatedTypeMirror result =
+                        visit(cls.getTypeParameters().get(idx), f).shallowCopy();
+                ((AnnotatedTypeVariable) result).setDeclaration(false);
                 return result;
             } else {
                 // We already have all info from the element -> nothing to do.
                 return type;
             }
         } else if (elt instanceof ExecutableElement) {
-            ExecutableElement exElt = (ExecutableElement)elt;
+            ExecutableElement exElt = (ExecutableElement) elt;
             int idx = exElt.getTypeParameters().indexOf(tpe);
             MethodTree meth = (MethodTree) f.declarationFromElement(exElt);
             if (meth != null) {
                 // This works the same as the case above.  Even though `meth` itself is not a
                 // type declaration tree, the elements of `meth.getTypeParameters()` still are.
-                AnnotatedTypeMirror result = visit(meth.getTypeParameters().get(idx), f).shallowCopy();
-                ((AnnotatedTypeVariable)result).setDeclaration(false);
+                AnnotatedTypeMirror result =
+                        visit(meth.getTypeParameters().get(idx), f).shallowCopy();
+                ((AnnotatedTypeVariable) result).setDeclaration(false);
                 return result;
             } else {
                 // ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: did not find source for: " + elt);
@@ -201,15 +205,15 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
             if (InternalUtils.isCaptured(typeVar)) {
                 return type;
             } else {
-                ErrorReporter.errorAbort("TypeFromTree.forTypeVariable: not a supported element: " + elt);
+                ErrorReporter.errorAbort(
+                        "TypeFromTree.forTypeVariable: not a supported element: " + elt);
                 return null; // dead code
             }
         }
     }
 
     @Override
-    public AnnotatedTypeMirror visitIdentifier(IdentifierTree node,
-                                               AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitIdentifier(IdentifierTree node, AnnotatedTypeFactory f) {
 
         AnnotatedTypeMirror type = f.type(node);
 
@@ -221,8 +225,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
-    public AnnotatedTypeMirror visitMemberSelect(MemberSelectTree node,
-                                                 AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitMemberSelect(MemberSelectTree node, AnnotatedTypeFactory f) {
 
         AnnotatedTypeMirror type = f.type(node);
 
@@ -234,8 +237,7 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
-    public AnnotatedTypeMirror visitUnionType(UnionTypeTree node,
-                                              AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitUnionType(UnionTypeTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror type = f.type(node);
 
         if (type.getKind() == TypeKind.TYPEVAR) {
@@ -246,8 +248,8 @@ class TypeFromTypeTreeVisitor extends TypeFromTreeVisitor {
     }
 
     @Override
-    public AnnotatedTypeMirror visitIntersectionType(IntersectionTypeTree node,
-                                                     AnnotatedTypeFactory f) {
+    public AnnotatedTypeMirror visitIntersectionType(
+            IntersectionTypeTree node, AnnotatedTypeFactory f) {
         AnnotatedTypeMirror type = f.type(node);
 
         if (type.getKind() == TypeKind.TYPEVAR) {

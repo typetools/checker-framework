@@ -5,24 +5,18 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
 import org.checkerframework.framework.qual.SubtypeOf;
 
 /**
- * This annotation is used on a formal parameter to indicate
- * that the parameter is not leaked (stored in a location that could
- * be accessed later) nor returned by the method body.
- * <p>
+ * This annotation is used on a formal parameter to indicate that the parameter is not leaked
+ * (stored in a location that could be accessed later) nor returned by the method body.
  *
- * For example, the parameter of {@link String#String(String s)} is
- * {@code @NonLeaked}, because
+ * <p>For example, the parameter of {@link String#String(String s)} is {@code @NonLeaked}, because
  * the method only uses the parameter to make a copy of it.
  *
  * @see LeakedToResult
  * @checker_framework.manual #aliasing-checker Aliasing Checker
- *
- * TODO: This annotation is currently trusted. A verification must be
- * implemented.
+ *     <p>TODO: This annotation is currently trusted. A verification must be implemented.
  */
 
 // This is a type qualifier because of a checker framework limitation (Issue 383), but its
@@ -31,6 +25,6 @@ import org.checkerframework.framework.qual.SubtypeOf;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE_USE })
+@Target({ElementType.TYPE_USE})
 @SubtypeOf({})
 public @interface NonLeaked {}

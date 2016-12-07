@@ -1,16 +1,21 @@
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
-import java.util.*;
 
-class  MethodTypeVars3 {
-    public static
-    <@KeyFor("preds") T extends @KeyFor("preds") Object> Map<T,List<T>> dominators(Map<T,List<T>> preds) {
+class MethodTypeVars3 {
+    public static <@KeyFor("preds") T extends @KeyFor("preds") Object> Map<T, List<T>> dominators(
+            Map<T, List<T>> preds) {
         List<T> nodes = new ArrayList<T>(preds.keySet());
 
         // Compute roots & non-roots, for convenience
         List<@KeyFor("preds") T> roots = new ArrayList<@KeyFor("preds") T>();
         List<@KeyFor("preds") T> non_roots = new ArrayList<@KeyFor("preds") T>();
 
-        Map<@KeyFor("preds") T,List<T>> dom = new HashMap<@KeyFor("preds") T,List<T>>();
+        Map<@KeyFor("preds") T, List<T>> dom = new HashMap<@KeyFor("preds") T, List<T>>();
 
         // Initialize result:  for roots just the root, otherwise everything
         for (@KeyFor("preds") T node : preds.keySet()) {

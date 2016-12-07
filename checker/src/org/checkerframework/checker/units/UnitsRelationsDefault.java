@@ -3,7 +3,6 @@ package org.checkerframework.checker.units;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
-
 import org.checkerframework.checker.units.qual.Prefix;
 import org.checkerframework.checker.units.qual.h;
 import org.checkerframework.checker.units.qual.km2;
@@ -20,18 +19,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
  */
 
-/**
- * Default relations between SI units.
- * TODO: what relations are missing?
- */
+/** Default relations between SI units. TODO: what relations are missing? */
 public class UnitsRelationsDefault implements UnitsRelations {
     protected AnnotationMirror m, km, mm, m2, km2, mm2, s, h, mPERs, kmPERh, mPERs2;
     protected Elements elements;
 
     /**
-     * Constructs various AnnotationMirrors representing specific
-     * checker-framework provided Units involved in the rules resolved in this
-     * UnitsRelations implementation
+     * Constructs various AnnotationMirrors representing specific checker-framework provided Units
+     * involved in the rules resolved in this UnitsRelations implementation
      */
     @Override
     public UnitsRelations init(ProcessingEnvironment env) {
@@ -57,16 +52,18 @@ public class UnitsRelationsDefault implements UnitsRelations {
     }
 
     /**
-     * Provides rules for resolving the result Unit of the multiplication of
-     * checker-framework provided Units
+     * Provides rules for resolving the result Unit of the multiplication of checker-framework
+     * provided Units
      */
     @Override
-    public /*@Nullable*/ AnnotationMirror multiplication(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
+    public /*@Nullable*/ AnnotationMirror multiplication(
+            AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
         // TODO: does this handle scaling correctly?
 
         // length * length => area
         // checking SI units only
-        if (UnitsRelationsTools.hasSpecificUnitIgnoringPrefix(lht, m) && UnitsRelationsTools.hasSpecificUnitIgnoringPrefix(rht, m)) {
+        if (UnitsRelationsTools.hasSpecificUnitIgnoringPrefix(lht, m)
+                && UnitsRelationsTools.hasSpecificUnitIgnoringPrefix(rht, m)) {
             if (UnitsRelationsTools.hasNoPrefix(lht) && UnitsRelationsTools.hasNoPrefix(rht)) {
                 // m * m
                 return m2;
@@ -102,11 +99,12 @@ public class UnitsRelationsDefault implements UnitsRelations {
     }
 
     /**
-     * Provides rules for resolving the result Unit of the division of
-     * checker-framework provided Units
+     * Provides rules for resolving the result Unit of the division of checker-framework provided
+     * Units
      */
     @Override
-    public /*@Nullable*/ AnnotationMirror division(AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
+    public /*@Nullable*/ AnnotationMirror division(
+            AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {
         if (havePairOfUnits(lht, m, rht, s)) {
             // m / s => mPERs
             return mPERs;
@@ -140,15 +138,15 @@ public class UnitsRelationsDefault implements UnitsRelations {
     }
 
     /**
-     * Checks to see if both lhtPrefix and rhtPrefix have the same prefix as
-     * specificPrefix
+     * Checks to see if both lhtPrefix and rhtPrefix have the same prefix as specificPrefix
      *
      * @param lhtPrefix left hand side prefix
      * @param rhtPrefix right hand side prefix
      * @param specificPrefix specific desired prefix to match
      * @return true if all 3 Prefix are the same, false otherwise
      */
-    protected boolean bothHaveSpecificPrefix(Prefix lhtPrefix, Prefix rhtPrefix, Prefix specificPrefix) {
+    protected boolean bothHaveSpecificPrefix(
+            Prefix lhtPrefix, Prefix rhtPrefix, Prefix specificPrefix) {
         if (lhtPrefix == null || rhtPrefix == null || specificPrefix == null) {
             return false;
         }
@@ -157,8 +155,7 @@ public class UnitsRelationsDefault implements UnitsRelations {
     }
 
     /**
-     * Checks to see if lht has the unit ul and if rht has the unit ur all at
-     * the same time
+     * Checks to see if lht has the unit ul and if rht has the unit ur all at the same time
      *
      * @param lht left hand annotated type
      * @param ul left hand unit
@@ -166,22 +163,30 @@ public class UnitsRelationsDefault implements UnitsRelations {
      * @param ur right hand unit
      * @return true if lht has lu and rht has ru, false otherwise
      */
-    protected boolean havePairOfUnits(AnnotatedTypeMirror lht, AnnotationMirror ul, AnnotatedTypeMirror rht, AnnotationMirror ur) {
-        return UnitsRelationsTools.hasSpecificUnit(lht, ul) && UnitsRelationsTools.hasSpecificUnit(rht, ur);
+    protected boolean havePairOfUnits(
+            AnnotatedTypeMirror lht,
+            AnnotationMirror ul,
+            AnnotatedTypeMirror rht,
+            AnnotationMirror ur) {
+        return UnitsRelationsTools.hasSpecificUnit(lht, ul)
+                && UnitsRelationsTools.hasSpecificUnit(rht, ur);
     }
 
     /**
-     * Checks to see if lht and rht have the pair of units u1 and u2 regardless
-     * of order
+     * Checks to see if lht and rht have the pair of units u1 and u2 regardless of order
      *
      * @param lht left hand annotated type
      * @param u1 unit 1
      * @param rht right hand annotated type
      * @param u2 unit 2
-     * @return true if lht and rht have the pair of units u1 and u2 regardless
-     *         of order, false otherwise
+     * @return true if lht and rht have the pair of units u1 and u2 regardless of order, false
+     *     otherwise
      */
-    protected boolean havePairOfUnitsIgnoringOrder(AnnotatedTypeMirror lht, AnnotationMirror u1, AnnotatedTypeMirror rht, AnnotationMirror u2) {
+    protected boolean havePairOfUnitsIgnoringOrder(
+            AnnotatedTypeMirror lht,
+            AnnotationMirror u1,
+            AnnotatedTypeMirror rht,
+            AnnotationMirror u2) {
         return havePairOfUnits(lht, u1, rht, u2) || havePairOfUnits(lht, u2, rht, u1);
     }
 }

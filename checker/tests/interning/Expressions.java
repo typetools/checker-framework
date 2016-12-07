@@ -1,19 +1,25 @@
 import org.checkerframework.checker.interning.qual.*;
 
-import java.util.*;
-
-
 public class Expressions {
 
     class A {
         B b;
     }
+
     class B {
         C c;
-        D d() { return new D(); }
-        Boolean bBoolean() { return true; }
+
+        D d() {
+            return new D();
+        }
+
+        Boolean bBoolean() {
+            return true;
+        }
     }
+
     class C {}
+
     class D {}
 
     public Boolean fieldThenMethod(A a) {
@@ -45,5 +51,4 @@ public class Expressions {
         //:: warning: (unnecessary.equals)
         return f1.equals(f2);
     }
-
 }

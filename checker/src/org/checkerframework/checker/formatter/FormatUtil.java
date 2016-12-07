@@ -1,8 +1,5 @@
 package org.checkerframework.checker.formatter;
 
-import org.checkerframework.checker.formatter.qual.ConversionCategory;
-import org.checkerframework.checker.formatter.qual.ReturnsFormat;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IllegalFormatConversionException;
@@ -11,10 +8,11 @@ import java.util.Map;
 import java.util.MissingFormatArgumentException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.checkerframework.checker.formatter.qual.ConversionCategory;
+import org.checkerframework.checker.formatter.qual.ReturnsFormat;
 
 /**
- * This class provides a collection of utilities to ease working
- * with format strings.
+ * This class provides a collection of utilities to ease working with format strings.
  *
  * @author Konstantin Weitz
  */
@@ -38,14 +36,14 @@ public class FormatUtil {
     }
 
     /**
-     * Returns if the format string is satisfiable, and if the
-     * format's parameters match the passed {@link ConversionCategory}s.
-     * Otherwise an {@link Error} is thrown.
+     * Returns if the format string is satisfiable, and if the format's parameters match the passed
+     * {@link ConversionCategory}s. Otherwise an {@link Error} is thrown.
      *
-     * TODO introduce more such functions, see RegexUtil for examples
+     * <p>TODO introduce more such functions, see RegexUtil for examples
      */
     @ReturnsFormat
-    public static String asFormat(String format, ConversionCategory... cc) throws IllegalFormatException {
+    public static String asFormat(String format, ConversionCategory... cc)
+            throws IllegalFormatException {
         ConversionCategory[] fcc = formatParameterCategories(format);
         if (fcc.length != cc.length) {
             throw new ExcessiveOrMissingFormatArgumentException(cc.length, fcc.length);
@@ -60,71 +58,72 @@ public class FormatUtil {
         return format;
     }
 
-    /**
-     * Throws an exception if the format is not syntactically valid.
-     */
+    /** Throws an exception if the format is not syntactically valid. */
     public static void tryFormatSatisfiability(String format) throws IllegalFormatException {
-        String.format(format, (Object[])null);
+        @SuppressWarnings("unused")
+        String unused = String.format(format, (Object[]) null);
     }
 
     /**
-     * Returns a {@link ConversionCategory} for every conversion found in the
-     * format string.
+     * Returns a {@link ConversionCategory} for every conversion found in the format string.
      *
-     * Throws an exception if the format is not syntactically valid.
+     * <p>Throws an exception if the format is not syntactically valid.
      */
-    public static ConversionCategory[] formatParameterCategories(String format) throws IllegalFormatException {
+    public static ConversionCategory[] formatParameterCategories(String format)
+            throws IllegalFormatException {
         tryFormatSatisfiability(format);
 
-        int last = -1;        // index of last argument referenced
-        int lasto = -1;       // last ordinary index
+        int last = -1; // index of last argument referenced
+        int lasto = -1; // last ordinary index
         int maxindex = -1;
 
         Conversion[] cs = parse(format);
-        Map<Integer,ConversionCategory> conv = new HashMap<Integer,ConversionCategory>();
+        Map<Integer, ConversionCategory> conv = new HashMap<Integer, ConversionCategory>();
 
         for (Conversion c : cs) {
             int index = c.index();
             switch (index) {
-            case -1:  // relative index
-                break;
-            case 0:  // ordinary index
-                lasto++;
-                last = lasto;
-                break;
-            default:  // explicit index
-                last = index - 1;
-                break;
+                case -1: // relative index
+                    break;
+                case 0: // ordinary index
+                    lasto++;
+                    last = lasto;
+                    break;
+                default: // explicit index
+                    last = index - 1;
+                    break;
             }
             maxindex = Math.max(maxindex, last);
-            conv.put(last, ConversionCategory.intersect(
-                    conv.containsKey(last) ? conv.get(last) : ConversionCategory.UNUSED,
-                    c.category()));
+            conv.put(
+                    last,
+                    ConversionCategory.intersect(
+                            conv.containsKey(last) ? conv.get(last) : ConversionCategory.UNUSED,
+                            c.category()));
         }
 
-        ConversionCategory[] res = new ConversionCategory[maxindex+1];
-        for (int i = 0; i <= maxindex ;++i) {
-            res[i] = conv.containsKey(i)?conv.get(i):ConversionCategory.UNUSED;
+        ConversionCategory[] res = new ConversionCategory[maxindex + 1];
+        for (int i = 0; i <= maxindex; ++i) {
+            res[i] = conv.containsKey(i) ? conv.get(i) : ConversionCategory.UNUSED;
         }
         return res;
     }
 
     // %[argument_index$][flags][width][.precision][t]conversion
-    private static final String formatSpecifier
-        = "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
+    private static final String formatSpecifier =
+            "%(\\d+\\$)?([-#+ 0,(\\<]*)?(\\d+)?(\\.\\d+)?([tT])?([a-zA-Z%])";
 
     private static Pattern fsPattern = Pattern.compile(formatSpecifier);
 
     private static int indexFromFormat(Matcher m) {
         int index;
         String s = m.group(1);
-        if (s != null) {  // explicit index
+        if (s != null) { // explicit index
             index = Integer.parseInt(s.substring(0, s.length() - 1));
         } else {
             if (m.group(2) != null && m.group(2).contains(String.valueOf('<'))) {
-                index = -1;    // relative index
+                index = -1; // relative index
             } else {
-                index = 0;    // ordinary index
+                index = 0; // ordinary index
             }
         }
         return index;
@@ -145,25 +144,26 @@ public class FormatUtil {
         while (m.find()) {
             char c = conversionCharFromFormat(m);
             switch (c) {
-            case '%':
-            case 'n':
-                break;
-            default:
-                cs.add(new Conversion(c, indexFromFormat(m)));
+                case '%':
+                case 'n':
+                    break;
+                default:
+                    cs.add(new Conversion(c, indexFromFormat(m)));
             }
         }
         return cs.toArray(new Conversion[cs.size()]);
     }
 
-    public static class ExcessiveOrMissingFormatArgumentException extends MissingFormatArgumentException {
+    public static class ExcessiveOrMissingFormatArgumentException
+            extends MissingFormatArgumentException {
         private static final long serialVersionUID = 17000126L;
 
         private final int expected;
         private final int found;
 
         /**
-         * Constructs an instance of this class with the actual argument length and
-         * the expected one.
+         * Constructs an instance of this class with the actual argument length and the expected
+         * one.
          */
         public ExcessiveOrMissingFormatArgumentException(int expected, int found) {
             super("-");
@@ -185,20 +185,21 @@ public class FormatUtil {
         }
     }
 
-    public static class IllegalFormatConversionCategoryException extends IllegalFormatConversionException {
+    public static class IllegalFormatConversionCategoryException
+            extends IllegalFormatConversionException {
         private static final long serialVersionUID = 17000126L;
 
         private final ConversionCategory expected;
         private final ConversionCategory found;
 
         /**
-         * Constructs an instance of this class with the mismatched conversion and
-         * the expected one.
+         * Constructs an instance of this class with the mismatched conversion and the expected one.
          */
-        public IllegalFormatConversionCategoryException(ConversionCategory expected,
-                ConversionCategory found) {
-            super(expected.chars.length() == 0 ? '-' : expected.chars.charAt(0),
-                  found.types == null ? Object.class : found.types[0]);
+        public IllegalFormatConversionCategoryException(
+                ConversionCategory expected, ConversionCategory found) {
+            super(
+                    expected.chars.length() == 0 ? '-' : expected.chars.charAt(0),
+                    found.types == null ? Object.class : found.types[0]);
             this.expected = expected;
             this.found = found;
         }

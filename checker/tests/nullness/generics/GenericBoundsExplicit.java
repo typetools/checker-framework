@@ -6,13 +6,15 @@ import org.checkerframework.checker.nullness.qual.*;
 class GenericBoundsExplicit<@NonNull T extends @Nullable Object> {
 
     T t;
+
     public void method() {
         //:: error: (dereference.of.nullable)
         String str = t.toString();
     }
 
     public static void doSomething() {
-        final GenericBoundsExplicit<@Nullable String> b = new GenericBoundsExplicit<@Nullable String>();
+        final GenericBoundsExplicit<@Nullable String> b =
+                new GenericBoundsExplicit<@Nullable String>();
         b.method();
     }
 }

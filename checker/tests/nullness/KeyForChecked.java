@@ -1,41 +1,73 @@
-import org.checkerframework.dataflow.qual.Pure;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
-import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.nullness.qual.Covariant;
-
-import java.util.*;
+import org.checkerframework.checker.nullness.qual.KeyFor;
+import org.checkerframework.dataflow.qual.Pure;
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.TypeUseLocation;
 
 @DefaultQualifier(value = NonNull.class, locations = TypeUseLocation.IMPLICIT_UPPER_BOUND)
 public class KeyForChecked {
 
-interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
-    @Covariant(0)
-    public static interface Entry<K1 extends @Nullable Object, V1 extends @Nullable Object> {
-        K1 getKey();
-        V1 getValue();
+    interface KFMap<K extends @NonNull Object, V extends @NonNull Object> {
+        @Covariant(0)
+        public static interface Entry<K1 extends @Nullable Object, V1 extends @Nullable Object> {
+            K1 getKey();
+
+            V1 getValue();
+        }
+
+        @Pure
+        boolean containsKey(@Nullable Object a1);
+
+        @Pure
+        @Nullable V get(@Nullable Object a1);
+
+        @Nullable V put(K a1, V a2);
+
+        Set<@KeyFor("this") K> keySet();
+
+        Set<KFMap.Entry<@KeyFor("this") K, V>> entrySet();
+
+        KFIterator<K> iterator();
     }
-    @Pure boolean containsKey(@Nullable Object a1);
-    @Pure @Nullable V get(@Nullable Object a1);
-    @Nullable V put(K a1, V a2);
-    Set<@KeyFor("this") K> keySet();
-    Set<KFMap.Entry<@KeyFor("this") K, V>> entrySet();
-    KFIterator<K> iterator();
-}
 
-class KFHashMap<K2 extends @NonNull Object, V2 extends @NonNull Object> implements KFMap<K2, V2> {
-    @Pure public boolean containsKey(@Nullable Object a1) { return false; }
-    @Pure public @Nullable V2 get(@Nullable Object a1) { return null; }
-    public @Nullable V2 put(K2 a1, V2 a2) { return null; }
-    public Set<@KeyFor("this") K2> keySet() { return new HashSet<@KeyFor("this") K2>(); }
-    public Set<KFMap.Entry<@KeyFor("this") K2, V2>> entrySet() { return new HashSet<KFMap.Entry<@KeyFor("this") K2, V2>>(); }
-    public KFIterator<K2> iterator() { return new KFIterator<K2>(); }
-}
+    class KFHashMap<K2 extends @NonNull Object, V2 extends @NonNull Object>
+            implements KFMap<K2, V2> {
+        @Pure
+        public boolean containsKey(@Nullable Object a1) {
+            return false;
+        }
 
-@Covariant(0)
-class KFIterator<E extends @Nullable Object> {
+        @Pure
+        public @Nullable V2 get(@Nullable Object a1) {
+            return null;
+        }
 
-}
+        public @Nullable V2 put(K2 a1, V2 a2) {
+            return null;
+        }
+
+        public Set<@KeyFor("this") K2> keySet() {
+            return new HashSet<@KeyFor("this") K2>();
+        }
+
+        public Set<KFMap.Entry<@KeyFor("this") K2, V2>> entrySet() {
+            return new HashSet<KFMap.Entry<@KeyFor("this") K2, V2>>();
+        }
+
+        public KFIterator<K2> iterator() {
+            return new KFIterator<K2>();
+        }
+    }
+
+    @Covariant(0)
+    class KFIterator<E extends @Nullable Object> {}
 
     void incorrect1() {
         String nonkey = "";
@@ -112,7 +144,7 @@ class KFIterator<E extends @Nullable Object> {
         Set<KFMap.Entry<String, Object>> es2 = emap.entrySet();
     }
 
-    public static <K,V> void mapToString(KFMap<K,V> m) {
+    public static <K, V> void mapToString(KFMap<K, V> m) {
         Set<KFMap.Entry<@KeyFor("m") K, V>> eset = m.entrySet();
 
         for (KFMap.Entry<@KeyFor("m") K, V> entry : m.entrySet()) {}

@@ -166,6 +166,11 @@
             label="Units Checker"
             style="push">
            </command>
+           <command
+            commandId="checkers.eclipse.runsignednesschecker"
+            label="Signedness Checker"
+            style="push">
+           </command>
           <command
             commandId="checkers.eclipse.runconstantvaluechecker"
             label="Constant Value Checker"
@@ -288,6 +293,12 @@
       defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$UnitAction"
       id="checkers.eclipse.rununitchecker"
       name="Run Units Checker">
+    </command>
+    <command
+      categoryId="checkers.eclipse.category"
+      defaultHandler="org.checkerframework.eclipse.actions.CheckerActions$signednessAction"
+      id="checkers.eclipse.runsignednesschecker"
+      name="Run Signedness Checker">
     </command>
     <command
       categoryId="checkers.eclipse.category"

@@ -1,9 +1,6 @@
-import org.checkerframework.framework.test.*;
-
-import java.util.*;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.framework.qual.*;
-import tests.util.*;
+import org.checkerframework.framework.test.*;
+import testlib.util.*;
 
 // Tests for the meta-annotations for contracts.
 class MetaPrecondition {
@@ -43,7 +40,7 @@ class MetaPrecondition {
         @Odd String l2 = p;
     }
 
-    @RequiresOdd({"#1","#2"})
+    @RequiresOdd({"#1", "#2"})
     void requiresParams(String p1, String p2) {
         //:: error: (assignment.type.incompatible)
         @Value String l1 = p1;
@@ -55,8 +52,7 @@ class MetaPrecondition {
 
     @RequiresOdd("#1")
     //:: error: (flowexpr.parse.index.too.big)
-    void param3() {
-    }
+    void param3() {}
 
     void t1(@Odd String p1, String p2) {
         //:: error: (contracts.precondition.not.satisfied)

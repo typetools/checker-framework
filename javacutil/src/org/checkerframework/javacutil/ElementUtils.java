@@ -8,6 +8,7 @@ import static com.sun.tools.javac.code.Flags.ABSTRACT;
 import static com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
 import static com.sun.tools.javac.code.Flags.FINAL;
 
+import com.sun.tools.javac.code.Symbol;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +17,6 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -31,26 +31,23 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 
-import com.sun.tools.javac.code.Symbol;
-
-/**
- * A Utility class for analyzing {@code Element}s.
- */
+/** A Utility class for analyzing {@code Element}s. */
 public class ElementUtils {
 
     // Class cannot be instantiated.
-    private ElementUtils() { throw new AssertionError("Class ElementUtils cannot be instantiated."); }
+    private ElementUtils() {
+        throw new AssertionError("Class ElementUtils cannot be instantiated.");
+    }
 
     /**
      * Returns the innermost type element enclosing the given element
      *
      * @param elem the enclosed element of a class
-     * @return  the innermost type element
+     * @return the innermost type element
      */
     public static TypeElement enclosingClass(final Element elem) {
         Element result = elem;
-        while (result != null && !result.getKind().isClass()
-                && !result.getKind().isInterface()) {
+        while (result != null && !result.getKind().isClass() && !result.getKind().isInterface()) {
             /*@Nullable*/ Element encl = result.getEnclosingElement();
             result = encl;
         }
@@ -58,13 +55,12 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the innermost package element enclosing the given element.
-     * The same effect as {@link javax.lang.model.util.Elements#getPackageOf(Element)}.
-     * Returns the element itself if it is a package.
+     * Returns the innermost package element enclosing the given element. The same effect as {@link
+     * javax.lang.model.util.Elements#getPackageOf(Element)}. Returns the element itself if it is a
+     * package.
      *
      * @param elem the enclosed element of a package
      * @return the innermost package element
-     *
      */
     public static PackageElement enclosingPackage(final Element elem) {
         Element result = elem;
@@ -76,18 +72,16 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the "parent" package element for the given package element.
-     * For package "A.B" it gives "A".
-     * For package "A" it gives the default package.
-     * For the default package it returns null;
+     * Returns the "parent" package element for the given package element. For package "A.B" it
+     * gives "A". For package "A" it gives the default package. For the default package it returns
+     * null;
      *
-     * Note that packages are not enclosed within each other, we have to manually climb
-     * the namespaces. Calling "enclosingPackage" on a package element returns the
-     * package element itself again.
+     * <p>Note that packages are not enclosed within each other, we have to manually climb the
+     * namespaces. Calling "enclosingPackage" on a package element returns the package element
+     * itself again.
      *
      * @param elem the package to start from
      * @return the parent package element
-     *
      */
     public static PackageElement parentPackage(final Elements e, final PackageElement elem) {
         // The following might do the same thing:
@@ -103,8 +97,8 @@ public class ElementUtils {
     }
 
     /**
-     * Returns true if the element is a static element: whether it is a static
-     * field, static method, or static class
+     * Returns true if the element is a static element: whether it is a static field, static method,
+     * or static class
      *
      * @return true if element is static
      */
@@ -113,8 +107,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns true if the element is a final element: a final field, final
-     * method, or final class
+     * Returns true if the element is a final element: a final field, final method, or final class
      *
      * @return true if the element is final
      */
@@ -129,23 +122,23 @@ public class ElementUtils {
      */
     public static boolean isEffectivelyFinal(Element element) {
         Symbol sym = (Symbol) element;
-        if (sym.getEnclosingElement().getKind() == ElementKind.METHOD &&
-                (sym.getEnclosingElement().flags() & ABSTRACT) != 0) {
+        if (sym.getEnclosingElement().getKind() == ElementKind.METHOD
+                && (sym.getEnclosingElement().flags() & ABSTRACT) != 0) {
             return true;
         }
         return (sym.flags() & (FINAL | EFFECTIVELY_FINAL)) != 0;
     }
 
     /**
-     * Returns the {@code TypeMirror} for usage of Element as a value. It
-     * returns the return type of a method element, the class type of a
-     * constructor, or simply the type mirror of the element itself.
+     * Returns the {@code TypeMirror} for usage of Element as a value. It returns the return type of
+     * a method element, the class type of a constructor, or simply the type mirror of the element
+     * itself.
      *
-     * @return  the type for the element used as a value
+     * @return the type for the element used as a value
      */
     public static TypeMirror getType(Element element) {
         if (element.getKind() == ElementKind.METHOD) {
-            return ((ExecutableElement)element).getReturnType();
+            return ((ExecutableElement) element).getReturnType();
         } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
             return enclosingClass(element).asType();
         } else {
@@ -154,14 +147,10 @@ public class ElementUtils {
     }
 
     /**
-     * Returns the qualified name of the inner most class enclosing
-     * the provided {@code Element}
+     * Returns the qualified name of the inner most class enclosing the provided {@code Element}
      *
-     * @param element
-     *            an element enclosed by a class, or a
-     *            {@code TypeElement}
-     * @return the qualified {@code Name} of the innermost class
-     *         enclosing the element
+     * @param element an element enclosed by a class, or a {@code TypeElement}
+     * @return the qualified {@code Name} of the innermost class enclosing the element
      */
     public static /*@Nullable*/ Name getQualifiedClassName(Element element) {
         if (element.getKind() == ElementKind.PACKAGE) {
@@ -177,13 +166,11 @@ public class ElementUtils {
         return elem.getQualifiedName();
     }
 
-    /**
-     * Returns a verbose name that identifies the element.
-     */
+    /** Returns a verbose name that identifies the element. */
     public static String getVerboseName(Element elt) {
-        if (elt.getKind() == ElementKind.PACKAGE ||
-                elt.getKind().isClass() ||
-                elt.getKind().isInterface()) {
+        if (elt.getKind() == ElementKind.PACKAGE
+                || elt.getKind().isClass()
+                || elt.getKind().isInterface()) {
             return getQualifiedClassName(elt).toString();
         } else {
             return getQualifiedClassName(elt) + "." + elt.toString();
@@ -193,25 +180,23 @@ public class ElementUtils {
     /**
      * Check if the element is an element for 'java.lang.Object'
      *
-     * @param element   the type element
+     * @param element the type element
      * @return true iff the element is java.lang.Object element
      */
     public static boolean isObject(TypeElement element) {
         return element.getQualifiedName().contentEquals("java.lang.Object");
     }
 
-    /**
-     * Returns true if the element is a constant time reference
-     */
+    /** Returns true if the element is a constant time reference */
     public static boolean isCompileTimeConstant(Element elt) {
         return elt != null
-            && (elt.getKind() == ElementKind.FIELD || elt.getKind() == ElementKind.LOCAL_VARIABLE)
-            && ((VariableElement)elt).getConstantValue() != null;
+                && (elt.getKind() == ElementKind.FIELD
+                        || elt.getKind() == ElementKind.LOCAL_VARIABLE)
+                && ((VariableElement) elt).getConstantValue() != null;
     }
 
     /**
-     * Returns true if the element is declared in ByteCode.
-     * Always return false if elt is a package.
+     * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
      */
     public static boolean isElementFromByteCode(Element elt) {
         if (elt == null) {
@@ -231,8 +216,7 @@ public class ElementUtils {
     }
 
     /**
-     * Returns true if the element is declared in ByteCode.
-     * Always return false if elt is a package.
+     * Returns true if the element is declared in ByteCode. Always return false if elt is a package.
      */
     private static boolean isElementFromByteCode(Element elt, Element orig) {
         if (elt == null) {
@@ -242,9 +226,9 @@ public class ElementUtils {
             Symbol.ClassSymbol clss = (Symbol.ClassSymbol) elt;
             if (null != clss.classfile) {
                 // The class file could be a .java file
-                return (clss.classfile.getName().endsWith(".class") ||
-                        clss.classfile.getName().endsWith(".class)") ||
-                        clss.classfile.getName().endsWith(".class)]"));
+                return (clss.classfile.getName().endsWith(".class")
+                        || clss.classfile.getName().endsWith(".class)")
+                        || clss.classfile.getName().endsWith(".class)]"));
             } else {
                 return false;
             }
@@ -252,11 +236,9 @@ public class ElementUtils {
         return isElementFromByteCode(elt.getEnclosingElement(), elt);
     }
 
-    /**
-     * Returns the field of the class
-     */
+    /** Returns the field of the class */
     public static VariableElement findFieldInType(TypeElement type, String name) {
-        for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
+        for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (field.getSimpleName().toString().equals(name)) {
                 return field;
             }
@@ -264,9 +246,10 @@ public class ElementUtils {
         return null;
     }
 
-    public static Set<VariableElement> findFieldsInType(TypeElement type, Collection<String> names) {
+    public static Set<VariableElement> findFieldsInType(
+            TypeElement type, Collection<String> names) {
         Set<VariableElement> results = new HashSet<VariableElement>();
-        for (VariableElement field: ElementFilter.fieldsIn(type.getEnclosedElements())) {
+        for (VariableElement field : ElementFilter.fieldsIn(type.getEnclosedElements())) {
             if (names.contains(field.getSimpleName().toString())) {
                 results.add(field);
             }
@@ -275,28 +258,29 @@ public class ElementUtils {
     }
 
     public static boolean isError(Element element) {
-        return element.getClass().getName().equals("com.sun.tools.javac.comp.Resolve$SymbolNotFoundError");
+        return element.getClass()
+                .getName()
+                .equals("com.sun.tools.javac.comp.Resolve$SymbolNotFoundError");
     }
 
     /**
-     * Does the given element need a receiver for accesses?
-     * For example, an access to a local variable does not require a receiver.
+     * Does the given element need a receiver for accesses? For example, an access to a local
+     * variable does not require a receiver.
      *
      * @param element the element to test
      * @return whether the element requires a receiver for accesses
      */
     public static boolean hasReceiver(Element element) {
-        return (element.getKind().isField() ||
-                element.getKind() == ElementKind.METHOD ||
-                element.getKind() == ElementKind.CONSTRUCTOR)
+        return (element.getKind().isField()
+                        || element.getKind() == ElementKind.METHOD
+                        || element.getKind() == ElementKind.CONSTRUCTOR)
                 && !ElementUtils.isStatic(element);
     }
 
     /**
-     * Determine all type elements for the classes and interfaces referenced
-     * in the extends/implements clauses of the given type element.
-     * TODO: can we learn from the implementation of
-     * com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
+     * Determine all type elements for the classes and interfaces referenced in the
+     * extends/implements clauses of the given type element. TODO: can we learn from the
+     * implementation of com.sun.tools.javac.model.JavacElements.getAllMembers(TypeElement)?
      */
     public static List<TypeElement> getSuperTypes(Elements elements, TypeElement type) {
 
@@ -317,14 +301,14 @@ public class ElementUtils {
             // add it to our superelems set.
             TypeMirror supertypecls = current.getSuperclass();
             if (supertypecls.getKind() != TypeKind.NONE) {
-                TypeElement supercls = (TypeElement) ((DeclaredType)supertypecls).asElement();
+                TypeElement supercls = (TypeElement) ((DeclaredType) supertypecls).asElement();
                 if (!superelems.contains(supercls)) {
                     stack.push(supercls);
                     superelems.add(supercls);
                 }
             }
             for (TypeMirror supertypeitf : current.getInterfaces()) {
-                TypeElement superitf = (TypeElement) ((DeclaredType)supertypeitf).asElement();
+                TypeElement superitf = (TypeElement) ((DeclaredType) supertypeitf).asElement();
                 if (!superelems.contains(superitf)) {
                     stack.push(superitf);
                     superelems.add(superitf);
@@ -342,9 +326,9 @@ public class ElementUtils {
     }
 
     /**
-     * Return all fields declared in the given type or any superclass/interface.
-     * TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement)
-     * instead of our own getSuperTypes?
+     * Return all fields declared in the given type or any superclass/interface. TODO: should this
+     * use javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own
+     * getSuperTypes?
      */
     public static List<VariableElement> getAllFieldsIn(Elements elements, TypeElement type) {
         List<VariableElement> fields = new ArrayList<VariableElement>();
@@ -357,10 +341,9 @@ public class ElementUtils {
     }
 
     /**
-     * Return all methods declared in the given type or any superclass/interface.
-     * Note that no constructors will be returned.
-     * TODO: should this use javax.lang.model.util.Elements.getAllMembers(TypeElement)
-     * instead of our own getSuperTypes?
+     * Return all methods declared in the given type or any superclass/interface. Note that no
+     * constructors will be returned. TODO: should this use
+     * javax.lang.model.util.Elements.getAllMembers(TypeElement) instead of our own getSuperTypes?
      */
     public static List<ExecutableElement> getAllMethodsIn(Elements elements, TypeElement type) {
         List<ExecutableElement> meths = new ArrayList<ExecutableElement>();
@@ -375,8 +358,8 @@ public class ElementUtils {
 
     public static boolean isTypeDeclaration(Element elt) {
         switch (elt.getKind()) {
-            // These tree kinds are always declarations.  Uses of the declared
-            // types have tree kind IDENTIFIER.
+                // These tree kinds are always declarations.  Uses of the declared
+                // types have tree kind IDENTIFIER.
             case ANNOTATION_TYPE:
             case CLASS:
             case ENUM:
@@ -392,17 +375,16 @@ public class ElementUtils {
     /**
      * Check that a method Element matches a signature.
      *
-     * Note: Matching the receiver type must be done elsewhere as
-     * the Element receiver type is only populated when annotated.
+     * <p>Note: Matching the receiver type must be done elsewhere as the Element receiver type is
+     * only populated when annotated.
      *
      * @param method the method Element
      * @param methodName the name of the method
      * @param parameters the formal parameters' Classes
      * @return true if the method matches
      */
-    public static boolean matchesElement(ExecutableElement method,
-            String methodName,
-            Class<?> ... parameters) {
+    public static boolean matchesElement(
+            ExecutableElement method, String methodName, Class<?>... parameters) {
 
         if (!method.getSimpleName().toString().equals(methodName)) {
             return false;
@@ -412,8 +394,11 @@ public class ElementUtils {
             return false;
         } else {
             for (int i = 0; i < method.getParameters().size(); i++) {
-                if (!method.getParameters().get(i).asType().toString().equals(
-                        parameters[i].getName())) {
+                if (!method.getParameters()
+                        .get(i)
+                        .asType()
+                        .toString()
+                        .equals(parameters[i].getName())) {
 
                     return false;
                 }

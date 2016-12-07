@@ -5,23 +5,18 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.framework.qual.InheritedAnnotation;
 
 /**
- * The method neither acquires nor releases locks, nor do any of the
- * methods that it calls.
- * More specifically, the method is not {@code synchronized}, it
- * contains no {@code synchronized} blocks, it contains no calls to
- * {@code lock} or {@code unlock}, and it contains no calls to other
+ * The method neither acquires nor releases locks, nor do any of the methods that it calls. More
+ * specifically, the method is not {@code synchronized}, it contains no {@code synchronized} blocks,
+ * it contains no calls to {@code lock} or {@code unlock}, and it contains no calls to other
  * non-{@code @LockingFree} methods.
- * <p>
  *
- * {@code @LockingFree} provides a stronger guarantee than
- * {@code @}{@link ReleasesNoLocks} and a weaker guarantee than
- * {@code @}{@link SideEffectFree}.
+ * <p>{@code @LockingFree} provides a stronger guarantee than {@code @}{@link ReleasesNoLocks} and a
+ * weaker guarantee than {@code @}{@link SideEffectFree}.
  *
  * @see MayReleaseLocks
  * @see ReleasesNoLocks
@@ -33,6 +28,5 @@ import org.checkerframework.framework.qual.InheritedAnnotation;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @InheritedAnnotation
-@Target({ ElementType.METHOD, ElementType.CONSTRUCTOR })
-public @interface LockingFree {
-}
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+public @interface LockingFree {}

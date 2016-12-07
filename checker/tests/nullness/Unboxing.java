@@ -1,6 +1,3 @@
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-
 import org.checkerframework.checker.nullness.qual.*;
 
 class Unboxing {

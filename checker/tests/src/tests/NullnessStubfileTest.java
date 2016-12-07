@@ -1,15 +1,15 @@
 package tests;
 
 import java.io.File;
-
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-public class NullnessStubfileTest extends CheckerFrameworkTest {
+public class NullnessStubfileTest extends CheckerFrameworkPerDirectoryTest {
 
-    public NullnessStubfileTest(File testFile) {
+    public NullnessStubfileTest(List<File> testFiles) {
         super(
-                testFile,
+                testFiles,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
                 "nullness",
                 "-Anomsgtext",
@@ -22,7 +22,6 @@ public class NullnessStubfileTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"nullness-stubfile"};
+        return new String[] {"nullness-stubfile"};
     }
-
 }

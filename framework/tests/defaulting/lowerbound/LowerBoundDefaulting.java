@@ -2,10 +2,11 @@ package defaulting.lowerbound;
 
 // this tests sole purpose is to check that implicit and explicit LOWER_BOUND defaulting work as expected
 
-import tests.defaulting.LowerBoundQual.*;
+import testlib.defaulting.LowerBoundQual.*;
 
-class MyArrayList<MAL extends String>{}
-class MyExplicitArray<MEA extends String>{}
+class MyArrayList<MAL extends String> {}
+
+class MyExplicitArray<MEA extends String> {}
 
 public class LowerBoundDefaulting {
 
@@ -13,13 +14,17 @@ public class LowerBoundDefaulting {
     public <IMP1 extends String> void implicitsTypeVar() {
 
         // should fail because @LB_IMPLICIT is below @LB_TOP
-        //:: error: (assignment.type.incompatible)
-        @LB_TOP MyArrayList<@LB_TOP ? extends @LB_TOP String> itLowerBoundIncompatible = new MyArrayList<IMP1>();
+        @LB_TOP MyArrayList<@LB_TOP ? extends @LB_TOP String> itLowerBoundIncompatible =
+                //:: error: (assignment.type.incompatible)
+                new MyArrayList<IMP1>();
 
-        //:: error: (assignment.type.incompatible) :: error: (type.argument.type.incompatible)
-        @LB_TOP MyArrayList<@LB_EXPLICIT ? extends @LB_TOP String> itLowerBoundStillIncompatible = new MyArrayList<IMP1>();
+        //:: error: (type.argument.type.incompatible)
+        @LB_TOP MyArrayList<@LB_EXPLICIT ? extends @LB_TOP String> itLowerBoundStillIncompatible =
+                //:: error: (assignment.type.incompatible)
+                new MyArrayList<IMP1>();
 
-        @LB_TOP MyArrayList<@LB_IMPLICIT ? extends @LB_TOP String> itLowerBoundCompatible = new MyArrayList<IMP1>();
+        @LB_TOP MyArrayList<@LB_IMPLICIT ? extends @LB_TOP String> itLowerBoundCompatible =
+                new MyArrayList<IMP1>();
     }
 
     public void implicitsWildcard(MyArrayList<?> myArrayList) {
@@ -31,8 +36,8 @@ public class LowerBoundDefaulting {
         //:: error: (assignment.type.incompatible) :: error: (type.argument.type.incompatible)
         @LB_TOP MyArrayList<@LB_EXPLICIT ? extends @LB_TOP String> iwLowerBoundCompatible = myArrayList;
 
-        @LB_TOP MyArrayList<@LB_IMPLICIT ? extends @LB_TOP String> iwLowerBoundStillCompatible = myArrayList;
-
+        @LB_TOP MyArrayList<@LB_IMPLICIT ? extends @LB_TOP String> iwLowerBoundStillCompatible =
+                myArrayList;
     }
 
     public void implicitExtendBoundedWildcard(MyArrayList<? extends String> iebList) {
@@ -58,6 +63,5 @@ public class LowerBoundDefaulting {
 
         //:: error: (assignment.type.incompatible)
         @LB_TOP MyArrayList<@LB_TOP ? super @LB_IMPLICIT String> iebLowerBoundCompatible = elbList;
-
     }
 }

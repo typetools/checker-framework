@@ -1,10 +1,7 @@
-import tests.util.Odd;
-
+import testlib.util.Odd;
 
 public class Constructors {
-    public Constructors(Constructors con) {
-
-    }
+    public Constructors(Constructors con) {}
 
     public void testConstructors() {
         Constructors c = null;
@@ -12,28 +9,30 @@ public class Constructors {
     }
 
     // Test anonymous constructors
-    public Constructors(@Odd String s, int i) { }
+    public Constructors(@Odd String s, int i) {}
 
     public void testStaticAnonymousConstructor() {
         String notOdd = "m";
 
         //:: error: (argument.type.incompatible)
-        new Constructors(notOdd, 0);        // error
+        new Constructors(notOdd, 0); // error
         //:: error: (argument.type.incompatible)
-        new Constructors(notOdd, 0) { };    // error
+        new Constructors(notOdd, 0) {}; // error
     }
 
     private class MyConstructors extends Constructors {
-        public MyConstructors(@Odd String s) { super(s, 0); }
+        public MyConstructors(@Odd String s) {
+            super(s, 0);
+        }
     }
 
     public static void testAnonymousConstructor() {
-        Constructors m = new Constructors(null) { };
+        Constructors m = new Constructors(null) {};
         String notOdd = "m";
         //:: error: (argument.type.incompatible)
-        m.new MyConstructors(notOdd);       // error
+        m.new MyConstructors(notOdd); // error
         //:: error: (argument.type.incompatible)
-        m.new MyConstructors(notOdd) { };   // error
+        m.new MyConstructors(notOdd) {}; // error
     }
 
     // Tests that should pass
@@ -41,10 +40,10 @@ public class Constructors {
         @Odd String odd = null;
 
         new Constructors(odd, 0);
-        new Constructors(odd, 0) { };
+        new Constructors(odd, 0) {};
 
-        Constructors m = new Constructors(null) { };
+        Constructors m = new Constructors(null) {};
         m.new MyConstructors(odd);
-        m.new MyConstructors(odd) { };
+        m.new MyConstructors(odd) {};
     }
 }

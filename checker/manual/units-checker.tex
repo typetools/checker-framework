@@ -168,9 +168,9 @@ Here is an example of a new unit annotation.
 \begin{alltt}
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@SubtypeOf( \ttlcb{} Time.class \ttrcb{} )
+@SubtypeOf(\ttlcb{}Time.class\ttrcb{})
 @UnitsMultiple(quantity=s.class, prefix=Prefix.nano)
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
+@Target(\{ElementType.TYPE_USE, ElementType.TYPE_PARAMETER\})
 public @interface ns \ttlcb{}\ttrcb{}
 \end{alltt}
 
@@ -184,7 +184,7 @@ Most annotation definitions do not have a \<@UnitsMultiple> meta-annotation.
 
 Note that all custom annotations must have the
 \<@Target({ElementType.TYPE\_USE})> meta-annotation. See section
-\ref{define-type-qualifiers}.
+\ref{creating-define-type-qualifiers}.
 
 To take full advantage of the additional unit qualifier, you need to
 do two additional steps.
@@ -255,14 +255,14 @@ annotations through the \code{-Aunits} option, using a comma-no-space-separated
 notation:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.units.UnitsChecker \ttbs
         -Aunits=\textit{myModule.qual.MyUnit},\textit{myModule.qual.MyOtherUnit} MyFile.java ...
 \end{alltt}
 
 The annotations listed in \code{-Aunits} must be accessible to
 the compiler during compilation in the classpath.  In other words, they must
-already be compiled (and, typically, be on the javac bootclasspath)
+already be compiled (and, typically, be on the javac classpath)
 before you run the Units Checker with \code{javac}.  It
 is not sufficient to supply their source files on the command line.
 
@@ -272,7 +272,7 @@ that contain units qualifiers through the \code{-AunitsDirs} option,
 using a colon-no-space-separated notation. For example:
 
 \begin{alltt}
-  javac -Xbootclasspath/p:\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
+  javac -classpath \textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} \ttbs
         -processor org.checkerframework.checker.units.UnitsChecker \ttbs
         -AunitsDirs=\textit{/full/path/to/myProject/bin}:\textit{/full/path/to/myLibrary/bin} MyFile.java ...
 \end{alltt}

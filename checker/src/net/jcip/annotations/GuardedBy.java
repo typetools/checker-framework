@@ -1,6 +1,10 @@
 package net.jcip.annotations;
 
-import java.lang.annotation.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import org.checkerframework.checker.lock.qual.LockHeld;
 import org.checkerframework.framework.qual.PreconditionAnnotation;
 
@@ -14,15 +18,15 @@ import org.checkerframework.framework.qual.PreconditionAnnotation;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD, ElementType.FIELD })
+@Target({ElementType.METHOD, ElementType.FIELD})
 @PreconditionAnnotation(qualifier = LockHeld.class)
 public @interface GuardedBy {
     /**
      * The Java expressions that need to be held.
      *
      * @see <a
-     *      href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
-     *      of Java expressions</a>
+     *     href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#java-expressions-as-arguments">Syntax
+     *     of Java expressions</a>
      */
     String[] value() default {};
 }

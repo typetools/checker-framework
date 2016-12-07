@@ -10,11 +10,12 @@
 # be available from the $PATH.
 
 # This script receives as arguments:
+# 0. Any number of cmd-line arguments to insert-annotations-to-source (optional).
 # 1. Processor's name (in any form recognized by CF's javac -processor argument).
 # 2. Classpath (target project's classpath).
 # 3. Any number of extra processor arguments to be passed to the checker.
-# 4. List of paths to .jaif files -- used as input (optional).
-# 5. List of paths to .java files in a program.
+# 4. Any number of paths to .jaif files -- used as input (optional).
+# 5. Any number of paths to .java files in a program.
 
 # Example of usage:
 # ./infer-and-annotate.sh "LockChecker,NullnessChecker" \
@@ -46,8 +47,11 @@ TEMP_DIR=build/temp-whole-program-inference-output
 PREV_ITERATION_DIR=build/prev-whole-program-inference
 
 debug=
+interactive=
 # For debugging
 # debug=1
+# Require user confirmation before running each command
+# interactive=1
 
 # This function separates extra arguments passed to the checker from Java files
 # received as arguments.
@@ -55,6 +59,23 @@ debug=
 # that every argument starts with a hyphen. It means one cannot pass arguments
 # such as -processorpath and -source, which are followed by a value.
 read_input() {
+
+    # Collect command-line arguments that come before the preprocessor.
+    # Assumes that every command line argument starts with a hyphen.
+    insert_to_source_args=""
+    for i in "$@"
+    do
+        case "$1" in
+            -*)
+                insert_to_source_args="$insert_to_source_args $1"
+                shift
+            ;;
+            *)
+                break
+            ;;
+        esac
+    done
+
     # First two arguments are processor and cp.
     processor=$1
     cp=$2
@@ -107,8 +128,8 @@ infer_and_annotate() {
 
         # Runs CF's javac
         command="${CHECKERFRAMEWORK}/checker/bin/javac -d $TEMP_DIR/ -cp $cp -processor $processor -Ainfer -Awarns -Xmaxwarns 10000 $extra_args $java_files"
-        if [ $debug ]; then
-            echo ${command}
+        echo "About to run: ${command}"
+        if [ $interactive ]; then
             echo "Press any key to run command... "
             read _
         fi
@@ -124,7 +145,7 @@ infer_and_annotate() {
         if [ ! `find $WHOLE_PROGRAM_INFERENCE_DIR -prune -empty` ]
         then
             # Only insert annotations if there is at least one .jaif file.
-            insert-annotations-to-source -i `find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif"` $java_files
+            insert-annotations-to-source $insert_to_source_args -i `find $WHOLE_PROGRAM_INFERENCE_DIR -name "*.jaif"` $java_files
         fi
         # Updates DIFF_JAIF variable.
         # diff returns exit-value 1 when there are differences between files.
@@ -132,7 +153,9 @@ infer_and_annotate() {
         # in its header. To avoid this problem, we add the "|| true" below.
         DIFF_JAIF="$(diff -qr $PREV_ITERATION_DIR $WHOLE_PROGRAM_INFERENCE_DIR || true)"
     done
-    clean
+    if [ ! $debug ]; then
+        clean
+    fi
 }
 
 clean() {

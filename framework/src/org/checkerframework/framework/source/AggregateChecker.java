@@ -1,5 +1,9 @@
 package org.checkerframework.framework.source;
 
+import com.sun.source.util.TreePath;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -8,43 +12,30 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
-import com.sun.source.util.TreePath;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Log;
-
 /**
- * An aggregate checker that packages multiple checkers together.  The
- * resulting checker invokes the component checkers in turn on the processed
- * files.
- * <p>
+ * An aggregate checker that packages multiple checkers together. The resulting checker invokes the
+ * component checkers in turn on the processed files.
  *
- * There is no communication, interaction, or cooperation between the
- * component checkers, even to the extent of being able to read one
- * another's qualifiers.  An aggregate checker is merely shorthand to
- * invoke a sequence of checkers.
- * <p>
+ * <p>There is no communication, interaction, or cooperation between the component checkers, even to
+ * the extent of being able to read one another's qualifiers. An aggregate checker is merely
+ * shorthand to invoke a sequence of checkers.
  *
- * This class delegates {@code AbstractTypeProcessor} responsibilities to each
- * component checker.
- * <p>
+ * <p>This class delegates {@code AbstractTypeProcessor} responsibilities to each component checker.
  *
- * Checker writers need to subclass this class and only override
- * {@link #getSupportedCheckers()} to indicate the classes of the checkers
- * to be bundled.
+ * <p>Checker writers need to subclass this class and only override {@link #getSupportedCheckers()}
+ * to indicate the classes of the checkers to be bundled.
  */
 public abstract class AggregateChecker extends SourceChecker {
 
     protected final List<SourceChecker> checkers;
 
     /**
-     * Returns the list of supported checkers to be run together.
-     * Subclasses need to override this method.
+     * Returns the list of supported checkers to be run together. Subclasses need to override this
+     * method.
      */
     protected abstract Collection<Class<? extends SourceChecker>> getSupportedCheckers();
 
@@ -63,13 +54,11 @@ public abstract class AggregateChecker extends SourceChecker {
         }
     }
 
-    /** processingEnv needs to be set on each checker since
-        we are not calling init on the checker, which leaves
-        it null.
-        If one of checkers is an AggregateChecker, its
-        visitors will try use checker's processing env which
-        should not be null.
-    **/
+    /**
+     * processingEnv needs to be set on each checker since we are not calling init on the checker,
+     * which leaves it null. If one of checkers is an AggregateChecker, its visitors will try use
+     * checker's processing env which should not be null.
+     */
     @Override
     protected void setProcessingEnvironment(ProcessingEnvironment env) {
         super.setProcessingEnvironment(env);
@@ -108,7 +97,7 @@ public abstract class AggregateChecker extends SourceChecker {
     // AbstractTypeProcessor delegation
     @Override
     public final void typeProcess(TypeElement element, TreePath tree) {
-        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         Log log = Log.instance(context);
         if (log.nerrors > this.errsOnLastExit) {
             // If there is a Java error, do not perform any
@@ -142,7 +131,8 @@ public abstract class AggregateChecker extends SourceChecker {
         for (SourceChecker checker : checkers) {
             options.addAll(checker.getSupportedOptions());
         }
-        options.addAll(expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
+        options.addAll(
+                expandCFOptions(Arrays.asList(this.getClass()), options.toArray(new String[0])));
         return options;
     }
 

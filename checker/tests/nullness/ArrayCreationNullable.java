@@ -1,10 +1,9 @@
-import org.checkerframework.framework.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
+import org.checkerframework.framework.qual.DefaultQualifier;
 
 /**
- * The component type of newly created arrays is always @Nullable,
- * also for boxed types.
- * This is an expanded version of the test case for Issue 151:
+ * The component type of newly created arrays is always @Nullable, also for boxed types. This is an
+ * expanded version of the test case for Issue 151:
  * https://github.com/typetools/checker-framework/issues/151
  */
 public class ArrayCreationNullable {
@@ -12,13 +11,13 @@ public class ArrayCreationNullable {
     void testObjectArray(@NonNull Object @NonNull [] p) {
         @NonNull Object @NonNull [] objs;
         //:: error: (new.array.type.invalid)
-        objs = new Object [10];
+        objs = new Object[10];
         objs[0].toString();
         //:: error: (assignment.type.incompatible)
-        objs = new @Nullable Object [10];
+        objs = new @Nullable Object[10];
         objs[0].toString();
         //:: error: (new.array.type.invalid)
-        objs = new @NonNull Object [10];
+        objs = new @NonNull Object[10];
         objs[0].toString();
         // Allowed.
         objs = p;
@@ -27,51 +26,51 @@ public class ArrayCreationNullable {
 
     @DefaultQualifier(NonNull.class)
     void testObjectArray2() {
-        Object [] objs;
+        Object[] objs;
         // Even if the default qualifier is NonNull, array component
         // types must be Nullable.
         //:: error: (new.array.type.invalid)
-        objs = new Object [10];
+        objs = new Object[10];
         objs[0].toString();
     }
 
     void testInitializers() {
-        Object []  objs = { 1, 2, 3 };
-        objs = new Integer[] { 1, 2, 3 };
-        objs = new Object [] { new Object(), "ha" };
+        Object[] objs = {1, 2, 3};
+        objs = new Integer[] {1, 2, 3};
+        objs = new Object[] {new Object(), "ha"};
 
-        @NonNull Object [] objs2 = {};
+        @NonNull Object[] objs2 = {};
         //:: error: (assignment.type.incompatible)
-        objs2 = new Integer[] { 1, null, 3 };
+        objs2 = new Integer[] {1, null, 3};
         //:: error: (assignment.type.incompatible)
-        objs2 = new Object[] { new Object(), "ha", null };
+        objs2 = new Object[] {new Object(), "ha", null};
 
-        @NonNull Object [] objs3 = new Integer[] { 1, 2, 3 };
-        objs3 = new Integer[] { 1, 2, 3 };
+        @NonNull Object[] objs3 = new Integer[] {1, 2, 3};
+        objs3 = new Integer[] {1, 2, 3};
         //:: error: (assignment.type.incompatible)
-        objs3 = new Integer[] { 1, 2, 3, null };
+        objs3 = new Integer[] {1, 2, 3, null};
 
-        (new Integer[] { 1, 2, 3 })[0].toString();
+        (new Integer[] {1, 2, 3})[0].toString();
         //:: error: (dereference.of.nullable)
-        (new Integer[] { 1, 2, 3, null })[0].toString();
+        (new Integer[] {1, 2, 3, null})[0].toString();
 
         // The assignment context is used to infer a @Nullable component type.
-        @Nullable Object [] objs4 = new Integer[] { 1, 2, 3 };
+        @Nullable Object[] objs4 = new Integer[] {1, 2, 3};
         //:: error: (dereference.of.nullable)
         objs4[0].toString();
-        objs4 = new Integer[] { 1, 2, 3 };
+        objs4 = new Integer[] {1, 2, 3};
     }
 
     void testStringArray(@NonNull String @NonNull [] p) {
         @NonNull String @NonNull [] strs;
         //:: error: (new.array.type.invalid)
-        strs = new String [10];
+        strs = new String[10];
         strs[0].toString();
         //:: error: (assignment.type.incompatible)
-        strs = new @Nullable String [10];
+        strs = new @Nullable String[10];
         strs[0].toString();
         //:: error: (new.array.type.invalid)
-        strs = new @NonNull String [10];
+        strs = new @NonNull String[10];
         strs[0].toString();
         // Allowed.
         strs = p;
@@ -81,13 +80,13 @@ public class ArrayCreationNullable {
     void testIntegerArray(@NonNull Integer @NonNull [] p) {
         @NonNull Integer @NonNull [] ints;
         //:: error: (new.array.type.invalid)
-        ints = new Integer [10];
+        ints = new Integer[10];
         ints[0].toString();
         //:: error: (assignment.type.incompatible)
-        ints = new @Nullable Integer [10];
+        ints = new @Nullable Integer[10];
         ints[0].toString();
         //:: error: (new.array.type.invalid)
-        ints = new @NonNull Integer [10];
+        ints = new @NonNull Integer[10];
         ints[0].toString();
         // Allowed.
         ints = p;
@@ -132,7 +131,8 @@ public class ArrayCreationNullable {
         //:: error: (new.array.type.invalid)
         oaa2 = new Object @NonNull [10] @NonNull [10];
 
-        @MonotonicNonNull Object @NonNull [] @MonotonicNonNull [] oaa3 = new @MonotonicNonNull Object @NonNull [10] @MonotonicNonNull [10];
+        @MonotonicNonNull Object @NonNull [] @MonotonicNonNull [] oaa3 =
+                new @MonotonicNonNull Object @NonNull [10] @MonotonicNonNull [10];
         oaa3[0] = new @MonotonicNonNull Object[4];
         //:: error: (assignment.type.incompatible)
         oaa3[0] = null;
@@ -141,7 +141,7 @@ public class ArrayCreationNullable {
     }
 
     @PolyNull Object[] testPolyNull(@PolyNull Object[] in) {
-        @PolyNull Object [] out = new @PolyNull Object [in.length];
+        @PolyNull Object[] out = new @PolyNull Object[in.length];
         for (int i = 0; i < in.length; ++i) {
             if (in[i] == null) {
                 out[i] = null;
@@ -168,7 +168,7 @@ public class ArrayCreationNullable {
     }
 
     //:: error: (new.array.type.invalid)
-    @NonNull Object @NonNull [] oa0 = new Object [10];
+    @NonNull Object @NonNull [] oa0 = new Object[10];
 
     // OK
     @MonotonicNonNull Object @NonNull [] loa0 = new @MonotonicNonNull Object @NonNull [10];
@@ -180,9 +180,8 @@ public class ArrayCreationNullable {
 
     public static void main(String[] args) {
         ArrayCreationNullable e = new ArrayCreationNullable();
-        Integer[] ints = new Integer[] { 5, 6 };
+        Integer[] ints = new Integer[] {5, 6};
         // This would result in a NPE, if there were no error.
         e.testIntegerArray(ints);
     }
-
 }

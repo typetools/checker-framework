@@ -4,21 +4,25 @@ package tests;
 // https://github.com/typetools/checker-framework/issues/343
 // This exists to just run the NestedAggregateChecker
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
-
 import java.io.File;
-
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+import testlib.NestedAggregateChecker;
 
-public class NestedAggregateCheckerTest extends CheckerFrameworkTest {
+public class NestedAggregateCheckerTest extends CheckerFrameworkPerDirectoryTest {
 
-    public NestedAggregateCheckerTest(File testFile) {
-        super(testFile, NestedAggregateChecker.class, "", "-Anomsgtext", "-AcheckPurityAnnotations");
+    public NestedAggregateCheckerTest(List<File> testFiles) {
+        super(
+                testFiles,
+                NestedAggregateChecker.class,
+                "",
+                "-Anomsgtext",
+                "-AcheckPurityAnnotations");
     }
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"aggregate", "all-systems"};
+        return new String[] {"aggregate", "all-systems"};
     }
-
 }

@@ -1,6 +1,9 @@
 // Test case for Issue 263:
 // https://github.com/typetools/checker-framework/issues/263
 
+// Suppression required because of Issue 724
+// https://github.com/typetools/checker-framework/issues/724
+@SuppressWarnings({"regex", "tainting"})
 abstract class Outer<T> {
 
     public class Inner {
@@ -10,10 +13,12 @@ abstract class Outer<T> {
             this.t = t;
         }
 
-        T get() { return t; }
+        T get() {
+            return t;
+        }
     }
 
-    abstract public Inner getInner();
+    public abstract Inner getInner();
 }
 
 class Harness {
@@ -23,7 +28,7 @@ class Harness {
 
     Outer<String> outer;
 
-    public void context(  ) {
+    public void context() {
         String s = outer.getInner().get();
     }
 }

@@ -7,7 +7,7 @@
     <name>Checker Framework</name>
     <url>http://checkerframework.org</url>
     <description>
-        The Checker Framework enhances Java’s type system to
+        The Checker Framework enhances Java's type system to
         make it more powerful and useful. This lets software developers
         detect and prevent errors in their Java programs.
         The Checker Framework includes compiler plug-ins ("checkers")
@@ -28,7 +28,7 @@
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/bin/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->2.0.1<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.1.6<!-- /checker-framework-version --></version>
 
     <scm>
         <url>https://github.com/typetools/checker-framework.git</url>

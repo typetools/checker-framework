@@ -1,32 +1,25 @@
-import tests.reflection.qual.ReflectBottom;
-import tests.reflection.qual.Top;
-import tests.reflection.qual.Sibling1;
-import tests.reflection.qual.Sibling2;
-
 import java.lang.reflect.Method;
+import testlib.reflection.qual.ReflectBottom;
+import testlib.reflection.qual.Sibling1;
+import testlib.reflection.qual.Sibling2;
+import testlib.reflection.qual.Top;
 
 public class AnonymousClassTest {
     /**
      * To build/run outside of the JUnit tests:
      *
-     * Build with $CHECKERFRAMEWOKR/framework/tests/build/ on the classpath.
-     * Need to either use Java 8 or the langtools compiler,
-     * because annotations on cast are used.
+     * <p>Build with $CHECKERFRAMEWOKR/framework/tests/build/ on the classpath. Need to either use
+     * Java 8 or the langtools compiler, because annotations on cast are used.
      *
-     * java AnonymousClassTest
-     * MyClass$1.getSib1()
-     * MyClass$1.setSib1()
-     * MyClass$1.setSib1()
-     * MyClass$1.setSib2()
-     * MyClass$1.setSib2()
-     * MyClass$1.getSib2()
+     * <p>java AnonymousClassTest MyClass$1.getSib1() MyClass$1.setSib1() MyClass$1.setSib1()
+     * MyClass$1.setSib2() MyClass$1.setSib2() MyClass$1.getSib2()
      */
     public static void main(String[] args) {
-       AnonymousClassTest act = new AnonymousClassTest();
-       act.returnTypePass();
-       act.argumentTypePass();
-       act.argumentTypeFail();
-       act.returnTypeFail();
+        AnonymousClassTest act = new AnonymousClassTest();
+        act.returnTypePass();
+        act.argumentTypePass();
+        act.argumentTypeFail();
+        act.returnTypeFail();
     }
 
     @Sibling1 int sibling1;
@@ -44,23 +37,21 @@ public class AnonymousClassTest {
         }
     }
 
-
     public void argumentTypePass() {
         String str = "setSib1";
         @Sibling1 int val1 = sibling1;
         @Sibling1 Integer val2 = val1;
         try {
             Class<?> c = Class.forName("AnonymousClassTest$1");
-            Method m = c.getMethod(str, new Class[] { int.class });
-          //TODO: Can we resolve anonymous classes?
+            Method m = c.getMethod(str, new Class[] {int.class});
+            //TODO: Can we resolve anonymous classes?
             //:: error: (argument.type.incompatible)
             m.invoke(anonymous, val1);
-          //TODO: Can we resolve anonymous classes?
+            //TODO: Can we resolve anonymous classes?
             //:: error: (argument.type.incompatible)
             m.invoke(anonymous, val2);
         } catch (Exception ignore) {
             ignore.printStackTrace();
-
         }
     }
 
@@ -70,14 +61,13 @@ public class AnonymousClassTest {
         @Sibling1 Integer val2 = val1;
         try {
             Class<?> c = Class.forName("AnonymousClassTest$1");
-            Method m = c.getMethod(str, new Class[] { int.class });
+            Method m = c.getMethod(str, new Class[] {int.class});
             //:: error: (argument.type.incompatible)
             m.invoke(anonymous, val1);
-          //:: error: (argument.type.incompatible)
+            //:: error: (argument.type.incompatible)
             m.invoke(anonymous, val2);
         } catch (Exception ignore) {
             ignore.printStackTrace();
-
         }
     }
 
@@ -92,34 +82,35 @@ public class AnonymousClassTest {
         }
     }
 
+    public @ReflectBottom MyClass anonymous =
+            new @ReflectBottom MyClass() {
 
+                public @Sibling1 int getSib1() {
+                    System.out.println("MyClass$1.getSib1()");
+                    return 1;
+                }
 
+                public @Sibling2 int getSib2() {
+                    System.out.println("MyClass$1.getSib2()");
+                    return 1;
+                }
 
-    public @ReflectBottom MyClass anonymous = new @ReflectBottom MyClass() {
+                public void setSib1(@Sibling1 int a) {
+                    System.out.println("MyClass$1.setSib1()");
+                }
 
-        public @Sibling1 int getSib1() {
-            System.out.println("MyClass$1.getSib1()");
-            return 1;
-        }
-        public @Sibling2 int getSib2() {
-            System.out.println("MyClass$1.getSib2()");
-            return 1;
-        }
+                public void setSib2(@Sibling2 int a) {
+                    System.out.println("MyClass$1.setSib2()");
+                }
+            };
 
-        public void setSib1(@Sibling1 int a) {
-            System.out.println("MyClass$1.setSib1()");
-        }
-        public void setSib2(@Sibling2 int a) {
-            System.out.println("MyClass$1.setSib2()");
-        }
-
-    };
     class MyClass {
 
         public @Top int getSib1() {
             System.out.println("MyClass.getSib1()");
             return 1;
         }
+
         public @Top int getSib2() {
             System.out.println("MyClass.getSib1()");
             return 1;
@@ -128,6 +119,7 @@ public class AnonymousClassTest {
         public void setSib1(@ReflectBottom int a) {
             System.out.println("MyClass.setSib1()");
         }
+
         public void setSib2(@ReflectBottom int a) {
             System.out.println("MyClass.setSib2()");
         }

@@ -5,21 +5,17 @@ import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.nullness.qual.*;
 */
 
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.AnnotatedFor;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.util.CFContext;
-import org.checkerframework.framework.util.CheckerMain;
-import org.checkerframework.framework.util.OptionConfiguration;
-import org.checkerframework.javacutil.AbstractTypeProcessor;
-import org.checkerframework.javacutil.AnnotationProvider;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorHandler;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
@@ -37,7 +33,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Pattern;
-
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -51,58 +46,58 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import javax.tools.Diagnostic.Kind;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
-import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Log;
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.qual.AnnotatedFor;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.util.CFContext;
+import org.checkerframework.framework.util.CheckerMain;
+import org.checkerframework.framework.util.OptionConfiguration;
+import org.checkerframework.javacutil.AbstractTypeProcessor;
+import org.checkerframework.javacutil.AnnotationProvider;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorHandler;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
- * An abstract annotation processor designed for implementing a
- * source-file checker for a JSR-308 conforming compiler plug-in. It provides an
- * interface to {@code javac}'s annotation processing API, routines for error
- * reporting via the JSR 199 compiler API, and an implementation for using a
+ * An abstract annotation processor designed for implementing a source-file checker for a JSR-308
+ * conforming compiler plug-in. It provides an interface to {@code javac}'s annotation processing
+ * API, routines for error reporting via the JSR 199 compiler API, and an implementation for using a
  * {@link SourceVisitor} to perform the type-checking.
  *
- * <p>
- *
- * Subclasses must implement the following methods: (TODO: update the list)
+ * <p>Subclasses must implement the following methods: (TODO: update the list)
  *
  * <ul>
- *  <li>{@link SourceChecker#getMessages} (for type-qualifier specific error messages)
- *  <li>{@link SourceChecker#createSourceVisitor} (for a custom {@link SourceVisitor})
- *  <li>{@link SourceChecker#getSuppressWarningsKeys} (for honoring
- *      {@literal @}{link SuppressWarnings} annotations)
+ *   <li>{@link SourceChecker#getMessages} (for type-qualifier specific error messages)
+ *   <li>{@link SourceChecker#createSourceVisitor} (for a custom {@link SourceVisitor})
+ *   <li>{@link SourceChecker#getSuppressWarningsKeys} (for honoring {@literal @}{link
+ *       SuppressWarnings} annotations)
  * </ul>
  *
- * Most type-checker plug-ins will want to extend {@link BaseTypeChecker},
- * instead of this class.  Only checkers that require annotated types but not
- * subtype checking (e.g. for testing purposes) should extend this.
- * Non-type checkers (e.g. for enforcing coding styles) should extend
- * {@link AbstractProcessor} (or even this class) as the Checker Framework is
- * not designed for such checkers.
+ * Most type-checker plug-ins will want to extend {@link BaseTypeChecker}, instead of this class.
+ * Only checkers that require annotated types but not subtype checking (e.g. for testing purposes)
+ * should extend this. Non-type checkers (e.g. for enforcing coding styles) should extend {@link
+ * AbstractProcessor} (or even this class) as the Checker Framework is not designed for such
+ * checkers.
  */
-
 @SupportedOptions({
     // When adding a new standard option:
     // 1. Add a brief blurb here about the use case
     //    and a pointer to one prominent use of the option.
     // 2. Update the Checker Framework manual:
-    //     * introduction.tex contains an overview of all options, which
-    //       should be in the same order as this source code file.
+    //     * checker/manual/introduction.tex contains a list of all options,
+    //       which should be in the same order as this source code file.
     //     * a specific section should contain a detailed discussion.
-
 
     ///
     /// Unsound checking: ignore some errors
     ///
+
+    // A comma-separated list of warnings to suppress
+    // org.checkerframework.framework.source.SourceChecker.createSuppressWarnings
+    "suppressWarnings",
 
     // Set inclusion/exclusion of type uses or definitions
     // org.checkerframework.framework.source.SourceChecker.shouldSkipUses and similar
@@ -111,25 +106,30 @@ import com.sun.tools.javac.util.Log;
     "skipDefs",
     "onlyDefs",
 
-    // A comma-separated list of warnings to suppress
-    // org.checkerframework.framework.source.SourceChecker.createSuppressWarnings
-    "suppressWarnings",
-
-    // With each warning, in addition to the concrete error key,
-    // output the suppress warning keys that can be used to
-    // suppress that warning.
-    "showSuppressWarningKeys",
-
-    // Unsoundly ignore side effects
-    "assumeSideEffectFree",
-
     // Whether to ignore all subtype tests for type arguments that
     // were inferred for a raw type
     // org.checkerframework.framework.type.TypeHierarchy.isSubtypeTypeArguments
     "ignoreRawTypeArguments",
 
+    // Unsoundly ignore side effects
+    "assumeSideEffectFree",
+
+    // Whether to assume that assertions are enabled or disabled
+    // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder
+    "assumeAssertionsAreEnabled",
+    "assumeAssertionsAreDisabled",
+
+    // Treat checker errors as warnings
+    // org.checkerframework.framework.source.SourceChecker.report
+    "warns",
+
+    ///
+    /// More sound (strict checking): enable errors that are disabled by default
+    ///
+
     // The next ones *increase* rather than *decrease* soundness.
-    // They will eventually be replaced by their complements.
+    // They will eventually be replaced by their complements
+    // (except -AconcurrentSemantics) and moved into the above section.
 
     // TODO: Checking of bodies of @SideEffectFree, @Deterministic, and
     // @Pure methods is temporarily disabled unless -AcheckPurityAnnotations is
@@ -146,10 +146,22 @@ import com.sun.tools.javac.util.Log;
     // casting to an array or generic type. This will be the new default soon.
     "checkCastElementType",
 
-    // Whether to output errors or warnings only
-    // org.checkerframework.framework.source.SourceChecker.report
-    "warns",
+    // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
+    // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
+    // This option takes arguments "source" and/or "bytecode".
+    // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
+    // Note, if unchecked code defaults are turned on for source code, the unchecked
+    // defaults are not applied to code in scope of an @AnnotatedFor.
+    // See the "Compiling partially-annotated libraries" and
+    // "Default qualifiers for \<.class> files (conservative library defaults)"
+    // sections in the manual for more details
+    // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
+    "useDefaultsForUncheckedCode",
 
+    // Whether to assume sound concurrent semantics or
+    // simplified sequential semantics
+    // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
+    "concurrentSemantics",
 
     ///
     /// Type-checking modes:  enable/disable functionality
@@ -164,38 +176,21 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.common.basetype.BaseTypeVisitor.visitMethod(MethodTree, Void)
     "suggestPureMethods",
 
-    // Whether to assume that assertions are enabled or disabled
-    // org.checkerframework.framework.flow.CFCFGBuilder.CFCFGBuilder
-    "assumeAssertionsAreEnabled",
-    "assumeAssertionsAreDisabled",
-
-    // Whether to assume sound concurrent semantics or
-    // simplified sequential semantics
-    // org.checkerframework.framework.flow.CFAbstractTransfer.sequentialSemantics
-    "concurrentSemantics",
-
-    // Whether to use unchecked code defaults for bytecode and/or source code; these are configured
-    // by the specific type checker using @Default[QualifierInHierarchy]InUncheckedCode[For].
-    // This option takes arguments "source" and/or "bytecode".
-    // The default is "-source,-bytecode" (eventually this will be changed to "-source,bytecode").
-    // Note, if unchecked code defaults are turned on for source code, the unchecked
-    // defaults are not applied to code in scope of an @AnnotatedFor.
-    // See the "Compiling partially-annotated libraries" and
-    // "Default qualifiers for \<.class> files (conservative library defaults)"
-    // sections in the manual for more details
-    // org.checkerframework.framework.source.SourceChecker.useUncheckedCodeDefault
-    "useDefaultsForUncheckedCode",
-
-    // Whether to resolve reflective method invocations
-    // resolveReflection=debug cause debugging information
+    // Whether to resolve reflective method invocations.
+    // "-AresolveReflection=debug" causes debugging information
     // to be output.
     "resolveReflection",
 
     // Whether to use .jaif files whole-program inference
     "infer",
 
+    // With each warning, in addition to the concrete error key,
+    // output the suppress warning keys that can be used to
+    // suppress that warning.
+    "showSuppressWarningKeys",
+
     ///
-    /// Stub libraries
+    /// Partially-annotated libraries
     ///
 
     // Additional stub files to use
@@ -208,6 +203,8 @@ import com.sun.tools.javac.util.Log;
     // Whether to print warnings about stub files that overwrite annotations
     // from bytecode.
     "stubWarnIfOverwritesBytecode",
+    // Already listed above, but worth noting again in this section:
+    // "useDefaultsForUncheckedCode"
 
     ///
     /// Debugging
@@ -266,7 +263,10 @@ import com.sun.tools.javac.util.Log;
     // org.checkerframework.common.basetype.BaseTypeVisitor
     "showchecks",
 
-    /// Miscellaneous debugging options
+    /// Visualizing the CFG
+
+    // Implemented in the wrapper rather than this file, but worth noting here.
+    // -AoutputArgsToFile
 
     // Mechanism to visualize the control flow graph (CFG).
     // The argument is a sequence of values or key-value pairs.
@@ -295,6 +295,8 @@ import com.sun.tools.javac.util.Log;
     // -Acfgviz=MyClass,verbose
     "verbosecfg",
 
+    /// Miscellaneous debugging options
+
     // Whether to output resource statistics at JVM shutdown
     // org.checkerframework.framework.source.SourceChecker.shutdownHook()
     "resourceStats",
@@ -304,10 +306,9 @@ import com.sun.tools.javac.util.Log;
 
     // Sets AnnotatedTypeFactory shouldCache to false
     "atfDoNotCache"
-
 })
-public abstract class SourceChecker
-    extends AbstractTypeProcessor implements ErrorHandler, CFContext, OptionConfiguration {
+public abstract class SourceChecker extends AbstractTypeProcessor
+        implements ErrorHandler, CFContext, OptionConfiguration {
 
     // TODO A checker should export itself through a separate interface,
     // and maybe have an interface for all the methods for which it's safe
@@ -331,8 +332,9 @@ public abstract class SourceChecker
     /** The source tree that is being scanned. */
     protected CompilationUnitTree currentRoot;
 
-    /** If an error is detected in a CompilationUnitTree, skip
-     * all future calls of typeProcess with that same CompilationUnitTree.
+    /**
+     * If an error is detected in a CompilationUnitTree, skip all future calls of typeProcess with
+     * that same CompilationUnitTree.
      */
     private CompilationUnitTree previousErrorCompilationUnit;
 
@@ -343,43 +345,36 @@ public abstract class SourceChecker
     private String /*@Nullable*/ [] suppressWarnings;
 
     /**
-     * Regular expression pattern to specify Java classes that are not
-     * annotated, so warnings about uses of them should be suppressed.
+     * Regular expression pattern to specify Java classes that are not annotated, so warnings about
+     * uses of them should be suppressed.
      *
-     * It contains the pattern specified by the user, through the option
-     * {@code checkers.skipUses}; otherwise it contains a pattern that can
-     * match no class.
+     * <p>It contains the pattern specified by the user, through the option {@code
+     * checkers.skipUses}; otherwise it contains a pattern that can match no class.
      */
     private Pattern skipUsesPattern;
 
     /**
-     * Regular expression pattern to specify Java classes that are
-     * annotated, so warnings about them should be issued but warnings
-     * about all other classes should be suppressed.
+     * Regular expression pattern to specify Java classes that are annotated, so warnings about them
+     * should be issued but warnings about all other classes should be suppressed.
      *
-     * It contains the pattern specified by the user, through the option
-     * {@code checkers.onlyUses}; otherwise it contains a pattern
-     * matches every class.
+     * <p>It contains the pattern specified by the user, through the option {@code
+     * checkers.onlyUses}; otherwise it contains a pattern matches every class.
      */
     private Pattern onlyUsesPattern;
 
     /**
-     * Regular expression pattern to specify Java classes whose
-     * definition should not be checked.
+     * Regular expression pattern to specify Java classes whose definition should not be checked.
      *
-     * It contains the pattern specified by the user, through the option
-     * {@code checkers.skipDefs}; otherwise it contains a pattern that can
-     * match no class.
+     * <p>It contains the pattern specified by the user, through the option {@code
+     * checkers.skipDefs}; otherwise it contains a pattern that can match no class.
      */
     private Pattern skipDefsPattern;
 
     /**
-     * Regular expression pattern to specify Java classes whose
-     * definition should be checked.
+     * Regular expression pattern to specify Java classes whose definition should be checked.
      *
-     * It contains the pattern specified by the user, through the option
-     * {@code checkers.onlyDefs}; otherwise it contains a pattern that
-     * matches every class.
+     * <p>It contains the pattern specified by the user, through the option {@code
+     * checkers.onlyDefs}; otherwise it contains a pattern that matches every class.
      */
     private Pattern onlyDefsPattern;
 
@@ -389,55 +384,50 @@ public abstract class SourceChecker
     /** The enabled lint options */
     private Set<String> activeLints;
 
-    /** The active options for this checker.
-     * This is a processed version of {@link ProcessingEnvironment#getOptions()}:
-     * If the option is of the form "-ACheckerName@key=value" and the current checker class,
-     * or one of its superclasses is named "CheckerName", then add key &rarr; value.
-     * If the option is of the form "-ACheckerName@key=value" and the current checker class,
-     * and none of its superclasses is named "CheckerName", then do not add key &rarr; value.
-     * If the option is of the form "-Akey=value", then add key &rarr; value.
+    /**
+     * The active options for this checker. This is a processed version of {@link
+     * ProcessingEnvironment#getOptions()}: If the option is of the form "-ACheckerName@key=value"
+     * and the current checker class, or one of its superclasses is named "CheckerName", then add
+     * key &rarr; value. If the option is of the form "-ACheckerName@key=value" and the current
+     * checker class, and none of its superclasses is named "CheckerName", then do not add key
+     * &rarr; value. If the option is of the form "-Akey=value", then add key &rarr; value.
      *
-     * Both the simple and the canonical name of the checker can be used.
-     * Superclasses of the current checker are also considered.
+     * <p>Both the simple and the canonical name of the checker can be used. Superclasses of the
+     * current checker are also considered.
      */
     private Map<String, String> activeOptions;
 
-    /** The string that separates the checker name from the option name.
-     * This string may only consist of valid Java identifier part characters,
-     * because it will be used within the key of an option.
+    /**
+     * The string that separates the checker name from the option name. This string may only consist
+     * of valid Java identifier part characters, because it will be used within the key of an
+     * option.
      */
-    private final static String OPTION_SEPARATOR = "_";
+    private static final String OPTION_SEPARATOR = "_";
 
     /** The line separator */
-    private final static String LINE_SEPARATOR = System.getProperty("line.separator").intern();
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator").intern();
 
-    /** The checker that called this one, whether that be a BaseTypeChecker (used
-     * as a compound checker) or an AggregateChecker.
-     * Null if this is the checker that calls all others.
-     * Note that in the case of a compound checker, the compound checker is the
-     * parent, not the checker that was run prior to this one by the compound
-     * checker.
+    /**
+     * The checker that called this one, whether that be a BaseTypeChecker (used as a compound
+     * checker) or an AggregateChecker. Null if this is the checker that calls all others. Note that
+     * in the case of a compound checker, the compound checker is the parent, not the checker that
+     * was run prior to this one by the compound checker.
      */
     protected SourceChecker parentChecker = null;
 
-    /** List of upstream checker names.
-     * Includes the current checker.
-     */
+    /** List of upstream checker names. Includes the current checker. */
     protected List<String> upstreamCheckerNames = null;
 
     @Override
-    public final void init(ProcessingEnvironment env) {
+    public final synchronized void init(ProcessingEnvironment env) {
         super.init(env);
         // The processingEnvironment field will also be set by the superclass' init method.
         // This is used to trigger AggregateChecker's setProcessingEnvironment.
         setProcessingEnvironment(env);
     }
 
-    /**
-     * @return the {@link ProcessingEnvironment} that was supplied to this
-     *         checker
-     */
-    @Override   // from CFChecker
+    /** @return the {@link ProcessingEnvironment} that was supplied to this checker */
+    @Override // from CFChecker
     public ProcessingEnvironment getProcessingEnvironment() {
         return this.processingEnv;
     }
@@ -452,8 +442,8 @@ public abstract class SourceChecker
     }
 
     /**
-     * Return a list containing this checker name and all checkers it is a
-     * part of (that is, checkers that called it).
+     * Return a list containing this checker name and all checkers it is a part of (that is,
+     * checkers that called it).
      */
     public List<String> getUpstreamCheckerNames() {
         if (upstreamCheckerNames == null) {
@@ -506,8 +496,7 @@ public abstract class SourceChecker
     }
 
     /**
-     * Provides the {@link SourceVisitor} that the checker should use to scan
-     * input source trees.
+     * Provides the {@link SourceVisitor} that the checker should use to scan input source trees.
      *
      * @return a {@link SourceVisitor} to use to scan source trees
      */
@@ -515,17 +504,17 @@ public abstract class SourceChecker
 
     @Override
     public AnnotationProvider getAnnotationProvider() {
-        throw new UnsupportedOperationException("getAnnotationProvider is not implemented for this class.");
+        throw new UnsupportedOperationException(
+                "getAnnotationProvider is not implemented for this class.");
     }
 
     /**
      * Provides a mapping of error keys to custom error messages.
-     * <p>
-     * As a default, this implementation builds a {@link Properties} out of
-     * file {@code messages.properties}.  It accumulates all the properties files
-     * in the Java class hierarchy from the checker up to {@code SourceChecker}.
-     * This permits subclasses to inherit default messages while being able to
-     * override them.
+     *
+     * <p>As a default, this implementation builds a {@link Properties} out of file {@code
+     * messages.properties}. It accumulates all the properties files in the Java class hierarchy
+     * from the checker up to {@code SourceChecker}. This permits subclasses to inherit default
+     * messages while being able to override them.
      *
      * @return a {@link Properties} that maps error keys to error message text
      */
@@ -562,7 +551,8 @@ public abstract class SourceChecker
         return getPattern(patternName, options, ".");
     }
 
-    private Pattern getPattern(String patternName, Map<String, String> options, String defaultPattern) {
+    private Pattern getPattern(
+            String patternName, Map<String, String> options, String defaultPattern) {
         String pattern = "";
 
         if (options.containsKey(patternName)) {
@@ -574,8 +564,12 @@ public abstract class SourceChecker
         }
 
         if (pattern.indexOf("/") != -1) {
-            message(Kind.WARNING,
-              "The " + patternName + " property contains \"/\", which will never match a class name: " + pattern);
+            message(
+                    Kind.WARNING,
+                    "The "
+                            + patternName
+                            + " property contains \"/\", which will never match a class name: "
+                            + pattern);
         }
 
         if (pattern.equals("")) {
@@ -617,13 +611,18 @@ public abstract class SourceChecker
 
         Set<String> activeLint = new HashSet<String>();
         for (String s : lintString.split(",")) {
-            if (!this.getSupportedLintOptions().contains(s) &&
-                    !(s.charAt(0) == '-' && this.getSupportedLintOptions().contains(s.substring(1))) &&
-                    !s.equals("all") &&
-                    !s.equals("none") /*&&
+            if (!this.getSupportedLintOptions().contains(s)
+                    && !(s.charAt(0) == '-'
+                            && this.getSupportedLintOptions().contains(s.substring(1)))
+                    && !s.equals("all")
+                    && !s.equals("none") /*&&
                     !warnedOnLint.contains(s)*/) {
-                this.messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
-                        "Unsupported lint option: " + s + "; All options: " + this.getSupportedLintOptions());
+                this.messager.printMessage(
+                        javax.tools.Diagnostic.Kind.WARNING,
+                        "Unsupported lint option: "
+                                + s
+                                + "; All options: "
+                                + this.getSupportedLintOptions());
                 // warnedOnLint.add(s);
             }
 
@@ -650,27 +649,33 @@ public abstract class SourceChecker
             String[] split = key.split(OPTION_SEPARATOR);
 
             switch (split.length) {
-            case 1:
-                // No separator, option always active
-                activeOpts.put(key, value);
-                break;
-            case 2:
-                // Valid class-option pair
-                Class<?> clazz = this.getClass();
+                case 1:
+                    // No separator, option always active
+                    activeOpts.put(key, value);
+                    break;
+                case 2:
+                    // Valid class-option pair
+                    Class<?> clazz = this.getClass();
 
-                do {
-                    if (clazz.getCanonicalName().equals(split[0]) ||
-                            clazz.getSimpleName().equals(split[0])) {
-                        activeOpts.put(split[1], value);
-                    }
+                    do {
+                        if (clazz.getCanonicalName().equals(split[0])
+                                || clazz.getSimpleName().equals(split[0])) {
+                            activeOpts.put(split[1], value);
+                        }
 
-                    clazz = clazz.getSuperclass();
-                } while (clazz != null &&
-                        !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
-                break;
-            default:
-                ErrorReporter.errorAbort("Invalid option name: " + key +
-                        " At most one separator " + OPTION_SEPARATOR + " expected, but found " + split.length);
+                        clazz = clazz.getSuperclass();
+                    } while (clazz != null
+                            && !clazz.getName()
+                                    .equals(AbstractTypeProcessor.class.getCanonicalName()));
+                    break;
+                default:
+                    ErrorReporter.errorAbort(
+                            "Invalid option name: "
+                                    + key
+                                    + " At most one separator "
+                                    + OPTION_SEPARATOR
+                                    + " expected, but found "
+                                    + split.length);
             }
         }
         return Collections.unmodifiableMap(activeOpts);
@@ -689,12 +694,11 @@ public abstract class SourceChecker
         return swString.split(",");
     }
 
-
     /**
-     * Exception type used only internally to abort
-     * processing.
-     * Only public to allow tests.AnnotationBuilderTest;
-     * this class should be private. TODO: nicer way?
+     * Exception type used only internally to abort processing. Only public to allow
+     * tests.AnnotationBuilderTest; this class should be private.
+     *
+     * <p>TODO: nicer way?
      */
     @SuppressWarnings("serial")
     public static class CheckerError extends RuntimeException {
@@ -708,8 +712,7 @@ public abstract class SourceChecker
     }
 
     /**
-     * Log an error message and abort processing.
-     * Call this method instead of raising an exception.
+     * Log an error message and abort processing. Call this method instead of raising an exception.
      *
      * @param msg the error message to log
      */
@@ -718,10 +721,8 @@ public abstract class SourceChecker
         throw new CheckerError(msg, new Throwable(), false);
     }
 
-
     /**
-     * Log an error message and abort processing.
-     * Call this method instead of raising an exception.
+     * Log an error message and abort processing. Call this method instead of raising an exception.
      *
      * @param msg the error message to log
      * @param cause the original error cause
@@ -732,11 +733,9 @@ public abstract class SourceChecker
     }
 
     /**
-     * Log a user error message and abort processing.
-     * Call this method instead of raising an exception or
-     * using System.out.
-     * In contrast to {@link SourceChecker#errorAbort(String)} this method
-     * presents a more user-friendly output.
+     * Log a user error message and abort processing. Call this method instead of raising an
+     * exception or using System.out. In contrast to {@link SourceChecker#errorAbort(String)} this
+     * method presents a more user-friendly output.
      *
      * @param msg the error message to log
      */
@@ -747,27 +746,32 @@ public abstract class SourceChecker
     private void logCheckerError(CheckerError ce) {
         if (ce.getMessage() == null) {
             final String stackTrace = formatStackTrace(ce.getStackTrace());
-            ErrorReporter.errorAbort("Null error message while logging Checker error.\nStack Trace:\n" + stackTrace);
+            ErrorReporter.errorAbort(
+                    "Null error message while logging Checker error.\nStack Trace:\n" + stackTrace);
         }
 
         StringBuilder msg = new StringBuilder(ce.getMessage());
-        if ((processingEnv == null ||
-                processingEnv.getOptions() == null ||
-                processingEnv.getOptions().containsKey("printErrorStack")) &&
-                ce.getCause() != null) {
+        if ((processingEnv == null
+                        || processingEnv.getOptions() == null
+                        || processingEnv.getOptions().containsKey("printErrorStack"))
+                && ce.getCause() != null) {
 
-            if (this.currentRoot != null &&
-                    this.currentRoot.getSourceFile() != null) {
+            if (this.currentRoot != null && this.currentRoot.getSourceFile() != null) {
                 msg.append("\nCompilation unit: " + this.currentRoot.getSourceFile().getName());
             }
 
-            msg.append("\nException: " +
-                            ce.getCause().toString() + "; " + formatStackTrace(ce.getCause().getStackTrace()));
+            msg.append(
+                    "\nException: "
+                            + ce.getCause().toString()
+                            + "; "
+                            + formatStackTrace(ce.getCause().getStackTrace()));
             Throwable cause = ce.getCause().getCause();
             while (cause != null) {
-                msg.append("\nUnderlying Exception: " +
-                                (cause.toString() + "; " +
-                                        formatStackTrace(cause.getStackTrace())));
+                msg.append(
+                        "\nUnderlying Exception: "
+                                + (cause.toString()
+                                        + "; "
+                                        + formatStackTrace(cause.getStackTrace())));
                 cause = cause.getCause();
             }
         } else {
@@ -787,10 +791,9 @@ public abstract class SourceChecker
     /**
      * {@inheritDoc}
      *
-     * Type-checkers are not supposed to override this.
-     * Instead use initChecker.
-     * This allows us to handle CheckerError only here and doesn't
-     * require all overriding implementations to be aware of CheckerError.
+     * <p>Type-checkers are not supposed to override this. Instead use initChecker. This allows us
+     * to handle CheckerError only here and doesn't require all overriding implementations to be
+     * aware of CheckerError.
      *
      * @see AbstractProcessor#init(ProcessingEnvironment)
      * @see SourceChecker#initChecker()
@@ -804,22 +807,26 @@ public abstract class SourceChecker
                 messager = processingEnv.getMessager();
                 messager.printMessage(
                         javax.tools.Diagnostic.Kind.WARNING,
-                        "You have forgotten to call super.initChecker in your " +
-                                "subclass of SourceChecker, " + this.getClass() +
-                                "! Please ensure your checker is properly initialized.");
+                        "You have forgotten to call super.initChecker in your "
+                                + "subclass of SourceChecker, "
+                                + this.getClass()
+                                + "! Please ensure your checker is properly initialized.");
             }
             if (shouldAddShutdownHook()) {
-                Runtime.getRuntime().addShutdownHook(new Thread() {
-                    @Override
-                    public void run() {
-                        shutdownHook();
-                    }
-                });
+                Runtime.getRuntime()
+                        .addShutdownHook(
+                                new Thread() {
+                                    @Override
+                                    public void run() {
+                                        shutdownHook();
+                                    }
+                                });
             }
         } catch (CheckerError ce) {
             logCheckerError(ce);
         } catch (Throwable t) {
-            logCheckerError(wrapThrowableAsCheckerError("SourceChecker.typeProcessingStart", t, null));
+            logCheckerError(
+                    wrapThrowableAsCheckerError("SourceChecker.typeProcessingStart", t, null));
         }
     }
 
@@ -841,22 +848,20 @@ public abstract class SourceChecker
         this.visitor = createSourceVisitor();
 
         // TODO: hack to clear out static caches.
-        // When the {@link org.checkerframework.qualframework.util.QualifierContext}
-        // gets used by all utilities, this shouldn't be an issue anymore.
         AnnotationUtils.clear();
     }
 
     /**
-     * Return true to indicate that method {@link #shutdownHook} should be
-     * added as a shutdownHook of the JVM.
+     * Return true to indicate that method {@link #shutdownHook} should be added as a shutdownHook
+     * of the JVM.
      */
     protected boolean shouldAddShutdownHook() {
         return hasOption("resourceStats");
     }
 
     /**
-     * Method that gets called exactly once at shutdown time of the JVM.
-     * Checkers can override this method to customize the behavior.
+     * Method that gets called exactly once at shutdown time of the JVM. Checkers can override this
+     * method to customize the behavior.
      */
     protected void shutdownHook() {
         if (hasOption("resourceStats")) {
@@ -877,43 +882,43 @@ public abstract class SourceChecker
         }
     }
 
-    /**
-     * Output the warning about source level at most once.
-     */
+    /** Output the warning about source level at most once. */
     private boolean warnedAboutSourceLevel = false;
 
     /**
-     * The number of errors at the last exit of the type processor.
-     * At entry to the type processor we check whether the current error count is
-     * higher and then don't process the file, as it contains some Java errors.
-     * Needs to be protected to allow access from AggregateChecker and BaseTypeChecker.
+     * The number of errors at the last exit of the type processor. At entry to the type processor
+     * we check whether the current error count is higher and then don't process the file, as it
+     * contains some Java errors. Needs to be protected to allow access from AggregateChecker and
+     * BaseTypeChecker.
      */
     protected int errsOnLastExit = 0;
 
     /**
-     * Type-check the code with Java specifications and then runs the Checker
-     * Rule Checking visitor on the processed source.
+     * Type-check the code with Java specifications and then runs the Checker Rule Checking visitor
+     * on the processed source.
      *
      * @see Processor#process(Set, RoundEnvironment)
      */
     @Override
     public void typeProcess(TypeElement e, TreePath p) {
         if (e == null) {
-            messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
-                    "Refusing to process empty TypeElement");
+            messager.printMessage(
+                    javax.tools.Diagnostic.Kind.ERROR, "Refusing to process empty TypeElement");
             return;
         }
         if (p == null) {
-            messager.printMessage(javax.tools.Diagnostic.Kind.ERROR,
+            messager.printMessage(
+                    javax.tools.Diagnostic.Kind.ERROR,
                     "Refusing to process empty TreePath in TypeElement: " + e);
             return;
         }
 
-        Context context = ((JavacProcessingEnvironment)processingEnv).getContext();
+        Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         com.sun.tools.javac.code.Source source = com.sun.tools.javac.code.Source.instance(context);
-        if ((! warnedAboutSourceLevel) && (! source.allowTypeAnnotations())) {
-            messager.printMessage(javax.tools.Diagnostic.Kind.WARNING,
-                                  "-source " + source.name + " does not support type annotations");
+        if ((!warnedAboutSourceLevel) && (!source.allowTypeAnnotations())) {
+            messager.printMessage(
+                    javax.tools.Diagnostic.Kind.WARNING,
+                    "-source " + source.name + " does not support type annotations");
             warnedAboutSourceLevel = true;
         }
 
@@ -951,20 +956,23 @@ public abstract class SourceChecker
         }
     }
 
-    private CheckerError wrapThrowableAsCheckerError(String where, Throwable t, /*@Nullable*/ TreePath p) {
+    private CheckerError wrapThrowableAsCheckerError(
+            String where, Throwable t, /*@Nullable*/ TreePath p) {
         return new CheckerError(
-           where + ": unexpected Throwable (" +
-           t.getClass().getSimpleName() + ")" +
-           ((p == null) ? "" : " while processing " + p.getCompilationUnit().getSourceFile().getName()) +
-           (t.getMessage() == null ? "" : "; message: " + t.getMessage()),
-           t,
-           false);
+                where
+                        + ": unexpected Throwable ("
+                        + t.getClass().getSimpleName()
+                        + ")"
+                        + ((p == null)
+                                ? ""
+                                : " while processing "
+                                        + p.getCompilationUnit().getSourceFile().getName())
+                        + (t.getMessage() == null ? "" : "; message: " + t.getMessage()),
+                t,
+                false);
     }
 
-    /**
-     * Format a list of {@link StackTraceElement}s to be printed out as an error
-     * message.
-     */
+    /** Format a list of {@link StackTraceElement}s to be printed out as an error message. */
     protected String formatStackTrace(StackTraceElement[] stackTrace) {
         boolean first = true;
         StringBuilder sb = new StringBuilder();
@@ -999,9 +1007,8 @@ public abstract class SourceChecker
     // }
 
     /**
-     * Returns the localized long message corresponding for this key, and
-     * returns the defValue if no localized message is found.
-     *
+     * Returns the localized long message corresponding for this key, and returns the defValue if no
+     * localized message is found.
      */
     protected String fullMessageOf(String messageKey, String defValue) {
         String key = messageKey;
@@ -1022,21 +1029,18 @@ public abstract class SourceChecker
     /**
      * Prints a message (error, warning, note, etc.) via JSR-269.
      *
-     * @param kind
-     *            the type of message to print
-     * @param source
-     *            the object from which to obtain source position information
-     * @param msgKey
-     *            the message key to print
-     * @param args
-     *            arguments for interpolation in the string corresponding to the
-     *            given message key
+     * @param kind the type of message to print
+     * @param source the object from which to obtain source position information
+     * @param msgKey the message key to print
+     * @param args arguments for interpolation in the string corresponding to the given message key
      * @see Diagnostic
-     * @throws IllegalArgumentException
-     *             if {@code source} is neither a {@link Tree} nor an
-     *             {@link Element}
+     * @throws IllegalArgumentException if {@code source} is neither a {@link Tree} nor an {@link
+     *     Element}
      */
-    public void message(Diagnostic.Kind kind, Object source, /*@CompilerMessageKey*/ String msgKey,
+    public void message(
+            Diagnostic.Kind kind,
+            Object source,
+            /*@CompilerMessageKey*/ String msgKey,
             Object... args) {
 
         assert messages != null : "null messages";
@@ -1097,13 +1101,13 @@ public abstract class SourceChecker
             // the source file.
             final Tree tree;
             if (source instanceof Element) {
-                tree = trees.getTree( (Element) source );
+                tree = trees.getTree((Element) source);
             } else if (source instanceof Tree) {
                 tree = (Tree) source;
             } else {
                 tree = null;
             }
-            sb.append( treeToFilePositionString( tree, currentRoot, processingEnv ) );
+            sb.append(treeToFilePositionString(tree, currentRoot, processingEnv));
             sb.append(DETAILS_SEPARATOR);
 
             // (4) The human-readable error message.
@@ -1124,7 +1128,8 @@ public abstract class SourceChecker
         try {
             messageText = String.format(fmtString, args);
         } catch (Exception e) {
-            messageText = "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
+            messageText =
+                    "Invalid format string: \"" + fmtString + "\" args: " + Arrays.toString(args);
         }
 
         if (LINE_SEPARATOR != "\n") { // interned
@@ -1135,16 +1140,16 @@ public abstract class SourceChecker
         if (source instanceof Element) {
             messager.printMessage(kind, messageText, (Element) source);
         } else if (source instanceof Tree) {
-            Trees.instance(processingEnv).printMessage(kind, messageText, (Tree) source,
-                    currentRoot);
+            Trees.instance(processingEnv)
+                    .printMessage(kind, messageText, (Tree) source, currentRoot);
         } else {
-            ErrorReporter.errorAbort("invalid position source: "
-                    + source.getClass().getName());
+            ErrorReporter.errorAbort("invalid position source: " + source.getClass().getName());
         }
     }
 
     /**
      * Process an argument to an error message before it is passed to String.format.
+     *
      * @param arg the argument
      * @return the result after processing
      */
@@ -1154,16 +1159,14 @@ public abstract class SourceChecker
     }
 
     /**
-     * Print a non-localized message using the javac messager.
-     * This is preferable to using System.out or System.err, but should
-     * only be used for exceptional cases that don't happen in correct usage.
-     * Localized messages should be raised using
-     * {@link SourceChecker#message(Diagnostic.Kind, Object, String, Object...)}.
+     * Print a non-localized message using the javac messager. This is preferable to using
+     * System.out or System.err, but should only be used for exceptional cases that don't happen in
+     * correct usage. Localized messages should be raised using {@link
+     * SourceChecker#message(Diagnostic.Kind, Object, String, Object...)}.
      *
      * @param kind the kind of message to print
      * @param msg the message text
      * @param args optional arguments to substitute in the message.
-     *
      * @see SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
      */
     public void message(Diagnostic.Kind kind, String msg, Object... args) {
@@ -1175,54 +1178,51 @@ public abstract class SourceChecker
     }
 
     /**
-     * For the given tree, compute the source positions for that tree.  Return a "tuple" like string
-     * (e.g. "( 1, 200 )" ) that contains the start and end position of the tree in the current compilation unit.
+     * For the given tree, compute the source positions for that tree. Return a "tuple" like string
+     * (e.g. "( 1, 200 )" ) that contains the start and end position of the tree in the current
+     * compilation unit.
      *
      * @param tree tree to locate within the current compilation unit
      * @param currentRoot the current compilation unit
      * @param processingEnv the current processing environment
-     * @return a tuple string representing the range of characters that tree occupies in the source file
+     * @return a tuple string representing the range of characters that tree occupies in the source
+     *     file
      */
-    public String treeToFilePositionString(Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
+    public String treeToFilePositionString(
+            Tree tree, CompilationUnitTree currentRoot, ProcessingEnvironment processingEnv) {
         if (tree == null) {
             return null;
         }
 
         SourcePositions sourcePositions = trees.getSourcePositions();
-        long start = sourcePositions.getStartPosition( currentRoot, tree);
-        long end   = sourcePositions.getEndPosition( currentRoot, tree );
+        long start = sourcePositions.getStartPosition(currentRoot, tree);
+        long end = sourcePositions.getEndPosition(currentRoot, tree);
 
-        return "( " + start + ", " + end  + " )";
+        return "( " + start + ", " + end + " )";
     }
 
     public static final String DETAILS_SEPARATOR = " $$ ";
 
     /**
-     * Determines whether an error (whose error key is {@code errKey}) should
-     * be suppressed, according to the user's explicitly-written
-     * SuppressWarnings annotation {@code anno} or the -AsuppressWarnings
-     * command-line argument.
-     * <p>
+     * Determines whether an error (whose error key is {@code errKey}) should be suppressed,
+     * according to the user's explicitly-written SuppressWarnings annotation {@code anno} or the
+     * {@code -AsuppressWarnings} command-line argument.
      *
-     * A @SuppressWarnings value may be of the following pattern:
+     * <p>A @SuppressWarnings value may be of the following pattern:
      *
      * <ol>
-     * <li>{@code "suppress-key"}, where suppress-key is a supported warnings
-     * key, as specified by {@link #getSuppressWarningsKeys()}
-     * (e.g., {@code "nullness"} for Nullness, {@code "regex"} for Regex)</li>
-     *
-     * <li>{@code "suppress-key:error-key}, where the suppress-key
-     * is as above, and error-key is a prefix of the errors
-     * that it may suppress.  So "nullness:generic.argument", would
-     * suppress any errors in the Nullness Checker related to
-     * generic.argument.</li>
+     *   <li>{@code "suppress-key"}, where suppress-key is a supported warnings key, as specified by
+     *       {@link #getSuppressWarningsKeys()} (e.g., {@code "nullness"} for Nullness, {@code
+     *       "regex"} for Regex)
+     *   <li>{@code "suppress-key:error-key}, where the suppress-key is as above, and error-key is a
+     *       prefix of the errors that it may suppress. So "nullness:generic.argument", would
+     *       suppress any errors in the Nullness Checker related to generic.argument.
      * </ol>
      *
-     * @param anno   the @SuppressWarnings annotation written by the user
+     * @param anno the @SuppressWarnings annotation written by the user
      * @param errKey the error key the checker is emitting
-     * @return true  if one of {@code anno}'s keys is
-     *         returned by {@link SourceChecker#getSuppressWarningsKeys};
-     *         also accounts for errKey
+     * @return true if one of {@code anno}'s keys is returned by {@link
+     *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
      */
     private boolean checkSuppressWarnings(/*@Nullable*/ SuppressWarnings anno, String errKey) {
 
@@ -1243,13 +1243,13 @@ public abstract class SourceChecker
     }
 
     /**
-     * Return true if the given error should be suppressed, based on the
-     * given @SuppressWarnings keys.
-     * @param userSwKeys   the @SuppressWarnings keys supplied by the user
+     * Return true if the given error should be suppressed, based on the given @SuppressWarnings
+     * keys.
+     *
+     * @param userSwKeys the @SuppressWarnings keys supplied by the user
      * @param errKey the error key the checker is emitting
-     * @return true  if one of the {@code userSwKeys} is
-     *         returned by {@link SourceChecker#getSuppressWarningsKeys};
-     *         also accounts for errKey
+     * @return true if one of the {@code userSwKeys} is returned by {@link
+     *     SourceChecker#getSuppressWarningsKeys}; also accounts for errKey
      */
     private boolean checkSuppressWarnings(String /*@Nullable*/ [] userSwKeys, String errKey) {
         if (userSwKeys == null) {
@@ -1276,18 +1276,16 @@ public abstract class SourceChecker
     }
 
     /**
-     * Determines whether all the warnings pertaining to a given tree
-     * should be suppressed.  Returns true if the tree is within the scope
-     * of a @SuppressWarnings annotation, one of whose values suppresses
-     * the checker's warnings.  The list of keys that suppress a checker's
-     * warnings is provided by the {@link
-     * SourceChecker#getSuppressWarningsKeys} method.
+     * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
+     * true if the tree is within the scope of a @SuppressWarnings annotation, one of whose values
+     * suppresses the checker's warnings. The list of keys that suppress a checker's warnings is
+     * provided by the {@link SourceChecker#getSuppressWarningsKeys} method.
      *
      * @param tree the tree that might be a source of a warning
      * @param errKey the error key the checker is emitting
-     * @return true if no warning should be emitted for the given tree because
-     *         it is contained by a declaration with an appropriately-valued
-     *         {@literal @}SuppressWarnings annotation; false otherwise
+     * @return true if no warning should be emitted for the given tree because it is contained by a
+     *     declaration with an appropriately-valued {@literal @}SuppressWarnings annotation; false
+     *     otherwise
      */
     // Public so it can be called from a few places in
     // org.checkerframework.framework.flow.CFAbstractTransfer
@@ -1352,6 +1350,7 @@ public abstract class SourceChecker
 
     /**
      * Should unchecked code defaults be used for the kind of code indicated by the parameter
+     *
      * @param kindOfCode source or bytecode
      * @return whether unchecked code defaults should be used
      */
@@ -1373,24 +1372,23 @@ public abstract class SourceChecker
         } else if (kindOfCode.equals("bytecode")) {
             return useUncheckedDefaultsForByteCode;
         } else {
-            ErrorReporter.errorAbort("SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
+            ErrorReporter.errorAbort(
+                    "SourceChecker: unexpected argument to useUncheckedCodeDefault: " + kindOfCode);
         }
         return false;
     }
 
     /**
-     * Determines whether all the warnings pertaining to a given tree
-     * should be suppressed.  Returns true if the element is within the scope
-     * of a @SuppressWarnings annotation, one of whose values suppresses
-     * the checker's warnings.  The list of keys that suppress a checker's
-     * warnings is provided by the {@link
-     * SourceChecker#getSuppressWarningsKeys} method.
+     * Determines whether all the warnings pertaining to a given tree should be suppressed. Returns
+     * true if the element is within the scope of a @SuppressWarnings annotation, one of whose
+     * values suppresses the checker's warnings. The list of keys that suppress a checker's warnings
+     * is provided by the {@link SourceChecker#getSuppressWarningsKeys} method.
      *
      * @param elt the Element that might be a source of, or related to, a warning
      * @param errKey the error key the checker is emitting
-     * @return true if no warning should be emitted for the given Element because
-     *         it is contained by a declaration with an appropriately-valued
-     *         {@code @SuppressWarnings} annotation; false otherwise
+     * @return true if no warning should be emitted for the given Element because it is contained by
+     *     a declaration with an appropriately-valued {@code @SuppressWarnings} annotation; false
+     *     otherwise
      */
     // Public so it can be called from InitializationVisitor.checkerFieldsInitialized
     public boolean shouldSuppressWarnings(/*@Nullable*/ Element elt, String errKey) {
@@ -1426,7 +1424,8 @@ public abstract class SourceChecker
             List<String> upstreamCheckerNames = getUpstreamCheckerNames();
 
             for (String userAnnotatedFor : userAnnotatedFors) {
-                if (CheckerMain.matchesCheckerOrSubcheckerFromList(userAnnotatedFor, upstreamCheckerNames)) {
+                if (CheckerMain.matchesCheckerOrSubcheckerFromList(
+                        userAnnotatedFor, upstreamCheckerNames)) {
                     return true;
                 }
             }
@@ -1436,22 +1435,19 @@ public abstract class SourceChecker
     }
 
     /**
-     * Reports a result. By default, it prints it to the screen via the
-     * compiler's internal messenger if the result is non-success; otherwise,
-     * the method returns with no side-effects.
+     * Reports a result. By default, it prints it to the screen via the compiler's internal
+     * messenger if the result is non-success; otherwise, the method returns with no side-effects.
      *
-     * @param r
-     *            the result to report
-     * @param src
-     *            the position object associated with the result
+     * @param r the result to report
+     * @param src the position object associated with the result
      */
     public void report(final Result r, final Object src) {
 
         String errKey = r.getMessageKeys().iterator().next();
-        if (src instanceof Tree && shouldSuppressWarnings((Tree)src, errKey)) {
+        if (src instanceof Tree && shouldSuppressWarnings((Tree) src, errKey)) {
             return;
         }
-        if (src instanceof Element && shouldSuppressWarnings((Element)src, errKey)) {
+        if (src instanceof Element && shouldSuppressWarnings((Element) src, errKey)) {
             return;
         }
 
@@ -1461,10 +1457,16 @@ public abstract class SourceChecker
 
         for (Result.DiagMessage msg : r.getDiagMessages()) {
             if (r.isFailure()) {
-                this.message(hasOption("warns") ? Diagnostic.Kind.MANDATORY_WARNING : Diagnostic.Kind.ERROR,
-                        src, msg.getMessageKey(), msg.getArgs());
+                this.message(
+                        hasOption("warns")
+                                ? Diagnostic.Kind.MANDATORY_WARNING
+                                : Diagnostic.Kind.ERROR,
+                        src,
+                        msg.getMessageKey(),
+                        msg.getArgs());
             } else if (r.isWarning()) {
-                this.message(Diagnostic.Kind.MANDATORY_WARNING, src, msg.getMessageKey(), msg.getArgs());
+                this.message(
+                        Diagnostic.Kind.MANDATORY_WARNING, src, msg.getMessageKey(), msg.getArgs());
             } else {
                 this.message(Diagnostic.Kind.NOTE, src, msg.getMessageKey(), msg.getArgs());
             }
@@ -1472,20 +1474,17 @@ public abstract class SourceChecker
     }
 
     /**
-     * Determines the value of the lint option with the given name.  Just
-     * as <a
-     * href="https://docs.oracle.com/javase/7/docs/technotes/guides/javac/index.html">javac</a>
-     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx,
-     * annotation-related lint options are enabled with "-Alint:xxx" and
-     * disabled with "-Alint:-xxx".
+     * Determines the value of the lint option with the given name. Just as <a
+     * href="https://docs.oracle.com/javase/7/docs/technotes/guides/javac/index.html">javac</a> uses
+     * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
+     * options are enabled with "-Alint:xxx" and disabled with "-Alint:-xxx".
      *
-     * @throws IllegalArgumentException if the option name is not recognized
-     *         via the {@link SupportedLintOptions} annotation or the {@link
-     *         SourceChecker#getSupportedLintOptions} method
+     * @throws IllegalArgumentException if the option name is not recognized via the {@link
+     *     SupportedLintOptions} annotation or the {@link SourceChecker#getSupportedLintOptions}
+     *     method
      * @param name the name of the lint option to check for
-     * @return true if the lint option was given, false if it was not given or
-     * was given prepended with a "-"
-     *
+     * @return true if the lint option was given, false if it was not given or was given prepended
+     *     with a "-"
      * @see SourceChecker#getLintOption(String, boolean)
      */
     public final boolean getLintOption(String name) {
@@ -1493,21 +1492,18 @@ public abstract class SourceChecker
     }
 
     /**
-     * Determines the value of the lint option with the given name.  Just
-     * as <a
-     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a>
-     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx,
-     * annotation-related lint options are enabled with "-Alint=xxx" and
-     * disabled with "-Alint=-xxx".
+     * Determines the value of the lint option with the given name. Just as <a
+     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a> uses
+     * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
+     * options are enabled with "-Alint=xxx" and disabled with "-Alint=-xxx".
      *
-     * @throws IllegalArgumentException if the option name is not recognized
-     *         via the {@link SupportedLintOptions} annotation or the {@link
-     *         SourceChecker#getSupportedLintOptions} method
+     * @throws IllegalArgumentException if the option name is not recognized via the {@link
+     *     SupportedLintOptions} annotation or the {@link SourceChecker#getSupportedLintOptions}
+     *     method
      * @param name the name of the lint option to check for
      * @param def the default option value, returned if the option was not given
-     * @return true if the lint option was given, false if it was given
-     *         prepended with a "-", or {@code def} if it was not given at all
-     *
+     * @return true if the lint option was given, false if it was given prepended with a "-", or
+     *     {@code def} if it was not given at all
      * @see SourceChecker#getLintOption(String)
      * @see SourceChecker#getOption(String)
      */
@@ -1540,21 +1536,17 @@ public abstract class SourceChecker
     }
 
     /**
-     * Set the value of the lint option with the given name.  Just
-     * as <a
-     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a>
-     * uses "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx,
-     * annotation-related lint options are enabled with "-Alint=xxx" and
-     * disabled with "-Alint=-xxx".
-     * This method can be used by subclasses to enforce having certain lint
-     * options enabled/disabled.
+     * Set the value of the lint option with the given name. Just as <a
+     * href="https://docs.oracle.com/javase/1.5.0/docs/tooldocs/solaris/javac.html">javac</a> uses
+     * "-Xlint:xxx" to enable and "-Xlint:-xxx" to disable option xxx, annotation-related lint
+     * options are enabled with "-Alint=xxx" and disabled with "-Alint=-xxx". This method can be
+     * used by subclasses to enforce having certain lint options enabled/disabled.
      *
-     * @throws IllegalArgumentException if the option name is not recognized
-     *         via the {@link SupportedLintOptions} annotation or the {@link
-     *         SourceChecker#getSupportedLintOptions} method
+     * @throws IllegalArgumentException if the option name is not recognized via the {@link
+     *     SupportedLintOptions} annotation or the {@link SourceChecker#getSupportedLintOptions}
+     *     method
      * @param name the name of the lint option to set
      * @param val the option value
-     *
      * @see SourceChecker#getLintOption(String)
      * @see SourceChecker#getLintOption(String,boolean)
      */
@@ -1594,8 +1586,8 @@ public abstract class SourceChecker
     }
 
     /**
-     * Helper method to find the parent of a lint key.  The lint hierarchy
-     * level is donated by a colon ':'.  'all' is the root for all hierarchy.
+     * Helper method to find the parent of a lint key. The lint hierarchy level is donated by a
+     * colon ':'. 'all' is the root for all hierarchy.
      *
      * <pre>
      * Example
@@ -1615,11 +1607,10 @@ public abstract class SourceChecker
     }
 
     /**
-     * Returns the lint options recognized by this checker. Lint options are
-     * those which can be checked for via {@link SourceChecker#getLintOption}.
+     * Returns the lint options recognized by this checker. Lint options are those which can be
+     * checked for via {@link SourceChecker#getLintOption}.
      *
-     * @return an unmodifiable {@link Set} of the lint options recognized by
-     *         this checker
+     * @return an unmodifiable {@link Set} of the lint options recognized by this checker
      */
     public Set<String> getSupportedLintOptions() {
         if (supportedLints == null) {
@@ -1628,12 +1619,10 @@ public abstract class SourceChecker
         return supportedLints;
     }
 
-    /**
-     * Compute the set of supported lint options.
-     */
+    /** Compute the set of supported lint options. */
     protected Set<String> createSupportedLintOptions() {
         /*@Nullable*/ SupportedLintOptions sl =
-            this.getClass().getAnnotation(SupportedLintOptions.class);
+                this.getClass().getAnnotation(SupportedLintOptions.class);
 
         if (sl == null) {
             return Collections.</*@NonNull*/ String>emptySet();
@@ -1642,7 +1631,7 @@ public abstract class SourceChecker
         /*@Nullable*/ String /*@Nullable*/ [] slValue = sl.value();
         assert slValue != null; /*nninvariant*/
 
-        /*@Nullable*/ String [] lintArray = slValue;
+        /*@Nullable*/ String[] lintArray = slValue;
         Set<String> lintSet = new HashSet<String>(lintArray.length);
         for (String s : lintArray) {
             lintSet.add(s);
@@ -1651,19 +1640,16 @@ public abstract class SourceChecker
     }
 
     /**
-     * Set the supported lint options.
-     * Use of this method should be limited to the AggregateChecker,
-     * who needs to set the lint options to the union of all subcheckers.
-     * Also, e.g. the NullnessSubchecker/RawnessSubchecker need to
-     * use this method, as one is created by the other.
+     * Set the supported lint options. Use of this method should be limited to the AggregateChecker,
+     * who needs to set the lint options to the union of all subcheckers. Also, e.g. the
+     * NullnessSubchecker/RawnessSubchecker need to use this method, as one is created by the other.
      */
     protected void setSupportedLintOptions(Set<String> newlints) {
         supportedLints = newlints;
     }
 
     /**
-     * Add additional active options.
-     * Use of this method should be limited to the AggregateChecker,
+     * Add additional active options. Use of this method should be limited to the AggregateChecker,
      * who needs to set the active options to the union of all subcheckers.
      */
     protected void addOptions(Map<String, String> moreopts) {
@@ -1684,6 +1670,7 @@ public abstract class SourceChecker
 
     /**
      * Return all active options for this checker.
+     *
      * @return all active options for this checker
      */
     @Override
@@ -1696,8 +1683,9 @@ public abstract class SourceChecker
 
     /**
      * Check whether the given option is provided.
-     * Note that {@link #getOption(String)} can still return null even
-     * if hasOption is true: this happens e.g. for -Amyopt
+     *
+     * <p>Note that {@link #getOption(String)} can still return null even if {@code hasOption}
+     * returns true: this happens e.g. for {@code -Amyopt}
      *
      * @param name the option name to check
      * @return true if the option name was provided, false otherwise
@@ -1709,8 +1697,8 @@ public abstract class SourceChecker
     }
 
     /**
-     * Determines the value of the lint option with the given name and
-     * returns the default value if nothing is specified.
+     * Determines the value of the lint option with the given name and returns the default value if
+     * nothing is specified.
      *
      * @see SourceChecker#getOption(String)
      * @see SourceChecker#getLintOption(String)
@@ -1738,9 +1726,8 @@ public abstract class SourceChecker
     }
 
     /**
-     * Map the Checker Framework version of {@link SupportedOptions} to
-     * the standard annotation provided version
-     * {@link javax.annotation.processing.SupportedOptions}.
+     * Map the Checker Framework version of {@link SupportedOptions} to the standard annotation
+     * provided version {@link javax.annotation.processing.SupportedOptions}.
      */
     @Override
     public Set<String> getSupportedOptions() {
@@ -1761,20 +1748,19 @@ public abstract class SourceChecker
             clazzPrefixes.add(clazz);
 
             SupportedOptions so = clazz.getAnnotation(SupportedOptions.class);
-            if  (so != null) {
+            if (so != null) {
                 options.addAll(expandCFOptions(clazzPrefixes, so.value()));
             }
             clazz = clazz.getSuperclass();
-        } while (clazz != null &&
-                !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
+        } while (clazz != null
+                && !clazz.getName().equals(AbstractTypeProcessor.class.getCanonicalName()));
 
         return Collections.</*@NonNull*/ String>unmodifiableSet(options);
     }
 
     /**
-     * Generate the possible command-line option names by prefixing
-     * each class name from {@code classPrefixes} to {@code options},
-     * separated by OPTION_SEPARATOR.
+     * Generate the possible command-line option names by prefixing each class name from {@code
+     * classPrefixes} to {@code options}, separated by {@code OPTION_SEPARATOR}.
      *
      * @param clazzPrefixes the classes to prefix
      * @param options the option names
@@ -1795,44 +1781,36 @@ public abstract class SourceChecker
     }
 
     /**
-     * Overrides the default implementation to always
-     * return a singleton set containing only "*".
-     * <p>
+     * Overrides the default implementation to always return a singleton set containing only "*".
      *
-     * javac uses this list to determine which classes process; javac only
-     * runs an annotation processor on classes that contain at least one of
-     * the mentioned annotations.
-     * Thus, the effect of returning "*"
-     * is as if the checker were annotated by
-     * {@code @SupportedAnnotationTypes("*")}:
-     * javac runs the checker on every
-     * class mentioned on the javac command line.  This method also checks
-     * that subclasses do not contain a {@link SupportedAnnotationTypes}
-     * annotation.  <p>
+     * <p>javac uses this list to determine which classes process; javac only runs an annotation
+     * processor on classes that contain at least one of the mentioned annotations. Thus, the effect
+     * of returning "*" is as if the checker were annotated by
+     * {@code @SupportedAnnotationTypes("*")}: javac runs the checker on every class mentioned on
+     * the javac command line. This method also checks that subclasses do not contain a {@link
+     * SupportedAnnotationTypes} annotation.
      *
-     * To specify the annotations that a checker recognizes as type qualifiers,
-     * see {@link AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
+     * <p>To specify the annotations that a checker recognizes as type qualifiers, see {@link
+     * AnnotatedTypeFactory#createSupportedTypeQualifiers()}.
      *
-     * @throws Error if a subclass is annotated with
-     *         {@link SupportedAnnotationTypes}
+     * @throws Error if a subclass is annotated with {@link SupportedAnnotationTypes}
      */
     @Override
     public final Set<String> getSupportedAnnotationTypes() {
 
-        SupportedAnnotationTypes supported = this.getClass().getAnnotation(
-                SupportedAnnotationTypes.class);
+        SupportedAnnotationTypes supported =
+                this.getClass().getAnnotation(SupportedAnnotationTypes.class);
         if (supported != null) {
-            ErrorReporter.errorAbort("@SupportedAnnotationTypes should not be written on any checker;"
+            ErrorReporter.errorAbort(
+                    "@SupportedAnnotationTypes should not be written on any checker;"
                             + " supported annotation types are inherited from SourceChecker.");
         }
         return Collections.singleton("*");
     }
 
     /**
-     * @return string keys that a checker honors for suppressing warnings
-     *         and errors that it issues.  Each such key suppresses all
-     *         warnings issued by the checker.
-     *
+     * @return string keys that a checker honors for suppressing warnings and errors that it issues.
+     *     Each such key suppresses all warnings issued by the checker.
      * @see SuppressWarningsKeys
      */
     public Collection<String> getSuppressWarningsKeys() {
@@ -1846,8 +1824,7 @@ public abstract class SourceChecker
      * @return collection of warning keys
      */
     protected final Collection<String> getStandardSuppressWarningsKeys() {
-        SuppressWarningsKeys annotation =
-            this.getClass().getAnnotation(SuppressWarningsKeys.class);
+        SuppressWarningsKeys annotation = this.getClass().getAnnotation(SuppressWarningsKeys.class);
 
         Set<String> result = new HashSet<>();
         result.add(SUPPRESS_ALL_KEY);
@@ -1865,7 +1842,8 @@ public abstract class SourceChecker
             if (indexOfChecker == -1) {
                 indexOfChecker = className.lastIndexOf("Subchecker");
             }
-            String key = (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
+            String key =
+                    (indexOfChecker == -1) ? className : className.substring(0, indexOfChecker);
             result.add(key.trim().toLowerCase());
         }
 
@@ -1873,12 +1851,11 @@ public abstract class SourceChecker
     }
 
     /**
-     * Tests whether the class owner of the passed element is an unannotated
-     * class and matches the pattern specified in the
-     * {@code checker.skipUses} property.
+     * Tests whether the class owner of the passed element is an unannotated class and matches the
+     * pattern specified in the {@code checker.skipUses} property.
      *
-     * @param element   an element
-     * @return  true iff the enclosing class of element should be skipped
+     * @param element an element
+     * @return true iff the enclosing class of element should be skipped
      */
     public final boolean shouldSkipUses(Element element) {
         if (element == null) {
@@ -1890,13 +1867,12 @@ public abstract class SourceChecker
     }
 
     /**
-     * Tests whether the class owner of the passed type matches
-     * the pattern specified in the {@code checker.skipUses} property.
-     * In contrast to {@link #shouldSkipUses(Element)} this version
-     * can also be used from primitive types, which don't have an element.
+     * Tests whether the class owner of the passed type matches the pattern specified in the {@code
+     * checker.skipUses} property. In contrast to {@link #shouldSkipUses(Element)} this version can
+     * also be used from primitive types, which don't have an element.
      *
-     * @param typeName   the fully-qualified name of a type
-     * @return  true iff the enclosing class of element should be skipped
+     * @param typeName the fully-qualified name of a type
+     * @return true iff the enclosing class of element should be skipped
      */
     public final boolean shouldSkipUses(String typeName) {
         // System.out.printf("shouldSkipUses(%s) %s%nskipUses %s%nonlyUses %s%nresult %s%n",
@@ -1918,12 +1894,12 @@ public abstract class SourceChecker
             onlyUsesPattern = getOnlyUsesPattern(getOptions());
         }
         return skipUsesPattern.matcher(typeName).find()
-                || ! onlyUsesPattern.matcher(typeName).find();
+                || !onlyUsesPattern.matcher(typeName).find();
     }
 
     /**
-     * Tests whether the class definition should not be checked because it
-     * matches the {@code checker.skipDefs} property.
+     * Tests whether the class definition should not be checked because it matches the {@code
+     * checker.skipDefs} property.
      *
      * @param node class to potentially skip
      * @return true if checker should not test node
@@ -1945,14 +1921,14 @@ public abstract class SourceChecker
         }
 
         return skipDefsPattern.matcher(qualifiedName).find()
-                || ! onlyDefsPattern.matcher(qualifiedName).find();
+                || !onlyDefsPattern.matcher(qualifiedName).find();
     }
 
     /**
-     * Tests whether the method definition should not be checked because it
-     * matches the {@code checker.skipDefs} property.
+     * Tests whether the method definition should not be checked because it matches the {@code
+     * checker.skipDefs} property.
      *
-     * TODO: currently only uses the class definition. Refine pattern. Same for skipUses.
+     * <p>TODO: currently only uses the class definition. Refine pattern. Same for skipUses.
      *
      * @param cls class to potentially skip
      * @param meth method to potentially skip
@@ -1962,13 +1938,12 @@ public abstract class SourceChecker
         return shouldSkipDefs(cls);
     }
 
-
     /**
      * A helper function to parse a Properties file
      *
-     * @param cls   the class whose location is the base of the file path
+     * @param cls the class whose location is the base of the file path
      * @param filePath the name/path of the file to be read
-     * @return  the properties
+     * @return the properties
      */
     protected Properties getProperties(Class<?> cls, String filePath) {
         Properties prop = new Properties();

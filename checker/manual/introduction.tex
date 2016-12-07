@@ -30,7 +30,7 @@ The Checker Framework comes with checkers for specific types of errors:
   (see \chapterpageref{lock-checker})
 \item
   \ahrefloc{fenum-checker}{Fake Enum Checker} to allow type-safe fake enum
-  patterns (see \chapterpageref{fenum-checker})
+  patterns and type aliases or typedefs (see \chapterpageref{fenum-checker})
 \item
   \ahrefloc{tainting-checker}{Tainting Checker} for trust and security errors
   (see \chapterpageref{tainting-checker})
@@ -70,9 +70,9 @@ The Checker Framework comes with checkers for specific types of errors:
   performed on correct units of measurement
   (see \chapterpageref{units-checker})
 \item
-  \ahrefloc{unsignedness-checker}{Unsignedness Checker} to
+  \ahrefloc{signedness-checker}{Signedness Checker} to
   ensure unsigned and signed values are not mixed
-  (see \chapterpageref{unsignedness-checker})
+  (see \chapterpageref{signedness-checker})
 \item
   \ahrefloc{constant-value-checker}{Constant Value Checker} to determine
   whether an expression's value can be known at compile time
@@ -195,10 +195,7 @@ build the latest development version from source
 \textbf{Requirement:}
 You must have \textbf{JDK 7} or later installed.  You can get JDK 7 from
 \href{http://www.oracle.com/technetwork/java/javase/downloads/index.html}{Oracle}
-or elsewhere.  If you are using Apple Mac OS X, you can use
-\href{https://developer.apple.com/search/index.php?q=java}{Apple's implementation},
-\href{http://landonf.bikemonkey.org/static/soylatte/}{SoyLatte},
-or the \href{http://openjdk.java.net/}{OpenJDK}.
+or elsewhere.
 
 The installation process is simple!  It has two required steps and one
 optional step.
@@ -208,7 +205,7 @@ optional step.
   %BEGIN LATEX
   \\
   %END LATEX
-  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-2.0.1.zip}
+  \url{http://types.cs.washington.edu/checker-framework/current/checker-framework-2.1.6.zip}
 
 \item
   Unzip it to create a \code{checker-framework} directory.
@@ -577,8 +574,14 @@ You can pass command-line arguments to a checker via javac's standard \<-A>
 option (``\<A>'' stands for ``annotation'').  All of the distributed
 checkers support the following command-line options.
 
+% This list should be kept in sync with file
+% framework/src/org/checkerframework/framework/source/SourceChecker.java
+
 Unsound checking: ignore some errors
 \begin{itemize}
+\item \<-AsuppressWarnings>
+  Suppress all warnings matching the given key; see
+  Section~\ref{suppresswarnings-command-line}
 \item \<-AskipUses>, \<-AonlyUses>
   Suppress all errors and warnings at all uses of a given class --- or at all
   uses except those of a given class.  See Section~\ref{askipuses}
@@ -586,9 +589,6 @@ Unsound checking: ignore some errors
   Suppress all errors and warnings within the definition of a given class
   --- or everywhere except within the definition of a given class.  See
   Section~\ref{askipdefs}
-\item \<-AsuppressWarnings>
-  Suppress all warnings matching the given key; see
-  Section~\ref{suppresswarnings-command-line}
 \item \<-AignoreRawTypeArguments>
   Ignore subtype tests for type arguments that were inferred for a raw
   type.  If possible, it is better to write the type arguments.  See
@@ -598,17 +598,11 @@ Unsound checking: ignore some errors
   Section~\ref{type-refinement-purity}.
 \item \<-AassumeAssertionsAreEnabled>, \<-AassumeAssertionsAreDisabled>
   Whether to assume that assertions are enabled or disabled; see Section~\ref{type-refinement-assertions}.
-\item \<-AuseDefaultsForUncheckedCode>
-  Enables/disables unchecked code defualts.  Takes arguments ``source,bytecode''.
-  ``-source,-bytecode'' is the default setting.
-  ``bytecode'' specifies
-  whether the checker should apply unchecked code defaults to
-  bytecode; see
-  Section~\ref{defaults-classfile}.
-  Outside the scope of any relevant
-  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source'' specifies whether unchecked code
-  default annotations are applied to source code and suppress all type-checking warnings; see
-  Section~\ref{compiling-libraries}.
+\item \<-Awarns>
+  Treat checker errors as warnings.  If you use this, you
+  may wish to also supply \code{-Xmaxwarns 10000}, because by default
+  \<javac> prints at most 100 warnings.  Don't supply \code{-Werror},
+  which is a javac argument to halt compilation if a warning is issued.
 \end{itemize}
 
 \label{unsound-by-default}
@@ -627,6 +621,22 @@ More sound (strict) checking: enable errors that are disabled by default
   another only if they have exactly the same element type.  By default,
   the Checker Framework unsoundly permits covariant array subtyping, just
   as Java does.  See Section~\ref{invariant-arrays}.
+\item \<-AcheckCastElementType>
+  In a cast, require that parameterized type arguments and array elements
+  are the same.  By default, the Checker Framework unsoundly permits them
+  to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
+  and Section~\ref{invariant-arrays}.
+\item \<-AuseDefaultsForUncheckedCode>
+  Enables/disables unchecked code defualts.  Takes arguments ``source,bytecode''.
+  ``-source,-bytecode'' is the (unsound) default setting.
+  ``bytecode'' specifies
+  whether the checker should apply unchecked code defaults to
+  bytecode; see
+  Section~\ref{defaults-classfile}.
+  Outside the scope of any relevant
+  \refqualclass{framework/qual}{AnnotatedFor} annotation, ``source'' specifies whether unchecked code
+  default annotations are applied to source code and suppress all type-checking warnings; see
+  Section~\ref{compiling-libraries}.
 \item \<-AconcurrentSemantics>
   Whether to assume concurrent semantics (field values may change at any
   time) or sequential semantics; see Section~\ref{faq-concurrency}.
@@ -636,24 +646,24 @@ Type-checking modes:  enable/disable functionality
 \begin{itemize}
 \item \<-Alint>
   Enable or disable optional checks; see Section~\ref{lint-options}.
-\item \<-AshowSuppressWarningKeys>
-  With each warning, show all possible keys to suppress that warning;
-  see Section~\ref{suppresswarnings-command-line}
 \item \<-AsuggestPureMethods>
   Suggest methods that could be marked
   \refqualclass{dataflow/qual}{SideEffectFree},
   \refqualclass{dataflow/qual}{Deterministic},
   or \refqualclass{dataflow/qual}{Pure}; see
   Section~\ref{type-refinement-purity}.
-\item \<-AcheckCastElementType>
-  In a cast, require that parameterized type arguments and array elements
-  are the same.  By default, the Checker Framework unsoundly permits them
-  to differ, just as Java does.  See Section~\ref{covariant-type-parameters}
-  and Section~\ref{invariant-arrays}.
-\item \<-Awarns>
-  Treat checker errors as warnings.  If you use this, you
-  may wish to also supply \code{-Xmaxwarns 10000}, because by default
-  \<javac> prints at most 100 warnings.
+\item \<-AresolveReflection>
+  Determine the target of reflective calls, and perform more precise
+  type-checking based no that information; see
+  Section~\ref{reflection-resolution}.  \<-AresolveReflection=debug> causes
+  debugging information to be output.
+\item \<-Ainfer>
+  Output suggested annotations for method signatures and fields.
+  These annotations may reduce the number of type-checking
+  errors when running type-checking in the future; see
+  Section~\ref{whole-program-inference}.
+\item \<-AshowSuppressWarningKeys>
+  With each warning, show all possible keys to suppress that warning.
 \end{itemize}
 
 Partially-annotated libraries
@@ -676,35 +686,26 @@ Partially-annotated libraries
   Section~\ref{compiling-libraries}.
 \end{itemize}
 
-Inference
-\begin{itemize}
-\item \<-Ainfer>
-  Output suggested annotations for method signatures and fields.
-  These annotations may reduce the number of type-checking
-  errors when running type-checking in the future; see
-  Section~\ref{whole-program-inference}.
-
-\end{itemize}
-
 Debugging
 \begin{itemize}
 \item
  \<-AprintAllQualifiers>,
+ \<-AprintVerboseGenerics>,
  \<-Adetailedmsgtext>,
  \<-AprintErrorStack>,
  \<-Anomsgtext>
-Amount of detail in messages; see Section~\ref{debugging-options-detail}.
+Amount of detail in messages; see Section~\ref{creating-debugging-options-detail}.
 
 \item
  \<-Aignorejdkastub>,
- \<-Anocheckjdk>
- \<-AstubDebug>,
-Stub and JDK libraries; see Section~\ref{debugging-options-libraries}
+ \<-Anocheckjdk>,
+ \<-AstubDebug>
+Stub and JDK libraries; see Section~\ref{creating-debugging-options-libraries}.
 
 \item
  \<-Afilenames>,
  \<-Ashowchecks>
-Progress tracing; see Section~\ref{debugging-options-progress}
+Progress tracing; see Section~\ref{creating-debugging-options-progress}.
 
 \item
 \<-AoutputArgsToFile>
@@ -714,14 +715,21 @@ This produces a standalone command line that can be executed independently
 of the tool that generated it can make it easier to reproduce, report, and
 debug issues.  For example, the command line can be modified to enable
 attaching a debugger.
-See Section~\ref{debugging-options-output-args}
+See Section~\ref{creating-debugging-options-output-args}.
 
 \item
  \<-Aflowdotdir>,
  \<-Averbosecfg>,
- \<-Acfgviz>,
- \<-AresourceStats>
-Miscellaneous debugging options; see Section~\ref{debugging-options-misc}
+ \<-Acfgviz>
+ Draw a visualization of the CFG (control flow graph); see
+ Section~\ref{creating-debugging-options-misc}.
+
+\item
+ \<-AresourceStats>,
+ \<-AatfDoNotCache>,
+ \<-AatfCacheSize>
+Miscellaneous debugging options; see Section~\ref{creating-debugging-options-misc}.
+
 \end{itemize}
 
 
@@ -994,9 +1002,9 @@ libraries that your code uses.
 The checker infers annotations for local variables (see
 Section~\ref{type-refinement}).  Usually, you only need to annotate fields
 and method signatures.  After doing those, you can add annotations inside
-method bodies if the checker is unable to infer the correct annotation, if
-you need to suppress a warning (see Section~\ref{suppressing-warnings}),
-etc.
+method bodies if the checker is unable to infer the correct annotation.
+% or if
+% you need to suppress a warning (see Section~\ref{suppressing-warnings}).
 
 
 \subsection{Annotations indicate normal behavior\label{annotate-normal-behavior}}
@@ -1042,7 +1050,7 @@ as \code{@Nullable} would suppress such warnings, which is undesirable.
 % library methods; if the method is type-checked, then the type-checker
 % warnings will lead you to leave the formal parameter as the default, which
 % means \<@NonNull>.
-If a method can possibly throw exception because its parameter
+If a method can possibly throw an exception because its parameter
 is \<null>, then that parameter's type should be \<@NonNull>, which
 guarantees that the type-checker will issue a warning for every client
 use that has the potential to cause an exception.  Don't write

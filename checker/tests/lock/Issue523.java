@@ -4,16 +4,20 @@
 import org.checkerframework.checker.lock.qual.*;
 
 class Issue523 {
-    static class MyClass { Object field; }
-    static final @GuardedBy("itself") MyClass m = new MyClass();
+    static class MyClass {
+        Object field;
+    }
+
+    static final @GuardedBy("<self>") MyClass m = new MyClass();
 
     static void foo() {
-        Thread t = new Thread() {
-            public void run() {
-                synchronized(m) {
-                    m.field = new Object();
-                }
-            }
-        };
+        Thread t =
+                new Thread() {
+                    public void run() {
+                        synchronized (m) {
+                            m.field = new Object();
+                        }
+                    }
+                };
     }
 }

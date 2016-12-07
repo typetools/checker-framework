@@ -117,11 +117,33 @@ The paper
 
 Javari~\cite{TschantzE2005}, IGJ~\cite{ZibinPAAKE2007}, and
 OIGJ~\cite{ZibinPLAE2010} are type systems that enforce immutability
-constraints.  They were distributed with the Checker Framework through
-release 1.9.13, then removed because the implementations were not being
-maintained.  If you wish to use them, install
+constraints.  Type-checkers for all three type systems were distributed
+with the Checker Framework through release 1.9.13 (dated 1 April 2016).
+If you wish to use them, install
 \href{http://types.cs.washington.edu/checker-framework/releases/1.9.13/}{Checker
   Framework version 1.9.13}.
+
+They were removed from the main distribution on June 1, 2016 because the
+implementations were not being maintained as the Checker Framework evolved.
+The type systems are valuable, and some people found the type-checkers
+useful.  However,
+% the type-checkers should be rewritten from scratch and
+we wanted
+to focus on distributing checkers that are currently being maintained.
+
+
+\section{Read Checker for CERT FIO08-J\label{read-checker}}
+
+CERT
+rule \href{https://www.securecoding.cert.org/confluence/display/java/FIO08-J.+Distinguish+between+characters+or+bytes+read+from+a+stream+and+-1}{FIO08-J}
+describes a rule for the correct handling of characters/bytes read
+from a stream.
+
+The Read Checker enforces this rule.
+It is available from:
+
+\url{https://github.com/opprop/ReadChecker}
+
 
 
 % LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI

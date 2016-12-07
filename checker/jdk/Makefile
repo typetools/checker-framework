@@ -23,7 +23,7 @@ jdk.jar:
 # Helper
 
 # All class files that contain an annotation, by directory
-ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class')
+ANNOTATED_CLASSES_BY_DIR = $(shell find $(CHECKER_DIRS) -name '*.class' | sort)
 # All class files that contain some annotation, possibly with duplicates.
 # These, and only these, need to be extracted from $(CTSYM).
 ANNOTATED_CLASSES = \
@@ -51,7 +51,7 @@ annotated/%.class:
 # Ignore errors for now; we get errors when building the JDK for Java 6 but looking for files that are in the annotated JDK because of Java 7.
 	-cd annotated; unzip $(CTSYM) 'META-INF/sym/rt.jar/$*.class' > /dev/null
 	-cp -R annotated/META-INF/sym/rt.jar/* annotated/
-	-rm -rf annotated/META-INF
+	rm -rf annotated/META-INF
 
 
 

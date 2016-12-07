@@ -1,15 +1,14 @@
 package org.checkerframework.dataflow.analysis;
 
+import com.sun.tools.javac.code.Symbol.VarSymbol;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.ClassNameNode;
@@ -31,28 +30,25 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
-import com.sun.tools.javac.code.Symbol.VarSymbol;
-
 /**
- * Collection of classes and helper functions to represent Java expressions
- * about which the org.checkerframework.dataflow analysis can possibly infer facts. Expressions
- * include:
+ * Collection of classes and helper functions to represent Java expressions about which the
+ * org.checkerframework.dataflow analysis can possibly infer facts. Expressions include:
+ *
  * <ul>
- * <li>Field accesses (e.g., <em>o.f</em>)</li>
- * <li>Local variables (e.g., <em>l</em>)</li>
- * <li>This reference (e.g., <em>this</em>)</li>
- * <li>Pure method calls (e.g., <em>o.m()</em>)</li>
- * <li>Unknown other expressions to mark that something else was present.</li>
+ *   <li>Field accesses (e.g., <em>o.f</em>)
+ *   <li>Local variables (e.g., <em>l</em>)
+ *   <li>This reference (e.g., <em>this</em>)
+ *   <li>Pure method calls (e.g., <em>o.m()</em>)
+ *   <li>Unknown other expressions to mark that something else was present.
  * </ul>
  *
  * @author Stefan Heule
- *
  */
 public class FlowExpressions {
 
     /**
-     * @return the internal representation (as {@link FieldAccess}) of a
-     *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
+     * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     *     Can contain {@link Unknown} as receiver.
      */
     public static FieldAccess internalReprOfFieldAccess(
             AnnotationProvider provider, FieldAccessNode node) {
@@ -67,8 +63,8 @@ public class FlowExpressions {
     }
 
     /**
-     * @return the internal representation (as {@link FieldAccess}) of a
-     *         {@link FieldAccessNode}. Can contain {@link Unknown} as receiver.
+     * @return the internal representation (as {@link FieldAccess}) of a {@link FieldAccessNode}.
+     *     Can contain {@link Unknown} as receiver.
      */
     public static ArrayAccess internalReprOfArrayAccess(
             AnnotationProvider provider, ArrayAccessNode node) {
@@ -78,26 +74,25 @@ public class FlowExpressions {
     }
 
     /**
-     * We ignore operations such as widening and
-     * narrowing when computing the internal representation.
+     * We ignore operations such as widening and narrowing when computing the internal
+     * representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any
-     *         {@link Node}. Might contain {@link Unknown}.
+     * @return the internal representation (as {@link Receiver}) of any {@link Node}. Might contain
+     *     {@link Unknown}.
      */
-    public static Receiver internalReprOf(AnnotationProvider provider,
-            Node receiverNode) {
+    public static Receiver internalReprOf(AnnotationProvider provider, Node receiverNode) {
         return internalReprOf(provider, receiverNode, false);
     }
 
     /**
-     * We ignore operations such as widening and
-     * narrowing when computing the internal representation.
+     * We ignore operations such as widening and narrowing when computing the internal
+     * representation.
      *
-     * @return the internal representation (as {@link Receiver}) of any
-     *         {@link Node}. Might contain {@link Unknown}.
+     * @return the internal representation (as {@link Receiver}) of any {@link Node}. Might contain
+     *     {@link Unknown}.
      */
-    public static Receiver internalReprOf(AnnotationProvider provider,
-            Node receiverNode, boolean allowNonDeterministic) {
+    public static Receiver internalReprOf(
+            AnnotationProvider provider, Node receiverNode, boolean allowNonDeterministic) {
         Receiver receiver = null;
         if (receiverNode instanceof FieldAccessNode) {
             FieldAccessNode fan = (FieldAccessNode) receiverNode;
@@ -112,7 +107,7 @@ public class FlowExpressions {
                 // of a call to getClass(). However for the purposes of dataflow
                 // analysis, and value stores, this is the equivalent of a ClassNameNode.
                 receiver = new ClassName(fan.getReceiver().getType());
-            }  else {
+            } else {
                 receiver = internalReprOfFieldAccess(provider, fan);
             }
         } else if (receiverNode instanceof ExplicitThisLiteralNode) {
@@ -129,16 +124,13 @@ public class FlowExpressions {
             receiver = internalReprOfArrayAccess(provider, a);
         } else if (receiverNode instanceof StringConversionNode) {
             // ignore string conversion
-            return internalReprOf(provider,
-                    ((StringConversionNode) receiverNode).getOperand());
+            return internalReprOf(provider, ((StringConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof WideningConversionNode) {
             // ignore widening
-            return internalReprOf(provider,
-                    ((WideningConversionNode) receiverNode).getOperand());
+            return internalReprOf(provider, ((WideningConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof NarrowingConversionNode) {
             // ignore narrowing
-            return internalReprOf(provider,
-                    ((NarrowingConversionNode) receiverNode).getOperand());
+            return internalReprOf(provider, ((NarrowingConversionNode) receiverNode).getOperand());
         } else if (receiverNode instanceof ClassNameNode) {
             ClassNameNode cn = (ClassNameNode) receiverNode;
             receiver = new ClassName(cn.getType());
@@ -146,12 +138,11 @@ public class FlowExpressions {
             ValueLiteralNode vn = (ValueLiteralNode) receiverNode;
             receiver = new ValueLiteral(vn.getType(), vn);
         } else if (receiverNode instanceof ArrayCreationNode) {
-            ArrayCreationNode an = (ArrayCreationNode)receiverNode;
+            ArrayCreationNode an = (ArrayCreationNode) receiverNode;
             receiver = new ArrayCreation(an.getType(), an.getDimensions(), an.getInitializers());
         } else if (receiverNode instanceof MethodInvocationNode) {
             MethodInvocationNode mn = (MethodInvocationNode) receiverNode;
-            ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn
-                    .getTree());
+            ExecutableElement invokedMethod = TreeUtils.elementFromUse(mn.getTree());
 
             // check if this represents a boxing operation of a constant, in which
             // case we treat the method call as deterministic, because there is no way
@@ -165,21 +156,20 @@ public class FlowExpressions {
                 }
             }
 
-            if (PurityUtils.isDeterministic(provider, invokedMethod) || allowNonDeterministic || considerDeterministic) {
+            if (PurityUtils.isDeterministic(provider, invokedMethod)
+                    || allowNonDeterministic
+                    || considerDeterministic) {
                 List<Receiver> parameters = new ArrayList<>();
                 for (Node p : mn.getArguments()) {
                     parameters.add(internalReprOf(provider, p));
                 }
                 Receiver methodReceiver;
                 if (ElementUtils.isStatic(invokedMethod)) {
-                    methodReceiver = new ClassName(mn.getTarget().getReceiver()
-                            .getType());
+                    methodReceiver = new ClassName(mn.getTarget().getReceiver().getType());
                 } else {
-                    methodReceiver = internalReprOf(provider, mn.getTarget()
-                            .getReceiver());
+                    methodReceiver = internalReprOf(provider, mn.getTarget().getReceiver());
                 }
-                receiver = new MethodCall(mn.getType(), invokedMethod,
-                        methodReceiver, parameters);
+                receiver = new MethodCall(mn.getType(), invokedMethod, methodReceiver, parameters);
             }
         }
 
@@ -189,7 +179,7 @@ public class FlowExpressions {
         return receiver;
     }
 
-    public static abstract class Receiver {
+    public abstract static class Receiver {
         protected final TypeMirror type;
 
         public Receiver(TypeMirror type) {
@@ -208,38 +198,32 @@ public class FlowExpressions {
         }
 
         /**
-         * Returns true if and only if the value this expression stands for
-         * cannot be changed by a method call. This is the case for local
-         * variables, the self reference as well as final field accesses for
-         * whose receiver {@link #isUnmodifiableByOtherCode} is true.
+         * Returns true if and only if the value this expression stands for cannot be changed by a
+         * method call. This is the case for local variables, the self reference as well as final
+         * field accesses for whose receiver {@link #isUnmodifiableByOtherCode} is true.
          */
         public abstract boolean isUnmodifiableByOtherCode();
 
-        /**
-         * @return true if and only if the two receiver are syntactically
-         *         identical
-         */
+        /** @return true if and only if the two receiver are syntactically identical */
         public boolean syntacticEquals(Receiver other) {
             return other == this;
         }
 
         /**
-         * @return true if and only if this receiver contains a receiver that is
-         *         syntactically equal to {@code other}.
+         * @return true if and only if this receiver contains a receiver that is syntactically equal
+         *     to {@code other}.
          */
         public boolean containsSyntacticEqualReceiver(Receiver other) {
             return syntacticEquals(other);
         }
 
         /**
-         * Returns true if and only if {@code other} appears anywhere in this
-         * receiver or an expression appears in this receiver such that
-         * {@code other} might alias this expression, and that expression is
-         * modifiable.
+         * Returns true if and only if {@code other} appears anywhere in this receiver or an
+         * expression appears in this receiver such that {@code other} might alias this expression,
+         * and that expression is modifiable.
          *
-         * <p>
-         * This is always true, except for cases where the Java type information
-         * prevents aliasing and none of the subexpressions can alias 'other'.
+         * <p>This is always true, except for cases where the Java type information prevents
+         * aliasing and none of the subexpressions can alias 'other'.
          */
         public boolean containsModifiableAliasOf(Store<?> store, Receiver other) {
             return this.equals(other) || store.canAlias(this, other);
@@ -264,8 +248,7 @@ public class FlowExpressions {
             this.field = node.getElement();
         }
 
-        public FieldAccess(Receiver receiver, TypeMirror type,
-                VariableElement fieldElement) {
+        public FieldAccess(Receiver receiver, TypeMirror type, VariableElement fieldElement) {
             super(type);
             this.receiver = receiver;
             this.field = fieldElement;
@@ -285,8 +268,7 @@ public class FlowExpressions {
                 return false;
             }
             FieldAccess fa = (FieldAccess) obj;
-            return fa.getField().equals(getField())
-                    && fa.getReceiver().equals(getReceiver());
+            return fa.getField().equals(getField()) && fa.getReceiver().equals(getReceiver());
         }
 
         @Override
@@ -302,8 +284,7 @@ public class FlowExpressions {
 
         @Override
         public boolean containsSyntacticEqualReceiver(Receiver other) {
-            return syntacticEquals(other)
-                    || receiver.containsSyntacticEqualReceiver(other);
+            return syntacticEquals(other) || receiver.containsSyntacticEqualReceiver(other);
         }
 
         @Override
@@ -314,7 +295,7 @@ public class FlowExpressions {
             FieldAccess fa = (FieldAccess) other;
             return super.syntacticEquals(other)
                     || fa.getField().equals(getField())
-                    && fa.getReceiver().syntacticEquals(getReceiver());
+                            && fa.getReceiver().syntacticEquals(getReceiver());
         }
 
         @Override
@@ -375,12 +356,10 @@ public class FlowExpressions {
     }
 
     /**
-     * A ClassName represents the occurrence of a class as part of a static
-     * field access or method invocation.
+     * A ClassName represents the occurrence of a class as part of a static field access or method
+     * invocation.
      */
     public static class ClassName extends Receiver {
-        protected Element element;
-
         public ClassName(TypeMirror type) {
             super(type);
         }
@@ -459,7 +438,6 @@ public class FlowExpressions {
         public boolean isUnmodifiableByOtherCode() {
             return false;
         }
-
     }
 
     public static class LocalVariable extends Receiver {
@@ -487,9 +465,12 @@ public class FlowExpressions {
             // because Types requires a processing environment, and FlowExpressions is
             // designed to be independent of processing environment.  See also
             // calls to getType().toString() in FlowExpressions.
-            return vsother.name.contentEquals(vs.name) &&
-                   vsother.type.unannotatedType().toString().equals(vs.type.unannotatedType().toString()) &&
-                   vsother.owner.toString().equals(vs.owner.toString());
+            return vsother.name.contentEquals(vs.name)
+                    && vsother.type
+                            .unannotatedType()
+                            .toString()
+                            .equals(vs.type.unannotatedType().toString())
+                    && vsother.owner.toString().equals(vs.owner.toString());
         }
 
         public Element getElement() {
@@ -499,9 +480,8 @@ public class FlowExpressions {
         @Override
         public int hashCode() {
             VarSymbol vs = (VarSymbol) element;
-            return HashCodeUtils.hash(vs.name.toString(),
-                    vs.type.unannotatedType().toString(),
-                    vs.owner.toString());
+            return HashCodeUtils.hash(
+                    vs.name.toString(), vs.type.unannotatedType().toString(), vs.owner.toString());
         }
 
         @Override
@@ -565,11 +545,9 @@ public class FlowExpressions {
             }
             ValueLiteral other = (ValueLiteral) obj;
             if (value == null) {
-                return type.toString().equals(other.type.toString())
-                        && other.value == null;
+                return type.toString().equals(other.type.toString()) && other.value == null;
             }
-            return type.toString().equals(other.type.toString())
-                    && value.equals(other.value);
+            return type.toString().equals(other.type.toString()) && value.equals(other.value);
         }
 
         @Override
@@ -598,17 +576,18 @@ public class FlowExpressions {
         }
     }
 
-    /**
-     * A method call.
-     */
+    /** A method call. */
     public static class MethodCall extends Receiver {
 
         protected final Receiver receiver;
         protected final List<Receiver> parameters;
-        protected final Element method;
+        protected final ExecutableElement method;
 
-        public MethodCall(TypeMirror type, Element method,
-                Receiver receiver, List<Receiver> parameters) {
+        public MethodCall(
+                TypeMirror type,
+                ExecutableElement method,
+                Receiver receiver,
+                List<Receiver> parameters) {
             super(type);
             this.receiver = receiver;
             this.parameters = parameters;
@@ -631,24 +610,21 @@ public class FlowExpressions {
             return false;
         }
 
-        /**
-         * @return the method call receiver (for inspection only - do not modify)
-         */
+        /** @return the method call receiver (for inspection only - do not modify) */
         public Receiver getReceiver() {
             return receiver;
         }
 
         /**
-         * @return the method call parameters (for inspection only - do not modify any of the parameters)
+         * @return the method call parameters (for inspection only - do not modify any of the
+         *     parameters)
          */
         public List<Receiver> getParameters() {
             return Collections.unmodifiableList(parameters);
         }
 
-        /**
-         * @return the Element for the method call
-         */
-        public Element getElement() {
+        /** @return the ExecutableElement for the method call */
+        public ExecutableElement getElement() {
             return method;
         }
 
@@ -719,8 +695,7 @@ public class FlowExpressions {
                 }
                 i++;
             }
-            return receiver.equals(other.receiver)
-                    && method.equals(other.method);
+            return receiver.equals(other.receiver) && method.equals(other.method);
         }
 
         @Override
@@ -753,9 +728,7 @@ public class FlowExpressions {
         }
     }
 
-    /**
-     * A deterministic method call.
-     */
+    /** A deterministic method call. */
     public static class ArrayAccess extends Receiver {
 
         protected final Receiver receiver;
@@ -793,7 +766,8 @@ public class FlowExpressions {
 
         @Override
         public boolean containsSyntacticEqualReceiver(Receiver other) {
-            return syntacticEquals(other) || receiver.syntacticEquals(other)
+            return syntacticEquals(other)
+                    || receiver.syntacticEquals(other)
                     || index.syntacticEquals(other);
         }
 

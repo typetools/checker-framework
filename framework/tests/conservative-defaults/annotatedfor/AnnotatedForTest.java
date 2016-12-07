@@ -1,47 +1,46 @@
 import org.checkerframework.framework.qual.AnnotatedFor;
-import tests.util.SubQual;
-import tests.util.SuperQual;
+import testlib.util.SubQual;
+import testlib.util.SuperQual;
 
-class AnnotatedForTest
-{
-/*
-     Test a mix of @SuppressWarnings with @AnnotatedFor. @SuppressWarnings should win, but only within the kinds of warnings it promises to suppress. It should win because
-     it is a specific intent of suppressing warnings, whereas NOT suppressing warnings using AnnotatedFor is a default behavior, and SW is a user-specified behavior.
-*/
+class AnnotatedForTest {
+    /*
+         Test a mix of @SuppressWarnings with @AnnotatedFor. @SuppressWarnings should win, but only within the kinds of warnings it promises to suppress. It should win because
+         it is a specific intent of suppressing warnings, whereas NOT suppressing warnings using AnnotatedFor is a default behavior, and SW is a user-specified behavior.
+    */
 
-     // Test unannotated class initializer - no warnings should be issued
-     @SuperQual Object o1 = annotatedMethod(new Object());
-     @SubQual Object o2 = annotatedMethod(new Object());
-     Object o3 = unannotatedMethod(o2);
-     Object o4 = unannotatedMethod(o1);
+    // Test unannotated class initializer - no warnings should be issued
+    @SuperQual Object o1 = annotatedMethod(new Object());
+    @SubQual Object o2 = annotatedMethod(new Object());
+    Object o3 = unannotatedMethod(o2);
+    Object o4 = unannotatedMethod(o1);
 
-     static @SuperQual Object so1;
-     static @SubQual Object so2;
-     static Object so3, so4;
+    static @SuperQual Object so1;
+    static @SubQual Object so2;
+    static Object so3, so4;
 
-     // Test unannotated static initializer block - no warnings should be issued
-     static {
-         so1 = staticAnnotatedMethod(new Object());
-         so2 = staticAnnotatedMethod(new Object());
-         so3 = staticUnannotatedMethod(so2);
-         so4 = staticUnannotatedMethod(so1);
-     }
+    // Test unannotated static initializer block - no warnings should be issued
+    static {
+        so1 = staticAnnotatedMethod(new Object());
+        so2 = staticAnnotatedMethod(new Object());
+        so3 = staticUnannotatedMethod(so2);
+        so4 = staticUnannotatedMethod(so1);
+    }
 
-     @SuperQual Object o5;
-     @SubQual Object o6;
-     Object o7, o8;
+    @SuperQual Object o5;
+    @SubQual Object o6;
+    Object o7, o8;
 
-     // Test unannotated nonstatic initializer block - no warnings should be issued
-     {
-         o5 = annotatedMethod(new Object());
-         o6 = annotatedMethod(new Object());
-         o7 = unannotatedMethod(o6);
-         o8 = unannotatedMethod(o5);
-     }
+    // Test unannotated nonstatic initializer block - no warnings should be issued
+    {
+        o5 = annotatedMethod(new Object());
+        o6 = annotatedMethod(new Object());
+        o7 = unannotatedMethod(o6);
+        o8 = unannotatedMethod(o5);
+    }
 
-
-     @AnnotatedFor("subtyping") // This method is @AnnotatedFor("subtyping") so it can cause errors to be issued by calling other methods.
-     void method1() {
+    // This method is @AnnotatedFor("subtyping") so it can cause errors to be issued by calling other methods.
+    @AnnotatedFor("subtyping")
+    void method1() {
         // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since @SuperQual is annotated with @DefaultQualifierInHierarchy.
         @SuperQual Object o1 = annotatedMethod(new Object());
         //:: error: (assignment.type.incompatible)
@@ -63,9 +62,10 @@ class AnnotatedForTest
         Object o8 = unannotatedMethod(o1);
     }
 
-     @SuppressWarnings("all")
-     @AnnotatedFor("subtyping") // Same as method1, but the @SuppressWarnings overrides the @AnnotatedFor.
-     void method2() {
+    @SuppressWarnings("all")
+    @AnnotatedFor(
+            "subtyping") // Same as method1, but the @SuppressWarnings overrides the @AnnotatedFor.
+    void method2() {
         // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since @SuperQual is annotated with @DefaultQualifierInHierarchy.
         @SuperQual Object o1 = annotatedMethod(new Object());
         @SubQual Object o2 = annotatedMethod(new Object());
@@ -83,9 +83,10 @@ class AnnotatedForTest
         Object o8 = unannotatedMethod(o1);
     }
 
-     @SuppressWarnings("nullness")
-     @AnnotatedFor("subtyping") // Similar to method1. The @SuppressWarnings does not override the @AnnotatedFor because it suppressing warnings for a different typesystem.
-     void method3() {
+    @SuppressWarnings("nullness")
+    @AnnotatedFor(
+            "subtyping") // Similar to method1. The @SuppressWarnings does not override the @AnnotatedFor because it suppressing warnings for a different typesystem.
+    void method3() {
         // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since @SuperQual is annotated with @DefaultQualifierInHierarchy.
         @SuperQual Object o1 = annotatedMethod(new Object());
         //:: error: (assignment.type.incompatible)
@@ -110,7 +111,6 @@ class AnnotatedForTest
         return new Object();
     }
 
-
     @AnnotatedFor({})
     Object unannotatedMethod2(Object p) {
         return new Object();
@@ -121,26 +121,30 @@ class AnnotatedForTest
         return new Object();
     }
 
-    @AnnotatedFor({"nullness", "subtyping"}) // Annotated for more than one type system
+    // Annotated for more than one type system
+    @AnnotatedFor({"nullness", "subtyping"})
     void method4() {
-       //:: error: (assignment.type.incompatible)
-       @SubQual Object o2 = new @SuperQual Object();
+        //:: error: (assignment.type.incompatible)
+        @SubQual Object o2 = new @SuperQual Object();
     }
 
-    @AnnotatedFor("SubtypingChecker") // Different way of writing the checker name
+    // Different way of writing the checker name
+    @AnnotatedFor("SubtypingChecker")
     void method5() {
-       //:: error: (assignment.type.incompatible)
-       @SubQual Object o2 = new @SuperQual Object();
+        //:: error: (assignment.type.incompatible)
+        @SubQual Object o2 = new @SuperQual Object();
     }
 
-    @AnnotatedFor("org.checkerframework.common.subtyping.SubtypingChecker") // Different way of writing the checker name
+    // Different way of writing the checker name
+    @AnnotatedFor("org.checkerframework.common.subtyping.SubtypingChecker")
     void method6() {
-       //:: error: (assignment.type.incompatible)
-       @SubQual Object o2 = new @SuperQual Object();
+        //:: error: (assignment.type.incompatible)
+        @SubQual Object o2 = new @SuperQual Object();
     }
 
+    // Every method in this class should issue warnings for subtyping even if it's not marked with @AnnotatedFor, unless it's marked with @SuppressWarnings.
     @AnnotatedFor("subtyping")
-    class annotatedClass { // Every method in this class should issue warnings for subtyping even if it's not marked with AnnotatedFor, unless it's marked with SuppressWarnings.
+    class annotatedClass {
         // Test annotated class initializer
         // When calling annotatedMethod, we expect the usual (non-conservative) defaults, since @SuperQual is annotated with @DefaultQualifierInHierarchy.
         @SuperQual Object o1 = annotatedMethod(new Object());
@@ -167,13 +171,13 @@ class AnnotatedForTest
         }
 
         void method1() {
-           //:: error: (assignment.type.incompatible)
-           @SubQual Object o2 = new @SuperQual Object();
+            //:: error: (assignment.type.incompatible)
+            @SubQual Object o2 = new @SuperQual Object();
         }
 
         @SuppressWarnings("all")
         void method2() {
-           @SubQual Object o2 = new @SuperQual Object();
+            @SubQual Object o2 = new @SuperQual Object();
         }
     }
 
@@ -216,7 +220,7 @@ class AnnotatedForTest
         }
 
         void method1() {
-           @SubQual Object o2 = new @SuperQual Object();
+            @SubQual Object o2 = new @SuperQual Object();
         }
     }
 

@@ -1,6 +1,12 @@
 package org.checkerframework.framework.type.typeannotator;
 
 import com.sun.tools.javac.code.Type.WildcardType;
+import java.util.Set;
+import java.util.Stack;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -9,30 +15,23 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.TypesUtils;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeKind;
-import java.util.*;
-
 /**
- * {@link PropagationTypeAnnotator} adds qualifiers to types where the qualifier
- * to add should be transferred from one or more other types.
+ * {@link PropagationTypeAnnotator} adds qualifiers to types where the qualifier to add should be
+ * transferred from one or more other types.
  *
- * At the moment, the only function PropagationTypeAnnotator provides, is the
- * propagation of generic type parameter annotations to unannotated wildcards
- * with missing bounds annotations.
+ * <p>At the moment, the only function PropagationTypeAnnotator provides, is the propagation of
+ * generic type parameter annotations to unannotated wildcards with missing bounds annotations.
  *
- * @see #visitWildcard(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType, Object)
- *
- * PropagationTypeAnnotator traverses trees deeply by default.
- *
+ * @see
+ *     #visitWildcard(org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType,
+ *     Object)
+ *     <p>PropagationTypeAnnotator traverses trees deeply by default.
  */
 public class PropagationTypeAnnotator extends TypeAnnotator {
 
     // The PropagationTypeAnnotator is called recursively via TypeAnnotatorUtil.eraseBoundsThenAnnotate.
     // This flag prevents infinite recursion.
-    private boolean pause  = false;
+    private boolean pause = false;
     private Stack<AnnotatedDeclaredType> parents = new Stack<>();
 
     public PropagationTypeAnnotator(AnnotatedTypeFactory typeFactory) {
@@ -62,9 +61,10 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     }
 
     /**
-     * Sometimes the underlying type parameters of AnnotatedWildcardTypes are not available
-     * on the wildcards themselves.  Instead, record enclosing class to find the type parameter
-     * to use as a backup in visitWildcards.
+     * Sometimes the underlying type parameters of AnnotatedWildcardTypes are not available on the
+     * wildcards themselves. Instead, record enclosing class to find the type parameter to use as a
+     * backup in visitWildcards.
+     *
      * @param declaredType type to record
      */
     @Override
@@ -78,11 +78,10 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         return null;
     }
 
-
     /**
-     * Rather than defaulting the missing bounds of a wildcard, find the bound
-     * annotations on the type parameter it replaced.  Place those annotations
-     * on the wildcard.
+     * Rather than defaulting the missing bounds of a wildcard, find the bound annotations on the
+     * type parameter it replaced. Place those annotations on the wildcard.
+     *
      * @param wildcardAtm type to annotate
      */
     @Override
@@ -95,15 +94,20 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         final WildcardType wildcard = (WildcardType) wildcardAtm.getUnderlyingType();
         Element typeParamElement = TypesUtils.wildcardToTypeParam(wildcard);
         if (typeParamElement == null) {
-            typeParamElement = (parents.empty()) ? null : getTypeParamFromEnclosingClass(wildcardAtm, parents.peek());
+            typeParamElement =
+                    (parents.empty())
+                            ? null
+                            : getTypeParamFromEnclosingClass(wildcardAtm, parents.peek());
         }
 
         if (typeParamElement != null) {
             pause = true;
-            AnnotatedTypeVariable typeParam = (AnnotatedTypeVariable) typeFactory.getAnnotatedType(typeParamElement);
+            AnnotatedTypeVariable typeParam =
+                    (AnnotatedTypeVariable) typeFactory.getAnnotatedType(typeParamElement);
             pause = false;
 
-            final Set<? extends AnnotationMirror> tops = typeFactory.getQualifierHierarchy().getTopAnnotations();
+            final Set<? extends AnnotationMirror> tops =
+                    typeFactory.getQualifierHierarchy().getTopAnnotations();
 
             if (wildcard.isUnbound()) {
                 propagateExtendsBound(wildcardAtm, typeParam, tops);
@@ -115,32 +119,39 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
             } else { // is super bound
                 propagateExtendsBound(wildcardAtm, typeParam, tops);
             }
-
         }
         scan(wildcardAtm.getExtendsBound(), null);
         scan(wildcardAtm.getSuperBound(), null);
         return null;
     }
 
-    private void propagateSuperBound(AnnotatedWildcardType wildcard, AnnotatedTypeVariable typeParam,
-                                     Set<? extends AnnotationMirror> tops) {
+    private void propagateSuperBound(
+            AnnotatedWildcardType wildcard,
+            AnnotatedTypeVariable typeParam,
+            Set<? extends AnnotationMirror> tops) {
         applyAnnosFromBound(wildcard.getSuperBound(), typeParam.getLowerBound(), tops);
     }
 
-    private void propagateExtendsBound(AnnotatedWildcardType wildcard, AnnotatedTypeVariable typeParam,
-                                       Set<? extends AnnotationMirror> tops) {
+    private void propagateExtendsBound(
+            AnnotatedWildcardType wildcard,
+            AnnotatedTypeVariable typeParam,
+            Set<? extends AnnotationMirror> tops) {
         applyAnnosFromBound(wildcard.getExtendsBound(), typeParam.getUpperBound(), tops);
-
     }
 
-    /** Take the primary annotations from typeParamBound and place them as primary annotations on wildcard bound */
-    private void applyAnnosFromBound(final AnnotatedTypeMirror wildcardBound, final AnnotatedTypeMirror typeParamBound,
-                                     final Set<? extends AnnotationMirror> tops) {
+    /**
+     * Take the primary annotations from typeParamBound and place them as primary annotations on
+     * wildcard bound
+     */
+    private void applyAnnosFromBound(
+            final AnnotatedTypeMirror wildcardBound,
+            final AnnotatedTypeMirror typeParamBound,
+            final Set<? extends AnnotationMirror> tops) {
         // Type variables do not need primary annotations.
         // The type variable will have annotations placed on its
         // bounds via its declaration or defaulting rules
         if (wildcardBound.getKind() == TypeKind.TYPEVAR
-         || typeParamBound.getKind() == TypeKind.TYPEVAR) {
+                || typeParamBound.getKind() == TypeKind.TYPEVAR) {
             return;
         }
 
@@ -148,11 +159,17 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
             if (wildcardBound.getAnnotationInHierarchy(top) == null) {
                 final AnnotationMirror typeParamAnno = typeParamBound.getAnnotationInHierarchy(top);
                 if (typeParamAnno == null) {
-                    ErrorReporter.errorAbort("Missing annotation on type parameter\n"
-                        + "top=" + top + "\n"
-                        + "wildcardBound=" + wildcardBound + "\n"
-                        + "typeParamBound=" + typeParamBound + "\n"
-                    );
+                    ErrorReporter.errorAbort(
+                            "Missing annotation on type parameter\n"
+                                    + "top="
+                                    + top
+                                    + "\n"
+                                    + "wildcardBound="
+                                    + wildcardBound
+                                    + "\n"
+                                    + "typeParamBound="
+                                    + typeParamBound
+                                    + "\n");
                 } // else
                 wildcardBound.addAnnotation(typeParamAnno);
             }
@@ -160,13 +177,12 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
     }
 
     /**
-     * Search parent's type arguments for wildcard.  Using the index of wildcard,
-     * find the corresponding type parameter element and return it.
-     * Returns null if the wildcard is the result of substitution and therefore
-     * not in the list of type arguments.
+     * Search parent's type arguments for wildcard. Using the index of wildcard, find the
+     * corresponding type parameter element and return it. Returns null if the wildcard is the
+     * result of substitution and therefore not in the list of type arguments.
      */
-    private Element getTypeParamFromEnclosingClass(final AnnotatedWildcardType wildcard,
-                                                   final AnnotatedDeclaredType parent) {
+    private Element getTypeParamFromEnclosingClass(
+            final AnnotatedWildcardType wildcard, final AnnotatedDeclaredType parent) {
         Integer wildcardIndex = null;
         int currentIndex = 0;
         for (AnnotatedTypeMirror typeArg : parent.getTypeArguments()) {
@@ -180,16 +196,16 @@ public class PropagationTypeAnnotator extends TypeAnnotator {
         }
 
         if (wildcardIndex != null) {
-            final TypeElement typeElement = (TypeElement)
-                    typeFactory
-                        .getProcessingEnv()
-                        .getTypeUtils()
-                        .asElement(parent.getUnderlyingType());
+            final TypeElement typeElement =
+                    (TypeElement)
+                            typeFactory
+                                    .getProcessingEnv()
+                                    .getTypeUtils()
+                                    .asElement(parent.getUnderlyingType());
 
             return typeElement.getTypeParameters().get(wildcardIndex);
         }
 
         return null;
     }
-
 }

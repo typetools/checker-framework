@@ -1,14 +1,15 @@
 package tests;
 
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.io.File;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-import java.io.File;
+public class RegexTest extends CheckerFrameworkPerDirectoryTest {
 
-public class RegexTest extends CheckerFrameworkTest {
-
-    public RegexTest(File testFile) {
-        super(testFile,
+    public RegexTest(List<File> testFiles) {
+        super(
+                testFiles,
                 org.checkerframework.checker.regex.RegexChecker.class,
                 "regex",
                 "-Anomsgtext");
@@ -16,6 +17,6 @@ public class RegexTest extends CheckerFrameworkTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[]{"regex", "regex_poly", "regex_qual_poly", "all-systems"};
+        return new String[] {"regex", "regex_poly", "all-systems"};
     }
 }

@@ -1,6 +1,11 @@
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 import org.checkerframework.checker.interning.qual.*;
-
-import java.util.*;
 
 public class Generics {
 
@@ -20,27 +25,28 @@ public class Generics {
         map.put(b, a); // error
 
         notInterned = map.get(a); // valid
-        interned = map.get(b);    // valid
+        interned = map.get(b); // valid
 
         Collection<@Interned String> internedSet;
         Collection<String> notInternedSet;
 
         notInternedSet = map.keySet(); // valid
         //:: error: (assignment.type.incompatible)
-        internedSet = map.keySet();    // error
+        internedSet = map.keySet(); // error
 
         //:: error: (assignment.type.incompatible)
         notInternedSet = map.values(); // error
-        internedSet = map.values();    // valid
+        internedSet = map.values(); // valid
 
-        HashMap<@Interned String,Vector<@Interned Integer>> all_nums = new HashMap<@Interned String,Vector<@Interned Integer>>();
+        HashMap<@Interned String, Vector<@Interned Integer>> all_nums =
+                new HashMap<@Interned String, Vector<@Interned Integer>>();
         Vector<@Interned Integer> v = all_nums.get("Hello");
-
     }
 
     // The cells aren't interned, but their contents are
     class CellOfImm<T extends @Interned Object> {
         T value;
+
         boolean equals(CellOfImm<T> other) {
             return value == other.value; // valid
         }
@@ -54,7 +60,7 @@ public class Generics {
     void testGenerics2() {
         istrings.add(istring);
         //:: error: (argument.type.incompatible)
-        istrings.add(string);   // invalid
+        istrings.add(string); // invalid
         strings.add(istring);
         strings.add(string);
         istring = istrings.get(0);
@@ -67,13 +73,16 @@ public class Generics {
     void testCollections() {
         Collection<String> strings = Collections.unmodifiableCollection(new ArrayList<String>());
 
-        Collection<@Interned String> istrings = Collections.unmodifiableCollection(new ArrayList<@Interned String>()); // valid
+        Collection<@Interned String> istrings =
+                Collections.unmodifiableCollection(new ArrayList<@Interned String>()); // valid
     }
 
     class MyList extends ArrayList<@Interned String> {
         // Correct return value is Iterator<@Interned String>
         //:: error: (override.return.invalid)
-        public Iterator<String> iterator() { return null; }
+        public Iterator<String> iterator() {
+            return null;
+        }
     }
 
     // from VarInfoAux
@@ -82,14 +91,17 @@ public class Generics {
         private Map<@Interned String, @Interned String> map;
 
         void testMap() {
-            Map<@Interned String,@Interned String> mymap;
+            Map<@Interned String, @Interned String> mymap;
             mymap = theDefault.map;
-            mymap = new HashMap<@Interned String,@Interned String>(theDefault.map);
+            mymap = new HashMap<@Interned String, @Interned String>(theDefault.map);
         }
     }
 
     // type inference
-    <T> T id(T m, Object t) { return m; }
+    <T> T id(T m, Object t) {
+        return m;
+    }
+
     void useID() {
         String o = id("m", null);
     }
@@ -100,7 +112,7 @@ public class Generics {
         Collections.sort(lst);
     }
 
-    public static class Pair<T1,T2> {
+    public static class Pair<T1, T2> {
         public T1 a;
         public T2 b;
 
@@ -120,10 +132,9 @@ public class Generics {
 
         // @skip-test
         // This test might be faulty
-//        private Pair<T,T> return1() {
-//            Pair<T,T> result = Pair.of(next1, (T)null);
-//            return result;
-//        }
+        //        private Pair<T,T> return1() {
+        //            Pair<T,T> result = Pair.of(next1, (T)null);
+        //            return result;
+        //        }
     }
-
 }

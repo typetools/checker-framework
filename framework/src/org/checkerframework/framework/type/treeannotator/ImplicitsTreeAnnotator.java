@@ -1,13 +1,8 @@
 package org.checkerframework.framework.type.treeannotator;
 
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.qual.LiteralKind;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -17,31 +12,33 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-
 import javax.lang.model.element.AnnotationMirror;
-
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-
+import org.checkerframework.framework.qual.ImplicitFor;
+import org.checkerframework.framework.qual.LiteralKind;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
- * Adds annotations to a type based on the contents of a tree. By default, this
- * class honors the {@link org.checkerframework.framework.qual.ImplicitFor} annotation and applies implicit
- * annotations specified by {@link org.checkerframework.framework.qual.ImplicitFor} for any tree whose visitor is
- * not overridden or does not call {@code super}; it is designed to be invoked
- * from
- * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(javax.lang.model.element.Element, org.checkerframework.framework.type.AnnotatedTypeMirror)}
- * and {@link org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(com.sun.source.tree.Tree, org.checkerframework.framework.type.AnnotatedTypeMirror)}.
+ * Adds annotations to a type based on the contents of a tree. By default, this class honors the
+ * {@link org.checkerframework.framework.qual.ImplicitFor} annotation and applies implicit
+ * annotations specified by {@link org.checkerframework.framework.qual.ImplicitFor} for any tree
+ * whose visitor is not overridden or does not call {@code super}; it is designed to be invoked from
+ * {@link
+ * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(javax.lang.model.element.Element,
+ * org.checkerframework.framework.type.AnnotatedTypeMirror)} and {@link
+ * org.checkerframework.framework.type.AnnotatedTypeFactory#addComputedTypeAnnotations(com.sun.source.tree.Tree,
+ * org.checkerframework.framework.type.AnnotatedTypeMirror)}.
  *
- * <p>
+ * <p>{@link ImplicitsTreeAnnotator} does not traverse trees deeply by default.
  *
- * {@link ImplicitsTreeAnnotator} does not traverse trees deeply by default.
- *
- * This class takes care of three of the attributes of {@link org.checkerframework.framework.qual.ImplicitFor};
- * the others are handled in {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}.
- * TODO: we currently don't check that any attribute is set, that is, a qualifier
- * could be annotated as @ImplicitFor(), which might be misleading.
+ * <p>This class takes care of three of the attributes of {@link
+ * org.checkerframework.framework.qual.ImplicitFor}; the others are handled in {@link
+ * org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}. TODO: we currently
+ * don't check that any attribute is set, that is, a qualifier could be annotated as @ImplicitFor(),
+ * which might be misleading.
  *
  * @see org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator
  * @see TreeAnnotator
@@ -62,11 +59,13 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     protected final QualifierHierarchy qualHierarchy;
 
     /**
-     * Map of {@link LiteralKind}s to {@link Tree.Kind}s.
-     * This is here and not in LiteralKinds because LiteralKind is in the checker-qual.jar
-     * which cannot depend on classes, such as Tree.Kind, that are in the tools.jar
+     * Map of {@link LiteralKind}s to {@link Tree.Kind}s. This is here and not in LiteralKinds
+     * because LiteralKind is in the checker-qual.jar which cannot depend on classes, such as
+     * Tree.Kind, that are in the tools.jar
      */
-    private static final Map<LiteralKind, Tree.Kind> literalKindToTreeKind = new EnumMap<>(LiteralKind.class);
+    private static final Map<LiteralKind, Tree.Kind> literalKindToTreeKind =
+            new EnumMap<>(LiteralKind.class);
+
     static {
         literalKindToTreeKind.put(LiteralKind.BOOLEAN, Kind.BOOLEAN_LITERAL);
         literalKindToTreeKind.put(LiteralKind.CHAR, Kind.CHAR_LITERAL);
@@ -79,10 +78,9 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
     }
 
     /**
-     * Creates a
-     * {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
-     * from the given checker, using that checker to determine the annotations
-     * that are in the type hierarchy.
+     * Creates a {@link org.checkerframework.framework.type.typeannotator.ImplicitsTypeAnnotator}
+     * from the given checker, using that checker to determine the annotations that are in the type
+     * hierarchy.
      */
     public ImplicitsTreeAnnotator(AnnotatedTypeFactory atypeFactory) {
         super(atypeFactory);
@@ -103,7 +101,8 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                 continue;
             }
 
-            AnnotationMirror theQual = AnnotationUtils.fromClass(atypeFactory.getElementUtils(), qual);
+            AnnotationMirror theQual =
+                    AnnotationUtils.fromClass(atypeFactory.getElementUtils(), qual);
             for (LiteralKind literalKind : implicit.literals()) {
                 addLiteralKind(literalKind, theQual);
             }
@@ -116,19 +115,26 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
 
     /**
      * Added an implicit rule for a particular {@link Tree} class
+     *
      * @param treeClass tree class that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeClass}
      */
     public void addTreeClass(Class<? extends Tree> treeClass, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeClasses, treeClass, theQual);
         if (!res) {
-            ErrorReporter.errorAbort("PropagationTreeAnnotator: invalid update of map " +
-                    treeClasses + " at " + treeClass + " with " +theQual);
+            ErrorReporter.errorAbort(
+                    "PropagationTreeAnnotator: invalid update of map "
+                            + treeClasses
+                            + " at "
+                            + treeClass
+                            + " with "
+                            + theQual);
         }
     }
 
     /**
      * Added an implicit rule for a particular {@link LiteralKind}
+     *
      * @param literalKind {@code LiteralKind} that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code literalKind}
      */
@@ -146,34 +152,49 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
             if (treeKind != null) {
                 addTreeKind(treeKind, theQual);
             } else {
-                ErrorReporter.errorAbort("LiteralKind " + literalKind + " is not mapped to a Tree.Kind.");
+                ErrorReporter.errorAbort(
+                        "LiteralKind " + literalKind + " is not mapped to a Tree.Kind.");
             }
         }
     }
 
     /**
      * Added an implicit rule for a particular {@link Tree.Kind}
+     *
      * @param treeKind {@code Tree.Kind} that should be implicited to {@code theQual}
      * @param theQual the {@code AnnotationMirror} that should be applied to the {@code treeKind}
      */
     public void addTreeKind(Kind treeKind, AnnotationMirror theQual) {
         boolean res = qualHierarchy.updateMappingToMutableSet(treeKinds, treeKind, theQual);
         if (!res) {
-            ErrorReporter.errorAbort("PropagationTreeAnnotator: invalid update of treeKinds " +
-                    treeKinds + " at " + treeKind + " with " + theQual);
+            ErrorReporter.errorAbort(
+                    "PropagationTreeAnnotator: invalid update of treeKinds "
+                            + treeKinds
+                            + " at "
+                            + treeKind
+                            + " with "
+                            + theQual);
         }
     }
 
     /**
      * Added an implicit rule for all String literals that match the given pattern
+     *
      * @param pattern pattern to match Strings against
      * @param theQual {@code AnnotationMirror} to apply to Strings that match the pattern
      */
     public void addStringPattern(String pattern, AnnotationMirror theQual) {
-        boolean res = qualHierarchy.updateMappingToMutableSet(stringPatterns, Pattern.compile(pattern), theQual);
+        boolean res =
+                qualHierarchy.updateMappingToMutableSet(
+                        stringPatterns, Pattern.compile(pattern), theQual);
         if (!res) {
-            ErrorReporter.errorAbort("PropagationTreeAnnotator: invalid update of stringPatterns " +
-                    stringPatterns + " at " + pattern + " with " + theQual);
+            ErrorReporter.errorAbort(
+                    "PropagationTreeAnnotator: invalid update of stringPatterns "
+                            + stringPatterns
+                            + " at "
+                            + pattern
+                            + " with "
+                            + theQual);
         }
     }
 
@@ -206,9 +227,7 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
         return null;
     }
 
-    /**
-     * Go through the string patterns and add the greatest lower bound of all matching patterns.
-     */
+    /** Go through the string patterns and add the greatest lower bound of all matching patterns. */
     @Override
     public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
         if (!stringPatterns.isEmpty() && tree.getKind() == Kind.STRING_LITERAL) {
@@ -225,16 +244,25 @@ public class ImplicitsTreeAnnotator extends TreeAnnotator {
                 }
             }
             Set<? extends AnnotationMirror> res = null;
-            if (! matches.isEmpty()) {
+            if (!matches.isEmpty()) {
                 res = matches.get(0);
                 for (Set<? extends AnnotationMirror> sam : matches) {
                     res = qualHierarchy.greatestLowerBounds(res, sam);
                 }
                 // Verify that res is not a subtype of any type in nonMatches
-                for (Set<? extends AnnotationMirror> sam: nonMatches) {
+                for (Set<? extends AnnotationMirror> sam : nonMatches) {
                     if (qualHierarchy.isSubtype(res, sam)) {
-                            ErrorReporter.errorAbort(
-                              "Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition: inferred type for \"" + string + "\" is " + res + " which is a subtype of " + sam + " but its pattern does not match the string.  matches = " + matches + "; nonMatches = " + nonMatches);
+                        ErrorReporter.errorAbort(
+                                "Bug in @ImplicitFor(stringpatterns=...) in type hierarchy definition: inferred type for \""
+                                        + string
+                                        + "\" is "
+                                        + res
+                                        + " which is a subtype of "
+                                        + sam
+                                        + " but its pattern does not match the string.  matches = "
+                                        + matches
+                                        + "; nonMatches = "
+                                        + nonMatches);
                     }
                 }
                 type.addAnnotations(res);

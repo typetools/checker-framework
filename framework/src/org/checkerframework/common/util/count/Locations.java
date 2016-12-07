@@ -1,12 +1,5 @@
 package org.checkerframework.common.util.count;
 
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-
-import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.source.SourceVisitor;
-import org.checkerframework.framework.source.SupportedOptions;
-
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.ClassTree;
@@ -22,35 +15,34 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.source.SourceVisitor;
+import org.checkerframework.framework.source.SupportedOptions;
 import org.checkerframework.javacutil.AnnotationProvider;
 
 /**
- * An annotation processor for listing the potential locations of annotations.
- * To invoke it, use
+ * An annotation processor for listing the potential locations of annotations. To invoke it, use
+ *
  * <pre>
  * javac -proc:only -processor org.checkerframework.common.util.count.Locations <em>MyFile.java ...</em>
  * </pre>
  *
- * <p>
+ * <p>Counting the number of lines of the processor's output yields the annotation location count
+ * (e.g., by piping the output to {@code wc}). Because the processor outputs a single line of text
+ * describing type of each annotation location it encounters, you can obtain the count for specific
+ * annotation location types (i.e., possible local variable annotations, or possible method receiver
+ * annotations) by filtering the output accordingly (e.g., with {@code grep}).
  *
- * Counting the number of lines of the processor's output yields the annotation
- * location count (e.g., by piping the output to {@code wc}). Because the
- * processor outputs a single line of text describing type of each annotation
- * location it encounters, you can obtain the count for specific annotation
- * location types (i.e., possible local variable annotations, or possible
- * method receiver annotations) by filtering the output accordingly (e.g., with
- * {@code grep}).
- *
- * <p>
- *
- * By default, this utility displays annotation locations only. The following
- * two options may be used to adjust the output:
+ * <p>By default, this utility displays annotation locations only. The following two options may be
+ * used to adjust the output:
  *
  * <ul>
- *  <li>{@code -Aannotations}: prints, on the same line as each location,
- *  information about the annotation that is written there, if any</li>
- *  <li>{@code -Anolocations}: suppresses location output;
- *  only makes sense in conjunction with {@code -Aannotations}</li>
+ *   <li>{@code -Aannotations}: prints, on the same line as each location, information about the
+ *       annotation that is written there, if any
+ *   <li>{@code -Anolocations}: suppresses location output; only makes sense in conjunction with
+ *       {@code -Aannotations}
  * </ul>
  */
 /*
@@ -97,7 +89,8 @@ public class Locations extends SourceChecker {
                 TreePath path = getCurrentPath();
                 Tree prev = null;
                 for (Tree t : path) {
-                    if (prev != null && prev.getKind() == Tree.Kind.BLOCK
+                    if (prev != null
+                            && prev.getKind() == Tree.Kind.BLOCK
                             && t.getKind() == Tree.Kind.METHOD) {
                         isBodyAnnotation = true;
                         break;
@@ -105,7 +98,8 @@ public class Locations extends SourceChecker {
                     prev = t;
                 }
 
-                System.out.printf(":annotation %s %s %s %s%n",
+                System.out.printf(
+                        ":annotation %s %s %s %s%n",
                         tree.getAnnotationType(),
                         tree,
                         root.getSourceFile().getName(),
@@ -238,6 +232,7 @@ public class Locations extends SourceChecker {
 
     @Override
     public AnnotationProvider getAnnotationProvider() {
-        throw new UnsupportedOperationException("getAnnotationProvider is not implemented for this class.");
+        throw new UnsupportedOperationException(
+                "getAnnotationProvider is not implemented for this class.");
     }
 }

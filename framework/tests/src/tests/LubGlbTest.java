@@ -1,23 +1,19 @@
 package tests;
 
 import java.io.File;
-
-import org.checkerframework.framework.test.CheckerFrameworkTest;
+import java.util.List;
+import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
 
-/**
- */
-public class LubGlbTest extends CheckerFrameworkTest {
+/** */
+public class LubGlbTest extends CheckerFrameworkPerDirectoryTest {
 
-    public LubGlbTest(File testFile) {
-        super(testFile,
-                lubglb.LubGlbChecker.class,
-                "lubglb",
-                "-Anomsgtext");
+    public LubGlbTest(List<File> testFiles) {
+        super(testFiles, lubglb.LubGlbChecker.class, "lubglb", "-Anomsgtext");
     }
 
     @Parameters
-    public static String [] getTestDirs() {
-        return new String[]{"lubglb"};
+    public static String[] getTestDirs() {
+        return new String[] {"lubglb"};
     }
 }

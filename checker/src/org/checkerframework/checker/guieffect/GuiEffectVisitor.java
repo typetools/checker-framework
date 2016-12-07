@@ -1,5 +1,17 @@
 package org.checkerframework.checker.guieffect;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import java.util.Collections;
+import java.util.Set;
+import java.util.Stack;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import org.checkerframework.checker.guieffect.qual.AlwaysSafe;
 import org.checkerframework.checker.guieffect.qual.PolyUI;
 import org.checkerframework.checker.guieffect.qual.PolyUIEffect;
@@ -8,30 +20,14 @@ import org.checkerframework.checker.guieffect.qual.UI;
 import org.checkerframework.checker.guieffect.qual.UIEffect;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.framework.qual.PolyAll;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-import java.util.Collections;
-import java.util.Set;
-import java.util.Stack;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-
-/**
- * Require that only UI code invokes code with the UI effect.
- */
+/** Require that only UI code invokes code with the UI effect. */
 public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
     protected final boolean debugSpew;
@@ -61,8 +57,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     // TODO: Fix method receiver defaults: method-polymorphic for any polymorphic method, UI
     //       for any UI instantiations, safe otherwise
     @Override
-    protected void checkMethodInvocability(AnnotatedExecutableType method,
-            MethodInvocationTree node) {
+    protected void checkMethodInvocability(
+            AnnotatedExecutableType method, MethodInvocationTree node) {
         // The inherited version of this complains about invoking methods of @UI instantiations of
         // classes, which by default are annotated @AlwaysSafe, which for data type qualifiers is
         // reasonable, but it not what we want, since we want .
@@ -70,32 +66,45 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
     }
 
     @Override
-    protected boolean checkOverride(MethodTree overriderTree,
+    protected boolean checkOverride(
+            MethodTree overriderTree,
             AnnotatedTypeMirror.AnnotatedDeclaredType enclosingType,
             AnnotatedTypeMirror.AnnotatedExecutableType overridden,
-            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType, Void p) {
+            AnnotatedTypeMirror.AnnotatedDeclaredType overriddenType,
+            Void p) {
         // Method override validity is checked manually by the type factory during visitation
         return true;
     }
 
     @Override
     protected Set<? extends AnnotationMirror> getExceptionParameterLowerBoundAnnotations() {
-        return Collections.singleton(AnnotationUtils.fromClass(elements,
-                AlwaysSafe.class));
+        return Collections.singleton(AnnotationUtils.fromClass(elements, AlwaysSafe.class));
     }
+
     @Override
-    public boolean isValidUse(AnnotatedTypeMirror.AnnotatedDeclaredType declarationType,
-                 AnnotatedTypeMirror.AnnotatedDeclaredType useType, Tree tree) {
-        boolean ret = useType.hasAnnotation(AlwaysSafe.class) ||
-                atypeFactory.isPolymorphicType((TypeElement)declarationType.getUnderlyingType().asElement()) ||
-                (useType.hasAnnotation(UI.class) && declarationType.hasAnnotation(UI.class));
+    public boolean isValidUse(
+            AnnotatedTypeMirror.AnnotatedDeclaredType declarationType,
+            AnnotatedTypeMirror.AnnotatedDeclaredType useType,
+            Tree tree) {
+        boolean ret =
+                useType.hasAnnotation(AlwaysSafe.class)
+                        || useType.hasAnnotation(PolyAll.class)
+                        || useType.hasAnnotation(PolyUI.class)
+                        || atypeFactory.isPolymorphicType(
+                                (TypeElement) declarationType.getUnderlyingType().asElement())
+                        || (useType.hasAnnotation(UI.class)
+                                && declarationType.hasAnnotation(UI.class));
         if (debugSpew && !ret) {
             System.err.println("use: " + useType);
             System.err.println("use safe: " + useType.hasAnnotation(AlwaysSafe.class));
             System.err.println("use poly: " + useType.hasAnnotation(PolyUI.class));
             System.err.println("use ui: " + useType.hasAnnotation(UI.class));
-            System.err.println("declaration safe: " + declarationType.hasAnnotation(AlwaysSafe.class));
-            System.err.println("declaration poly: " + atypeFactory.isPolymorphicType((TypeElement)declarationType.getUnderlyingType().asElement()));
+            System.err.println(
+                    "declaration safe: " + declarationType.hasAnnotation(AlwaysSafe.class));
+            System.err.println(
+                    "declaration poly: "
+                            + atypeFactory.isPolymorphicType(
+                                    (TypeElement) declarationType.getUnderlyingType().asElement()));
             System.err.println("declaration ui: " + declarationType.hasAnnotation(UI.class));
             System.err.println("declaration: " + declarationType);
         }
@@ -136,10 +145,10 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         // System.err.println("Dispatching method "+node+"on "+node.getMethodSelect());
         if (targetEffect.isPoly()) {
             AnnotatedTypeMirror srcType = null;
-            assert (node.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER ||
-                    node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT);
+            assert (node.getMethodSelect().getKind() == Tree.Kind.IDENTIFIER
+                    || node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT);
             if (node.getMethodSelect().getKind() == Tree.Kind.MEMBER_SELECT) {
-                ExpressionTree src = ((MemberSelectTree)node.getMethodSelect()).getExpression();
+                ExpressionTree src = ((MemberSelectTree) node.getMethodSelect()).getExpression();
                 srcType = atypeFactory.getAnnotatedType(src);
             } else {
                 // Tree.Kind.IDENTIFIER, e.g. a direct call like "super()"
@@ -167,7 +176,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
             }
         }
         if (debugSpew) {
-            System.err.println("Successfully finished main non-recursive checkinv of invocation "+node);
+            System.err.println(
+                    "Successfully finished main non-recursive checkinv of invocation " + node);
         }
 
         return super.visitMethodInvocation(node, p);
@@ -188,7 +198,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         ExecutableElement methElt = TreeUtils.elementFromDeclaration(node);
         if (debugSpew) {
-            System.err.println("\nVisiting method "+methElt);
+            System.err.println("\nVisiting method " + methElt);
         }
 
         // Check for conflicting (multiple) annotations
@@ -197,7 +207,7 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         AnnotationMirror targetUIP = atypeFactory.getDeclAnnotation(methElt, UIEffect.class);
         AnnotationMirror targetSafeP = atypeFactory.getDeclAnnotation(methElt, SafeEffect.class);
         AnnotationMirror targetPolyP = atypeFactory.getDeclAnnotation(methElt, PolyUIEffect.class);
-        TypeElement targetClassElt = (TypeElement)methElt.getEnclosingElement();
+        TypeElement targetClassElt = (TypeElement) methElt.getEnclosingElement();
 
         if (targetUIP != null && (targetSafeP != null || targetPolyP != null)
                 || targetSafeP != null && targetPolyP != null) {
@@ -212,15 +222,18 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
 
         // TODO: Report an error for polymorphic method bodies??? Until we fix the receiver defaults, it won't really be correct
         @SuppressWarnings("unused") // call has side-effects
-        Effect.EffectRange range = atypeFactory.findInheritedEffectRange(((TypeElement)methElt.getEnclosingElement()),
-                methElt, true, node);
+        Effect.EffectRange range =
+                atypeFactory.findInheritedEffectRange(
+                        ((TypeElement) methElt.getEnclosingElement()), methElt, true, node);
         if (targetUIP == null && targetSafeP == null && targetPolyP == null) {
             // implicitly annotate this method with the LUB of the effects of the methods it overrides
             // atypeFactory.fromElement(methElt).addAnnotation(range != null ? range.min.getAnnot() : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? UI.class : AlwaysSafe.class));
             // TODO: This line does nothing! AnnotatedTypeMirror.addAnnotation
             // silently ignores non-qualifier annotations!
             // System.err.println("ERROR: TREE ANNOTATOR SHOULD HAVE ADDED EXPLICIT ANNOTATION! ("+node.getName()+")");
-            atypeFactory.fromElement(methElt).addAnnotation(atypeFactory.getDeclaredEffect(methElt).getAnnot());
+            atypeFactory
+                    .fromElement(methElt)
+                    .addAnnotation(atypeFactory.getDeclaredEffect(methElt).getAnnot());
         }
 
         // We hang onto the current method here for ease.  We back up the old
@@ -232,7 +245,8 @@ public class GuiEffectVisitor extends BaseTypeVisitor<GuiEffectTypeFactory> {
         //                      (range != null ? range.min : (isUIType(((TypeElement)methElt.getEnclosingElement())) ? new Effect(UI.class) : new Effect(AlwaysSafe.class))))));
         effStack.push(atypeFactory.getDeclaredEffect(methElt));
         if (debugSpew) {
-            System.err.println("Pushing "+effStack.peek()+" onto the stack when checking "+methElt);
+            System.err.println(
+                    "Pushing " + effStack.peek() + " onto the stack when checking " + methElt);
         }
 
         Void ret = super.visitMethod(node, p);

@@ -1,23 +1,21 @@
 package org.checkerframework.common.value;
 
 /**
- * This file contains methods that simulate the functions of the binary and
- * unary operators in java (e.g. +, -, &lt;, ++, etc.). The purpose of doing this
- * is to streamline the code for evaluating operators in
- * ValueAnnotatedTypeFactory and make it more similar to the code for evaluating
- * methods as well. The naming is the same name as the operator has when
- * BinaryTree.getKind() is called.
- *
+ * This file contains methods that simulate the functions of the binary and unary operators in java
+ * (e.g. +, -, &lt;, ++, etc.). The purpose of doing this is to streamline the code for evaluating
+ * operators in ValueAnnotatedTypeFactory and make it more similar to the code for evaluating
+ * methods as well. The naming is the same name as the operator has when BinaryTree.getKind() is
+ * called.
  */
 public class Operators {
 
     public static boolean LOGICAL_COMPLEMENT(Boolean a) {
         return !a;
     }
+
     public static boolean LOGICAL_COMPLEMENT(boolean a) {
         return !a;
     }
-
 
     public static long BITWISE_COMPLEMENT(Long a) {
         return ~a;
@@ -28,12 +26,9 @@ public class Operators {
     }
 
     /**
-     *
-     * NOTE ON POSTFIX OPERATORS: Because the postfix increment/decrement would
-     * take place after the value is returned, the method does not actually
-     * perform a postfix increment/decrement; this is correctly handled by the
-     * org.checkerframework.dataflow analysis elsewhere.
-     *
+     * NOTE ON POSTFIX OPERATORS: Because the postfix increment/decrement would take place after the
+     * value is returned, the method does not actually perform a postfix increment/decrement; this
+     * is correctly handled by the org.checkerframework.dataflow analysis elsewhere.
      */
     public static byte POSTFIX_INCREMENT(Byte a) {
         return a;
@@ -195,7 +190,6 @@ public class Operators {
         return a || b;
     }
 
-
     public static double PLUS(Double a, Double b) {
         return a + b;
     }
@@ -227,7 +221,6 @@ public class Operators {
     public static float PLUS(float a, float b) {
         return a + b;
     }
-
 
     public static String PLUS(String a, String b) {
         return a + b;
@@ -313,7 +306,7 @@ public class Operators {
         return a / b;
     }
 
-public static double DIVIDE(double a, double b) {
+    public static double DIVIDE(double a, double b) {
         return a / b;
     }
 
@@ -453,7 +446,6 @@ public static double DIVIDE(double a, double b) {
         return a | b;
     }
 
-
     public static boolean XOR(Boolean a, Boolean b) {
         return a ^ b;
     }
@@ -553,10 +545,10 @@ public static double DIVIDE(double a, double b) {
     public static boolean EQUAL_TO(Boolean a, Boolean b) {
         return a == b;
     }
+
     public static boolean EQUAL_TO(boolean a, boolean b) {
         return a == b;
     }
-
 
     public static boolean NOT_EQUAL_TO(Boolean a, Boolean b) {
         return a != b;
@@ -566,7 +558,6 @@ public static double DIVIDE(double a, double b) {
         return a != b;
     }
 
-
     public static boolean EQUAL_TO(String a, String b) {
         return a == b;
     }
@@ -574,5 +565,4 @@ public static double DIVIDE(double a, double b) {
     public static boolean NOT_EQUAL_TO(String a, String b) {
         return a != b;
     }
-
 }

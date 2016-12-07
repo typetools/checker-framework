@@ -9,7 +9,7 @@
 
     <!-- The comments in the version number are used to do a text substitution. Don't remove them.
          See checker-framework/binary/poms/updateVersion.sh -->
-    <version><!-- checker-framework-version -->2.0.1<!-- /checker-framework-version --></version>
+    <version><!-- checker-framework-version -->2.1.6<!-- /checker-framework-version --></version>
 
     <build>
         <plugins>

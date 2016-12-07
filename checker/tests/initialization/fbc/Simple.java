@@ -1,21 +1,20 @@
 
-import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.checker.initialization.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
-import org.checkerframework.framework.qual.*;
+import org.checkerframework.dataflow.qual.Pure;
 
 public class Simple {
 
     Simple f;
     @NotOnlyInitialized Simple g;
 
-    @Pure int pure() {
+    @Pure
+    int pure() {
         return 1;
     }
 
     //:: error: (initialization.fields.uninitialized)
-    public Simple(String arg) {
-    }
+    public Simple(String arg) {}
 
     void test() {
         @NonNull String s = "234";

@@ -1,10 +1,12 @@
-import tests.util.*;
+import testlib.util.*;
 
 class AnnotatedGenerics {
 
     public static void testNullableTypeVariable() {
         class Test<T> {
-            @Odd T get() { return null; }
+            @Odd T get() {
+                return null;
+            }
         }
         Test<String> l = null;
         String l1 = l.get();
@@ -16,8 +18,14 @@ class AnnotatedGenerics {
     }
 
     class MyClass<T> implements java.util.Iterator<@Odd T> {
-        public boolean hasNext() { return true; }
-        public @Odd T next() { return null; }
-        public void remove() { }
-      }
+        public boolean hasNext() {
+            return true;
+        }
+
+        public @Odd T next() {
+            return null;
+        }
+
+        public void remove() {}
+    }
 }

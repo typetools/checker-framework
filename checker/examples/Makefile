@@ -1,3 +1,5 @@
+JAVAC ?= $(realpath ../bin/javac)
+
 .PHONY: all
 
 all: compile

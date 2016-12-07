@@ -1,21 +1,21 @@
 package org.checkerframework.checker.units.qual;
 
-import java.lang.annotation.*;
-
-import org.checkerframework.framework.qual.*;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import org.checkerframework.framework.qual.PolymorphicQualifier;
 
 /**
- * A polymorphic qualifier for the units-of-measure type system implemented
- * by the Units Checker.
- * <p>
+ * A polymorphic qualifier for the units-of-measure type system implemented by the Units Checker.
  *
- * Any method written using @PolyUnit conceptually has many versions:  in
- * each one, every instance of @PolyUnit has been replaced by a different
- * unit qualifier such as @kg (kilograms) or @h (hours).
- * <p>
+ * <p>Any method written using @PolyUnit conceptually has many versions: in each one, every instance
+ * of @PolyUnit has been replaced by a different unit qualifier such as @kg (kilograms) or @h
+ * (hours).
  *
- * The following example shows how method {@code triplePolyUnit} can be
- * used to process either meters or seconds:
+ * <p>The following example shows how method {@code triplePolyUnit} can be used to process either
+ * meters or seconds:
  *
  * <pre> {@literal @}PolyUnit int triplePolyUnit(@PolyUnit int amount) {
  *    return 3*amount;
@@ -39,4 +39,4 @@ import org.checkerframework.framework.qual.*;
 @PolymorphicQualifier(UnknownUnits.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
-public @interface PolyUnit { }
+public @interface PolyUnit {}

@@ -1,4 +1,5 @@
 import org.checkerframework.checker.nullness.qual.*;
+
 @org.checkerframework.framework.qual.DefaultQualifier(Nullable.class)
 public class FlowField {
 
@@ -6,7 +7,7 @@ public class FlowField {
 
     void test() {
         if (s != null) {
-          s.startsWith ("foo");
+            s.startsWith("foo");
         }
     }
 
@@ -42,6 +43,7 @@ public class FlowField {
     static class BooleanWrapper {
         @Nullable Object b;
     }
+
     @Nullable BooleanWrapper bw;
 
     void testBitwise(@NonNull FlowField a, @NonNull FlowField b) {
@@ -68,7 +70,7 @@ public class FlowField {
     void testTwoLevels(@NonNull FlowField a, BooleanWrapper bwArg) {
         //:: error: (dereference.of.nullable)
         if (!(a.bw.hashCode() == 0)) // warning here
-            return;
-        Object o = a.bw.b;      // but not here
+        return;
+        Object o = a.bw.b; // but not here
     }
 }

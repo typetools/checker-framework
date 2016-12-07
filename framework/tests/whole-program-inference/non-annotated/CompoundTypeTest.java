@@ -1,4 +1,4 @@
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
 
 public class CompoundTypeTest {
     // The default type for fields is @DefaultType.
@@ -20,5 +20,4 @@ public class CompoundTypeTest {
         @Sibling1 Object @Sibling2 [] out = (@Sibling1 Object @Sibling2 []) new Object[1];
         return out;
     }
-
 }

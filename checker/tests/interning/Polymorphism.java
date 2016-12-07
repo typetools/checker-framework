@@ -1,6 +1,8 @@
-import org.checkerframework.checker.interning.qual.*;
-import java.util.*;
 import java.lang.ref.WeakReference;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import org.checkerframework.checker.interning.qual.*;
 
 public class Polymorphism {
     // Test parameter
@@ -45,20 +47,24 @@ public class Polymorphism {
         return a;
     }
 
-    public static void idTest (@Interned Object @Interned [] seq) {
+    public static void idTest(@Interned Object @Interned [] seq) {
         @Interned Object[] copy_uninterned = id(seq);
     }
 
-    private static Map<List<@Interned String @Interned []>,WeakReference<@Interned String @Interned []>> internedStringSequenceAndIndices;
+    private static Map<
+                    List<@Interned String @Interned []>,
+                    WeakReference<@Interned String @Interned []>>
+            internedStringSequenceAndIndices;
     private static List<@Interned String @Interned []> sai;
     private static WeakReference<@Interned String @Interned []> wr;
 
     public static void testArrayInGeneric() {
-        internedStringSequenceAndIndices.put (sai, wr);
+        internedStringSequenceAndIndices.put(sai, wr);
     }
 
     // check for a crash when using raw types
-    void processMap(Map<String, String> map) { }
+    void processMap(Map<String, String> map) {}
+
     void testRaw() {
         Map m = null;
         //TODO: RAW TYPES WILL EVENTUALLY REQUIRE THAT THERE BOUNDS BE EXACTLY THE QUALIFIER EXPECTED
@@ -70,9 +76,11 @@ public class Polymorphism {
     private void testAnonymous() {
         new Object() {
             @org.checkerframework.dataflow.qual.Pure
-            public boolean equals(Object o) { return true; }
+            public boolean equals(Object o) {
+                return true;
+            }
         }.equals(null);
 
-        Date d = new Date() { };
+        Date d = new Date() {};
     }
 }

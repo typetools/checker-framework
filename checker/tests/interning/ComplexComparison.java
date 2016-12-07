@@ -1,6 +1,5 @@
+import java.util.Comparator;
 import org.checkerframework.checker.interning.qual.*;
-
-import java.util.*;
 
 public class ComplexComparison {
 
@@ -41,7 +40,6 @@ public class ComplexComparison {
         }
     }
 
-
     /* @ pure */ public class DoubleArrayComparatorLexical implements Comparator<double[]> {
 
         /**
@@ -56,7 +54,7 @@ public class ComplexComparison {
                 return 0;
             }
             int len = Math.min(a1.length, a2.length);
-            for (int i=0; i<len; i++) {
+            for (int i = 0; i < len; i++) {
                 if (a1[i] != a2[i]) {
                     return ((a1[i] > a2[i]) ? 1 : -1);
                 }

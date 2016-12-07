@@ -2,7 +2,7 @@
 // TODO: Reenable this test after a @GuardedByName annotation is implemented that can guard primitives,
 // and uncomment all the @GuardedByName annotations below.
 
-// Note that testing of the primitive.type.guardedby error message is done in TestTreeKinds.java
+// Note that testing of the immutable.type.guardedby error message is done in TestTreeKinds.java
 
 class Primitives {
     //@GuardedByName("lock")
@@ -44,7 +44,7 @@ class Primitives {
         --primitive;
 
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-        if (primitive != 5) { }
+        if (primitive != 5) {}
 
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
         i = primitive >> i;
@@ -65,7 +65,7 @@ class Primitives {
         primitive >>= i;
 
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
-        assert(primitiveBoolean);
+        assert (primitiveBoolean);
 
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
         b = primitive >= i;
@@ -111,9 +111,6 @@ class Primitives {
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
         i = primitive / 4;
 
-
-
-
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
         if (primitiveBoolean) {}
 
@@ -140,10 +137,8 @@ class Primitives {
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
         b = !primitiveBoolean;
 
-
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
         i = primitive;
-
 
         // TODO reenable this error: (contracts.precondition.not.satisfied.field)
         b = true && primitiveBoolean;

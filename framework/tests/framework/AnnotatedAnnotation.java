@@ -1,9 +1,13 @@
-import tests.util.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
+import testlib.util.*;
 
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @interface OddInt {
     @Odd int value();
 }
 
+@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @interface OddIntArr {
     @Odd int[] value();
 }
@@ -23,22 +27,30 @@ class Const {
 }
 
 class Uses {
-    @OddInt(Const.ok1) Object good1;
+    @OddInt(Const.ok1)
+    Object good1;
 
     //:: error: (annotation.type.incompatible)
-    @OddInt(4) Object bad1;
+    @OddInt(4)
+    Object bad1;
 
     //:: error: (annotation.type.incompatible)
-    @OddInt(Const.notodd) Object bad2;
+    @OddInt(Const.notodd)
+    Object bad2;
 
-    @OddIntArr(Const.ok1) Object good2;
-    @OddIntArr({Const.ok1, Const.ok2}) Object good3;
+    @OddIntArr(Const.ok1)
+    Object good2;
+
+    @OddIntArr({Const.ok1, Const.ok2})
+    Object good3;
 
     //:: error: (annotation.type.incompatible)
-    @OddIntArr(4) Object bada1;
+    @OddIntArr(4)
+    Object bada1;
 
     //:: error: (annotation.type.incompatible)
-    @OddIntArr({Const.ok1, 4}) Object bada2;
+    @OddIntArr({Const.ok1, 4})
+    Object bada2;
 
     @OddRec(@OddIntArr({Const.ok1, Const.ok2}))
     void goodrec1() {}
