@@ -2,10 +2,7 @@ package org.checkerframework.checker.upperbound;
 
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -457,6 +454,48 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 type.getAnnotationInHierarchy(UNKNOWN)));
             }
             return super.visitMemberSelect(tree, type);
+        }
+
+        @Override
+        public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
+            AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
+            switch (tree.getKind()) {
+                case PREFIX_INCREMENT:
+                    handleIncrement(typeSrc, typeDst);
+                    break;
+                case PREFIX_DECREMENT:
+                    handleDecrement(typeSrc, typeDst);
+                    break;
+                case POSTFIX_INCREMENT: // Do nothing. The CF should take care of these itself.
+                    break;
+                case POSTFIX_DECREMENT:
+                    break;
+                default:
+                    break;
+            }
+            return super.visitUnary(tree, typeDst);
+        }
+
+        private void handleIncrement(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+            if (typeSrc.hasAnnotation(LTLengthOf.class)) {
+                String[] names =
+                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                typeDst.replaceAnnotation(createLTEqLengthOfAnnotation(names));
+                return;
+            } else if (typeSrc.hasAnnotation(LTEqLengthOf.class)) {
+                typeDst.replaceAnnotation(UNKNOWN);
+                return;
+            }
+        }
+
+        private void handleDecrement(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+            if (typeSrc.hasAnnotation(LTLengthOf.class)
+                    || typeSrc.hasAnnotation(LTEqLengthOf.class)) {
+                String[] names =
+                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                typeDst.replaceAnnotation(createLTLengthOfAnnotation(names));
+                return;
+            }
         }
 
         @Override
