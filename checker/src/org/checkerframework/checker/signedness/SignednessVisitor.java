@@ -22,20 +22,14 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
         super(checker);
     }
 
-    /**
-     * @param node
-     * @return true iff node is a relevant mask operation (& or |).
-     */
+    /** @return true iff node is a mask operation (&amp; or |). */
     private boolean isMask(Tree node) {
         Kind kind = node.getKind();
 
         return kind == Kind.AND || kind == Kind.OR;
     }
 
-    /**
-     * @param expr
-     * @return true iff expr is a literal.
-     */
+    /** @return true iff expr is a literal. */
     private boolean isLiteral(ExpressionTree expr) {
         return expr instanceof LiteralTree;
     }
@@ -54,10 +48,10 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
     }
 
     /**
-     * @param maskKind
-     * @param shiftLit The LiteralTree whose value is s.
-     * @param maskLit The LiteralTree whose value is m.
-     * @return true iff the s most significant bits of m are 0 for AND, and 1 for OR.
+     * @param maskKind the kind of mask (AND or OR)
+     * @param shiftLit the LiteralTree whose value is s
+     * @param maskLit the LiteralTree whose value is m
+     * @return true iff the s most significant bits of m are 0 for AND, and 1 for OR
      */
     private boolean isMaskedShift(Kind maskKind, LiteralTree shiftLit, LiteralTree maskLit) {
         long s = getLong(shiftLit.getValue());
