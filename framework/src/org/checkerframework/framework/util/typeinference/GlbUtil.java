@@ -3,7 +3,6 @@ package org.checkerframework.framework.util.typeinference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,6 +16,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
+import org.checkerframework.framework.util.AnnotationMirrorMap;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -31,7 +32,7 @@ public class GlbUtil {
      *     annotations of typeMirrors
      */
     public static AnnotatedTypeMirror glbAll(
-            final Map<AnnotatedTypeMirror, Set<AnnotationMirror>> typeMirrors,
+            final Map<AnnotatedTypeMirror, AnnotationMirrorSet> typeMirrors,
             final AnnotatedTypeFactory typeFactory) {
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
         if (typeMirrors.isEmpty()) {
@@ -39,10 +40,9 @@ public class GlbUtil {
         }
 
         // dtermine the greatest lower bounds for the primary annotations
-        Map<AnnotationMirror, AnnotationMirror> glbPrimaries =
-                AnnotationUtils.createAnnotationMap();
-        for (Entry<AnnotatedTypeMirror, Set<AnnotationMirror>> tmEntry : typeMirrors.entrySet()) {
-            final Set<AnnotationMirror> typeAnnoHierarchies = tmEntry.getValue();
+        AnnotationMirrorMap<AnnotationMirror> glbPrimaries = new AnnotationMirrorMap<>();
+        for (Entry<AnnotatedTypeMirror, AnnotationMirrorSet> tmEntry : typeMirrors.entrySet()) {
+            final AnnotationMirrorSet typeAnnoHierarchies = tmEntry.getValue();
             final AnnotatedTypeMirror type = tmEntry.getKey();
 
             for (AnnotationMirror top : typeAnnoHierarchies) {
@@ -63,7 +63,7 @@ public class GlbUtil {
         final List<AnnotatedTypeMirror> glbTypes = new ArrayList<>();
 
         // create a copy of all of the types and apply the glb primary annotation
-        final Set<AnnotationMirror> values = new HashSet<>(glbPrimaries.values());
+        final AnnotationMirrorSet values = new AnnotationMirrorSet(glbPrimaries.values());
         for (AnnotatedTypeMirror type : typeMirrors.keySet()) {
             if (type.getKind() != TypeKind.TYPEVAR
                     || !qualifierHierarchy.isSubtype(type.getEffectiveAnnotations(), values)) {
