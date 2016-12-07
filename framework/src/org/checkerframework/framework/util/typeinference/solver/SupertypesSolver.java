@@ -320,7 +320,7 @@ public class SupertypesSolver {
             } else {
                 // If there are no annotations for this hierarchy, add bottom.  This happens
                 // when the only constraint for a type variable is a use that is annotated in
-                // this hierarchy. Calls to the method below has this property.
+                // this hierarchy. Calls to the method below have this property.
                 // <T> void method(@NonNull T t) {}
                 lubOfPrimaries.put(top, qualifierHierarchy.getBottomAnnotation(top));
             }
