@@ -83,6 +83,8 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ## (Maybe they don't even need the full ./.travis-build-without-test.sh ;
   ## for example they currently don't need the annotated JDK.)
 
+  set -e
+
   # Code style and formatting
   ant -d check-style
   release/checkPluginUtil.sh
