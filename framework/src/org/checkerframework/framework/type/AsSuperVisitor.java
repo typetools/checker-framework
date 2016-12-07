@@ -30,6 +30,11 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
     private final Types types;
     private final AnnotatedTypeFactory annotatedTypeFactory;
+    /**
+     * Whether or not the type being visited is an uninferred type argument. If true, then the
+     * underlying type may not have the correct relationship with the supertype.
+     */
+    private boolean isUninferredTypeAgrument = false;
 
     public AsSuperVisitor(AnnotatedTypeFactory annotatedTypeFactory) {
         this.annotatedTypeFactory = annotatedTypeFactory;
@@ -59,6 +64,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         // parameters to asSuper are not changed and a copy is returned.
         AnnotatedTypeMirror copyType = type.deepCopy();
         AnnotatedTypeMirror copySuperType = superType.deepCopy();
+        reset();
         AnnotatedTypeMirror result = visit(copyType, copySuperType, null);
 
         if (result == null) {
@@ -67,6 +73,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         }
 
         return (T) result;
+    }
+
+    private void reset() {
+        isUninferredTypeAgrument = false;
     }
 
     @Override
@@ -138,6 +148,9 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
         if (TypesUtils.isString(superType.getUnderlyingType())) {
             // Any type can be converted to a String
             return visit(annotatedTypeFactory.getStringType(type), superType, p);
+        }
+        if (isUninferredTypeAgrument) {
+            return copyPrimaryAnnos(type, superType);
         }
         ErrorReporter.errorAbort(
                 "AsSuperVisitor: type is not an erased subtype of supertype."
@@ -695,7 +708,12 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
 
     private AnnotatedTypeMirror visitWildcard_NotTypvarNorWildcard(
             AnnotatedWildcardType type, AnnotatedTypeMirror superType, Void p) {
+        boolean oldIsUninferredTypeArgument = isUninferredTypeAgrument;
+        if (type.isUninferredTypeArgument()) {
+            isUninferredTypeAgrument = true;
+        }
         AnnotatedTypeMirror asSuper = visit(type.getExtendsBound(), superType, p);
+        isUninferredTypeAgrument = oldIsUninferredTypeArgument;
         return copyPrimaryAnnos(type, asSuper);
     }
 
@@ -720,6 +738,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitWildcard_Typevar(
             AnnotatedWildcardType type, AnnotatedTypeVariable superType, Void p) {
+        boolean oldIsUninferredTypeArgument = isUninferredTypeAgrument;
+        if (type.isUninferredTypeArgument()) {
+            isUninferredTypeAgrument = true;
+        }
         AnnotatedTypeMirror upperBound =
                 visit(type.getExtendsBound(), superType.getUpperBound(), p);
         superType.setUpperBound(upperBound);
@@ -734,6 +756,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             lowerBound = asSuperTypevarLowerBound(type.getSuperBound(), superType, p);
         }
         superType.setLowerBound(lowerBound);
+        isUninferredTypeAgrument = oldIsUninferredTypeArgument;
 
         return copyPrimaryAnnos(type, superType);
     }
@@ -747,6 +770,10 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
     @Override
     public AnnotatedTypeMirror visitWildcard_Wildcard(
             AnnotatedWildcardType type, AnnotatedWildcardType superType, Void p) {
+        boolean oldIsUninferredTypeArgument = isUninferredTypeAgrument;
+        if (type.isUninferredTypeArgument()) {
+            isUninferredTypeAgrument = true;
+        }
         AnnotatedTypeMirror upperBound =
                 visit(type.getExtendsBound(), superType.getExtendsBound(), p);
         superType.setExtendsBound(upperBound);
@@ -761,6 +788,7 @@ public class AsSuperVisitor extends AbstractAtmComboVisitor<AnnotatedTypeMirror,
             lowerBound = asSuperWildcardLowerBound(type.getSuperBound(), superType, p);
         }
         superType.setSuperBound(lowerBound);
+        isUninferredTypeAgrument = oldIsUninferredTypeArgument;
 
         return copyPrimaryAnnos(type, superType);
     }
