@@ -34,6 +34,8 @@ export SHELLOPTS
 # The above command builds the JDK, so there is no need for a subsequent
 # command to rebuild it again.
 
+set -e
+
 if [[ "${GROUP}" == "junit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant junit-tests-nojtreg-nobuild)
 fi
