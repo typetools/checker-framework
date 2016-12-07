@@ -3029,11 +3029,18 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
     }
 
     /**
-     * This method is a hack to use when a method type argument could not be inferred automatically
-     * or if a raw type is used. The only use should be:
+     * Returns a wildcard type to be used as a type argument when the correct type could not be
+     * inferred. The wildcard will be marked as an uninferred wildcard so that {@link
+     * AnnotatedWildcardType#isUninferredTypeArgument()} returns true.
+     *
+     * <p>This method should only be used by type argument inference or for type arguments to raw
+     * types:
      * org.checkerframework.framework.util.AnnotatedTypes.inferTypeArguments(ProcessingEnvironment,
      * AnnotatedTypeFactory, ExpressionTree, ExecutableElement)
      * org.checkerframework.framework.type.AnnotatedTypeFactory.fromTypeTree(Tree)
+     *
+     * @param typeVar TypeVariable which could not be inferred
+     * @return a wildcard that is marked as an uninferred type argument
      */
     public AnnotatedWildcardType getUninferredWildcardType(AnnotatedTypeVariable typeVar) {
         final boolean intersectionType;
@@ -3057,7 +3064,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
         }
         wctype.setSuperBound(typeVar.getLowerBound().deepCopy());
         wctype.addAnnotations(typeVar.getAnnotations());
-        wctype.setTypeArgHack();
+        wctype.setUninferredTypeArgument();
         return wctype;
     }
 
