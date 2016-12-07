@@ -59,10 +59,10 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
     @Override
     public V get(Object key) {
         if (key instanceof AnnotationMirror) {
-            for (AnnotationMirror k : shadowMap.keySet()) {
-                if (AnnotationUtils.areSame(k, (AnnotationMirror) key)) {
-                    return shadowMap.get(k);
-                }
+            AnnotationMirror keyAnno =
+                    AnnotationUtils.getSame(shadowMap.keySet(), (AnnotationMirror) key);
+            if (keyAnno != null) {
+                return shadowMap.get(keyAnno);
             }
         }
         return null;
@@ -79,10 +79,10 @@ public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
     @Override
     public V remove(Object key) {
         if (key instanceof AnnotationMirror) {
-            for (AnnotationMirror k : shadowMap.keySet()) {
-                if (AnnotationUtils.areSame(k, (AnnotationMirror) key)) {
-                    return shadowMap.remove(k);
-                }
+            AnnotationMirror keyAnno =
+                    AnnotationUtils.getSame(shadowMap.keySet(), (AnnotationMirror) key);
+            if (keyAnno != null) {
+                return shadowMap.remove(keyAnno);
             }
         }
         return null;

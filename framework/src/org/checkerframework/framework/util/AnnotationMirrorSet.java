@@ -76,12 +76,7 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
     @Override
     public boolean remove(Object o) {
         if (o instanceof AnnotationMirror) {
-            AnnotationMirror found = null;
-            for (AnnotationMirror am : shadowSet) {
-                if (AnnotationUtils.areSame(am, (AnnotationMirror) o)) {
-                    found = (AnnotationMirror) o;
-                }
-            }
+            AnnotationMirror found = AnnotationUtils.getSame(shadowSet, (AnnotationMirror) o);
             return found != null && shadowSet.remove(found);
         }
         return false;
@@ -89,12 +84,8 @@ public class AnnotationMirrorSet implements Set<AnnotationMirror> {
 
     @Override
     public boolean containsAll(Collection<?> c) {
-        for (Object a : c) {
-            if (a instanceof AnnotationMirror) {
-                if (!AnnotationUtils.containsSame(shadowSet, (AnnotationMirror) a)) {
-                    return false;
-                }
-            } else {
+        for (Object o : c) {
+            if (!contains(o)) {
                 return false;
             }
         }
