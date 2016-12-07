@@ -16,9 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.VariableElement;
+import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
@@ -49,11 +47,7 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.*;
 
 /**
  * AnnotatedTypeFactory for the Value type system.
@@ -130,6 +124,35 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         } else {
             return UNKNOWNVAL;
         }
+    }
+
+    /**
+     * Creates array length annotations for the result of the Enum.values() method, since the length
+     * of the resulting array is known to always be the number of possible values of the enum.
+     */
+    @Override
+    public Pair<AnnotatedTypeMirror.AnnotatedExecutableType, List<AnnotatedTypeMirror>>
+            methodFromUse(
+                    ExpressionTree tree,
+                    ExecutableElement methodElt,
+                    AnnotatedTypeMirror receiverType) {
+
+        Pair<AnnotatedTypeMirror.AnnotatedExecutableType, List<AnnotatedTypeMirror>> superPair =
+                super.methodFromUse(tree, methodElt, receiverType);
+        if (ElementUtils.matchesElement(methodElt, "values")
+                && methodElt.getEnclosingElement().getKind() == ElementKind.ENUM
+                && ElementUtils.isStatic(methodElt)) {
+            int count = 0;
+            List<? extends Element> l = methodElt.getEnclosingElement().getEnclosedElements();
+            for (Element el : l) {
+                if (el.getKind() == ElementKind.ENUM_CONSTANT) {
+                    count++;
+                }
+            }
+            AnnotationMirror am = createArrayLenAnnotation(Collections.singletonList(count));
+            superPair.first.getReturnType().replaceAnnotation(am);
+        }
+        return superPair;
     }
 
     @Override
