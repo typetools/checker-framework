@@ -368,12 +368,13 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     } else {
                         return false;
                     }
+                } else {
+                    List<Object> lhsValues =
+                            AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
+                    List<Object> rhsValues =
+                            AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
+                    return lhsValues.containsAll(rhsValues);
                 }
-                List<Object> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
-                List<Object> rhsValues =
-                        AnnotationUtils.getElementValueArray(rhs, "value", Object.class, true);
-                return lhsValues.containsAll(rhsValues);
             } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
                 List<Long> rhsValues;
@@ -950,62 +951,68 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             long valMin = Collections.min(new ArrayList<>(intValues));
             long valMax = Collections.max(new ArrayList<>(intValues));
             return createIntRangeAnnotation(new Range(valMin, valMax));
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
+            builder.setValue("value", intValues);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntVal.class);
-        builder.setValue("value", intValues);
-        return builder.build();
     }
 
     public AnnotationMirror createDoubleValAnnotation(List<Double> doubleValues) {
         doubleValues = ValueCheckerUtils.removeDuplicates(doubleValues);
         if (doubleValues.isEmpty() || doubleValues.size() > MAX_VALUES) {
             return UNKNOWNVAL;
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
+            builder.setValue("value", doubleValues);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DoubleVal.class);
-        builder.setValue("value", doubleValues);
-        return builder.build();
     }
 
     public AnnotationMirror createStringAnnotation(List<String> values) {
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty() || values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
+            builder.setValue("value", values);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, StringVal.class);
-        builder.setValue("value", values);
-        return builder.build();
     }
 
     public AnnotationMirror createArrayLenAnnotation(List<Integer> values) {
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty() || values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ArrayLen.class);
+            builder.setValue("value", values);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, ArrayLen.class);
-        builder.setValue("value", values);
-        return builder.build();
     }
 
     public AnnotationMirror createBooleanAnnotation(List<Boolean> values) {
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty() || values.size() > MAX_VALUES) {
             return UNKNOWNVAL;
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
+            builder.setValue("value", values);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, BoolVal.class);
-        builder.setValue("value", values);
-        return builder.build();
     }
 
     public AnnotationMirror createCharAnnotation(List<Character> values) {
         values = ValueCheckerUtils.removeDuplicates(values);
         if (values.isEmpty()) {
             return UNKNOWNVAL;
+        } else {
+            List<Long> longValues = new ArrayList<>();
+            for (char value : values) {
+                longValues.add((long) value);
+            }
+            return createIntValAnnotation(longValues);
         }
-        List<Long> longValues = new ArrayList<>();
-        for (char value : values) {
-            longValues.add((long) value);
-        }
-        return createIntValAnnotation(longValues);
     }
 
     private AnnotationMirror createNumberAnnotationMirror(List<Number> values) {
@@ -1022,8 +1029,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 intValues.add(number.longValue());
             }
             return createIntValAnnotation(intValues);
-        }
-        if (first instanceof Double || first instanceof Float) {
+        } else if (first instanceof Double || first instanceof Float) {
             List<Double> intValues = new ArrayList<>();
             for (Number number : values) {
                 intValues.add(number.doubleValue());
@@ -1043,11 +1049,12 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 values.add(value);
             }
             return createIntValAnnotation(values);
+        } else {
+            AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
+            builder.setValue("from", range.from);
+            builder.setValue("to", range.to);
+            return builder.build();
         }
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, IntRange.class);
-        builder.setValue("from", range.from);
-        builder.setValue("to", range.to);
-        return builder.build();
     }
 
     /**
