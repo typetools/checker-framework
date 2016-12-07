@@ -1,7 +1,7 @@
 // Test case for issue 953
 // https://github.com/typetools/checker-framework/issues/953
 // The signture of MyStream#collect is slightly different than the one in Issue953.java
-// @skip-test Crash will be fixed once both pull request #978 and #977 are merged.
+
 import java.util.List;
 
 public class Issue953b {
