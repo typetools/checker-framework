@@ -16,10 +16,10 @@ import java.lang.annotation.Target;
  * <p>Here is an example use:
  *
  * <pre>
- *    {@literal @}EnsuresQualifierIf(result = true, expression = "#1", qualifier = Odd.class)
- *    boolean isOdd(final int p1, int p2) {
- *        return p1 % 2 == 1;
- *    }
+ *  {@literal @}EnsuresQualifier(expression = "p.f1", qualifier = Odd.class)
+ *   void oddF1_1() {
+ *       p.f1 = null;
+ *   }
  * </pre>
  *
  * @author Stefan Heule
