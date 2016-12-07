@@ -1,9 +1,8 @@
 package org.checkerframework.checker.signedness;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.Unsigned;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -21,6 +20,87 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
 
     public SignednessVisitor(BaseTypeChecker checker) {
         super(checker);
+    }
+
+    /**
+     * @param node
+     * @return true iff node is a relevant mask operation (& or |).
+     */
+    private boolean isMask(Tree node) {
+        Kind kind = node.getKind();
+
+        return kind == Kind.AND || kind == Kind.OR;
+    }
+
+    /**
+     * @param expr
+     * @return true iff expr is a literal.
+     */
+    private boolean isLiteral(ExpressionTree expr) {
+        return expr instanceof LiteralTree;
+    }
+
+    /**
+     * @param obj either an Integer or a Long
+     * @return the long value of obj.
+     */
+    private long getLong(Object obj) {
+        if (obj instanceof Integer) {
+            Integer intObj = (Integer) obj;
+            return intObj.longValue();
+        } else {
+            return (long) obj;
+        }
+    }
+
+    /**
+     * @param maskKind
+     * @param shiftLit The LiteralTree whose value is s.
+     * @param maskLit The LiteralTree whose value is m.
+     * @return true iff the s most significant bits of m are 0 for AND, and 1 for OR.
+     */
+    private boolean isMaskedShift(Kind maskKind, LiteralTree shiftLit, LiteralTree maskLit) {
+        long s = getLong(shiftLit.getValue());
+        long m = getLong(maskLit.getValue());
+
+        if (maskLit.getKind() != Kind.LONG_LITERAL) m <<= 32;
+
+        m >>>= (64 - s);
+        if (maskKind == Kind.AND) {
+            return m == 0;
+        } else if (maskKind == Kind.OR) {
+            return m == (1 << s) - 1;
+        } else return false;
+    }
+
+    /**
+     * @param shiftOp
+     * @return true iff the shift is masked such that the type of shift is irrelevant.
+     */
+    private boolean irrelevantShift(BinaryTree shiftOp) {
+        TreePath ancestorPath = visitorState.getPath().getParentPath();
+        Tree ancestor = ancestorPath.getLeaf();
+
+        while (ancestor.getKind() == Kind.PARENTHESIZED) {
+            ancestorPath = ancestorPath.getParentPath();
+            ancestor = ancestorPath.getLeaf();
+        }
+
+        if (!isMask(ancestor)) return false;
+
+        BinaryTree maskOp = (BinaryTree) ancestor;
+        ExpressionTree shiftExpr = shiftOp.getRightOperand();
+        ExpressionTree maskExpr =
+                maskOp.getRightOperand() == shiftOp
+                        ? maskOp.getLeftOperand()
+                        : maskOp.getRightOperand();
+
+        if (!isLiteral(shiftExpr) || !isLiteral(maskExpr)) return false;
+
+        LiteralTree shiftLit = (LiteralTree) shiftExpr;
+        LiteralTree maskLit = (LiteralTree) maskExpr;
+
+        return isMaskedShift(maskOp.getKind(), shiftLit, maskLit);
     }
 
     /**
@@ -56,13 +136,13 @@ public class SignednessVisitor extends BaseTypeVisitor<SignednessAnnotatedTypeFa
                 break;
 
             case RIGHT_SHIFT:
-                if (leftOpType.hasAnnotation(Unsigned.class)) {
+                if (leftOpType.hasAnnotation(Unsigned.class) && !irrelevantShift(node)) {
                     checker.report(Result.failure("shift.signed", kind), leftOp);
                 }
                 break;
 
             case UNSIGNED_RIGHT_SHIFT:
-                if (leftOpType.hasAnnotation(Signed.class)) {
+                if (leftOpType.hasAnnotation(Signed.class) && !irrelevantShift(node)) {
                     checker.report(Result.failure("shift.unsigned", kind), leftOp);
                 }
                 break;
