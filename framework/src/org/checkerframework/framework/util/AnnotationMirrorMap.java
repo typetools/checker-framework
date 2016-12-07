@@ -11,13 +11,13 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * The Map interface defines some of its methods with respect to the equals method. This
- * implementation of Map violates those specifications, but fulfills the same property using
- * AnnotationUtils.areSame.
+ * implementation of Map violates those specifications, but fulfills the same property using {@link
+ * AnnotationUtils#areSame}.
  *
  * <p>For example, the specification for the containsKey(Object key) method says: "returns true if
  * and only if this map contains a mapping for a key k such that (key == null ? k == null :
- * key.equals(k))." The specification for AnnotationMirrorMap is "returns true if and only if this
- * map contains a mapping for a key k such that (key == null ? k == null :
+ * key.equals(k))." The specification for {@link AnnotationMirrorMap#containsKey} is "returns true
+ * if and only if this map contains a mapping for a key k such that (key == null ? k == null :
  * AnnotationUtils.areSame(key, k))."
  *
  * <p>AnnotationMirror is an interface and not all implementing classes provide a correct equals
