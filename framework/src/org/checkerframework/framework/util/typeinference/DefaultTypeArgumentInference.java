@@ -1,8 +1,10 @@
 package org.checkerframework.framework.util.typeinference;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,9 +21,11 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Types;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
@@ -113,8 +117,15 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
         final Map<TypeVariable, AnnotatedTypeMirror> inferredArgs =
-                infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, true);
-
+                infer(
+                        typeFactory,
+                        expressionTree,
+                        argTypes,
+                        assignedTo,
+                        methodElem,
+                        methodType,
+                        targets,
+                        true);
         handleNullTypeArguments(
                 typeFactory, methodElem, methodType, argTypes, assignedTo, targets, inferredArgs);
 
@@ -148,7 +159,15 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             return;
         }
         final Map<TypeVariable, AnnotatedTypeMirror> inferredArgsWithOutNull =
-                infer(typeFactory, argTypes, assignedTo, methodElem, methodType, targets, false);
+                infer(
+                        typeFactory,
+                        null,
+                        argTypes,
+                        assignedTo,
+                        methodElem,
+                        methodType,
+                        targets,
+                        false);
         for (AnnotatedTypeVariable atv : methodType.getTypeVariables()) {
             TypeVariable typeVar = atv.getUnderlyingType();
             AnnotatedTypeMirror result = inferredArgs.get(typeVar);
@@ -306,18 +325,25 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      */
     private Map<TypeVariable, AnnotatedTypeMirror> infer(
             final AnnotatedTypeFactory typeFactory,
+            final ExpressionTree expressionTree,
             final List<AnnotatedTypeMirror> argumentTypes,
             final AnnotatedTypeMirror assignedTo,
             final ExecutableElement methodElem,
             final AnnotatedExecutableType methodType,
             final Set<TypeVariable> targets,
             final boolean useNullArguments) {
-
         //1.  Step 1 - Build up argument constraints
         // The AFConstraints for arguments are used also in the
         Set<AFConstraint> afArgumentConstraints =
                 createArgumentAFConstraints(
                         typeFactory, argumentTypes, methodType, targets, useNullArguments);
+
+        // Combine a set of constraints for Interdependent Method Invocations
+        if (assignedTo == null) {
+            final Set<AFConstraint> invocationConstraints =
+                    createInvocationConstraints(typeFactory, expressionTree, methodType);
+            afArgumentConstraints.addAll(invocationConstraints);
+        }
 
         //2. Step 2 - Solve the constraints.
         Pair<InferenceResult, InferenceResult> argInference =
@@ -325,7 +351,6 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         final InferenceResult fromArgEqualities = argInference.first; // result 2.a
         final InferenceResult fromArgSubandSupers = argInference.second; // result 2.b
-
         clampToLowerBound(fromArgSubandSupers, methodType.getTypeVariables(), typeFactory);
 
         // if this method invocation's has a return type and it is assigned/pseudo-assigned to
@@ -482,6 +507,52 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
 
         reduceAfConstraints(typeFactory, reducedConstraints, afConstraints, targets);
         return reducedConstraints;
+    }
+
+    /**
+     * This method creates FIsA constraints by copying all defined type arguments from the receiver
+     * type.
+     */
+    protected Set<AFConstraint> createInvocationConstraints(
+            final AnnotatedTypeFactory typeFactory,
+            final ExpressionTree expressionTree,
+            final AnnotatedExecutableType methodType) {
+        // Try to detect a receiver type
+        final TreePath path = typeFactory.getPath(expressionTree);
+        if (path == null) {
+            return Collections.emptySet();
+        }
+
+        final AnnotatedTypeMirror receiverType =
+                TypeArgInferenceUtil.assignedTo(typeFactory, path, true);
+        if (receiverType == null || receiverType.getKind() != TypeKind.DECLARED) {
+            return Collections.emptySet();
+        }
+
+        // Receiver type must be same as return type of method
+        final AnnotatedTypeMirror declaredReturnType = methodType.getReturnType();
+        if (!declaredReturnType.getErased().equals(receiverType.getErased())) {
+            return Collections.emptySet();
+        }
+
+        final List<AnnotatedTypeVariable> annotatedTypeVars = methodType.getTypeVariables();
+        final List<AnnotatedTypeMirror> receiverTypeArgs =
+                ((AnnotatedDeclaredType) receiverType).getTypeArguments();
+
+        // Copy arguments from receive type
+        final Set<AFConstraint> afConstraints = new HashSet<>();
+        for (int i = 0; i < annotatedTypeVars.size(); i++) {
+            final AnnotatedTypeMirror substitution = receiverTypeArgs.get(i);
+            if (substitution.getKind() == TypeKind.DECLARED) {
+                afConstraints.add(new FIsA(annotatedTypeVars.get(i), substitution));
+            } else if (substitution.getKind() == TypeKind.WILDCARD) {
+                final AnnotatedWildcardType wildcardArg = (AnnotatedWildcardType) substitution;
+                afConstraints.add(new A2F(wildcardArg.getSuperBound(), annotatedTypeVars.get(i)));
+                afConstraints.add(new F2A(annotatedTypeVars.get(i), wildcardArg.getExtendsBound()));
+            }
+        }
+
+        return afConstraints;
     }
 
     /**
