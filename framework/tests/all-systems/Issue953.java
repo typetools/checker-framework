@@ -1,6 +1,5 @@
 // Test case for issue 953
 // https://github.com/typetools/checker-framework/issues/953
-// @skip-test
 
 import java.util.List;
 
@@ -14,6 +13,8 @@ class Issue953 {
     }
 
     public static void test(MyStream<Integer> y) {
+        // Type argument inference fails, so a checker may report a type checking error.
+        @SuppressWarnings("")
         List<Integer> counts = y.collect(toList());
     }
 
