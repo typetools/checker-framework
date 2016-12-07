@@ -136,7 +136,7 @@ qualifier on a type --- the qualifier that the checkers treat as being present.
 \begin{description}
 \item[built-in]
   Implicit qualifiers can be
-  built into a type system (Section~\ref{writing-type-introduction}), in
+  built into a type system (Section~\ref{creating-type-introduction}), in
   which case the type system's documentation explains all of the type
   system's implicit qualifiers.  Both of the above examples are built into
   the Nullness type system.
@@ -190,7 +190,7 @@ rules are used in order, until one applies.
   this section.
 \item
   Use the default specified by the type system designer
-  (Section~\ref{typesystem-defaults});
+  (Section~\ref{creating-typesystem-defaults});
   this is usually CLIMB-to-top (Section~\ref{climb-to-top}).
 \item
   Use \refqualclass{framework/qual}{Unqualified}, which the framework
@@ -508,10 +508,10 @@ choice is:
 \begin{itemize}
 \item
   For method parameters and lower bounds, use the bottom qualifier (see
-  Section~\ref{bottom-qualifier}).
+  Section~\ref{creating-bottom-qualifier}).
 \item
   For method return values, fields, and upper bounds, use the top qualifier (see
-  Section~\ref{top-qualifier}).
+  Section~\ref{creating-top-qualifier}).
 \end{itemize}
 
 These choices are conservative.  They are likely to cause many

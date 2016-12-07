@@ -12,6 +12,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Equalities;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Subtypes;
 import org.checkerframework.framework.util.typeinference.solver.TargetConstraints.Supertypes;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * ConstraintMap holds simplified versions of the TUConstraints for ALL type variable for which we
@@ -85,7 +86,7 @@ public class ConstraintMap {
 
         for (final AnnotationMirror anno : annos) {
             final AnnotationMirror top = qualHierarchy.getTopAnnotation(anno);
-            if (!equalities.primaries.containsKey(top)) {
+            if (!AnnotationUtils.containsSame(equalities.primaries.keySet(), top)) {
                 equalities.primaries.put(top, anno);
             }
         }
