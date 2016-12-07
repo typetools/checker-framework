@@ -274,7 +274,6 @@ public class SupertypesSolver {
                 solution.addType(target, lub);
             }
         }
-
         return solution;
     }
 
@@ -318,6 +317,12 @@ public class SupertypesSolver {
             final Set<AnnotationMirror> annosInHierarchy = subtypeAnnos.get(top);
             if (annosInHierarchy != null && !annosInHierarchy.isEmpty()) {
                 lubOfPrimaries.put(top, leastUpperBound(annosInHierarchy, qualifierHierarchy));
+            } else {
+                // If there are no annotations for this hierarchy, add bottom.  This happens
+                // when the only constraint for a type variable is a use that is annotated in
+                // this hierarchy. Calls to the method below have this property.
+                // <T> void method(@NonNull T t) {}
+                lubOfPrimaries.put(top, qualifierHierarchy.getBottomAnnotation(top));
             }
         }
     }

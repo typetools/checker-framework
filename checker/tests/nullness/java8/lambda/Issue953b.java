@@ -2,12 +2,12 @@
 // https://github.com/typetools/checker-framework/issues/953
 // @below-java8-jdk-skip-test
 
-// @skip-test
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+@SuppressWarnings("")
 class Issue953b {
     private static List<List<?>> strs = new ArrayList<>();
 
