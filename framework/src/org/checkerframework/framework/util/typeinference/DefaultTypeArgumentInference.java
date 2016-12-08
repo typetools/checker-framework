@@ -26,6 +26,7 @@ import org.checkerframework.framework.type.GeneralAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.framework.util.typeinference.constraint.A2F;
 import org.checkerframework.framework.util.typeinference.constraint.A2FReducer;
@@ -118,7 +119,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
         handleNullTypeArguments(
                 typeFactory, methodElem, methodType, argTypes, assignedTo, targets, inferredArgs);
 
-        handleUninferredTypeVariables(methodType, targets, inferredArgs);
+        handleUninferredTypeVariables(typeFactory, methodType, targets, inferredArgs);
 
         return inferredArgs;
     }
@@ -162,7 +163,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
                 if (withoutNullResult == null) {
                     // withoutNullResult is null when the only constraint on a type argument is
                     // where a method argument is null.
-                    withoutNullResult = atv.getUpperBound().deepCopy();
+                    withoutNullResult = typeFactory.getUninferredWildcardType(atv);
                 }
                 AnnotatedTypeMirror lub =
                         AnnotatedTypes.leastUpperBound(typeFactory, withoutNullResult, result);
@@ -418,7 +419,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             List<AnnotatedTypeVariable> targetDeclarations,
             AnnotatedTypeFactory typeFactory) {
         final QualifierHierarchy qualifierHierarchy = typeFactory.getQualifierHierarchy();
-        final Set<? extends AnnotationMirror> tops = qualifierHierarchy.getTopAnnotations();
+        final AnnotationMirrorSet tops =
+                new AnnotationMirrorSet(qualifierHierarchy.getTopAnnotations());
 
         for (AnnotatedTypeVariable targetDecl : targetDeclarations) {
             InferredValue inferred = fromArgSupertypes.get(targetDecl.getUnderlyingType());
@@ -710,6 +712,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * parameter.
      */
     private void handleUninferredTypeVariables(
+            AnnotatedTypeFactory typeFactory,
             AnnotatedExecutableType methodType,
             Set<TypeVariable> targets,
             Map<TypeVariable, AnnotatedTypeMirror> inferredArgs) {
@@ -719,8 +722,8 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
             if (targets.contains(typeVar)) {
                 final AnnotatedTypeMirror inferredType = inferredArgs.get(typeVar);
                 if (inferredType == null) {
-                    AnnotatedTypeMirror dummy = atv.getUpperBound().deepCopy();
-                    inferredArgs.put(typeVar, dummy);
+                    AnnotatedTypeMirror dummy = typeFactory.getUninferredWildcardType(atv);
+                    inferredArgs.put(atv.getUnderlyingType(), dummy);
                 }
             }
         }

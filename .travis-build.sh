@@ -34,6 +34,8 @@ export SHELLOPTS
 # The above command builds the JDK, so there is no need for a subsequent
 # command to rebuild it again.
 
+set -e
+
 if [[ "${GROUP}" == "junit" || "${GROUP}" == "all" ]]; then
   (cd checker && ant junit-tests-nojtreg-nobuild)
 fi
@@ -81,8 +83,10 @@ if [[ "${GROUP}" == "misc" || "${GROUP}" == "all" ]]; then
   ## (Maybe they don't even need the full ./.travis-build-without-test.sh ;
   ## for example they currently don't need the annotated JDK.)
 
+  set -e
+
   # Code style and formatting
-  ant check-style
+  ant -d check-style
   release/checkPluginUtil.sh
 
   # Documentation

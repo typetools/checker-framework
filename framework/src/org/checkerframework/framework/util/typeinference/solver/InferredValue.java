@@ -1,11 +1,10 @@
 package org.checkerframework.framework.util.typeinference.solver;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 
 /**
  * When one of the constraint solvers infers that a the target has a given type/target in ALL
@@ -43,13 +42,13 @@ public class InferredValue {
          * Indicates that the inferred type should have these primary annotations and the remainder
          * should come from the annotations inferred for target.
          */
-        public final Set<AnnotationMirror> additionalAnnotations;
+        public final AnnotationMirrorSet additionalAnnotations;
 
         public InferredTarget(
                 final TypeVariable target,
                 final Collection<? extends AnnotationMirror> additionalAnnotations) {
             this.target = target;
-            this.additionalAnnotations = new HashSet<>(additionalAnnotations);
+            this.additionalAnnotations = new AnnotationMirrorSet(additionalAnnotations);
         }
     }
 }

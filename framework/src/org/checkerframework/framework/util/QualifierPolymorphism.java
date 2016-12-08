@@ -622,6 +622,9 @@ public class QualifierPolymorphism {
         public Map<AnnotationMirror, Set<? extends AnnotationMirror>> visitWildcard(
                 AnnotatedWildcardType type, AnnotatedTypeMirror actualType) {
             AnnotatedTypeMirror typeSuper = AnnotatedTypes.asSuper(atypeFactory, type, actualType);
+            if (type.isUninferredTypeArgument()) {
+                return Collections.emptyMap();
+            }
             if (typeSuper.getKind() != TypeKind.WILDCARD) {
                 return visit(typeSuper, actualType);
             }

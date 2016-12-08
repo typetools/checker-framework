@@ -286,12 +286,23 @@ public class AnnotationUtils {
      */
     public static boolean containsSame(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
+        return getSame(c, anno) != null;
+    }
+
+    /**
+     * Returns the AnnotationMirror in {@code c} that is the same annotation as {@code anno}.
+     *
+     * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
+     *     to areSame; otherwise, {@code null}
+     */
+    public static AnnotationMirror getSame(
+            Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSame(an, anno)) {
-                return true;
+                return an;
             }
         }
-        return false;
+        return null;
     }
 
     /**
@@ -329,12 +340,24 @@ public class AnnotationUtils {
      */
     public static boolean containsSameIgnoringValues(
             Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
+        return getSameIgnoringValues(c, anno) != null;
+    }
+
+    /**
+     * Returns the AnnotationMirror in {@code c} that is the same annotation as {@code anno}
+     * ignoring values.
+     *
+     * @return AnnotationMirror with the same class as {@code anno} iff c contains anno, according
+     *     to areSameIgnoringValues; otherwise, {@code null}
+     */
+    public static AnnotationMirror getSameIgnoringValues(
+            Collection<? extends AnnotationMirror> c, AnnotationMirror anno) {
         for (AnnotationMirror an : c) {
             if (AnnotationUtils.areSameIgnoringValues(an, anno)) {
-                return true;
+                return an;
             }
         }
-        return false;
+        return null;
     }
 
     private static final Comparator<AnnotationMirror> ANNOTATION_ORDERING =
