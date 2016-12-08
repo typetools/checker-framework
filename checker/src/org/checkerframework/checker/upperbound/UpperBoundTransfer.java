@@ -70,8 +70,14 @@ public class UpperBoundTransfer extends CFTransfer {
             String name = node.getTarget().toString();
             String[] names = {name};
 
-            store.insertValue(
-                    rec, UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
+            Set<AnnotationMirror> oldType = in.getValueOfSubNode(dim).getAnnotations();
+
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(oldType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
+
+            store.insertValue(rec, newType);
         }
         return result;
     }
@@ -86,10 +92,17 @@ public class UpperBoundTransfer extends CFTransfer {
             String arrName = node.getReceiver().toString();
             AnnotationMirror anm =
                     UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(arrName);
-            CFValue newResultValue =
-                    analysis.createSingleAnnotationValue(
-                            anm, result.getResultValue().getUnderlyingType());
-            return new RegularTransferResult<>(newResultValue, result.getRegularStore());
+
+            Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
+
+            result.getRegularStore()
+                    .insertValue(
+                            rec,
+                            qualifierHierarchy.greatestLowerBound(
+                                    anm,
+                                    atypeFactory
+                                            .getAnnotatedType(node.getTree())
+                                            .getAnnotationInHierarchy(UNKNOWN)));
         }
         return result;
     }
@@ -312,61 +325,24 @@ public class UpperBoundTransfer extends CFTransfer {
             Node right,
             Set<AnnotationMirror> rightType,
             CFStore store) {
-        // LTEL always implies that the other is LTEL.
-        if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
 
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(names));
+        AnnotationMirror rightUpperboundType =
+                qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN);
+        AnnotationMirror leftUpperboundType =
+                qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN);
 
-            store.insertValue(rightRec, newType);
+        if (rightUpperboundType == null || leftUpperboundType == null) {
+            return;
         }
-        if (AnnotationUtils.containsSameByClass(rightType, LTEqLengthOf.class)) {
-            Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN));
 
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(names));
+        AnnotationMirror newType =
+                qualifierHierarchy.greatestLowerBound(rightUpperboundType, leftUpperboundType);
 
-            store.insertValue(leftRec, newType);
-        }
-        if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)
-                && fOnlyUnknown(rightType)) {
-            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
+        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
 
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
-
-            store.insertValue(rightRec, newType);
-        }
-        if (AnnotationUtils.containsSameByClass(rightType, LTLengthOf.class)
-                && fOnlyUnknown(leftType)) {
-            Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
-            String[] names =
-                    UpperBoundUtils.getValue(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
-
-            AnnotationMirror newType =
-                    qualifierHierarchy.greatestLowerBound(
-                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN),
-                            UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(names));
-
-            store.insertValue(leftRec, newType);
-        }
+        store.insertValue(rightRec, newType);
+        store.insertValue(leftRec, newType);
     }
 
     // This method really only exists because it's easier to leave it. It used

@@ -29,6 +29,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -43,11 +44,14 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     protected final ExecutableElement listToArray1;
     protected final ExecutableElement arrayAsList;
 
+    private QualifierHierarchy qualifierHierarchy;
+
     public MinLenTransfer(MinLenAnalysis analysis) {
         super(analysis);
         this.analysis = analysis;
         atypeFactory = (MinLenAnnotatedTypeFactory) analysis.getTypeFactory();
         this.env = MinLenAnnotatedTypeFactory.env;
+        qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         this.listAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
         this.listAdd2 = TreeUtils.getMethod("java.util.List", "add", 2, env);
         this.listToArray = TreeUtils.getMethod("java.util.List", "toArray", 0, env);
@@ -253,9 +257,10 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
-        // Refine the then branch.
         refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
         refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+
+        refineEq(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
 
         // The else branch should only be refined if a length is being compared
         // to zero. The following code block implements this special case.
@@ -276,9 +281,10 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
-        // Refine the then branch.
         refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
         refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+
+        refineEq(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
 
         // The then branch should only be refined if a length is being compared
         // to zero. The following code block implements this special case.
@@ -289,6 +295,33 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         refineZeroEquality(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
 
         return rfi.newResult;
+    }
+
+    private void refineEq(
+            Node left,
+            Set<AnnotationMirror> leftTypeSet,
+            Node right,
+            Set<AnnotationMirror> rightTypeSet,
+            MinLenStore store) {
+
+        AnnotationMirror rightType =
+                qualifierHierarchy.findAnnotationInHierarchy(
+                        rightTypeSet, atypeFactory.createMinLen(0));
+        AnnotationMirror leftType =
+                qualifierHierarchy.findAnnotationInHierarchy(
+                        leftTypeSet, atypeFactory.createMinLen(0));
+
+        if (leftType == null || rightType == null) {
+            return;
+        }
+
+        AnnotationMirror newType = qualifierHierarchy.greatestLowerBound(leftType, rightType);
+
+        Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+        Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
+
+        store.insertValue(rightRec, newType);
+        store.insertValue(leftRec, newType);
     }
 
     private void refineZeroEquality(

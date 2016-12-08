@@ -2,15 +2,14 @@ package org.checkerframework.checker.upperbound;
 
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
@@ -32,6 +31,7 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -444,6 +444,61 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
+        public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
+            if (tree.getIdentifier().contentEquals("length")
+                    && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
+                String arrName = tree.getExpression().toString();
+                type.replaceAnnotation(
+                        qualHierarchy.greatestLowerBound(
+                                createLTEqLengthOfAnnotation(arrName),
+                                type.getAnnotationInHierarchy(UNKNOWN)));
+            }
+            return super.visitMemberSelect(tree, type);
+        }
+
+        @Override
+        public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
+            AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
+            switch (tree.getKind()) {
+                case PREFIX_INCREMENT:
+                    handleIncrement(typeSrc, typeDst);
+                    break;
+                case PREFIX_DECREMENT:
+                    handleDecrement(typeSrc, typeDst);
+                    break;
+                case POSTFIX_INCREMENT: // Do nothing. The CF should take care of these itself.
+                    break;
+                case POSTFIX_DECREMENT:
+                    break;
+                default:
+                    break;
+            }
+            return super.visitUnary(tree, typeDst);
+        }
+
+        private void handleIncrement(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+            if (typeSrc.hasAnnotation(LTLengthOf.class)) {
+                String[] names =
+                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                typeDst.replaceAnnotation(createLTEqLengthOfAnnotation(names));
+                return;
+            } else if (typeSrc.hasAnnotation(LTEqLengthOf.class)) {
+                typeDst.replaceAnnotation(UNKNOWN);
+                return;
+            }
+        }
+
+        private void handleDecrement(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+            if (typeSrc.hasAnnotation(LTLengthOf.class)
+                    || typeSrc.hasAnnotation(LTEqLengthOf.class)) {
+                String[] names =
+                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                typeDst.replaceAnnotation(createLTLengthOfAnnotation(names));
+                return;
+            }
+        }
+
+        @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             // A few small rules for addition/subtraction by 0/1, etc.
             if (TreeUtils.isStringConcatenation(tree)) {
@@ -460,10 +515,55 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case MINUS:
                     addAnnotationForMinus(left, right, type);
                     break;
+                case DIVIDE:
+                    addAnnotationForDivide(left, right, type);
+                    break;
                 default:
                     break;
             }
             return super.visitBinary(tree, type);
+        }
+
+        /**
+         * Handles these cases:
+         *
+         * <pre>
+         *     LTL / 1+ &rarr; LTL
+         *     LTEL / 2+ &rarr; LTL
+         *     LTEL / 1 &rarr; LTEL
+         * </pre>
+         */
+        private void addAnnotationForDivide(
+                ExpressionTree left, ExpressionTree right, AnnotatedTypeMirror type) {
+            // Check if the right side's value is known at compile time.
+            AnnotatedTypeMirror valueTypeRight = valueAnnotatedTypeFactory.getAnnotatedType(right);
+            Integer maybeValRight = maybeValFromValueType(valueTypeRight);
+            if (maybeValRight != null) {
+                AnnotatedTypeMirror leftType = getAnnotatedType(left);
+                addAnnotationForLiteralDivide(maybeValRight, leftType, type);
+                return;
+            }
+        }
+
+        private void addAnnotationForLiteralDivide(
+                int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
+            if (nonLiteralType.hasAnnotation(LTLengthOf.class)) {
+                if (val >= 1) {
+                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    return;
+                }
+            } else if (nonLiteralType.hasAnnotation(LTEqLengthOf.class)) {
+                if (val >= 2) {
+                    String[] names =
+                            UpperBoundUtils.getValue(
+                                    nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    type.replaceAnnotation(createLTLengthOfAnnotation(names));
+                    return;
+                } else if (val == 1) {
+                    type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(UNKNOWN));
+                    return;
+                }
+            }
         }
 
         private void addAnnotationForLiteralPlus(
