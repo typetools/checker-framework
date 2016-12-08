@@ -326,10 +326,17 @@ public class UpperBoundTransfer extends CFTransfer {
             Set<AnnotationMirror> rightType,
             CFStore store) {
 
+        AnnotationMirror rightUpperboundType =
+                qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN);
+        AnnotationMirror leftUpperboundType =
+                qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN);
+
+        if (rightUpperboundType == null || leftUpperboundType == null) {
+            return;
+        }
+
         AnnotationMirror newType =
-                qualifierHierarchy.greatestLowerBound(
-                        qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
-                        qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
+                qualifierHierarchy.greatestLowerBound(rightUpperboundType, leftUpperboundType);
 
         Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
         Receiver leftRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), left);
