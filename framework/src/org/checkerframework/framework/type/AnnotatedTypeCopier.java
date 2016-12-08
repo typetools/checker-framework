@@ -332,8 +332,8 @@ public class AnnotatedTypeCopier
                                 original.getUnderlyingType(),
                                 original.atypeFactory,
                                 original.isDeclaration());
-        if (original.isTypeArgHack()) {
-            copy.setTypeArgHack();
+        if (original.isUninferredTypeArgument()) {
+            copy.setUninferredTypeArgument();
         }
 
         maybeCopyPrimaryAnnotations(original, copy);

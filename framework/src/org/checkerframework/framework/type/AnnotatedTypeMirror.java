@@ -1990,7 +1990,7 @@ public abstract class AnnotatedTypeMirror {
                 type.addAnnotations(this.getAnnotationsField());
             }
 
-            type.typeArgHack = typeArgHack;
+            type.uninferredTypeArgument = uninferredTypeArgument;
 
             return type;
         }
@@ -2010,16 +2010,23 @@ public abstract class AnnotatedTypeMirror {
             return getExtendsBound().getErased();
         }
 
-        // Remove the typeArgHack once method type
+        // Remove the uninferredTypeArgument once method type
         // argument inference and raw type handling is improved.
-        private boolean typeArgHack = false;
+        private boolean uninferredTypeArgument = false;
 
-        /* package-scope */ void setTypeArgHack() {
-            typeArgHack = true;
+        /* package-scope */ void setUninferredTypeArgument() {
+            uninferredTypeArgument = true;
         }
 
-        /* package-scope */ boolean isTypeArgHack() {
-            return typeArgHack;
+        /**
+         * Returns whether or not this wildcard is a type argument for which inference failed to
+         * infer a type.
+         *
+         * @return Returns whether or not this wildcard is a type argument for which inference
+         *     failed
+         */
+        public boolean isUninferredTypeArgument() {
+            return uninferredTypeArgument;
         }
     }
 

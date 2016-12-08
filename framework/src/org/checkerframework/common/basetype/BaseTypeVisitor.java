@@ -1771,17 +1771,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             Tree valueTree,
             /*@CompilerMessageKey*/ String errorKey) {
 
-        String valueTypeString = valueType.toString();
-        String varTypeString = varType.toString();
-
-        // If both types as strings are the same, try printing verbosely.
-        if (valueTypeString.equals(varTypeString)
-                // or if neither string contains an annotation
-                || (!valueTypeString.contains("@") && !varTypeString.contains("@"))) {
-            valueTypeString = valueType.toString(true);
-            varTypeString = varType.toString(true);
-        }
-
         if (checker.hasOption("showchecks")) {
             long valuePos = positions.getStartPosition(root, valueTree);
             System.out.printf(
@@ -1791,9 +1780,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     valueTree.getKind(),
                     valueTree,
                     valueType.getKind(),
-                    valueTypeString,
+                    valueType.toString(),
                     varType.getKind(),
-                    varTypeString);
+                    varType.toString());
         }
 
         boolean success = atypeFactory.getTypeHierarchy().isSubtype(valueType, varType);
@@ -1826,13 +1815,22 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     valueTree.getKind(),
                     valueTree,
                     valueType.getKind(),
-                    valueTypeString,
+                    valueType.toString(),
                     varType.getKind(),
-                    varTypeString);
+                    varType.toString());
         }
 
         // Use an error key only if it's overridden by a checker.
         if (!success) {
+            String valueTypeString = valueType.toString();
+            String varTypeString = varType.toString();
+            // If both types as strings are the same, try printing verbosely.
+            if (valueTypeString.equals(varTypeString)
+                    // or if neither string contains an annotation
+                    || (!valueTypeString.contains("@") && !varTypeString.contains("@"))) {
+                valueTypeString = valueType.toString(true);
+                varTypeString = varType.toString(true);
+            }
             checker.report(Result.failure(errorKey, valueTypeString, varTypeString), valueTree);
         }
     }
