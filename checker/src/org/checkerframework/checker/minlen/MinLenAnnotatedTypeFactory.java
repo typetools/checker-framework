@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
@@ -30,6 +31,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The MinLen checker is responsible for annotating arrays with their minimum lengths. It is meant
@@ -266,6 +268,19 @@ public class MinLenAnnotatedTypeFactory
 
             return super.visitNewArray(tree, type);
         }
+    }
+
+    protected static int getMinLenValue(AnnotationMirror annotation) {
+        if (annotation == null || AnnotationUtils.areSameByClass(annotation, MinLenBottom.class)) {
+            return -1;
+        }
+        ExecutableElement valueMethod =
+                TreeUtils.getMethod(
+                        "org.checkerframework.checker.minlen.qual.MinLen", "value", 0, env);
+        return (int)
+                AnnotationUtils.getElementValuesWithDefaults(annotation)
+                        .get(valueMethod)
+                        .getValue();
     }
 
     public AnnotationMirror createMinLen(int val) {

@@ -1,4 +1,3 @@
-import java.util.Arrays;
 import java.util.List;
 import org.checkerframework.checker.minlen.qual.*;
 
@@ -20,17 +19,8 @@ class ArrayIntro {
         int /*@MinLen(16)*/[] arr5 = new int[a];
     }
 
-    // There are three expected failures in here. As soon as
-    // list support is added, they should go away.
     void listToArray(@MinLen(10) List<String> arg) {
-        //:: error: (assignment.type.incompatible)
         Object @MinLen(10) [] a1 = arg.toArray();
-        //:: error: (assignment.type.incompatible)
-        String @MinLen(10) [] a2 = arg.toArray(new String[0]);
-    }
-
-    void arrayToList(String @MinLen(10) [] arg) {
-        //:: error: (assignment.type.incompatible)
-        @MinLen(10) List<String> lst = Arrays.asList(arg);
+        String @MinLen(0) [] a2 = arg.toArray(new String[0]);
     }
 }

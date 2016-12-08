@@ -1,23 +1,30 @@
 package org.checkerframework.checker.minlen;
 
 import com.sun.source.tree.Tree;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.minlen.qual.MinLen;
+import org.checkerframework.checker.minlen.qual.MinLenBottom;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
+import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
 import org.checkerframework.dataflow.cfg.node.LessThanNode;
 import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
@@ -32,6 +39,10 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     protected static MinLenAnnotatedTypeFactory atypeFactory;
     protected final ProcessingEnvironment env;
     protected final ExecutableElement listAdd;
+    protected final ExecutableElement listAdd2;
+    protected final ExecutableElement listToArray;
+    protected final ExecutableElement listToArray1;
+    protected final ExecutableElement arrayAsList;
 
     private QualifierHierarchy qualifierHierarchy;
 
@@ -42,6 +53,96 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         this.env = MinLenAnnotatedTypeFactory.env;
         qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         this.listAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
+        this.listAdd2 = TreeUtils.getMethod("java.util.List", "add", 2, env);
+        this.listToArray = TreeUtils.getMethod("java.util.List", "toArray", 0, env);
+        this.listToArray1 = TreeUtils.getMethod("java.util.List", "toArray", 1, env);
+        this.arrayAsList = TreeUtils.getMethod("java.util.Arrays", "asList", 1, env);
+    }
+
+    @Override
+    public TransferResult<MinLenValue, MinLenStore> visitMethodInvocation(
+            MethodInvocationNode node, TransferInput<MinLenValue, MinLenStore> in) {
+        TransferResult<MinLenValue, MinLenStore> result = super.visitMethodInvocation(node, in);
+
+        String methodName = node.getTarget().getMethod().toString();
+        boolean add = methodName.startsWith("add(");
+        boolean asList = methodName.contains("asList(");
+        boolean toArray = methodName.startsWith("toArray(");
+        if (!(add || asList || toArray)) {
+            return result;
+        }
+
+        if (TreeUtils.isMethodInvocation(node.getTree(), listAdd, env)
+                || TreeUtils.isMethodInvocation(node.getTree(), listAdd2, env)) {
+            Receiver rec =
+                    FlowExpressions.internalReprOf(
+                            analysis.getTypeFactory(), node.getTarget().getReceiver());
+            if (node.getTarget().getReceiver().getTree() == null || rec instanceof Unknown) {
+                return result;
+            }
+            AnnotatedTypeMirror ATM =
+                    atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
+            AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
+            if (anno == null || AnnotationUtils.areSameByClass(anno, MinLenBottom.class)) {
+                return result;
+            }
+            int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
+            AnnotationMirror AM = atypeFactory.createMinLen(value + 1);
+            Set<AnnotationMirror> set = new HashSet<>();
+            set.add(AM);
+            MinLenValue minlen =
+                    new MinLenValue(analysis, set, node.getTarget().getReceiver().getType());
+            if (MinLenStore.canInsertReceiver(rec)) {
+                if (result.containsTwoStores()) {
+                    result.getThenStore().replaceValue(rec, minlen);
+                    result.getElseStore().replaceValue(rec, minlen);
+                } else {
+                    result.getRegularStore().replaceValue(rec, minlen);
+                }
+            }
+            return result;
+        } else if (TreeUtils.isMethodInvocation(node.getTree(), listToArray, env)
+                || TreeUtils.isMethodInvocation(node.getTree(), listToArray1, env)) {
+            if (node.getTarget().getReceiver().getTree() == null) {
+                return result;
+            }
+            AnnotatedTypeMirror ATM =
+                    atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
+            AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
+            int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
+            AnnotationMirror AM = atypeFactory.createMinLen(value + 1);
+            result.setResultValue(analysis.createSingleAnnotationValue(AM, node.getType()));
+            return result;
+        } else if (TreeUtils.isMethodInvocation(node.getTree(), arrayAsList, env)) {
+            Node arg = node.getArgument(0);
+            int value = 0;
+            if (arg instanceof ArrayCreationNode) {
+                ArrayCreationNode aNode = (ArrayCreationNode) arg;
+                List<Node> args = aNode.getInitializers();
+                // if there is only one argument arg; and if arg is an array of T (T[] arg); and if T is not a primitive
+                // then array.asList(arg).size() == arg.length
+                // otherwise it is treated as varargs and array.asList(arg).size() == the number of arguments
+                if (args.size() == 1
+                        && args.get(0).getType().getKind().equals(TypeKind.ARRAY)
+                        && !((ArrayType) args.get(0).getType())
+                                .getComponentType()
+                                .getKind()
+                                .isPrimitive()) {
+                    if (args.get(0).getTree() == null) {
+                        return result;
+                    }
+                    AnnotatedTypeMirror ATM = atypeFactory.getAnnotatedType(args.get(0).getTree());
+                    AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
+                    value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
+                } else {
+                    value = args.size();
+                }
+            }
+            AnnotationMirror AM = atypeFactory.createMinLen(value);
+            result.setResultValue(analysis.createSingleAnnotationValue(AM, node.getType()));
+        }
+
+        return result;
     }
 
     /**
