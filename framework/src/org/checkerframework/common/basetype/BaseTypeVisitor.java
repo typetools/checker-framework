@@ -100,6 +100,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
@@ -1822,17 +1823,98 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Use an error key only if it's overridden by a checker.
         if (!success) {
-            String valueTypeString = valueType.toString();
-            String varTypeString = varType.toString();
-            // If both types as strings are the same, try printing verbosely.
-            if (valueTypeString.equals(varTypeString)
-                    // or if neither string contains an annotation
-                    || (!valueTypeString.contains("@") && !varTypeString.contains("@"))) {
+            String valueTypeString;
+            String varTypeString;
+            if (shouldPrintVerbose(varType, valueType)) {
                 valueTypeString = valueType.toString(true);
                 varTypeString = varType.toString(true);
+            } else {
+                valueTypeString = valueType.toString();
+                varTypeString = varType.toString();
             }
             checker.report(Result.failure(errorKey, valueTypeString, varTypeString), valueTree);
         }
+    }
+
+    /**
+     * Return whether or not the verbose toString should be used when printing the two annotated
+     * types.
+     *
+     * <p>If any simple toString of any annotated type in the first atm is equal to any toString of
+     * any annotated type in the second atm and if the verbose toStrings differ, then the verbose
+     * toString should be used.
+     *
+     * @param atm1 the first atm
+     * @param atm2 the second atm
+     * @return whether or not the verbose toString should be used when printing the two annotated
+     *     types.
+     */
+    private boolean shouldPrintVerbose(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
+        String atm1ToString = atm1.toString();
+        String atm2ToString = atm2.toString();
+        // If both types as strings are the same, use verbose toString.
+        if (atm2ToString.equals(atm1ToString)
+                // or if neither string contains an annotation
+                || (!atm2ToString.contains("@") && !atm1ToString.contains("@"))) {
+            return true;
+        }
+
+        // Collect the "toString" of every AnnotatedTypeMirror in atm2.
+        SimpleAnnotatedTypeScanner<Map<String, List<AnnotatedTypeMirror>>, Void> collectToStrings =
+                new SimpleAnnotatedTypeScanner<Map<String, List<AnnotatedTypeMirror>>, Void>() {
+                    Map<String, List<AnnotatedTypeMirror>> map = new HashMap<>();
+
+                    @Override
+                    protected Map<String, List<AnnotatedTypeMirror>> defaultAction(
+                            AnnotatedTypeMirror type, Void aVoid) {
+                        if (type == null) {
+                            return map;
+                        }
+                        String simple = type.toString();
+                        List<AnnotatedTypeMirror> list;
+                        if (map.containsKey(simple)) {
+                            list = map.get(simple);
+                        } else {
+                            list = new ArrayList<>();
+                            map.put(simple, list);
+                        }
+                        list.add(type);
+                        return map;
+                    }
+                };
+        Map<String, List<AnnotatedTypeMirror>> map = collectToStrings.visit(atm2, null);
+
+        // Compare the "toString" of every AnnotatedTypeMirror in atm2 with the "toString" of
+        // every AnnotatedType mirror in atm1.  If the toStrings match, but toString verbose of
+        // the annotated types does not match, then the types should be printed verbosely.
+        SimpleAnnotatedTypeScanner<Boolean, Map<String, List<AnnotatedTypeMirror>>>
+                checkToStringOfOther =
+                        new SimpleAnnotatedTypeScanner<
+                                Boolean, Map<String, List<AnnotatedTypeMirror>>>() {
+                            @Override
+                            protected Boolean defaultAction(
+                                    AnnotatedTypeMirror type,
+                                    Map<String, List<AnnotatedTypeMirror>> map) {
+                                if (type == null) {
+                                    return false;
+                                }
+                                String simple = type.toString();
+                                if (!map.containsKey(simple)) {
+                                    return false;
+                                }
+                                String verbose = type.toString(true);
+                                List<AnnotatedTypeMirror> list = map.get(simple);
+                                for (AnnotatedTypeMirror other : list) {
+                                    String otherVerbose = other.toString(true);
+                                    if (!verbose.equals(otherVerbose)) {
+                                        return true;
+                                    }
+                                }
+                                return false;
+                            }
+                        };
+        Boolean result = checkToStringOfOther.visit(atm1, map);
+        return result == null ? false : result;
     }
 
     protected void checkArrayInitialization(
