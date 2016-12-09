@@ -1,0 +1,178 @@
+%\htmlhr
+\chapter{Index Checker for array bounds\label{index-checker}}
+
+The Index Checker warns about unsafe array accesses.  It protects
+against Java's
+\sunjavadoc{java/lang/ArrayIndexOutOfBoundsException.html}{ArrayIndexOutOfBoundsException}. A
+class checked by the
+Index Checker  will not throw an ArrayIndexOutOfBoundException unless the
+index has overflowed or underflowed. The Index Checker maintains information
+for each sequence-like data structure and will report unsafe accesses to each.
+It is designed primarily for arrays and Lists.
+
+The Index Checker maintains an estimate of the range of values for each
+index expression.  There are two ways an expression can fail to be safe for use as an
+index: either it can be too low or it can be too high. The Index
+Checker will warn about both types of dangerous accesses, and will
+issue different warnings for the two.
+
+Typically, programmers do not need to write annotations to use the
+Index Checker. The Index Checker will infer properties of indexes from
+the code around them.  For example, it will infer that \<x> is positive
+within the then block of an \code{if (x > 0)} statement.
+
+
+\section{Running the Index Checker\label{index-running}}
+
+To run the Index Checker, run the command
+
+\begin{alltt}
+  javac -processor index \emph{MyJavaFile}.java
+\end{alltt}
+
+Internally, the Index Checker is composed of three checkers: the Lower
+Bound Checker (section~\ref{index-lowerbound}), which checks whether potential accesses may be too low;
+the Upper Bound Checker (section~\ref{index-upperbound}), which checks whether potential accesses
+may be too high; and the MinLen Checker (section~\ref{index-minlen}), which estimates the minimum
+length of each sequence.
+
+
+\section{The Lower Bound Checker\label{index-lowerbound}}
+
+The Lower Bound Checker warns about indices that might be
+too low to access a zero-indexed sequence. The
+Lower Bound Checker's type system uses the following qualifiers.
+
+\begin{description}
+\item[\refqualclass{checker/lowerbound/qual}{Positive}]
+  The value is 1 or greater, so it is not too low to be used as an index.
+\item[\refqualclass{checker/lowerbound/qual}{NonNegative}]
+  The value is 0 or greater, so it is not too low to be used as an index.
+\item[\refqualclass{checker/lowerbound/qual}{GTENegativeOne}]
+  The value is -1 or greater.
+  It may not be used as an index for a sequence, because it might be too low.
+\item[\refqualclass{checker/lowerbound/qual}{LowerBoundUnknown}]
+  There is no information about the value.
+  It may not be used as an index for a sequence, because it might be too low.
+\end{description}
+
+\begin{figure}
+  \includeimage{lowerbound}{7cm}
+  \caption{The type hierarchy used by the Lower Bound Checker.}
+  \label{fig-lowerbound-types}
+\end{figure}
+
+%% True, but implementation details don't seem relevant to someone reading the manual.
+% Internally, the Lower Bound Checker uses both the Constant Value Checker and the MinLen
+% Checker. The Constant Value Checker is used to reason about constants, and to assign
+% them the appropriate Lower Bound types. The MinLen Checker is used to give correct types
+% to calls to \code{arr.length}, where \code{arr} is any array. The Lower Bound checker
+% implements a large number of transfer rules. Because there are so many, they are
+% not documented here; the code implementing them contains JavaDoc comments that describe
+% the rules it implements.
+
+Typically, a programmer only needs to write these annotations on
+fields and method signatures, because the Lower Bound Checker infers
+qualifiers within method bodies.
+Detailed documentation about the inferences performed can be found
+in the Javadoc comments in its source code.
+
+
+\section{The Upper Bound Checker\label{index-upperbound}}
+
+The Upper Bound Checker warns about accesses to sequences with indexes that might be
+too high.
+The Upper Bound Checker's type system uses the following qualifiers.
+Typically, a programmer only needs to write these annotations on
+fields and method signatures, because the Upper Bound Checker infers
+qualifiers within method bodies.
+
+\begin{description}
+\item[\refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}]
+  An expression with this type
+  has value less than the length of each sequence listed in \<names>.
+  The expression may be used as an index into any of those sequences.
+  \code{@LTLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTLengthOf("a")} and \code{@LTLengthOf("b")}.
+\item[\refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}]
+  An expression with this type
+  has value less than or equal to the length of each sequence listed in \<names>.
+  It may not be used as an index for a sequence, because it might be too high.
+  \code{@LTEqLengthOf({"a", "b"})} is a subtype of both
+  \code{@LTEqLengthOf("a")} and \code{@LTEqLengthOf("b")}.
+\item[\refqualclass{checker/upperbound/qual}{UpperBoundUnknown}]
+  There is no information about the value of an expression with this type.
+  It may not be used as an index for a sequence, because it might be too high.
+  This type is the top type, and should never need to be written by the
+  programmer.
+\item[\refqualclass{checker/upperbound/qual}{UpperBoundBottom}]
+  This is the bottom type for the Upper Bound type system. It should
+  never need to be written by the programmer.
+  \end{description}
+
+\begin{figure}
+  \includeimage{upperbound}{7cm}
+  \caption{The type hierarchy used by the Upper Bound Checker.}
+  \label{fig-upperbound-types}
+\end{figure}
+
+% Like the Lower Bound checker, the Upper Bound checker relies on both the Constant
+% Value Checker and the MinLen checker. It uses the Constant Value Checker to determine
+% precisely the value of particular indexes, and uses the MinLen checker both in the way
+% described above (for constant indexes) and to determine when potential indexes should
+% be assigned
+% \refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{String[] names}] or
+% \refqualclasswithparams{checker/upperbound/qual}{LTEqLengthOf}{String[] names}].
+
+
+\section{The MinLen Checker\label{index-minlen}}
+
+The MinLen Checker estimates, for each sequence expression, how long its value
+might be at run time.  The MinLen Checker computes a minimum length that
+the sequence is guaranteed to have.
+
+The main reason for the MinLen Checker is to handle fixed-length arrays
+that are indexed by a compile-time constant.
+There are two different situations when \<arr[i]> is legal because \<i> is
+not too large:
+\begin{itemize}
+\item
+  when \<i> is known to be less than the length of \<arr> independent of the length of
+  \<arr>.  This fact is represented by giving \<i> the type \refqualclasswithparams{checker/upperbound/qual}{LTLengthOf}{"arr"}.
+\item
+  when \<i> is a compile-time constant but the length of \<arr> is known to
+  be greater.  For example, consider the following code:
+\end{itemize}
+
+\begin{Verbatim}
+  String getSecondElement(String[] arr) {
+    return arr[1];
+  }
+\end{Verbatim}
+  This is legal if \<arr> has at least two elements, which can be indicated
+  in this way:
+\begin{Verbatim}
+  String getSecondElement(String @MinLen(2) [] arr) {
+    return arr[1];
+  }
+\end{Verbatim}
+
+The MinLen Checker uses the following type hierarchy:
+
+\begin{description}
+\item[\refqualclasswithparams{checker/minlen/qual}{MinLen}{int value}]
+  An expression with this type represents a sequential structure
+  with at least \code{value} elements.  The default annotation is
+  \code{@MinLen(0)}, since an arbitrary object has at least 0 elements.
+  In general, \code{@MinLen(x)} is a subtype of \code{@MinLen(x-1)}.
+\item[\refqualclass{checker/minlen/qual}{MinLenBottom}]
+  This is the bottom type for the MinLen type system.
+  Programmers should rarely need to write it.
+  \code{null} has this type.
+  \end{description}
+
+\begin{figure}
+  \includeimage{minlen}{7cm}
+  \caption{The type hierarchy used by the MinLen Checker.}
+  \label{fig-minlen-types}
+\end{figure}

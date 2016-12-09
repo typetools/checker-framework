@@ -496,6 +496,7 @@ public class BaseTypeValidator extends AnnotatedTypeScanner<Void, Tree> implemen
             }
             AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(aOnVar);
             if (seenTops.contains(top)) {
+                System.out.println("too many qualifiers from same hierarchy");
                 this.reportError(type, tree);
                 error = true;
             }
