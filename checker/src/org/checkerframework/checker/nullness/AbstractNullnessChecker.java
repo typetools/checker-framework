@@ -24,7 +24,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
     //     http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#nullness-arrays
     // It is the default temporarily, until we improve the analysis to reduce false positives or we
     // learn what advice to give programmers about avoid false positive warnings.
-    // See issues #154, #322, and #433.
+    // See issue #986: https://github.com/typetools/checker-framework/issues/986
     "forbidnonnullarraycomponents"
 })
 public abstract class AbstractNullnessChecker extends InitializationChecker {
