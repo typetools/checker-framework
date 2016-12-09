@@ -515,6 +515,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case MINUS:
                     addAnnotationForMinus(left, right, type);
                     break;
+                case MULTIPLY:
+                    addAnnotationForMultiply(left, right, type);
+                    break;
                 case DIVIDE:
                     addAnnotationForDivide(left, right, type);
                     break;
@@ -635,6 +638,54 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             type.addAnnotation(UNKNOWN);
+            return;
+        }
+
+        private boolean isRandomSpecialCase(
+                ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
+            if (arrLenTree instanceof MemberSelectTree) {
+                MemberSelectTree mstree = (MemberSelectTree) arrLenTree;
+                if (mstree.getIdentifier().contentEquals("length")
+                        && InternalUtils.typeOf(mstree.getExpression()).getKind()
+                                == TypeKind.ARRAY) {
+                    // Now we know that the arrLenTree represented an array length.
+
+                    if (randTree instanceof MethodInvocationTree) {
+
+                        MethodInvocationTree mitree = (MethodInvocationTree) randTree;
+                        ExecutableElement random =
+                                TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
+                        ExecutableElement nextDouble =
+                                TreeUtils.getMethod(
+                                        "java.util.Random", "nextDouble", 0, processingEnv);
+
+                        if (TreeUtils.isMethodInvocation(mitree, random, processingEnv)) {
+                            // Okay, so this is Math.random() * array.length, which must be NonNegative
+                            type.addAnnotation(
+                                    createLTLengthOfAnnotation(mstree.getExpression().toString()));
+                            return true;
+                        }
+
+                        if (TreeUtils.isMethodInvocation(mitree, nextDouble, processingEnv)) {
+                            // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
+                            type.addAnnotation(
+                                    createLTLengthOfAnnotation(mstree.getExpression().toString()));
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void addAnnotationForMultiply(
+                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+            // Special handling for multiplying an array length by a random variable.
+            if (isRandomSpecialCase(rightExpr, leftExpr, type)
+                    || isRandomSpecialCase(leftExpr, rightExpr, type)) {
+                return;
+            }
+
             return;
         }
 
