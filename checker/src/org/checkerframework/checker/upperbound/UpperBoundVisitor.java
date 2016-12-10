@@ -2,20 +2,46 @@ package org.checkerframework.checker.upperbound;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodInvocationTree;
+import java.util.ArrayList;
+import java.util.List;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.TreeUtils;
 
 /** Warns about array accesses that could be too high. */
 public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFactory> {
 
+    protected final List<ExecutableElement> IndexFirstArgListMethods;
+
     private static final String UPPER_BOUND = "array.access.unsafe.high";
+    private static final String UPPER_BOUND_LIST = "list.access.unsafe.high";
 
     public UpperBoundVisitor(BaseTypeChecker checker) {
         super(checker);
+        this.IndexFirstArgListMethods = new ArrayList<ExecutableElement>();
+        this.IndexFirstArgListMethods.add(
+                TreeUtils.getMethod(
+                        "java.util.List", "get", 1, checker.getProcessingEnvironment()));
+        this.IndexFirstArgListMethods.add(
+                TreeUtils.getMethod(
+                        "java.util.List", "set", 2, checker.getProcessingEnvironment()));
+        //// can't handle until TreeUtils.getMethod has a way to precisly handle method overloading
+        //// this.IndexFirstArgListMethods.add(TreeUtils.getMethod("java.util.List", "remove", 1, checker.getProcessingEnvironment()));
+        this.IndexFirstArgListMethods.add(
+                TreeUtils.getMethod(
+                        "java.util.List", "listIterator", 1, checker.getProcessingEnvironment()));
+        this.IndexFirstArgListMethods.add(
+                TreeUtils.getMethod(
+                        "java.util.List", "addAll", 2, checker.getProcessingEnvironment()));
+        this.IndexFirstArgListMethods.add(
+                TreeUtils.getMethod(
+                        "java.util.List", "add", 2, checker.getProcessingEnvironment()));
     }
 
     /**
@@ -51,8 +77,55 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return super.visitArrayAccess(tree, type);
         } else {
             // Unsafe, since neither the Upper bound or MinLen checks succeeded.
-            checker.report(Result.warning(UPPER_BOUND, indexType.toString(), arrName), indexTree);
+            checker.report(
+                    Result.warning(UPPER_BOUND, indexType.toString(), arrName, arrTree.toString()),
+                    indexTree);
             return super.visitArrayAccess(tree, type);
         }
+    }
+
+    @Override
+    public Void visitMethodInvocation(MethodInvocationTree tree, Void type) {
+        if (isFirstArgListMethod(tree)) {
+            ExpressionTree indexTree = tree.getArguments().get(0);
+            ExpressionTree lstTree = tree.getMethodSelect();
+            String lstName = FlowExpressions.internalReprOf(this.atypeFactory, lstTree).toString();
+            AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
+            String[] parts = lstTree.toString().split("\\.");
+            // the last part of the methodName is the method (get, remove, etc) so get second to last part
+            String localName = parts[parts.length - 2];
+            // Need to be able to check these as part of the conditional below.
+            // We need the max because we want to know whether the index is
+            // less than the minimum length of the array. If it could be any
+            // of several values, we want the highest one.
+            Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
+            Integer minLen = atypeFactory.minLenFromExpressionTree(lstTree);
+
+            // Is indexType LTL of a set containing arrName?
+            if (indexType.hasAnnotation(LTLengthOf.class)
+                    && (UpperBoundUtils.hasValue(indexType, localName)
+                            || (UpperBoundUtils.hasValue(indexType, lstName)))) {
+                // If so, this is safe - get out of here.
+                return super.visitMethodInvocation(tree, type);
+            } else if (valMax != null && minLen != null && valMax < minLen) {
+                return super.visitMethodInvocation(tree, type);
+            } else {
+                // Unsafe, since neither the Upper bound or MinLen checks succeeded.
+                checker.report(
+                        Result.warning(UPPER_BOUND_LIST, indexType.toString(), lstName, localName),
+                        indexTree);
+                return super.visitMethodInvocation(tree, type);
+            }
+        }
+        return super.visitMethodInvocation(tree, type);
+    }
+
+    private boolean isFirstArgListMethod(MethodInvocationTree tree) {
+        for (ExecutableElement e : this.IndexFirstArgListMethods) {
+            if (TreeUtils.isMethodInvocation(tree, e, this.checker.getProcessingEnvironment())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

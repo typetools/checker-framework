@@ -3,7 +3,6 @@ import org.checkerframework.checker.upperbound.qual.*;
 package java.util;
 
 interface List<E> {
-	public void set(@LTLengthOf("this") int index, E element);
 	public @LTLengthOf("this") int indexOf(Object o);
 	public @LTLengthOf("this") int lastIndexOf(Object o);
 	public @LTEqLengthOf("this") int size();
