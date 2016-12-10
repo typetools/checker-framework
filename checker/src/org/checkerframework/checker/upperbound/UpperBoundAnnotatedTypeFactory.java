@@ -23,6 +23,7 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
@@ -460,7 +461,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
             if (tree.getIdentifier().contentEquals("length")
                     && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
-                String arrName = tree.getExpression().toString();
+                String arrName =
+                        FlowExpressions.internalReprOf(this.atypeFactory, tree.getExpression())
+                                .toString();
                 type.replaceAnnotation(
                         qualHierarchy.greatestLowerBound(
                                 createLTEqLengthOfAnnotation(arrName),

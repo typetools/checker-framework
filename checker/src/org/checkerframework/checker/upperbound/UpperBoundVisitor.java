@@ -5,6 +5,7 @@ import com.sun.source.tree.ExpressionTree;
 import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
@@ -30,7 +31,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
     public Void visitArrayAccess(ArrayAccessTree tree, Void type) {
         ExpressionTree indexTree = tree.getIndex();
         ExpressionTree arrTree = tree.getExpression();
-        String arrName = arrTree.toString();
+        String arrName = FlowExpressions.internalReprOf(this.atypeFactory, arrTree).toString();
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
 
         // Need to be able to check these as part of the conditional below.
@@ -42,7 +43,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
 
         // Is indexType LTL of a set containing arrName?
         if (indexType.hasAnnotation(LTLengthOf.class)
-                && (UpperBoundUtils.hasValue(indexType, arrName))) {
+                && (UpperBoundUtils.hasValue(indexType, arrTree.toString())
+                        || (UpperBoundUtils.hasValue(indexType, arrName)))) {
             // If so, this is safe - get out of here.
             return super.visitArrayAccess(tree, type);
         } else if (valMax != null && minLen != null && valMax < minLen) {

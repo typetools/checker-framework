@@ -82,31 +82,6 @@ public class UpperBoundTransfer extends CFTransfer {
         return result;
     }
 
-    /** Makes array.length have type LTEL(array). */
-    @Override
-    public TransferResult<CFValue, CFStore> visitFieldAccess(
-            FieldAccessNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitFieldAccess(node, in);
-        if (node.getFieldName().equals("length")
-                && node.getReceiver().getType().getKind() == TypeKind.ARRAY) {
-            String arrName = node.getReceiver().toString();
-            AnnotationMirror anm =
-                    UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(arrName);
-
-            Receiver rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), node);
-
-            result.getRegularStore()
-                    .insertValue(
-                            rec,
-                            qualifierHierarchy.greatestLowerBound(
-                                    anm,
-                                    atypeFactory
-                                            .getAnnotatedType(node.getTree())
-                                            .getAnnotationInHierarchy(UNKNOWN)));
-        }
-        return result;
-    }
-
     /**
      * This struct contains all of the information that the refinement functions need. It's called
      * by each node function (i.e. greater than node, less than node, etc.) and then the results are
