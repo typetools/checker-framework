@@ -2,7 +2,9 @@ package org.checkerframework.checker.upperbound;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.checkerframework.checker.minlen.qual.*;
+import java.util.Set;
+import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
@@ -11,6 +13,7 @@ import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationUtils;
 
 public class UpperBoundStore extends CFAbstractStore<UpperBoundValue, UpperBoundStore> {
 
@@ -36,26 +39,18 @@ public class UpperBoundStore extends CFAbstractStore<UpperBoundValue, UpperBound
         Map<Receiver, UpperBoundValue> replace = new HashMap<Receiver, UpperBoundValue>();
         if (clear) {
             for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
-                if (caller.containsModifiableAliasOf(this, rec)) {
-                    applyTransfer(rec, replace, true, atypeFactory);
-                }
+                applyTransfer(rec, replace, true, atypeFactory);
             }
             for (FieldAccess rec : fieldValues.keySet()) {
-                if (caller.containsModifiableAliasOf(this, rec)) {
-                    applyTransfer(rec, replace, true, atypeFactory);
-                }
+                applyTransfer(rec, replace, true, atypeFactory);
             }
         }
         if (remove) {
             for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
-                if (caller.containsModifiableAliasOf(this, rec)) {
-                    applyTransfer(rec, replace, false, atypeFactory);
-                }
+                applyTransfer(rec, replace, false, atypeFactory);
             }
             for (FieldAccess rec : fieldValues.keySet()) {
-                if (caller.containsModifiableAliasOf(this, rec)) {
-                    applyTransfer(rec, replace, false, atypeFactory);
-                }
+                applyTransfer(rec, replace, false, atypeFactory);
             }
         }
         for (Receiver rec : replace.keySet()) {
@@ -69,7 +64,37 @@ public class UpperBoundStore extends CFAbstractStore<UpperBoundValue, UpperBound
             Receiver rec,
             Map<Receiver, UpperBoundValue> replace,
             boolean isClear,
-            AnnotatedTypeFactory atypeFactory) {}
+            AnnotatedTypeFactory atypeFactory) {
+
+        UpperBoundAnnotatedTypeFactory factory = (UpperBoundAnnotatedTypeFactory) atypeFactory;
+        UpperBoundValue value = this.getValue(rec);
+        Set<AnnotationMirror> atm = value.getAnnotations();
+        if (AnnotationUtils.containsSameByClass(atm, LTLengthOf.class)) {
+            if (isClear) {
+                UpperBoundValue val =
+                        analysis.createSingleAnnotationValue(
+                                UpperBoundAnnotatedTypeFactory.createAnnotation("Unknown", null),
+                                rec.getType());
+                replace.put(rec, val);
+            } else {
+                UpperBoundValue val =
+                        analysis.createSingleAnnotationValue(
+                                UpperBoundAnnotatedTypeFactory.createAnnotation(
+                                        "LTEqLengthOf",
+                                        UpperBoundUtils.getValue(
+                                                AnnotationUtils.getAnnotationByClass(
+                                                        atm, LTLengthOf.class))),
+                                rec.getType());
+                replace.put(rec, val);
+            }
+        } else if (AnnotationUtils.containsSameByClass(atm, LTEqLengthOf.class)) {
+            UpperBoundValue val =
+                    analysis.createSingleAnnotationValue(
+                            UpperBoundAnnotatedTypeFactory.createAnnotation("Unknown", null),
+                            rec.getType());
+            replace.put(rec, val);
+        }
+    }
 
     @Override
     public String toString() {

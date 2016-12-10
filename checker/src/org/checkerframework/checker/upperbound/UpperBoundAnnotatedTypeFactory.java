@@ -167,7 +167,7 @@ public class UpperBoundAnnotatedTypeFactory
      *
      * @return annotation given by name with names=values, or UNKNOWN
      */
-    private static AnnotationMirror createAnnotation(String name, String[] names) {
+    static AnnotationMirror createAnnotation(String name, String[] names) {
         if (names == null) {
             names = new String[0];
         }
