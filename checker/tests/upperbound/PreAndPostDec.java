@@ -1,8 +1,6 @@
 import org.checkerframework.checker.lowerbound.qual.*;
 import org.checkerframework.checker.minlen.qual.*;
 
-// @skip-test until the bug is fixed
-
 public class PreAndPostDec {
 
     void pre1(int[] args) {

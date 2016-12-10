@@ -2,10 +2,7 @@ package org.checkerframework.checker.upperbound;
 
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -473,6 +470,48 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
+        public Void visitUnary(UnaryTree tree, AnnotatedTypeMirror typeDst) {
+            AnnotatedTypeMirror typeSrc = getAnnotatedType(tree.getExpression());
+            switch (tree.getKind()) {
+                case PREFIX_INCREMENT:
+                    handleIncrement(typeSrc, typeDst);
+                    break;
+                case PREFIX_DECREMENT:
+                    handleDecrement(typeSrc, typeDst);
+                    break;
+                case POSTFIX_INCREMENT: // Do nothing. The CF should take care of these itself.
+                    break;
+                case POSTFIX_DECREMENT:
+                    break;
+                default:
+                    break;
+            }
+            return super.visitUnary(tree, typeDst);
+        }
+
+        private void handleIncrement(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+            if (typeSrc.hasAnnotation(LTLengthOf.class)) {
+                String[] names =
+                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                typeDst.replaceAnnotation(createLTEqLengthOfAnnotation(names));
+                return;
+            } else if (typeSrc.hasAnnotation(LTEqLengthOf.class)) {
+                typeDst.replaceAnnotation(UNKNOWN);
+                return;
+            }
+        }
+
+        private void handleDecrement(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+            if (typeSrc.hasAnnotation(LTLengthOf.class)
+                    || typeSrc.hasAnnotation(LTEqLengthOf.class)) {
+                String[] names =
+                        UpperBoundUtils.getValue(typeSrc.getAnnotationInHierarchy(UNKNOWN));
+                typeDst.replaceAnnotation(createLTLengthOfAnnotation(names));
+                return;
+            }
+        }
+
+        @Override
         public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
             // A few small rules for addition/subtraction by 0/1, etc.
             if (TreeUtils.isStringConcatenation(tree)) {
@@ -488,6 +527,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     break;
                 case MINUS:
                     addAnnotationForMinus(left, right, type);
+                    break;
+                case MULTIPLY:
+                    addAnnotationForMultiply(left, right, type);
                     break;
                 case DIVIDE:
                     addAnnotationForDivide(left, right, type);
@@ -609,6 +651,54 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             type.addAnnotation(UNKNOWN);
+            return;
+        }
+
+        private boolean isRandomSpecialCase(
+                ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
+            if (arrLenTree instanceof MemberSelectTree) {
+                MemberSelectTree mstree = (MemberSelectTree) arrLenTree;
+                if (mstree.getIdentifier().contentEquals("length")
+                        && InternalUtils.typeOf(mstree.getExpression()).getKind()
+                                == TypeKind.ARRAY) {
+                    // Now we know that the arrLenTree represented an array length.
+
+                    if (randTree instanceof MethodInvocationTree) {
+
+                        MethodInvocationTree mitree = (MethodInvocationTree) randTree;
+                        ExecutableElement random =
+                                TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
+                        ExecutableElement nextDouble =
+                                TreeUtils.getMethod(
+                                        "java.util.Random", "nextDouble", 0, processingEnv);
+
+                        if (TreeUtils.isMethodInvocation(mitree, random, processingEnv)) {
+                            // Okay, so this is Math.random() * array.length, which must be NonNegative
+                            type.addAnnotation(
+                                    createLTLengthOfAnnotation(mstree.getExpression().toString()));
+                            return true;
+                        }
+
+                        if (TreeUtils.isMethodInvocation(mitree, nextDouble, processingEnv)) {
+                            // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
+                            type.addAnnotation(
+                                    createLTLengthOfAnnotation(mstree.getExpression().toString()));
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void addAnnotationForMultiply(
+                ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+            // Special handling for multiplying an array length by a random variable.
+            if (isRandomSpecialCase(rightExpr, leftExpr, type)
+                    || isRandomSpecialCase(leftExpr, rightExpr, type)) {
+                return;
+            }
+
             return;
         }
 

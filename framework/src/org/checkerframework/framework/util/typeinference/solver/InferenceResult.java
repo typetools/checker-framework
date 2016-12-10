@@ -138,7 +138,7 @@ public class InferenceResult extends LinkedHashMap<TypeVariable, InferredValue> 
                 final InferredValue subValue = subordinate.get(target);
                 if (subValue != null && subValue instanceof InferredType) {
                     this.put(target, subValue);
-                    return newType;
+                    return null;
                 }
             } else {
                 if (newType.type.getKind() == TypeKind.NULL) {

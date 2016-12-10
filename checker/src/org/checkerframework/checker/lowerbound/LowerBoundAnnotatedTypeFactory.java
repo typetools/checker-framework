@@ -277,38 +277,36 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
+         * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent
+         * an array's length field.
+         */
+        private Integer minLenFromMemberSelectTree(MemberSelectTree tree) {
+            if (tree.getIdentifier().contentEquals("length")
+                    && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
+                AnnotatedTypeMirror minLenType =
+                        minLenAnnotatedTypeFactory.getAnnotatedType(tree.getExpression());
+                AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
+                if (anm == null) {
+                    return null;
+                }
+                Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
+                if (minLen == null) {
+                    return null;
+                }
+                return minLen;
+            }
+            return null;
+        }
+
+        /**
          * For dealing with array length expressions. We look for array length accesses
          * specifically, then dispatch to the MinLen checker to deteremine the length of the
          * relevant array. If we find it, we use it to give the expression a type.
          */
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            if (tree.getIdentifier().contentEquals("length")
-                    && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
-                // We only care about fields named "length".
-                // Next, we check if the MinLen checker knows anything about the receiver
-                // object. If it's not an array, the MinLen checker won't know anything,
-                // so it's not necessary for us to check.
-                AnnotatedTypeMirror minLenType =
-                        minLenAnnotatedTypeFactory.getAnnotatedType(tree.getExpression());
-                AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
-                if (anm == null) {
-                    // So this is unsound. Basically, I'm assuming that anything
-                    // with a .length field has the same restrictions arrays do:
-                    // the length must be non-negative. Ideally, I'd like to be
-                    // able to test for whether we've got an array right here, but
-                    // I haven't been able to find a way to do that.
-
-                    // if (!type.hasAnnotation(POS)) {
-                    //     type.replaceAnnotation(NN);
-                    // }
-
-                    return super.visitMemberSelect(tree, type);
-                }
-                Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
-                if (minLen == null) {
-                    return super.visitMemberSelect(tree, type);
-                }
+            Integer minLen = minLenFromMemberSelectTree(tree);
+            if (minLen != null) {
                 type.replaceAnnotation(anmFromVal(minLen));
             }
             return super.visitMemberSelect(tree, type);
@@ -494,6 +492,18 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
                 // Instead of a separate method for subtraction, add the negative of a constant.
                 addAnnotationForLiteralPlus(-1 * maybeValRight, leftType, type);
+
+                // Check if the left side is a field access of an array's length. If so,
+                // we can try to look up the MinLen of the array, and potentially keep
+                // this either NN or POS instead of GTEN1 or LBU.
+                if (leftExpr instanceof MemberSelectTree) {
+                    MemberSelectTree mstree = (MemberSelectTree) leftExpr;
+                    Integer minLen = minLenFromMemberSelectTree(mstree);
+                    if (minLen != null) {
+                        type.replaceAnnotation(anmFromVal(minLen - maybeValRight));
+                    }
+                }
+
                 return;
             }
 
@@ -527,6 +537,41 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.addAnnotation(UNKNOWN);
         }
 
+        private boolean isRandomSpecialCase(
+                ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
+            if (arrLenTree instanceof MemberSelectTree) {
+                MemberSelectTree mstree = (MemberSelectTree) arrLenTree;
+                if (mstree.getIdentifier().contentEquals("length")
+                        && InternalUtils.typeOf(mstree.getExpression()).getKind()
+                                == TypeKind.ARRAY) {
+                    // Now we know that the arrLenTree represented an array length.
+
+                    if (randTree instanceof MethodInvocationTree) {
+
+                        MethodInvocationTree mitree = (MethodInvocationTree) randTree;
+                        ExecutableElement random =
+                                TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
+                        ExecutableElement nextDouble =
+                                TreeUtils.getMethod(
+                                        "java.util.Random", "nextDouble", 0, processingEnv);
+
+                        if (TreeUtils.isMethodInvocation(mitree, random, processingEnv)) {
+                            // Okay, so this is Math.random() * array.length, which must be NonNegative
+                            type.addAnnotation(NN);
+                            return true;
+                        }
+
+                        if (TreeUtils.isMethodInvocation(mitree, nextDouble, processingEnv)) {
+                            // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
+                            type.addAnnotation(NN);
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
         /**
          *
          *
@@ -542,6 +587,12 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         public void addAnnotationForMultiply(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
+
+            // Special handling for multiplying an array length by a random variable.
+            if (isRandomSpecialCase(rightExpr, leftExpr, type)
+                    || isRandomSpecialCase(leftExpr, rightExpr, type)) {
+                return;
+            }
 
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // Check if the right side's value is known at compile time.

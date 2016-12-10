@@ -1,7 +1,5 @@
 package org.checkerframework.checker.minlen;
 
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
@@ -14,6 +12,7 @@ import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -240,30 +239,13 @@ public class MinLenAnnotatedTypeFactory
         /** When we encounter a new array, record how long it is. TODO write how this is done */
         @Override
         public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
-            // When there is an explicit initialization, we know the length.
-            if (tree.getDimensions().size() == 0) {
-                type.replaceAnnotation(createMinLen(tree.getInitializers().size()));
-                return super.visitNewArray(tree, type);
-            }
-            ExpressionTree dim = tree.getDimensions().get(0);
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(dim);
-            // Try to use value checker information.
-            Integer val = minLenFromValueType(valueType);
-            if (val != null) {
+
+            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+
+            if (valueType.hasAnnotation(ArrayLen.class)) {
+                AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
+                Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
                 type.replaceAnnotation(createMinLen(val));
-            }
-            // For when the value checker doesn't know anything.
-            // We can check if this happens to be this case:
-            // int[] array1 = {2};
-            // int[] array2 = new int[array1.length];
-            if (dim.getKind().equals(Tree.Kind.MEMBER_SELECT)) {
-                MemberSelectTree MST = (MemberSelectTree) dim;
-                AnnotationMirror dimType =
-                        getAnnotatedType(MST.getExpression()).getAnnotation(MinLen.class);
-                // If it doesnt have this annotation it will be null.
-                if (dimType != null) {
-                    type.addAnnotation(dimType);
-                }
             }
 
             return super.visitNewArray(tree, type);

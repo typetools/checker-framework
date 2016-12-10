@@ -2,6 +2,7 @@ package org.checkerframework.checker.lowerbound;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.NewArrayTree;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.checker.lowerbound.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -20,6 +21,7 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
      * directory, which includes the actual text of the warning.
      */
     private static final @CompilerMessageKey String LOWER_BOUND = "array.access.unsafe.low";
+    private static final @CompilerMessageKey String NEGATIVE_ARRAY = "array.length.negative";
 
     public LowerBoundVisitor(BaseTypeChecker checker) {
         super(checker);
@@ -36,5 +38,20 @@ public class LowerBoundVisitor extends BaseTypeVisitor<LowerBoundAnnotatedTypeFa
         }
 
         return super.visitArrayAccess(tree, type);
+    }
+
+    @Override
+    public Void visitNewArray(NewArrayTree tree, Void type) {
+        if (tree.getDimensions().size() > 0) {
+            for (ExpressionTree dim : tree.getDimensions()) {
+                AnnotatedTypeMirror dimType = atypeFactory.getAnnotatedType(dim);
+                if (!(dimType.hasAnnotation(NonNegative.class)
+                        || dimType.hasAnnotation(Positive.class))) {
+                    checker.report(Result.warning(NEGATIVE_ARRAY, dimType.toString()), dim);
+                }
+            }
+        }
+
+        return super.visitNewArray(tree, type);
     }
 }

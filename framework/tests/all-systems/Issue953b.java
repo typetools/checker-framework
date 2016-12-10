@@ -1,13 +1,14 @@
 // Test case for issue 953
 // https://github.com/typetools/checker-framework/issues/953
+// The signture of MyStream#collect is slightly different than the one in Issue953.java
 
 import java.util.List;
 
-class Issue953 {
+public class Issue953b {
     class MyCollector<A, B, C> {}
 
     class MyStream<E> {
-        <F, G> F collect(MyCollector<? super E, G, F> param) {
+        <F, G> F collect(MyCollector<? extends E, G, F> param) {
             throw new RuntimeException();
         }
     }
