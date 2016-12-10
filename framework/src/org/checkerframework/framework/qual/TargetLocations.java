@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
  * org.checkerframework.checker.nullness.qual.KeyForBottom}) should only be written on an explicit
  * wildcard upper or lower bound. This meta-annotation is a declarative, coarse-grained approach to
  * enable that. A {@link org.checkerframework.common.basetype.TypeValidator} must be implemented if
- * a more fine-grained control is necessary.
+ * finer-grained control is necessary.
  */
 // TODO: Verify this meta-annotation (step 3 in https://github.com/typetools/checker-framework/issues/515).
 @Documented
