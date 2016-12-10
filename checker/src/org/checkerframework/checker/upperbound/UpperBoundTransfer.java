@@ -13,14 +13,12 @@ import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.*;
-import org.checkerframework.framework.flow.CFAnalysis;
-import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFTransfer;
-import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
-public class UpperBoundTransfer extends CFTransfer {
+public class UpperBoundTransfer
+        extends CFAbstractTransfer<UpperBoundValue, UpperBoundStore, UpperBoundTransfer> {
 
     private final AnnotationMirror UNKNOWN;
 
@@ -28,7 +26,7 @@ public class UpperBoundTransfer extends CFTransfer {
 
     private QualifierHierarchy qualifierHierarchy;
 
-    public UpperBoundTransfer(CFAnalysis analysis) {
+    public UpperBoundTransfer(UpperBoundAnalysis analysis) {
         super(analysis);
         atypeFactory = (UpperBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         qualifierHierarchy = atypeFactory.getQualifierHierarchy();
@@ -39,9 +37,9 @@ public class UpperBoundTransfer extends CFTransfer {
     // less than length of the array to which the new array is
     // assigned.
     @Override
-    public TransferResult<CFValue, CFStore> visitAssignment(
-            AssignmentNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitAssignment(node, in);
+    public TransferResult<UpperBoundValue, UpperBoundStore> visitAssignment(
+            AssignmentNode node, TransferInput<UpperBoundValue, UpperBoundStore> in) {
+        TransferResult<UpperBoundValue, UpperBoundStore> result = super.visitAssignment(node, in);
 
         // When an existing array is assigned into, we need to blow up the store -
         // that is, we need to remove every instance of LTL and LTEL, since arrays
@@ -51,16 +49,16 @@ public class UpperBoundTransfer extends CFTransfer {
             // This means that the existing store needs to be invalidated.
             // As far as I can tell the easiest way to do this is to just
             // create a new TransferResult.
-            TransferResult<CFValue, CFStore> newResult =
-                    new RegularTransferResult<CFValue, CFStore>(
-                            result.getResultValue(), new CFStore(analysis, true));
+            TransferResult<UpperBoundValue, UpperBoundStore> newResult =
+                    new RegularTransferResult<UpperBoundValue, UpperBoundStore>(
+                            result.getResultValue(), new UpperBoundStore(analysis, true));
             result = newResult;
         }
 
         // This handles when a new array is created.
         if (node.getExpression() instanceof ArrayCreationNode) {
             ArrayCreationNode acNode = (ArrayCreationNode) node.getExpression();
-            CFStore store = result.getRegularStore();
+            UpperBoundStore store = result.getRegularStore();
             List<Node> nodeList = acNode.getDimensions();
             if (nodeList.size() < 1) {
                 return result;
@@ -93,12 +91,12 @@ public class UpperBoundTransfer extends CFTransfer {
     private class RefinementInfo {
         public Node left, right;
         public Set<AnnotationMirror> leftType, rightType;
-        public CFStore thenStore, elseStore;
-        public ConditionalTransferResult<CFValue, CFStore> newResult;
+        public UpperBoundStore thenStore, elseStore;
+        public ConditionalTransferResult<UpperBoundValue, UpperBoundStore> newResult;
 
         public RefinementInfo(
-                TransferResult<CFValue, CFStore> result,
-                TransferInput<CFValue, CFStore> in,
+                TransferResult<UpperBoundValue, UpperBoundStore> result,
+                TransferInput<UpperBoundValue, UpperBoundStore> in,
                 Node r,
                 Node l) {
             right = r;
@@ -122,9 +120,9 @@ public class UpperBoundTransfer extends CFTransfer {
     // their LBC counterparts.
 
     @Override
-    public TransferResult<CFValue, CFStore> visitGreaterThan(
-            GreaterThanNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitGreaterThan(node, in);
+    public TransferResult<UpperBoundValue, UpperBoundStore> visitGreaterThan(
+            GreaterThanNode node, TransferInput<UpperBoundValue, UpperBoundStore> in) {
+        TransferResult<UpperBoundValue, UpperBoundStore> result = super.visitGreaterThan(node, in);
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
@@ -138,9 +136,10 @@ public class UpperBoundTransfer extends CFTransfer {
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
-            GreaterThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(node, in);
+    public TransferResult<UpperBoundValue, UpperBoundStore> visitGreaterThanOrEqual(
+            GreaterThanOrEqualNode node, TransferInput<UpperBoundValue, UpperBoundStore> in) {
+        TransferResult<UpperBoundValue, UpperBoundStore> result =
+                super.visitGreaterThanOrEqual(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -155,9 +154,10 @@ public class UpperBoundTransfer extends CFTransfer {
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
-            LessThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(node, in);
+    public TransferResult<UpperBoundValue, UpperBoundStore> visitLessThanOrEqual(
+            LessThanOrEqualNode node, TransferInput<UpperBoundValue, UpperBoundStore> in) {
+        TransferResult<UpperBoundValue, UpperBoundStore> result =
+                super.visitLessThanOrEqual(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -171,9 +171,9 @@ public class UpperBoundTransfer extends CFTransfer {
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitLessThan(
-            LessThanNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitLessThan(node, in);
+    public TransferResult<UpperBoundValue, UpperBoundStore> visitLessThan(
+            LessThanNode node, TransferInput<UpperBoundValue, UpperBoundStore> in) {
+        TransferResult<UpperBoundValue, UpperBoundStore> result = super.visitLessThan(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -187,9 +187,9 @@ public class UpperBoundTransfer extends CFTransfer {
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitEqualTo(
-            EqualToNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitEqualTo(node, in);
+    public TransferResult<UpperBoundValue, UpperBoundStore> visitEqualTo(
+            EqualToNode node, TransferInput<UpperBoundValue, UpperBoundStore> in) {
+        TransferResult<UpperBoundValue, UpperBoundStore> result = super.visitEqualTo(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -202,9 +202,9 @@ public class UpperBoundTransfer extends CFTransfer {
     }
 
     @Override
-    public TransferResult<CFValue, CFStore> visitNotEqual(
-            NotEqualNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitNotEqual(node, in);
+    public TransferResult<UpperBoundValue, UpperBoundStore> visitNotEqual(
+            NotEqualNode node, TransferInput<UpperBoundValue, UpperBoundStore> in) {
+        TransferResult<UpperBoundValue, UpperBoundStore> result = super.visitNotEqual(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -226,7 +226,7 @@ public class UpperBoundTransfer extends CFTransfer {
             Set<AnnotationMirror> leftType,
             Node right,
             Set<AnnotationMirror> rightType,
-            CFStore store) {
+            UpperBoundStore store) {
         // First, check if the left type is one of the ones that tells us something.
         if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)
                 || AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
@@ -256,7 +256,7 @@ public class UpperBoundTransfer extends CFTransfer {
             Set<AnnotationMirror> leftType,
             Node right,
             Set<AnnotationMirror> rightType,
-            CFStore store) {
+            UpperBoundStore store) {
         if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
             // Create an LTL for the right type.
             // There's a slight danger of losing information here:
@@ -299,7 +299,7 @@ public class UpperBoundTransfer extends CFTransfer {
             Set<AnnotationMirror> leftType,
             Node right,
             Set<AnnotationMirror> rightType,
-            CFStore store) {
+            UpperBoundStore store) {
 
         AnnotationMirror rightUpperboundType =
                 qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN);

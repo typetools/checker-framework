@@ -18,13 +18,13 @@ import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -43,7 +43,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * the minLen checker and comparing the min lengths of arrays to the known values of variables as
  * supplied by the value checker.
  */
-public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class UpperBoundAnnotatedTypeFactory
+        extends GenericAnnotatedTypeFactory<
+                UpperBoundValue, UpperBoundStore, UpperBoundTransfer, UpperBoundAnalysis> {
 
     /** Easy shorthand for UpperBoundUnknown.class, basically. */
     public static AnnotationMirror UNKNOWN;
