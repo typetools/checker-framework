@@ -84,6 +84,24 @@ command-line option.)
 \label{lint-nulltest-section}\label{lint-uninitialized-section}
 \begin{enumerate}
 \item
+  Options that control soundness:
+
+\begin{itemize}
+\item
+  \label{lint-nonnullarraycomponents-item}%
+  If you supply the \code{-Alint=forbidnonnullarraycomponents} command-line
+  option, then the checker warns if it encounters an array creation
+  with a non-null component type.
+  See Section~\ref{nullness-arrays} for a discussion.
+  % TODO: this option is temporary and the sound option
+  % should become the default.
+\end{itemize}
+
+\item
+  Options that warn about poor code style:
+
+\begin{itemize}
+\item
   \label{lint-nulltest-item}%
   If you supply the \code{-Alint=redundantNullComparison} command-line option, then the
   checker warns when a null check is performed against a value that is
@@ -104,15 +122,7 @@ command-line option.)
   This command-line option does not affect the Nullness Checker's tests
   that fields of \refqualclass{checker/nullness/qual}{NonNull} type are
   initialized --- such initialization is mandatory, not optional.
-
-\item
-  \label{lint-nonnullarraycomponents-item}%
-  If you supply the \code{-Alint=forbidnonnullarraycomponents} command-line
-  option, then the checker warns if it encounters an array creation
-  with a non-null component type.
-  See Section~\ref{nullness-arrays} for a discussion.
-  % TODO: this option is temporary and the sound option
-  % should become the default.
+\end{itemize}
 
 \end{enumerate}
 

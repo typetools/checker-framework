@@ -21,8 +21,7 @@ RUN apt-get -qqy update && apt-get -qqy install \
   make \
   mercurial \
   unzip \
-  openjdk-7-jdk \
-&& apt-get -qqy remove openjdk-8-jre-headless:amd64 \
+  default-jdk \
 && apt-get -qqy install \
   dia \
   hevea \

@@ -12,6 +12,10 @@ import java.lang.annotation.Target;
  * include the receiver, and the environment includes all of the Java heap (that is, all fields of
  * all objects and all static variables).
  *
+ * <p>Determinism refers to the return value during a non-exceptional execution. If a method throws
+ * an exception, the Throwable does not have to be exactly the same object on each invocation (and
+ * generally should not be, to capture the correct stack trace).
+ *
  * <p>This annotation is important to pluggable type-checking because, after a call to a
  * {@code @Deterministic} method, flow-sensitive type refinement can assume that anything learned
  * about the first invocation is true about subsequent invocations (so long as no

@@ -13,10 +13,8 @@ public class NullnessFbcJavacErrorsTest extends CheckerFrameworkPerFileTest {
 
     public NullnessFbcJavacErrorsTest(File testFile) {
         // TODO: remove forbidnonnullarraycomponents option once it's no
-        // longer needed.  See issues 154, 322, and 433:
-        // https://github.com/typetools/checker-framework/issues/154
-        // https://github.com/typetools/checker-framework/issues/322
-        // https://github.com/typetools/checker-framework/issues/433
+        // longer needed.  See issue #986:
+        // https://github.com/typetools/checker-framework/issues/986
         super(
                 testFile,
                 org.checkerframework.checker.nullness.NullnessChecker.class,
