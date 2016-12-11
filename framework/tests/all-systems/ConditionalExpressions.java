@@ -48,8 +48,7 @@ public class ConditionalExpressions {
             Object o = (flag ? ts : numbers);
         }
     }
-    @SuppressWarnings(
-    		"list.access.unsafe.high") // The Index Checker correctly issues this warning here.
+
     class Generics {
         void foo1(List<Long> listS, List<Integer> listI) {
             Number s = (flag ? listI : listS).get(0);
