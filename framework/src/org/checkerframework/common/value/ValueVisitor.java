@@ -10,7 +10,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -35,10 +35,7 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     public ValueVisitor(BaseTypeChecker checker) {
         super(checker);
 
-        intLiteralKinds = new HashSet<Kind>(3);
-        intLiteralKinds.add(Kind.INT_LITERAL);
-        intLiteralKinds.add(Kind.LONG_LITERAL);
-        intLiteralKinds.add(Kind.CHAR_LITERAL);
+        intLiteralKinds = EnumSet.of(Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.CHAR_LITERAL);
     }
 
     private boolean isIntLiteral(Kind k) {

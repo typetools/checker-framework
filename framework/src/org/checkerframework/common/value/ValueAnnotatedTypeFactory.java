@@ -394,53 +394,6 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     }
                 }
                 return same;
-            } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
-                Range rhsRange = getIntRange(rhs);
-                List<Double> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
-                if (rhsRange.isWiderThan(lhsValues.size())) {
-                    // This seems to be always the case if
-                    // we consider the replacement between
-                    // IntRange and IntVal
-                    return false;
-                }
-                boolean same = false;
-                for (Long rhsLong = rhsRange.from; rhsLong <= rhsRange.to; rhsLong++) {
-                    for (Double lhsDbl : lhsValues) {
-                        if (lhsDbl.doubleValue() == rhsLong.doubleValue()) {
-                            same = true;
-                            break;
-                        }
-                    }
-                    if (!same) {
-                        return false;
-                    }
-                }
-                return same;
-            } else if (AnnotationUtils.areSameByClass(lhs, IntVal.class)
-                    && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
-                Range rhsRange = getIntRange(rhs);
-                List<Long> lhsValues =
-                        AnnotationUtils.getElementValueArray(lhs, "value", Long.class, true);
-                if (rhsRange.isWiderThan(lhsValues.size())) {
-                    // This seems to be always the case if
-                    // we consider the replacement between
-                    // IntRange and IntVal
-                    return false;
-                }
-                boolean same = false;
-                for (Long rhsLong = rhsRange.from; rhsLong <= rhsRange.to; rhsLong++) {
-                    for (Long lhsLong : lhsValues) {
-                        if (lhsLong == rhsLong) {
-                            same = true;
-                            break;
-                        }
-                    }
-                    if (!same) {
-                        return false;
-                    }
-                }
             } else if (AnnotationUtils.areSameByClass(lhs, IntRange.class)
                     && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
                 List<Long> rhsValues =
@@ -454,6 +407,10 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     return false;
                 }
             }
+            // Because of replaceWithNewAnnoInSpecialCases, the possible values of
+            // of @IntRange is always greater than MAX_VALUES. Therefore no need
+            // to consider the cases of @IntVal/@IntRange or @DoubleVal/@IntRange
+            // as they always return false
             return false;
         }
     }

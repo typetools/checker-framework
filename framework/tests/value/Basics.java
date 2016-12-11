@@ -79,40 +79,82 @@ class Basics {
         @DoubleVal({'a'}) float c = a;
     }
 
-    public void intTest() {
+    public void intTest(@IntRange(from = 0, to = 10) int x, @IntRange(from = 20, to = 30) int y) {
         int a = 0;
         if (true) {
+            // @IntVal / @IntVal
             a = 2;
         }
+
+        int z = x;
+        if (true) {
+            // @IntRange / @IntRange
+            z = y;
+        }
+
+        int i = y;
+        if (true) {
+            // @IntRange / @IntVal
+            i = 15;
+        }
+
         @IntVal({0, 2}) int b = a;
 
         //:: error: (assignment.type.incompatible)
         @IntVal({0}) int c = a;
 
+        //:: error: (assignment.type.incompatible)
+        @IntVal({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}) int d = z;
+
         @IntRange(from = 0, to = 20)
-        int d = a;
+        int e = a;
 
         @IntRange(from = 1, to = 100)
         //:: error: (assignment.type.incompatible)
-        int e = a;
+        int f = a;
+
+        @IntRange(from = 1, to = 40)
+        //:: error: (assignment.type.incompatible)
+        int g = z;
+
+        @IntRange(from = 15, to = 30)
+        int j = i;
+
+        @IntRange(from = 20, to = 40)
+        //:: error: (assignment.type.incompatible)
+        int k = i;
     }
 
-    public void IntegerTest() {
+    public void IntegerTest(
+            @IntRange(from = 0, to = 10) Integer x, @IntRange(from = 20, to = 30) Integer y) {
         Integer a = new Integer(0);
         if (true) {
             a = 2;
         }
+
+        Integer z = x;
+        if (true) {
+            z = y;
+        }
+
         @IntVal({0, 2}) Integer b = a;
 
         //:: error: (assignment.type.incompatible)
         @IntVal({0}) Integer c = a;
 
+        //:: error: (assignment.type.incompatible)
+        @IntVal({0, 1, 2, 3, 4, 5, 6, 7, 8, 9}) Integer d = z;
+
         @IntRange(from = 0, to = 20)
-        Integer d = a;
+        Integer e = a;
 
         @IntRange(from = 1, to = 100)
         //:: error: (assignment.type.incompatible)
-        Integer e = a;
+        Integer f = a;
+
+        @IntRange(from = 1, to = 40)
+        //:: error: (assignment.type.incompatible)
+        Integer g = z;
     }
 
     public void stringTest() {
