@@ -1,6 +1,5 @@
 import org.checkerframework.checker.minlen.qual.*;
-
-// @skip-test until the bug is fixed
+import org.checkerframework.common.value.qual.*;
 
 class EnumValues {
 
@@ -12,6 +11,7 @@ class EnumValues {
     };
 
     public static void enumValues() {
+        Direction @ArrayLen(4) [] arr4 = Direction.values();
         Direction @MinLen(4) [] arr = Direction.values();
     }
 }
