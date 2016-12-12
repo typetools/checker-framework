@@ -1,6 +1,5 @@
 package org.checkerframework.checker.upperbound;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -243,8 +242,9 @@ public class UpperBoundTransfer extends CFTransfer {
     }
 
     /**
-     * The implementation of the algorithm for refining a &gt; test. If an EL, an LTL, or an LTEL is
-     * greater than something, then that thing must be an LTL.
+     * The implementation of the algorithm for refining a &gt; test. If an LTEL is greater than
+     * something, then that thing must be an LTL. If an LTL is greater, than the other thing must be
+     * LTOM.
      */
     private void refineGT(
             Node left,
@@ -253,8 +253,7 @@ public class UpperBoundTransfer extends CFTransfer {
             Set<AnnotationMirror> rightType,
             CFStore store) {
         // First, check if the left type is one of the ones that tells us something.
-        if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)
-                || AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
+        if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
             // Create an LTL for the right type.
 
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
@@ -270,11 +269,28 @@ public class UpperBoundTransfer extends CFTransfer {
             store.insertValue(rightRec, newType);
             return;
         }
+        if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
+            // Create an LTOM for the right type.
+
+            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+            String[] names =
+                    UpperBoundUtils.getValue(
+                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
+
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLTOMLengthOfAnnotation(names));
+
+            store.insertValue(rightRec, newType);
+            return;
+        }
     }
 
     /**
-     * If an LTL is greater than or equal to something, it must also be LTL. If an EL or LTEL is
-     * greater than or equal to something, it must be be LTEL.
+     * If an LTL is greater than or equal to something, it must also be LTL. If an LTEL is greater
+     * than or equal to something, it must be be LTEL. If an LTOM is gte something, that's also
+     * LTOM.
      */
     private void refineGTE(
             Node left,
@@ -301,9 +317,7 @@ public class UpperBoundTransfer extends CFTransfer {
             return;
         } else if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
             // Create an LTL for the right type.
-            // There's a slight danger of losing information here:
-            // if the two annotations are LTL(a) and EL(b), for instance,
-            // we lose some information.
+
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             String[] names =
                     UpperBoundUtils.getValue(
@@ -313,6 +327,21 @@ public class UpperBoundTransfer extends CFTransfer {
                     qualifierHierarchy.greatestLowerBound(
                             qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
                             UpperBoundAnnotatedTypeFactory.createLTEqLengthOfAnnotation(names));
+
+            store.insertValue(rightRec, newType);
+            return;
+        } else if (AnnotationUtils.containsSameByClass(leftType, LTOMLengthOf.class)) {
+            // Create an LTOM for the right type.
+
+            Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
+            String[] names =
+                    UpperBoundUtils.getValue(
+                            qualifierHierarchy.findAnnotationInHierarchy(leftType, UNKNOWN));
+
+            AnnotationMirror newType =
+                    qualifierHierarchy.greatestLowerBound(
+                            qualifierHierarchy.findAnnotationInHierarchy(rightType, UNKNOWN),
+                            UpperBoundAnnotatedTypeFactory.createLTOMLengthOfAnnotation(names));
 
             store.insertValue(rightRec, newType);
             return;
@@ -343,19 +372,5 @@ public class UpperBoundTransfer extends CFTransfer {
 
         store.insertValue(rightRec, newType);
         store.insertValue(leftRec, newType);
-    }
-
-    // This method really only exists because it's easier to leave it. It used
-    // to serve an actual function.
-    private boolean fOnlyUnknown(Set<AnnotationMirror> type) {
-        return AnnotationUtils.containsSameByClass(type, UpperBoundUnknown.class);
-    }
-
-    // From: http://stackoverflow.com/questions/80476/how-can-i-concatenate-two-arrays-in-java
-    // This just concatenates two generic arrays.
-    private static <T> T[] concat(T[] first, T[] second) {
-        T[] result = Arrays.copyOf(first, first.length + second.length);
-        System.arraycopy(second, 0, result, first.length, second.length);
-        return result;
     }
 }

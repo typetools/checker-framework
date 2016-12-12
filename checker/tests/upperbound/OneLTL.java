@@ -1,5 +1,3 @@
-// @skip-test until this bug is fixed.
-
 class OneLTL {
     public static boolean sorted(int[] a) {
         for (int i = 0; i < a.length - 1; i++) {
