@@ -1,6 +1,8 @@
+// @skip-test
+
 import java.util.*;
 import org.checkerframework.checker.upperbound.qual.*;
-// @skip-test
+
 class ViewpointAdaptTest {
 
     void ListGet(
