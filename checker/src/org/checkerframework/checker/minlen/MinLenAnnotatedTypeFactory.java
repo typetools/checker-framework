@@ -249,19 +249,10 @@ public class MinLenAnnotatedTypeFactory
 
             return super.visitNewArray(tree, type);
         }
+    }
 
-        @Override
-        public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
-
-            if (valueType.hasAnnotation(ArrayLen.class)) {
-                AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
-                Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
-                type.replaceAnnotation(createMinLen(val));
-            }
-
-            return super.visitMethodInvocation(tree, type);
-        }
+    public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
+        return valueAnnotatedTypeFactory;
     }
 
     protected static int getMinLenValue(AnnotationMirror annotation) {
