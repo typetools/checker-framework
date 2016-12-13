@@ -19,9 +19,18 @@ public class UpperBoundUtils {
                 .toArray(new String[0]);
     }
 
-    /** Determines if the given string is a member of the LTL annotation attached to type. */
+    /**
+     * Determines if the given string is a member of the LTL or LTOM annotation attached to type.
+     */
     public static boolean hasValue(AnnotatedTypeMirror type, String name) {
-        String[] rgst = getValue(type.getAnnotation(LTLengthOf.class));
+        String[] rgst;
+        if (type.hasAnnotation(LTLengthOf.class)) {
+            rgst = getValue(type.getAnnotation(LTLengthOf.class));
+        } else if (type.hasAnnotation(LTOMLengthOf.class)) {
+            rgst = getValue(type.getAnnotation(LTOMLengthOf.class));
+        } else {
+            return false;
+        }
         for (String st : rgst) {
             if (st.equals(name)) {
                 return true;
