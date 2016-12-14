@@ -127,6 +127,7 @@ public abstract class GenericAnnotatedTypeFactory<
     /** to handle defaults specified by the user */
     protected QualifierDefaults defaults;
 
+    /** to handle expression annotations */
     protected ExpressionAnnotationHelper expressionAnnotationHelper;
 
     // Flow related fields

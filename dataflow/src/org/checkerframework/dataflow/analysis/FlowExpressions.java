@@ -358,15 +358,22 @@ public class FlowExpressions {
         }
     }
 
+    /**
+     * Returns Receiver objects for the formal parameters of the method in which path is enclosed.
+     *
+     * @param annotationProvider annotationProvider
+     * @param path TreePath that is enclosed by the method
+     * @return Receiver objects for the formal parameters of the method in which path is enclosed.
+     */
     public static List<Receiver> getParametersOfEnclosingMethod(
-            AnnotationProvider factory, TreePath path) {
+            AnnotationProvider annotationProvider, TreePath path) {
         MethodTree methodTree = TreeUtils.enclosingMethod(path);
         if (methodTree == null) {
             return null;
         }
         List<Receiver> internalArguments = new ArrayList<>();
         for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(internalReprOf(factory, new LocalVariableNode(arg)));
+            internalArguments.add(internalReprOf(annotationProvider, new LocalVariableNode(arg)));
         }
         return internalArguments;
     }
