@@ -46,17 +46,17 @@ import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * A class that helps checkers use qualifiers that are represented by annotations with Java
- * expression strings. This class preforms four main functions:
+ * expression strings. This class performs four main functions:
  *
  * <p>1. Standardizes/canonicalizes the expressions in the annotations such that two expression
- * strings that are equivalent are made to be equal. For example, an instance field f may be appear
- * in an expression string as "f" or "this.f"; this class standardizes both strings to "this.f".
+ * strings that are equivalent are made to be equal. For example, an instance field f may appear in
+ * an expression string as "f" or "this.f"; this class standardizes both strings to "this.f".
  *
  * <p>2. Viewpoint-adapts annotations on field or method declarations at field accesses or method
  * invocations.
  *
  * <p>3. Changes invalid expression strings to an error string that includes the reason why the
- * expression is in valid. For example, {@code @KeyFor("m")} would be changed to
+ * expression is invalid. For example, {@code @KeyFor("m")} would be changed to
  * {@code @KeyFor("[error for expression: m error: m: identifier not found]")} if m is not a valid
  * identifier.
  *
@@ -69,7 +69,7 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class ExpressionAnnotationHelper {
     protected final AnnotatedTypeFactory factory;
-    /** A list of annotations that */
+    /** A list of annotations that are expression annotations. */
     protected final List<Class<? extends Annotation>> expressionAnnos;
 
     public ExpressionAnnotationHelper(
@@ -144,6 +144,14 @@ public class ExpressionAnnotationHelper {
             ExpressionTree receiverTree,
             AnnotatedExecutableType typeFromUse,
             List<? extends ExpressionTree> args) {
+
+        Element element = TreeUtils.elementFromUse(tree);
+        AnnotatedExecutableType viewpointAdaptedType =
+                (AnnotatedExecutableType) factory.getAnnotatedType(element);
+        if (!hasExpressionAnnotation(viewpointAdaptedType)) {
+            return;
+        }
+
         FlowExpressions.Receiver receiver;
         if (receiverTree == null) {
             receiver =
@@ -172,15 +180,10 @@ public class ExpressionAnnotationHelper {
         // If the type of List.get is viewpoint adapted for the invocation "list.get(0)", then
         // typeFromUse would be @KeyFor("map") String get(int).
 
-        // Instead, get the type for the method and viewpoint adapt that type.
+        // Instead, use the type for the method (viewpointAdaptedType) and viewpoint adapt that
+        // type.
         // Then copy annotations from the viewpoint adapted type to typeFromUse, if that annotation
         // is not on a type that was substituted for a type variable.
-        Element element = TreeUtils.elementFromUse(tree);
-        AnnotatedExecutableType viewpointAdaptedType =
-                (AnnotatedExecutableType) factory.getAnnotatedType(element);
-        if (!hasExpressionAnnotation(viewpointAdaptedType)) {
-            return;
-        }
 
         standardizeDoNotUseLocals(context, currentPath, viewpointAdaptedType);
         new ViewpointAdaptedCopier().visit(viewpointAdaptedType, typeFromUse);
@@ -401,7 +404,7 @@ public class ExpressionAnnotationHelper {
                 TreePath localScope,
                 AnnotationMirror anno,
                 boolean useLocalScope) {
-            if (!isExpressionAnnotation(anno)) {
+            if (!isExpressionAnno(anno)) {
                 return null;
             }
             List<String> expressionStrings =
@@ -415,15 +418,6 @@ public class ExpressionAnnotationHelper {
                             factory.getProcessingEnv(), AnnotationUtils.annotationName(anno));
             builder.setValue("value", vpdStrings);
             return builder.build();
-        }
-
-        private boolean isExpressionAnnotation(AnnotationMirror anno) {
-            for (Class<? extends Annotation> maybeAnno : expressionAnnos) {
-                if (AnnotationUtils.areSameByClass(anno, maybeAnno)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         @Override
@@ -549,6 +543,15 @@ public class ExpressionAnnotationHelper {
         }
     }
 
+    boolean isExpressionAnno(AnnotationMirror am) {
+        for (Class<? extends Annotation> clazz : expressionAnnos) {
+            if (AnnotationUtils.areSameByClass(am, clazz)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Checks all expression annotations in the given annotated type to see if the expression string
      * is an error string as specified by ExpressionAnnotationError#isExpressionError. If the
@@ -574,15 +577,6 @@ public class ExpressionAnnotationHelper {
                 errors.addAll(superList);
             }
             return errors;
-        }
-
-        boolean isExpressionAnno(AnnotationMirror am) {
-            for (Class<? extends Annotation> clazz : expressionAnnos) {
-                if (AnnotationUtils.areSameByClass(am, clazz)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         @Override
@@ -666,7 +660,9 @@ public class ExpressionAnnotationHelper {
      * check avoids calling time intensive methods unless absolutely required.)
      */
     private boolean hasExpressionAnnotation(AnnotatedTypeMirror atm) {
-        if (atm == null) return false;
+        if (atm == null) {
+            return false;
+        }
         Boolean b = new ExpressionAnnotationExists().visit(atm);
         if (b == null) {
             return false;
@@ -687,15 +683,6 @@ public class ExpressionAnnotationHelper {
                 }
             }
             return super.scan(type, aVoid);
-        }
-
-        boolean isExpressionAnno(AnnotationMirror am) {
-            for (Class<? extends Annotation> clazz : expressionAnnos) {
-                if (AnnotationUtils.areSameByClass(am, clazz)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         @Override
