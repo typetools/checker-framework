@@ -16,18 +16,24 @@ public class WriteCheckerFrameworkPropertiesAction implements ExceptionAction<Vo
     private final String checkerPath;
     private final String checkerQualPath;
 
-    public WriteCheckerFrameworkPropertiesAction(FileObject projectProperties, String inCheckerPath, String inCheckerQualPath, StringBuilder inSelection) throws FileNotFoundException{
-        ep=new EditableProperties(true);
-        projPropsFO= projectProperties;
+    public WriteCheckerFrameworkPropertiesAction(
+            FileObject projectProperties,
+            String inCheckerPath,
+            String inCheckerQualPath,
+            StringBuilder inSelection)
+            throws FileNotFoundException {
+        ep = new EditableProperties(true);
+        projPropsFO = projectProperties;
         is = projPropsFO.getInputStream();
-        selection=inSelection;
-        checkerPath=inCheckerPath;
-        checkerQualPath=inCheckerQualPath;
+        selection = inSelection;
+        checkerPath = inCheckerPath;
+        checkerQualPath = inCheckerQualPath;
     }
 
     /**
-     * run() method for the WriteCheckerFrameworkPropertiesAction saves the
-     * selected checkers to run in the project's properties file.
+     * run() method for the WriteCheckerFrameworkPropertiesAction saves the selected checkers to run
+     * in the project's properties file.
+     *
      * @return nothing
      * @throws Exception
      */
