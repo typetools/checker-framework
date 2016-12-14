@@ -1840,9 +1840,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Return whether or not the verbose toString should be used when printing the two annotated
      * types.
      *
-     * <p>If any simple toString of any annotated type in the first atm is equal to any toString of
-     * any annotated type in the second atm and if the verbose toStrings differ, then the verbose
-     * toString should be used.
+     * <p>If any simple toString of any annotated type in the first atm or second atm is equal to
+     * any toString of any annotated type in the first or second atm and if the verbose toStrings
+     * differ, then the verbose toString should be used.
      *
      * @param atm1 the first atm
      * @param atm2 the second atm
@@ -1859,62 +1859,57 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             return true;
         }
 
-        // Collect the "toString" of every AnnotatedTypeMirror in atm2.
-        SimpleAnnotatedTypeScanner<Map<String, List<AnnotatedTypeMirror>>, Void> collectToStrings =
-                new SimpleAnnotatedTypeScanner<Map<String, List<AnnotatedTypeMirror>>, Void>() {
+        SimpleAnnotatedTypeScanner<Boolean, Void> checkForMismatchedToStrings =
+                new SimpleAnnotatedTypeScanner<Boolean, Void>() {
                     Map<String, List<AnnotatedTypeMirror>> map = new HashMap<>();
 
                     @Override
-                    protected Map<String, List<AnnotatedTypeMirror>> defaultAction(
-                            AnnotatedTypeMirror type, Void aVoid) {
+                    protected Boolean reduce(Boolean r1, Boolean r2) {
+                        if (r1 == null) {
+                            if (r2 == null) {
+                                return false;
+                            } else {
+                                return r2;
+                            }
+                        } else if (r2 == null) {
+                            return r1;
+                        } else {
+                            return r1 || r2;
+                        }
+                    }
+
+                    @Override
+                    protected Boolean defaultAction(AnnotatedTypeMirror type, Void avoid) {
                         if (type == null) {
-                            return map;
+                            return false;
                         }
                         String simple = type.toString();
-                        List<AnnotatedTypeMirror> list;
-                        if (map.containsKey(simple)) {
-                            list = map.get(simple);
-                        } else {
+                        List<AnnotatedTypeMirror> list = map.get(simple);
+                        if (list == null) {
                             list = new ArrayList<>();
                             map.put(simple, list);
                         }
+                        String verbose = type.toString(true);
+                        for (AnnotatedTypeMirror other : list) {
+                            String otherVerbose = other.toString(true);
+                            if (!verbose.equals(otherVerbose)) {
+                                list.add(type);
+                                return true;
+                            }
+                        }
                         list.add(type);
-                        return map;
+                        return false;
                     }
                 };
-        Map<String, List<AnnotatedTypeMirror>> map = collectToStrings.visit(atm2, null);
-
-        // Compare the "toString" of every AnnotatedTypeMirror in atm2 with the "toString" of
-        // every AnnotatedType mirror in atm1.  If the toStrings match, but toString verbose of
-        // the annotated types does not match, then the types should be printed verbosely.
-        SimpleAnnotatedTypeScanner<Boolean, Map<String, List<AnnotatedTypeMirror>>>
-                checkToStringOfOther =
-                        new SimpleAnnotatedTypeScanner<
-                                Boolean, Map<String, List<AnnotatedTypeMirror>>>() {
-                            @Override
-                            protected Boolean defaultAction(
-                                    AnnotatedTypeMirror type,
-                                    Map<String, List<AnnotatedTypeMirror>> map) {
-                                if (type == null) {
-                                    return false;
-                                }
-                                String simple = type.toString();
-                                if (!map.containsKey(simple)) {
-                                    return false;
-                                }
-                                String verbose = type.toString(true);
-                                List<AnnotatedTypeMirror> list = map.get(simple);
-                                for (AnnotatedTypeMirror other : list) {
-                                    String otherVerbose = other.toString(true);
-                                    if (!verbose.equals(otherVerbose)) {
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            }
-                        };
-        Boolean result = checkToStringOfOther.visit(atm1, map);
-        return result == null ? false : result;
+        Boolean result1 = checkForMismatchedToStrings.visit(atm1);
+        // SimpleAnnotatedTypeScanner#scan returns null is it encounters a null AnnotatedTypeMirror
+        if (result1 != null && result1) {
+            return true;
+        }
+        // Call reset to clear the visitor history, but not the map for Strings to types.
+        checkForMismatchedToStrings.reset();
+        Boolean result2 = checkForMismatchedToStrings.visit(atm2);
+        return result2 == null ? false : result2;
     }
 
     protected void checkArrayInitialization(
