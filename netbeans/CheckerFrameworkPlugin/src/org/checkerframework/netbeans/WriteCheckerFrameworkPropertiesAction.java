@@ -15,7 +15,7 @@ public class WriteCheckerFrameworkPropertiesAction implements ExceptionAction<Vo
     private final StringBuilder selection;
     private final String checkerPath;
     private final String checkerQualPath;
-    
+
     public WriteCheckerFrameworkPropertiesAction(FileObject projectProperties, String inCheckerPath, String inCheckerQualPath, StringBuilder inSelection) throws FileNotFoundException{
         ep=new EditableProperties(true);
         projPropsFO= projectProperties;
@@ -24,12 +24,12 @@ public class WriteCheckerFrameworkPropertiesAction implements ExceptionAction<Vo
         checkerPath=inCheckerPath;
         checkerQualPath=inCheckerQualPath;
     }
-    
+
     /**
-     * run() method for the WriteCheckerFrameworkPropertiesAction saves the 
+     * run() method for the WriteCheckerFrameworkPropertiesAction saves the
      * selected checkers to run in the project's properties file.
      * @return nothing
-     * @throws Exception 
+     * @throws Exception
      */
     @Override
     public Void run() throws Exception {
@@ -46,7 +46,7 @@ public class WriteCheckerFrameworkPropertiesAction implements ExceptionAction<Vo
         //@todo: make this not overwrite other libraries added to the project in question...
         ep.setProperty("file.reference.checker-qual.jar", checkerQualPath);
         ep.setProperty("file.reference.checker.jar", checkerPath);
-        ep.setProperty("javac.classpath", "${file.reference.checker-qual.jar}"); 
+        ep.setProperty("javac.classpath", "${file.reference.checker-qual.jar}");
         ep.setProperty("javac.processorpath", "${javac.classpath}:${file.reference.checker.jar}");
         OutputStream os = null;
         FileLock lock = null;

@@ -12,15 +12,15 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 public class CheckerFrameworkPanelProvider implements ProjectCustomizer.CompositeCategoryProvider  {
-    
+
     @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-java-j2seproject", position = 2147483647)
     public static CheckerFrameworkPanelProvider createCheckerFramework() {
         return new CheckerFrameworkPanelProvider();
     }
-    
+
     private static final String NAME = "CheckerFramework";
     private FileObject projectProperties;
-    
+
     @Override
     public Category createCategory(Lookup lkp) {
         Project p = lkp.lookup(Project.class);
@@ -29,7 +29,7 @@ public class CheckerFrameworkPanelProvider implements ProjectCustomizer.Composit
         ResourceBundle bundle = NbBundle.getBundle(CheckerFrameworkPanelProvider.class);
         ProjectCustomizer.Category toReturn = null;
         toReturn = ProjectCustomizer.Category.create(NAME, bundle.getString("LBL_Config_CheckerFramework"), null);
-       
+
         return toReturn;
     }
 
@@ -39,8 +39,8 @@ public class CheckerFrameworkPanelProvider implements ProjectCustomizer.Composit
         ctgr.setStoreListener(new ModifyPropertiesListener(cfp));
         return cfp;
     }
-    
-    
+
+
     private static class ModifyPropertiesListener implements ActionListener{
         private CheckerFrameworkPanel checkerFrameworkPanel;
         public ModifyPropertiesListener (CheckerFrameworkPanel inCheckerFrameworkPanel){
@@ -51,11 +51,11 @@ public class CheckerFrameworkPanelProvider implements ProjectCustomizer.Composit
         public void actionPerformed(ActionEvent e) {
         try {
             checkerFrameworkPanel.store();
-        } 
+        }
         catch (Exception exception) {
             System.out.println("Could not store checkers in project properties.");
         }
         }
-        
+
     }
 }
