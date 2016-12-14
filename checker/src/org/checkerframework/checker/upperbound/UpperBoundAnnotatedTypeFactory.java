@@ -566,7 +566,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Handles these cases:
          *
          * <pre>
-         *     LTOM / 1+ &arr; LTOM
+         *     LTOM / 1+ &rarr; LTOM
          *     LTL / 1+ &rarr; LTL
          *     LTEL / 2+ &rarr; LTL
          *     LTEL / 1 &rarr; LTEL
@@ -645,8 +645,8 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *
          * <pre>
          *      lit 0 + * &rarr; *
-         *      lit 1 + * &arr; call increment
-         *      lit -1 + * &arr; call decrement
+         *      lit 1 + * &rarr; call increment
+         *      lit -1 + * &rarr; call decrement
          *      LTL,LTOM,LTEL + negative lit < -1 &rarr; LTOM
          *      * + * &rarr; UNKNOWN
          *  </pre>
