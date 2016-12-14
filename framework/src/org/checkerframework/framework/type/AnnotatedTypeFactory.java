@@ -1213,26 +1213,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(this, tree);
 
-        // treat Raw as generic!
-        // TODO: This doesn't handle recursive type parameter
-        // e.g. class Pair<Y extends List<Y>> { ... }
-        // Type argument inference for raw types can be improved. See Issue 635.
-        // https://github.com/typetools/checker-framework/issues/635
-        if (result.getKind() == TypeKind.DECLARED) {
-            AnnotatedDeclaredType dt = (AnnotatedDeclaredType) result;
-            if (dt.wasRaw()) {
-                List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
-                AnnotatedDeclaredType declaration =
-                        fromElement((TypeElement) dt.getUnderlyingType().asElement());
-                for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
-                    AnnotatedWildcardType wct =
-                            getUninferredWildcardType((AnnotatedTypeVariable) typeParam);
-                    typeArgs.add(wct);
-                }
-                dt.setTypeArguments(typeArgs);
-            }
-        }
-
         annotateInheritedFromClass(result);
         if (shouldCache) {
             fromTreeCache.put(tree, result.deepCopy());

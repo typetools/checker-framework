@@ -928,8 +928,21 @@ public abstract class AnnotatedTypeMirror {
         public List<AnnotatedTypeMirror> getTypeArguments() {
             if (typeArgs == null) {
                 typeArgs = new ArrayList<AnnotatedTypeMirror>();
-                if (!((DeclaredType) actualType).getTypeArguments().isEmpty()) { // lazy init
-                    for (TypeMirror t : ((DeclaredType) actualType).getTypeArguments()) {
+                if (wasRaw()) {
+                    // TODO: This doesn't handle recursive type parameter
+                    // e.g. class Pair<Y extends List<Y>> { ... }
+                    // Type argument inference for raw types can be improved. See Issue 635.
+                    // https://github.com/typetools/checker-framework/issues/635
+                    AnnotatedDeclaredType declaration =
+                            atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
+                    for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
+                        AnnotatedWildcardType wct =
+                                atypeFactory.getUninferredWildcardType(
+                                        (AnnotatedTypeVariable) typeParam);
+                        typeArgs.add(wct);
+                    }
+                } else if (!getUnderlyingType().getTypeArguments().isEmpty()) { // lazy init
+                    for (TypeMirror t : getUnderlyingType().getTypeArguments()) {
                         typeArgs.add(createType(t, atypeFactory, declaration));
                     }
                 }
