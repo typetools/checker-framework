@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module: org.checkerframework.netbeans
+OpenIDE-Module-Layer: org/checkerframework/netbeans/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/checkerframework/netbeans/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
