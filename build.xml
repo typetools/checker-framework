@@ -135,7 +135,7 @@
   </target>
 
 
-  <fileset id="formatted.java.files" dir="." includes="**/*.java" excludes="**/checker/jdk/,**/stubparser/,**/eclipse/,**/nullness-javac-errors/"/>
+  <fileset id="formatted.java.files" dir="." includes="**/*.java,**/netbeans/" excludes="**/checker/jdk/,**/stubparser/,**/eclipse/,**/nullness-javac-errors/"/>
 
   <import file="./build-styleguide.xml"/>
 
