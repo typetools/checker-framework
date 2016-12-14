@@ -228,7 +228,6 @@ public class LowerBoundTransfer extends CFTransfer {
      * @param mLiteral a potential literal
      * @param otherNode the node on the other side of the ==/!=
      * @param otherType the type of the other side of the ==/!=
-     * @param store
      * @return whether the store was modified
      */
     private boolean isRelevantLiteralForEquals(
@@ -258,17 +257,7 @@ public class LowerBoundTransfer extends CFTransfer {
         }
     }
 
-    /**
-     * Implements the transfer rules for both equal nodes and not-equals nodes.
-     *
-     * @param result
-     * @param firstNode
-     * @param secondNode
-     * @param firstValue
-     * @param secondValue
-     * @param notEqualTo
-     * @return
-     */
+    /** Implements the transfer rules for both equal nodes and not-equals nodes. */
     @Override
     protected TransferResult<CFValue, CFStore> strengthenAnnotationOfEqualTo(
             TransferResult<CFValue, CFStore> result,
