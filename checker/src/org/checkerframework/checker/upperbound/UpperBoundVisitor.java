@@ -70,7 +70,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // Is indexType LTL/LTOM of a set containing arrName?
         if ((indexType.hasAnnotation(LTLengthOf.class)
                         || indexType.hasAnnotation(LTOMLengthOf.class))
-                && (UpperBoundUtils.hasValue(indexType, arrName))) {
+                && (UpperBoundUtils.hasValue(indexType, arrName)
+                        || UpperBoundUtils.hasValue(indexType, arrTree.toString()))) {
             // If so, this is safe - get out of here.
             return super.visitArrayAccess(tree, type);
         } else if (valMax != null && minLen != null && valMax < minLen) {
