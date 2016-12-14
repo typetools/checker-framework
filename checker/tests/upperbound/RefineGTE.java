@@ -1,7 +1,7 @@
 import org.checkerframework.checker.upperbound.qual.*;
 
 class RefineGTE {
-    void testLTL() {
+    void testLTL(@LTLengthOf("arr") int test) {
         // The reason for the parsing is so that the Value Checker
         // can't figure it out but normal humans can.
 
@@ -12,7 +12,7 @@ class RefineGTE {
         @LTLengthOf("arr") int a3 = Integer.parseInt("3");
 
         int b = 2;
-        if (a3 >= b) {
+        if (test >= b) {
             @LTLengthOf("arr") int c = b;
         }
         //:: error: (assignment.type.incompatible)
@@ -26,7 +26,7 @@ class RefineGTE {
         }
     }
 
-    void testLTEL() {
+    void testLTEL(@LTEqLengthOf("arr") int test) {
         //:: error: (assignment.type.incompatible)
         @LTEqLengthOf("arr") int a = Integer.parseInt("1");
 
@@ -34,7 +34,7 @@ class RefineGTE {
         @LTEqLengthOf("arr") int a3 = Integer.parseInt("3");
 
         int b = 2;
-        if (a3 >= b) {
+        if (test >= b) {
             @LTEqLengthOf("arr") int c = b;
         }
         //:: error: (assignment.type.incompatible)

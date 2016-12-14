@@ -1,18 +1,18 @@
 import org.checkerframework.checker.upperbound.qual.*;
 
 public class IntroSub {
-    void test() {
+    void test(int[] arr) {
         //:: error: (assignment.type.incompatible)
-        @LTLengthOf({"banana"}) int a = 3;
+        @LTLengthOf({"arr"}) int a = 3;
         //:: error: (assignment.type.incompatible)
-        @LTLengthOf({"banana"}) int c = a - (-1);
-        @LTEqLengthOf({"banana"}) int c1 = a - (-1);
-        @LTLengthOf({"banana"}) int d = a - 0;
-        @LTLengthOf({"banana"}) int e = a - 7;
+        @LTLengthOf({"arr"}) int c = a - (-1);
+        @LTEqLengthOf({"arr"}) int c1 = a - (-1);
+        @LTLengthOf({"arr"}) int d = a - 0;
+        @LTLengthOf({"arr"}) int e = a - 7;
         //:: error: (assignment.type.incompatible)
-        @LTLengthOf({"banana"}) int f = a - (-7);
+        @LTLengthOf({"arr"}) int f = a - (-7);
 
         //:: error: (assignment.type.incompatible)
-        @LTEqLengthOf({"banana"}) int j = 7;
+        @LTEqLengthOf({"arr"}) int j = 7;
     }
 }

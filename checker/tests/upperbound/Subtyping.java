@@ -1,7 +1,7 @@
 import org.checkerframework.checker.upperbound.qual.*;
 
 public class Subtyping {
-    void test() {
+    void test(@LTEqLengthOf({"arr", "arr2", "arr3"}) int test) {
         //:: error: (assignment.type.incompatible)
         @LTEqLengthOf({"arr"}) int a = 1;
         //:: error: (assignment.type.incompatible)
@@ -17,8 +17,8 @@ public class Subtyping {
         //:: error: (assignment.type.incompatible)
         @LTEqLengthOf({"arr", "arr2", "arr3"}) int h = 2;
 
-        @LTEqLengthOf({"arr", "arr2"}) int h2 = h;
-        @LTEqLengthOf({"arr"}) int i = h;
-        @LTEqLengthOf({"arr", "arr3"}) int j = h;
+        @LTEqLengthOf({"arr", "arr2"}) int h2 = test;
+        @LTEqLengthOf({"arr"}) int i = test;
+        @LTEqLengthOf({"arr", "arr3"}) int j = test;
     }
 }

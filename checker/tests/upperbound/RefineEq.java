@@ -1,12 +1,12 @@
 import org.checkerframework.checker.upperbound.qual.*;
 
 class RefineEq {
-    void testLTL() {
+    void testLTL(@LTLengthOf("arr") int test) {
         //:: error: (assignment.type.incompatible)
         @LTLengthOf("arr") int a = Integer.parseInt("1");
 
         int b = 1;
-        if (a == b) {
+        if (test == b) {
             @LTLengthOf("arr") int c = b;
 
         } else {
@@ -17,12 +17,12 @@ class RefineEq {
         @LTLengthOf("arr") int d = b;
     }
 
-    void testLTEL() {
+    void testLTEL(@LTEqLengthOf("arr") int test) {
         //:: error: (assignment.type.incompatible)
         @LTEqLengthOf("arr") int a = Integer.parseInt("1");
 
         int b = 1;
-        if (a == b) {
+        if (test == b) {
             @LTEqLengthOf("arr") int c = b;
 
             //:: error: (assignment.type.incompatible)
