@@ -1,7 +1,6 @@
 package org.checkerframework.checker.minlen;
 
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.Tree;
+import com.sun.source.tree.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -250,6 +249,10 @@ public class MinLenAnnotatedTypeFactory
 
             return super.visitNewArray(tree, type);
         }
+    }
+
+    public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
+        return valueAnnotatedTypeFactory;
     }
 
     protected static int getMinLenValue(AnnotationMirror annotation) {

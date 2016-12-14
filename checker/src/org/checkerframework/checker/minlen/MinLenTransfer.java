@@ -1,6 +1,7 @@
 package org.checkerframework.checker.minlen;
 
 import com.sun.source.tree.Tree;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +12,8 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.checker.minlen.qual.MinLenBottom;
+import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
+import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
@@ -34,6 +37,7 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     protected final ExecutableElement listToArray;
     protected final ExecutableElement listToArray1;
     protected final ExecutableElement arrayAsList;
+    protected static ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
     private QualifierHierarchy qualifierHierarchy;
 
@@ -42,6 +46,7 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         this.analysis = analysis;
         atypeFactory = (MinLenAnnotatedTypeFactory) analysis.getTypeFactory();
         this.env = MinLenAnnotatedTypeFactory.env;
+        valueAnnotatedTypeFactory = atypeFactory.getValueAnnotatedTypeFactory();
         qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         this.listAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
         this.listAdd2 = TreeUtils.getMethod("java.util.List", "add", 2, env);
@@ -168,6 +173,29 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             }
             AnnotationMirror AM = atypeFactory.createMinLen(value);
             result.setResultValue(analysis.createSingleAnnotationValue(AM, node.getType()));
+        }
+
+        return result;
+    }
+
+    @Override
+    public TransferResult<MinLenValue, MinLenStore> visitArrayAccess(
+            ArrayAccessNode node, TransferInput<MinLenValue, MinLenStore> in) {
+        TransferResult<MinLenValue, MinLenStore> result = super.visitArrayAccess(node, in);
+
+        if (valueAnnotatedTypeFactory
+                .getAnnotatedType(node.getArray().getTree())
+                .hasAnnotation(ArrayLen.class)) {
+            // In this case, we can refine the MinLen to match the ArrayLen.
+            AnnotationMirror arrayLenAnm =
+                    valueAnnotatedTypeFactory
+                            .getAnnotatedType(node.getArray().getTree())
+                            .getAnnotation(ArrayLen.class);
+            MinLenStore store = in.getRegularStore();
+            int minlen = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(arrayLenAnm));
+            Receiver rec =
+                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), node.getArray());
+            store.insertValue(rec, atypeFactory.createMinLen(minlen));
         }
 
         return result;

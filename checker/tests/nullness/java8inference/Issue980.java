@@ -1,5 +1,5 @@
-// Test case for issue #980:
-// https://github.com/typetools/checker-framework/issues/980
+// Test case that was submitted in Issue 402, but was combined with Issue 979
+// https://github.com/typetools/checker-framework/issues/979
 
 // @below-java8-jdk-skip-test
 // @skip-test until the bug is fixed
