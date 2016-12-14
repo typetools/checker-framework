@@ -32,6 +32,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeComparer;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotationBuilder;
@@ -92,6 +93,16 @@ public class ExpressionAnnotationHelper {
             expressionAnnos.add(anno);
         }
         this.expressionAnnos = expressionAnnos;
+    }
+
+    /**
+     * Creates a TreeAnnotator that standarizes expression annotations.
+     *
+     * @param factory annotated type factory
+     * @return a new TreeAnnotator that standarizes expression annotatoions
+     */
+    public TreeAnnotator createExpressionAnnotationTreeAnnotator(AnnotatedTypeFactory factory) {
+        return new ExpressionAnnotationTreeAnnotator(factory, this);
     }
 
     /**

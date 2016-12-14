@@ -88,7 +88,6 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
-import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -283,7 +282,7 @@ public abstract class GenericAnnotatedTypeFactory<
         treeAnnotators.add(new ImplicitsTreeAnnotator(this));
         if (expressionAnnotationHelper != null) {
             treeAnnotators.add(
-                    new ExpressionAnnotationTreeAnnotator(this, expressionAnnotationHelper));
+                    expressionAnnotationHelper.createExpressionAnnotationTreeAnnotator(this));
         }
         return new ListTreeAnnotator(treeAnnotators);
     }
