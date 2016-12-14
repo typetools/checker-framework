@@ -647,7 +647,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *      lit 0 + * &rarr; *
          *      lit 1 + * &rarr; call increment
          *      lit -1 + * &rarr; call decrement
-         *      LTL,LTOM,LTEL + negative lit < -1 &rarr; LTOM
+         *      LTL,LTOM,LTEL + negative lit &lt; -1 &rarr; LTOM
          *      * + * &rarr; UNKNOWN
          *  </pre>
          */
