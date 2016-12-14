@@ -48,9 +48,30 @@ class ListRemove {
     }
 
     void ListRemoveUserAnnotation(@IndexFor("list") int i, List<Integer> list) {
-        listremove(i);
+        list.remove(i);
 
         //:: warning: (list.access.unsafe.high)
         list.remove(i + 1);
+        //:: warning: (list.access.unsafe.high)
+        list.remove(i);
+    }
+
+    void FailRemove(List<Integer> list) {
+        @LTLengthOf("list") int i = list.size() - 1;
+        try {
+            list.remove(1);
+        } catch (Exception e) {
+        }
+
+        @LTLengthOf("list") int m = i;
+    }
+
+    void RemoveUpdate(List<Integer> list) {
+        @LTLength("list")
+        int m = list.size() - 1;
+        list.get(m);
+        list.remove(m);
+        //:: warning: (list.access.unsafe.high)
+        list.get(m);
     }
 }

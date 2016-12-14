@@ -36,21 +36,30 @@ public class UpperBoundStore extends CFAbstractStore<UpperBoundValue, UpperBound
         String methodName = n.getTarget().getMethod().toString();
         boolean remove = methodName.startsWith("remove(");
         boolean clear = methodName.startsWith("clear(");
+        boolean add = methodName.startsWith("add(");
         Map<Receiver, UpperBoundValue> replace = new HashMap<Receiver, UpperBoundValue>();
         if (clear) {
             for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
-                applyTransfer(rec, replace, true, atypeFactory);
+                applyTransfer(rec, replace, true, atypeFactory, caller);
             }
             for (FieldAccess rec : fieldValues.keySet()) {
-                applyTransfer(rec, replace, true, atypeFactory);
+                applyTransfer(rec, replace, true, atypeFactory, caller);
             }
         }
         if (remove) {
             for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
-                applyTransfer(rec, replace, false, atypeFactory);
+                applyTransfer(rec, replace, false, atypeFactory, caller);
             }
             for (FieldAccess rec : fieldValues.keySet()) {
-                applyTransfer(rec, replace, false, atypeFactory);
+                applyTransfer(rec, replace, false, atypeFactory, caller);
+            }
+        }
+        if (add) {
+            for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
+                applyAdd(rec, replace, atypeFactory, caller);
+            }
+            for (FieldAccess rec : fieldValues.keySet()) {
+                applyAdd(rec, replace, atypeFactory, caller);
             }
         }
         for (Receiver rec : replace.keySet()) {
@@ -64,33 +73,82 @@ public class UpperBoundStore extends CFAbstractStore<UpperBoundValue, UpperBound
             Receiver rec,
             Map<Receiver, UpperBoundValue> replace,
             boolean isClear,
-            AnnotatedTypeFactory atypeFactory) {
+            AnnotatedTypeFactory atypeFactory,
+            Receiver caller) {
 
         UpperBoundAnnotatedTypeFactory factory = (UpperBoundAnnotatedTypeFactory) atypeFactory;
         UpperBoundValue value = this.getValue(rec);
         Set<AnnotationMirror> atm = value.getAnnotations();
-        if (AnnotationUtils.containsSameByClass(atm, LTLengthOf.class)) {
-            if (isClear) {
-                UpperBoundValue val =
-                        analysis.createSingleAnnotationValue(
-                                UpperBoundAnnotatedTypeFactory.createAnnotation("Unknown", null),
-                                rec.getType());
-                replace.put(rec, val);
-            } else {
-                UpperBoundValue val =
-                        analysis.createSingleAnnotationValue(
-                                UpperBoundAnnotatedTypeFactory.createAnnotation(
-                                        "LTEqLengthOf",
-                                        UpperBoundUtils.getValue(
-                                                AnnotationUtils.getAnnotationByClass(
-                                                        atm, LTLengthOf.class))),
-                                rec.getType());
-                replace.put(rec, val);
-            }
+        if (isClear) {
+            UpperBoundValue val =
+                    analysis.createSingleAnnotationValue(
+                            UpperBoundAnnotatedTypeFactory.createAnnotation("Unknown", ""),
+                            rec.getType());
+            replace.put(rec, val);
+        } else if (AnnotationUtils.containsSameByClass(atm, LTOMLengthOf.class)) {
+            AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(atm, LTOMLengthOf.class);
+            AnnotationMirror newAnno =
+                    UpperBoundAnnotatedTypeFactory.createAnnotation(
+                            "LTLengthOf", UpperBoundUtils.getValue(anno));
+            UpperBoundValue val =
+                    analysis.createSingleAnnotationValue(
+                            factory.getQualifierHierarchy().leastUpperBound(newAnno, anno),
+                            rec.getType());
+            replace.put(rec, val);
+        } else if (AnnotationUtils.containsSameByClass(atm, LTLengthOf.class)) {
+            AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(atm, LTLengthOf.class);
+            AnnotationMirror newAnno =
+                    UpperBoundAnnotatedTypeFactory.createAnnotation(
+                            "LTEqLengthOf", UpperBoundUtils.getValue(anno));
+            UpperBoundValue val =
+                    analysis.createSingleAnnotationValue(
+                            factory.getQualifierHierarchy().leastUpperBound(newAnno, anno),
+                            rec.getType());
+            replace.put(rec, val);
         } else if (AnnotationUtils.containsSameByClass(atm, LTEqLengthOf.class)) {
             UpperBoundValue val =
                     analysis.createSingleAnnotationValue(
-                            UpperBoundAnnotatedTypeFactory.createAnnotation("Unknown", null),
+                            UpperBoundAnnotatedTypeFactory.createAnnotation("Unknown", ""),
+                            rec.getType());
+            replace.put(rec, val);
+        }
+    }
+
+    private void applyAdd(
+            Receiver rec,
+            Map<Receiver, UpperBoundValue> replace,
+            AnnotatedTypeFactory atypeFactory,
+            Receiver caller) {
+
+        UpperBoundAnnotatedTypeFactory factory = (UpperBoundAnnotatedTypeFactory) atypeFactory;
+        UpperBoundValue value = this.getValue(rec);
+        Set<AnnotationMirror> atm = value.getAnnotations();
+        if (AnnotationUtils.containsSameByClass(atm, LTEqLengthOf.class)) {
+            AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(atm, LTEqLengthOf.class);
+            String[] vals = UpperBoundUtils.getValue(anno);
+            if (vals.length != 1 || !vals[0].equals(caller.toString())) {
+                return;
+            }
+            AnnotationMirror newAnno =
+                    UpperBoundAnnotatedTypeFactory.createAnnotation(
+                            "LTLengthOf", caller.toString());
+            UpperBoundValue val =
+                    analysis.createSingleAnnotationValue(
+                            factory.getQualifierHierarchy().greatestLowerBound(newAnno, anno),
+                            rec.getType());
+            replace.put(rec, val);
+        } else if (AnnotationUtils.containsSameByClass(atm, LTLengthOf.class)) {
+            AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(atm, LTLengthOf.class);
+            String[] vals = UpperBoundUtils.getValue(anno);
+            if (vals.length != 1 || !vals[0].equals(caller.toString())) {
+                return;
+            }
+            AnnotationMirror newAnno =
+                    UpperBoundAnnotatedTypeFactory.createAnnotation(
+                            "LTOMLengthOf", caller.toString());
+            UpperBoundValue val =
+                    analysis.createSingleAnnotationValue(
+                            factory.getQualifierHierarchy().greatestLowerBound(newAnno, anno),
                             rec.getType());
             replace.put(rec, val);
         }

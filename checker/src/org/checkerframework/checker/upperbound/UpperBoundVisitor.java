@@ -78,9 +78,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             return super.visitArrayAccess(tree, type);
         } else {
             // Unsafe, since neither the Upper bound or MinLen checks succeeded.
-            checker.report(
-                    Result.warning(UPPER_BOUND, indexType.toString(), arrName, arrTree.toString()),
-                    indexTree);
+            checker.report(Result.warning(UPPER_BOUND, indexType.toString(), arrName), indexTree);
             return super.visitArrayAccess(tree, type);
         }
     }
@@ -103,7 +101,8 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             Integer minLen = atypeFactory.minLenFromExpressionTree(lstTree);
 
             // Is indexType LTL of a set containing arrName?
-            if (indexType.hasAnnotation(LTLengthOf.class)
+            if ((indexType.hasAnnotation(LTLengthOf.class)
+                            || indexType.hasAnnotation(LTOMLengthOf.class))
                     && (UpperBoundUtils.hasValue(indexType, localName)
                             || (UpperBoundUtils.hasValue(indexType, lstName)))) {
                 // If so, this is safe - get out of here.
@@ -113,8 +112,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             } else {
                 // Unsafe, since neither the Upper bound or MinLen checks succeeded.
                 checker.report(
-                        Result.warning(UPPER_BOUND_LIST, indexType.toString(), lstName, localName),
-                        indexTree);
+                        Result.warning(UPPER_BOUND_LIST, indexType.toString(), lstName), indexTree);
                 return super.visitMethodInvocation(tree, type);
             }
         }

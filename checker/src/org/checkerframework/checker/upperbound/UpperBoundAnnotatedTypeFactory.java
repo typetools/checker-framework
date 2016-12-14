@@ -84,6 +84,7 @@ public class UpperBoundAnnotatedTypeFactory
         annos.add(LTEqLengthOf.class);
         annos.add(IndexFor.class);
         annos.add(IndexOrHigh.class);
+        annos.add(LTOMLengthOf.class);
         return new ExpressionAnnotationHelper(this, annos);
     }
 
@@ -162,12 +163,18 @@ public class UpperBoundAnnotatedTypeFactory
     // 9.29.16. Do not try this. It does not work. They rely on the processing
     // environment, which is only available here. DO NOT TRY TO MOVE THEM.
 
+    protected static AnnotationMirror createAnnotation(String anno, String name) {
+        String[] arr = new String[1];
+        arr[0] = name;
+        return createAnnotation(anno, arr);
+    }
+
     /**
      * Creates an annotation of the name given with the set of values given.
      *
      * @return annotation given by name with names=values, or UNKNOWN
      */
-    static AnnotationMirror createAnnotation(String name, String[] names) {
+    protected static AnnotationMirror createAnnotation(String name, String[] names) {
         if (names == null) {
             names = new String[0];
         }
@@ -284,7 +291,7 @@ public class UpperBoundAnnotatedTypeFactory
      * The qualifier hierarchy for the upperbound type system. The qh is responsible for determining
      * the relationships within the qualifiers - especially subtyping relations.
      */
-    private final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
         /** @param factory MultiGraphFactory to use to construct this */
         public UpperBoundQualifierHierarchy(
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {

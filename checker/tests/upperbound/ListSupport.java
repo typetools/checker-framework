@@ -43,27 +43,6 @@ class ListSupport {
         @LTLengthOf("list") int m = i;
     }
 
-    void remove(List<Integer> list) {
-        int lessThanLength = list.size() - 1;
-        int lessThanOrEq = list.size();
-        list.get(lessThanLength);
-
-        list.remove(0);
-
-        //:: warning: (list.access.unsafe.high)
-        list.get(lessThanLength);
-
-        list.get(lessThanLength - 1);
-
-        @LTEqLengthOf("list") int m = lessThanLength;
-
-        //:: error: (assignment.type.incompatible)
-        m = lessThanOrEq;
-
-        //:: error: (assignment.type.incompatible)
-        @LTLengthOf("list") int i = lessThanLength;
-    }
-
     void clear(List<Integer> list) {
         int lessThanLength = list.size() - 1;
         int lessThanOrEq = list.size();
