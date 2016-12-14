@@ -1,4 +1,4 @@
-import tests.wholeprograminference.qual.*;
+import testlib.wholeprograminference.qual.*;
 
 public class AnnotationWithFieldTest {
 
@@ -20,17 +20,17 @@ public class AnnotationWithFieldTest {
 
     void expectsSiblingWithFields(
             @SiblingWithFields(
-                value = {"test", "test2"},
-                value2 = "test3"
-            )
-            String s) {}
+                        value = {"test", "test2"},
+                        value2 = "test3"
+                    )
+                    String s) {}
 
     void expectsSiblingWithEmptyFields(
             @SiblingWithFields(
-                value = {},
-                value2 = ""
-            )
-            String s) {}
+                        value = {},
+                        value2 = ""
+                    )
+                    String s) {}
 
     String getSiblingWithFields() {
         //:: warning: (cast.unsafe)

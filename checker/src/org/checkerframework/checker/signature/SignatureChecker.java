@@ -3,12 +3,8 @@ package org.checkerframework.checker.signature;
 import com.sun.source.tree.CompilationUnitTree;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
-import org.checkerframework.framework.qual.StubFiles;
 
-/**
- * @checker_framework.manual #signature-checker Signature Checker
- */
-@StubFiles({"apache-bcel.astub"})
+/** @checker_framework.manual #signature-checker Signature Checker */
 @RelevantJavaTypes(CharSequence.class)
 public final class SignatureChecker extends BaseTypeChecker {
 

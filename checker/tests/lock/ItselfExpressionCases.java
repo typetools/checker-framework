@@ -1,13 +1,11 @@
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.checker.nullness.qual.*;
 import org.checkerframework.dataflow.qual.*;
-import org.checkerframework.framework.qual.ImplicitFor;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 
 class ItselfExpressionCases {
     final Object somelock = new Object();
 
-    final private @GuardedBy({"<self>"}) MyClass m = new MyClass();
+    private final @GuardedBy({"<self>"}) MyClass m = new MyClass();
 
     @Pure
     private @GuardedBy({"<self>"}) MyClass getm() {

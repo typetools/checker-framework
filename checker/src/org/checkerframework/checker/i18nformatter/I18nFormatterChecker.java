@@ -5,14 +5,11 @@ import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.RelevantJavaTypes;
 
 /**
- * A type-checker plug-in for the qualifier that finds syntactically invalid
- * i18n-formatter calls (MessageFormat.format()).
+ * A type-checker plug-in for the qualifier that finds syntactically invalid i18n-formatter calls
+ * (MessageFormat.format()).
  *
- *
- * @checker_framework.manual #i18n-formatter-checker Internationalization
- *                           Format String Checker
+ * @checker_framework.manual #i18n-formatter-checker Internationalization Format String Checker
  * @author Siwakorn Srisakaokul
- *
  */
 @SupportedOptions({"bundlenames", "propfiles"})
 @RelevantJavaTypes(CharSequence.class)

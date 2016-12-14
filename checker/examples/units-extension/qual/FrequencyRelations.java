@@ -41,9 +41,8 @@ public class FrequencyRelations implements UnitsRelations {
     }
 
     /**
-     * Division of a scalar by seconds yields Hertz.
-     * Division of a scalar by milliseconds yields Kilohertz.
-     * Other divisions yield an unannotated value.
+     * Division of a scalar by seconds yields Hertz. Division of a scalar by milliseconds yields
+     * Kilohertz. Other divisions yield an unannotated value.
      */
     public /*@Nullable*/ AnnotationMirror division(
             AnnotatedTypeMirror lht, AnnotatedTypeMirror rht) {

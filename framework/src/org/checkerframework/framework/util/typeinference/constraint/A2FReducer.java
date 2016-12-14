@@ -5,10 +5,10 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 /**
- * A2FReducer takes an A2F constraint that is not irreducible (@see AFConstraint.isIrreducible)
- * and reduces it by one step.  The resulting constraint may still be reducible.
+ * A2FReducer takes an A2F constraint that is not irreducible (@see AFConstraint.isIrreducible) and
+ * reduces it by one step. The resulting constraint may still be reducible.
  *
- * Generally reductions should map to corresponding rules in
+ * <p>Generally reductions should map to corresponding rules in
  * http://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.12.2.7
  */
 public class A2FReducer implements AFReducer {
@@ -32,18 +32,20 @@ public class A2FReducer implements AFReducer {
     }
 
     /**
-     * Given an A2F constraint of the form:
-     * A2F( typeFromMethodArgument, typeFromFormalParameter )
+     * Given an A2F constraint of the form: A2F( typeFromMethodArgument, typeFromFormalParameter )
      *
-     * A2FReducingVisitor visits the constraint as follows:
-     * visit ( typeFromMethodArgument, typeFromFormalParameter, newConstraints )
+     * <p>A2FReducingVisitor visits the constraint as follows: visit ( typeFromMethodArgument,
+     * typeFromFormalParameter, newConstraints )
      *
-     * The visit method will determine if the given constraint should either:
-     *    a) be discarded - in this case, the visitor just returns
-     *    b) reduced to a simpler constraint or set of constraints - in this case, the new constraint
-     *    or set of constraints is added to newConstraints
+     * <p>The visit method will determine if the given constraint should either:
+     *
+     * <ul>
+     *   <li> be discarded -- in this case, the visitor just returns
+     *   <li> reduced to a simpler constraint or set of constraints -- in this case, the new
+     *       constraint or set of constraints is added to newConstraints
+     * </ul>
      */
-    class A2FReducingVisitor extends AFReducingVisitor {
+    private static class A2FReducingVisitor extends AFReducingVisitor {
 
         public A2FReducingVisitor(AnnotatedTypeFactory typeFactory) {
             super(A2F.class, typeFactory);

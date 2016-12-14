@@ -1,4 +1,4 @@
-import tests.util.Critical;
+import testlib.util.Critical;
 
 /**
  * Tests the symantics for throwable exception

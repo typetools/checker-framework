@@ -12,25 +12,24 @@ import java.util.StringTokenizer;
 import javax.annotation.processing.ProcessingEnvironment;
 
 /**
- * A Utility class for parsing Java expression snippets, and converting them
- * to proper Javac AST nodes.
+ * A Utility class for parsing Java expression snippets, and converting them to proper Javac AST
+ * nodes.
  *
- * This is useful for parsing {@code EnsuresNonNull*},
- * and {@code KeyFor} values.
+ * <p>This is useful for parsing {@code EnsuresNonNull*}, and {@code KeyFor} values.
  *
- * Currently, it handles four tree types only:
+ * <p>Currently, it handles four tree types only:
+ *
  * <ul>
- *  <li>Identifier tree (e.g. {@code id})</li>
- *  <li>Literal tree (e.g. 2, 3)</li>
- *  <li>Method invocation tree (e.g. {@code method(2, 3)})</li>
- *  <li>Member select tree (e.g. {@code Class.field}, {@code instance.method()})
- *  <li>Array access tree (e.g. {@code array[id]})</li>
+ *   <li>Identifier tree (e.g. {@code id})
+ *   <li>Literal tree (e.g. 2, 3)
+ *   <li>Method invocation tree (e.g. {@code method(2, 3)})
+ *   <li>Member select tree (e.g. {@code Class.field}, {@code instance.method()})
+ *   <li>Array access tree (e.g. {@code array[id]})
  * </ul>
  *
- * Notable limitation: Doesn't handle spaces, or non-method-argument
- * parenthesis.
+ * Notable limitation: Doesn't handle spaces, or non-method-argument parenthesis.
  *
- * It's implemented via a Recursive-Descend parser.
+ * <p>It's implemented via a Recursive-Descend parser.
  */
 public class TreeParser {
     private static final String DELIMS = ".[](),";
@@ -46,11 +45,10 @@ public class TreeParser {
     }
 
     /**
-     * Parses the snippet in the string as an internal Javac AST expression
-     * node
+     * Parses the snippet in the string as an internal Javac AST expression node
      *
      * @param s the java snippet
-     * @return  the AST corresponding to the snippet
+     * @return the AST corresponding to the snippet
      */
     public ExpressionTree parseTree(String s) {
         tokenizer = new StringTokenizer(s, DELIMS, true);
@@ -133,7 +131,7 @@ public class TreeParser {
         return tree;
     }
 
-    class ParseError extends RuntimeException {
+    private static class ParseError extends RuntimeException {
         private static final long serialVersionUID = 1887754619522101929L;
 
         ParseError(Throwable cause) {

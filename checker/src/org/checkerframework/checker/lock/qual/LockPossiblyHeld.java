@@ -14,10 +14,9 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 
 /**
  * Indicates that an expression is not known to be {@link LockHeld}.
- * <p>
  *
- * This annotation may not be written in source code; it is an
- * implementation detail of the checker.
+ * <p>This annotation may not be written in source code; it is an implementation detail of the
+ * checker.
  *
  * @see LockHeld
  * @checker_framework.manual #lock-checker Lock Checker

@@ -1,9 +1,6 @@
-import org.checkerframework.checker.initialization.qual.Initialized;
 import org.checkerframework.checker.nullness.qual.*;
 
-/**
- * @author Nathaniel Mote <nmote@cs.washington.edu>
- */
+/** @author Nathaniel Mote <nmote@cs.washington.edu> */
 
 // This is how I propose the Collection interface be annotated:
 interface Collection1<E extends @Nullable Object> {

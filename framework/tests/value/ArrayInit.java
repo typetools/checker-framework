@@ -62,4 +62,11 @@ class ArrayInit {
     }
 
     public void vargs(Object @ArrayLen(0) ... ints) {}
+
+    public void nullableArrays() {
+        Object @ArrayLen(2) [] @ArrayLen(1) [] o = new Object[][] {new Object[] {null}, null};
+        Object @ArrayLen(1) [][] o2 = new Object[][] {null};
+        //:: error: (assignment.type.incompatible)
+        Object @ArrayLen(1) [] @ArrayLen(1) [] o3 = new Object[][] {null};
+    }
 }

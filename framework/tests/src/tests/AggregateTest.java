@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
-import tests.aggregate.AggregateOfCompoundChecker;
+import testlib.aggregate.AggregateOfCompoundChecker;
 
 public class AggregateTest extends CheckerFrameworkPerDirectoryTest {
 

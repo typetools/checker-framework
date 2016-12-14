@@ -1,5 +1,5 @@
-import tests.util.Even;
-import tests.util.Odd;
+import testlib.util.Even;
+import testlib.util.Odd;
 
 abstract class C<T extends @Odd Object> {
     abstract T id(T x);

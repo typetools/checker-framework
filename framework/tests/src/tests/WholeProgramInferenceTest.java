@@ -4,26 +4,21 @@ import java.io.File;
 import java.util.List;
 import org.checkerframework.framework.test.CheckerFrameworkPerDirectoryTest;
 import org.junit.runners.Parameterized.Parameters;
+import testlib.wholeprograminference.WholeProgramInferenceTestChecker;
 
 /**
  * Tests whole-program inference with the aid of .jaif files.
  *
- * IMPORTANT: The errors captured in the tests located in tests/whole-program-inference/
- * are not relevant. The meaning of this test class is to test if the generated
- * .jaif files are similar to the expected ones. The errors on .java files
- * must be ignored.
+ * <p>IMPORTANT: The errors captured in the tests located in tests/whole-program-inference/ are not
+ * relevant. The meaning of this test class is to test if the generated .jaif files are similar to
+ * the expected ones. The errors on .java files must be ignored.
  *
  * @author pbsf
  */
 public class WholeProgramInferenceTest extends CheckerFrameworkPerDirectoryTest {
 
     public WholeProgramInferenceTest(List<File> testFiles) {
-        super(
-                testFiles,
-                tests.wholeprograminference.WholeProgramInferenceTestChecker.class,
-                "value",
-                "-Anomsgtext",
-                "-Ainfer");
+        super(testFiles, WholeProgramInferenceTestChecker.class, "value", "-Anomsgtext", "-Ainfer");
     }
 
     @Parameters

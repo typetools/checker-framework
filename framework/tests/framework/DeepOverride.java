@@ -1,4 +1,4 @@
-import tests.util.*;
+import testlib.util.*;
 
 public class DeepOverride {
     public static class A {
