@@ -1,8 +1,6 @@
 // Test case for issue #62:
 // https://github.com/kelloggm/checker-framework/issues/62
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
 

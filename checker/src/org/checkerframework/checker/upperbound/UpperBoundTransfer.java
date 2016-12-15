@@ -1,5 +1,7 @@
 package org.checkerframework.checker.upperbound;
 
+import com.sun.source.tree.ExpressionTree;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -197,6 +199,10 @@ public class UpperBoundTransfer
          *  branch (i.e. when they are, actually, equal).
          */
         refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+
+        // With a few exceptions...
+        refineNeq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+
         return rfi.newResult;
     }
 
@@ -347,5 +353,103 @@ public class UpperBoundTransfer
 
         store.insertValue(rightRec, newType);
         store.insertValue(leftRec, newType);
+    }
+
+    private void specialCaseForLTEL(
+            Set<AnnotationMirror> leftType, Node left, Node right, UpperBoundStore store) {
+        if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
+            if (right instanceof FieldAccessNode) {
+                if (((FieldAccessNode) right).getFieldName().equals("length")
+                        && ((FieldAccessNode) right).getReceiver().getType().getKind()
+                                == TypeKind.ARRAY) {
+                    String[] names =
+                            UpperBoundUtils.getValue(
+                                    AnnotationUtils.getAnnotationByClass(
+                                            leftType, LTEqLengthOf.class));
+                    String canonicalName =
+                            FlowExpressions.internalReprOf(
+                                            this.atypeFactory,
+                                            (ExpressionTree)
+                                                    (((FieldAccessNode) right)
+                                                            .getReceiver()
+                                                            .getTree()))
+                                    .toString();
+                    String localName = null;
+                    // This is probably evil and viewpoint adaptation should handle it...
+                    if (canonicalName.startsWith("this.")) {
+                        localName = canonicalName.substring(5);
+                    }
+                    if (names.length == 1) {
+                        if (Arrays.asList(names).contains(canonicalName)) {
+                            store.insertValue(
+                                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
+                                    UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(
+                                            canonicalName));
+                        } else if ((localName != null
+                                && Arrays.asList(names).contains(localName))) {
+                            store.insertValue(
+                                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
+                                    UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(
+                                            localName));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void specialCaseForLTL(
+            Set<AnnotationMirror> leftType, Node left, Node right, UpperBoundStore store) {
+        if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
+            if (right instanceof FieldAccessNode) {
+                if (((FieldAccessNode) right).getFieldName().equals("length")
+                        && ((FieldAccessNode) right).getReceiver().getType().getKind()
+                                == TypeKind.ARRAY) {
+                    String[] names =
+                            UpperBoundUtils.getValue(
+                                    AnnotationUtils.getAnnotationByClass(
+                                            leftType, LTLengthOf.class));
+                    String canonicalName =
+                            FlowExpressions.internalReprOf(
+                                            this.atypeFactory,
+                                            (ExpressionTree)
+                                                    (((FieldAccessNode) right)
+                                                            .getReceiver()
+                                                            .getTree()))
+                                    .toString();
+                    String localName = null;
+                    // This is probably evil and viewpoint adaptation should handle it...
+                    if (canonicalName.startsWith("this.")) {
+                        localName = canonicalName.substring(5);
+                    }
+                    if (names.length == 1) {
+                        if (Arrays.asList(names).contains(canonicalName)) {
+                            store.insertValue(
+                                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
+                                    UpperBoundAnnotatedTypeFactory.createLTOMLengthOfAnnotation(
+                                            canonicalName));
+                        } else if ((localName != null
+                                && Arrays.asList(names).contains(localName))) {
+                            store.insertValue(
+                                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
+                                    UpperBoundAnnotatedTypeFactory.createLTOMLengthOfAnnotation(
+                                            localName));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void refineNeq(
+            Node left,
+            Set<AnnotationMirror> leftType,
+            Node right,
+            Set<AnnotationMirror> rightType,
+            UpperBoundStore store) {
+        specialCaseForLTEL(leftType, left, right, store);
+        specialCaseForLTEL(rightType, right, left, store);
+        specialCaseForLTL(leftType, left, right, store);
+        specialCaseForLTL(rightType, right, left, store);
     }
 }
