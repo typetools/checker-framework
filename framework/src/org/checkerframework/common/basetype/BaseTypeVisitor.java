@@ -1861,7 +1861,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         SimpleAnnotatedTypeScanner<Boolean, Void> checkForMismatchedToStrings =
                 new SimpleAnnotatedTypeScanner<Boolean, Void>() {
-                    Map<String, List<AnnotatedTypeMirror>> map = new HashMap<>();
+                    Map<String, String> map = new HashMap<>();
 
                     @Override
                     protected Boolean reduce(Boolean r1, Boolean r2) {
@@ -1884,32 +1884,25 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                             return false;
                         }
                         String simple = type.toString();
-                        List<AnnotatedTypeMirror> list = map.get(simple);
-                        if (list == null) {
-                            list = new ArrayList<>();
-                            map.put(simple, list);
+                        String verbose = map.get(simple);
+                        if (verbose == null) {
+                            map.put(simple, type.toString(true));
+                            return false;
+                        } else {
+                            return !verbose.equals(type.toString(true));
                         }
-                        String verbose = type.toString(true);
-                        for (AnnotatedTypeMirror other : list) {
-                            String otherVerbose = other.toString(true);
-                            if (!verbose.equals(otherVerbose)) {
-                                list.add(type);
-                                return true;
-                            }
-                        }
-                        list.add(type);
-                        return false;
                     }
                 };
-        Boolean result1 = checkForMismatchedToStrings.visit(atm1);
-        // SimpleAnnotatedTypeScanner#scan returns null is it encounters a null AnnotatedTypeMirror
-        if (result1 != null && result1) {
-            return true;
-        }
-        // Call reset to clear the visitor history, but not the map for Strings to types.
+        Boolean r1 = checkForMismatchedToStrings.visit(atm1);
+        // Call reset to clear the visitor history, but not the map from Strings to types.
         checkForMismatchedToStrings.reset();
-        Boolean result2 = checkForMismatchedToStrings.visit(atm2);
-        return result2 == null ? false : result2;
+        Boolean r2 = checkForMismatchedToStrings.visit(atm2);
+
+        // SimpleAnnotatedTypeScanner#scan returns null if it encounters a null AnnotatedTypeMirror.
+        // This shouldn't happen if the atm1 and atm2 are wellformed.
+        if (r1 == null) r1 = false;
+        if (r2 == null) r2 = false;
+        return r1 || r2;
     }
 
     protected void checkArrayInitialization(
