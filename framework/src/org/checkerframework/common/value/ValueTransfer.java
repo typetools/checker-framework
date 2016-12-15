@@ -9,6 +9,7 @@ import javax.lang.model.type.TypeMirror;
 import org.checkerframework.common.value.qual.BoolVal;
 import org.checkerframework.common.value.qual.BottomVal;
 import org.checkerframework.common.value.qual.DoubleVal;
+import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
@@ -134,6 +135,11 @@ public class ValueTransfer extends CFTransfer {
         return NumberUtils.castNumbers(subNode.getType(), values);
     }
 
+    private boolean isIntRange(Node subNode, TransferInput<CFValue, CFStore> p) {
+        CFValue value = p.getValueOfSubNode(subNode);
+        return AnnotationUtils.getAnnotationByClass(value.getAnnotations(), IntRange.class) != null;
+    }
+
     private AnnotationMirror createStringValAnnotationMirror(List<String> values) {
         if (values.isEmpty()) {
             return ((ValueAnnotatedTypeFactory) atypefactory).UNKNOWNVAL;
@@ -240,48 +246,50 @@ public class ValueTransfer extends CFTransfer {
             Node rightNode,
             NumericalBinaryOps op,
             TransferInput<CFValue, CFStore> p) {
-        List<? extends Number> lefts = getNumericalValues(leftNode, p);
-        List<? extends Number> rights = getNumericalValues(rightNode, p);
         List<Number> resultValues = new ArrayList<>();
-        for (Number left : lefts) {
-            NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
-            for (Number right : rights) {
-                switch (op) {
-                    case ADDTION:
-                        resultValues.add(nmLeft.plus(right));
-                        break;
-                    case DIVISION:
-                        resultValues.add(nmLeft.divide(right));
-                        break;
-                    case MULPLICATION:
-                        resultValues.add(nmLeft.times(right));
-                        break;
-                    case REMAINDER:
-                        resultValues.add(nmLeft.remainder(right));
-                        break;
-                    case SUBTRACTION:
-                        resultValues.add(nmLeft.minus(right));
-                        break;
-                    case SHIFT_LEFT:
-                        resultValues.add(nmLeft.shiftLeft(right));
-                        break;
-                    case SIGNED_SHIFT_RIGHT:
-                        resultValues.add(nmLeft.signedSiftRight(right));
-                        break;
-                    case UNSIGNED_SHIFT_RIGHT:
-                        resultValues.add(nmLeft.unsignedSiftRight(right));
-                        break;
-                    case BITWISE_AND:
-                        resultValues.add(nmLeft.bitwiseAnd(right));
-                        break;
-                    case BITWISE_OR:
-                        resultValues.add(nmLeft.bitwiseOr(right));
-                        break;
-                    case BITWISE_XOR:
-                        resultValues.add(nmLeft.bitwiseXor(right));
-                        break;
-                    default:
-                        throw new UnsupportedOperationException();
+        if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
+            List<? extends Number> lefts = getNumericalValues(leftNode, p);
+            List<? extends Number> rights = getNumericalValues(rightNode, p);
+            for (Number left : lefts) {
+                NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+                for (Number right : rights) {
+                    switch (op) {
+                        case ADDTION:
+                            resultValues.add(nmLeft.plus(right));
+                            break;
+                        case DIVISION:
+                            resultValues.add(nmLeft.divide(right));
+                            break;
+                        case MULPLICATION:
+                            resultValues.add(nmLeft.times(right));
+                            break;
+                        case REMAINDER:
+                            resultValues.add(nmLeft.remainder(right));
+                            break;
+                        case SUBTRACTION:
+                            resultValues.add(nmLeft.minus(right));
+                            break;
+                        case SHIFT_LEFT:
+                            resultValues.add(nmLeft.shiftLeft(right));
+                            break;
+                        case SIGNED_SHIFT_RIGHT:
+                            resultValues.add(nmLeft.signedSiftRight(right));
+                            break;
+                        case UNSIGNED_SHIFT_RIGHT:
+                            resultValues.add(nmLeft.unsignedSiftRight(right));
+                            break;
+                        case BITWISE_AND:
+                            resultValues.add(nmLeft.bitwiseAnd(right));
+                            break;
+                        case BITWISE_OR:
+                            resultValues.add(nmLeft.bitwiseOr(right));
+                            break;
+                        case BITWISE_XOR:
+                            resultValues.add(nmLeft.bitwiseXor(right));
+                            break;
+                        default:
+                            throw new UnsupportedOperationException();
+                    }
                 }
             }
         }
@@ -435,22 +443,24 @@ public class ValueTransfer extends CFTransfer {
 
     private List<Number> calculateNumericalUnaryOp(
             Node operand, NumericalUnaryOps op, TransferInput<CFValue, CFStore> p) {
-        List<? extends Number> lefts = getNumericalValues(operand, p);
         List<Number> resultValues = new ArrayList<>();
-        for (Number left : lefts) {
-            NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
-            switch (op) {
-                case PLUS:
-                    resultValues.add(nmLeft.unaryPlus());
-                    break;
-                case MINUS:
-                    resultValues.add(nmLeft.unaryMinus());
-                    break;
-                case BITWISE_COMPLEMENT:
-                    resultValues.add(nmLeft.bitwiseComplement());
-                    break;
-                default:
-                    throw new UnsupportedOperationException();
+        if (!isIntRange(operand, p)) {
+            List<? extends Number> lefts = getNumericalValues(operand, p);
+            for (Number left : lefts) {
+                NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+                switch (op) {
+                    case PLUS:
+                        resultValues.add(nmLeft.unaryPlus());
+                        break;
+                    case MINUS:
+                        resultValues.add(nmLeft.unaryMinus());
+                        break;
+                    case BITWISE_COMPLEMENT:
+                        resultValues.add(nmLeft.bitwiseComplement());
+                        break;
+                    default:
+                        throw new UnsupportedOperationException();
+                }
             }
         }
         return resultValues;
@@ -497,33 +507,35 @@ public class ValueTransfer extends CFTransfer {
             Node rightNode,
             ComparisonOperators op,
             TransferInput<CFValue, CFStore> p) {
-        List<? extends Number> lefts = getNumericalValues(leftNode, p);
-        List<? extends Number> rights = getNumericalValues(rightNode, p);
         List<Boolean> resultValues = new ArrayList<>();
-        for (Number left : lefts) {
-            NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
-            for (Number right : rights) {
-                switch (op) {
-                    case EQUAL:
-                        resultValues.add(nmLeft.equalTo(right));
-                        break;
-                    case GREATER_THAN:
-                        resultValues.add(nmLeft.greaterThan(right));
-                        break;
-                    case GREATER_THAN_EQ:
-                        resultValues.add(nmLeft.greaterThanEq(right));
-                        break;
-                    case LESS_THAN:
-                        resultValues.add(nmLeft.lessThan(right));
-                        break;
-                    case LESS_THAN_EQ:
-                        resultValues.add(nmLeft.lessThanEq(right));
-                        break;
-                    case NOT_EQUAL:
-                        resultValues.add(nmLeft.notEqualTo(right));
-                        break;
-                    default:
-                        throw new UnsupportedOperationException();
+        if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
+            List<? extends Number> lefts = getNumericalValues(leftNode, p);
+            List<? extends Number> rights = getNumericalValues(rightNode, p);
+            for (Number left : lefts) {
+                NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+                for (Number right : rights) {
+                    switch (op) {
+                        case EQUAL:
+                            resultValues.add(nmLeft.equalTo(right));
+                            break;
+                        case GREATER_THAN:
+                            resultValues.add(nmLeft.greaterThan(right));
+                            break;
+                        case GREATER_THAN_EQ:
+                            resultValues.add(nmLeft.greaterThanEq(right));
+                            break;
+                        case LESS_THAN:
+                            resultValues.add(nmLeft.lessThan(right));
+                            break;
+                        case LESS_THAN_EQ:
+                            resultValues.add(nmLeft.lessThanEq(right));
+                            break;
+                        case NOT_EQUAL:
+                            resultValues.add(nmLeft.notEqualTo(right));
+                            break;
+                        default:
+                            throw new UnsupportedOperationException();
+                    }
                 }
             }
         }
