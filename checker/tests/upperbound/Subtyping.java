@@ -1,6 +1,10 @@
 import org.checkerframework.checker.upperbound.qual.*;
 
 public class Subtyping {
+    int[] arr = {1};
+    int[] arr2 = {1};
+    int[] arr3 = {1};
+
     void test(@LTEqLengthOf({"arr", "arr2", "arr3"}) int test) {
         //:: error: (assignment.type.incompatible)
         @LTEqLengthOf({"arr"}) int a = 1;

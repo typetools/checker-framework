@@ -7,12 +7,14 @@ class ListIterator {
     List<Integer> listField;
 
     void ListIterator(
-            @LTLengthOf("list") int index, @LTEqLengthOf("list") int notIndex, List<Integer> list) {
+            @LTLengthOf("#3") int index, @LTEqLengthOf("#3") int notIndex, List<Integer> list) {
         list.listIterator(index);
 
         //:: warning: (list.access.unsafe.high)
         list.listIterator(notIndex);
     }
+
+    int[] arr = {0};
 
     void ListIteratorWrongName(@LTLengthOf("arr") int index, List<Integer> list) {
         //:: warning: (list.access.unsafe.high)
@@ -45,7 +47,7 @@ class ListIterator {
         this.listField.listIterator(i + 1);
     }
 
-    void ListIteratorUserAnnotation(@IndexFor("list") int i, List<Integer> list) {
+    void ListIteratorUserAnnotation(@IndexFor("#2") int i, List<Integer> list) {
         list.listIterator(i);
 
         //:: warning: (list.access.unsafe.high)
