@@ -11,7 +11,7 @@ import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.javacutil.Pair;
 
-// subclasses the base analysis to use our Transfers instead of the deafaults
+// subclasses the base analysis to use our Transfers instead of the defaults
 
 public class UpperBoundAnalysis
         extends CFAbstractAnalysis<UpperBoundValue, UpperBoundStore, UpperBoundTransfer> {

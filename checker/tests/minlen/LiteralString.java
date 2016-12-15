@@ -1,8 +1,6 @@
 // Test case for issue #55:
 // https://github.com/kelloggm/checker-framework/issues/55
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.minlen.qual.MinLen;
 

@@ -1,7 +1,5 @@
 // Test case for issue #64: https://github.com/kelloggm/checker-framework/issues/64
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.common.value.qual.*;
 
 class LengthTransfer2 {
