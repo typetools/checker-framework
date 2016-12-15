@@ -3,6 +3,8 @@ package org.checkerframework.checker.upperbound;
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
 import com.sun.source.tree.*;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -16,12 +18,13 @@ import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
@@ -30,6 +33,7 @@ import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -39,7 +43,9 @@ import org.checkerframework.javacutil.TreeUtils;
  * the minLen checker and comparing the min lengths of arrays to the known values of variables as
  * supplied by the value checker.
  */
-public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class UpperBoundAnnotatedTypeFactory
+        extends GenericAnnotatedTypeFactory<
+                UpperBoundValue, UpperBoundStore, UpperBoundTransfer, UpperBoundAnalysis> {
 
     /** Easy shorthand for UpperBoundUnknown.class, basically. */
     public static AnnotationMirror UNKNOWN;
@@ -69,6 +75,17 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(new String[0]));
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(new String[0]));
         this.postInit();
+    }
+
+    @Override
+    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
+        List<Class<? extends Annotation>> annos = new ArrayList<>();
+        annos.add(LTLengthOf.class);
+        annos.add(LTEqLengthOf.class);
+        annos.add(IndexFor.class);
+        annos.add(IndexOrHigh.class);
+        annos.add(LTOMLengthOf.class);
+        return new ExpressionAnnotationHelper(this, annos);
     }
 
     @Override
@@ -146,12 +163,18 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // 9.29.16. Do not try this. It does not work. They rely on the processing
     // environment, which is only available here. DO NOT TRY TO MOVE THEM.
 
+    protected static AnnotationMirror createAnnotation(String anno, String name) {
+        String[] arr = new String[1];
+        arr[0] = name;
+        return createAnnotation(anno, arr);
+    }
+
     /**
      * Creates an annotation of the name given with the set of values given.
      *
      * @return annotation given by name with names=values, or UNKNOWN
      */
-    private static AnnotationMirror createAnnotation(String name, String[] names) {
+    protected static AnnotationMirror createAnnotation(String name, String[] names) {
         if (names == null) {
             names = new String[0];
         }
@@ -268,7 +291,7 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * The qualifier hierarchy for the upperbound type system. The qh is responsible for determining
      * the relationships within the qualifiers - especially subtyping relations.
      */
-    private final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    protected final class UpperBoundQualifierHierarchy extends MultiGraphQualifierHierarchy {
         /** @param factory MultiGraphFactory to use to construct this */
         public UpperBoundQualifierHierarchy(
                 MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
@@ -472,7 +495,9 @@ public class UpperBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
             if (tree.getIdentifier().contentEquals("length")
                     && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
-                String arrName = tree.getExpression().toString();
+                String arrName =
+                        FlowExpressions.internalReprOf(this.atypeFactory, tree.getExpression())
+                                .toString();
                 type.replaceAnnotation(
                         qualHierarchy.greatestLowerBound(
                                 createLTEqLengthOfAnnotation(arrName),

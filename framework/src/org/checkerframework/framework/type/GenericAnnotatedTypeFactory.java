@@ -14,6 +14,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.UnaryTree;
@@ -35,6 +36,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
@@ -85,6 +87,8 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.QualifierPolymorphism;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
+import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationTreeAnnotator;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -123,6 +127,8 @@ public abstract class GenericAnnotatedTypeFactory<
 
     /** to handle defaults specified by the user */
     protected QualifierDefaults defaults;
+
+    protected ExpressionAnnotationHelper expressionAnnotationHelper;
 
     // Flow related fields
 
@@ -187,6 +193,7 @@ public abstract class GenericAnnotatedTypeFactory<
     protected void postInit() {
         super.postInit();
 
+        this.expressionAnnotationHelper = createExpressionAnnotationHelper();
         this.defaults = createQualifierDefaults();
         this.treeAnnotator = createTreeAnnotator();
         this.typeAnnotator = createTypeAnnotator();
@@ -271,8 +278,14 @@ public abstract class GenericAnnotatedTypeFactory<
      * @return a tree annotator
      */
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new PropagationTreeAnnotator(this), new ImplicitsTreeAnnotator(this));
+        List<TreeAnnotator> treeAnnotators = new ArrayList<>();
+        treeAnnotators.add(new PropagationTreeAnnotator(this));
+        treeAnnotators.add(new ImplicitsTreeAnnotator(this));
+        if (expressionAnnotationHelper != null) {
+            treeAnnotators.add(
+                    new ExpressionAnnotationTreeAnnotator(this, expressionAnnotationHelper));
+        }
+        return new ListTreeAnnotator(treeAnnotators);
     }
 
     /**
@@ -400,6 +413,28 @@ public abstract class GenericAnnotatedTypeFactory<
                 (TransferFunction)
                         new CFTransfer((CFAbstractAnalysis<CFValue, CFStore, CFTransfer>) analysis);
         return ret;
+    }
+
+    /**
+     * Creates an {@link ExpressionAnnotationHelper} and returns it.
+     *
+     * @return a new {@link ExpressionAnnotationHelper}
+     */
+    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
+        return null;
+    }
+
+    public ExpressionAnnotationHelper getExpressionAnnotationHelper() {
+        return expressionAnnotationHelper;
+    }
+
+    @Override
+    public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+        AnnotatedDeclaredType superResult = super.fromNewClass(newClassTree);
+        if (expressionAnnotationHelper != null) {
+            expressionAnnotationHelper.standardizeNewClassTree(newClassTree, superResult);
+        }
+        return superResult;
     }
 
     /**
@@ -1115,8 +1150,29 @@ public abstract class GenericAnnotatedTypeFactory<
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
                 super.constructorFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
+        if (expressionAnnotationHelper != null) {
+            expressionAnnotationHelper.viewpointAdaptConstructor(tree, method);
+        }
         poly.annotate(tree, method);
         return mfuPair;
+    }
+
+    @Override
+    public AnnotatedTypeMirror getMethodReturnType(MethodTree m) {
+        AnnotatedTypeMirror returnType = super.getMethodReturnType(m);
+        if (expressionAnnotationHelper != null) {
+            expressionAnnotationHelper.standardizeReturnType(m, returnType);
+        }
+        return returnType;
+    }
+
+    @Override
+    public AnnotatedTypeMirror getMethodReturnType(MethodTree m, ReturnTree r) {
+        AnnotatedTypeMirror returnType = super.getMethodReturnType(m, r);
+        if (expressionAnnotationHelper != null) {
+            expressionAnnotationHelper.standardizeReturnType(m, returnType);
+        }
+        return returnType;
     }
 
     /**
@@ -1223,6 +1279,9 @@ public abstract class GenericAnnotatedTypeFactory<
     public void addComputedTypeAnnotations(Element elt, AnnotatedTypeMirror type) {
         typeAnnotator.visit(type, null);
         defaults.annotate(elt, type);
+        if (expressionAnnotationHelper != null) {
+            expressionAnnotationHelper.standardizeVariable(type, elt);
+        }
     }
 
     @Override
@@ -1231,8 +1290,22 @@ public abstract class GenericAnnotatedTypeFactory<
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair =
                 super.methodFromUse(tree);
         AnnotatedExecutableType method = mfuPair.first;
+        if (expressionAnnotationHelper != null) {
+            expressionAnnotationHelper.viewpointAdaptMethod(tree, method);
+        }
         poly.annotate(tree, method);
         return mfuPair;
+    }
+
+    @Override
+    public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(
+            AnnotatedDeclaredType type, TypeElement element) {
+        List<AnnotatedTypeParameterBounds> f = super.typeVariablesFromUse(type, element);
+        if (expressionAnnotationHelper != null) {
+            expressionAnnotationHelper.viewpointAdaptTypeVariableBounds(
+                    element, f, visitorState.getPath());
+        }
+        return f;
     }
 
     public Store getEmptyStore() {

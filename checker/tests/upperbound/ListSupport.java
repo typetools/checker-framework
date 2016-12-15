@@ -1,20 +1,8 @@
 import java.util.*;
+import org.checkerframework.checker.index.qual.*;
 import org.checkerframework.checker.upperbound.qual.*;
-// @skip-test
+
 class ListSupport {
-
-    void ListGet(
-            @LTLengthOf("list") int index, @LTEqLengthOf("list") int notIndex, List<Integer> list) {
-        list.get(index);
-
-        //:: error: (argument.type.incompatible)
-        list.get(notIndex);
-    }
-
-    void ListGetWrongName(@LTLengthOf("arr") int index, List<Integer> list) {
-        //:: error: (argument.type.imcompatible)
-        list.get(index);
-    }
 
     void indexOf(List<Integer> list) {
         int index = list.indexOf(0);
@@ -55,48 +43,23 @@ class ListSupport {
         @LTLengthOf("list") int m = i;
     }
 
-    void remove(
-            List<Integer> list, @LTLengthOf("list") int index, @LTEqLengthOf("list") int endIndex) {
-        int i = index;
-        int j = endIndex;
-        list.remove(0);
+    void clear(List<Integer> list) {
+        int lessThanLength = list.size() - 1;
+        int lessThanOrEq = list.size();
+        list.get(lessThanLength);
 
-        //:: error: (assignment.type.incompatible)
-        @LTLengthOf("list") int less = i;
-
-        @LTEqLengthOf("list") int loe = i;
-
-        //:: error: (assignment.type.incompatible)
-        @LTEqLengthOf("list") int loe2 = j;
-    }
-
-    void clear(
-            List<Integer> list, @LTLengthOf("list") int index, @LTEqLengthOf("list") int endIndex) {
-        int i = index;
-        int j = endIndex;
         list.clear();
 
-        //:: error: (assignment.type.incompatible)
-        @LTLengthOf("list") int less = i;
+        //:: warning: (list.access.unsafe.high)
+        list.get(lessThanLength);
 
         //:: error: (assignment.type.incompatible)
-        @LTEqLengthOf("list") int loe = i;
+        @LTEqLengthOf("list") int m = lessThanLength;
 
         //:: error: (assignment.type.incompatible)
-        @LTEqLengthOf("list") int loe2 = j;
-    }
-
-    void add(
-            List<Integer> list,
-            @LTEqLengthOf("list") int index,
-            @LTEqLengthOf("arr") int arrIndex) {
-        int i = index;
-        int arri = arrIndex;
-
-        list.add(0);
-        @LTLengthOf("list") int less = i;
+        m = lessThanOrEq;
 
         //:: error: (assignment.type.incompatible)
-        @LTLengthOf("arr") int arrLess = arri;
+        @LTLengthOf("list") int i = lessThanLength;
     }
 }
