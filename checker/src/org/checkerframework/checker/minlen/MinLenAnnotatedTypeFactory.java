@@ -251,6 +251,17 @@ public class MinLenAnnotatedTypeFactory
         }
 
         @Override
+        public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
+
+            if (tree.getKind() == Tree.Kind.STRING_LITERAL) {
+                String lit = (String) (tree.getValue());
+                type.replaceAnnotation(createMinLen(lit.length()));
+            }
+
+            return super.visitLiteral(tree, type);
+        }
+
+        @Override
         public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
 
