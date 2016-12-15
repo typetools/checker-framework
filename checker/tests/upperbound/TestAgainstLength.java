@@ -1,8 +1,6 @@
 // Test case for issue #68:
 // https://github.com/kelloggm/checker-framework/issues/68
 
-// @skip-test until the issue is fixed
-
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 
 public class TestAgainstLength {
