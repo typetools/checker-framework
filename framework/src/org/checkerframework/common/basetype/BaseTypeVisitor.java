@@ -1840,14 +1840,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Return whether or not the verbose toString should be used when printing the two annotated
      * types.
      *
-     * <p>If any simple toString of any annotated type in the first atm or second atm is equal to
-     * any toString of any annotated type in the first or second atm and if the verbose toStrings
-     * differ, then the verbose toString should be used.
-     *
-     * @param atm1 the first atm
-     * @param atm2 the second atm
-     * @return whether or not the verbose toString should be used when printing the two annotated
-     *     types.
+     * @param atm1 the first AnnotatedTypeMirror
+     * @param atm2 the second AnnotatedTypeMirror
+     * @return true iff there are two annotated types (in either ATM) such that their toStrings are
+     *     the same but their verbose toStrings differ
      */
     private boolean shouldPrintVerbose(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
         String atm1ToString = atm1.toString();
@@ -1861,6 +1857,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         SimpleAnnotatedTypeScanner<Boolean, Void> checkForMismatchedToStrings =
                 new SimpleAnnotatedTypeScanner<Boolean, Void>() {
+                    /** Maps from a type's toString to its verbose toString */
                     Map<String, List<AnnotatedTypeMirror>> map = new HashMap<>();
 
                     @Override
@@ -1906,7 +1903,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (result1 != null && result1) {
             return true;
         }
-        // Call reset to clear the visitor history, but not the map for Strings to types.
+        // Call reset to clear the visitor history, but not the map
         checkForMismatchedToStrings.reset();
         Boolean result2 = checkForMismatchedToStrings.visit(atm2);
         return result2 == null ? false : result2;
