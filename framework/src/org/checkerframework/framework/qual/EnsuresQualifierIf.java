@@ -12,11 +12,21 @@ import java.lang.annotation.Target;
  * have a certain qualifier once the method has finished, and if the result is as indicated by
  * {@code result}. The expressions for which the annotation must hold after the methods execution
  * are indicated by {@code expression} and are specified using a string. The qualifier is specified
- * by {@code qualifier}.
+ * by the {@code qualifier} annotation argument.
+ *
+ * <p>Here is an example use:
+ *
+ * <pre>
+ *   {@literal @}EnsuresQualifierIf(result = true, expression = "#1", qualifier = Odd.class)
+ *    boolean isOdd(final int p1, int p2) {
+ *        return p1 % 2 == 1;
+ *    }
+ * </pre>
  *
  * <p>This annotation is only applicable to methods with a boolean return type.
  *
  * @author Stefan Heule
+ * @see EnsuresQualifiersIf
  * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
  */
 @Documented
