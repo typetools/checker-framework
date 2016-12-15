@@ -219,6 +219,10 @@ public class UpperBoundTransfer
          * not equal).
          */
         refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+
+        // With a few exceptions...
+        refineNeq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+
         return rfi.newResult;
     }
 
