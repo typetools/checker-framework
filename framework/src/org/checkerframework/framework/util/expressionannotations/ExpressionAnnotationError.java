@@ -9,7 +9,7 @@ import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressio
 /** Helper class for creating expression annotation error strings. */
 public class ExpressionAnnotationError {
     private static final String formatString = "[error for expression: %s error: %s]";
-    private static final Pattern p =
+    private static final Pattern errorPattern =
             Pattern.compile("\\[error for expression: (.*) error: (.*)\\]");
 
     /**
@@ -20,7 +20,7 @@ public class ExpressionAnnotationError {
      * @return wheter or not the given expressions string is an error
      */
     public static boolean isExpressionError(String expression) {
-        Matcher matcher = p.matcher(expression);
+        Matcher matcher = errorPattern.matcher(expression);
         return matcher.matches() && matcher.groupCount() == 2;
     }
 
@@ -44,7 +44,7 @@ public class ExpressionAnnotationError {
     }
 
     public ExpressionAnnotationError(String error) {
-        Matcher matcher = p.matcher(error);
+        Matcher matcher = errorPattern.matcher(error);
         if (matcher.matches() && matcher.groupCount() == 2) {
             this.expression = matcher.group(1);
             this.error = matcher.group(2);
