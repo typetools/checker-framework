@@ -244,7 +244,7 @@ public abstract class CFAbstractTransfer<
 
             AnnotatedTypeFactory factory = analysis.getTypeFactory();
             for (LocalVariableNode p : parameters) {
-                AnnotatedTypeMirror anno = factory.getAnnotatedType(p.getElement());
+                AnnotatedTypeMirror anno = factory.getAnnotatedType(p.getTree());
                 info.initializeMethodParameter(p, analysis.createAbstractValue(anno));
             }
 
