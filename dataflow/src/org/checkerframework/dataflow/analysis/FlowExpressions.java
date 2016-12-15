@@ -314,14 +314,14 @@ public class FlowExpressions {
     }
 
     /**
-     * Returns either a new ClassName or ThisReference Receiver for the given tree.
+     * Returns either a new ClassName or ThisReference Receiver object for the enclosingType
      *
-     * <p>The Tree should be an expression or a statement that does not have a receiver (or an
-     * implicit receiver). For example, a local variable declaration.
+     * <p>The Tree should be an expression or a statement that does not have a receiver or an
+     * implicit receiver. For example, a local variable declaration.
      *
      * @param path TreePath to tree
      * @param enclosingType type of the enclosing type
-     * @return a new ClassName or ThisReference that is the pseudo receiver of tree
+     * @return a new ClassName or ThisReference that is a Receiver object for the enclosingType
      */
     public static Receiver internalRepOfPseudoReceiver(TreePath path, TypeMirror enclosingType) {
         if (TreeUtils.isTreeInStaticScope(path)) {
@@ -358,15 +358,22 @@ public class FlowExpressions {
         }
     }
 
+    /**
+     * Returns Receiver objects for the formal parameters of the method in which path is enclosed.
+     *
+     * @param annotationProvider annotationProvider
+     * @param path TreePath that is enclosed by the method
+     * @return Receiver objects for the formal parameters of the method in which path is enclosed.
+     */
     public static List<Receiver> getParametersOfEnclosingMethod(
-            AnnotationProvider factory, TreePath path) {
+            AnnotationProvider annotationProvider, TreePath path) {
         MethodTree methodTree = TreeUtils.enclosingMethod(path);
         if (methodTree == null) {
             return null;
         }
         List<Receiver> internalArguments = new ArrayList<>();
         for (VariableTree arg : methodTree.getParameters()) {
-            internalArguments.add(internalReprOf(factory, new LocalVariableNode(arg)));
+            internalArguments.add(internalReprOf(annotationProvider, new LocalVariableNode(arg)));
         }
         return internalArguments;
     }
