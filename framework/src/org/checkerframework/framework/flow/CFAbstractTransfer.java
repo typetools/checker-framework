@@ -405,7 +405,7 @@ public abstract class CFAbstractTransfer<
             if (member instanceof VariableTree) {
                 VariableTree vt = (VariableTree) member;
                 final VariableElement element = TreeUtils.elementFromDeclaration(vt);
-                AnnotatedTypeMirror type = factory.getAnnotatedType(element);
+                AnnotatedTypeMirror type = factory.getAnnotatedType(vt);
                 TypeMirror fieldType = ElementUtils.getType(element);
                 Receiver receiver;
                 if (ElementUtils.isStatic(element)) {
