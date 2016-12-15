@@ -1862,17 +1862,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
                     @Override
                     protected Boolean reduce(Boolean r1, Boolean r2) {
-                        if (r1 == null) {
-                            if (r2 == null) {
-                                return false;
-                            } else {
-                                return r2;
-                            }
-                        } else if (r2 == null) {
-                            return r1;
-                        } else {
-                            return r1 || r2;
-                        }
+                        r1 = r1 == null ? false : r1;
+                        r2 = r2 == null ? false : r2;
+                        return r1 || r2;
                     }
 
                     @Override
@@ -1891,15 +1883,16 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                     }
                 };
         Boolean r1 = checkForMismatchedToStrings.visit(atm1);
+        if (r1 != null && r1) {
+            return true;
+        }
         // Call reset to clear the visitor history, but not the map from Strings to types.
         checkForMismatchedToStrings.reset();
         Boolean r2 = checkForMismatchedToStrings.visit(atm2);
 
         // SimpleAnnotatedTypeScanner#scan returns null if it encounters a null AnnotatedTypeMirror.
         // This shouldn't happen if the atm1 and atm2 are well-formed.
-        if (r1 == null) r1 = false;
-        if (r2 == null) r2 = false;
-        return r1 || r2;
+        return r2 == null ? false : r2;
     }
 
     protected void checkArrayInitialization(
