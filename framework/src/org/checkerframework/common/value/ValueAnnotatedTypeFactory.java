@@ -363,11 +363,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // Special case for IntRange
                     Range lhsRange = getIntRange(lhs);
                     Range rhsRange = getIntRange(rhs);
-                    if (lhsRange.from <= rhsRange.from && lhsRange.to >= rhsRange.to) {
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    return lhsRange.from <= rhsRange.from && lhsRange.to >= rhsRange.to;
                 } else {
                     List<Object> lhsValues =
                             AnnotationUtils.getElementValueArray(lhs, "value", Object.class, true);
@@ -401,11 +397,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 Range lhsRange = getIntRange(lhs);
                 long rhsMinVal = Collections.min(new ArrayList<>(rhsValues));
                 long rhsMaxVal = Collections.max(new ArrayList<>(rhsValues));
-                if (rhsMinVal >= lhsRange.from && rhsMaxVal <= lhsRange.to) {
-                    return true;
-                } else {
-                    return false;
-                }
+                return rhsMinVal >= lhsRange.from && rhsMaxVal <= lhsRange.to;
             }
             // Because of replaceWithNewAnnoInSpecialCases, the possible values of
             // of @IntRange is always greater than MAX_VALUES. Therefore no need

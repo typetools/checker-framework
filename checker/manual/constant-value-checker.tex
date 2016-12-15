@@ -58,12 +58,21 @@ Checker gives up and its type becomes
 
 In the case of
 \refqualclass{common/value/qual}{IntVal}
-with more than 10 possible values, instead of
-\refqualclass{common/value/qual}{UnknownVal}, its type becomes
-\refqualclass{common/value/qual}{IntRange}
-which is a type annotation with two integer arguments: \<from> and \<to>. It means that at run time, the expression only evaluates to a value that falls into the interval described by the two arguments. For example, an expression of type \<@IntRange(from = 0, to = 255)> evaluates to a value that falls between 0 and 255.
+with more than 10 possible values, its type becomes
+\refqualclass{common/value/qual}{IntRange} instead of
+\refqualclass{common/value/qual}{UnknownVal},
+which is a type annotation with two integer arguments: \<from> and \<to>.
+It means that at run time, the expression only evaluates to a value that
+falls into the interval described by the two arguments. For example, an
+expression of type \<@IntRange(from = 0, to = 255)> evaluates to a value
+that falls between 0 and 255.
 
-The introduction of \<@IntRange> gives more granularity for the propagation analysis of integer variables while greatly reduces computational complexity. On the other hand, when the interval denoted by \<@IntRange> is smaller than or equal to 10, the annotation would be replaced with \<@IntVal> with the same set of possible values, providing more precise propagation analysis.
+The introduction of \<@IntRange> gives more granularity for the propagation
+analysis of integer variables while greatly reduces computational
+complexity. On the other hand, when the interval denoted by \<@IntRange>
+is smaller than or equal to 10, the annotation would be replaced with
+\<@IntVal> with the same set of possible values, providing more precise
+propagation analysis.
 
 Figure~\ref{fig-value-hierarchy} shows the
 subtyping relationship among the type annotations.
@@ -101,7 +110,17 @@ public void foo(boolean b) {
 \label{fig-value-multivalue}
 \end{figure}
 
-It's worth mentioning that the \<@IntRange> annotation is also implemented in \<android.support.annotation>. Working together with the \href{https://developer.android.com/studio/write/lint.html}{Lint} tool, it provides basic integer range checkings on fields, parameters, methods and local variables, preventing annotated targets from out of range assignments. However, this tool can only handle compile time known values (literals, basically) and doesn't provide any subtype checkings or propagation analysis as the Checker Framework do. If your code is already annotated with \<@android.support.annotation.IntRange>, the Checker Framework would treat the annotation exactly as if you had written the \<@IntRange> annotation from the Constant Value Checker.
+It's worth mentioning that the \<@IntRange> annotation is also implemented in
+\<android.support.annotation>. Working together with the
+\href{https://developer.android.com/studio/write/lint.html}{Lint} tool, it
+provides basic integer range checkings on fields, parameters, methods and
+local variables, preventing annotated targets from out of range assignments.
+However, this tool can only handle compile time known values (literals,
+basically) and doesn't provide any subtype checkings or propagation analysis
+as the Checker Framework do. If your code is already annotated with
+\<@android.support.annotation.IntRange>, the Checker Framework would treat
+the annotation exactly as if you had written the \<@IntRange> annotation
+from the Constant Value Checker.
 
 
 \subsection{Compile-time execution of expressions\label{staticallyexecutable-annotation}}
@@ -123,7 +142,9 @@ calls to methods annotated with
 public int foo(int a, int b) {
     return a + b;
 }
-public void bar() { int a = 5;          // a has type:  @IntVal({5}) int
+
+public void bar() {
+    int a = 5;          // a has type:  @IntVal({5}) int
     int b = 4;          // b has type:  @IntVal({4}) int
     int c = foo(a, b);  // c has type:  @IntVal({9}) int
 }
@@ -207,29 +228,14 @@ warning message:
   expression.  If you write an annotation with more values than will be
   tracked, the annotation is replaced with \<@UnknownVal>.
 
-\end{itemize}
-\end{sloppypar}
-
-\begin{sloppypar}
-\begin{itemize}
 \item \code{[too.many.int.values] The maximum number of integer arguments permitted is 10. Remove the annotation. Treating result as @IntRange to reduce computational complexity}
 
   Similar to above, but with \<@IntVal> annotations.
 
-\end{itemize}
-\end{sloppypar}
-
-\begin{sloppypar}
-\begin{itemize}
 \item \code{[too.narrow.int.range] The smallest interval of integer range permitted is 10. Remove the annotation. Treating result as @IntVal to have finer propagation results.}
 
   Vice versa.
 
-\end{itemize}
-\end{sloppypar}
-
-\begin{sloppypar}
-\begin{itemize}
 \item \code{[from.greater.than.to] The integer range specified is abnormal. Remove the annotation. Treating result as @UnknownVal}
 
   Issue a warning when user accidentally confuse \<from> for \<to>.

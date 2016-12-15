@@ -4,18 +4,18 @@ import org.checkerframework.common.value.qual.*;
 class Binaries {
     private BitSet bitmap;
 
-    //    public void test() {
-    //        int length = bitmap.length();
-    //        for (int i = 0, t = 0; i < length; i++) {
-    //            t |= (bitmap.get(i) ? (1 << (7 - i % 8)) : 0);
-    //            if (i % 8 == 7 || i == length - 1) {
-    //                write(t);
-    //                t = 0;
-    //            }
-    //        }
-    //    }
-    //
-    //    void write(int t) {}
+    public void test() {
+        int length = bitmap.length();
+        for (int i = 0, t = 0; i < length; i++) {
+            t |= (bitmap.get(i) ? (1 << (7 - i % 8)) : 0);
+            if (i % 8 == 7 || i == length - 1) {
+                write(t);
+                t = 0;
+            }
+        }
+    }
+
+    void write(int t) {}
 
     public void add() {
         int a = 1;
