@@ -99,6 +99,7 @@ import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.TypeHierarchy;
 import org.checkerframework.framework.type.VisitorState;
+import org.checkerframework.framework.type.visitor.SimpleAnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.ContractsUtils;
 import org.checkerframework.framework.util.ContractsUtils.ConditionalPostcondition;
@@ -1787,17 +1788,76 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         // Use an error key only if it's overridden by a checker.
         if (!success) {
-            String valueTypeString = valueType.toString();
-            String varTypeString = varType.toString();
-            // If both types as strings are the same, try printing verbosely.
-            if (valueTypeString.equals(varTypeString)
-                    // or if neither string contains an annotation
-                    || (!valueTypeString.contains("@") && !varTypeString.contains("@"))) {
+            String valueTypeString;
+            String varTypeString;
+            if (shouldPrintVerbose(varType, valueType)) {
                 valueTypeString = valueType.toString(true);
                 varTypeString = varType.toString(true);
+            } else {
+                valueTypeString = valueType.toString();
+                varTypeString = varType.toString();
             }
             checker.report(Result.failure(errorKey, valueTypeString, varTypeString), valueTree);
         }
+    }
+
+    /**
+     * Return whether or not the verbose toString should be used when printing the two annotated
+     * types.
+     *
+     * @param atm1 the first AnnotatedTypeMirror
+     * @param atm2 the second AnnotatedTypeMirror
+     * @return true iff there are two annotated types (in either ATM) such that their toStrings are
+     *     the same but their verbose toStrings differ
+     */
+    private boolean shouldPrintVerbose(AnnotatedTypeMirror atm1, AnnotatedTypeMirror atm2) {
+        String atm1ToString = atm1.toString();
+        String atm2ToString = atm2.toString();
+        // If both types as strings are the same, use verbose toString.
+        if (atm2ToString.equals(atm1ToString)
+                // or if neither string contains an annotation
+                || (!atm2ToString.contains("@") && !atm1ToString.contains("@"))) {
+            return true;
+        }
+
+        SimpleAnnotatedTypeScanner<Boolean, Void> checkForMismatchedToStrings =
+                new SimpleAnnotatedTypeScanner<Boolean, Void>() {
+                    /** Maps from a type's toString to its verbose toString */
+                    Map<String, String> map = new HashMap<>();
+
+                    @Override
+                    protected Boolean reduce(Boolean r1, Boolean r2) {
+                        r1 = r1 == null ? false : r1;
+                        r2 = r2 == null ? false : r2;
+                        return r1 || r2;
+                    }
+
+                    @Override
+                    protected Boolean defaultAction(AnnotatedTypeMirror type, Void avoid) {
+                        if (type == null) {
+                            return false;
+                        }
+                        String simple = type.toString();
+                        String verbose = map.get(simple);
+                        if (verbose == null) {
+                            map.put(simple, type.toString(true));
+                            return false;
+                        } else {
+                            return !verbose.equals(type.toString(true));
+                        }
+                    }
+                };
+        Boolean r1 = checkForMismatchedToStrings.visit(atm1);
+        if (r1 != null && r1) {
+            return true;
+        }
+        // Call reset to clear the visitor history, but not the map from Strings to types.
+        checkForMismatchedToStrings.reset();
+        Boolean r2 = checkForMismatchedToStrings.visit(atm2);
+
+        // SimpleAnnotatedTypeScanner#scan returns null if it encounters a null AnnotatedTypeMirror.
+        // This shouldn't happen if the atm1 and atm2 are well-formed.
+        return r2 == null ? false : r2;
     }
 
     protected void checkArrayInitialization(
