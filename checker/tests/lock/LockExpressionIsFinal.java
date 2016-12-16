@@ -185,13 +185,16 @@ public class LockExpressionIsFinal {
 
         final Object o1 = new Object();
         Object o2 = new Object();
+        // reassign so it's not effectively final
+        o2 = new Object();
+
         @GuardedBy("o1") Object guarded2 = new Object();
         //:: error: (lock.expression.not.final)
         @GuardedBy("o2") Object guarded3 = new Object();
 
         // Test expressions that are not supported by LockVisitor.ensureExpressionIsEffectivelyFinal
         @GuardedBy("java.lang.String.class") Object guarded4;
-        //:: error: (flowexpr.parse.error)
+        //:: error: (expression.unparsable.type.invalid)
         @GuardedBy("c1.getFieldPure(b ? c1 : o1, c1)")
         Object guarded5;
 
@@ -244,14 +247,13 @@ public class LockExpressionIsFinal {
         //:: error: (lock.expression.not.final)
         @GuardedBy("o2") Object guarded19[];
 
-        // TODO: BaseTypeVisitor.visitAnnotation does not currently visit annotations on type arguments.
-        // Address this for the Lock Checker somehow and enable the warnings below:
         MyParameterizedClass1<@GuardedBy("o1") Object> m1;
-        // TODO: Enable :: error: (lock.expression.not.final)
+        //:: error: (lock.expression.not.final)
         MyParameterizedClass1<@GuardedBy("o2") Object> m2;
 
         boolean b = c1 instanceof @GuardedBy("o1") Object;
-        //:: error: (lock.expression.not.final)
+        // instanceof expression have not effect on the type.
+        // //:: error: (lock.expression.not.final)
         b = c1 instanceof @GuardedBy("o2") Object;
 
         // Additional tests just outside of this method below:
@@ -285,15 +287,12 @@ public class LockExpressionIsFinal {
 
     class MyParameterizedClass1<T extends @GuardedByUnknown Object> {};
 
-    // TODO: BaseTypeVisitor.visitAnnotation does not currently visit annotations on wildcard bounds.
-    // Address this for the Lock Checker somehow and enable the warnings below:
-
     MyParameterizedClass1<? super @GuardedBy("finalField") Object> m1;
-    // TODO: Enable :: error: (lock.expression.not.final)
+    //:: error: (lock.expression.not.final)
     MyParameterizedClass1<? super @GuardedBy("nonFinalField") Object> m2;
 
     MyParameterizedClass1<? extends @GuardedBy("finalField") Object> m3;
-    // TODO: Enable :: error: (lock.expression.not.final)
+    //:: error: (lock.expression.not.final)
     MyParameterizedClass1<? extends @GuardedBy("nonFinalField") Object> m4;
 
     class MyClassContainingALock {
@@ -305,13 +304,13 @@ public class LockExpressionIsFinal {
     void testItselfFinalLock() {
         final @GuardedBy("<self>.finalLock") MyClassContainingALock m =
                 new MyClassContainingALock();
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         m.field = new Object();
         // Ignore this error: it is expected that an error will be issued for dereferencing 'm' in order to take the 'm.finalLock' lock.
         // Typically, the Lock Checker does not support an object being guarded by one of its fields, but this is sometimes done in user code
         // with a ReentrantLock field guarding its containing object. This unfortunately makes it a bit difficult for users since they have
         // to add a @SuppressWarnings for this call while still making sure that warnings for other dereferences are not suppressed.
-        //:: error: (contracts.precondition.not.satisfied.field)
+        //:: error: (lock.not.held)
         m.finalLock.lock();
         m.field = new Object();
     }
@@ -319,9 +318,9 @@ public class LockExpressionIsFinal {
     void testItselfNonFinalLock() {
         final @GuardedBy("<self>.nonFinalLock") MyClassContainingALock m =
                 new MyClassContainingALock();
-        //:: error: (lock.expression.not.final) :: error: (contracts.precondition.not.satisfied.field)
+        //::error: (lock.not.held) :: error: (lock.expression.not.final)
         m.field = new Object();
-        //:: error: (lock.expression.not.final) :: error: (contracts.precondition.not.satisfied.field)
+        //::error: (lock.not.held) :: error: (lock.expression.not.final)
         m.nonFinalLock.lock();
         //:: error: (lock.expression.not.final)
         m.field = new Object();

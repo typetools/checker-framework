@@ -9,6 +9,7 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,20 +31,31 @@ import org.checkerframework.checker.lock.qual.LockingFree;
 import org.checkerframework.checker.lock.qual.MayReleaseLocks;
 import org.checkerframework.checker.lock.qual.ReleasesNoLocks;
 import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ClassName;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
+import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
+import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
+import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
+import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
+import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFValue;
+import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.*;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.framework.util.FlowExpressionParseUtil;
+import org.checkerframework.framework.util.FlowExpressionParseUtil.FlowExpressionContext;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationError;
+import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
@@ -64,6 +76,7 @@ import org.checkerframework.javacutil.Pair;
 public class LockAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, LockStore, LockTransfer, LockAnalysis> {
 
+    public static final String NOT_EFFECTIVELY_FINAL = "lock expression is not effectively final";
     /** Annotation constants */
     protected final AnnotationMirror LOCKHELD,
             LOCKPOSSIBLYHELD,
@@ -95,6 +108,92 @@ public class LockAnnotatedTypeFactory
         addAliasedDeclAnnotation(ReleasesNoLocks.class, SideEffectFree.class, SIDEEFFECTFREE);
 
         postInit();
+    }
+
+    @Override
+    protected ExpressionAnnotationHelper createExpressionAnnotationHelper() {
+        return new ExpressionAnnotationHelper(this, GuardedBy.class) {
+            @Override
+            protected void reportErrors(Tree errorTree, List<ExpressionAnnotationError> errors) {
+                List<ExpressionAnnotationError> superErrors = new ArrayList<>();
+                for (ExpressionAnnotationError error : errors) {
+                    if (error.error.equals(NOT_EFFECTIVELY_FINAL)) {
+                        checker.report(
+                                Result.failure("lock.expression.not.final", error.expression),
+                                errorTree);
+                    } else {
+                        superErrors.add(error);
+                    }
+                }
+                super.reportErrors(errorTree, superErrors);
+            }
+
+            @Override
+            protected String standardizeString(
+                    String expression,
+                    FlowExpressionContext context,
+                    TreePath localScope,
+                    boolean useLocalScope) {
+                if (ExpressionAnnotationError.isExpressionError(expression)) {
+                    return expression;
+                }
+                if (LockVisitor.selfReceiverPattern.matcher(expression).matches()) {
+                    return expression;
+                }
+
+                try {
+                    FlowExpressions.Receiver result =
+                            FlowExpressionParseUtil.parse(
+                                    expression, context, localScope, useLocalScope);
+                    if (result == null) {
+                        return new ExpressionAnnotationError(expression, " ").toString();
+                    }
+                    if (!isExpressionEffectivelyFinal(result)) {
+                        return new ExpressionAnnotationError(expression, NOT_EFFECTIVELY_FINAL)
+                                .toString();
+                    }
+                    return result.toString();
+                } catch (FlowExpressionParseUtil.FlowExpressionParseException e) {
+                    return new ExpressionAnnotationError(expression, e).toString();
+                }
+            }
+        };
+    }
+
+    boolean isExpressionEffectivelyFinal(Receiver expr) {
+        if (expr instanceof FieldAccess) {
+            FieldAccess fieldAccess = (FieldAccess) expr;
+            Receiver recv = fieldAccess.getReceiver();
+
+            // Do NOT call fieldAccess.isUnmodifiableByOtherCode if the receiver is a method call, since it also checks if the receiver
+            // is unmodifiable and does so incorrectly in that case. The present
+            // method will determine whether or not a method call receiver is effectively final
+            // (see the "if (expr instanceof MethodCall)" block below).
+            if (!(fieldAccess.isUnmodifiableByOtherCode()
+                    || (fieldAccess.isFinal() && recv instanceof MethodCall))) {
+                return false;
+            }
+            return isExpressionEffectivelyFinal(recv);
+        } else if (expr instanceof LocalVariable) {
+            return ElementUtils.isEffectivelyFinal(((LocalVariable) expr).getElement());
+        } else if (expr instanceof MethodCall) {
+            MethodCall methodCall = (MethodCall) expr;
+            for (Receiver param : methodCall.getParameters()) {
+                if (!isExpressionEffectivelyFinal(param)) {
+                    return false;
+                }
+            }
+            if (!PurityUtils.isDeterministic(this, methodCall.getElement())) {
+                return false;
+            }
+            return isExpressionEffectivelyFinal(methodCall.getReceiver());
+        } else if (expr instanceof ThisReference || expr instanceof ClassName) {
+            // this is always final. "ClassName" is actually a class literal,(String.class), it's
+            // final too.
+            return true;
+        } else { // type of 'expr' is not supported in @GuardedBy(...) lock expressions
+            return false;
+        }
     }
 
     @Override
@@ -521,10 +620,7 @@ public class LockAnnotatedTypeFactory
 
     @Override
     protected TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(
-                new LockTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
+        return new ListTreeAnnotator(new LockTreeAnnotator(this), super.createTreeAnnotator());
     }
 
     @Override

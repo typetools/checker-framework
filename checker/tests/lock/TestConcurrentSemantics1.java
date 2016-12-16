@@ -1,11 +1,9 @@
 package chapter;
 
-import chapter.ChapterExamples.MyClass;
 import java.util.concurrent.locks.ReentrantLock;
 import org.checkerframework.checker.lock.qual.GuardedBy;
 import org.checkerframework.checker.lock.qual.GuardedByUnknown;
 
-/** Created by smillst on 11/17/16. */
 class TestConcurrentSemantics1 {
     /* This class tests the following critical scenario.
      *
@@ -42,7 +40,7 @@ class TestConcurrentSemantics1 {
         @GuardedBy("lock1") MyClass local = new MyClass();
         m = local;
         lock1.lock();
-        //:: error: (cannot.dereference)
+        //:: error: (lock.not.held)
         m.field = new Object();
     }
 
