@@ -9,7 +9,7 @@ class ListRemove {
     List<Integer> listField;
 
     void ListRemove(
-            @LTLengthOf("list") int index, @LTEqLengthOf("list") int notIndex, List<Integer> list) {
+            @LTLengthOf("#3") int index, @LTEqLengthOf("#3") int notIndex, List<Integer> list) {
         list.remove(index);
 
         //:: warning: (list.access.unsafe.high)

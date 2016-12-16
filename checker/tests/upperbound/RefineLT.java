@@ -1,6 +1,8 @@
 import org.checkerframework.checker.upperbound.qual.*;
 
 class RefineLT {
+    int[] arr = {1};
+
     void testLTL(@LTLengthOf("arr") int test) {
         // The reason for the parsing is so that the Value Checker
         // can't figure it out but normal humans can.

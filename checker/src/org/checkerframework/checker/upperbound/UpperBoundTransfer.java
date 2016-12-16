@@ -1,7 +1,5 @@
 package org.checkerframework.checker.upperbound;
 
-import com.sun.source.tree.ExpressionTree;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
@@ -9,6 +7,7 @@ import javax.lang.model.type.TypeKind;
 import org.checkerframework.checker.upperbound.qual.*;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
@@ -359,44 +358,37 @@ public class UpperBoundTransfer
         store.insertValue(leftRec, newType);
     }
 
+    private boolean isArrayLengthFieldAccess(Node node) {
+        if (!(node instanceof FieldAccessNode)) {
+            return false;
+        }
+        FieldAccessNode fieldAccess = (FieldAccessNode) node;
+        return fieldAccess.getFieldName().equals("length")
+                && fieldAccess.getReceiver().getType().getKind() == TypeKind.ARRAY;
+    }
+
     private void specialCaseForLTEL(
             Set<AnnotationMirror> leftType, Node left, Node right, UpperBoundStore store) {
         if (AnnotationUtils.containsSameByClass(leftType, LTEqLengthOf.class)) {
-            if (right instanceof FieldAccessNode) {
-                if (((FieldAccessNode) right).getFieldName().equals("length")
-                        && ((FieldAccessNode) right).getReceiver().getType().getKind()
-                                == TypeKind.ARRAY) {
-                    String[] names =
-                            UpperBoundUtils.getValue(
-                                    AnnotationUtils.getAnnotationByClass(
-                                            leftType, LTEqLengthOf.class));
-                    String canonicalName =
-                            FlowExpressions.internalReprOf(
-                                            this.atypeFactory,
-                                            (ExpressionTree)
-                                                    (((FieldAccessNode) right)
-                                                            .getReceiver()
-                                                            .getTree()))
-                                    .toString();
-                    String localName = null;
-                    // This is probably evil and viewpoint adaptation should handle it...
-                    if (canonicalName.startsWith("this.")) {
-                        localName = canonicalName.substring(5);
-                    }
-                    if (names.length == 1) {
-                        if (Arrays.asList(names).contains(canonicalName)) {
-                            store.insertValue(
-                                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
-                                    UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(
-                                            canonicalName));
-                        } else if ((localName != null
-                                && Arrays.asList(names).contains(localName))) {
-                            store.insertValue(
-                                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
-                                    UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(
-                                            localName));
-                        }
-                    }
+            if (isArrayLengthFieldAccess(right)) {
+                FieldAccess fieldAccess =
+                        FlowExpressions.internalReprOfFieldAccess(
+                                atypeFactory, (FieldAccessNode) right);
+                String arrayName = fieldAccess.getReceiver().toString();
+
+                String[] names =
+                        UpperBoundUtils.getValue(
+                                AnnotationUtils.getAnnotationByClass(leftType, LTEqLengthOf.class));
+                if (names.length != 1) {
+                    // if there is more than one array, then we can't refine, because precise
+                    // information is only available  about one array.
+                    return;
+                }
+
+                if (names[0].equals(arrayName)) {
+                    store.insertValue(
+                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
+                            UpperBoundAnnotatedTypeFactory.createLTLengthOfAnnotation(arrayName));
                 }
             }
         }
@@ -405,41 +397,24 @@ public class UpperBoundTransfer
     private void specialCaseForLTL(
             Set<AnnotationMirror> leftType, Node left, Node right, UpperBoundStore store) {
         if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
-            if (right instanceof FieldAccessNode) {
-                if (((FieldAccessNode) right).getFieldName().equals("length")
-                        && ((FieldAccessNode) right).getReceiver().getType().getKind()
-                                == TypeKind.ARRAY) {
-                    String[] names =
-                            UpperBoundUtils.getValue(
-                                    AnnotationUtils.getAnnotationByClass(
-                                            leftType, LTLengthOf.class));
-                    String canonicalName =
-                            FlowExpressions.internalReprOf(
-                                            this.atypeFactory,
-                                            (ExpressionTree)
-                                                    (((FieldAccessNode) right)
-                                                            .getReceiver()
-                                                            .getTree()))
-                                    .toString();
-                    String localName = null;
-                    // This is probably evil and viewpoint adaptation should handle it...
-                    if (canonicalName.startsWith("this.")) {
-                        localName = canonicalName.substring(5);
-                    }
-                    if (names.length == 1) {
-                        if (Arrays.asList(names).contains(canonicalName)) {
-                            store.insertValue(
-                                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
-                                    UpperBoundAnnotatedTypeFactory.createLTOMLengthOfAnnotation(
-                                            canonicalName));
-                        } else if ((localName != null
-                                && Arrays.asList(names).contains(localName))) {
-                            store.insertValue(
-                                    FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
-                                    UpperBoundAnnotatedTypeFactory.createLTOMLengthOfAnnotation(
-                                            localName));
-                        }
-                    }
+            if (isArrayLengthFieldAccess(right)) {
+                FieldAccess fieldAccess =
+                        FlowExpressions.internalReprOfFieldAccess(
+                                atypeFactory, (FieldAccessNode) right);
+                String arrayName = fieldAccess.getReceiver().toString();
+
+                String[] names =
+                        UpperBoundUtils.getValue(
+                                AnnotationUtils.getAnnotationByClass(leftType, LTLengthOf.class));
+                if (names.length != 1) {
+                    // if there is more than one array, then we can't refine, because precise
+                    // information is only available  about one array.
+                    return;
+                }
+                if (names[0].equals(arrayName)) {
+                    store.insertValue(
+                            FlowExpressions.internalReprOf(analysis.getTypeFactory(), left),
+                            UpperBoundAnnotatedTypeFactory.createLTOMLengthOfAnnotation(arrayName));
                 }
             }
         }

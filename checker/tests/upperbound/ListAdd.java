@@ -7,12 +7,14 @@ class ListAdd {
     List<Integer> listField;
 
     void ListAdd(
-            @LTLengthOf("list") int index, @LTEqLengthOf("list") int notIndex, List<Integer> list) {
+            @LTLengthOf("#3") int index, @LTEqLengthOf("#3") int notIndex, List<Integer> list) {
         list.add(index, 4);
 
         //:: warning: (list.access.unsafe.high)
         list.add(notIndex + 1, 4);
     }
+
+    int[] arr = {0};
 
     void ListAddWrongName(@LTLengthOf("arr") int index, List<Integer> list) {
         //:: warning: (list.access.unsafe.high)
@@ -45,7 +47,7 @@ class ListAdd {
         this.listField.add(i + 4, 4);
     }
 
-    void ListAddUserAnnotation(@IndexFor("list") int i, List<Integer> list) {
+    void ListAddUserAnnotation(@IndexFor("#2") int i, List<Integer> list) {
         list.add(i, 4);
 
         //:: warning: (list.access.unsafe.high)
@@ -61,8 +63,7 @@ class ListAdd {
         int p = r;
     }
 
-    void ListAddTwo(
-            @LTEqLengthOf({"list", "list2"}) int i, List<Integer> list, List<Integer> list2) {
+    void ListAddTwo(@LTEqLengthOf({"#2", "#3"}) int i, List<Integer> list, List<Integer> list2) {
         @LTEqLengthOf({"list", "list2"}) int j = i;
         list.add(0);
         //:: warning: (list.access.unsafe.high)

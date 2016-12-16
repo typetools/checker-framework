@@ -5,9 +5,10 @@ import org.checkerframework.checker.upperbound.qual.*;
 class ListGet {
 
     List<Integer> listField;
+    int[] arr = {0};
 
     void ListGet(
-            @LTLengthOf("list") int index, @LTEqLengthOf("list") int notIndex, List<Integer> list) {
+            @LTLengthOf("#3") int index, @LTEqLengthOf("#3") int notIndex, List<Integer> list) {
         list.get(index);
 
         //:: warning: (list.access.unsafe.high)
@@ -45,7 +46,7 @@ class ListGet {
         this.listField.get(i + 1);
     }
 
-    void ListGetUserAnnotation(@IndexFor("list") int i, List<Integer> list) {
+    void ListGetUserAnnotation(@IndexFor("#2") int i, List<Integer> list) {
         list.get(i);
 
         //:: warning: (list.access.unsafe.high)
