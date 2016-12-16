@@ -23,17 +23,17 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
+import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -85,7 +85,26 @@ public class UpperBoundAnnotatedTypeFactory
         annos.add(IndexFor.class);
         annos.add(IndexOrHigh.class);
         annos.add(LTOMLengthOf.class);
-        return new ExpressionAnnotationHelper(this, annos);
+        return new ExpressionAnnotationHelper(this, annos) {
+            @Override
+            public TreeAnnotator createExpressionAnnotationTreeAnnotator(
+                    AnnotatedTypeFactory factory) {
+                return new ExpressionAnnotationTreeAnnotator(factory, this) {
+                    @Override
+                    public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
+                        // UpperBoundTreeAnnotator changes the type of array.length to @LTEL
+                        // ("array"). If the ExpressionAnnotationTreeAnnotator tries to viewpoint
+                        // adapt it based on the declaration of length; it will fail.
+                        if (tree.getIdentifier().contentEquals("length")
+                                && InternalUtils.typeOf(tree.getExpression()).getKind()
+                                        == TypeKind.ARRAY) {
+                            return null;
+                        }
+                        return super.visitMemberSelect(tree, type);
+                    }
+                };
+            }
+        };
     }
 
     @Override
@@ -458,9 +477,7 @@ public class UpperBoundAnnotatedTypeFactory
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
-                new UpperBoundTreeAnnotator(this),
-                new PropagationTreeAnnotator(this),
-                new ImplicitsTreeAnnotator(this));
+                new UpperBoundTreeAnnotator(this), super.createTreeAnnotator());
     }
 
     protected class UpperBoundTreeAnnotator extends TreeAnnotator {

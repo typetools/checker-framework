@@ -23,7 +23,7 @@ class ListSupport {
     }
 
     void subList(
-            List<Integer> list, @LTLengthOf("list") int index, @LTEqLengthOf("list") int endIndex) {
+            List<Integer> list, @LTLengthOf("#1") int index, @LTEqLengthOf("#1") int endIndex) {
         List<Integer> list2 = list.subList(index, endIndex);
 
         // start index must be strictly lessthanlength

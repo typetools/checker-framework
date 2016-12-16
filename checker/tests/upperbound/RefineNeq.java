@@ -1,6 +1,8 @@
 import org.checkerframework.checker.upperbound.qual.*;
 
 class RefineNeq {
+    int[] arr = {1};
+
     void testLTL(@LTLengthOf("arr") int test) {
         //:: error: (assignment.type.incompatible)
         @LTLengthOf("arr") int a = Integer.parseInt("1");

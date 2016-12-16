@@ -8,12 +8,14 @@ class ListAddAll {
     List<Integer> coll;
 
     void ListAddAll(
-            @LTLengthOf("list") int index, @LTEqLengthOf("list") int notIndex, List<Integer> list) {
+            @LTLengthOf("#3") int index, @LTEqLengthOf("#3") int notIndex, List<Integer> list) {
         list.addAll(index, coll);
 
         //:: warning: (list.access.unsafe.high)
         list.addAll(notIndex, coll);
     }
+
+    int[] arr = {0};
 
     void ListAddAllWrongName(@LTLengthOf("arr") int index, List<Integer> list) {
         //:: warning: (list.access.unsafe.high)
@@ -46,7 +48,7 @@ class ListAddAll {
         this.listField.addAll(i + 1, coll);
     }
 
-    void ListAddAllUserAnnotation(@IndexFor("list") int i, List<Integer> list) {
+    void ListAddAllUserAnnotation(@IndexFor("#2") int i, List<Integer> list) {
         list.addAll(i, coll);
 
         //:: warning: (list.access.unsafe.high)

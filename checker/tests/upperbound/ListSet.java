@@ -7,12 +7,14 @@ class ListSet {
     List<Integer> listField;
 
     void ListSet(
-            @LTLengthOf("list") int index, @LTEqLengthOf("list") int notIndex, List<Integer> list) {
+            @LTLengthOf("#3") int index, @LTEqLengthOf("#3") int notIndex, List<Integer> list) {
         list.set(index, 4);
 
         //:: warning: (list.access.unsafe.high)
         list.set(notIndex, 4);
     }
+
+    int[] arr = {0};
 
     void ListSetWrongName(@LTLengthOf("arr") int index, List<Integer> list) {
         //:: warning: (list.access.unsafe.high)
@@ -45,7 +47,7 @@ class ListSet {
         this.listField.set(i + 1, 4);
     }
 
-    void ListSetUserAnnotation(@IndexFor("list") int i, List<Integer> list) {
+    void ListSetUserAnnotation(@IndexFor("#2") int i, List<Integer> list) {
         list.set(i, 4);
 
         //:: warning: (list.access.unsafe.high)
