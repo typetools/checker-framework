@@ -82,7 +82,6 @@ import org.checkerframework.dataflow.util.PurityUtils;
 import org.checkerframework.framework.flow.CFAbstractStore;
 import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.FieldIsExpression;
 import org.checkerframework.framework.qual.Unused;
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceVisitor;
@@ -323,67 +322,6 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
     protected void checkDefaultConstructor(ClassTree node) {}
 
-    private static boolean isFieldIsExpressionQualifier(AnnotationMirror anno) {
-        return ((TypeElement) anno.getAnnotationType().asElement())
-                        .getAnnotation(FieldIsExpression.class)
-                != null;
-    }
-
-    /*
-     * Verifies that annotations relevant to the current checker on formal parameters
-     * do not use formal parameter names as expressions. Issues a warning if they do.
-     *
-     * Returns the list of formal parameter names.
-     * Returns null if the method has no formal parameters.
-     */
-    private List<String> verifyParameterAnnotationsForParameterNames(MethodTree node) {
-        List<? extends VariableTree> parameters = node.getParameters();
-
-        if (parameters != null && !parameters.isEmpty()) {
-            ArrayList<String> formalParamNames = new ArrayList<String>();
-            for (VariableTree param : parameters) {
-                formalParamNames.add(param.getName().toString());
-            }
-
-            for (VariableTree param : parameters) {
-                AnnotatedTypeMirror atm = atypeFactory.getAnnotatedType(param);
-
-                if (atm != null) {
-                    Set<AnnotationMirror> annotationMirrors = atm.getAnnotations();
-
-                    if (annotationMirrors != null) {
-                        for (AnnotationMirror anno : annotationMirrors) {
-                            if (isFieldIsExpressionQualifier(anno)
-                                    && atypeFactory.isSupportedQualifier(anno)) {
-                                List<String> expressions =
-                                        AnnotationUtils.getElementValueArray(
-                                                anno, "value", String.class, false);
-
-                                for (String expression : expressions) {
-                                    if (formalParamNames.contains(expression)) {
-                                        checker.report(
-                                                Result.warning(
-                                                        "method.declaration.expression.parameter.name",
-                                                        param.getName().toString(),
-                                                        node.getName().toString(),
-                                                        expression,
-                                                        formalParamNames.indexOf(expression) + 1,
-                                                        expression),
-                                                node);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return formalParamNames;
-        }
-
-        return null;
-    }
-
     /**
      * Performs pseudo-assignment check: checks that the method obeys override and subtype rules to
      * all overridden methods.
@@ -488,6 +426,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 validateTypeOf(thr);
             }
 
+            if (atypeFactory.getExpressionAnnotationHelper() != null) {
+                atypeFactory.getExpressionAnnotationHelper().checkMethod(node, methodType);
+            }
+
             AnnotatedDeclaredType enclosingType =
                     (AnnotatedDeclaredType)
                             atypeFactory.getAnnotatedType(methodElement.getEnclosingElement());
@@ -513,7 +455,12 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
             boolean abstractMethod =
                     methodElement.getModifiers().contains(Modifier.ABSTRACT)
                             || methodElement.getModifiers().contains(Modifier.NATIVE);
-            List<String> formalParamNames = verifyParameterAnnotationsForParameterNames(node);
+
+            // check well-formedness of pre/postcondition
+            List<String> formalParamNames = new ArrayList<String>();
+            for (VariableTree param : node.getParameters()) {
+                formalParamNames.add(param.getName().toString());
+            }
             checkContractsAtMethodDeclaration(
                     node, methodElement, formalParamNames, abstractMethod);
 
@@ -758,6 +705,11 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
                 Pair.of((Tree) node, atypeFactory.getAnnotatedType(node)));
 
         try {
+            if (atypeFactory.getExpressionAnnotationHelper() != null) {
+                atypeFactory
+                        .getExpressionAnnotationHelper()
+                        .checkType(visitorState.getAssignmentContext().second, node);
+            }
             // If there's no assignment in this variable declaration, skip it.
             if (node.getInitializer() != null) {
                 commonAssignmentCheck(node, node.getInitializer(), "assignment.type.incompatible");
@@ -1146,6 +1098,9 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
 
         if (valid) {
             AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(node);
+            if (atypeFactory.getExpressionAnnotationHelper() != null) {
+                atypeFactory.getExpressionAnnotationHelper().checkType(dt, node);
+            }
             checkConstructorInvocation(dt, constructor, node);
         }
 
@@ -1399,9 +1354,15 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
     @Override
     public Void visitNewArray(NewArrayTree node, Void p) {
         boolean valid = validateTypeOf(node);
-        if (valid && node.getType() != null && node.getInitializers() != null) {
+
+        if (valid && node.getType() != null) {
             AnnotatedArrayType arrayType = atypeFactory.getAnnotatedType(node);
-            checkArrayInitialization(arrayType.getComponentType(), node.getInitializers());
+            if (atypeFactory.getExpressionAnnotationHelper() != null) {
+                atypeFactory.getExpressionAnnotationHelper().checkType(arrayType, node);
+            }
+            if (node.getInitializers() != null) {
+                checkArrayInitialization(arrayType.getComponentType(), node.getInitializers());
+            }
         }
 
         return super.visitNewArray(node, p);
@@ -1515,6 +1476,10 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
         if (valid) {
             checkTypecastSafety(node, p);
             checkTypecastRedundancy(node, p);
+        }
+        if (atypeFactory.getExpressionAnnotationHelper() != null) {
+            AnnotatedTypeMirror type = atypeFactory.getAnnotatedType(node);
+            atypeFactory.getExpressionAnnotationHelper().checkType(type, node.getType());
         }
         return super.visitTypeCast(node, p);
         // return scan(node.getExpression(), p);

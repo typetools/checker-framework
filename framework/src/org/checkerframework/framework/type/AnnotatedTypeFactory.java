@@ -1992,10 +1992,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * annotations on those type arguments are included. If the NewClassTree has a diamond operator,
      * then the annotations on the type arguments are inferred using the assignment context.
      *
+     * <p>(Subclass beside {@link GenericAnnotatedTypeFactory} should not override this method.)
+     *
      * @param newClassTree NewClassTree
      * @return AnnotatedDeclaredType
      */
-    public final AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+    public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         if (TreeUtils.isDiamondTree(newClassTree)) {
             AnnotatedDeclaredType type =
                     (AnnotatedDeclaredType)
