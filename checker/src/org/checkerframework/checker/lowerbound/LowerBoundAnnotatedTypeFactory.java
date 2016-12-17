@@ -93,6 +93,26 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         LowerBoundUnknown.class));
     }
 
+    public Long getValueFromTree(Tree tree) {
+        AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+        List<Long> possibleValues = possibleValuesFromValueType(valueType);
+        if (possibleValues == null || possibleValues.size() != 1) {
+            return null;
+        } else {
+            return possibleValues.get(0);
+        }
+    }
+
+    /** Get the list of possible values from a Value Checker type. May return null. */
+    private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
+        AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
+        // Anm can be null if the Value Checker didn't assign an IntVal annotation
+        if (anm == null) {
+            return null;
+        }
+        return ValueAnnotatedTypeFactory.getIntValues(anm);
+    }
+
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -221,16 +241,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 getAnnotatedType(right).getAnnotationInHierarchy(POS)));
             }
             return super.visitMethodInvocation(tree, type);
-        }
-
-        /** Get the list of possible values from a Value Checker type. May return null. */
-        private List<Long> possibleValuesFromValueType(AnnotatedTypeMirror valueType) {
-            AnnotationMirror anm = valueType.getAnnotation(IntVal.class);
-            // Anm can be null if the Value Checker didn't assign an IntVal annotation
-            if (anm == null) {
-                return null;
-            }
-            return ValueAnnotatedTypeFactory.getIntValues(anm);
         }
 
         /**

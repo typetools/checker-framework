@@ -230,30 +230,30 @@ public class LowerBoundTransfer extends CFTransfer {
      * @param otherType the type of the other side of the ==/!=
      * @return whether the store was modified
      */
-    private boolean isRelevantLiteralForEquals(
+    private void isRelevantLiteralForEquals(
             Node mLiteral, Node otherNode, Set<AnnotationMirror> otherType, CFStore store) {
-        if (!(mLiteral instanceof IntegerLiteralNode)) {
-            return false;
+
+        Long integerLiteral = aTypeFactory.getValueFromTree(mLiteral.getTree());
+
+        if (integerLiteral == null) {
+            return;
         }
-        IntegerLiteralNode integerLiteral = (IntegerLiteralNode) mLiteral;
-        if (integerLiteral.getValue() == 0) {
-            if (AnnotationUtils.containsSame(otherType, NN)) {
+
+        if (integerLiteral == 0) {
+            if (AnnotationUtils.containsSameByClass(otherType, NonNegative.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, POS);
-                return true;
-            } else {
-                return false;
+                return;
             }
-        } else if (integerLiteral.getValue() == -1) {
-            if (AnnotationUtils.containsSame(otherType, GTEN1)) {
+        } else if (integerLiteral == -1) {
+            if (AnnotationUtils.containsSameByClass(otherType, GTENegativeOne.class)) {
+                System.out.println("modifying " + otherNode + " to be NN");
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, NN);
-                return true;
-            } else {
-                return false;
+                return;
             }
         } else {
-            return false;
+            return;
         }
     }
 
@@ -276,12 +276,8 @@ public class LowerBoundTransfer extends CFTransfer {
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
             // Special processing for literals:
-            if (isRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore)) {
-                return rfi.newResult;
-            }
-            if (isRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore)) {
-                return rfi.newResult;
-            }
+            isRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore);
+            isRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore);
 
             refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
@@ -297,12 +293,8 @@ public class LowerBoundTransfer extends CFTransfer {
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
             // Special processing for literals:
-            if (isRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore)) {
-                return rfi.newResult;
-            }
-            if (isRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore)) {
-                return rfi.newResult;
-            }
+            isRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore);
+            isRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore);
 
             refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
