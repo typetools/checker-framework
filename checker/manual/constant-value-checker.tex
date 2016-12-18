@@ -49,9 +49,8 @@ one of the values \<"a">, \<"b">, or \<null>.
 The set is limited to 10 entries; if a variable
 could be more than 10 different values, the Constant Value
 Checker gives up and its type becomes
-\refqualclass{common/value/qual}{UnknownVal} instead (except for
-\refqualclass{common/value/qual}{IntVal}
-, see below)
+\refqualclass{common/value/qual}{IntVal} for integral types and
+\refqualclass{common/value/qual}{UnknownVal} for all other types.
 
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
@@ -228,7 +227,7 @@ warning message:
   expression.  If you write an annotation with more values than will be
   tracked, the annotation is replaced with \<@UnknownVal>.
 
-\item \code{[too.many.int.values] The maximum number of integer arguments permitted is 10. Remove the annotation. Treating result as @IntRange to reduce computational complexity}
+\item \code{[too.many.int.values] The maximum number of integer arguments permitted is 10. Remove the annotation. Treating result as @IntRange.}
 
   Similar to above, but with \<@IntVal> annotations.
 
