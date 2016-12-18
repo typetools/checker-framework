@@ -98,6 +98,6 @@ public class ParameterExpression {
     }
 
     // Annotations on formal parameters referring to a formal parameter of the same method.
-    //:: warning: (method.declaration.expression.parameter.name)
+    //:: error: (expression.unparsable.type.invalid)
     public void m14(@KeyFor("param2") Object param1, Map<Object, Object> param2) {}
 }

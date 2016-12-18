@@ -36,6 +36,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -943,5 +944,35 @@ public final class TreeUtils {
                         .toString();
         return ownerName.equals("java.lang.Object")
                 && declarationElement.getSimpleName().toString().equals("getClass");
+    }
+
+    /**
+     * Returns whether or not the leaf of the tree path is in a static scope.
+     *
+     * @param path TreePath whose leaf may or may not be in static scope
+     * @return Returns whether or not the leaf of the tree path is in a static scope.
+     */
+    public static boolean isTreeInStaticScope(TreePath path) {
+        MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);
+
+        if (enclosingMethod != null) {
+            return enclosingMethod.getModifiers().getFlags().contains(Modifier.STATIC);
+        }
+        // no enclosing method, check for static or initializer block
+        BlockTree block = enclosingTopLevelBlock(path);
+        if (block != null) {
+            return block.isStatic();
+        }
+
+        // check if its in a variable initializer
+        Tree t = enclosingVariable(path);
+        if (t != null) {
+            return ((VariableTree) t).getModifiers().getFlags().contains((Modifier.STATIC));
+        }
+        ClassTree classTree = enclosingClass(path);
+        if (classTree != null) {
+            return classTree.getModifiers().getFlags().contains((Modifier.STATIC));
+        }
+        return false;
     }
 }

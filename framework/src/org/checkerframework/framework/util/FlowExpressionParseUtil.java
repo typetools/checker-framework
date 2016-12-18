@@ -5,6 +5,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 */
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -24,6 +25,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
@@ -40,6 +42,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.MethodCall;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ThisReference;
 import org.checkerframework.dataflow.analysis.FlowExpressions.ValueLiteral;
+import org.checkerframework.dataflow.cfg.node.ClassNameNode;
 import org.checkerframework.dataflow.cfg.node.ImplicitThisLiteralNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
@@ -413,8 +416,11 @@ public class FlowExpressionParseUtil {
     private static Receiver parseParameter(String s, FlowExpressionContext context)
             throws FlowExpressionParseException {
         Matcher parameterMatcher = parameterPattern.matcher(s);
-        if (!parameterMatcher.matches() || context.arguments == null) {
+        if (!parameterMatcher.matches()) {
             return null;
+        }
+        if (context.arguments == null) {
+            throw constructParserException(s, "No parameter found.");
         }
         int idx = -1;
         try {
@@ -530,9 +536,6 @@ public class FlowExpressionParseUtil {
     }
 
     private static boolean isArray(String s, FlowExpressionContext context) {
-        if (context.parsingMember) {
-            return false;
-        }
         Matcher arraymatcher = arrayPattern.matcher(s);
         return arraymatcher.matches();
     }
@@ -547,7 +550,8 @@ public class FlowExpressionParseUtil {
         String receiverStr = arraymatcher.group(1);
         String indexStr = arraymatcher.group(2);
         Receiver receiver = parseHelper(receiverStr, context, path);
-        Receiver index = parseHelper(indexStr, context, path);
+        FlowExpressionContext contextForIndex = context.copyAndUseOuterReceiver();
+        Receiver index = parseHelper(indexStr, contextForIndex, path);
         TypeMirror receiverType = receiver.getType();
         if (!(receiverType instanceof ArrayType)) {
             throw constructParserException(
@@ -891,7 +895,8 @@ public class FlowExpressionParseUtil {
          *
          * @param receiver used to replace "this" in a flow expression and used to resolve
          *     identifiers in the flow expression with an implicit "this"
-         * @param arguments used to replace parameter references, e.g. #1, in flow expressions
+         * @param arguments used to replace parameter references, e.g. #1, in flow expressions, null
+         *     if no arguments
          * @param checkerContext used to create {@link FlowExpressions.Receiver}s
          */
         public FlowExpressionContext(
@@ -953,12 +958,40 @@ public class FlowExpressionParseUtil {
                 MethodTree methodDeclaration,
                 TypeMirror enclosingType,
                 BaseContext checkerContext) {
-            Node receiver = new ImplicitThisLiteralNode(enclosingType);
+
+            Node receiver;
+            if (methodDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)) {
+                Element classElt =
+                        ElementUtils.enclosingClass(
+                                TreeUtils.elementFromDeclaration(methodDeclaration));
+                receiver = new ClassNameNode(enclosingType, classElt);
+            } else {
+                receiver = new ImplicitThisLiteralNode(enclosingType);
+            }
             Receiver internalReceiver =
                     FlowExpressions.internalReprOf(
                             checkerContext.getAnnotationProvider(), receiver);
             List<Receiver> internalArguments = new ArrayList<>();
             for (VariableTree arg : methodDeclaration.getParameters()) {
+                internalArguments.add(
+                        FlowExpressions.internalReprOf(
+                                checkerContext.getAnnotationProvider(),
+                                new LocalVariableNode(arg, receiver)));
+            }
+            FlowExpressionContext flowExprContext =
+                    new FlowExpressionContext(internalReceiver, internalArguments, checkerContext);
+            return flowExprContext;
+        }
+
+        public static FlowExpressionContext buildContextForLambda(
+                LambdaExpressionTree lambdaTree, TreePath path, BaseContext checkerContext) {
+            TypeMirror enclosingType = InternalUtils.typeOf(TreeUtils.enclosingClass(path));
+            Node receiver = new ImplicitThisLiteralNode(enclosingType);
+            Receiver internalReceiver =
+                    FlowExpressions.internalReprOf(
+                            checkerContext.getAnnotationProvider(), receiver);
+            List<Receiver> internalArguments = new ArrayList<>();
+            for (VariableTree arg : lambdaTree.getParameters()) {
                 internalArguments.add(
                         FlowExpressions.internalReprOf(
                                 checkerContext.getAnnotationProvider(),
@@ -993,6 +1026,7 @@ public class FlowExpressionParseUtil {
         public static FlowExpressionContext buildContextForClassDeclaration(
                 ClassTree classTree, BaseContext checkerContext) {
             Node receiver = new ImplicitThisLiteralNode(InternalUtils.typeOf(classTree));
+
             Receiver internalReceiver =
                     FlowExpressions.internalReprOf(
                             checkerContext.getAnnotationProvider(), receiver);

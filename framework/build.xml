@@ -607,6 +607,13 @@
         </antcall>
     </target>
 
+    <target name="flowexpression-tests" depends="jar,build-tests"
+            description="Run tests for constant value propagation">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.FlowExpressionCheckerTest"/>
+        </antcall>
+    </target>
+
     <target name="jtreg.check">
       <condition property="jtreg.exists">
         <available file="${jtreg.home}" type="dir"/>
