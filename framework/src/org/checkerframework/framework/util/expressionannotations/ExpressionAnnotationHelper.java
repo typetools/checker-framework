@@ -554,7 +554,7 @@ public class ExpressionAnnotationHelper {
         }
     }
 
-    boolean isExpressionAnno(AnnotationMirror am) {
+    private boolean isExpressionAnno(AnnotationMirror am) {
         for (Class<? extends Annotation> clazz : expressionAnnos) {
             if (AnnotationUtils.areSameByClass(am, clazz)) {
                 return true;
