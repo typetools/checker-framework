@@ -122,22 +122,12 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                     int numArgs =
                             ((NewArrayTree) argument.getExpression()).getInitializers().size();
                     if (numArgs > ValueAnnotatedTypeFactory.MAX_VALUES) {
-                        if (element.toString().equals(IntVal.class.getName())) {
-                            checker.report(
-                                    Result.warning(
-                                            "too.many.int.values",
-                                            ValueAnnotatedTypeFactory.MAX_VALUES),
-                                    node);
-                            return null;
-
-                        } else {
-                            checker.report(
-                                    Result.warning(
-                                            "too.many.values.given",
-                                            ValueAnnotatedTypeFactory.MAX_VALUES),
-                                    node);
-                            return null;
-                        }
+                        checker.report(
+                                Result.warning(
+                                        "too.many.values.given",
+                                        ValueAnnotatedTypeFactory.MAX_VALUES),
+                                node);
+                        return null;
                     }
                 }
             }
