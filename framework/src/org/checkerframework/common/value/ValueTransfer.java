@@ -228,7 +228,7 @@ public class ValueTransfer extends CFTransfer {
     }
 
     enum NumericalBinaryOps {
-        ADDTION,
+        ADDITION,
         SUBTRACTION,
         DIVISION,
         REMAINDER,
@@ -254,7 +254,7 @@ public class ValueTransfer extends CFTransfer {
                 NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
                 for (Number right : rights) {
                     switch (op) {
-                        case ADDTION:
+                        case ADDITION:
                             resultValues.add(nmLeft.plus(right));
                             break;
                         case DIVISION:
@@ -302,7 +302,7 @@ public class ValueTransfer extends CFTransfer {
         TransferResult<CFValue, CFStore> transferResult = super.visitNumericalAddition(n, p);
         List<Number> resultValues =
                 calculateNumericalBinaryOp(
-                        n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.ADDTION, p);
+                        n.getLeftOperand(), n.getRightOperand(), NumericalBinaryOps.ADDITION, p);
         return createNewResult(transferResult, resultValues);
     }
 

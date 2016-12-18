@@ -1,4 +1,4 @@
-// Addtional test case for issue #511:
+// Additional test case for issue #511:
 // https://github.com/typetools/checker-framework/issues/511
 class MyGeneric<T extends Number> {}
 
