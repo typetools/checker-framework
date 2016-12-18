@@ -35,13 +35,15 @@ The programmer is also permitted to write type annotations.  This is only necess
 locations where the Constant Value Checker does not infer annotations:  on fields
 and method signatures.
 
-There are 4 common type annotations:
+The type annotations are
 \refqualclass{common/value/qual}{BoolVal},
 \refqualclass{common/value/qual}{IntVal},
+\refqualclass{common/value/qual}{IntRange},
 \refqualclass{common/value/qual}{DoubleVal}, and
 \refqualclass{common/value/qual}{StringVal}.
 
-Each type annotation takes as an argument a set of values, and its meaning
+Each \<*Val> type annotation takes as an argument a set of values, and its
+meaning
 is that at run time, the expression evaluates to one of the values.  For
 example, an expression of type
 \<\refqualclass{common/value/qual}{StringVal}("a", "b")> evaluates to
@@ -49,29 +51,17 @@ one of the values \<"a">, \<"b">, or \<null>.
 The set is limited to 10 entries; if a variable
 could be more than 10 different values, the Constant Value
 Checker gives up and its type becomes
-\refqualclass{common/value/qual}{IntVal} for integral types and
+\refqualclass{common/value/qual}{IntRange} for integral types and
 \refqualclass{common/value/qual}{UnknownVal} for all other types.
 
 % \refqualclass{checker/value/qual}{BottomVal}, meaning that the expression
 % is dead or always has the value \<null>.
 
-In the case of
-\refqualclass{common/value/qual}{IntVal}
-with more than 10 possible values, its type becomes
-\refqualclass{common/value/qual}{IntRange} instead of
-\refqualclass{common/value/qual}{UnknownVal},
-which is a type annotation with two integer arguments: \<from> and \<to>.
-It means that at run time, the expression only evaluates to a value that
-falls into the interval described by the two arguments. For example, an
-expression of type \<@IntRange(from = 0, to = 255)> evaluates to a value
-that falls between 0 and 255.
-
-The introduction of \<@IntRange> gives more granularity for the propagation
-analysis of integer variables while greatly reduces computational
-complexity. On the other hand, when the interval denoted by \<@IntRange>
-is smaller than or equal to 10, the annotation would be replaced with
-\<@IntVal> with the same set of possible values, providing more precise
-propagation analysis.
+\refqualclass{common/value/qual}{IntRange} takes two arguments --- a lower
+bound and an upper bound.  Its meaning is that at run time, the expression
+evaluates to a value between the bounds (inclusive).  For example, an
+expression of type \<@IntRange(from=0, to=255)> evaluates to a value
+between 0 and 255, inclusive.
 
 Figure~\ref{fig-value-hierarchy} shows the
 subtyping relationship among the type annotations.
@@ -90,7 +80,7 @@ relationships that depend on the annotations' arguments.}
 \label{fig-value-hierarchy}
 \end{figure}
 
-Figure~\ref{fig-value-multivalue} shows how the Constant Value Checker
+Figure~\ref{fig-value-multivalue} illustrates how the Constant Value Checker
 infers type annotations (using flow-sensitive type qualifier refinement, Section~\ref{type-refinement}).
 
 \begin{figure}
@@ -109,17 +99,35 @@ public void foo(boolean b) {
 \label{fig-value-multivalue}
 \end{figure}
 
-It's worth mentioning that the \<@IntRange> annotation is also implemented in
-\<android.support.annotation>. Working together with the
-\href{https://developer.android.com/studio/write/lint.html}{Lint} tool, it
-provides basic integer range checkings on fields, parameters, methods and
-local variables, preventing annotated targets from out of range assignments.
-However, this tool can only handle compile time known values (literals,
-basically) and doesn't provide any subtype checkings or propagation analysis
-as the Checker Framework do. If your code is already annotated with
-\<@android.support.annotation.IntRange>, the Checker Framework would treat
-the annotation exactly as if you had written the \<@IntRange> annotation
-from the Constant Value Checker.
+If your code is already annotated with a different constant value or range
+annotation, the Checker Framework can type-check your code.
+It treats annotations from other tools
+exactly as if you had written the corresponding annotation from the
+Interning Checker, as described in Figure~\ref{fig-constant-value-refactoring}.
+
+
+% These lists should be kept in sync with ValueAnnotatedTypeFactory.java .
+\begin{figure}
+\begin{center}
+% The ~ around the text makes things look better in Hevea (and not terrible
+% in LaTeX).
+\begin{tabular}{ll}
+\begin{tabular}{|l|}
+\hline
+ ~android.support.annotation.IntRange~ \\ \hline
+\end{tabular}
+&
+$\Rightarrow$
+~org.checkerframework.checker.common.value.qual.IntRange~
+\end{tabular}
+\end{center}
+%BEGIN LATEX
+\vspace{-1.5\baselineskip}
+%END LATEX
+\caption{Correspondence between other constant value and range annotations
+  and the Checker Framework's annotations.}
+\label{fig-constant-value-refactoring}
+\end{figure}
 
 
 \subsection{Compile-time execution of expressions\label{staticallyexecutable-annotation}}
@@ -241,6 +249,6 @@ warning message:
 
 \end{itemize}
 \end{sloppypar}
-%%  LocalWords:  UnknownVal StringValue BottomVal astub
+%%  LocalWords:  UnknownVal StringValue BottomVal astub Astubs IntRange
 %  LocalWords:  StaticallyExecutable BoolVal IntVal DoubleVal StringVal
-%%  LocalWords:  classpath
+%%  LocalWords:  classpath AreportEvalWarns
