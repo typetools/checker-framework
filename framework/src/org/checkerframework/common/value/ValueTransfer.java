@@ -246,6 +246,8 @@ public class ValueTransfer extends CFTransfer {
             Node rightNode,
             NumericalBinaryOps op,
             TransferInput<CFValue, CFStore> p) {
+        List<? extends Number> lefts = getNumericalValues(leftNode, p);
+        List<? extends Number> rights = getNumericalValues(rightNode, p);
         List<Number> resultValues = new ArrayList<>();
         for (Number left : lefts) {
             NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
