@@ -204,7 +204,7 @@ Some examples of these:
   this is caused by not providing the path of a class-file needed to
   the classpath.
 
-\item \code{[method.find.failed] Failed to find a method named foo with argument types [@IntVal(3) int]. Treating result as @UnknownVal}
+\item \code{[method.find.failed] Failed to find a method named foo with argument types [@IntVal(3) int].}
 
   The checker could not find the method \code{foo(int)} specified for
   resolving a \<@StaticallyExecutable> method, but could find the
@@ -212,7 +212,7 @@ Some examples of these:
   class-file that does not contain the \<@StaticallyExecutable>
   method.
 
-\item \code{[method.evaluation.exception] Failed to evaluate method public static int Test.foo(int) because it threw an exception: java.lang.ArithmeticException: / by zero. Treating result as @UnknownVal}
+\item \code{[method.evaluation.exception] Failed to evaluate method public static int Test.foo(int) because it threw an exception: java.lang.ArithmeticException: / by zero.}
 
   An exception was thrown when trying to statically execute the
   method. In this case it was a divide-by-zero exception. If the
@@ -229,21 +229,21 @@ warning message:
 
 \begin{sloppypar}
 \begin{itemize}
-\item \code{[too.many.values.given] The maximum number of arguments permitted is 10. Remove the annotation. Treating result as @UnknownVal}
+\item \code{[too.many.values.given] The maximum number of arguments permitted is 10.}
 
   The Constant Value Checker only tracks up to 10 possible values for an
   expression.  If you write an annotation with more values than will be
-  tracked, the annotation is replaced with \<@UnknownVal>.
+  tracked, the annotation is replaced with \<@IntRange> or \<@UnknownVal>.
 
-\item \code{[too.many.int.values] The maximum number of integer arguments permitted is 10. Remove the annotation. Treating result as @IntRange.}
+\item \code{[too.many.int.values] The maximum number of integer arguments permitted is 10.}
 
   Similar to above, but with \<@IntVal> annotations.
 
-\item \code{[too.narrow.int.range] The smallest interval of integer range permitted is 10. Remove the annotation. Treating result as @IntVal to have finer propagation results.}
+\item \code{[too.narrow.int.range] The smallest interval of integer range permitted is 10.}
 
   Vice versa.
 
-\item \code{[from.greater.than.to] The integer range specified is abnormal. Remove the annotation. Treating result as @UnknownVal}
+\item \code{[from.greater.than.to] The integer range specified is abnormal.}
 
   Issue a warning when user accidentally confuse \<from> for \<to>.
 
