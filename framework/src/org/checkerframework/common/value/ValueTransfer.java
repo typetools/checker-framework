@@ -247,49 +247,45 @@ public class ValueTransfer extends CFTransfer {
             NumericalBinaryOps op,
             TransferInput<CFValue, CFStore> p) {
         List<Number> resultValues = new ArrayList<>();
-        if (!isIntRange(leftNode, p) && !isIntRange(rightNode, p)) {
-            List<? extends Number> lefts = getNumericalValues(leftNode, p);
-            List<? extends Number> rights = getNumericalValues(rightNode, p);
-            for (Number left : lefts) {
-                NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
-                for (Number right : rights) {
-                    switch (op) {
-                        case ADDITION:
-                            resultValues.add(nmLeft.plus(right));
-                            break;
-                        case DIVISION:
-                            resultValues.add(nmLeft.divide(right));
-                            break;
-                        case MULPLICATION:
-                            resultValues.add(nmLeft.times(right));
-                            break;
-                        case REMAINDER:
-                            resultValues.add(nmLeft.remainder(right));
-                            break;
-                        case SUBTRACTION:
-                            resultValues.add(nmLeft.minus(right));
-                            break;
-                        case SHIFT_LEFT:
-                            resultValues.add(nmLeft.shiftLeft(right));
-                            break;
-                        case SIGNED_SHIFT_RIGHT:
-                            resultValues.add(nmLeft.signedSiftRight(right));
-                            break;
-                        case UNSIGNED_SHIFT_RIGHT:
-                            resultValues.add(nmLeft.unsignedSiftRight(right));
-                            break;
-                        case BITWISE_AND:
-                            resultValues.add(nmLeft.bitwiseAnd(right));
-                            break;
-                        case BITWISE_OR:
-                            resultValues.add(nmLeft.bitwiseOr(right));
-                            break;
-                        case BITWISE_XOR:
-                            resultValues.add(nmLeft.bitwiseXor(right));
-                            break;
-                        default:
-                            throw new UnsupportedOperationException();
-                    }
+        for (Number left : lefts) {
+            NumberMath<?> nmLeft = NumberMath.getNumberMath(left);
+            for (Number right : rights) {
+                switch (op) {
+                    case ADDITION:
+                        resultValues.add(nmLeft.plus(right));
+                        break;
+                    case DIVISION:
+                        resultValues.add(nmLeft.divide(right));
+                        break;
+                    case MULPLICATION:
+                        resultValues.add(nmLeft.times(right));
+                        break;
+                    case REMAINDER:
+                        resultValues.add(nmLeft.remainder(right));
+                        break;
+                    case SUBTRACTION:
+                        resultValues.add(nmLeft.minus(right));
+                        break;
+                    case SHIFT_LEFT:
+                        resultValues.add(nmLeft.shiftLeft(right));
+                        break;
+                    case SIGNED_SHIFT_RIGHT:
+                        resultValues.add(nmLeft.signedSiftRight(right));
+                        break;
+                    case UNSIGNED_SHIFT_RIGHT:
+                        resultValues.add(nmLeft.unsignedSiftRight(right));
+                        break;
+                    case BITWISE_AND:
+                        resultValues.add(nmLeft.bitwiseAnd(right));
+                        break;
+                    case BITWISE_OR:
+                        resultValues.add(nmLeft.bitwiseOr(right));
+                        break;
+                    case BITWISE_XOR:
+                        resultValues.add(nmLeft.bitwiseXor(right));
+                        break;
+                    default:
+                        throw new UnsupportedOperationException();
                 }
             }
         }
