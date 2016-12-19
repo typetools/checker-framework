@@ -245,7 +245,6 @@ public class LowerBoundTransfer extends CFTransfer {
             }
         } else if (integerLiteral == -1) {
             if (AnnotationUtils.containsSameByClass(otherType, GTENegativeOne.class)) {
-                System.out.println("modifying " + otherNode + " to be NN");
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, NN);
                 return;
