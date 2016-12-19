@@ -222,15 +222,13 @@ public class LowerBoundTransfer extends CFTransfer {
     }
 
     /**
-     * This function handles the problems described in issues 25 and 29 in the issue tracker. It
-     * returns a flag that reports whether it made a change to the store.
+     * This function handles the problems described in issues 25 and 29 in the issue tracker.
      *
      * @param mLiteral a potential literal
      * @param otherNode the node on the other side of the ==/!=
      * @param otherType the type of the other side of the ==/!=
-     * @return whether the store was modified
      */
-    private void isRelevantLiteralForEquals(
+    private void handleRelevantLiteralForEquals(
             Node mLiteral, Node otherNode, Set<AnnotationMirror> otherType, CFStore store) {
 
         Long integerLiteral = aTypeFactory.getValueFromTree(mLiteral.getTree());
