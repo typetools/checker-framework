@@ -274,8 +274,8 @@ public class LowerBoundTransfer extends CFTransfer {
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
             // Special processing for literals:
-            isRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore);
-            isRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore);
+            handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore);
+            handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore);
 
             refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
@@ -291,8 +291,8 @@ public class LowerBoundTransfer extends CFTransfer {
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
             // Special processing for literals:
-            isRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore);
-            isRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore);
+            handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore);
+            handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore);
 
             refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
