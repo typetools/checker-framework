@@ -1,6 +1,7 @@
 package org.checkerframework.checker.index;
 
 import org.checkerframework.checker.lowerbound.LowerBoundChecker;
+import org.checkerframework.framework.source.SuppressWarningsKeys;
 
 /**
  * A type checker for preventing out-of-bounds accesses on arrays and lists. Contains two
@@ -8,6 +9,7 @@ import org.checkerframework.checker.lowerbound.LowerBoundChecker;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
+@SuppressWarningsKeys("index")
 public class IndexChecker extends LowerBoundChecker {
     // Ideally, the Index Checker would be an AggregateChecker that ran the Lower and Upper Bound
     // Checkers.  However, both checkers use annotations from the ValueChecker and the

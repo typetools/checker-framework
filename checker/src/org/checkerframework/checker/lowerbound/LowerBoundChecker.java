@@ -5,6 +5,7 @@ import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.upperbound.UpperBoundChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.framework.source.SuppressWarningsKeys;
 
 /**
  * A type-checker for preventing arrays from being accessed with values that are too low. Normally
@@ -12,6 +13,7 @@ import org.checkerframework.common.value.ValueChecker;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
+@SuppressWarningsKeys({"index", "lowerbound"})
 public class LowerBoundChecker extends BaseTypeChecker {
 
     @Override
