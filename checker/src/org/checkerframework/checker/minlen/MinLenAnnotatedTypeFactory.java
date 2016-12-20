@@ -1,11 +1,15 @@
 package org.checkerframework.checker.minlen;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.minlen.qual.*;
+import org.checkerframework.checker.minlen.qual.MinLen;
+import org.checkerframework.checker.minlen.qual.MinLenBottom;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;

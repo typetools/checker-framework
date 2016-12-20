@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.minlen.qual.*;
+import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.FieldAccess;
 import org.checkerframework.dataflow.analysis.FlowExpressions.LocalVariable;
