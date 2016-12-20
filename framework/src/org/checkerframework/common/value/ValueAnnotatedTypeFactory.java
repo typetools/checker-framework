@@ -225,13 +225,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (anno != null && anno.getElementValues().size() > 0) {
                 if (AnnotationUtils.areSameByClass(anno, IntRange.class)) {
                     Range range = getIntRange(anno);
-                    if (range.to >= range.from && !range.isWiderThan(MAX_VALUES)) {
-                        List<Long> values = new ArrayList<>();
-                        for (long value = range.from; value <= range.to; value++) {
-                            values.add(value);
-                        }
-                        atm.replaceAnnotation(createIntValAnnotation(values));
-                    } else if (range.to < range.from) {
+                    if (range.to < range.from) {
                         atm.replaceAnnotation(UNKNOWNVAL);
                     }
                 } else if (AnnotationUtils.areSameByClass(anno, IntVal.class)) {

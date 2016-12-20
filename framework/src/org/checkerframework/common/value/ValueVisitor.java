@@ -22,7 +22,6 @@ import org.checkerframework.common.value.qual.DoubleVal;
 import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
-import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.source.Result;
 /**
  * @author plvines
@@ -30,18 +29,20 @@ import org.checkerframework.framework.source.Result;
  */
 public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
 
-    private final Set<Kind> intLiteralKinds;
+    /** helper set that includes all integer literal kinds */
+    private final Set<Kind> intLiteralKinds =
+            EnumSet.of(Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.CHAR_LITERAL);
 
     public ValueVisitor(BaseTypeChecker checker) {
         super(checker);
-
-        intLiteralKinds = EnumSet.of(Kind.INT_LITERAL, Kind.LONG_LITERAL, Kind.CHAR_LITERAL);
     }
 
+    /** helper function to determine if a given kind is integer literal */
     private boolean isIntLiteral(Kind k) {
         return intLiteralKinds.contains(k);
     }
 
+    /** get value from a give expression tree, assuming the tree kind is int literal */
     private long getIntLiteralValue(ExpressionTree exp) {
         switch (exp.getKind()) {
             case INT_LITERAL:
@@ -62,10 +63,15 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
     }
 
     /**
-     * Issues a warning if any constant-value annotation has &gt; MAX_VALUES number of values
+     * Issues an error if any @IntRange annotation has its 'from' value greater than 'to' value.
+     * Works together with
+     * ValueAnnotatedTypeFactory.ValueTypeAnnotator.replaceWithUnknownValInSpecialCases which treats
+     * to value as @UnknownVal in this case.
+     *
+     * <p>Issues a warning if any constant-value annotation has &gt; MAX_VALUES number of values
      * provided. Works together with
-     * ValueAnnotatedTypeFactory.ValueTypeAnnotator.replaceWithUnknownValIfTooManyValues which
-     * treats the value as @UnknownVal in this case.
+     * ValueAnnotatedTypeFactory.ValueTypeAnnotator.replaceWithUnknownValInSpecialCases which treats
+     * the value as @IntRange for @IntVal and @UnknownVal for other *Val annotations in this case.
      */
     @Override
     public Void visitAnnotation(AnnotationTree node, Void p) {
@@ -94,19 +100,15 @@ public class ValueVisitor extends BaseTypeVisitor<ValueAnnotatedTypeFactory> {
                 }
 
                 if (isIntLiteral(expFrom.getKind()) && isIntLiteral(expTo.getKind())) {
-                    long valueFrom = getIntLiteralValue(expFrom);
-                    long valueTo = getIntLiteralValue(expTo);
-                    if (valueFrom > valueTo) {
-                        checker.report(Result.warning("from.greater.than.to"), node);
-                        return null;
-                    } else if (!(new Range(valueFrom, valueTo))
-                            .isWiderThan(ValueAnnotatedTypeFactory.MAX_VALUES)) {
-                        checker.report(
-                                Result.warning(
-                                        "too.narrow.int.range",
-                                        ValueAnnotatedTypeFactory.MAX_VALUES + 1),
-                                node);
-                        return null;
+                    try {
+                        long valueFrom = getIntLiteralValue(expFrom);
+                        long valueTo = getIntLiteralValue(expTo);
+                        if (valueFrom > valueTo) {
+                            checker.report(Result.failure("from.greater.than.to"), node);
+                            return null;
+                        }
+                    } catch (IllegalArgumentException e) {
+                        e.printStackTrace(System.out);
                     }
                 }
             }

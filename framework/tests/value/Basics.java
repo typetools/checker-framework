@@ -190,29 +190,8 @@ class Basics {
         int d = a; // d is @IntRange(from=1, to=12), a is @IntVal({20});
     }
 
-    void tooNarrowIntRange(
-            //:: warning: (too.narrow.int.range)
-            @IntRange(from = 1, to = 4) int a) {
-
-        @IntVal({2, 4, 6, 8}) int b;
-
-        b = a * 2; // should be succeed if a is treated as @IntVal({1, 2, 3, 4})
-
-        //:: warning: (too.narrow.int.range)
-        @IntRange(from = 3, to = 8)
-        int c;
-
-        //:: error: (assignment.type.incompatible)
-        c = a * 2; // should not be succeed
-
-        //:: warning: (too.narrow.int.range)
-        @IntRange(from = 2, to = 2)
-        int d = 2;
-        b = d * 2; // should be succeed if d is treated as @IntVal({2});
-    }
-
     void fromGreaterThanTo() {
-        //:: warning: (from.greater.than.to)
+        //:: error: (from.greater.than.to)
         @IntRange(from = 2, to = 0)
         int a;
 
