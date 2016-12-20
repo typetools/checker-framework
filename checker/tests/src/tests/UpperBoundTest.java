@@ -18,6 +18,6 @@ public class UpperBoundTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
-        return new String[] {"upperbound"}; //, "all-systems"};
+        return new String[] {"upperbound", "all-systems"};
     }
 }
