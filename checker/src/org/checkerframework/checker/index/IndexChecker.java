@@ -9,11 +9,11 @@ import org.checkerframework.checker.lowerbound.LowerBoundChecker;
  * @checker_framework.manual #index-checker Index Checker
  */
 public class IndexChecker extends LowerBoundChecker {
-    // This class is literally just the Lower Bound Checker right now. The Lower Bound Checker runs
-    // the Upper Bound Checker as a subchecker at the moment, because this class can't run both as
-    // it's subcheckers while retaining the benefits of being a compound checker - basically, what
-    // we'd like is an aggregate checker that will run its subcheckers each only once in an order
-    // that makes sense.
+    // Ideally, the Index Checker would be an AggregateChecker that ran the Lower and Upper Bound
+    // Checkers.  However, both checkers use annotations from the ValueChecker and the
+    // MinLenChecker. So in order for these subcheckers to only be run once, the IndexChecker
+    // is a subclass of the LowerBoundChecker.  If isIndexChecker() returns true, then the
+    // LowerBoundChecker runs the UpperBoundChecker as a subchecker.
 
     @Override
     protected boolean isIndexChecker() {

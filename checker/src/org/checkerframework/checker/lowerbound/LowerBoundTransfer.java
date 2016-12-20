@@ -231,7 +231,7 @@ public class LowerBoundTransfer extends CFTransfer {
     private void handleRelevantLiteralForEquals(
             Node mLiteral, Node otherNode, Set<AnnotationMirror> otherType, CFStore store) {
 
-        Long integerLiteral = aTypeFactory.getValueFromTree(mLiteral.getTree());
+        Long integerLiteral = aTypeFactory.getExactValueFromTree(mLiteral.getTree());
 
         if (integerLiteral == null) {
             return;
@@ -241,16 +241,12 @@ public class LowerBoundTransfer extends CFTransfer {
             if (AnnotationUtils.containsSameByClass(otherType, NonNegative.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, POS);
-                return;
             }
         } else if (integerLiteral == -1) {
             if (AnnotationUtils.containsSameByClass(otherType, GTENegativeOne.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, NN);
-                return;
             }
-        } else {
-            return;
         }
     }
 
@@ -374,6 +370,5 @@ public class LowerBoundTransfer extends CFTransfer {
             store.insertValue(leftRec, GTEN1);
             return;
         }
-        return;
     }
 }

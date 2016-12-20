@@ -21,8 +21,8 @@ public class LowerBoundChecker extends BaseTypeChecker {
         checkers.add(ValueChecker.class);
         checkers.add(MinLenChecker.class);
         if (isIndexChecker()) {
-            // Temporary hack to make this the "index checker," because proper
-            // compound aggregate checkers aren't working.
+            // If running the Index Checker, then run the Upper Bound Checker as a subchecker.
+            // See comment on the Index Checker for more details.
             checkers.add(UpperBoundChecker.class);
         }
         return checkers;
