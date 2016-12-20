@@ -4,15 +4,14 @@ import com.sun.source.tree.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.minlen.qual.*;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -29,17 +28,13 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The MinLen checker is responsible for annotating arrays with their minimum lengths. It is meant
  * to be run by the upper bound checker.
  */
 public class MinLenAnnotatedTypeFactory
-        extends GenericAnnotatedTypeFactory<
-                MinLenValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
-
-    protected static ProcessingEnvironment env;
+        extends GenericAnnotatedTypeFactory<CFValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
 
     /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
@@ -47,16 +42,24 @@ public class MinLenAnnotatedTypeFactory
      */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
+    /** {@code @MinLen(0)}, which is the top qualifier. */
+    final AnnotationMirror MIN_LEN_0;
+
+    final AnnotationMirror MIN_LEN_BOTTOM;
+
     public MinLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
-        env = checker.getProcessingEnvironment();
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
+        builder.setValue("value", 0);
+        MIN_LEN_0 = builder.build();
+        MIN_LEN_BOTTOM = AnnotationUtils.fromClass(elements, MinLenBottom.class);
         this.postInit();
     }
 
     @Override
     protected void addCheckedCodeDefaults(QualifierDefaults defaults) {
-        AnnotationMirror minLen0 = createMinLen(0);
+        AnnotationMirror minLen0 = MIN_LEN_0;
         defaults.addCheckedCodeDefault(minLen0, TypeUseLocation.OTHERWISE);
     }
 
@@ -113,7 +116,7 @@ public class MinLenAnnotatedTypeFactory
         public Set<? extends AnnotationMirror> getTopAnnotations() {
             if (minLenTops == null) {
                 Set<AnnotationMirror> tops = AnnotationUtils.createAnnotationSet();
-                tops.add(createMinLen(0));
+                tops.add(MIN_LEN_0);
                 minLenTops = Collections.unmodifiableSet(tops);
             }
             return minLenTops;
@@ -121,7 +124,7 @@ public class MinLenAnnotatedTypeFactory
 
         @Override
         public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
-            return createMinLen(0);
+            return MIN_LEN_0;
         }
 
         @Override
@@ -145,7 +148,7 @@ public class MinLenAnnotatedTypeFactory
             }
 
             // This should be unreachable but we want the function to be complete, so return bottom.
-            return createMinLenBottom();
+            return MIN_LEN_BOTTOM;
         }
 
         @Override
@@ -169,7 +172,7 @@ public class MinLenAnnotatedTypeFactory
             }
 
             // This should be unreachable but we want the function to be complete, so we return top.
-            return createMinLen(0);
+            return MIN_LEN_0;
         }
 
         /**
@@ -198,9 +201,6 @@ public class MinLenAnnotatedTypeFactory
         }
     }
 
-    // This is based on a suggestion Suzanne had for making arrays always default
-    // to MinLen(0).
-
     @Override
     protected TypeAnnotator createTypeAnnotator() {
         return new ListTypeAnnotator(new MinLenTypeAnnotator(this), super.createTypeAnnotator());
@@ -215,7 +215,7 @@ public class MinLenAnnotatedTypeFactory
         @Override
         public Void visitArray(AnnotatedArrayType type, Void aVoid) {
             if (!type.hasAnnotation(MinLen.class)) {
-                type.replaceAnnotation(createMinLen(0));
+                type.replaceAnnotation(MIN_LEN_0);
             }
             return super.visitArray(type, aVoid);
         }
@@ -282,23 +282,15 @@ public class MinLenAnnotatedTypeFactory
         if (annotation == null || AnnotationUtils.areSameByClass(annotation, MinLenBottom.class)) {
             return -1;
         }
-        ExecutableElement valueMethod =
-                TreeUtils.getMethod(
-                        "org.checkerframework.checker.minlen.qual.MinLen", "value", 0, env);
-        return (int)
-                AnnotationUtils.getElementValuesWithDefaults(annotation)
-                        .get(valueMethod)
-                        .getValue();
+        return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);
     }
 
     public AnnotationMirror createMinLen(int val) {
+        if (val == 0) {
+            return MIN_LEN_0;
+        }
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", val);
-        return builder.build();
-    }
-
-    public AnnotationMirror createMinLenBottom() {
-        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLenBottom.class);
         return builder.build();
     }
 }
