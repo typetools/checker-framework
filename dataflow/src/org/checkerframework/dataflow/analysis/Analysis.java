@@ -45,9 +45,9 @@ import org.checkerframework.javacutil.Pair;
  * given a control flow graph and a transfer function.
  *
  * @author Stefan Heule
- * @param <A> The abstract value type to be tracked by the analysis
- * @param <S> The store type used in the analysis.
- * @param <T> The transfer function type that is used to approximated runtime behavior
+ * @param <A> the abstract value type to be tracked by the analysis
+ * @param <S> the store type used in the analysis
+ * @param <T> the transfer function type that is used to approximated runtime behavior
  */
 public class Analysis<
         A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>> {

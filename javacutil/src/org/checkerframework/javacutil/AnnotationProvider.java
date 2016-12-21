@@ -21,8 +21,8 @@ public interface AnnotationProvider {
      * Return the annotation on {@code tree} that has the class {@code target}. If no annotation for
      * the given target class exists, the result is {@code null}
      *
-     * @param tree The tree of which the annotation is returned
-     * @param target The class of the annotation
+     * @param tree the tree of which the annotation is returned
+     * @param target the class of the annotation
      */
     public AnnotationMirror getAnnotationMirror(Tree tree, Class<? extends Annotation> target);
 }

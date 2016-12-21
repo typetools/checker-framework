@@ -113,11 +113,11 @@ public class JavaSource2CFGDOT {
     /**
      * Generate the DOT representation of the CFG for a method.
      *
-     * @param inputFile Java source input file
-     * @param outputDir Source output directory.
-     * @param method Method name to generate the CFG for
-     * @param pdf Also generate a PDF?
-     * @param analysis Analysis to perform befor the visualization (or {@code null} if no analysis
+     * @param inputFile java source input file
+     * @param outputDir source output directory
+     * @param method method name to generate the CFG for
+     * @param pdf also generate a PDF?
+     * @param analysis analysis to perform befor the visualization (or {@code null} if no analysis
      *     is to be performed).
      */
     public static <A extends AbstractValue<A>, S extends Store<S>, T extends TransferFunction<A, S>>

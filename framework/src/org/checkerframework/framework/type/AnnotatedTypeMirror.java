@@ -2022,7 +2022,7 @@ public abstract class AnnotatedTypeMirror {
          * Returns whether or not this wildcard is a type argument for which inference failed to
          * infer a type.
          *
-         * @return Returns whether or not this wildcard is a type argument for which inference
+         * @return returns whether or not this wildcard is a type argument for which inference
          *     failed
          */
         public boolean isUninferredTypeArgument() {

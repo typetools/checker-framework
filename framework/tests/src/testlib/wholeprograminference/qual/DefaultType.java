@@ -9,7 +9,10 @@ import org.checkerframework.framework.qual.SubtypeOf;
  * DefaultType is used to test the relaxInference option. Toy type system for testing field
  * inference. This annotation cannot be used in source code.
  *
- * @see Sibling1, Sibling2, Parent, Top.
+ * @see Sibling1
+ * @see Sibling2
+ * @see Parent
+ * @see Top
  */
 @SubtypeOf({Top.class})
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})

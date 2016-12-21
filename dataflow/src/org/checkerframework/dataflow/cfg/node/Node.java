@@ -92,10 +92,10 @@ public abstract class Node {
     /**
      * Accept method of the visitor pattern
      *
-     * @param <R> Result type of the operation
-     * @param <P> Parameter type
-     * @param visitor The visitor to be applied to this node
-     * @param p The parameter for this operation.
+     * @param <R> result type of the operation
+     * @param <P> parameter type
+     * @param visitor the visitor to be applied to this node
+     * @param p the parameter for this operation
      */
     public abstract <R, P> R accept(NodeVisitor<R, P> visitor, P p);
 
