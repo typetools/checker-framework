@@ -216,10 +216,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameByClass(lhs, SameLenBottom.class)) {
+            if (AnnotationUtils.areSameByClass(rhs, SameLenBottom.class)) {
                 return true;
             }
-            if (AnnotationUtils.areSameByClass(rhs, SameLenUnknown.class)) {
+            if (AnnotationUtils.areSameByClass(lhs, SameLenUnknown.class)) {
                 return true;
             }
             if (AnnotationUtils.hasElementValue(rhs, "value")

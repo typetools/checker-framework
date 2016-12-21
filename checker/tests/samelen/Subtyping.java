@@ -8,7 +8,7 @@ class Subtyping {
         int @SameLen({"a", "b"}) [] c = a;
         int @SameLen("c") [] d = b;
 
-        //:: error: (type.assignment.incompatible)
+        //:: error: (assignment.type.incompatible)
         int @SameLen("f") [] e = a;
     }
 }
