@@ -849,6 +849,13 @@
         </antcall>
     </target>
 
+    <target name="samelen-tests" depends="jar,build-tests"
+            description="Run tests for the SameLen Checker">
+        <antcall target="-run-tests">
+            <param name="param" value="tests.SameLenTest"/>
+        </antcall>
+    </target>
+
     <target name="interning-tests" depends="jar,build-tests"
             description="Run tests for the Interning Checker">
         <antcall target="-run-tests">
