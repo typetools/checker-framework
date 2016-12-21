@@ -1166,7 +1166,7 @@ public abstract class SourceChecker extends AbstractTypeProcessor
      *
      * @param kind the kind of message to print
      * @param msg the message text
-     * @param args optional arguments to substitute in the message.
+     * @param args optional arguments to substitute in the message
      * @see SourceChecker#message(Diagnostic.Kind, Object, String, Object...)
      */
     public void message(Diagnostic.Kind kind, String msg, Object... args) {

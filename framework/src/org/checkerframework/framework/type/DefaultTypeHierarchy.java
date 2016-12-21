@@ -188,7 +188,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      * Calls is subtype pair-wise on the elements of the subtypes/supertypes Iterable.
      *
      * @return true if for each pair, the subtype element is a subtype of the supertype element. An
-     *     exception will be thrown if the iterables are of different sizes
+     *     exception will be thrown if the iterables are of different sizes.
      */
     public boolean areSubtypes(
             final Iterable<? extends AnnotatedTypeMirror> subtypes,
@@ -1033,7 +1033,7 @@ public class DefaultTypeHierarchy extends AbstractAtmComboVisitor<Boolean, Visit
      *
      * @param subtype subtype to be transformed to supertype
      * @param supertype supertype that subtype is transformed to
-     * @param <T> The type of supertype and return type
+     * @param <T> the type of supertype and return type
      * @return subtype as an instance of supertype
      */
     @SuppressWarnings("unchecked")

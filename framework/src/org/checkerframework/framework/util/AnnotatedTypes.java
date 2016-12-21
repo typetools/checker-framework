@@ -117,7 +117,7 @@ public class AnnotatedTypes {
      * <p>Postconditions: {@code type} and {@code superType} are not modified.
      *
      * @param atypeFactory {@link AnnotatedTypeFactory}
-     * @param type Type from which to copy annotations
+     * @param type type from which to copy annotations
      * @param superType a type whose erased Java type is a supertype of {@code type}'s erased Java
      *     type.
      * @return {@code superType} with annotations copied from {@code type} and type variables
@@ -714,7 +714,7 @@ public class AnnotatedTypes {
      *     return
      * @param index position of parameter type to return
      * @return if that parameter is a varArgs, return the component of the var args and NOT the
-     *     array type. Otherwise, return the exact type of the parameter in the index position
+     *     array type. Otherwise, return the exact type of the parameter in the index position.
      */
     public static AnnotatedTypeMirror getAnnotatedTypeMirrorOfParameter(
             AnnotatedExecutableType methodType, int index) {
