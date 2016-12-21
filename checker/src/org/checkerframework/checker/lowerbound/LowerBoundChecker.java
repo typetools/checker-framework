@@ -5,6 +5,7 @@ import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.upperbound.UpperBoundChecker;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.framework.source.SuppressWarningsKeys;
 
 /**
  * A type-checker for preventing arrays from being accessed with values that are too low. Normally
@@ -12,6 +13,7 @@ import org.checkerframework.common.value.ValueChecker;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
+@SuppressWarningsKeys({"index", "lowerbound"})
 public class LowerBoundChecker extends BaseTypeChecker {
 
     @Override
@@ -21,8 +23,8 @@ public class LowerBoundChecker extends BaseTypeChecker {
         checkers.add(ValueChecker.class);
         checkers.add(MinLenChecker.class);
         if (isIndexChecker()) {
-            // Temporary hack to make this the "index checker," because proper
-            // compound aggregate checkers aren't working.
+            // If running the Index Checker, then run the Upper Bound Checker as a subchecker.
+            // See comment on the Index Checker for more details.
             checkers.add(UpperBoundChecker.class);
         }
         return checkers;

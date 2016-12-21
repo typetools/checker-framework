@@ -1,6 +1,13 @@
 package org.checkerframework.checker.lowerbound;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -93,7 +100,13 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         LowerBoundUnknown.class));
     }
 
-    public Long getValueFromTree(Tree tree) {
+    /**
+     * Returns the exact value of the tree or null if an exact value isn't known.
+     *
+     * @param tree Tree
+     * @return Returns the exact value of the tree or null if an exact value isn't known.
+     */
+    public Long getExactValueFromTree(Tree tree) {
         AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues == null || possibleValues.size() != 1) {
@@ -137,7 +150,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *      lbu &rarr; lbu
          *  </pre>
          */
-        public void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+        private void promoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
             if (typeSrc.hasAnnotation(POS)) {
                 typeDst.replaceAnnotation(POS);
             } else if (typeSrc.hasAnnotation(NN)) {
@@ -147,7 +160,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else { //Only unknown is left.
                 typeDst.replaceAnnotation(UNKNOWN);
             }
-            return;
         }
 
         /**
@@ -160,7 +172,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *       gte-1, lbu &rarr; lbu
          *  </pre>
          */
-        public void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
+        private void demoteType(AnnotatedTypeMirror typeSrc, AnnotatedTypeMirror typeDst) {
             if (typeSrc.hasAnnotation(POS)) {
                 typeDst.replaceAnnotation(NN);
             } else if (typeSrc.hasAnnotation(NN)) {
@@ -168,7 +180,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             } else { // GTEN1 and UNKNOWN both become UNKNOWN.
                 typeDst.replaceAnnotation(UNKNOWN);
             }
-            return;
         }
 
         /** Determine the annotation that should be associated with a literal. */
@@ -189,8 +200,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (tree.getKind() == Tree.Kind.NULL_LITERAL) {
                 return super.visitLiteral(tree, type);
             }
-            // Call the constant value checker since we want to rely
-            // on it handling constants correctly...
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
             type.addAnnotation(lowerBoundAnmFromValueType(valueType));
             return super.visitLiteral(tree, type);
@@ -207,9 +216,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 case PREFIX_DECREMENT:
                     demoteType(typeSrc, typeDst);
                     break;
-                case POSTFIX_INCREMENT: // Do nothing. The CF should take care of these itself.
-                    break;
+                case POSTFIX_INCREMENT:
                 case POSTFIX_DECREMENT:
+                    // Do nothing. The CF should take care of these itself.
                     break;
                 default:
                     break;
@@ -254,22 +263,17 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private Integer maybeValFromValueType(AnnotatedTypeMirror valueType) {
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
             if (possibleValues != null && possibleValues.size() == 1) {
-                return new Integer(possibleValues.get(0).intValue());
+                return possibleValues.get(0).intValue();
             } else {
                 return null;
             }
         }
 
         /** Returns the type in the lower bound hierarchy a Value Checker type corresponds to. */
-        public AnnotationMirror lowerBoundAnmFromValueType(AnnotatedTypeMirror valueType) {
+        private AnnotationMirror lowerBoundAnmFromValueType(AnnotatedTypeMirror valueType) {
             // In the code, AnnotationMirror is abbr. as anm.
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
-            /*  It's possible that possibleValues could be null (if
-             *  there was no Value Checker annotation, I guess, but this
-             *  definitely happens in practice) or empty (if the value
-             *  checker annotated it with its equivalent of our unknown
-             *  annotation.
-             */
+            // possibleValues is null if the Value Checker does not have any estimate.
             if (possibleValues == null || possibleValues.size() == 0) {
                 return UNKNOWN;
             }
@@ -293,19 +297,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 if (anm == null) {
                     return null;
                 }
-                Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
-                if (minLen == null) {
-                    return null;
-                }
-                return minLen;
+                return AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
             }
             return null;
         }
 
         /**
          * For dealing with array length expressions. We look for array length accesses
-         * specifically, then dispatch to the MinLen checker to deteremine the length of the
-         * relevant array. If we find it, we use it to give the expression a type.
+         * specifically, then dispatch to the MinLen checker to determine the length of the relevant
+         * array. If we find it, we use it to give the expression a type.
          */
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
@@ -386,17 +386,16 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 demoteType(nonLiteralType, type);
                 return;
             } else if (val == 0) {
-                /* This gets the type of nonLiteralType in our
-                hierarchy (in which POS is the bottom type). */
+                // This gets the type of nonLiteralType in our hierarchy (in which POS is the
+                // bottom type).
                 type.addAnnotation(nonLiteralType.getAnnotationInHierarchy(POS));
                 return;
             } else if (val == 1) {
                 promoteType(nonLiteralType, type);
                 return;
             } else if (val >= 2) {
-                if (nonLiteralType.hasAnnotation(GTEN1)
-                        || nonLiteralType.hasAnnotation(NN)
-                        || nonLiteralType.hasAnnotation(POS)) {
+                if (!nonLiteralType.hasAnnotation(UNKNOWN)) {
+                    // 2 + a positive, or a non-negative, or a non-negative-1 is a positive
                     type.addAnnotation(POS);
                     return;
                 }
@@ -405,10 +404,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         *
+         * addAnnotationForPlus handles the following cases:
          *
          * <pre>
-         *  addAnnotationForPlus handles the following cases:
          *      lit -2 + pos &rarr; gte-1
          *      lit -1 + * &rarr; call demote
          *      lit 0 + * &rarr; *
@@ -421,7 +419,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *      * + * &rarr; lbu
          *  </pre>
          */
-        public void addAnnotationForPlus(
+        private void addAnnotationForPlus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
 
             // Adding two literals is handled by visitBinary, so we
@@ -473,19 +471,17 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             // * + * -> lbu.
             type.addAnnotation(UNKNOWN);
-            return;
         }
 
         /**
-         *
+         * addAnnotationForMinus handles the following cases:
          *
          * <pre>
-         *  addAnnotationForMinus handles the following cases:
          *      * - lit &rarr; call plus(*, -1 * the value of the lit)
          *      * - * &rarr; lbu
          *  </pre>
          */
-        public void addAnnotationForMinus(
+        private void addAnnotationForMinus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
 
             // Check if the right side's value is known at compile time.
@@ -500,7 +496,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // Check if the left side is a field access of an array's length. If so,
                 // we can try to look up the MinLen of the array, and potentially keep
                 // this either NN or POS instead of GTEN1 or LBU.
-                if (leftExpr instanceof MemberSelectTree) {
+                if (leftExpr.getKind() == Kind.MEMBER_SELECT) {
                     MemberSelectTree mstree = (MemberSelectTree) leftExpr;
                     Integer minLen = minLenFromMemberSelectTree(mstree);
                     if (minLen != null) {
@@ -513,7 +509,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             // We can't say anything about generic things that are being subtracted, sadly.
             type.addAnnotation(UNKNOWN);
-            return;
         }
 
         /**
@@ -577,10 +572,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /**
-         *
+         * addAnnotationForMultiply handles the following cases:
          *
          * <pre>
-         *  addAnnotationForMultiply handles the following cases:
          *        * * lit 0 &rarr; nn (=0)
          *        * * lit 1 &rarr; *
          *        pos * pos &rarr; pos
@@ -589,10 +583,10 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *        * * * &rarr; lbu
          *  </pre>
          */
-        public void addAnnotationForMultiply(
+        private void addAnnotationForMultiply(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
 
-            // Special handling for multiplying an array length by a random variable.
+            // Special handling for multiplying an array length by a Math.random().
             if (isRandomSpecialCase(rightExpr, leftExpr, type)
                     || isRandomSpecialCase(leftExpr, rightExpr, type)) {
                 return;
@@ -637,7 +631,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return;
             }
             type.addAnnotation(UNKNOWN);
-            return;
         }
 
         /** When the value on the left is known at compile time. */
@@ -645,7 +638,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 int val, AnnotatedTypeMirror rightType, AnnotatedTypeMirror type) {
             if (val == 0) {
                 type.addAnnotation(NN);
-                return;
             } else if (val == 1) {
                 if (rightType.hasAnnotation(NN) || rightType.hasAnnotation(POS)) {
                     type.addAnnotation(NN);
@@ -653,7 +645,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                     // (1 / x) can't be outside the range [-1, 1] when x is an integer.
                     type.addAnnotation(GTEN1);
                 }
-                return;
             }
         }
 
@@ -668,18 +659,15 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (val == 0) {
                 // If we get here then this is a divide by zero error. See above comment.
                 type.addAnnotation(POS);
-                return;
             } else if (val == 1) {
                 type.addAnnotation(leftType.getAnnotationInHierarchy(POS));
-                return;
             }
         }
 
         /**
-         *
+         * addAnnotationForDivide handles these cases:
          *
          * <pre>
-         *  addAnnotationForDivide handles these cases:
          * lit 0 / * &rarr; nn (=0)
          *      * / lit 0 &rarr; pos
          *      lit 1 / {pos, nn} &rarr; nn
@@ -690,7 +678,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          *      * / * &rarr; lbu
          *  </pre>
          */
-        public void addAnnotationForDivide(
+        private void addAnnotationForDivide(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
 
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
@@ -728,7 +716,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
             // We don't know anything about other stuff.
             type.addAnnotation(UNKNOWN);
-            return;
         }
 
         /**
@@ -737,7 +724,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         private void addAnnotationForLiteralRemainder(int val, AnnotatedTypeMirror type) {
             if (val == 1 || val == -1) {
                 type.addAnnotation(NN);
-                return;
             }
         }
 
@@ -805,6 +791,5 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         type.addAnnotation(UNKNOWN);
-        return;
     }
 }

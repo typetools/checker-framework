@@ -20,18 +20,29 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.*;
+import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
+import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
+import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.EqualToNode;
+import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
+import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.LessThanNode;
+import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
+import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
+import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
-public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore, MinLenTransfer> {
+public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, MinLenTransfer> {
 
     protected MinLenAnalysis analysis;
     protected static MinLenAnnotatedTypeFactory atypeFactory;
-    protected final ProcessingEnvironment env;
     protected final ExecutableElement listAdd;
     protected final ExecutableElement listAdd2;
     protected final ExecutableElement listToArray;
@@ -45,9 +56,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         super(analysis);
         this.analysis = analysis;
         atypeFactory = (MinLenAnnotatedTypeFactory) analysis.getTypeFactory();
-        this.env = MinLenAnnotatedTypeFactory.env;
         valueAnnotatedTypeFactory = atypeFactory.getValueAnnotatedTypeFactory();
         qualifierHierarchy = atypeFactory.getQualifierHierarchy();
+        ProcessingEnvironment env = atypeFactory.getProcessingEnv();
         this.listAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
         this.listAdd2 = TreeUtils.getMethod("java.util.List", "add", 2, env);
         this.listToArray = TreeUtils.getMethod("java.util.List", "toArray", 0, env);
@@ -56,9 +67,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitAssignment(
-            AssignmentNode node, TransferInput<MinLenValue, MinLenStore> in) {
-        TransferResult<MinLenValue, MinLenStore> result = super.visitAssignment(node, in);
+    public TransferResult<CFValue, MinLenStore> visitAssignment(
+            AssignmentNode node, TransferInput<CFValue, MinLenStore> in) {
+        TransferResult<CFValue, MinLenStore> result = super.visitAssignment(node, in);
 
         // When an array is created using another array's length as the dimension, transfer
         // that array's MinLen annotation to the new array.
@@ -93,9 +104,10 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitMethodInvocation(
-            MethodInvocationNode node, TransferInput<MinLenValue, MinLenStore> in) {
-        TransferResult<MinLenValue, MinLenStore> result = super.visitMethodInvocation(node, in);
+    public TransferResult<CFValue, MinLenStore> visitMethodInvocation(
+            MethodInvocationNode node, TransferInput<CFValue, MinLenStore> in) {
+        ProcessingEnvironment env = atypeFactory.getProcessingEnv();
+        TransferResult<CFValue, MinLenStore> result = super.visitMethodInvocation(node, in);
 
         String methodName = node.getTarget().getMethod().toString();
         boolean add = methodName.startsWith("add(");
@@ -123,8 +135,7 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             AnnotationMirror AM = atypeFactory.createMinLen(value + 1);
             Set<AnnotationMirror> set = new HashSet<>();
             set.add(AM);
-            MinLenValue minlen =
-                    new MinLenValue(analysis, set, node.getTarget().getReceiver().getType());
+            CFValue minlen = new CFValue(analysis, set, node.getTarget().getReceiver().getType());
             if (MinLenStore.canInsertReceiver(rec)) {
                 if (result.containsTwoStores()) {
                     result.getThenStore().replaceValue(rec, minlen);
@@ -179,9 +190,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitArrayAccess(
-            ArrayAccessNode node, TransferInput<MinLenValue, MinLenStore> in) {
-        TransferResult<MinLenValue, MinLenStore> result = super.visitArrayAccess(node, in);
+    public TransferResult<CFValue, MinLenStore> visitArrayAccess(
+            ArrayAccessNode node, TransferInput<CFValue, MinLenStore> in) {
+        TransferResult<CFValue, MinLenStore> result = super.visitArrayAccess(node, in);
 
         if (valueAnnotatedTypeFactory
                 .getAnnotatedType(node.getArray().getTree())
@@ -213,11 +224,11 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
         public Node left, right;
         public Set<AnnotationMirror> leftType, rightType;
         public MinLenStore thenStore, elseStore;
-        public ConditionalTransferResult<MinLenValue, MinLenStore> newResult;
+        public ConditionalTransferResult<CFValue, MinLenStore> newResult;
 
         public RefinementInfo(
-                TransferResult<MinLenValue, MinLenStore> result,
-                TransferInput<MinLenValue, MinLenStore> in,
+                TransferResult<CFValue, MinLenStore> result,
+                TransferInput<CFValue, MinLenStore> in,
                 Node r,
                 Node l) {
             right = r;
@@ -241,9 +252,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     // their LBC counterparts.
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitGreaterThan(
-            GreaterThanNode node, TransferInput<MinLenValue, MinLenStore> in) {
-        TransferResult<MinLenValue, MinLenStore> result = super.visitGreaterThan(node, in);
+    public TransferResult<CFValue, MinLenStore> visitGreaterThan(
+            GreaterThanNode node, TransferInput<CFValue, MinLenStore> in) {
+        TransferResult<CFValue, MinLenStore> result = super.visitGreaterThan(node, in);
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
@@ -257,9 +268,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitGreaterThanOrEqual(
-            GreaterThanOrEqualNode node, TransferInput<MinLenValue, MinLenStore> in) {
-        TransferResult<MinLenValue, MinLenStore> result = super.visitGreaterThanOrEqual(node, in);
+    public TransferResult<CFValue, MinLenStore> visitGreaterThanOrEqual(
+            GreaterThanOrEqualNode node, TransferInput<CFValue, MinLenStore> in) {
+        TransferResult<CFValue, MinLenStore> result = super.visitGreaterThanOrEqual(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -274,9 +285,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitLessThanOrEqual(
-            LessThanOrEqualNode node, TransferInput<MinLenValue, MinLenStore> in) {
-        TransferResult<MinLenValue, MinLenStore> result = super.visitLessThanOrEqual(node, in);
+    public TransferResult<CFValue, MinLenStore> visitLessThanOrEqual(
+            LessThanOrEqualNode node, TransferInput<CFValue, MinLenStore> in) {
+        TransferResult<CFValue, MinLenStore> result = super.visitLessThanOrEqual(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -290,9 +301,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitLessThan(
-            LessThanNode node, TransferInput<MinLenValue, MinLenStore> in) {
-        TransferResult<MinLenValue, MinLenStore> result = super.visitLessThan(node, in);
+    public TransferResult<CFValue, MinLenStore> visitLessThan(
+            LessThanNode node, TransferInput<CFValue, MinLenStore> in) {
+        TransferResult<CFValue, MinLenStore> result = super.visitLessThan(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -306,9 +317,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitEqualTo(
-            EqualToNode node, TransferInput<MinLenValue, MinLenStore> in) {
-        TransferResult<MinLenValue, MinLenStore> result = super.visitEqualTo(node, in);
+    public TransferResult<CFValue, MinLenStore> visitEqualTo(
+            EqualToNode node, TransferInput<CFValue, MinLenStore> in) {
+        TransferResult<CFValue, MinLenStore> result = super.visitEqualTo(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -330,9 +341,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
     }
 
     @Override
-    public TransferResult<MinLenValue, MinLenStore> visitNotEqual(
-            NotEqualNode node, TransferInput<MinLenValue, MinLenStore> in) {
-        TransferResult<MinLenValue, MinLenStore> result = super.visitNotEqual(node, in);
+    public TransferResult<CFValue, MinLenStore> visitNotEqual(
+            NotEqualNode node, TransferInput<CFValue, MinLenStore> in) {
+        TransferResult<CFValue, MinLenStore> result = super.visitNotEqual(node, in);
 
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
@@ -361,11 +372,9 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
             MinLenStore store) {
 
         AnnotationMirror rightType =
-                qualifierHierarchy.findAnnotationInHierarchy(
-                        rightTypeSet, atypeFactory.createMinLen(0));
+                qualifierHierarchy.findAnnotationInHierarchy(rightTypeSet, atypeFactory.MIN_LEN_0);
         AnnotationMirror leftType =
-                qualifierHierarchy.findAnnotationInHierarchy(
-                        leftTypeSet, atypeFactory.createMinLen(0));
+                qualifierHierarchy.findAnnotationInHierarchy(leftTypeSet, atypeFactory.MIN_LEN_0);
 
         if (leftType == null || rightType == null) {
             return;
@@ -569,10 +578,7 @@ public class MinLenTransfer extends CFAbstractTransfer<MinLenValue, MinLenStore,
                     AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
             if (newMinLen > currentMinLen) {
                 store.insertValue(rec, atypeFactory.createMinLen(newMinLen));
-                return;
             }
-
-            return;
         }
     }
 }

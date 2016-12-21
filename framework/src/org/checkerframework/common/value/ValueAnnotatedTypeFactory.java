@@ -75,7 +75,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** should this type factory report warnings? * */
     private final boolean reportEvalWarnings;
 
-    /** Helper class that evaluates statically executable methods, constructor, and fields. */
+    /** Helper class that evaluates statically executable methods, constructors, and fields. */
     private final ReflectiveEvalutator evalutator;
 
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {

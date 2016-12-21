@@ -5,39 +5,31 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
-import org.checkerframework.framework.flow.CFAbstractValue;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.Pair;
 
-// subclasses the base analysis to use our Transfers instead of the defaults
-
+/** Analysis class using {@link UpperBoundStore} and {@link UpperBoundTransfer}. */
 public class UpperBoundAnalysis
-        extends CFAbstractAnalysis<UpperBoundValue, UpperBoundStore, UpperBoundTransfer> {
-    UpperBoundAnnotatedTypeFactory atypeFactory;
+        extends CFAbstractAnalysis<CFValue, UpperBoundStore, UpperBoundTransfer> {
 
     public UpperBoundAnalysis(
             BaseTypeChecker checker,
             UpperBoundAnnotatedTypeFactory factory,
-            List<Pair<VariableElement, UpperBoundValue>> fieldValues) {
+            List<Pair<VariableElement, CFValue>> fieldValues) {
         super(checker, factory, fieldValues);
-        this.atypeFactory = (UpperBoundAnnotatedTypeFactory) super.atypeFactory;
     }
 
-    //overrides the superclass method to return our transfers
     @Override
     public UpperBoundTransfer createTransferFunction() {
         return new UpperBoundTransfer(this);
     }
 
     @Override
-    public @Nullable UpperBoundValue createAbstractValue(
+    public CFValue createAbstractValue(
             Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
-        if (!CFAbstractValue.validateSet(annotations, underlyingType, qualifierHierarchy)) {
-            return null;
-        }
-        return new UpperBoundValue(this, annotations, underlyingType);
+        return defaultCreateAbstractValue(this, annotations, underlyingType);
     }
 
     @Override

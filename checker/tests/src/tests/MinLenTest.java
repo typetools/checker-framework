@@ -17,6 +17,9 @@ public class MinLenTest extends CheckerFrameworkPerDirectoryTest {
 
     @Parameters
     public static String[] getTestDirs() {
+        // MinLen Checker is run as a sub-checker by the Upper and Lower Bound Checkers.
+        // Since both checkers are runn on all-systems and in order to save time, don't
+        // run the MinLen Checker on them by itself.
         return new String[] {"minlen"};
     }
 }

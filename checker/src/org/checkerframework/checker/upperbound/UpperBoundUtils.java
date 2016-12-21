@@ -1,7 +1,9 @@
 package org.checkerframework.checker.upperbound;
 
 import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.checker.upperbound.qual.*;
+import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
+import org.checkerframework.checker.upperbound.qual.LTLengthOf;
+import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 

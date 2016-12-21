@@ -2,13 +2,16 @@ package org.checkerframework.checker.upperbound;
 
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.UnaryTree;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
@@ -16,13 +19,18 @@ import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
-import org.checkerframework.checker.minlen.qual.*;
-import org.checkerframework.checker.upperbound.qual.*;
+import org.checkerframework.checker.minlen.qual.MinLen;
+import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
+import org.checkerframework.checker.upperbound.qual.LTLengthOf;
+import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
+import org.checkerframework.checker.upperbound.qual.UpperBoundBottom;
+import org.checkerframework.checker.upperbound.qual.UpperBoundUnknown;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
+import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
@@ -45,10 +53,10 @@ import org.checkerframework.javacutil.TreeUtils;
  */
 public class UpperBoundAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<
-                UpperBoundValue, UpperBoundStore, UpperBoundTransfer, UpperBoundAnalysis> {
+                CFValue, UpperBoundStore, UpperBoundTransfer, UpperBoundAnalysis> {
 
     /** Easy shorthand for UpperBoundUnknown.class, basically. */
-    public static AnnotationMirror UNKNOWN;
+    public final AnnotationMirror UNKNOWN;
 
     /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
@@ -62,16 +70,12 @@ public class UpperBoundAnnotatedTypeFactory
      */
     private final MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory;
 
-    /** We need this to make an AnnotationBuilder for some reason. */
-    protected static ProcessingEnvironment env;
-
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
 
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         minLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
-        env = checker.getProcessingEnvironment();
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(new String[0]));
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(new String[0]));
         this.postInit();
@@ -178,38 +182,28 @@ public class UpperBoundAnnotatedTypeFactory
         return new Integer((int) valMax);
     }
 
-    // I attempted to move all of these static methods into UpperBoundUtils on
-    // 9.29.16. Do not try this. It does not work. They rely on the processing
-    // environment, which is only available here. DO NOT TRY TO MOVE THEM.
-
-    protected static AnnotationMirror createAnnotation(String anno, String name) {
-        String[] arr = new String[1];
-        arr[0] = name;
-        return createAnnotation(anno, arr);
-    }
-
     /**
      * Creates an annotation of the name given with the set of values given.
      *
      * @return annotation given by name with names=values, or UNKNOWN
      */
-    protected static AnnotationMirror createAnnotation(String name, String[] names) {
+    protected AnnotationMirror createAnnotation(AnnotationMirror anno, String... names) {
         if (names == null) {
             names = new String[0];
         }
-        if (name.equals("LTLengthOf")) {
+        if (AnnotationUtils.areSameByClass(anno, LTLengthOf.class)) {
             return createLTLengthOfAnnotation(names);
-        } else if (name.equals("LTEqLengthOf")) {
+        } else if (AnnotationUtils.areSameByClass(anno, LTEqLengthOf.class)) {
             return createLTEqLengthOfAnnotation(names);
-        } else if (name.equals("LTOMLengthOf")) {
+        } else if (AnnotationUtils.areSameByClass(anno, LTOMLengthOf.class)) {
             return createLTOMLengthOfAnnotation(names);
         } else {
             return UNKNOWN;
         }
     }
 
-    static AnnotationMirror createLTOMLengthOfAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, LTOMLengthOf.class);
+    AnnotationMirror createLTOMLengthOfAnnotation(String... names) {
+        AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTOMLengthOf.class);
         if (names == null) {
             names = new String[0];
         }
@@ -217,8 +211,8 @@ public class UpperBoundAnnotatedTypeFactory
         return builder.build();
     }
 
-    static AnnotationMirror createLTLengthOfAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, LTLengthOf.class);
+    AnnotationMirror createLTLengthOfAnnotation(String... names) {
+        AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTLengthOf.class);
         if (names == null) {
             names = new String[0];
         }
@@ -226,28 +220,13 @@ public class UpperBoundAnnotatedTypeFactory
         return builder.build();
     }
 
-    static AnnotationMirror createLTLengthOfAnnotation(String name) {
-        String[] names = {name};
-        return createLTLengthOfAnnotation(names);
-    }
-
-    static AnnotationMirror createLTOMLengthOfAnnotation(String name) {
-        String[] names = {name};
-        return createLTOMLengthOfAnnotation(names);
-    }
-
-    static AnnotationMirror createLTEqLengthOfAnnotation(String[] names) {
-        AnnotationBuilder builder = new AnnotationBuilder(env, LTEqLengthOf.class);
+    AnnotationMirror createLTEqLengthOfAnnotation(String... names) {
+        AnnotationBuilder builder = new AnnotationBuilder(getProcessingEnv(), LTEqLengthOf.class);
         if (names == null) {
             names = new String[0];
         }
         builder.setValue("value", names);
         return builder.build();
-    }
-
-    static AnnotationMirror createLTEqLengthOfAnnotation(String name) {
-        String[] names = {name};
-        return createLTEqLengthOfAnnotation(names);
     }
 
     @Override
@@ -373,7 +352,7 @@ public class UpperBoundAnnotatedTypeFactory
             else if (AnnotationUtils.areSameIgnoringValues(a1, a2)) {
 
                 String[] names = getIntersectingNames(a1, a2);
-                return createAnnotation(a1.getAnnotationType().toString(), names);
+                return createAnnotation(a1, names);
             } else if ((AnnotationUtils.areSameByClass(a1, LTLengthOf.class)
                             && AnnotationUtils.areSameByClass(a2, LTEqLengthOf.class))
                     || (AnnotationUtils.areSameByClass(a1, LTEqLengthOf.class)

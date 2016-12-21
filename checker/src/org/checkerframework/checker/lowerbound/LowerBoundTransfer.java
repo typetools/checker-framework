@@ -231,7 +231,7 @@ public class LowerBoundTransfer extends CFTransfer {
     private void handleRelevantLiteralForEquals(
             Node mLiteral, Node otherNode, Set<AnnotationMirror> otherType, CFStore store) {
 
-        Long integerLiteral = aTypeFactory.getValueFromTree(mLiteral.getTree());
+        Long integerLiteral = aTypeFactory.getExactValueFromTree(mLiteral.getTree());
 
         if (integerLiteral == null) {
             return;
@@ -241,16 +241,12 @@ public class LowerBoundTransfer extends CFTransfer {
             if (AnnotationUtils.containsSameByClass(otherType, NonNegative.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, POS);
-                return;
             }
         } else if (integerLiteral == -1) {
             if (AnnotationUtils.containsSameByClass(otherType, GTENegativeOne.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, NN);
-                return;
             }
-        } else {
-            return;
         }
     }
 
@@ -265,10 +261,8 @@ public class LowerBoundTransfer extends CFTransfer {
             boolean notEqualTo) {
 
         if (notEqualTo) {
-            /* != is equivalent to == and implemented the same way, but we
-             * !have information about the else branch (i.e. when they are
-             * !equal).
-             */
+            // != is equivalent to == and implemented the same way, but we have information
+            // about the else branch (i.e. when they are !equal).
 
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
@@ -280,13 +274,10 @@ public class LowerBoundTransfer extends CFTransfer {
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
             return rfi.newResult;
         } else {
-            /*  In an ==, we only can make conclusions about the then
-             *  branch (i.e. when they are, actually, equal). In that
-             *  case, we essentially want to refine them to the more
-             *  precise of the two types, which we accomplish by refining
-             *  each as if it were greater than or equal to the other.
-             */
-
+            //  In an ==, we only can make conclusions about the then branch (i.e. when they are,
+            // actually, equal). In that case, we essentially want to refine them to the more
+            // precise of the two types, which we accomplish by refining each as if it were
+            // greater than or equal to the other.
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
             // Special processing for literals:
@@ -317,9 +308,8 @@ public class LowerBoundTransfer extends CFTransfer {
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
-        /* We don't want to overwrite a more precise type, so we don't modify
-         * the left's type if it's already known to be positive.
-         */
+        // We don't want to overwrite a more precise type, so we don't modify the left's type if
+        // it's already known to be positive.
         if (AnnotationUtils.containsSame(rightType, GTEN1)
                 && !AnnotationUtils.containsSame(leftType, POS)) {
             store.insertValue(leftRec, NN);
@@ -352,10 +342,8 @@ public class LowerBoundTransfer extends CFTransfer {
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
-        /* We are effectively calling GLB(right, left) here, but we're
-         * doing it manually because of the need to modify things
-         * directly.
-         */
+        // We are effectively calling GLB(right, left) here, but we're doing it manually because
+        // of the need to modify things directly.
         if (AnnotationUtils.containsSame(rightType, POS)) {
             store.insertValue(leftRec, POS);
             return;
@@ -374,6 +362,5 @@ public class LowerBoundTransfer extends CFTransfer {
             store.insertValue(leftRec, GTEN1);
             return;
         }
-        return;
     }
 }

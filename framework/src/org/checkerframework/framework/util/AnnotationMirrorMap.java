@@ -24,6 +24,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * method; therefore, existing implementations of Map cannot be used.
  */
 public class AnnotationMirrorMap<V> implements Map<AnnotationMirror, V> {
+
+    /** The actual map to which all work is delegated. */
     private final Map<AnnotationMirror, V> shadowMap = new TreeMap<>(annotationOrdering());
 
     public AnnotationMirrorMap() {}
