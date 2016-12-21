@@ -34,7 +34,6 @@ import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StaticallyExecutable;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.common.value.qual.UnknownVal;
-import org.checkerframework.common.value.util.Range;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;

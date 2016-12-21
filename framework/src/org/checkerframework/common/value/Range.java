@@ -1,4 +1,4 @@
-package org.checkerframework.common.value.util;
+package org.checkerframework.common.value;
 
 import java.math.BigInteger;
 /**
