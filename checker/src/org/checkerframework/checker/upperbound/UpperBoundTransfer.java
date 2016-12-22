@@ -51,8 +51,8 @@ public class UpperBoundTransfer
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
         TransferResult<CFValue, UpperBoundStore> result = super.visitAssignment(node, in);
 
-        // When an existing array is assigned into, we need to blow up the store -
-        // that is, we need to remove every instance of LTL and LTEL, since arrays
+        // When an existing array is assigned into, the store needs to be cleared -
+        // that is, every instance of LTL and LTEL needs to be removed, since arrays
         // might be aliased, and when an array is modified to be a different length,
         // that could cause any of our information about arrays to be wrong.
         if (node.getTarget().getType().getKind() == TypeKind.ARRAY) {
@@ -202,9 +202,8 @@ public class UpperBoundTransfer
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
-        /*  In an ==, we only can make conclusions about the then
-         *  branch (i.e. when they are, actually, equal).
-         */
+        //  In an ==, only refine the then
+        //  branch (i.e. when they are, actually, equal).
         refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
 
         // With a few exceptions...
@@ -221,10 +220,8 @@ public class UpperBoundTransfer
         RefinementInfo rfi =
                 new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
 
-        /* != is equivalent to == and implemented the same way, but we
-         * only have information about the else branch (i.e. when they are
-         * not equal).
-         */
+        // != is equivalent to == and implemented the same way, but only the
+        // else branch is refined.
         refineEq(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
 
         // With a few exceptions...
@@ -295,9 +292,6 @@ public class UpperBoundTransfer
         AnnotationMirror UNKNOWN = atypeFactory.UNKNOWN;
         if (AnnotationUtils.containsSameByClass(leftType, LTLengthOf.class)) {
             // Create an LTL for the right type.
-            // There's a slight danger of losing information here:
-            // if the two annotations are LTL(a) and EL(b), for instance,
-            // we lose some information.
             Receiver rightRec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), right);
             String[] names =
                     UpperBoundUtils.getValue(
@@ -392,7 +386,7 @@ public class UpperBoundTransfer
                         UpperBoundUtils.getValue(
                                 AnnotationUtils.getAnnotationByClass(leftType, LTEqLengthOf.class));
                 if (names.length != 1) {
-                    // if there is more than one array, then we can't refine, because precise
+                    // if there is more than one array, then no refinement takes place, because precise
                     // information is only available  about one array.
                     return;
                 }
@@ -419,7 +413,7 @@ public class UpperBoundTransfer
                         UpperBoundUtils.getValue(
                                 AnnotationUtils.getAnnotationByClass(leftType, LTLengthOf.class));
                 if (names.length != 1) {
-                    // if there is more than one array, then we can't refine, because precise
+                    // if there is more than one array, then no refinement takes place, because precise
                     // information is only available  about one array.
                     return;
                 }

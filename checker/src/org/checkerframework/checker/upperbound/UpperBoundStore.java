@@ -29,8 +29,8 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
         super(analysis, sequentialSemantics);
     }
 
-    // If we remove from a list it reduces the minlen of anything that could be an alias of the list by 1.
-    // if we clear a list anything that could be an alias of this list goes to UpperBound(0).
+    // If something is removed from a list it reduces the minlen of anything that could be an alias of the list by 1.
+    // If a list is cleared, anything that could be an alias of this list goes to UpperBoundUnknown.
     @Override
     public void updateForMethodCall(
             MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, CFValue val) {

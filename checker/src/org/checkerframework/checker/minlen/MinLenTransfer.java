@@ -84,7 +84,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                         if (((FieldAccessNode) lengthNode).getReceiver().getType().getKind()
                                         == TypeKind.ARRAY
                                 && ((FieldAccessNode) lengthNode).getFieldName().equals("length")) {
-                            // Finally, confirmation that we're creating a new array using another array's length.
+                            // Finally, confirmation that a new array has been created using another array's length.
                             AnnotationMirror otherMinLen =
                                     atypeFactory.getAnnotationMirror(
                                             ((FieldAccessNode) lengthNode).getReceiver().getTree(),
@@ -197,7 +197,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         if (valueAnnotatedTypeFactory
                 .getAnnotatedType(node.getArray().getTree())
                 .hasAnnotation(ArrayLen.class)) {
-            // In this case, we can refine the MinLen to match the ArrayLen.
+            // In this case, refine the MinLen to match the ArrayLen.
             AnnotationMirror arrayLenAnm =
                     valueAnnotatedTypeFactory
                             .getAnnotatedType(node.getArray().getTree())
@@ -399,7 +399,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         Tree tree = null;
         Receiver rec = null;
         Set<AnnotationMirror> type = null;
-        // We only care about length. This will miss an expression which
+        // Only the length matters. This will miss an expression which
         // include an array length (like "a.length + 1"), but that's okay
         // for now.
         // FIXME: Joe: List support will be needed here too.
@@ -420,7 +420,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 && fi.getReceiver().getType().getKind() == TypeKind.ARRAY) {
             // At this point, MinLen needs to invoke the constant value checker
             // to find out if it knows anything about what the length is being
-            // compared to. If so, we can do something.
+            // compared to.
 
             AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
 
@@ -434,8 +434,8 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 return;
             }
 
-            // We must be comparing against zero here; otherwise, we should be using
-            // refineGTE.
+            // This has to be a comparison against zero; otherwise, refineGTE will
+            // have the same behavior as this function.
             if (newMinLen != 0) {
                 return;
             }
@@ -467,7 +467,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         Tree tree = null;
         Receiver rec = null;
         Set<AnnotationMirror> type = null;
-        // We only care about length. This will miss an expression which
+        // Only length matters. This will miss an expression which
         // include an array length (like "a.length + 1"), but that's okay
         // for now.
         // FIXME: Joe: List support will be needed here too.
@@ -489,7 +489,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 && fi.getReceiver().getType().getKind() == TypeKind.ARRAY) {
             // At this point, MinLen needs to invoke the constant value checker
             // to find out if it knows anything about what the length is being
-            // compared to. If so, we can do something.
+            // compared to.
 
             AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
 
@@ -530,7 +530,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         Tree tree = null;
         Receiver rec = null;
         Set<AnnotationMirror> type = null;
-        // We only care about length. This will miss an expression which
+        // Only length matters. This will miss an expression which
         // include an array length (like "a.length + 1"), but that's okay
         // for now.
         // FIXME: Joe: List support will be needed here too.
@@ -556,7 +556,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 && fi.getReceiver().getType().getKind() == TypeKind.ARRAY) {
             // At this point, MinLen needs to invoke the constant value checker
             // to find out if it knows anything about what the length is being
-            // compared to. If so, we can do something.
+            // compared to.
 
             AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
 

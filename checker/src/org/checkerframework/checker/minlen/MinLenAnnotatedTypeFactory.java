@@ -82,7 +82,7 @@ public class MinLenAnnotatedTypeFactory
         if (possibleValues == null || possibleValues.size() == 0) {
             return null;
         }
-        // We're sure there is at least one element in the list, because of the previous check.
+        // There must be at least one element in the list, because of the previous check.
         Integer min = Collections.min(possibleValues).intValue();
         return min;
     }
@@ -151,7 +151,7 @@ public class MinLenAnnotatedTypeFactory
                 }
             }
 
-            // This should be unreachable but we want the function to be complete, so return bottom.
+            // This should be unreachable but the function has to be complete.
             return MIN_LEN_BOTTOM;
         }
 
@@ -175,7 +175,7 @@ public class MinLenAnnotatedTypeFactory
                 }
             }
 
-            // This should be unreachable but we want the function to be complete, so we return top.
+            // This should be unreachable but the function has to be complete.
             return MIN_LEN_0;
         }
 
@@ -194,8 +194,7 @@ public class MinLenAnnotatedTypeFactory
                 return false;
             } else if (AnnotationUtils.areSameIgnoringValues(rhs, lhs)) {
                 // Implies both are MinLen since that's the only other type.
-                // There used to be a check to see if these values existed.
-                // It's been removed; if they don't exist, we should get the default (0).
+                // There is no need for a check to see if these values exist - they must.
 
                 Integer rhsVal = AnnotationUtils.getElementValue(rhs, "value", Integer.class, true);
                 Integer lhsVal = AnnotationUtils.getElementValue(lhs, "value", Integer.class, true);
@@ -239,7 +238,7 @@ public class MinLenAnnotatedTypeFactory
             super(factory);
         }
 
-        /** When we encounter a new array, record how long it is. TODO write how this is done */
+        /** When a new array is reached, record how long it is. */
         @Override
         public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
 
