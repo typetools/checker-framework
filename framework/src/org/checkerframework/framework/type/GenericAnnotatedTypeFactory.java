@@ -961,9 +961,9 @@ public abstract class GenericAnnotatedTypeFactory<
     /**
      * Analyze the AST {@code ast} and store the result.
      *
-     * @param queue The queue to add more things to scan.
-     * @param fieldValues The abstract values for all fields of the same class.
-     * @param ast The AST to analyze.
+     * @param queue the queue to add more things to scan
+     * @param fieldValues the abstract values for all fields of the same class
+     * @param ast the AST to analyze
      * @param currentClass the class we are currently looking at
      * @param isInitializationCode are we analyzing a (non-static) initializer block of a class
      */

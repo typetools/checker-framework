@@ -754,7 +754,7 @@ public class QualifierDefaults {
         /**
          * Apply default to the type.
          *
-         * @param def Default to apply
+         * @param def default to apply
          */
         public void applyDefault(Default def) {
             this.location = def.location;
@@ -785,8 +785,8 @@ public class QualifierDefaults {
          * Add the qualifier to the type if it does not already have an annotation in the same
          * hierarchy as qual.
          *
-         * @param type Type to add qual
-         * @param qual Annotation to add
+         * @param type type to add qual
+         * @param qual annotation to add
          */
         private static void addAnnotation(AnnotatedTypeMirror type, AnnotationMirror qual) {
             // Add the default annotation, but only if no other
@@ -1098,7 +1098,7 @@ public class QualifierDefaults {
 
     /**
      * @param type the type whose boundType is returned. type must be an AnnotatedWildcardType or
-     *     AnnotatedTypeVariable
+     *     AnnotatedTypeVariable.
      * @return the boundType for type
      */
     private static BoundType getBoundType(
@@ -1176,7 +1176,7 @@ public class QualifierDefaults {
 
     /**
      * @return the BoundType of annotatedWildcard. If it is unbounded, use the type parameter to
-     *     which its an argument
+     *     which its an argument.
      */
     public static BoundType getWildcardBoundType(
             final AnnotatedWildcardType annotatedWildcard, final AnnotatedTypeFactory typeFactory) {

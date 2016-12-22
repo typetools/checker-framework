@@ -705,8 +705,8 @@ public abstract class CFAbstractTransfer<
      * precise than {@code firstvalue}. This is possible, if {@code secondNode} is an expression
      * that is tracked by the store (e.g., a local variable or a field).
      *
-     * @param res The previous result.
-     * @param notEqualTo If true, indicates that the logic is flipped (i.e., the information is
+     * @param res the previous result
+     * @param notEqualTo if true, indicates that the logic is flipped (i.e., the information is
      *     added to the {@code elseStore} instead of the {@code thenStore}) for a not-equal
      *     comparison.
      * @return the conditional transfer result (if information has been added), or {@code null}.

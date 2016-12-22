@@ -35,9 +35,9 @@ public interface CFGVisualizer<
      * <p>An invocation {@code visualize(cfg, entry, null);} does not output stores at the beginning
      * of basic blocks.
      *
-     * @param cfg The CFG to visualize
-     * @param entry The entry node of the control flow graph to be represented.
-     * @param analysis An analysis containing information about the program represented by the CFG.
+     * @param cfg the CFG to visualize
+     * @param entry the entry node of the control flow graph to be represented
+     * @param analysis an analysis containing information about the program represented by the CFG.
      *     The information includes {@link Store}s that are valid at the beginning of basic blocks
      *     reachable from {@code entry} and per-node information for value producing {@link Node}s.
      *     Can also be {@code null} to indicate that this information should not be output.

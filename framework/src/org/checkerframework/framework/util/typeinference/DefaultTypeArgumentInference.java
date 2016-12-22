@@ -135,7 +135,7 @@ public class DefaultTypeArgumentInference implements TypeArgumentInference {
      * @param argTypes annotated types of arguments to the method
      * @param assignedTo annotated type to which the result of the method invocation is assigned
      * @param targets set of type variables to infer
-     * @param inferredArgs map of type variables to the annotated types of their type arguments.
+     * @param inferredArgs map of type variables to the annotated types of their type arguments
      */
     private void handleNullTypeArguments(
             AnnotatedTypeFactory typeFactory,

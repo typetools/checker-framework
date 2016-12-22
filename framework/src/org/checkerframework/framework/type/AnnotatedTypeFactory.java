@@ -166,7 +166,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * initialized in the postInit.
      *
      * @see #postInit() This means, they cannot be final and cannot be referred to in any subclass
-     *     constructor or method until after postInit is called.
+     *     constructor or method until after postInit is called
      */
 
     /** Represent the annotation relations. * */
@@ -2163,7 +2163,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * literal ints, for example, {@code byte b = 1;}. All other narrowing conversions happen at
      * typecasts.
      *
-     * @param type type to narrow.
+     * @param type type to narrow
      * @param narrowedTypeMirror underlying type for the returned type mirror
      * @return result of converting {@code type} to {@code narrowedTypeMirror}
      */
@@ -2848,7 +2848,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>
      *
-     * @param elt The element for which to determine annotations.
+     * @param elt the element for which to determine annotations
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
         if (cacheDeclAnnos.containsKey(elt)) {
@@ -2888,7 +2888,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Adds into {@code results} the declaration annotations found in all elements that the method
      * element {@code elt} overrides.
      *
-     * @param elt Method element.
+     * @param elt method element
      * @param results {@code elt} local declaration annotations. The ones found in stub files and in
      *     the element itself.
      */
@@ -2956,8 +2956,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns a list of all declaration annotations used to annotate this element, which have a
      * meta-annotation (i.e., an annotation on that annotation) with class {@code metaAnnotation}.
      *
-     * @param element The element for which to determine annotations.
-     * @param metaAnnotation The meta-annotation that needs to be present.
+     * @param element the element for which to determine annotations
+     * @param metaAnnotation the meta-annotation that needs to be present
      * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror
      *     at {@code element}, and {@code metaAnno} is the annotation mirror used to annotate {@code
      *     anno}.
@@ -3000,8 +3000,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns a list of all annotations used to annotate this element, which have a meta-annotation
      * (i.e., an annotation on that annotation) with class {@code metaAnnotation}.
      *
-     * @param element The element at which to look for annotations.
-     * @param metaAnnotation The meta-annotation that needs to be present.
+     * @param element the element at which to look for annotations
+     * @param metaAnnotation the meta-annotation that needs to be present
      * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror
      *     at {@code element}, and {@code metaAnno} is the annotation mirror used to annotate {@code
      *     anno}.

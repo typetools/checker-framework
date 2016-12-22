@@ -726,7 +726,7 @@ public class AnnotationClassLoader {
      *
      * @param fullyQualifiedAnnoNames a set of strings where each string is a single annotation
      *     class's fully qualified name
-     * @return a set of loaded annotation classes.
+     * @return a set of loaded annotation classes
      * @see #loadAnnotationClass(String)
      */
     private final Set<Class<? extends Annotation>> loadAnnotationClasses(
