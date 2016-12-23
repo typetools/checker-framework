@@ -7,7 +7,7 @@ import org.checkerframework.dataflow.cfg.CFGVisualizer;
  * has accumulated at any given point in time.
  *
  * @author Stefan Heule
- * @param <S> The type of the store returned by {@code copy} and that is used in {@code
+ * @param <S> the type of the store returned by {@code copy} and that is used in {@code
  *     leastUpperBound}. Usually it is the implementing class itself, e.g. in {@code T extends
  *     Store<T>}.
  */

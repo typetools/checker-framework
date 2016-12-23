@@ -114,9 +114,9 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Resolves a call to {@link Method#invoke(Object, Object...)}.
      *
-     * @param factory The {@link AnnotatedTypeFactory} of the underlying type system.
-     * @param tree The method invocation tree that has to be resolved
-     * @param origResult The original result from {@code factory.methodFromUse}.
+     * @param factory the {@link AnnotatedTypeFactory} of the underlying type system
+     * @param tree the method invocation tree that has to be resolved
+     * @param origResult the original result from {@code factory.methodFromUse}.
      */
     private Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolveMethodCall(
             AnnotatedTypeFactory factory,
@@ -245,10 +245,10 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Resolves a call to {@link Constructor#newInstance(Object...)}.
      *
-     * @param factory The {@link AnnotatedTypeFactory} of the underlying type system.
-     * @param tree The method invocation tree (representing a constructor call) that has to be
+     * @param factory the {@link AnnotatedTypeFactory} of the underlying type system
+     * @param tree the method invocation tree (representing a constructor call) that has to be
      *     resolved
-     * @param origResult The original result from {@code factory.methodFromUse}.
+     * @param origResult the original result from {@code factory.methodFromUse}.
      */
     private Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> resolveConstructorCall(
             AnnotatedTypeFactory factory,
@@ -318,7 +318,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Resolves a reflective method call and returns all possible corresponding method calls.
      *
-     * @param tree The MethodInvocationTree node that is to be resolved (Method.invoke)
+     * @param tree the MethodInvocationTree node that is to be resolved (Method.invoke)
      * @return a (potentially empty) list of all resolved MethodInvocationTrees
      */
     private List<MethodInvocationTree> resolveReflectiveMethod(
@@ -418,7 +418,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
      * Resolves a reflective constructor call and returns all possible corresponding constructor
      * calls.
      *
-     * @param tree The MethodInvocationTree node that is to be resolved (Constructor.newInstance)
+     * @param tree the MethodInvocationTree node that is to be resolved (Constructor.newInstance)
      * @return a (potentially empty) list of all resolved MethodInvocationTrees
      */
     private List<JCNewClass> resolveReflectiveConstructor(

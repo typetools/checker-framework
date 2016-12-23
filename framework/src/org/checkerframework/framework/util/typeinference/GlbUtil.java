@@ -29,7 +29,7 @@ public class GlbUtil {
      *
      * @return the greatest lower bound of typeMirrors. If any of the type mirrors are incomparable,
      *     use an AnnotatedNullType that will contain the greatest lower bounds of the primary
-     *     annotations of typeMirrors
+     *     annotations of typeMirrors.
      */
     public static AnnotatedTypeMirror glbAll(
             final Map<AnnotatedTypeMirror, AnnotationMirrorSet> typeMirrors,

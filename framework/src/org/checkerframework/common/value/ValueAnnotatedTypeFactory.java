@@ -403,7 +403,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * find each dimension's size and create the appropriate annotation for it.
          *
          * @param dimensions a list of ExpressionTrees where each ExpressionTree is a specifier of
-         *     the size of that dimension (should be an IntVal).
+         *     the size of that dimension (should be an IntVal)
          * @param type the AnnotatedTypeMirror of the array
          */
         private void handleDimensions(

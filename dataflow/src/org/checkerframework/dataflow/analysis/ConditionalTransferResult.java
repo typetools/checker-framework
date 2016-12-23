@@ -9,7 +9,7 @@ import javax.lang.model.type.TypeMirror;
  * the two underlying stores.
  *
  * @author Stefan Heule
- * @param <S> The {@link Store} used to keep track of intermediate results.
+ * @param <S> the {@link Store} used to keep track of intermediate results
  */
 public class ConditionalTransferResult<A extends AbstractValue<A>, S extends Store<S>>
         extends TransferResult<A, S> {
