@@ -22,8 +22,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * Implements the refinement rules described in lowerbound_rules.txt. In particular, implements data
  * flow refinements based on tests: &lt;, &gt;, ==, and their derivatives.
  *
- * <p>We represent &gt;, &lt;, &ge;, &le;, ==, and != nodes as combinations of &gt; and &ge; (e.g.
- * == is &ge; in both directions in the then branch), and implement refinements based on these
+ * <p>&gt;, &lt;, &ge;, &le;, ==, and != nodes are represented as combinations of &gt; and &ge;
+ * (e.g. == is &ge; in both directions in the then branch), and implement refinements based on these
  * decompositions.
  *
  * <pre>
@@ -45,7 +45,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *  nn                   nn
  *  pos                  pos
  *
- * Then, we can use these two "building blocks" to make all
+ * These two "building blocks" can be combined to make all
  * other conditional expressions:
  *
  * EXPR             THEN          ELSE
@@ -66,8 +66,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
  * function on types (or, equivalently, the function specified by the "x
  * &gt; y" information above).
  *
- * There's also ==, which is a special case. We only know
- * things about the THEN branch:
+ * There's also ==, which is a special case. Only the THEN
+ * branch is refined:
  *
  * EXPR             THEN                   ELSE
  * x == y           x &ge; y &amp;&amp; y &ge; x       nothing known
@@ -261,8 +261,8 @@ public class LowerBoundTransfer extends CFTransfer {
             boolean notEqualTo) {
 
         if (notEqualTo) {
-            // != is equivalent to == and implemented the same way, but we have information
-            // about the else branch (i.e. when they are !equal).
+            // != is equivalent to == and implemented the same way, but the refinements occur in
+            // the else branch (i.e. when they are !equal).
 
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
@@ -274,9 +274,9 @@ public class LowerBoundTransfer extends CFTransfer {
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
             return rfi.newResult;
         } else {
-            //  In an ==, we only can make conclusions about the then branch (i.e. when they are,
-            // actually, equal). In that case, we essentially want to refine them to the more
-            // precise of the two types, which we accomplish by refining each as if it were
+            //  In an ==, refinements occur in the then branch (i.e. when they are,
+            // actually, equal). In that case, they are refined to the more
+            // precise of the two types, which is accomplished by refining each as if it were
             // greater than or equal to the other.
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
@@ -293,8 +293,8 @@ public class LowerBoundTransfer extends CFTransfer {
     /**
      * The implementation of the algorithm for refining a &gt; test. Changes the type of left (the
      * greater one) to one closer to bottom than the type of right. Can't call the promote function
-     * from the ATF directly because we're not introducing a new expression here - we have to modify
-     * an existing one.
+     * from the ATF directly because a new expression isn't introduced here - the modifications have
+     * to be made to an existing one.
      */
     private void refineGT(
             Node left,
@@ -308,7 +308,7 @@ public class LowerBoundTransfer extends CFTransfer {
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
-        // We don't want to overwrite a more precise type, so we don't modify the left's type if
+        // Shouldn't overwrite a more precise type, so don't modify the left's type if
         // it's already known to be positive.
         if (AnnotationUtils.containsSame(rightType, GTEN1)
                 && !AnnotationUtils.containsSame(leftType, POS)) {
@@ -342,8 +342,8 @@ public class LowerBoundTransfer extends CFTransfer {
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
-        // We are effectively calling GLB(right, left) here, but we're doing it manually because
-        // of the need to modify things directly.
+        // This effectively calls GLB(right, left), but does it manually because
+        // modifications need to be made mid-stream.
         if (AnnotationUtils.containsSame(rightType, POS)) {
             store.insertValue(leftRec, POS);
             return;

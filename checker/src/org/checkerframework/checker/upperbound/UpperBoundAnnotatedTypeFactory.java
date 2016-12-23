@@ -423,7 +423,7 @@ public class UpperBoundAnnotatedTypeFactory
                 return true;
             }
 
-            // To avoid doing evil things, we here enumerate all the conditions.
+            // Enumerate all the conditions.
             if (AnnotationUtils.areSameByClass(lhs, UpperBoundUnknown.class)) {
                 return true;
             } else if (AnnotationUtils.areSameByClass(rhs, UpperBoundUnknown.class)) {
@@ -674,7 +674,7 @@ public class UpperBoundAnnotatedTypeFactory
          */
         private void addAnnotationForPlus(
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
-            // Adding two literals isn't interesting, so we ignore it.
+            // Adding two literals isn't interesting, so ignore it.
             AnnotatedTypeMirror leftType = getAnnotatedType(leftExpr);
             // Check if the right side's value is known at compile time.
             AnnotatedTypeMirror valueTypeRight =
@@ -706,7 +706,7 @@ public class UpperBoundAnnotatedTypeFactory
                 if (mstree.getIdentifier().contentEquals("length")
                         && InternalUtils.typeOf(mstree.getExpression()).getKind()
                                 == TypeKind.ARRAY) {
-                    // Now we know that the arrLenTree represented an array length.
+                    // ArrLenTree must represent an array length.
 
                     if (randTree instanceof MethodInvocationTree) {
 

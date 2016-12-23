@@ -62,9 +62,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         AnnotatedTypeMirror indexType = atypeFactory.getAnnotatedType(indexTree);
 
         // Need to be able to check these as part of the conditional below.
-        // We need the max because we want to know whether the index is
+        // Find max because it's important to determine whether the index is
         // less than the minimum length of the array. If it could be any
-        // of several values, we want the highest one.
+        // of several values, only the max is of interest.
         Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
         Integer minLen = atypeFactory.minLenFromExpressionTree(arrTree);
 
@@ -95,9 +95,9 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // the last part of the methodName is the method (get, remove, etc) so get second to last part
             String localName = parts[parts.length - 2];
             // Need to be able to check these as part of the conditional below.
-            // We need the max because we want to know whether the index is
+            // Find max because it's important to determine whether the index is
             // less than the minimum length of the array. If it could be any
-            // of several values, we want the highest one.
+            // of several values, only the max is of interest.
             Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
             Integer minLen = atypeFactory.minLenFromExpressionTree(lstTree);
 

@@ -27,8 +27,8 @@ public class MinLenStore extends CFAbstractStore<CFValue, MinLenStore> {
         super(analysis, sequentialSemantics);
     }
 
-    // If we remove from a list it reduces the minlen of anything that could be an alias of the list by 1.
-    // if we clear a list anything that could be an alias of this list goes to MinLen(0).
+    // If something is removed from a list it reduces the minlen of anything that could be an alias of the list by 1.
+    // if a list is cleared, anything that could be an alias of the list goes to MinLen(0).
     @Override
     public void updateForMethodCall(
             MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, CFValue val) {
