@@ -285,6 +285,11 @@ public class FlowExpressions {
                                 new FieldAccess(
                                         fieldAccessExpression, typeOfId, (VariableElement) ele);
                         break;
+                    case CLASS:
+                    case ENUM:
+                    case ANNOTATION_TYPE:
+                    case INTERFACE:
+                        receiver = new ClassName(ele.asType());
                 }
         }
 
