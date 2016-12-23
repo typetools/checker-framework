@@ -388,7 +388,7 @@ public class UpperBoundAnnotatedTypeFactory
          * annotations are the same. In this case, rhs is a subtype of lhs iff lhs contains at least
          * every element of rhs.
          *
-         * @return true if rhs is a subtype of lhs, false otherwise.
+         * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {

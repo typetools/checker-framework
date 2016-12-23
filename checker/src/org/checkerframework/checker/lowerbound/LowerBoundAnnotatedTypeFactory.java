@@ -104,7 +104,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * Returns the exact value of the tree or null if an exact value isn't known.
      *
      * @param tree Tree
-     * @return Returns the exact value of the tree or null if an exact value isn't known.
+     * @return the exact value of the tree, or null if an exact value isn't known
      */
     public Long getExactValueFromTree(Tree tree) {
         AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
@@ -371,9 +371,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Helper method for addAnnotationForPlus. Handles addition of constants.
          *
-         * @param val The integer value of the constant.
-         * @param nonLiteralType The type of the side of the expression that isn't a constant.
-         * @param type The type of the result expression.
+         * @param val the integer value of the constant
+         * @param nonLiteralType the type of the side of the expression that isn't a constant
+         * @param type the type of the result expression
          */
         private void addAnnotationForLiteralPlus(
                 int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
@@ -514,9 +514,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         /**
          * Helper function for addAnnotationForMultiply. Handles compile-time known constants.
          *
-         * @param val The integer value of the constant.
-         * @param nonLiteralType The type of the side of the expression that isn't a constant.
-         * @param type The type of the result expression.
+         * @param val the integer value of the constant
+         * @param nonLiteralType the type of the side of the expression that isn't a constant
+         * @param type the type of the result expression
          */
         private void addAnnotationForLiteralMultiply(
                 int val, AnnotatedTypeMirror nonLiteralType, AnnotatedTypeMirror type) {
