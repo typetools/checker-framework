@@ -114,7 +114,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Resolves a call to {@link Method#invoke(Object, Object...)}.
      *
-     * @param factory the {@link AnnotatedTypeFactory} of the underlying type system.
+     * @param factory the {@link AnnotatedTypeFactory} of the underlying type system
      * @param tree the method invocation tree that has to be resolved
      * @param origResult the original result from {@code factory.methodFromUse}.
      */
@@ -245,7 +245,7 @@ public class DefaultReflectionResolver implements ReflectionResolver {
     /**
      * Resolves a call to {@link Constructor#newInstance(Object...)}.
      *
-     * @param factory the {@link AnnotatedTypeFactory} of the underlying type system.
+     * @param factory the {@link AnnotatedTypeFactory} of the underlying type system
      * @param tree the method invocation tree (representing a constructor call) that has to be
      *     resolved
      * @param origResult the original result from {@code factory.methodFromUse}.

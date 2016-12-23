@@ -78,7 +78,7 @@ public abstract class TransferResult<A extends AbstractValue<A>, S extends Store
     }
 
     /**
-     * @return a Map of {@link TypeMirror} to {@link Store}.
+     * @return a Map of {@link TypeMirror} to {@link Store}
      * @see TransferResult#getExceptionalStore(TypeMirror)
      */
     public Map<TypeMirror, S> getExceptionalStores() {
