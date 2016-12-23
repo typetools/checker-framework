@@ -15,7 +15,7 @@ public class RawTypeAssignment {
     }
 
     static void addTimes(Calendar calendar) {
-        // Type systems may issue an error below because of a mismatch between the type arguments..
+        // Type systems may issue an error below because of a mismatch between the type arguments.
         @SuppressWarnings("assignment.type.incompatible")
         //:: warning: [unchecked] unchecked conversion
         ArrayList<Component> clist = getComponents();

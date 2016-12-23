@@ -931,7 +931,7 @@ public abstract class AnnotatedTypeMirror {
                 if (wasRaw()) {
                     // TODO: This doesn't handle recursive type parameter
                     // e.g. class Pair<Y extends List<Y>> { ... }
-                    // Type argument inference for raw types can be improved. See Issue 635.
+                    // Type argument inference for raw types can be improved. See Issue #635.
                     // https://github.com/typetools/checker-framework/issues/635
                     AnnotatedDeclaredType declaration =
                             atypeFactory.fromElement((TypeElement) getUnderlyingType().asElement());
