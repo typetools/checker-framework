@@ -1,7 +1,6 @@
 package java.util;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.lock.qual.*;
 
 // Subclasses of this interface/class may opt to prohibit null elements

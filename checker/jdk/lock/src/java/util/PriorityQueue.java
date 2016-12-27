@@ -1,10 +1,10 @@
 package java.util;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
-import org.checkerframework.checker.nullness.qual.NonNull;
+
+
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.PolyNull;
+
 
 // doesn't permit null element
 public class PriorityQueue<E extends Object> extends AbstractQueue<E> implements java.io.Serializable {

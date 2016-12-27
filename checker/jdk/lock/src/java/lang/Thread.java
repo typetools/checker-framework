@@ -2,7 +2,7 @@ package java.lang;
 
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.Raw;
+
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 

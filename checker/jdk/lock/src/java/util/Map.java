@@ -1,8 +1,6 @@
 package java.util;
 import org.checkerframework.dataflow.qual.*;
 
-import org.checkerframework.checker.nullness.qual.Covariant;
-import org.checkerframework.checker.nullness.qual.KeyFor;
 import org.checkerframework.checker.lock.qual.*;
 
 // Subclasses of this interface/class may opt to prohibit null elements

@@ -2,9 +2,9 @@ package java.lang.reflect;
 
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
-import org.checkerframework.checker.nullness.qual.NonNull;
+
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.Raw;
+
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 public final class Field extends AccessibleObject implements Member {

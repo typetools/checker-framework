@@ -1,6 +1,6 @@
 package java.util;
 import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
+
 import org.checkerframework.checker.lock.qual.*;
 
 public abstract class AbstractQueue<E extends Object> extends AbstractCollection<E> implements Queue<E> {

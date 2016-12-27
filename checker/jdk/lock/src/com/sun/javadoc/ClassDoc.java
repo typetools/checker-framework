@@ -1,6 +1,6 @@
 package com.sun.javadoc;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+
 import org.checkerframework.checker.lock.qual.*;
 import org.checkerframework.dataflow.qual.Pure;
 

@@ -1,7 +1,6 @@
 package java.io;
 
 import org.checkerframework.dataflow.qual.*;
-import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.lock.qual.*;
 
 
@@ -15,7 +14,7 @@ public class BufferedReader extends Reader {
   public String readLine() throws IOException { throw new RuntimeException("skeleton method"); }
   public long skip(long a1) throws IOException { throw new RuntimeException("skeleton method"); }
 
-   public boolean ready(@GuardSatisfied BufferedReader this) throws IOException { throw new RuntimeException("skeleton method"); }
+  public boolean ready(@GuardSatisfied BufferedReader this) throws IOException { throw new RuntimeException("skeleton method"); }
   public boolean markSupported() { throw new RuntimeException("skeleton method"); }
   public void mark(int a1) throws IOException { throw new RuntimeException("skeleton method"); }
   public void reset() throws IOException { throw new RuntimeException("skeleton method"); }

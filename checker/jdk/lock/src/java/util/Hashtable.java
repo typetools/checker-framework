@@ -2,8 +2,8 @@ package java.util;
 import org.checkerframework.dataflow.qual.Pure;
 import org.checkerframework.dataflow.qual.SideEffectFree;
 
-import org.checkerframework.checker.nullness.qual.KeyFor;
-import org.checkerframework.checker.nullness.qual.NonNull;
+
+
 import org.checkerframework.checker.lock.qual.*;
 
 // This collection can only contain nonnull values
