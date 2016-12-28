@@ -1,5 +1,4 @@
 package java.util;
-import org.checkerframework.dataflow.qual.*;
 
 import org.checkerframework.checker.lock.qual.*;
 

@@ -4,8 +4,6 @@ import org.checkerframework.checker.lock.qual.*;
 
 
 
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
 public final class Class<T extends Object> extends Object implements java.io.Serializable, java.lang.reflect.GenericDeclaration, java.lang.reflect.Type, java.lang.reflect.AnnotatedElement {
   private static final long serialVersionUID = 0;

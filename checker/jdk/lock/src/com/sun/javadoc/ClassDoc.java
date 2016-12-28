@@ -2,7 +2,6 @@ package com.sun.javadoc;
 
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.dataflow.qual.Pure;
 
 public interface ClassDoc extends ProgramElementDoc, Type {
      boolean isAbstract(@GuardSatisfied ClassDoc this);

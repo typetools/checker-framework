@@ -1,8 +1,6 @@
 package java.util;
 import org.checkerframework.checker.lock.qual.*;
 
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import java.util.Collection;
 import java.util.stream.Stream;
