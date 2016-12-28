@@ -26,6 +26,7 @@ package java.util;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.nullness.qual.PolyNull;
 
 // Note: Methods with references to java 8 classes have been commented out
 // because it breaks the annotated jdk build when running java 7.
@@ -48,7 +49,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
  *
  * @since 1.8
  */
-public final class Optional<T> {
+public final class Optional<T extends @NonNull Object> {
     /**
      * Common instance for {@code empty()}.
      */
@@ -250,7 +251,7 @@ public final class Optional<T> {
      * be null
      * @return the value, if present, otherwise {@code other}
      */
-    public @Nullable T orElse(@Nullable T other) {
+    public @PolyNull T orElse(@PolyNull T other) {
         return value != null ? value : other;
     }
 

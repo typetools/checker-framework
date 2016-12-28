@@ -27,11 +27,9 @@ package java.lang;
 import  java.io.*;
 import  java.util.*;
 
-import org.checkerframework.dataflow.qual.Pure;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 
 import org.checkerframework.checker.lock.qual.*;
-import org.checkerframework.checker.nullness.qual.Raw;
+
 import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 
 /**
