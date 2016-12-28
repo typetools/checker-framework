@@ -49,7 +49,7 @@ import org.checkerframework.checker.nullness.qual.PolyNull;
  *
  * @since 1.8
  */
-public final class Optional<@NonNull T extends @NonNull Object> {
+public final class Optional<T extends @NonNull Object> {
     /**
      * Common instance for {@code empty()}.
      */
