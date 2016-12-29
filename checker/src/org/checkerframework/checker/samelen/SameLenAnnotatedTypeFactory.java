@@ -195,10 +195,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
             } else {
-                // the glb is either one of the annotations (if the other is top), or bottom.
-                if (AnnotationUtils.areSameByClass(a1, SameLenUnknown.class)) {
+                // the lub is either one of the annotations (if the other is bottom), or top.
+                if (AnnotationUtils.areSameByClass(a1, SameLenBottom.class)) {
                     return a2;
-                } else if (AnnotationUtils.areSameByClass(a2, SameLenUnknown.class)) {
+                } else if (AnnotationUtils.areSameByClass(a2, SameLenBottom.class)) {
                     return a1;
                 } else {
                     return createSameLenUnknown();

@@ -20,6 +20,8 @@ import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.minlen.qual.MinLen;
+import org.checkerframework.checker.samelen.SameLenAnnotatedTypeFactory;
+import org.checkerframework.checker.samelen.SameLenChecker;
 import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
@@ -70,12 +72,19 @@ public class UpperBoundAnnotatedTypeFactory
      */
     private final MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory;
 
+    /**
+     * Provides a way to query the SameLen (same length) Checker, which determines the relationships
+     * among the lengths of arrays.
+     */
+    private final SameLenAnnotatedTypeFactory sameLenAnnotatedTypeFactory;
+
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
 
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         minLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
+        sameLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(SameLenChecker.class);
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(new String[0]));
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(new String[0]));
         this.postInit();
@@ -138,6 +147,15 @@ public class UpperBoundAnnotatedTypeFactory
         }
         Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
         return minLen;
+    }
+
+    /**
+     * Queries the SameLen Checker to return the type that the SameLen Checker associates with the
+     * given expression tree.
+     */
+    public AnnotatedTypeMirror sameLenTypeFromExpressionTree(ExpressionTree tree) {
+        AnnotatedTypeMirror sameLenType = sameLenAnnotatedTypeFactory.getAnnotatedType(tree);
+        return sameLenType;
     }
 
     /** Get the list of possible values from a value checker type. May return null. */
