@@ -19,8 +19,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Implements the refinement rules described in lowerbound_rules.txt. In particular, implements data
- * flow refinements based on tests: &lt;, &gt;, ==, and their derivatives.
+ * Implements dataflow refinement rules based on tests: &lt;, &gt;, ==, and their derivatives.
  *
  * <p>&gt;, &lt;, &ge;, &le;, ==, and != nodes are represented as combinations of &gt; and &ge;
  * (e.g. == is &ge; in both directions in the then branch), and implement refinements based on these
