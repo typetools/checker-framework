@@ -78,6 +78,17 @@ public class UpperBoundAnnotatedTypeFactory
      */
     private final SameLenAnnotatedTypeFactory sameLenAnnotatedTypeFactory;
 
+    /**
+     * Important functions as executable elements. Stored in instance fields to avoid recomputation.
+     */
+    private final ExecutableElement fcnMin =
+            TreeUtils.getMethod("java.lang.Math", "min", 2, processingEnv);
+
+    private final ExecutableElement fcnRandom =
+            TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
+    private final ExecutableElement fcnNextDouble =
+            TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
+
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
@@ -491,8 +502,6 @@ public class UpperBoundAnnotatedTypeFactory
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            ExecutableElement fcnMin =
-                    TreeUtils.getMethod("java.lang.Math", "min", 2, processingEnv);
             if (TreeUtils.isMethodInvocation(tree, fcnMin, processingEnv)) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(tree.getArguments().get(0));
                 AnnotatedTypeMirror rightType = getAnnotatedType(tree.getArguments().get(1));
@@ -729,20 +738,15 @@ public class UpperBoundAnnotatedTypeFactory
                     if (randTree instanceof MethodInvocationTree) {
 
                         MethodInvocationTree mitree = (MethodInvocationTree) randTree;
-                        ExecutableElement random =
-                                TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
-                        ExecutableElement nextDouble =
-                                TreeUtils.getMethod(
-                                        "java.util.Random", "nextDouble", 0, processingEnv);
 
-                        if (TreeUtils.isMethodInvocation(mitree, random, processingEnv)) {
+                        if (TreeUtils.isMethodInvocation(mitree, fcnRandom, processingEnv)) {
                             // Okay, so this is Math.random() * array.length, which must be NonNegative
                             type.addAnnotation(
                                     createLTLengthOfAnnotation(mstree.getExpression().toString()));
                             return true;
                         }
 
-                        if (TreeUtils.isMethodInvocation(mitree, nextDouble, processingEnv)) {
+                        if (TreeUtils.isMethodInvocation(mitree, fcnNextDouble, processingEnv)) {
                             // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
                             type.addAnnotation(
                                     createLTLengthOfAnnotation(mstree.getExpression().toString()));
