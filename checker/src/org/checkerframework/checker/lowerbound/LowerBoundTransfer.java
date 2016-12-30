@@ -259,9 +259,17 @@ public class LowerBoundTransfer extends CFTransfer {
             CFValue secondValue,
             boolean notEqualTo) {
 
+        //  In an ==, refinements occur in the then branch (i.e. when they are,
+        // actually, equal). In that case, they are refined to the more
+        // precise of the two types, which is accomplished by refining each as if it were
+        // greater than or equal to the other. There is also special processing to look
+        // for literals on one side of the equals and a GTEN1 or NN on the other, so that
+        // those types can be promoted in the else branch if compared against the appropriate
+        // single literal. != is equivalent to == and implemented the same way, but the refinements occur in
+        // the other branch (i.e. when they are !equal).
+
         if (notEqualTo) {
-            // != is equivalent to == and implemented the same way, but the refinements occur in
-            // the else branch (i.e. when they are !equal).
+            // Process != first.
 
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
@@ -273,10 +281,8 @@ public class LowerBoundTransfer extends CFTransfer {
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
             return rfi.newResult;
         } else {
-            //  In an ==, refinements occur in the then branch (i.e. when they are,
-            // actually, equal). In that case, they are refined to the more
-            // precise of the two types, which is accomplished by refining each as if it were
-            // greater than or equal to the other.
+            // Process ==.
+
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
             // Special processing for literals:
