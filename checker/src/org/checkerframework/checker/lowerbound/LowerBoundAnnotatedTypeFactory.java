@@ -529,7 +529,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             type.addAnnotation(UNKNOWN);
         }
 
-        private boolean isRandomSpecialCase(
+        private boolean checkForMathRandomSpecialCase(
                 ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
             if (arrLenTree.getKind() == Kind.MEMBER_SELECT) {
                 MemberSelectTree msTree = (MemberSelectTree) arrLenTree;
@@ -575,8 +575,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 ExpressionTree leftExpr, ExpressionTree rightExpr, AnnotatedTypeMirror type) {
 
             // Special handling for multiplying an array length by a Math.random().
-            if (isRandomSpecialCase(rightExpr, leftExpr, type)
-                    || isRandomSpecialCase(leftExpr, rightExpr, type)) {
+            if (checkForMathRandomSpecialCase(rightExpr, leftExpr, type)
+                    || checkForMathRandomSpecialCase(leftExpr, rightExpr, type)) {
                 return;
             }
 
