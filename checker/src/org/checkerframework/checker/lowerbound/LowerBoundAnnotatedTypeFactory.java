@@ -323,7 +323,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitBinary(tree, type);
             }
 
-            // Check if the Value Checker's information puts it into a single type.
+            // Check if the Value Checker's information bounds the value within one of the
+            // lowerbound types.
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
             AnnotationMirror lowerBoundAnm = lowerBoundAnmFromValueType(valueType);
             if (lowerBoundAnm != UNKNOWN) {
