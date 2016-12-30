@@ -221,7 +221,7 @@ public class LowerBoundTransfer extends CFTransfer {
     }
 
     /**
-     * This function handles the problems described in issues 25 and 29 in the issue tracker.
+     * Refines GTEN1 to NN if it's compared directly to -1, and NN to Pos if it's compared to 0.
      *
      * @param mLiteral a potential literal
      * @param otherNode the node on the other side of the ==/!=
