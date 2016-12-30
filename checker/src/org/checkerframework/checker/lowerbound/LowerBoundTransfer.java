@@ -273,7 +273,6 @@ public class LowerBoundTransfer extends CFTransfer {
 
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
-            // Special processing for literals:
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore);
 
@@ -285,7 +284,6 @@ public class LowerBoundTransfer extends CFTransfer {
 
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
-            // Special processing for literals:
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore);
 
