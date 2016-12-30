@@ -550,14 +550,14 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         private boolean isRandomSpecialCase(
                 ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
-            if (arrLenTree instanceof MemberSelectTree) {
-                MemberSelectTree mstree = (MemberSelectTree) arrLenTree;
-                if (mstree.getIdentifier().contentEquals("length")
-                        && InternalUtils.typeOf(mstree.getExpression()).getKind()
+            if (arrLenTree.getKind() == Kind.MEMBER_SELECT) {
+                MemberSelectTree msTree = (MemberSelectTree) arrLenTree;
+                if (msTree.getIdentifier().contentEquals("length")
+                        && InternalUtils.typeOf(msTree.getExpression()).getKind()
                                 == TypeKind.ARRAY) {
                     // For sure, arrLenTree represents an array length.
 
-                    if (randTree instanceof MethodInvocationTree) {
+                    if (randTree.getKind() == Kind.METHOD_INVOCATION) {
 
                         MethodInvocationTree miTree = (MethodInvocationTree) randTree;
 

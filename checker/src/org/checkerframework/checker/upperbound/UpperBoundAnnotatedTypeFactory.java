@@ -2,11 +2,7 @@ package org.checkerframework.checker.upperbound;
 
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -728,14 +724,14 @@ public class UpperBoundAnnotatedTypeFactory
 
         private boolean isRandomSpecialCase(
                 ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
-            if (arrLenTree instanceof MemberSelectTree) {
+            if (arrLenTree.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree mstree = (MemberSelectTree) arrLenTree;
                 if (mstree.getIdentifier().contentEquals("length")
                         && InternalUtils.typeOf(mstree.getExpression()).getKind()
                                 == TypeKind.ARRAY) {
                     // ArrLenTree must represent an array length.
 
-                    if (randTree instanceof MethodInvocationTree) {
+                    if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
 
                         MethodInvocationTree mitree = (MethodInvocationTree) randTree;
 
