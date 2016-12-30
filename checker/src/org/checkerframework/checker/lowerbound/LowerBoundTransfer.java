@@ -311,10 +311,8 @@ public class LowerBoundTransfer extends CFTransfer {
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
-        // Shouldn't overwrite a more precise type, so don't modify the left's type if
-        // it's already known to be positive.
-        if (AnnotationUtils.containsSame(rightType, GTEN1)
-                && !AnnotationUtils.containsSame(leftType, POS)) {
+
+        if (AnnotationUtils.containsSame(rightType, GTEN1)) {
             store.insertValue(leftRec, NN);
             return;
         }
