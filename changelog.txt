@@ -2,7 +2,14 @@
 
 Version 2.1.7, 3 January 2017
 
-Added a link to jOOQ's SQL checker.
+Manual improvemnets:
+ * Added a link to jOOQ's SQL checker.
+ * Documented the `-AprintVerboseGenerics` command-line option.
+ * Better explanation of relationship between Fake Enum and Subtyping Checkers.
+
+Closed issues:
+154, 322, 402, 404, 433, 531, 578, 720, 795, 916, 953, 973, 974, 975, 976,
+980, 988, 1000.
 
 ---------------------------------------------------------------------------
 
