@@ -157,6 +157,60 @@ class Basics {
         Integer g = z;
     }
 
+    public void intDoubleTest(
+            @IntVal({0, 1}) int iv,
+            @IntRange(from = 2, to = 3) int ir,
+            @IntRange(from = 2, to = 20) int irw,
+            @DoubleVal({4.0, 5.0}) double dv1,
+            @DoubleVal({4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0}) double dv2) {
+        double a;
+
+        /* IntVal + DoubleVal */
+        a = iv;
+        if (true) {
+            a = dv1;
+        }
+        //:: error: (assignment.type.incompatible)
+        @DoubleVal({4.0, 5.0}) double test1 = a;
+        @DoubleVal({0.0, 1.0, 2.0, 3.0, 4.0, 5.0}) double test2 = a;
+
+        /* IntRange + DoubleVal */
+        a = ir;
+        if (true) {
+            a = dv1;
+        }
+        //:: error: (assignment.type.incompatible)
+        test1 = a;
+        test2 = a;
+
+        a = irw;
+        if (true) {
+            a = dv2;
+        }
+        //:: error: (assignment.type.incompatible)
+        @DoubleVal({4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0}) double test3 = a;
+        double test4 = a; // a should be @UnknownVal
+
+        /* IntRange + IntVal */
+        a = ir;
+        if (true) {
+            a = iv;
+        }
+        //:: error: (assignment.type.incompatible)
+        @IntVal({0, 1, 2}) double test5 = a;
+        @IntVal({0, 1, 2, 3}) double test6 = a;
+
+        a = irw;
+        if (true) {
+            a = iv;
+        }
+        @IntRange(from = 2, to = 20)
+        //:: error: (assignment.type.incompatible)
+        double test7 = a;
+        @IntRange(from = 0, to = 20)
+        double test8 = a;
+    }
+
     public void stringTest() {
         String a = "test1";
         if (true) {

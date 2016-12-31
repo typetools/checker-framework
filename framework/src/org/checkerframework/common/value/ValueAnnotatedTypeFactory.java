@@ -348,15 +348,45 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         rangeAnno = a1;
                         valAnno = a2;
                     }
-                    // The range of IntRange must be greater than 10 at this point.
-                    // Thus the LUB must be IntRange.
                     List<Long> values = getIntValues(valAnno);
-                    Range valueRange =
-                            new Range(
-                                    Collections.min(new ArrayList<>(values)),
-                                    Collections.max(new ArrayList<>(values)));
                     Range range = getIntRange(rangeAnno);
-                    return createIntRangeAnnotation(range.union(valueRange));
+                    // range at this point may not be wider than 10
+                    if (range.isWiderThan(MAX_VALUES)) {
+                        Range valueRange = getRangeFromValues(values);
+                        return createIntRangeAnnotation(range.union(valueRange));
+                    } else {
+                        List<Long> rangeValues = getIntValuesFromRange(range);
+                        for (Long rv : rangeValues) {
+                            values.add(rv);
+                        }
+                        return createIntValAnnotation(values);
+                    }
+                } else if ((AnnotationUtils.areSameByClass(a1, DoubleVal.class)
+                                || AnnotationUtils.areSameByClass(a1, IntRange.class))
+                        && (AnnotationUtils.areSameByClass(a2, DoubleVal.class)
+                                || AnnotationUtils.areSameByClass(a2, IntRange.class))) {
+                    AnnotationMirror doubleAnno;
+                    AnnotationMirror rangeAnno;
+
+                    if (AnnotationUtils.areSameByClass(a2, DoubleVal.class)) {
+                        doubleAnno = a2;
+                        rangeAnno = a1;
+                    } else {
+                        doubleAnno = a1;
+                        rangeAnno = a2;
+                    }
+
+                    Range range = getIntRange(rangeAnno);
+                    if (range.isWiderThan(MAX_VALUES)) {
+                        return UNKNOWNVAL;
+                    } else {
+                        List<Double> doubleVals = getDoubleValues(doubleAnno);
+                        List<Double> rangeVals = getDoubleValuesFromRange(range);
+                        for (Double rv : rangeVals) {
+                            doubleVals.add(rv);
+                        }
+                        return createDoubleValAnnotation(doubleVals);
+                    }
 
                 } else {
                     // In all other cases, the LUB is
@@ -1031,12 +1061,27 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-    /**
-     * For Annotation that are IntRange get the integer range
-     *
-     * @param rangeAnno Assume to be the same as IntRange.class
-     * @return Integer Range represented by the annotation
-     */
+    public static Range getRangeFromValues(List<Long> values) {
+        return new Range(
+                Collections.min(new ArrayList<>(values)), Collections.max(new ArrayList<>(values)));
+    }
+
+    public static List<Long> getIntValuesFromRange(Range range) {
+        List<Long> values = new ArrayList<>();
+        for (long value = range.from; value <= range.to; value++) {
+            values.add(value);
+        }
+        return values;
+    }
+
+    public static List<Double> getDoubleValuesFromRange(Range range) {
+        List<Double> values = new ArrayList<>();
+        for (Long value = range.from; value <= range.to; value++) {
+            values.add(value.doubleValue());
+        }
+        return values;
+    }
+
     public static Range getIntRange(AnnotationMirror rangeAnno) {
         return new Range(
                 AnnotationUtils.getElementValue(rangeAnno, "from", Long.class, true),
