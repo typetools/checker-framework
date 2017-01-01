@@ -1047,13 +1047,13 @@ the Checker Framework developers so we can add it.)
 \section{Comparison to other tools\label{other-tools}}
 
 A pluggable type-checker, such as those created by the Checker Framework,
-aims to help you prevent or detect all errors of a given variety.  An
+is a verification tool that prevents or detects all errors of a given variety.  An
 alternate approach is to use a bug detector such as
 \href{http://findbugs.sourceforge.net/}{FindBugs},
 \href{http://jlint.sourceforge.net/}{Jlint}, or
 \href{http://pmd.sourceforge.net/}{PMD}.
 
-A pluggable type-checker
+A pluggable type-checker or verifier
 differs from a bug detector in several ways:
 \begin{itemize}
 \item
@@ -1072,7 +1072,7 @@ differs from a bug detector in several ways:
 
 \item
   A type-checker requires you to annotate your code with type qualifiers,
-  or to run an inference tool that does so for you.  A bug detector may not
+  or to run an inference tool that does so for you.  Some bug detectors do not
   require annotations.  This means that it may be easier to get started
   running a bug detector.
 
