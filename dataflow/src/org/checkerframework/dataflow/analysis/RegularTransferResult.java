@@ -8,7 +8,7 @@ import javax.lang.model.type.TypeMirror;
  * {@code getThenStore} and {@code getElseStore} is equal to the only underlying store.
  *
  * @author Stefan Heule
- * @param <S> The {@link Store} used to keep track of intermediate results.
+ * @param <S> the {@link Store} used to keep track of intermediate results
  */
 public class RegularTransferResult<A extends AbstractValue<A>, S extends Store<S>>
         extends TransferResult<A, S> {

@@ -24,8 +24,8 @@
  */
 package java.util;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
+
+
 
 // Note: Methods with references to java 8 classes have been commented out
 // because it breaks the annotated jdk build when running java 7.
@@ -118,7 +118,7 @@ public final class Optional<T> {
      * @return an {@code Optional} with a present value if the specified value
      * is non-null, otherwise an empty {@code Optional}
      */
-    public static <T> Optional<@NonNull T> ofNullable(@Nullable T value) {
+    public static <T> Optional<T> ofNullable(T value) {
         return value == null ? empty() : of(value);
     }
 
@@ -250,7 +250,7 @@ public final class Optional<T> {
      * be null
      * @return the value, if present, otherwise {@code other}
      */
-    public @Nullable T orElse(@Nullable T other) {
+    public T orElse(T other) {
         return value != null ? value : other;
     }
 

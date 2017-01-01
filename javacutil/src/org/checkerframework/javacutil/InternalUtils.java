@@ -254,9 +254,9 @@ public class InternalUtils {
      * <p>Wrapper around Types.lub to add special handling for null types, primitives, and
      * wildcards.
      *
-     * @param processingEnv the {@link ProcessingEnvironment} to use.
-     * @param tm1 a {@link TypeMirror}.
-     * @param tm2 a {@link TypeMirror}.
+     * @param processingEnv the {@link ProcessingEnvironment} to use
+     * @param tm1 a {@link TypeMirror}
+     * @param tm2 a {@link TypeMirror}
      * @return the least upper bound of {@code tm1} and {@code tm2}.
      */
     public static TypeMirror leastUpperBound(
@@ -316,9 +316,9 @@ public class InternalUtils {
      * <p>Wrapper around Types.glb to add special handling for null types, primitives, and
      * wildcards.
      *
-     * @param processingEnv the {@link ProcessingEnvironment} to use.
-     * @param tm1 a {@link TypeMirror}.
-     * @param tm2 a {@link TypeMirror}.
+     * @param processingEnv the {@link ProcessingEnvironment} to use
+     * @param tm1 a {@link TypeMirror}
+     * @param tm2 a {@link TypeMirror}
      * @return the greatest lower bound of {@code tm1} and {@code tm2}.
      */
     public static TypeMirror greatestLowerBound(

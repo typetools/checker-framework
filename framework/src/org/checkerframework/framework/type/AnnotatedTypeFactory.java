@@ -166,7 +166,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * initialized in the postInit.
      *
      * @see #postInit() This means, they cannot be final and cannot be referred to in any subclass
-     *     constructor or method until after postInit is called.
+     *     constructor or method until after postInit is called
      */
 
     /** Represent the annotation relations. * */
@@ -1213,26 +1213,6 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
 
         AnnotatedTypeMirror result = TypeFromTree.fromTypeTree(this, tree);
 
-        // treat Raw as generic!
-        // TODO: This doesn't handle recursive type parameter
-        // e.g. class Pair<Y extends List<Y>> { ... }
-        // Type argument inference for raw types can be improved. See Issue 635.
-        // https://github.com/typetools/checker-framework/issues/635
-        if (result.getKind() == TypeKind.DECLARED) {
-            AnnotatedDeclaredType dt = (AnnotatedDeclaredType) result;
-            if (dt.wasRaw()) {
-                List<AnnotatedTypeMirror> typeArgs = new ArrayList<AnnotatedTypeMirror>();
-                AnnotatedDeclaredType declaration =
-                        fromElement((TypeElement) dt.getUnderlyingType().asElement());
-                for (AnnotatedTypeMirror typeParam : declaration.getTypeArguments()) {
-                    AnnotatedWildcardType wct =
-                            getUninferredWildcardType((AnnotatedTypeVariable) typeParam);
-                    typeArgs.add(wct);
-                }
-                dt.setTypeArguments(typeArgs);
-            }
-        }
-
         annotateInheritedFromClass(result);
         if (shouldCache) {
             fromTreeCache.put(tree, result.deepCopy());
@@ -1992,10 +1972,12 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * annotations on those type arguments are included. If the NewClassTree has a diamond operator,
      * then the annotations on the type arguments are inferred using the assignment context.
      *
+     * <p>(Subclass beside {@link GenericAnnotatedTypeFactory} should not override this method.)
+     *
      * @param newClassTree NewClassTree
      * @return AnnotatedDeclaredType
      */
-    public final AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+    public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
         if (TreeUtils.isDiamondTree(newClassTree)) {
             AnnotatedDeclaredType type =
                     (AnnotatedDeclaredType)
@@ -2161,7 +2143,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * literal ints, for example, {@code byte b = 1;}. All other narrowing conversions happen at
      * typecasts.
      *
-     * @param type type to narrow.
+     * @param type type to narrow
      * @param narrowedTypeMirror underlying type for the returned type mirror
      * @return result of converting {@code type} to {@code narrowedTypeMirror}
      */
@@ -2846,7 +2828,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      *
      * <p>
      *
-     * @param elt The element for which to determine annotations.
+     * @param elt the element for which to determine annotations
      */
     public Set<AnnotationMirror> getDeclAnnotations(Element elt) {
         if (cacheDeclAnnos.containsKey(elt)) {
@@ -2886,7 +2868,7 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Adds into {@code results} the declaration annotations found in all elements that the method
      * element {@code elt} overrides.
      *
-     * @param elt Method element.
+     * @param elt method element
      * @param results {@code elt} local declaration annotations. The ones found in stub files and in
      *     the element itself.
      */
@@ -2954,8 +2936,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns a list of all declaration annotations used to annotate this element, which have a
      * meta-annotation (i.e., an annotation on that annotation) with class {@code metaAnnotation}.
      *
-     * @param element The element for which to determine annotations.
-     * @param metaAnnotation The meta-annotation that needs to be present.
+     * @param element the element for which to determine annotations
+     * @param metaAnnotation the meta-annotation that needs to be present
      * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror
      *     at {@code element}, and {@code metaAnno} is the annotation mirror used to annotate {@code
      *     anno}.
@@ -2998,8 +2980,8 @@ public class AnnotatedTypeFactory implements AnnotationProvider {
      * Returns a list of all annotations used to annotate this element, which have a meta-annotation
      * (i.e., an annotation on that annotation) with class {@code metaAnnotation}.
      *
-     * @param element The element at which to look for annotations.
-     * @param metaAnnotation The meta-annotation that needs to be present.
+     * @param element the element at which to look for annotations
+     * @param metaAnnotation the meta-annotation that needs to be present
      * @return a list of pairs {@code (anno, metaAnno)} where {@code anno} is the annotation mirror
      *     at {@code element}, and {@code metaAnno} is the annotation mirror used to annotate {@code
      *     anno}.

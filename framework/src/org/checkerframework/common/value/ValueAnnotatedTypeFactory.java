@@ -75,7 +75,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** should this type factory report warnings? * */
     private final boolean reportEvalWarnings;
 
-    /** Helper class that evaluates statically executable methods, constructor, and fields. */
+    /** Helper class that evaluates statically executable methods, constructors, and fields. */
     private final ReflectiveEvalutator evalutator;
 
     public ValueAnnotatedTypeFactory(BaseTypeChecker checker) {
@@ -403,7 +403,7 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * find each dimension's size and create the appropriate annotation for it.
          *
          * @param dimensions a list of ExpressionTrees where each ExpressionTree is a specifier of
-         *     the size of that dimension (should be an IntVal).
+         *     the size of that dimension (should be an IntVal)
          * @param type the AnnotatedTypeMirror of the array
          */
         private void handleDimensions(

@@ -178,13 +178,13 @@ public class WholeProgramInferenceScenesHelper {
      *
      * <p>
      *
-     * @param type ATypeElement of the Scene which will be modified.
+     * @param type ATypeElement of the Scene which will be modified
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used.
-     * @param jaifPath used to identify a Scene.
-     * @param rhsATM the RHS of the annotated type on the source code.
-     * @param lhsATM the LHS of the annotated type on the source code.
-     * @param defLoc the location where the annotation will be added.
+     *     used
+     * @param jaifPath used to identify a Scene
+     * @param rhsATM the RHS of the annotated type on the source code
+     * @param lhsATM the LHS of the annotated type on the source code
+     * @param defLoc the location where the annotation will be added
      */
     protected void updateAnnotationSetInScene(
             ATypeElement type,
@@ -265,8 +265,8 @@ public class WholeProgramInferenceScenesHelper {
      * missing AnnotationMirror to be am. The results are stored in sourceCodeATM.
      *
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used.
-     * @param sourceCodeATM the annotated type on the source code.
+     *     used
+     * @param sourceCodeATM the annotated type on the source code
      * @param jaifATM the annotated type on the .jaif file.
      */
     private void updatesATMWithLUB(
@@ -420,9 +420,9 @@ public class WholeProgramInferenceScenesHelper {
      * {@link annotations.Annotation}s of an {@link annotations.el.ATypeElement}.
      *
      * @param atm the AnnotatedTypeMirror to be modified
-     * @param type the {@link annotations.el.ATypeElement}.
+     * @param type the {@link annotations.el.ATypeElement}
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used.
+     *     used
      */
     private void typeElementToATM(
             AnnotatedTypeMirror atm, ATypeElement type, AnnotatedTypeFactory atf) {
@@ -458,14 +458,14 @@ public class WholeProgramInferenceScenesHelper {
      * AnnotatedTypeMirror has a better type estimate for the ATypeElement. Therefore, it is not a
      * problem to remove all annotations before inserting the new annotations.
      *
-     * @param newATM the AnnotatedTypeMirror whose annotations will be added to the ATypeElement.
+     * @param newATM the AnnotatedTypeMirror whose annotations will be added to the ATypeElement
      * @param curATM used to check if the element which will be updated has explicit annotations in
-     *     source code.
+     *     source code
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
-     *     used.
-     * @param typeToUpdate the ATypeElement which will be updated.
-     * @param idx used to write annotations on compound types of an ATypeElement.
-     * @param defLoc the location where the annotation will be added.
+     *     used
+     * @param typeToUpdate the ATypeElement which will be updated
+     * @param idx used to write annotations on compound types of an ATypeElement
+     * @param defLoc the location where the annotation will be added
      */
     private void updateTypeElementFromATM(
             AnnotatedTypeMirror newATM,

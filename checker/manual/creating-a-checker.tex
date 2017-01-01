@@ -188,7 +188,7 @@ Here is an example of one good way to proceed.
   type system, what it guarantees, how to use it, etc., from the point of
   view of a user.
   This will help you flesh out your goals and the concepts, which are
-  easier to understand and change in text than in an imprementation.
+  easier to understand and change in text than in an implementation.
   Section~\ref{creating-documenting-a-checker} gives a suggested structure for the
   manual chapter, which will help you avoid omitting any parts.
 
@@ -228,7 +228,7 @@ Here is an example of one good way to proceed.
   Implement type rules, if any (Section~\ref{creating-extending-visitor}).
 
   Write simple test cases to test the type rules, and ensure that the
-  typechecker behaves as expected on those test files.
+  type-checker behaves as expected on those test files.
   For example, if your type system forbids indexing an array by a
   possibly-negative value, then you would write a test case such as:
 
@@ -609,6 +609,63 @@ then the default would apply to every
 type system that uses \<@Unqualified>, which is unlikely to be desired.
 
 
+\subsection{Annotations whose argument is a Java expression (``expression annotations'')\label{expression-annotations}}
+
+Sometimes, an annotation needs to refer to a Java expression.
+Section~\ref{java-expressions-as-arguments} gives examples of such
+annotations and also explains what Java expressions can and cannot be
+referred to.
+
+This section explains the Checker Framework's functionality to support such
+annotations.
+
+An ``expression annotation'' (for type qualifiers, also known as a
+``dependent type'') must have one attribute, \<value>, that is an
+array of strings.  The Checker Framework verifies that the annotation's
+arguments are valid expressions according to the rules of
+Section~\ref{java-expressions-as-arguments}.  If
+the expression is not valid, an error is issued and the string in the
+annotation is changed to indicate that the expression is not valid.
+
+The Checker Framework standardizes the expression strings.  For example, a
+field \<f> can be referred to as either ``f'' or ``this.f''.  If the
+programmer writes ``f'', the the Checker Framework changes it to
+``this.f'', as if the programmer had written that.
+An advantage of this canonicalization is that
+that comparisons, such as \<isSubtype>, can be implemented as string comparisons.
+
+The Checker Framework viewpoint-adapts type annotations on method, constructor,
+and field declarations at uses for those methods.  For example, given the
+following class
+
+\begin{Verbatim}
+class MyClass {
+   Object field = ...;
+   @Anno("this.field") Object field2 = ...;
+}
+\end{Verbatim}
+and assuming the variable \<myClass> is of type \<MyClass>, then the type of
+\<myClass.field> is viewpoint-adapted to \<@Anno("myClass.field")>.
+
+To use this built-in functionality, your checker implementation should override
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createExpressionAnnoHelper}{--}
+to return a new \<ExpressionAnnotationHelper> that has been initialized with the
+checker's expression annotations.
+
+Given a specific expression in the program (of type Tree or Node), a
+checker may need to obtain its canonical string representation.  This
+enables the checker to create an expression annotation that refers to
+it, or to compare to the string expression of an existing expression
+annotation.
+To obtain the string, first create a
+\refclass{dataflow/analysis}{FlowExpressions.Receiver} object by calling
+\refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-com.sun.source.tree.ExpressionTree-}{internalReprOf(AnnotationProvider,
+ExpressionTree)} or
+\refmethodanchortext{dataflow/analysis}{FlowExpressions}{internalReprOf}{-org.checkerframework.javacutil.AnnotationProvider-org.checkerframework.dataflow.cfg.node.Node-}{internalReprOf(AnnotationProvider,
+Node)}.
+Then, call \<toString()> on the \<FlowExpressions.Receiver> object.
+
+
 \section{Visitor: Type rules\label{creating-extending-visitor}}
 
 A type system's rules define which operations on values of a
@@ -884,9 +941,9 @@ be included on the classpath like other components of your checker.
 If the checker's extended \refclass{framework/flow}{CFTransfer}
 starts with the name of the type system, then the type factory will use the
 transfer class without further configuration. For example, if the checker
-class is FooChecker, then if the transfer class is FooTransfer, then it is
+class is \<FooChecker>, then if the transfer class is \<FooTransfer>, then it is
 not necessary to configure the type factory
-to use FooTransfer.  If some other naming convention is used, then
+to use \<FooTransfer>.  If some other naming convention is used, then
 to configure your checker's type factory to use the new extended
 \refclass{framework/flow}{CFTransfer}, override the
 \code{createFlowTransferFunction} method in your type factory to return a new instance
@@ -1955,8 +2012,8 @@ you may find useful later on.
 
 The Checker Framework uses Oracle's Tree API to access a program's AST\@.
 The Tree API is specific to the Oracle OpenJDK, so the Checker Framework only
-works with the OpenJDK javac, not with Eclipse's compiler ecj or with
-\href{http://gcc.gnu.org/java/}{gcj}.  This also limits the tightness of
+works with the OpenJDK javac, not with Eclipse's compiler ecj.
+This also limits the tightness of
 the integration of the Checker Framework into other IDEs such as \href{http://www.jetbrains.com/idea/}{IntelliJ IDEA}\@.
 An implementation-neutral API would be preferable.
 In the future, the Checker Framework
@@ -2020,9 +2077,9 @@ without warnings or errors.
 % LocalWords:  Aqual Anqual java CharSequence getAnnotatedType UseLovely
 % LocalWords:  AnnotatedTypeMirror LovelyChecker Anomsgtext Ashowchecks enums
 % LocalWords:  Afilenames dereferenced SuppressWarnings declaratively SubtypeOf
-% LocalWords:  TypeHierarchy GraphQualifierHierarchy Foo qual
+% LocalWords:  TypeHierarchy GraphQualifierHierarchy Foo qual UnknownSign
 % LocalWords:  QualifierHierarchy QualifierRoot createQualifierHierarchy util
-% LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror
+% LocalWords:  createTypeHierarchy ImplicitFor treeClasses TypeMirror Anno
 % LocalWords:  LiteralTree ExpressionTree typeClasses addComputedTypeAnnotations nullable
 % LocalWords:  createSupportedTypeQualifiers FooChecker nullness PolyAll
 % LocalWords:  FooVisitor FooAnnotatedTypeFactory basicstyle InterningVisitor
@@ -2056,5 +2113,12 @@ without warnings or errors.
 %%  LocalWords:  Hevea Hitchhiker's compilermsgs args Poly MyTypeSystem
 %%  LocalWords:  I18nChecker i18n I18nSubchecker LocalizableKeyChecker
 %%  LocalWords:  MyChecker MyHelperChecker getImmediateSubcheckerClasses
-%%  LocalWords:  MyChecker's subchecker plugins ElementType
-%%  LocalWords:  CheckerFrameworkTest
+%%  LocalWords:  MyChecker's subchecker plugins ElementType myClass myflag
+%%  LocalWords:  CheckerFrameworkTest GenericAnnotatedTypeFactory MyClass
+%%  LocalWords:  addCheckedCodeDefaults RelevantJavaTypes TargetLocations
+%%  LocalWords:  TypeUseLocation createExpressionAnnoHelper internalReprOf
+%%  LocalWords:  ExpressionAnnotationHelper FlowExpressions CFTransfer
+%%  LocalWords:  AnnotationProvider FooTransfer createFlowTransferFunction
+%%  LocalWords:  SupportedLintOptions myoption StubFiles scriptfile outdir
+%%  LocalWords:  somedir Acfgviz Averbosecfg cfgviz MyVisualizer init
+%%  LocalWords:  VizClassName CFGVisualizer
