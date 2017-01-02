@@ -428,8 +428,8 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
             } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
                     && AnnotationUtils.areSameByClass(rhs, IntVal.class)) {
-                List<Long> rhsValues;
-                rhsValues = AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
+                List<Long> rhsValues =
+                        AnnotationUtils.getElementValueArray(rhs, "value", Long.class, true);
                 List<Double> lhsValues =
                         AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
                 boolean same = false;
@@ -453,12 +453,31 @@ public class ValueAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 long rhsMinVal = Collections.min(new ArrayList<>(rhsValues));
                 long rhsMaxVal = Collections.max(new ArrayList<>(rhsValues));
                 return rhsMinVal >= lhsRange.from && rhsMaxVal <= lhsRange.to;
+            } else if (AnnotationUtils.areSameByClass(lhs, DoubleVal.class)
+                    && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
+                Range rhsRange = getIntRange(rhs);
+                if (!rhsRange.isWiderThan(MAX_VALUES)) {
+                    List<Double> lhsValues =
+                            AnnotationUtils.getElementValueArray(lhs, "value", Double.class, true);
+                    List<Double> rhsValues = getDoubleValuesFromRange(rhsRange);
+                    return lhsValues.containsAll(rhsValues);
+                } else {
+                    return false;
+                }
+            } else if (AnnotationUtils.areSameByClass(lhs, IntVal.class)
+                    && AnnotationUtils.areSameByClass(rhs, IntRange.class)) {
+                Range rhsRange = getIntRange(rhs);
+                if (!rhsRange.isWiderThan(MAX_VALUES)) {
+                    List<Long> lhsValues =
+                            AnnotationUtils.getElementValueArray(lhs, "value", Long.class, true);
+                    List<Long> rhsValues = getIntValuesFromRange(rhsRange);
+                    return lhsValues.containsAll(rhsValues);
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
             }
-            // Because of replaceWithNewAnnoInSpecialCases, the possible values of
-            // of @IntRange is always greater than MAX_VALUES. Therefore no need
-            // to consider the cases of @IntVal/@IntRange or @DoubleVal/@IntRange
-            // as they always return false
-            return false;
         }
     }
 
