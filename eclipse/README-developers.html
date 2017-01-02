@@ -110,7 +110,7 @@
             <td>2.</td>
             <td><strong>Import the Checker Framework project in Eclipse</strong><br/>
                 The Checker Framework manual has instructions on building the Checker Framework from source:<br/>
-                <code>http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#build-source</code>
+                <code>http://checker-framework.com/manual/#build-source</code>
                 <br/>
                 You do not need to build the framework but you do need the Checker Framework source.  Use a local clone
                 of the Checker Framework and import that project into a workspace.
@@ -591,7 +591,7 @@
 <section id="testing">
     <h2>Testing</h2>
     <p>To test your plugin, you should install it locally.  You can find installation instructions at:<br/>
-       <a href="http://types.cs.washington.edu/checker-framework/eclipse/">http://types.cs.washington.edu/checker-framework/eclipse/</a><br/>
+       <a href="http://checker-framework.com/eclipse/">http://checker-framework.com/eclipse/</a><br/>
        However, when installing the plugin, rather than using the above URL for the location of the
        plugin, you should press the "Local" button and select the directory of your
        checker-framework-update-site project.  The IDE will treat that directory as an update site
@@ -609,8 +609,8 @@
         </li>
     </ul>
     <p>When performing a release, you should test the "Getting Started" and "Validating User Input" guides from
-    the checker framework tutorial: <a href="http://types.cs.washington.edu/checker-framework/tutorial/">
-        http://types.cs.washington.edu/checker-framework/tutorial/</a>
+    the checker framework tutorial: <a href="http://checker-framework.com/tutorial/">
+        http://checker-framework.com/tutorial/</a>
 
     <div class="alert alert-warning">
         In the next section we discuss a typical workflow for testing the Eclipse plugin.  This workflow
@@ -696,7 +696,7 @@
     <div class="alert alert-danger">
         <strong>Note:</strong> Since the Checker Framework process is run in another process from Eclipse,
         setting a breakpoint in Checker Framework code will NOT cause Eclipse to pause at this code.  One
-        way of debugging this other process is to pass <a href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#debugging-options">debug arguments (see 23.8.5)</a>
+        way of debugging this other process is to pass <a href="http://checker-framework.com/manual/#debugging-options">debug arguments (see 23.8.5)</a>
         in the Eclipse->Checker Framework preferences.  This will cause the Checker Framework to pause and wait
         for a debugger before Executing.  You can then hook another debugger to this process to debug it separately
         from the process used to debug the Eclipse plugin.

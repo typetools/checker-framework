@@ -69,10 +69,10 @@ manual.html: manual.pdf CFLogo.png favicon-checkerframework.png
 # Add CSS styling, since \newstyle doesn't work for me.
 	sed -i -e "s%<style type=\"text/css\">%<style type=\"text/css\">\nimg { max-width: 100\%; max-height: 100\%; }%" manual.html
 
-CFLogo.png: logo/Logo/CFLogo.png
+CFLogo.png: ../logo/Logo/CFLogo.png
 	cp -p $< $@
 
-favicon-checkerframework.png: logo/Checkmark/CFCheckmark_favicon.png
+favicon-checkerframework.png: ../logo/Checkmark/CFCheckmark_favicon.png
 	cp -p $< $@
 
 # Ensure that every section of the manual has a \label{} command.

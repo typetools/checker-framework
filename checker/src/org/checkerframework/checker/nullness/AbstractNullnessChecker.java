@@ -21,7 +21,7 @@ import org.checkerframework.framework.source.SupportedLintOptions;
     // which is allowed by default.
     // Forbidding is sound and will eventually be the default.
     // Allowing is unsound, as described in Section 3.3.4, "Nullness and arrays":
-    //     http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#nullness-arrays
+    //     http://checker-framework.com/manual/#nullness-arrays
     // It is the default temporarily, until we improve the analysis to reduce false positives or we
     // learn what advice to give programmers about avoid false positive warnings.
     // See issue #986: https://github.com/typetools/checker-framework/issues/986

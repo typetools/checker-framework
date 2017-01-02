@@ -15,7 +15,7 @@ fi
 rm -f checker-framework-$1.zip
 rm -rf checker-framework-$1/
 
-wget -q http://types.cs.washington.edu/checker-framework/current/checker-framework-$1.zip
+wget -q http://checker-framework.com/checker-framework-$1.zip
 unzip -q checker-framework-$1.zip
 
 export CHECKERFRAMEWORK=checker-framework-$1

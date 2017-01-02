@@ -69,9 +69,8 @@ public final class InterningVisitor extends BaseTypeVisitor<InterningAnnotatedTy
     /**
      * @return true if interning should be verified for the input expression. By default, all
      *     classes are checked for interning unless {@code -Acheckclass} is specified.
-     * @see <a
-     *     href="http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#interning-checks">What
-     *     the Interning Checker checks</a>
+     * @see <a href="http://checker-framework.com/manual/#interning-checks">What the Interning
+     *     Checker checks</a>
      */
     private boolean shouldCheckExpression(ExpressionTree tree) {
         if (typeToCheck == null) return true;

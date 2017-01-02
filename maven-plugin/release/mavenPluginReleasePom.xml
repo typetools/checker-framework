@@ -10,7 +10,7 @@
         The Checker Framework Maven Plugin allows you to easily run the
         Checker Framework in your Maven build.  Directions can be found
         at:
-        http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#maven-plugin
+        http://checker-framework.com/manual/#maven-plugin
     </description>
 
     <groupId>org.checkerframework</groupId>

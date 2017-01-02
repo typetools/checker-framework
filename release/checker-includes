@@ -4,10 +4,10 @@ LICENSE.txt
 checker/bin/**
 checker/dist/**
 checker/lib/**
-checker/manual/manual.html
-checker/manual/manual.pdf
-checker/manual/*.svg
-checker/manual/manual001.png
+docs/manual/manual.html
+docs/manual/manual.pdf
+docs/manual/*.svg
+docs/manual/manual001.png
 checker/examples/InterningExample.java
 checker/examples/InterningExampleWithWarnings.java
 checker/examples/NullnessExample.java
@@ -24,4 +24,4 @@ checker/examples/units-extension/README
 checker/examples/MavenExample/pom.xml
 checker/examples/MavenExample/README
 checker/examples/MavenExample/src/main/java/org/checkerframework/example/MavenExample.java
-tutorial/**
+docs/tutorial/**

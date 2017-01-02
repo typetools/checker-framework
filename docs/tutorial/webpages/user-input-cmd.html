@@ -4,15 +4,15 @@
   <meta name="generator" content=
   "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
 
-  <title>Checker Framework Tutorial - Validating User Input -
-  Eclipse</title>
+  <title>Checker Framework Tutorial - Validating User Input - Command
+  Line</title>
   <link href="bootstrap/css/bootstrap.css" rel="stylesheet" type=
   "text/css">
   <script type="text/javascript" src="bootstrap/js/bootstrap.min.js">
 </script>
   <link href="css/main.css" rel="stylesheet" type="text/css">
   <link rel="icon" type="image/png" href=
-  "http://types.cs.washington.edu/checker-framework/favicon-checkerframework.png">
+  "http://checker-framework.com/favicon-checkerframework.png">
   </head>
 
 <body>
@@ -28,7 +28,7 @@
           <li><a href="http://checkerframework.org/">Main Site</a></li>
 
           <li><a href=
-          "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html">
+          "http://checker-framework.com/manual/">
           Manual</a></li>
 
           <li><a href=
@@ -44,21 +44,21 @@
           Code</a></li>
 
           <li><a href=
-          "http://types.cs.washington.edu/checker-framework/eclipse/">Eclipse
+          "http://checker-framework.com/eclipse/">Eclipse
           Plugin</a></li>
 
           <li class="active"><a href=
-          "http://types.cs.washington.edu/checker-framework/tutorial/">Tutorial</a></li>
+          "http://checker-framework.com/tutorial/">Tutorial</a></li>
         </ul>
       </div>
     </div>
-  </div><img src="http://types.cs.washington.edu/checker-framework/CFLogo.png" alt="Checker Framework logo">
+  </div><img src="http://checker-framework.com/CFLogo.png" alt="Checker Framework logo">
 
   <div class="page-header short" style=
   "border-bottom: 1px solid #EEE; border-top: none;">
     <h1>Checker Framework Tutorial</h1>
 
-    <h2><small>Previous <a href="get-started-eclipse.html">Getting
+    <h2><small>Previous <a href="get-started-cmd.html">Getting
     Started</a></small></h2>
   </div>
 
@@ -99,17 +99,19 @@
         <h4>1. The RegexExample program</h4>
 
         <p>If you have not already done so, download
-          <a href="../eclipse-projects.zip">the Eclipse projects</a> and
-        import the <strong>checker-framework-tutorial</strong> project into
-        your Eclipse workspace.</p>
+          <a href="../sourcefiles.zip">the source files</a> for the tutorial.
+        </p>
 
         <p>
-        <b>Open <a href="../src/RegexExample.java">RegexExample.java</a>.</b>
         The <a href="../src/RegexExample.java">RegexExample.java</a>
         program is called with two arguments: a regular expression and a
         string. The program prints the text from the string that matches
         the first capturing group in the regular expression.
+        <br/><b>Compile the program</b>:
         </p>
+        <pre>
+$ <strong>javac RegexExample.java</strong>
+</pre>
       </div>
 
       <div id="runex1">
@@ -118,12 +120,6 @@
         <p><b>Run the program</b> with a <strong class=
         "text-success">valid</strong> regular expression and a matching
         string:
-        <br/>
-        (For a prompt in Eclipse, select Run
-        Configurations-&gt;Arguments-&gt;Variables-&gt;string_prompt, or
-        right-click on RegexExample.launch-&gt;Run As-RegexExample)
-        <!--(RegexExample.launch was created in the common tab in the launch
-  configurations)-->
         </p>
         <pre>
 $ <strong>java RegexExample '[01]?\d-([0123]?\d)-\d{4}+' '01-24-2013'</strong>
@@ -146,7 +142,6 @@ Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed char
         at java.util.regex.Pattern.&lt;init&gt;(Pattern.java:1337)
         at java.util.regex.Pattern.compile(Pattern.java:1022)
         at RegexExample.main(RegexExample.java:13)
-
 </pre>
 
         <p>Good programming style dictates that the user should not see a
@@ -162,10 +157,10 @@ Exception in thread "main" java.util.regex.PatternSyntaxException: Unclosed char
         that would throw certain exceptions at run time. Next <b>run the Regex
         Checker</b> to see how it could have spotted this issue at compile
         time.
-        You will see the following output:
         </p>
         <pre>
-warning: (argument.type.incompatible) incompatible types in argument.
+$ <strong>javacheck -processor org.checkerframework.checker.regex.RegexChecker RegexExample.java</strong>
+RegexExample.java:13: error: [argument.type.incompatible] incompatible types in argument.
         Pattern pat = Pattern.compile(regex);
                                       ^
   found   : String
@@ -184,7 +179,7 @@ warning: (argument.type.incompatible) incompatible types in argument.
         <p>The right way to fix the problems is for the code to issue a
         user-friendly message at run time.  It should <b>verify the user
         input</b> using the
-        <a href="http://types.cs.washington.edu/checker-framework/current/api/org/checkerframework/checker/regex/RegexUtil.html#isRegex-java.lang.String-"><code>RegexUtil.isRegex(String, int)</code></a> method.
+        <a href="http://checker-framework.com/api/org/checkerframework/checker/regex/RegexUtil.html#isRegex-java.lang.String-"><code>RegexUtil.isRegex(String, int)</code></a> method.
         If the string is not a valid regular
         expression, it should <b>print an error message and halt</b>.
         If it <em>is</em> a valid regular expression, perform as before.
@@ -211,6 +206,10 @@ import org.checkerframework.checker.regex.RegexUtil;
       <div id="run2">
         <h4>5. Re-run the Regex Checker</h4>
 
+        <pre>
+$ <strong>javacheck -processor org.checkerframework.checker.regex.RegexChecker RegexExample.java</strong>
+</pre>
+
         <p>There should be no warnings.  This shows that the code will not
         throw a PatternSyntaxException at compile time.</p>
       </div>
@@ -222,13 +221,17 @@ import org.checkerframework.checker.regex.RegexUtil;
         prints a user-friendly warning.</p>
         <pre>
 $ <strong>java -cp ".:$CHECKERFRAMEWORK/checker/dist/checker.jar" RegexExample '[01]?[\d-\([0123]?\d\)-\d{4}+' '01-24-2013'</strong>
-Input is not a regular expression "[01]?[\d-\([0123]?\d\)-\d{4}+": Illegal character range near index 24
-[01]?[\d-\([0123]?\d\)-\d{4}+
-                        ^
+Input is not a regular expression "[01]?[d-([0123]?d)-d{4}+": Illegal character range near index 24
 </pre>
 
+        <p>(If this issues an error</p>
+        <pre>Exception in thread "main" java.lang.UnsupportedClassVersionError: RegexExample : Unsupported major.minor version 52.0</pre>
+        <p>, then <a href="http://checker-framework.com/manual/#javac-installation">change the <code>javacheck</code>
+        alias</a> to pass the <code>-source 7 -target 7</code> command-line
+        arguments and <a href="#run2">rerun the javacheck command</a>.)</p>
+
         <p>For a full discussion of the Regex Checker, please see the <a href=
-        "http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#regex-checker">
+        "http://checker-framework.com/manual/#regex-checker">
         Regex Checker chapter</a> of the Checker Framework manual.</p>
       </div>
     </div>
@@ -236,7 +239,7 @@ Input is not a regular expression "[01]?[\d-\([0123]?\d\)-\d{4}+": Illegal chara
 
   <div id="next">
     <div class="page-header short">
-      <h2><small>Next, try <a href="security-error-eclipse.html">Finding a
+      <h2><small>Next, try <a href="security-error-cmd.html">Finding a
       Security Error</a>, a complex example using the Tainting
       Checker.</small></h2>
     </div>

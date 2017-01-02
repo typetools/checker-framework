@@ -15,6 +15,7 @@
 #  * If run multiple times, it inserts the favicon multiple times.
 #  * The mktemp command is not portable (it doesn't work on Mac OS, for example).
 #  * It does not preserve file permissions.
+#  * It changes file timestamps even on files that are not changed.
 # This version corrects these issues.
 
 # Also see the html-add-favicon script in plume-lib, which has a similar effect.
@@ -28,7 +29,12 @@ patchIt () {
       # Hat tip to http://superuser.com/questions/170226/standard-way-to-duplicate-a-files-permissions for this trick.
       \cp -p $f $tmpfile
       sed -e " s%<head>\$%<head><link rel=\"icon\" href=\"$2\" type=\"image/png\"/>%" $f > $tmpfile
-      mv -f $tmpfile $f
+      if ! cmp $f $tmpfile >/dev/null 2>&1
+      then
+        mv -f $tmpfile $f
+      else
+        rm -f $tmpfile
+      fi
     fi;
   done ;
   for d in $1/* ; do
