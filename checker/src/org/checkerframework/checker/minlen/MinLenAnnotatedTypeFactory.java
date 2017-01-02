@@ -77,7 +77,7 @@ public class MinLenAnnotatedTypeFactory
      * empty or null), returns null. Otherwise, returns the smallest element in the list of possible
      * values.
      */
-    public Integer minLenFromValueType(AnnotatedTypeMirror valueType) {
+    public Integer getMinLenFromValueType(AnnotatedTypeMirror valueType) {
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues == null || possibleValues.size() == 0) {
             return null;

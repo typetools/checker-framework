@@ -428,7 +428,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 return;
             }
 
-            Integer newMinLen = atypeFactory.minLenFromValueType(valueType);
+            Integer newMinLen = atypeFactory.getMinLenFromValueType(valueType);
 
             if (newMinLen == null) {
                 return;
@@ -497,7 +497,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 return;
             }
 
-            Integer newMinLen = atypeFactory.minLenFromValueType(valueType);
+            Integer newMinLen = atypeFactory.getMinLenFromValueType(valueType);
 
             if (newMinLen == null) {
                 return;
@@ -564,7 +564,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 return;
             }
 
-            Integer newMinLen = atypeFactory.minLenFromValueType(valueType);
+            Integer newMinLen = atypeFactory.getMinLenFromValueType(valueType);
 
             if (newMinLen == null) {
                 return;
