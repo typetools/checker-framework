@@ -119,7 +119,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * null if the exact value is not known. This method should only be used by clients who need
      * exactly one value - such as the binary operator rules - and not by those that need to know
      * whether a valueType belongs to an LBC qualifier. Clients needing a qualifier should use
-     * lowerBoundAnmFromValueType instead of this method.
+     * getLowerBoundAnnotationFromValueType instead of this method.
      */
     public Long getExactValueOrNullFromTree(Tree tree) {
         AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
@@ -216,7 +216,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return super.visitLiteral(tree, type);
             }
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
-            type.addAnnotation(lowerBoundAnmFromValueType(valueType));
+            type.addAnnotation(getLowerBoundAnnotationFromValueType(valueType));
             return super.visitLiteral(tree, type);
         }
 
@@ -265,7 +265,8 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         /** Returns the type in the lower bound hierarchy a Value Checker type corresponds to. */
-        private AnnotationMirror lowerBoundAnmFromValueType(AnnotatedTypeMirror valueType) {
+        private AnnotationMirror getLowerBoundAnnotationFromValueType(
+                AnnotatedTypeMirror valueType) {
             // In the code, AnnotationMirror is abbr. as anm.
             List<Long> possibleValues = possibleValuesFromValueType(valueType);
             // possibleValues is null if the Value Checker does not have any estimate.
@@ -283,7 +284,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * Looks up the minlen of a member select tree. Returns null if the tree doesn't represent
          * an array's length field.
          */
-        private Integer minLenFromMemberSelectTree(MemberSelectTree tree) {
+        private Integer getMinLenFromMemberSelectTree(MemberSelectTree tree) {
             if (tree.getIdentifier().contentEquals("length")
                     && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
                 AnnotatedTypeMirror minLenType =
@@ -304,7 +305,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         @Override
         public Void visitMemberSelect(MemberSelectTree tree, AnnotatedTypeMirror type) {
-            Integer minLen = minLenFromMemberSelectTree(tree);
+            Integer minLen = getMinLenFromMemberSelectTree(tree);
             if (minLen != null) {
                 type.replaceAnnotation(anmFromVal(minLen));
             }
@@ -326,7 +327,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // Check if the Value Checker's information bounds the value within one of the
             // lowerbound types.
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
-            AnnotationMirror lowerBoundAnm = lowerBoundAnmFromValueType(valueType);
+            AnnotationMirror lowerBoundAnm = getLowerBoundAnnotationFromValueType(valueType);
             if (lowerBoundAnm != UNKNOWN) {
                 type.addAnnotation(lowerBoundAnm);
                 return super.visitBinary(tree, type);
@@ -490,7 +491,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // this either NN or POS instead of GTEN1 or LBU.
                 if (leftExpr.getKind() == Kind.MEMBER_SELECT) {
                     MemberSelectTree mstree = (MemberSelectTree) leftExpr;
-                    Integer minLen = minLenFromMemberSelectTree(mstree);
+                    Integer minLen = getMinLenFromMemberSelectTree(mstree);
                     if (minLen != null) {
                         type.replaceAnnotation(anmFromVal(minLen - valRightOrNull.intValue()));
                     }
