@@ -1,13 +1,12 @@
 package org.checkerframework.checker.minlen;
 
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.checker.minlen.qual.MinLenBottom;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -212,6 +211,30 @@ public class MinLenAnnotatedTypeFactory
         }
     }
 
+    public void addArrayLenAnnotation(AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
+        if (valueType.hasAnnotation(ArrayLen.class)) {
+            AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
+            Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
+            type.replaceAnnotation(createMinLen(val));
+        }
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
+        AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(element);
+        addArrayLenAnnotation(valueType, type);
+        super.addComputedTypeAnnotations(element, type);
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        if (tree.getKind() != Tree.Kind.TYPE_PARAMETER) {
+            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+            addArrayLenAnnotation(valueType, type);
+        }
+        super.addComputedTypeAnnotations(tree, type, iUseFlow);
+    }
+
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -226,21 +249,6 @@ public class MinLenAnnotatedTypeFactory
             super(factory);
         }
 
-        /** When a new array is reached, record how long it is. */
-        @Override
-        public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
-
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
-
-            if (valueType.hasAnnotation(ArrayLen.class)) {
-                AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
-                Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
-                type.replaceAnnotation(createMinLen(val));
-            }
-
-            return super.visitNewArray(tree, type);
-        }
-
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
 
@@ -250,18 +258,6 @@ public class MinLenAnnotatedTypeFactory
             }
 
             return super.visitLiteral(tree, type);
-        }
-
-        @Override
-        public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
-
-            if (valueType.hasAnnotation(ArrayLen.class)) {
-                AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
-                Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
-                type.replaceAnnotation(createMinLen(val));
-            }
-            return super.visitIdentifier(tree, type);
         }
     }
 
