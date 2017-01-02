@@ -133,8 +133,12 @@ public class MinLenAnnotatedTypeFactory
 
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.hasElementValue(a1, "value")
-                    && AnnotationUtils.hasElementValue(a2, "value")) {
+            // GLB of anything and bottom is bottom.
+            if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                return a2;
+            } else {
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
                 Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
                 if (a1Val >= a2Val) {
@@ -142,17 +146,7 @@ public class MinLenAnnotatedTypeFactory
                 } else {
                     return a2;
                 }
-            } else {
-                // One of these is bottom. GLB of anything and bottom is bottom.
-                if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
-                    return a1;
-                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
-                    return a2;
-                }
             }
-
-            // This should be unreachable but the function has to be complete.
-            return MIN_LEN_BOTTOM;
         }
 
         @Override
