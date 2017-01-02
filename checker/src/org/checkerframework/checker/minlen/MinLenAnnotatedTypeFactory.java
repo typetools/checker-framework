@@ -2,6 +2,7 @@ package org.checkerframework.checker.minlen;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -14,6 +15,7 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -211,10 +213,25 @@ public class MinLenAnnotatedTypeFactory
         }
     }
 
-    public void addArrayLenAnnotation(AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
+    private void addArrayLenAnnotation(AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
         if (valueType.hasAnnotation(ArrayLen.class)) {
             AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
             Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
+            type.replaceAnnotation(createMinLen(val));
+        }
+    }
+
+    private void addStringValAnnotation(AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
+        if (valueType.hasAnnotation(StringVal.class)) {
+            AnnotationMirror anm = valueType.getAnnotation(StringVal.class);
+            String[] values =
+                    AnnotationUtils.getElementValueArray(anm, "value", String.class, true)
+                            .toArray(new String[0]);
+            ArrayList<Integer> lengths = new ArrayList<>();
+            for (int i = 0; i < values.length; i++) {
+                lengths.add(values[i].length());
+            }
+            int val = Collections.min(lengths);
             type.replaceAnnotation(createMinLen(val));
         }
     }
@@ -223,6 +240,7 @@ public class MinLenAnnotatedTypeFactory
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
         AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(element);
         addArrayLenAnnotation(valueType, type);
+        addStringValAnnotation(valueType, type);
         super.addComputedTypeAnnotations(element, type);
     }
 
@@ -231,6 +249,7 @@ public class MinLenAnnotatedTypeFactory
         if (tree.getKind() != Tree.Kind.TYPE_PARAMETER) {
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
             addArrayLenAnnotation(valueType, type);
+            addStringValAnnotation(valueType, type);
         }
         super.addComputedTypeAnnotations(tree, type, iUseFlow);
     }
