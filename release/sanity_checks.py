@@ -35,7 +35,7 @@ def javac_sanity_check(checker_framework_website, release_version):
     print  "Attempting to download %s to %s" % (new_checkers_release_zip, javac_sanity_zip)
     download_binary(new_checkers_release_zip, javac_sanity_zip, MAX_DOWNLOAD_SIZE)
 
-    nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/checker/examples/NullnessExampleWithWarnings.java"
+    nullness_example_url = "https://raw.githubusercontent.com/typetools/checker-framework/master/docs/examples/NullnessExampleWithWarnings.java"
     nullness_example = os.path.join(javac_sanity_dir, "NullnessExampleWithWarnings.java")
 
     if os.path.isfile(nullness_example):

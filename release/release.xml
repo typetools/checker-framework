@@ -106,11 +106,11 @@
 
         <property name="cf.docs"             value="${checker}/../docs"                       />
         <property name="checker.manual"      value="${cf.docs}/manual"                       />
-        <property name="checker.examples"    value="${checker}/examples"                     />
+        <property name="cf.docs.examples"    value="${cf.docs}/examples"                     />
         <property name="checker.eclipse"     value="${checker}/../eclipse"                   />
         <property name="checker.tutorial"    value="${cf.docs}/tutorial"                  />
         <property name="checker.release"     value="${checker}/../release"                   />
-        <property name="checkerWebPage"      value="${checker.manual}/../docs/checker-framework-webpage.html" />
+        <property name="checkerWebPage"      value="${cf.docs}/checker-framework-webpage.html" />
         <property name="checkerQuickStartPage" value="${checker.manual}/checker-framework-quick-start.html" />
         <property name="maven.plugin"         value="${checker}/../maven-plugin"             />
         <property name="checker.binary.poms"  value="${maven.plugin}/poms"                   />
@@ -276,12 +276,12 @@
                 with="${release.ver}"/>
 
         <!-- examples -->
-        <update file="${checker.examples}/MavenExample/pom.xml"
+        <update file="${cf.docs.examples}/MavenExample/pom.xml"
                 start="${checkers.ver.0}" end="${checkers.ver.1}"
                 with="${release.ver}"/>
 
         <!-- build.gradle in GradleJava8Example is a soft link to GradleJava7Example/build.gradle -->
-        <replaceregexp file="${checker.examples}/GradleExamples/GradleJava7Example/build.gradle" byline="true"
+        <replaceregexp file="${cf.docs.examples}/GradleExamples/GradleJava7Example/build.gradle" byline="true"
                        match="ext.checkerFrameworkVersion = '${release.version.regexp}{0,1}'"
                        replace="ext.checkerFrameworkVersion = '${release.ver}'"/>
 
@@ -349,13 +349,13 @@
                         includes="checker/bin/javac" filemode="755"/>
 
             <zipfileset dir="${checkerframework}"
-                        includes="checker/../docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/checker/manual/CFLogo.png"/>
+                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/checker/manual/CFLogo.png"/>
 
             <zipfileset dir="${checkerframework}"
-                        includes="checker/../docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/tutorial/CFLogo.png"/>
+                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/tutorial/CFLogo.png"/>
 
             <zipfileset dir="${checkerframework}"
-                        includes="checker/../docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/tutorial/webpages/CFLogo.png"/>
+                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/tutorial/webpages/CFLogo.png"/>
         </zip>
 
     </target>
@@ -368,8 +368,8 @@
             <zipfileset dir="${checkerframework}" prefix="tutorial"
                         includes="docs/tutorial/**"
                         excludes="docs/tutorial/test/** docs/tutorial/src/** docs/tutorial/Makefile docs/tutorial/README"/>
-            <zipfileset dir="${checkerframework}" includes="checker/../docs/logo/Logo/CFLogo.png" fullpath="docs/tutorial/CFLogo.png"/>
-            <zipfileset dir="${checkerframework}" includes="checker/../docs/logo/Logo/CFLogo.png" fullpath="docs/tutorial/webpages/CFLogo.png"/>
+            <zipfileset dir="${checkerframework}" includes="docs/logo/Logo/CFLogo.png" fullpath="docs/tutorial/CFLogo.png"/>
+            <zipfileset dir="${checkerframework}" includes="docs/logo/Logo/CFLogo.png" fullpath="docs/tutorial/webpages/CFLogo.png"/>
         </zip>
     </target>
 
@@ -380,7 +380,7 @@
         <fail unless="version"     message="version is not set!" />
 
         <zip destfile="${dest.dir}/${file.name}">
-            <zipfileset dir="${checker}/examples/MavenExample" filemode="755" prefix="maven-examples-${version}"/>
+            <zipfileset dir="${cf.docs.examples}/MavenExample" filemode="755" prefix="maven-examples-${version}"/>
         </zip>
     </target>
 
@@ -496,10 +496,11 @@
         <fail unless="checker"    message="checker property is not set!" />
         <fail unless="version"    message="version is not set!" />
 
-        <property name="checker.examples"         value="${checker}/examples"             />
+        <property name="cf.docs"             value="${checker}/../docs"  />
+        <property name="cf.docs.examples"    value="${cf.docs}/examples" />
 
         <copy todir="${dest.dir}/MavenExample" flatten="false">
-            <fileset dir="${checker.examples}/MavenExample">
+            <fileset dir="${cf.docs.examples}/MavenExample">
                 <include name="**" />
             </fileset>
         </copy>

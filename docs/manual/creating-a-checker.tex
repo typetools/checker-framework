@@ -1692,7 +1692,7 @@ The following example demonstrates how these options are used:
 %END LATEX
 \begin{Verbatim}
 $ javac -processor org.checkerframework.checker.interning.InterningChecker \
-    examples/InternedExampleWithWarnings.java -Ashowchecks -Anomsgtext -Afilenames
+    docs/examples/InternedExampleWithWarnings.java -Ashowchecks -Anomsgtext -Afilenames
 
 [InterningChecker] InterningExampleWithWarnings.java
  success (line  18): STRING_LITERAL "foo"
@@ -1701,7 +1701,7 @@ $ javac -processor org.checkerframework.checker.interning.InterningChecker \
  success (line  19): NEW_CLASS new String("bar")
      actual: DECLARED java.lang.String
    expected: DECLARED java.lang.String
-examples/InterningExampleWithWarnings.java:21: (not.interned)
+docs/examples/InterningExampleWithWarnings.java:21: (not.interned)
     if (foo == bar)
             ^
  success (line  22): STRING_LITERAL "foo == bar"

@@ -3,7 +3,7 @@ FILES=qual/Encrypted.java \
 
 JAVAOPTS=-source 7 -target 7
 
-JAVAC?=../../bin/javac
+JAVAC?=../../../checker/bin/javac
 
 # gets the full path to the directory of the make file, which is also the root dir of the qual folder
 # for custom projects, it is best to encode the full root path as a variable

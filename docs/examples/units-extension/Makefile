@@ -3,9 +3,9 @@ FILES=qual/Frequency.java \
   qual/Hz.java \
   qual/kHz.java
 
-JAVAOPTS=-source 7 -target 7  -classpath .:../../dist/checker.jar
+JAVAOPTS=-source 7 -target 7 -classpath .:../../../checker/dist/checker.jar
 
-JAVAC?=../../bin/javac
+JAVAC?=../../../checker/bin/javac
 
 # gets the full path to the directory of the make file, which is also the root dir of the qual folder
 # for custom projects, it is best to encode the full root path as a variable

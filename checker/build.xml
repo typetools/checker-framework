@@ -110,7 +110,7 @@
         <delete failonerror="false">
             <fileset dir="${tests.build}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
-            <fileset dir="${checker.loc}/examples" includes="**/*.class"/>
+            <fileset dir="${cf.docs}/examples" includes="**/*.class"/>
         </delete>
 
         <delete dir="${dist}"/>
@@ -1117,7 +1117,7 @@
 
       <exec executable="make" failonerror="${halt.on.test.failure}">
         <env key="JAVAC" value="${basedir}/bin/javac"/>
-        <arg line="-C examples/"/>
+        <arg line="-C ../docs/examples/"/>
       </exec>
     </target>
 
@@ -1356,10 +1356,10 @@ So, use our own archived version.
     <target name="check-tutorial" description="Test that the tutorial is working as expected">
     <!--The tutorial build file is written relative to its location,
         so useNativeBasedir is required. -->
-          <ant dir="${framework.loc}/../docs/tutorial/tests/" useNativeBasedir="true">
+          <ant dir="${docs.loc}/tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
           </ant>
-          <ant dir="${framework.loc}/../docs/tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
+          <ant dir="${docs.loc}/tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
               <target name="clean"/>
           </ant>
     </target>

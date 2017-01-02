@@ -1,4 +1,4 @@
-JAVAC ?= $(realpath ../bin/javac)
+JAVAC ?= $(realpath ../../checker/bin/javac)
 
 .PHONY: all
 

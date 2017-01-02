@@ -38,7 +38,6 @@ checker/jdk/jdk*.jar
 checker/jdk/**/*.class
 *.pyc
 checker/build-temp
-checker/examples/**/*.class
 checker/bin-devel/.run-google-java-format
 
 # manual files
@@ -73,6 +72,7 @@ docs/manual/figures/*.png
 docs/manual/figures/signature-types-with-canonicalname.dia
 docs/manual/*.png
 docs/manual/*.svg
+docs/examples/**/*.class
 
 # dataflow manual
 dataflow/manual/dataflow.aux
