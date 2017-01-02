@@ -33,6 +33,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The MinLen checker is responsible for annotating arrays with their minimum lengths. It is meant
@@ -246,7 +247,9 @@ public class MinLenAnnotatedTypeFactory
 
     @Override
     public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
-        if (tree.getKind() != Tree.Kind.TYPE_PARAMETER) {
+        // TODO: Martin: Why did I use this here? Because this is the check that happens in AnnotatedTypeFactory#getAnnotatedType
+        // and causes the program to fail if it fails. I'm unsure of why; I should ask Suzanne when she gets back 1/2/17
+        if (TreeUtils.isExpressionTree(tree)) {
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
             addArrayLenAnnotation(valueType, type);
             addStringValAnnotation(valueType, type);
