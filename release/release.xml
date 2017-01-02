@@ -349,7 +349,7 @@
                         includes="checker/bin/javac" filemode="755"/>
 
             <zipfileset dir="${checkerframework}"
-                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/checker/manual/CFLogo.png"/>
+                        includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/manual/CFLogo.png"/>
 
             <zipfileset dir="${checkerframework}"
                         includes="docs/logo/Logo/CFLogo.png" fullpath="checker-framework-${version}/docs/tutorial/CFLogo.png"/>
