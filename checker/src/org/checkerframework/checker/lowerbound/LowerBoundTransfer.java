@@ -343,25 +343,17 @@ public class LowerBoundTransfer extends CFTransfer {
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
-        // This effectively calls GLB(right, left), but does it manually because
-        // modifications need to be made mid-stream.
-        if (AnnotationUtils.containsSame(rightType, POS)) {
-            store.insertValue(leftRec, POS);
-            return;
-        }
-        if (AnnotationUtils.containsSame(leftType, POS)) {
-            return;
-        }
-        if (AnnotationUtils.containsSame(rightType, NN)) {
-            store.insertValue(leftRec, NN);
-            return;
-        }
-        if (AnnotationUtils.containsSame(leftType, NN)) {
-            return;
-        }
-        if (AnnotationUtils.containsSame(rightType, GTEN1)) {
-            store.insertValue(leftRec, GTEN1);
-            return;
+
+        AnnotationMirror rightLBType =
+                aTypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(rightType, UNKNOWN);
+        AnnotationMirror leftLBType =
+                aTypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(rightType, UNKNOWN);
+
+        AnnotationMirror newLBType =
+                aTypeFactory.getQualifierHierarchy().greatestLowerBound(rightLBType, leftLBType);
+
+        if (rightLBType != null && leftLBType != null && newLBType != null) {
+            store.insertValue(leftRec, newLBType);
         }
     }
 }
