@@ -22,7 +22,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -45,7 +44,8 @@ public class MinLenAnnotatedTypeFactory
 
     /**
      * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
+     * known at compile time (constant prop + folding). Do not access directly; use
+     * getValueAnnotatedTypeFactory instead.
      */
     private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
@@ -72,7 +72,7 @@ public class MinLenAnnotatedTypeFactory
 
     /** Returns the value type associated with the given ExpressionTree. */
     public AnnotatedTypeMirror valueTypeFromTree(Tree tree) {
-        return valueAnnotatedTypeFactory.getAnnotatedType(tree);
+        return getValueAnnotatedTypeFactory().getAnnotatedType(tree);
     }
 
     /**
@@ -242,8 +242,8 @@ public class MinLenAnnotatedTypeFactory
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
         super.addComputedTypeAnnotations(element, type);
         if (element != null) {
-            resetVisitorState(valueAnnotatedTypeFactory);
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(element);
+            AnnotatedTypeMirror valueType =
+                    getValueAnnotatedTypeFactory().getAnnotatedType(element);
             addArrayLenAnnotation(valueType, type);
             addStringValAnnotation(valueType, type);
         }
@@ -255,21 +255,10 @@ public class MinLenAnnotatedTypeFactory
         // TODO: Martin: Why did I use this here? Because this is the check that happens in AnnotatedTypeFactory#getAnnotatedType
         // and causes the program to fail if it fails. I'm unsure of why; I should ask Suzanne when she gets back 1/2/17
         if (tree != null && TreeUtils.isExpressionTree(tree)) {
-            resetVisitorState(valueAnnotatedTypeFactory);
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+            AnnotatedTypeMirror valueType = valueTypeFromTree(tree);
             addArrayLenAnnotation(valueType, type);
             addStringValAnnotation(valueType, type);
         }
-    }
-
-    private void resetVisitorState(ValueAnnotatedTypeFactory factory) {
-        VisitorState otherVisitorState = factory.getVisitorState();
-
-        // TODO: the assignment context includes ATM for MinLen.
-        // otherVisitorState.setAssignmentContext(visitorState.getAssignmentContext());
-        otherVisitorState.setPath(visitorState.getPath());
-        otherVisitorState.setClassTree(visitorState.getClassTree());
-        otherVisitorState.setMethodTree(visitorState.getMethodTree());
     }
 
     @Override
@@ -299,7 +288,7 @@ public class MinLenAnnotatedTypeFactory
     }
 
     public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        return valueAnnotatedTypeFactory;
+        return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
 
     protected static int getMinLenValue(AnnotationMirror annotation) {

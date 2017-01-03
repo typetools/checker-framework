@@ -71,17 +71,6 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
-
-    /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding).
-     */
-    private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory =
-            getTypeFactoryOfSubchecker(ValueChecker.class);
-
-    private final MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory =
-            getTypeFactoryOfSubchecker(MinLenChecker.class);
-
     /**
      * Executable elements representing methods that are handled specially by this class. Stored as
      * instance fields to avoid recomputation.
@@ -114,6 +103,14 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                         LowerBoundUnknown.class));
     }
 
+    public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(ValueChecker.class);
+    }
+
+    public MinLenAnnotatedTypeFactory getMinLenAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(MinLenChecker.class);
+    }
+
     /**
      * Either returns the exact value of the given tree according to the constant value checker, or
      * null if the exact value is not known. This method should only be used by clients who need
@@ -122,7 +119,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * getLowerBoundAnnotationFromValueType instead of this method.
      */
     public Long getExactValueOrNullFromTree(Tree tree) {
-        AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+        AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues != null && possibleValues.size() == 1) {
             return possibleValues.get(0);
@@ -215,7 +212,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (tree.getKind() == Tree.Kind.NULL_LITERAL) {
                 return super.visitLiteral(tree, type);
             }
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+            AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
             type.addAnnotation(getLowerBoundAnnotationFromValueType(valueType));
             return super.visitLiteral(tree, type);
         }
@@ -288,7 +285,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (tree.getIdentifier().contentEquals("length")
                     && InternalUtils.typeOf(tree.getExpression()).getKind() == TypeKind.ARRAY) {
                 AnnotatedTypeMirror minLenType =
-                        minLenAnnotatedTypeFactory.getAnnotatedType(tree.getExpression());
+                        getMinLenAnnotatedTypeFactory().getAnnotatedType(tree.getExpression());
                 AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
                 if (anm == null) {
                     return null;
@@ -326,7 +323,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
             // Check if the Value Checker's information bounds the value within one of the
             // lowerbound types.
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+            AnnotatedTypeMirror valueType = getValueAnnotatedTypeFactory().getAnnotatedType(tree);
             AnnotationMirror lowerBoundAnm = getLowerBoundAnnotationFromValueType(valueType);
             if (lowerBoundAnm != UNKNOWN) {
                 type.addAnnotation(lowerBoundAnm);

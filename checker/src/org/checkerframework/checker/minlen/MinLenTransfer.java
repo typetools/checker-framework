@@ -48,7 +48,6 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
     protected final ExecutableElement listToArray;
     protected final ExecutableElement listToArray1;
     protected final ExecutableElement arrayAsList;
-    protected ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
     private QualifierHierarchy qualifierHierarchy;
 
@@ -56,7 +55,6 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         super(analysis);
         this.analysis = analysis;
         atypeFactory = (MinLenAnnotatedTypeFactory) analysis.getTypeFactory();
-        valueAnnotatedTypeFactory = atypeFactory.getValueAnnotatedTypeFactory();
         qualifierHierarchy = atypeFactory.getQualifierHierarchy();
         ProcessingEnvironment env = atypeFactory.getProcessingEnv();
         this.listAdd = TreeUtils.getMethod("java.util.List", "add", 1, env);
@@ -116,7 +114,6 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         if (!(add || asList || toArray)) {
             return result;
         }
-
         if (TreeUtils.isMethodInvocation(node.getTree(), listAdd, env)
                 || TreeUtils.isMethodInvocation(node.getTree(), listAdd2, env)) {
             Receiver rec =
@@ -193,15 +190,11 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
     public TransferResult<CFValue, MinLenStore> visitArrayAccess(
             ArrayAccessNode node, TransferInput<CFValue, MinLenStore> in) {
         TransferResult<CFValue, MinLenStore> result = super.visitArrayAccess(node, in);
+        AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(node.getArray().getTree());
 
-        if (valueAnnotatedTypeFactory
-                .getAnnotatedType(node.getArray().getTree())
-                .hasAnnotation(ArrayLen.class)) {
+        if (valueType.hasAnnotation(ArrayLen.class)) {
             // In this case, refine the MinLen to match the ArrayLen.
-            AnnotationMirror arrayLenAnm =
-                    valueAnnotatedTypeFactory
-                            .getAnnotatedType(node.getArray().getTree())
-                            .getAnnotation(ArrayLen.class);
+            AnnotationMirror arrayLenAnm = valueType.getAnnotation(ArrayLen.class);
             MinLenStore store = in.getRegularStore();
             int minlen = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(arrayLenAnm));
             Receiver rec =
