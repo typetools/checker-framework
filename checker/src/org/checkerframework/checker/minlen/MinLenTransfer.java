@@ -42,13 +42,13 @@ import org.checkerframework.javacutil.TreeUtils;
 public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, MinLenTransfer> {
 
     protected MinLenAnalysis analysis;
-    protected static MinLenAnnotatedTypeFactory atypeFactory;
+    protected MinLenAnnotatedTypeFactory atypeFactory;
     protected final ExecutableElement listAdd;
     protected final ExecutableElement listAdd2;
     protected final ExecutableElement listToArray;
     protected final ExecutableElement listToArray1;
     protected final ExecutableElement arrayAsList;
-    protected static ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
+    protected ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
 
     private QualifierHierarchy qualifierHierarchy;
 
