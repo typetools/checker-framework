@@ -23,6 +23,7 @@ import org.checkerframework.common.value.qual.IntRange;
 import org.checkerframework.common.value.qual.IntVal;
 import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.source.Result;
+
 /**
  * @author plvines
  *     <p>Visitor for the Constant Value type-system.

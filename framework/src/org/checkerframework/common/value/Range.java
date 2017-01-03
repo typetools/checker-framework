@@ -313,7 +313,7 @@ public class Range {
     }
 
     /**
-     * Determine if the range is wider than a given value
+     * Determines if the range is wider than a given value
      *
      * @param value
      * @return true if wider than the given value
