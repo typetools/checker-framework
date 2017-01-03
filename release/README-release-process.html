@@ -361,9 +361,9 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <td>2.</td>
       <td><strong>Import the Checker Framework signing key for PGP</strong><br/>
         SSH into Buffalo and run the following command:<br/>
-        <code>gpg --allow-secret-key-import --import /projects/swlab1/checker-framework/release-private.key<br/><br/></code>
+        <code>gpg --allow-secret-key-import --import /projects/swlab1/checker-framework/hosting-info/release-private.key<br/><br/></code>
         Note:  The password for this key is located in the file<br/>
-        <code>/projects/swlab1/checker-framework/release-private.password<br/></code>
+        <code>/projects/swlab1/checker-framework/hosting-infor/release-private.password<br/></code>
         and is used by the release_push script to sign Maven artifacts.<br/>
       </td>
     <tr>
@@ -385,7 +385,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <td>4.</td>
       <td><strong>Add your account information to settings.xml in your home directory.</strong><br/>
         Create a <code>~/.m2/settings.xml</code> file with the contents specified in
-        <code>/projects/swlab1/checker-framework/release-settings.txt</code>
+        <code>/projects/swlab1/checker-framework/hosting-info/release-settings.txt</code>
         using the information you just created for your Sonatypes Account on Buffalo or other
         network host.  Since the file contains your password, make it non-readable:  <code>chmod og-rw ~/.m2/settings.xml</code>
       </td>
