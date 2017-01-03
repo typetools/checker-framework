@@ -1316,12 +1316,14 @@ public abstract class GenericAnnotatedTypeFactory<
     public <T extends GenericAnnotatedTypeFactory<?, ?, ?, ?>, U extends BaseTypeChecker>
             T getTypeFactoryOfSubchecker(Class<U> checkerClass) {
         T subFactory = checker.getTypeFactoryOfSubchecker(checkerClass);
-        VisitorState subFactoryVisitorState = subFactory.getVisitorState();
-        // TODO: the assignment context includes ATM for MinLen.
-        // subFactoryVisitorState.setAssignmentContext(visitorState.getAssignmentContext());
-        subFactoryVisitorState.setPath(visitorState.getPath());
-        subFactoryVisitorState.setClassTree(visitorState.getClassTree());
-        subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
+        if (subFactory != null && subFactory.getVisitorState() != null) {
+            VisitorState subFactoryVisitorState = subFactory.getVisitorState();
+            // TODO: the assignment context includes ATM for MinLen.
+            // subFactoryVisitorState.setAssignmentContext(visitorState.getAssignmentContext());
+            subFactoryVisitorState.setPath(visitorState.getPath());
+            subFactoryVisitorState.setClassTree(visitorState.getClassTree());
+            subFactoryVisitorState.setMethodTree(visitorState.getMethodTree());
+        }
         return subFactory;
     }
 
