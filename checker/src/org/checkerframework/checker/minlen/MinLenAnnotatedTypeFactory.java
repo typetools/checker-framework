@@ -45,13 +45,6 @@ import org.checkerframework.javacutil.TreeUtils;
 public class MinLenAnnotatedTypeFactory
         extends GenericAnnotatedTypeFactory<CFValue, MinLenStore, MinLenTransfer, MinLenAnalysis> {
 
-    /**
-     * Provides a way to query the Constant Value Checker, which computes the values of expressions
-     * known at compile time (constant prop + folding). Do not access directly; use
-     * getValueAnnotatedTypeFactory instead.
-     */
-    private final ValueAnnotatedTypeFactory valueAnnotatedTypeFactory;
-
     /** {@code @MinLen(0)}, which is the top qualifier. */
     final AnnotationMirror MIN_LEN_0;
 
@@ -59,7 +52,6 @@ public class MinLenAnnotatedTypeFactory
 
     public MinLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
-        valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", 0);
         MIN_LEN_0 = builder.build();
@@ -71,6 +63,13 @@ public class MinLenAnnotatedTypeFactory
     protected void addCheckedCodeDefaults(QualifierDefaults defaults) {
         AnnotationMirror minLen0 = MIN_LEN_0;
         defaults.addCheckedCodeDefault(minLen0, TypeUseLocation.OTHERWISE);
+    }
+    /**
+     * Provides a way to query the Constant Value Checker, which computes the values of expressions
+     * known at compile time (constant prop + folding).
+     */
+    public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
+        return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
 
     /** Returns the value type associated with the given ExpressionTree. */
@@ -308,10 +307,6 @@ public class MinLenAnnotatedTypeFactory
             }
             return null;
         }
-    }
-
-    public ValueAnnotatedTypeFactory getValueAnnotatedTypeFactory() {
-        return getTypeFactoryOfSubchecker(ValueChecker.class);
     }
 
     protected static int getMinLenValue(AnnotationMirror annotation) {
