@@ -239,9 +239,11 @@ public class MinLenAnnotatedTypeFactory
 
     @Override
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
-        AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(element);
-        addArrayLenAnnotation(valueType, type);
-        addStringValAnnotation(valueType, type);
+        if (element != null) {
+            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(element);
+            addArrayLenAnnotation(valueType, type);
+            addStringValAnnotation(valueType, type);
+        }
         super.addComputedTypeAnnotations(element, type);
     }
 
@@ -249,7 +251,7 @@ public class MinLenAnnotatedTypeFactory
     public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
         // TODO: Martin: Why did I use this here? Because this is the check that happens in AnnotatedTypeFactory#getAnnotatedType
         // and causes the program to fail if it fails. I'm unsure of why; I should ask Suzanne when she gets back 1/2/17
-        if (TreeUtils.isExpressionTree(tree)) {
+        if (tree != null && TreeUtils.isExpressionTree(tree)) {
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
             addArrayLenAnnotation(valueType, type);
             addStringValAnnotation(valueType, type);
