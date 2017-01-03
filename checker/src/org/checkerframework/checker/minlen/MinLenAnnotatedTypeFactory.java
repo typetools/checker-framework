@@ -1,6 +1,9 @@
 package org.checkerframework.checker.minlen;
 
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -284,6 +287,26 @@ public class MinLenAnnotatedTypeFactory
             }
 
             return super.visitLiteral(tree, type);
+        }
+
+        @Override
+        public Void visitNewArray(NewArrayTree node, AnnotatedTypeMirror type) {
+            if (node.getDimensions().size() > 0) {
+                // If the dimension of the new array is the length of another array, then the
+                // MinLen of the new array is the min len of the other array.  (Dimensions that
+                // are a constant value have a known ArrayLen which is converted to a MinLen in
+                // addComputedTypeAnnotations.)
+                ExpressionTree dimExp = node.getDimensions().get(0);
+                if (TreeUtils.isArrayLengthAccess(dimExp)) {
+                    AnnotationMirror minLenAnno =
+                            getAnnotationMirror(
+                                    ((MemberSelectTree) dimExp).getExpression(), MinLen.class);
+                    if (minLenAnno != null) {
+                        type.addAnnotation(minLenAnno);
+                    }
+                }
+            }
+            return null;
         }
     }
 

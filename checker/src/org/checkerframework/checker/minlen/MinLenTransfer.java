@@ -22,7 +22,6 @@ import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
 import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
@@ -62,43 +61,6 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         this.listToArray = TreeUtils.getMethod("java.util.List", "toArray", 0, env);
         this.listToArray1 = TreeUtils.getMethod("java.util.List", "toArray", 1, env);
         this.arrayAsList = TreeUtils.getMethod("java.util.Arrays", "asList", 1, env);
-    }
-
-    @Override
-    public TransferResult<CFValue, MinLenStore> visitAssignment(
-            AssignmentNode node, TransferInput<CFValue, MinLenStore> in) {
-        TransferResult<CFValue, MinLenStore> result = super.visitAssignment(node, in);
-
-        // When an array is created using another array's length as the dimension, transfer
-        // that array's MinLen annotation to the new array.
-
-        if (node.getTarget().getType().getKind() == TypeKind.ARRAY) {
-            // An array is being assigned.
-            if (node.getExpression() instanceof ArrayCreationNode) {
-                // If a new array is being created.
-                if (((ArrayCreationNode) node.getExpression()).getDimensions().size() > 0) {
-                    Node lengthNode = ((ArrayCreationNode) node.getExpression()).getDimension(0);
-                    if (lengthNode instanceof FieldAccessNode) {
-                        if (((FieldAccessNode) lengthNode).getReceiver().getType().getKind()
-                                        == TypeKind.ARRAY
-                                && ((FieldAccessNode) lengthNode).getFieldName().equals("length")) {
-                            // Finally, confirmation that a new array has been created using another array's length.
-                            AnnotationMirror otherMinLen =
-                                    atypeFactory.getAnnotationMirror(
-                                            ((FieldAccessNode) lengthNode).getReceiver().getTree(),
-                                            MinLen.class);
-                            Receiver rec =
-                                    FlowExpressions.internalReprOf(
-                                            analysis.getTypeFactory(), node.getTarget());
-                            MinLenStore store = result.getRegularStore();
-                            store.insertValue(rec, otherMinLen);
-                        }
-                    }
-                }
-            }
-        }
-
-        return result;
     }
 
     @Override
