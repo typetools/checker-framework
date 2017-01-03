@@ -22,6 +22,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
@@ -239,24 +240,36 @@ public class MinLenAnnotatedTypeFactory
 
     @Override
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
+        super.addComputedTypeAnnotations(element, type);
         if (element != null) {
+            resetVisitorState(valueAnnotatedTypeFactory);
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(element);
             addArrayLenAnnotation(valueType, type);
             addStringValAnnotation(valueType, type);
         }
-        super.addComputedTypeAnnotations(element, type);
     }
 
     @Override
     public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        super.addComputedTypeAnnotations(tree, type, iUseFlow);
         // TODO: Martin: Why did I use this here? Because this is the check that happens in AnnotatedTypeFactory#getAnnotatedType
         // and causes the program to fail if it fails. I'm unsure of why; I should ask Suzanne when she gets back 1/2/17
         if (tree != null && TreeUtils.isExpressionTree(tree)) {
+            resetVisitorState(valueAnnotatedTypeFactory);
             AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
             addArrayLenAnnotation(valueType, type);
             addStringValAnnotation(valueType, type);
         }
-        super.addComputedTypeAnnotations(tree, type, iUseFlow);
+    }
+
+    private void resetVisitorState(ValueAnnotatedTypeFactory factory) {
+        VisitorState otherVisitorState = factory.getVisitorState();
+
+        // TODO: the assignment context includes ATM for MinLen.
+        // otherVisitorState.setAssignmentContext(visitorState.getAssignmentContext());
+        otherVisitorState.setPath(visitorState.getPath());
+        otherVisitorState.setClassTree(visitorState.getClassTree());
+        otherVisitorState.setMethodTree(visitorState.getMethodTree());
     }
 
     @Override
