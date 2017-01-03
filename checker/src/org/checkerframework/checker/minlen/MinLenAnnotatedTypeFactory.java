@@ -1,13 +1,13 @@
 package org.checkerframework.checker.minlen;
 
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.Tree;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.checker.minlen.qual.MinLenBottom;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -15,6 +15,7 @@ import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.ValueChecker;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.common.value.qual.IntVal;
+import org.checkerframework.common.value.qual.StringVal;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -32,6 +33,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * The MinLen checker is responsible for annotating arrays with their minimum lengths. It is meant
@@ -77,7 +79,7 @@ public class MinLenAnnotatedTypeFactory
      * empty or null), returns null. Otherwise, returns the smallest element in the list of possible
      * values.
      */
-    public Integer minLenFromValueType(AnnotatedTypeMirror valueType) {
+    public Integer getMinLenFromValueType(AnnotatedTypeMirror valueType) {
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues == null || possibleValues.size() == 0) {
             return null;
@@ -133,8 +135,12 @@ public class MinLenAnnotatedTypeFactory
 
         @Override
         public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.hasElementValue(a1, "value")
-                    && AnnotationUtils.hasElementValue(a2, "value")) {
+            // GLB of anything and bottom is bottom.
+            if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
+                return a1;
+            } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                return a2;
+            } else {
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
                 Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
                 if (a1Val >= a2Val) {
@@ -142,23 +148,17 @@ public class MinLenAnnotatedTypeFactory
                 } else {
                     return a2;
                 }
-            } else {
-                // One of these is bottom. GLB of anything and bottom is bottom.
-                if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
-                    return a1;
-                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
-                    return a2;
-                }
             }
-
-            // This should be unreachable but the function has to be complete.
-            return MIN_LEN_BOTTOM;
         }
 
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (AnnotationUtils.hasElementValue(a1, "value")
-                    && AnnotationUtils.hasElementValue(a2, "value")) {
+            // One of these is bottom. LUB of anything and bottom is the anything.
+            if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
+                return a2;
+            } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
+                return a1;
+            } else {
                 Integer a1Val = AnnotationUtils.getElementValue(a1, "value", Integer.class, true);
                 Integer a2Val = AnnotationUtils.getElementValue(a2, "value", Integer.class, true);
                 if (a1Val <= a2Val) {
@@ -166,17 +166,7 @@ public class MinLenAnnotatedTypeFactory
                 } else {
                     return a2;
                 }
-            } else {
-                // One of these is bottom. LUB of anything and bottom is the anything.
-                if (AnnotationUtils.areSameByClass(a1, MinLenBottom.class)) {
-                    return a2;
-                } else if (AnnotationUtils.areSameByClass(a2, MinLenBottom.class)) {
-                    return a1;
-                }
             }
-
-            // This should be unreachable but the function has to be complete.
-            return MIN_LEN_0;
         }
 
         /**
@@ -184,7 +174,7 @@ public class MinLenAnnotatedTypeFactory
          * annotations are the same. In this case, rhs is a subtype of lhs iff lhs contains at least
          * every element of rhs.
          *
-         * @return true if rhs is a subtype of lhs, false otherwise.
+         * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
@@ -224,6 +214,51 @@ public class MinLenAnnotatedTypeFactory
         }
     }
 
+    private void addArrayLenAnnotation(AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
+        if (valueType.hasAnnotation(ArrayLen.class)) {
+            AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
+            Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
+            type.replaceAnnotation(createMinLen(val));
+        }
+    }
+
+    private void addStringValAnnotation(AnnotatedTypeMirror valueType, AnnotatedTypeMirror type) {
+        if (valueType.hasAnnotation(StringVal.class)) {
+            AnnotationMirror anm = valueType.getAnnotation(StringVal.class);
+            String[] values =
+                    AnnotationUtils.getElementValueArray(anm, "value", String.class, true)
+                            .toArray(new String[0]);
+            ArrayList<Integer> lengths = new ArrayList<>();
+            for (int i = 0; i < values.length; i++) {
+                lengths.add(values[i].length());
+            }
+            int val = Collections.min(lengths);
+            type.replaceAnnotation(createMinLen(val));
+        }
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
+        if (element != null) {
+            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(element);
+            addArrayLenAnnotation(valueType, type);
+            addStringValAnnotation(valueType, type);
+        }
+        super.addComputedTypeAnnotations(element, type);
+    }
+
+    @Override
+    public void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type, boolean iUseFlow) {
+        // TODO: Martin: Why did I use this here? Because this is the check that happens in AnnotatedTypeFactory#getAnnotatedType
+        // and causes the program to fail if it fails. I'm unsure of why; I should ask Suzanne when she gets back 1/2/17
+        if (tree != null && TreeUtils.isExpressionTree(tree)) {
+            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
+            addArrayLenAnnotation(valueType, type);
+            addStringValAnnotation(valueType, type);
+        }
+        super.addComputedTypeAnnotations(tree, type, iUseFlow);
+    }
+
     @Override
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(
@@ -238,21 +273,6 @@ public class MinLenAnnotatedTypeFactory
             super(factory);
         }
 
-        /** When a new array is reached, record how long it is. */
-        @Override
-        public Void visitNewArray(NewArrayTree tree, AnnotatedTypeMirror type) {
-
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
-
-            if (valueType.hasAnnotation(ArrayLen.class)) {
-                AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
-                Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
-                type.replaceAnnotation(createMinLen(val));
-            }
-
-            return super.visitNewArray(tree, type);
-        }
-
         @Override
         public Void visitLiteral(LiteralTree tree, AnnotatedTypeMirror type) {
 
@@ -262,18 +282,6 @@ public class MinLenAnnotatedTypeFactory
             }
 
             return super.visitLiteral(tree, type);
-        }
-
-        @Override
-        public Void visitIdentifier(IdentifierTree tree, AnnotatedTypeMirror type) {
-            AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
-
-            if (valueType.hasAnnotation(ArrayLen.class)) {
-                AnnotationMirror anm = valueType.getAnnotation(ArrayLen.class);
-                Integer val = Collections.min(ValueAnnotatedTypeFactory.getArrayLength(anm));
-                type.replaceAnnotation(createMinLen(val));
-            }
-            return super.visitIdentifier(tree, type);
         }
     }
 

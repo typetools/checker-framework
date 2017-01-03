@@ -420,7 +420,7 @@ public class WholeProgramInferenceScenesHelper {
      * {@link annotations.Annotation}s of an {@link annotations.el.ATypeElement}.
      *
      * @param atm the AnnotatedTypeMirror to be modified
-     * @param type the {@link annotations.el.ATypeElement}.
+     * @param type the {@link annotations.el.ATypeElement}
      * @param atf the annotated type factory of a given type system, whose type hierarchy will be
      *     used
      */

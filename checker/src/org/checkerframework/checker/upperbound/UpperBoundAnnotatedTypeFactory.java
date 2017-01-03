@@ -2,11 +2,7 @@ package org.checkerframework.checker.upperbound;
 
 import static org.checkerframework.javacutil.AnnotationUtils.getElementValueArray;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.*;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +16,8 @@ import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
 import org.checkerframework.checker.minlen.MinLenChecker;
 import org.checkerframework.checker.minlen.qual.MinLen;
+import org.checkerframework.checker.samelen.SameLenAnnotatedTypeFactory;
+import org.checkerframework.checker.samelen.SameLenChecker;
 import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
@@ -70,12 +68,30 @@ public class UpperBoundAnnotatedTypeFactory
      */
     private final MinLenAnnotatedTypeFactory minLenAnnotatedTypeFactory;
 
+    /**
+     * Provides a way to query the SameLen (same length) Checker, which determines the relationships
+     * among the lengths of arrays.
+     */
+    private final SameLenAnnotatedTypeFactory sameLenAnnotatedTypeFactory;
+
+    /**
+     * Important functions as executable elements. Stored in instance fields to avoid recomputation.
+     */
+    private final ExecutableElement fcnMin =
+            TreeUtils.getMethod("java.lang.Math", "min", 2, processingEnv);
+
+    private final ExecutableElement fcnRandom =
+            TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
+    private final ExecutableElement fcnNextDouble =
+            TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
+
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
 
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
         minLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(MinLenChecker.class);
+        sameLenAnnotatedTypeFactory = getTypeFactoryOfSubchecker(SameLenChecker.class);
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(new String[0]));
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(new String[0]));
         this.postInit();
@@ -138,6 +154,15 @@ public class UpperBoundAnnotatedTypeFactory
         }
         Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
         return minLen;
+    }
+
+    /**
+     * Queries the SameLen Checker to return the type that the SameLen Checker associates with the
+     * given expression tree.
+     */
+    public AnnotatedTypeMirror sameLenTypeFromExpressionTree(ExpressionTree tree) {
+        AnnotatedTypeMirror sameLenType = sameLenAnnotatedTypeFactory.getAnnotatedType(tree);
+        return sameLenType;
     }
 
     /** Get the list of possible values from a value checker type. May return null. */
@@ -388,7 +413,7 @@ public class UpperBoundAnnotatedTypeFactory
          * annotations are the same. In this case, rhs is a subtype of lhs iff lhs contains at least
          * every element of rhs.
          *
-         * @return true if rhs is a subtype of lhs, false otherwise.
+         * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
@@ -473,8 +498,6 @@ public class UpperBoundAnnotatedTypeFactory
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            ExecutableElement fcnMin =
-                    TreeUtils.getMethod("java.lang.Math", "min", 2, processingEnv);
             if (TreeUtils.isMethodInvocation(tree, fcnMin, processingEnv)) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(tree.getArguments().get(0));
                 AnnotatedTypeMirror rightType = getAnnotatedType(tree.getArguments().get(1));
@@ -701,30 +724,25 @@ public class UpperBoundAnnotatedTypeFactory
 
         private boolean isRandomSpecialCase(
                 ExpressionTree randTree, ExpressionTree arrLenTree, AnnotatedTypeMirror type) {
-            if (arrLenTree instanceof MemberSelectTree) {
+            if (arrLenTree.getKind() == Tree.Kind.MEMBER_SELECT) {
                 MemberSelectTree mstree = (MemberSelectTree) arrLenTree;
                 if (mstree.getIdentifier().contentEquals("length")
                         && InternalUtils.typeOf(mstree.getExpression()).getKind()
                                 == TypeKind.ARRAY) {
                     // ArrLenTree must represent an array length.
 
-                    if (randTree instanceof MethodInvocationTree) {
+                    if (randTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
 
                         MethodInvocationTree mitree = (MethodInvocationTree) randTree;
-                        ExecutableElement random =
-                                TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
-                        ExecutableElement nextDouble =
-                                TreeUtils.getMethod(
-                                        "java.util.Random", "nextDouble", 0, processingEnv);
 
-                        if (TreeUtils.isMethodInvocation(mitree, random, processingEnv)) {
+                        if (TreeUtils.isMethodInvocation(mitree, fcnRandom, processingEnv)) {
                             // Okay, so this is Math.random() * array.length, which must be NonNegative
                             type.addAnnotation(
                                     createLTLengthOfAnnotation(mstree.getExpression().toString()));
                             return true;
                         }
 
-                        if (TreeUtils.isMethodInvocation(mitree, nextDouble, processingEnv)) {
+                        if (TreeUtils.isMethodInvocation(mitree, fcnNextDouble, processingEnv)) {
                             // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
                             type.addAnnotation(
                                     createLTLengthOfAnnotation(mstree.getExpression().toString()));

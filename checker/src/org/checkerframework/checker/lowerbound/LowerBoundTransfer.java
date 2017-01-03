@@ -19,8 +19,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
- * Implements the refinement rules described in lowerbound_rules.txt. In particular, implements data
- * flow refinements based on tests: &lt;, &gt;, ==, and their derivatives.
+ * Implements dataflow refinement rules based on tests: &lt;, &gt;, ==, and their derivatives.
  *
  * <p>&gt;, &lt;, &ge;, &le;, ==, and != nodes are represented as combinations of &gt; and &ge;
  * (e.g. == is &ge; in both directions in the then branch), and implement refinements based on these
@@ -222,7 +221,7 @@ public class LowerBoundTransfer extends CFTransfer {
     }
 
     /**
-     * This function handles the problems described in issues 25 and 29 in the issue tracker.
+     * Refines GTEN1 to NN if it's compared directly to -1, and NN to Pos if it's compared to 0.
      *
      * @param mLiteral a potential literal
      * @param otherNode the node on the other side of the ==/!=
@@ -231,18 +230,18 @@ public class LowerBoundTransfer extends CFTransfer {
     private void handleRelevantLiteralForEquals(
             Node mLiteral, Node otherNode, Set<AnnotationMirror> otherType, CFStore store) {
 
-        Long integerLiteral = aTypeFactory.getExactValueFromTree(mLiteral.getTree());
+        Long integerLiteralOrNull = aTypeFactory.getExactValueOrNullFromTree(mLiteral.getTree());
 
-        if (integerLiteral == null) {
+        if (integerLiteralOrNull == null) {
             return;
         }
 
-        if (integerLiteral == 0) {
+        if (integerLiteralOrNull == 0) {
             if (AnnotationUtils.containsSameByClass(otherType, NonNegative.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, POS);
             }
-        } else if (integerLiteral == -1) {
+        } else if (integerLiteralOrNull == -1) {
             if (AnnotationUtils.containsSameByClass(otherType, GTENegativeOne.class)) {
                 Receiver rec = FlowExpressions.internalReprOf(aTypeFactory, otherNode);
                 store.insertValue(rec, NN);
@@ -260,13 +259,20 @@ public class LowerBoundTransfer extends CFTransfer {
             CFValue secondValue,
             boolean notEqualTo) {
 
+        //  In an ==, refinements occur in the then branch (i.e. when they are,
+        // actually, equal). In that case, they are refined to the more
+        // precise of the two types, which is accomplished by refining each as if it were
+        // greater than or equal to the other. There is also special processing to look
+        // for literals on one side of the equals and a GTEN1 or NN on the other, so that
+        // those types can be promoted in the else branch if compared against the appropriate
+        // single literal. != is equivalent to == and implemented the same way, but the refinements occur in
+        // the other branch (i.e. when they are !equal).
+
         if (notEqualTo) {
-            // != is equivalent to == and implemented the same way, but the refinements occur in
-            // the else branch (i.e. when they are !equal).
+            // Process != first.
 
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
-            // Special processing for literals:
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore);
 
@@ -274,13 +280,10 @@ public class LowerBoundTransfer extends CFTransfer {
             refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
             return rfi.newResult;
         } else {
-            //  In an ==, refinements occur in the then branch (i.e. when they are,
-            // actually, equal). In that case, they are refined to the more
-            // precise of the two types, which is accomplished by refining each as if it were
-            // greater than or equal to the other.
+            // Process ==.
+
             RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
 
-            // Special processing for literals:
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore);
 
@@ -308,10 +311,8 @@ public class LowerBoundTransfer extends CFTransfer {
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
-        // Shouldn't overwrite a more precise type, so don't modify the left's type if
-        // it's already known to be positive.
-        if (AnnotationUtils.containsSame(rightType, GTEN1)
-                && !AnnotationUtils.containsSame(leftType, POS)) {
+
+        if (AnnotationUtils.containsSame(rightType, GTEN1)) {
             store.insertValue(leftRec, NN);
             return;
         }
@@ -342,25 +343,17 @@ public class LowerBoundTransfer extends CFTransfer {
         }
 
         Receiver leftRec = FlowExpressions.internalReprOf(aTypeFactory, left);
-        // This effectively calls GLB(right, left), but does it manually because
-        // modifications need to be made mid-stream.
-        if (AnnotationUtils.containsSame(rightType, POS)) {
-            store.insertValue(leftRec, POS);
-            return;
-        }
-        if (AnnotationUtils.containsSame(leftType, POS)) {
-            return;
-        }
-        if (AnnotationUtils.containsSame(rightType, NN)) {
-            store.insertValue(leftRec, NN);
-            return;
-        }
-        if (AnnotationUtils.containsSame(leftType, NN)) {
-            return;
-        }
-        if (AnnotationUtils.containsSame(rightType, GTEN1)) {
-            store.insertValue(leftRec, GTEN1);
-            return;
+
+        AnnotationMirror rightLBType =
+                aTypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(rightType, UNKNOWN);
+        AnnotationMirror leftLBType =
+                aTypeFactory.getQualifierHierarchy().findAnnotationInHierarchy(rightType, UNKNOWN);
+
+        AnnotationMirror newLBType =
+                aTypeFactory.getQualifierHierarchy().greatestLowerBound(rightLBType, leftLBType);
+
+        if (rightLBType != null && leftLBType != null && newLBType != null) {
+            store.insertValue(leftRec, newLBType);
         }
     }
 }

@@ -1,6 +1,9 @@
 package org.checkerframework.checker.upperbound;
 
+import java.util.HashSet;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.samelen.SameLenAnnotatedTypeFactory;
+import org.checkerframework.checker.samelen.qual.SameLen;
 import org.checkerframework.checker.upperbound.qual.LTEqLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTLengthOf;
 import org.checkerframework.checker.upperbound.qual.LTOMLengthOf;
@@ -22,19 +25,40 @@ public class UpperBoundUtils {
     }
 
     /**
-     * Determines if the given string is a member of the LTL or LTOM annotation attached to type.
+     * Determines if the given string is a member of the LTL or LTOM annotation attached to ubType.
+     * Requires a SameLen annotation as well, so that it can compare the set of SameLen annotations
+     * attached to the array/list to the passed string.
      */
-    public static boolean hasValue(AnnotatedTypeMirror type, String name) {
+    public static boolean hasValue(
+            AnnotatedTypeMirror ubType, String name, AnnotatedTypeMirror slType) {
         String[] rgst;
-        if (type.hasAnnotation(LTLengthOf.class)) {
-            rgst = getValue(type.getAnnotation(LTLengthOf.class));
-        } else if (type.hasAnnotation(LTOMLengthOf.class)) {
-            rgst = getValue(type.getAnnotation(LTOMLengthOf.class));
+        if (ubType.hasAnnotation(LTLengthOf.class)) {
+            rgst = getValue(ubType.getAnnotation(LTLengthOf.class));
+        } else if (ubType.hasAnnotation(LTOMLengthOf.class)) {
+            rgst = getValue(ubType.getAnnotation(LTOMLengthOf.class));
         } else {
             return false;
         }
+
+        HashSet<String> names = new HashSet<>();
+        names.add(name);
+
+        // Produce the full list of relevant names by checking the SameLen type.
+        if (slType.hasAnnotation(SameLen.class)) {
+            AnnotationMirror anno =
+                    slType.getAnnotationInHierarchy(SameLenAnnotatedTypeFactory.UNKNOWN);
+            if (AnnotationUtils.hasElementValue(anno, "value")) {
+                String[] slNames =
+                        AnnotationUtils.getElementValueArray(anno, "value", String.class, true)
+                                .toArray(new String[0]);
+                for (String st : slNames) {
+                    names.add(st);
+                }
+            }
+        }
+
         for (String st : rgst) {
-            if (st.equals(name)) {
+            if (names.contains(st)) {
                 return true;
             }
         }

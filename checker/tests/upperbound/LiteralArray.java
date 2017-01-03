@@ -1,3 +1,4 @@
+
 // test case for issue #67:
 // https://github.com/kelloggm/checker-framework/issues/67
 

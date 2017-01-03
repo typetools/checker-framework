@@ -2001,7 +2001,7 @@ public class CFGBuilder {
          * @param method an ExecutableElement representing a method to be called
          * @param actualExprs a List of argument expressions to a call
          * @return a List of {@link Node}s representing arguments after conversions required by a
-         *     call to this method.
+         *     call to this method
          */
         protected List<Node> convertCallArguments(
                 ExecutableElement method, List<? extends ExpressionTree> actualExprs) {

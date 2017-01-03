@@ -107,11 +107,11 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * For the use of the transfer function; generates a SameLen that includes a and b, as well as
      * everything in sl1 and sl2, if they are SameLen annotations.
      *
-     * @param a The name of the first array.
-     * @param b The name of the second array.
-     * @param sl1 The current annotation of the first array.
-     * @param sl2 The current annotation of the second array.
-     * @return A combined SameLen annotation.
+     * @param a the name of the first array
+     * @param b the name of the second array
+     * @param sl1 the current annotation of the first array
+     * @param sl2 the current annotation of the second array
+     * @return a combined SameLen annotation
      */
     public AnnotationMirror createCombinedSameLen(
             String a, String b, AnnotationMirror sl1, AnnotationMirror sl2) {
@@ -195,10 +195,10 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 }
 
             } else {
-                // the glb is either one of the annotations (if the other is top), or bottom.
-                if (AnnotationUtils.areSameByClass(a1, SameLenUnknown.class)) {
+                // the lub is either one of the annotations (if the other is bottom), or top.
+                if (AnnotationUtils.areSameByClass(a1, SameLenBottom.class)) {
                     return a2;
-                } else if (AnnotationUtils.areSameByClass(a2, SameLenUnknown.class)) {
+                } else if (AnnotationUtils.areSameByClass(a2, SameLenBottom.class)) {
                     return a1;
                 } else {
                     return createSameLenUnknown();
@@ -212,7 +212,7 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * everything, but nothing is a subtype of it. Then, checks if the types are the same. If
          * they are, return true. Otherwise, they're distinct, so return false.
          *
-         * @return true if rhs is a subtype of lhs, false otherwise.
+         * @return true if rhs is a subtype of lhs, false otherwise
          */
         @Override
         public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {

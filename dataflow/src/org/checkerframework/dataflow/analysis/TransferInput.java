@@ -140,7 +140,7 @@ public class TransferInput<A extends AbstractValue<A>, S extends Store<S>> {
 
     /**
      * @return the regular result store produced if no exception is thrown by the {@link Node}
-     *     corresponding to this transfer function result.
+     *     corresponding to this transfer function result
      */
     public S getRegularStore() {
         if (store == null) {
