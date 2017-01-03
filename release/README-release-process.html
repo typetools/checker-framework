@@ -284,7 +284,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       <strong>Note:</strong> This step can be performed in advance of the release day. It is recommended
       that this be done the work morning after Feature Freeze.
   </li>
-  <li><strong>Run release_build</strong><br/>
+  <li><strong>Run release_build</strong> to create the release artifacts and place them in the development website<br/>
       <code>python release_build.py all --auto</code><br/><br/>
       For verbose debugging output, use the <code>--debug</code> option.<br/><br/>
       <strong>Note:</strong> The &quot;all&quot; argument specifies that all projects should be built.
@@ -295,7 +295,7 @@ miss a step if you only read the paragraph asking you to say 'yes'.
       be asked more questions during the build.
   </li>
   <li>
-      <strong>Run release_push</strong><br/>
+      <strong>Run release_push</strong> to move release artifacts from the development website to the live site and to Maven Central <br/>
       <code>python release_push.py release</code><br/><br/>
       For minimal prompting, use the <code>--auto</code> option.<br/><br/>
       <div class="alert alert-danger">
