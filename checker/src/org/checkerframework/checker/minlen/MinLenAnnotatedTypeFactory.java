@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.checker.minlen.qual.MinLenBottom;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -36,6 +37,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 /**
@@ -49,11 +51,18 @@ public class MinLenAnnotatedTypeFactory
     final AnnotationMirror MIN_LEN_0;
 
     final AnnotationMirror MIN_LEN_BOTTOM;
+    final List<ExecutableElement> listRemoveMethods;
+    final List<ExecutableElement> listClearMethods;
 
     public MinLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, MinLen.class);
         builder.setValue("value", 0);
+        listRemoveMethods = TreeUtils.getMethodList("java.util.List", "remove", 1, processingEnv);
+        listClearMethods = TreeUtils.getMethodList("java.util.List", "clear", 0, processingEnv);
+        listClearMethods.add(TreeUtils.getMethod("java.util.List", "removeAll", 1, processingEnv));
+        listClearMethods.add(TreeUtils.getMethod("java.util.List", "retainAll", 1, processingEnv));
+
         MIN_LEN_0 = builder.build();
         MIN_LEN_BOTTOM = AnnotationUtils.fromClass(elements, MinLenBottom.class);
         this.postInit();
@@ -104,6 +113,24 @@ public class MinLenAnnotatedTypeFactory
     @Override
     public QualifierHierarchy createQualifierHierarchy(MultiGraphFactory factory) {
         return new MinLenQualifierHierarchy(factory);
+    }
+
+    public boolean isListRemove(ExecutableElement method) {
+        for (ExecutableElement removeMethod : listRemoveMethods) {
+            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isListClear(ExecutableElement method) {
+        for (ExecutableElement removeMethod : listClearMethods) {
+            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
