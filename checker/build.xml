@@ -383,7 +383,7 @@
             <manifest>
                 <attribute name="Main-Class" value="org.checkerframework.framework.util.CheckerMain"/>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
             </manifest>
         </jar>
     </target>
@@ -464,14 +464,14 @@
         <jar destfile="${checker.qual.lib}" basedir="${checker-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
             </manifest>
         </jar>
 
         <jar destfile="${checker.qual.sources.lib}" basedir="${checker-qual-sources-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
             </manifest>
         </jar>
         <delete dir="${checker-qual-sources-tmp}" failonerror="false"/>
@@ -568,7 +568,7 @@
         <jar destfile="${checker.compat.qual.lib}" basedir="${checker-compat-qual-classes-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
             </manifest>
         </jar>
 
@@ -576,7 +576,7 @@
              basedir="${checker-compat-qual-sources-tmp}">
             <manifest>
                 <attribute name="Implementation-Version" value="${build.version}"/>
-                <attribute name="Implementation-URL" value="http://checkerframework.org/"/>
+                <attribute name="Implementation-URL" value="http://checker-framework.com/"/>
             </manifest>
         </jar>
         <delete dir="${checker-compat-qual-sources-tmp}" failonerror="false"/>
