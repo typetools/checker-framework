@@ -950,7 +950,7 @@ public final class TreeUtils {
      * Returns whether or not the leaf of the tree path is in a static scope.
      *
      * @param path TreePath whose leaf may or may not be in static scope
-     * @return Returns whether or not the leaf of the tree path is in a static scope.
+     * @return returns whether or not the leaf of the tree path is in a static scope
      */
     public static boolean isTreeInStaticScope(TreePath path) {
         MethodTree enclosingMethod = TreeUtils.enclosingMethod(path);

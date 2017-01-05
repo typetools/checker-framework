@@ -3,7 +3,7 @@
 
 The Checker Framework has been used to build other checkers that are not
 distributed together with the framework.  This chapter mentions just a few
-of them.  They are listed in chonological order; older ones appear first
+of them.  They are listed in chronological order; older ones appear first
 and newer ones appear last.
 
 They are externally-maintained, so if you have problems or questions, you
@@ -140,10 +140,19 @@ describes a rule for the correct handling of characters/bytes read
 from a stream.
 
 The Read Checker enforces this rule.
-It is available from:
-
-\url{https://github.com/opprop/ReadChecker}
-
+It is available from
+\url{https://github.com/opprop/ReadChecker}.
 
 
-% LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI
+\section{SQL checker that supports multiple dialects\label{sql-schecker}}
+
+\href{http://www.jooq.org/}{jOOQ} is a database API that lets you build
+typesafe SQL queries.  jOOQ version 3.0.9 and later ships with a SQL
+checker that provides even more safety:  it ensures ensure that you don't
+use SQL features that are not not supported by your database
+implementation.  You can learn about the SQL checker at
+\url{https://blog.jooq.org/2016/05/09/jsr-308-and-the-checker-framework-add-even-more-typesafety-to-jooq-3-9}.
+
+
+% LocalWords:  SCJ EnerJ CheckLT unsanitized JavaUI CCS IGJ OIGJ FIO08
+%%  LocalWords:  jOOQ typesafe

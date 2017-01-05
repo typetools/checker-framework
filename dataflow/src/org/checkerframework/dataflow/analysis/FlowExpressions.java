@@ -285,6 +285,11 @@ public class FlowExpressions {
                                 new FieldAccess(
                                         fieldAccessExpression, typeOfId, (VariableElement) ele);
                         break;
+                    case CLASS:
+                    case ENUM:
+                    case ANNOTATION_TYPE:
+                    case INTERFACE:
+                        receiver = new ClassName(ele.asType());
                 }
         }
 
@@ -363,7 +368,7 @@ public class FlowExpressions {
      *
      * @param annotationProvider annotationProvider
      * @param path TreePath that is enclosed by the method
-     * @return Receiver objects for the formal parameters of the method in which path is enclosed.
+     * @return Receiver objects for the formal parameters of the method in which path is enclosed
      */
     public static List<Receiver> getParametersOfEnclosingMethod(
             AnnotationProvider annotationProvider, TreePath path) {

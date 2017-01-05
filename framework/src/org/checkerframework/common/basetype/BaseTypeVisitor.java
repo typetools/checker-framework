@@ -584,7 +584,7 @@ public class BaseTypeVisitor<Factory extends GenericAnnotatedTypeFactory<?, ?, ?
      * Check that the expression's type is annotated with {@code annotation} at the regular exit
      * store.
      *
-     * @param methodTree Declaration of the method
+     * @param methodTree declaration of the method
      * @param annotation expression's type must have this annotation
      * @param expression the expression that the postcondition concerns
      */

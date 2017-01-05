@@ -1,5 +1,4 @@
 package java.util;
-import org.checkerframework.dataflow.qual.SideEffectFree;
 import org.checkerframework.checker.lock.qual.*;
 
 public abstract class TimeZone implements java.io.Serializable, Cloneable{

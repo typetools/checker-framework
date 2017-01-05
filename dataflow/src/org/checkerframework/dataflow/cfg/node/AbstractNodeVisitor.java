@@ -10,8 +10,8 @@ package org.checkerframework.dataflow.cfg.node;
  * most {@link Node}s and only has special behavior for a few.
  *
  * @author Stefan Heule
- * @param <R> Return type of the visitor
- * @param <P> Parameter type of the visitor
+ * @param <R> return type of the visitor
+ * @param <P> parameter type of the visitor
  */
 public abstract class AbstractNodeVisitor<R, P> implements NodeVisitor<R, P> {
 
