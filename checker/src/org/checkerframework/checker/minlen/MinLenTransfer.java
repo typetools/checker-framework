@@ -345,32 +345,36 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         store.insertValue(leftRec, newType);
     }
 
-    private void refineNotEqual(
-            Node left,
-            Set<AnnotationMirror> leftType,
-            Node right,
-            Set<AnnotationMirror> rightType,
-            MinLenStore store) {
+    private Receiver getReceiverForFiNodeOrNull(Node node) {
+        if (node instanceof FieldAccessNode) {
+            Receiver rec =
+                    FlowExpressions.internalReprOf(
+                            analysis.getTypeFactory(), ((FieldAccessNode) node).getReceiver());
+            return rec;
+        }
+        return null;
+    }
+
+    private Integer getNewMinLenForRefinement(
+            Node fiNode, Node nonFiNode, Set<AnnotationMirror> leftType) {
         FieldAccessNode fi = null;
         Tree tree = null;
-        Receiver rec = null;
         Set<AnnotationMirror> type = null;
         // Only the length matters. This will miss an expression which
         // include an array length (like "a.length + 1"), but that's okay
         // for now.
         // FIXME: Joe: List support will be needed here too.
 
-        if (left instanceof FieldAccessNode) {
-            fi = (FieldAccessNode) left;
-            tree = right.getTree();
-            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), fi.getReceiver());
+        if (fiNode instanceof FieldAccessNode) {
+            fi = (FieldAccessNode) fiNode;
+            tree = nonFiNode.getTree();
             type = leftType;
         } else {
-            return;
+            return null;
         }
 
-        if (fi == null || tree == null || rec == null || type == null) {
-            return;
+        if (fi == null || tree == null || type == null) {
+            return null;
         }
         if (fi.getFieldName().equals("length")
                 && fi.getReceiver().getType().getKind() == TypeKind.ARRAY) {
@@ -381,23 +385,28 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
 
             if (valueType == null) {
-                return;
+                return null;
             }
 
             Integer newMinLen = atypeFactory.getMinLenFromValueType(valueType);
 
-            if (newMinLen == null) {
-                return;
-            }
+            return newMinLen;
+        }
+        return null;
+    }
 
-            // This has to be a comparison against zero; otherwise, refineGTE will
-            // have the same behavior as this function.
-            if (newMinLen != 0) {
-                return;
-            }
+    private void refineNotEqual(
+            Node left,
+            Set<AnnotationMirror> leftType,
+            Node right,
+            Set<AnnotationMirror> rightType,
+            MinLenStore store) {
 
+        Receiver rec = getReceiverForFiNodeOrNull(left);
+        Integer newMinLen = getNewMinLenForRefinement(left, right, leftType);
+
+        if (newMinLen != null && newMinLen == 0 && rec != null) {
             store.insertValue(rec, atypeFactory.createMinLen(1));
-            return;
         }
     }
 
@@ -407,48 +416,11 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             Node right,
             Set<AnnotationMirror> rightType,
             MinLenStore store) {
-        FieldAccessNode fi = null;
-        Tree tree = null;
-        Receiver rec = null;
-        Set<AnnotationMirror> type = null;
-        // Only length matters. This will miss an expression which
-        // include an array length (like "a.length + 1"), but that's okay
-        // for now.
-        // FIXME: Joe: List support will be needed here too.
 
-        if (left instanceof FieldAccessNode) {
-            fi = (FieldAccessNode) left;
-            tree = right.getTree();
-            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), fi.getReceiver());
-            type = leftType;
-        } else {
-            return;
-        }
-
-        if (fi == null || tree == null || rec == null || type == null) {
-            return;
-        }
-
-        if (fi.getFieldName().equals("length")
-                && fi.getReceiver().getType().getKind() == TypeKind.ARRAY) {
-            // At this point, MinLen needs to invoke the constant value checker
-            // to find out if it knows anything about what the length is being
-            // compared to.
-
-            AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
-
-            if (valueType == null) {
-                return;
-            }
-
-            Integer newMinLen = atypeFactory.getMinLenFromValueType(valueType);
-
-            if (newMinLen == null) {
-                return;
-            }
-
+        Receiver rec = getReceiverForFiNodeOrNull(left);
+        Integer newMinLen = getNewMinLenForRefinement(left, right, leftType);
+        if (rec != null && newMinLen != null) {
             store.insertValue(rec, atypeFactory.createMinLen(newMinLen + 1));
-            return;
         }
     }
 
@@ -458,50 +430,9 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             Node right,
             Set<AnnotationMirror> rightType,
             MinLenStore store) {
-        FieldAccessNode fi = null;
-        Tree tree = null;
-        Receiver rec = null;
-        Set<AnnotationMirror> type = null;
-        // Only length matters. This will miss an expression which
-        // include an array length (like "a.length + 1"), but that's okay
-        // for now.
-        // FIXME: Joe: List support will be needed here too.
-        if (left instanceof FieldAccessNode) {
-            fi = (FieldAccessNode) left;
-            tree = right.getTree();
-            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), fi.getReceiver());
-            type = leftType;
-        } else if (right instanceof FieldAccessNode) {
-            fi = (FieldAccessNode) right;
-            tree = left.getTree();
-            rec = FlowExpressions.internalReprOf(analysis.getTypeFactory(), fi.getReceiver());
-            type = rightType;
-        } else {
-            return;
-        }
-
-        if (fi == null || tree == null || rec == null || type == null) {
-            return;
-        }
-
-        if (fi.getFieldName().equals("length")
-                && fi.getReceiver().getType().getKind() == TypeKind.ARRAY) {
-            // At this point, MinLen needs to invoke the constant value checker
-            // to find out if it knows anything about what the length is being
-            // compared to.
-
-            AnnotatedTypeMirror valueType = atypeFactory.valueTypeFromTree(tree);
-
-            if (valueType == null) {
-                return;
-            }
-
-            Integer newMinLen = atypeFactory.getMinLenFromValueType(valueType);
-
-            if (newMinLen == null) {
-                return;
-            }
-
+        Receiver rec = getReceiverForFiNodeOrNull(left);
+        Integer newMinLen = getNewMinLenForRefinement(left, right, leftType);
+        if (rec != null && newMinLen != null) {
             store.insertValue(rec, atypeFactory.createMinLen(newMinLen));
         }
     }

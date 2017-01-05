@@ -5,6 +5,9 @@ class EqualToTransfer {
         if (1 == a.length) {
             int @MinLen(1) [] b = a;
         }
+        if (a.length == 1) {
+            int @MinLen(1) [] b = a;
+        }
     }
 
     void eq_bad_check(int[] a) {
