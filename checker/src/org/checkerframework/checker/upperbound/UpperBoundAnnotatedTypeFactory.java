@@ -337,10 +337,8 @@ public class UpperBoundAnnotatedTypeFactory
                    or 2) one of them is LTEL, so LTL is glb
                 */
                 String[] names = getCombinedNames(a1, a2);
-                if ((AnnotationUtils.areSameByClass(a1, LTLengthOf.class)
-                                && AnnotationUtils.areSameByClass(a2, LTOMLengthOf.class))
-                        || (AnnotationUtils.areSameByClass(a2, LTLengthOf.class)
-                                && AnnotationUtils.areSameByClass(a1, LTOMLengthOf.class))) {
+                if (AnnotationUtils.areSameByClass(a2, LTOMLengthOf.class)
+                        || AnnotationUtils.areSameByClass(a1, LTOMLengthOf.class)) {
                     return createLTOMLengthOfAnnotation(names);
                 } else {
                     return createLTLengthOfAnnotation(names);
