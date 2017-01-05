@@ -1,7 +1,12 @@
 package org.checkerframework.eclipse.ui;
 
-import java.util.*;
+import static org.checkerframework.eclipse.ui.CheckerPreferencePage.PT_COLUMNS.*;
 
+import java.util.*;
+import org.checkerframework.eclipse.CheckerPlugin;
+import org.checkerframework.eclipse.actions.CheckerInfo;
+import org.checkerframework.eclipse.actions.CheckerManager;
+import org.checkerframework.eclipse.prefs.CheckerPreferences;
 import org.checkerframework.eclipse.prefs.OptionLine;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
@@ -31,18 +36,11 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.PlatformUI;
-
-import org.checkerframework.eclipse.CheckerPlugin;
-import org.checkerframework.eclipse.actions.CheckerInfo;
-import org.checkerframework.eclipse.actions.CheckerManager;
-import org.checkerframework.eclipse.prefs.CheckerPreferences;
 import org.eclipse.ui.dialogs.SelectionDialog;
-import static org.checkerframework.eclipse.ui.CheckerPreferencePage.PT_COLUMNS.*;
 
-public class CheckerPreferencePage extends PreferencePage implements
-        IWorkbenchPreferencePage {
-    private final static String BUILT_IN_LABEL = "Built-In";
-    private final static String CUSTOM_LABEL  = "Custom";
+public class CheckerPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
+    private static final String BUILT_IN_LABEL = "Built-In";
+    private static final String CUSTOM_LABEL = "Custom";
 
     protected enum PT_COLUMNS {
         LABEL,
@@ -67,7 +65,7 @@ public class CheckerPreferencePage extends PreferencePage implements
     private Button optImplicitImports;
 
     @Override
-    public void init(IWorkbench workbench) { }
+    public void init(IWorkbench workbench) {}
 
     @Override
     protected IPreferenceStore doGetPreferenceStore() {
@@ -81,9 +79,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         final GridLayout layout = new GridLayout();
         tableComposite.setLayout(layout);
 
-
         makeProcessorGroup(tableComposite);
-
 
         // UI/Eclipse options
         final Group uiGroup = new Group(tableComposite, SWT.None);
@@ -120,22 +116,23 @@ public class CheckerPreferencePage extends PreferencePage implements
 
         final Button browseButton = new Button(jdkGroup, SWT.PUSH);
         browseButton.setText("Browse...");
-        browseButton.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                DirectoryDialog dirDialog = new DirectoryDialog(PlatformUI
-                        .getWorkbench().getActiveWorkbenchWindow().getShell(),
-                        SWT.OPEN);
-                String path = dirDialog.open();
-                optJDKPath.setText(path);
-            }
+        browseButton.addSelectionListener(
+                new SelectionListener() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DirectoryDialog dirDialog =
+                                new DirectoryDialog(
+                                        PlatformUI.getWorkbench()
+                                                .getActiveWorkbenchWindow()
+                                                .getShell(),
+                                        SWT.OPEN);
+                        String path = dirDialog.open();
+                        optJDKPath.setText(path);
+                    }
 
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
-            }
-        });
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {}
+                });
 
         final FormData jdkFormData1 = new FormData();
         jdkFormData1.left = new FormAttachment(0, 5);
@@ -153,8 +150,7 @@ public class CheckerPreferencePage extends PreferencePage implements
         jdkFormData3.left = new FormAttachment(optJDKPath, 5);
         browseButton.setLayoutData(jdkFormData3);
 
-        final GridData jdkGridData = new GridData(SWT.FILL, SWT.BEGINNING, true,
-                false);
+        final GridData jdkGridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         jdkGridData.widthHint = 300;
         jdkGroup.setLayoutData(jdkGridData);
 
@@ -181,14 +177,11 @@ public class CheckerPreferencePage extends PreferencePage implements
         optNoMsgText = new Button(procGroup, SWT.CHECK);
         optNoMsgText.setText("Use message keys instead of text (-Anomsgtext)");
         optShowChecks = new Button(procGroup, SWT.CHECK);
-        optShowChecks
-                .setText("Print debugging info for pseudo-checks (-Ashowchecks)");
+        optShowChecks.setText("Print debugging info for pseudo-checks (-Ashowchecks)");
         optImplicitImports = new Button(procGroup, SWT.CHECK);
-        optImplicitImports
-                .setText("Use implicit imports for annotation classes");
+        optImplicitImports.setText("Use implicit imports for annotation classes");
 
-        GridData procGridData = new GridData(SWT.FILL, SWT.BEGINNING, true,
-                false);
+        GridData procGridData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         procGroup.setLayoutData(procGridData);
 
         // argText = new Text(javacGroup, SWT.SINGLE | SWT.BORDER);
@@ -198,7 +191,6 @@ public class CheckerPreferencePage extends PreferencePage implements
 
         return tableComposite;
     }
-
 
     private void makeProcessorGroup(final Composite tableComposite) {
 
@@ -219,32 +211,32 @@ public class CheckerPreferencePage extends PreferencePage implements
         procTable = new Table(group, SWT.CHECK | SWT.MULTI | SWT.BORDER);
 
         // layout data within the group
-        final GridData procTableData = new GridData( SWT.FILL, SWT.TOP, true, false );
+        final GridData procTableData = new GridData(SWT.FILL, SWT.TOP, true, false);
         procTableData.heightHint = 200;
         procTableData.horizontalSpan = 2;
         procTableData.horizontalSpan = SWT.FILL;
         procTableData.grabExcessHorizontalSpace = true;
 
         procTable.setLayoutData(procTableData);
-        procTable.setLinesVisible (true);
-        procTable.setHeaderVisible (true);
+        procTable.setLinesVisible(true);
+        procTable.setHeaderVisible(true);
 
         final List<String> headers = Arrays.asList("Name", "Source", "Class");
         for (final String header : headers) {
-            final TableColumn column = new TableColumn (procTable, SWT.NONE);
-            column.setText (header);
+            final TableColumn column = new TableColumn(procTable, SWT.NONE);
+            column.setText(header);
         }
 
         // Add built-in checkers to the table
-        for ( final CheckerInfo checkerInfo : CheckerManager.getCheckerInfos() ) {
+        for (final CheckerInfo checkerInfo : CheckerManager.getCheckerInfos()) {
             addProcTableItem(checkerInfo, true);
         }
 
-        for ( final String className : CheckerManager.getStoredCustomClasses() ) {
+        for (final String className : CheckerManager.getStoredCustomClasses()) {
             addProcTableItem(CheckerInfo.fromClassPath(className, null), false);
         }
 
-        for ( final TableColumn columns : procTable.getColumns() ) {
+        for (final TableColumn columns : procTable.getColumns()) {
             columns.pack();
         }
 
@@ -252,30 +244,30 @@ public class CheckerPreferencePage extends PreferencePage implements
 
         final Button addButton = new Button(group, SWT.PUSH);
         addButton.setText("Add");
-        addButton.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected( SelectionEvent e ) {
-                searchForClass();
-            }
+        addButton.addSelectionListener(
+                new SelectionListener() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        searchForClass();
+                    }
 
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-        });
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {}
+                });
 
         final Button removeButton = new Button(group, SWT.PUSH);
         removeButton.setText("Remove");
         removeButton.setEnabled(false);
-        removeButton.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                removePTIndices(procTable.getSelectionIndices());
-            }
+        removeButton.addSelectionListener(
+                new SelectionListener() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        removePTIndices(procTable.getSelectionIndices());
+                    }
 
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-        });
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {}
+                });
 
         final GridData removeGd = new GridData();
         removeGd.horizontalAlignment = SWT.END;
@@ -285,26 +277,33 @@ public class CheckerPreferencePage extends PreferencePage implements
         // built-in checkers enabled and when at least 1 custom checker is
         // selected)
 
-        procTable.addSelectionListener(new SelectionListener() {
-            public void widgetSelected(SelectionEvent event)        { setRemoveState(); }
-            public void widgetDefaultSelected(SelectionEvent event) { setRemoveState(); }
-
-            private void setRemoveState() {  final TableItem [] selectedItems = procTable.getSelection();
-                boolean enabled = true;
-                if (selectedItems == null || selectedItems.length == 0) {
-                    enabled = false;
-                } else {
-                    for (final TableItem ti : selectedItems) {
-                        if ( !ti.getText( SOURCE.ordinal() ).equals(CUSTOM_LABEL) ) {
-                            enabled = false;
-                            break;
-                        }
+        procTable.addSelectionListener(
+                new SelectionListener() {
+                    public void widgetSelected(SelectionEvent event) {
+                        setRemoveState();
                     }
-                }
 
-                removeButton.setEnabled(enabled);
-            }
-        });
+                    public void widgetDefaultSelected(SelectionEvent event) {
+                        setRemoveState();
+                    }
+
+                    private void setRemoveState() {
+                        final TableItem[] selectedItems = procTable.getSelection();
+                        boolean enabled = true;
+                        if (selectedItems == null || selectedItems.length == 0) {
+                            enabled = false;
+                        } else {
+                            for (final TableItem ti : selectedItems) {
+                                if (!ti.getText(SOURCE.ordinal()).equals(CUSTOM_LABEL)) {
+                                    enabled = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        removeButton.setEnabled(enabled);
+                    }
+                });
     }
 
     //TODO: Lot's of overlap with procTable, perhaps there is a way to generalize these two
@@ -327,54 +326,54 @@ public class CheckerPreferencePage extends PreferencePage implements
         optTable = new Table(group, SWT.CHECK | SWT.MULTI | SWT.BORDER);
 
         // layout data within the group
-        final GridData optTableData = new GridData( SWT.FILL, SWT.TOP, true, false );
+        final GridData optTableData = new GridData(SWT.FILL, SWT.TOP, true, false);
         optTableData.heightHint = 100;
         optTableData.horizontalSpan = 2;
         optTableData.horizontalSpan = SWT.FILL;
         optTableData.grabExcessHorizontalSpace = true;
 
         optTable.setLayoutData(optTableData);
-        optTable.setLinesVisible (true);
-        optTable.setHeaderVisible (true);
+        optTable.setLinesVisible(true);
+        optTable.setHeaderVisible(true);
 
-        final TableColumn column = new TableColumn (optTable, SWT.NONE);
-        column.setText ("Option");
+        final TableColumn column = new TableColumn(optTable, SWT.NONE);
+        column.setText("Option");
 
         // Add existing op;tions to the table
-        for ( final OptionLine optionInfo : getMiscParams() ) {
+        for (final OptionLine optionInfo : getMiscParams()) {
             addOptTableItem(optionInfo);
         }
 
-        for ( final TableColumn columns : optTable.getColumns() ) {
+        for (final TableColumn columns : optTable.getColumns()) {
             columns.pack();
         }
 
         final Button addButton = new Button(group, SWT.PUSH);
         addButton.setText("Add");
-        addButton.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected( SelectionEvent e ) {
-                addOption();
-            }
+        addButton.addSelectionListener(
+                new SelectionListener() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        addOption();
+                    }
 
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-        });
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {}
+                });
 
         final Button removeButton = new Button(group, SWT.PUSH);
         removeButton.setText("Remove");
         removeButton.setEnabled(false);
-        removeButton.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                removeOptionIndices(optTable.getSelectionIndices());
-            }
+        removeButton.addSelectionListener(
+                new SelectionListener() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        removeOptionIndices(optTable.getSelectionIndices());
+                    }
 
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-            }
-        });
+                    @Override
+                    public void widgetDefaultSelected(SelectionEvent e) {}
+                });
 
         final GridData removeGd = new GridData();
         removeGd.horizontalAlignment = SWT.END;
@@ -384,41 +383,46 @@ public class CheckerPreferencePage extends PreferencePage implements
         // built-in checkers enabled and when at least 1 custom checker is
         // selected)
 
-        optTable.addSelectionListener(new SelectionListener() {
-            public void widgetSelected(SelectionEvent event)        { setRemoveState(); }
-            public void widgetDefaultSelected(SelectionEvent event) { setRemoveState(); }
+        optTable.addSelectionListener(
+                new SelectionListener() {
+                    public void widgetSelected(SelectionEvent event) {
+                        setRemoveState();
+                    }
 
-            private void setRemoveState() {
-                final TableItem [] selectedItems = optTable.getSelection();
-                removeButton.setEnabled(selectedItems != null || selectedItems.length != 0);
-            }
-        });
+                    public void widgetDefaultSelected(SelectionEvent event) {
+                        setRemoveState();
+                    }
+
+                    private void setRemoveState() {
+                        final TableItem[] selectedItems = optTable.getSelection();
+                        removeButton.setEnabled(selectedItems != null || selectedItems.length != 0);
+                    }
+                });
     }
 
     private TableItem addOptTableItem(final OptionLine optLine) {
         final TableItem item = new TableItem(optTable, SWT.None);
-        item.setText( 0, optLine.getArgument() );
+        item.setText(0, optLine.getArgument());
         item.setChecked(optLine.isActive());
         return item;
     }
 
-
-    private void removeOptionIndices(final int [] indices) {
+    private void removeOptionIndices(final int[] indices) {
         optTable.remove(indices);
     }
 
-
-    private void removePTIndices(final int [] indices) {
+    private void removePTIndices(final int[] indices) {
         for (final int index : indices) {
             final TableItem ti = procTable.getItem(index);
-            if (! ti.getText(SOURCE.ordinal()).equals(CUSTOM_LABEL) ) {
-                throw new IllegalArgumentException("Cannot remove built-in checker " + ti.getText(LABEL.ordinal()));
+            if (!ti.getText(SOURCE.ordinal()).equals(CUSTOM_LABEL)) {
+                throw new IllegalArgumentException(
+                        "Cannot remove built-in checker " + ti.getText(LABEL.ordinal()));
             }
         }
         procTable.remove(indices);
     }
 
-    public static String [] splitAtUppercase(final String toSplit) {
+    public static String[] splitAtUppercase(final String toSplit) {
         List<String> tokens = new ArrayList<String>();
 
         int length = toSplit.length();
@@ -435,7 +439,6 @@ public class CheckerPreferencePage extends PreferencePage implements
         return tokens.toArray(new String[tokens.size()]);
     }
 
-
     protected List<OptionLine> getMiscParams() {
         IPreferenceStore store = doGetPreferenceStore();
         return OptionLine.parseOptions(store.getString(CheckerPreferences.PREF_CHECKER_ARGS));
@@ -447,18 +450,18 @@ public class CheckerPreferencePage extends PreferencePage implements
             options.add(new OptionLine(item.getText(0), item.getChecked()));
         }
 
-        doGetPreferenceStore().setValue(CheckerPreferences.PREF_CHECKER_ARGS,
-                OptionLine.optionLinesToString(options));
-
+        doGetPreferenceStore()
+                .setValue(
+                        CheckerPreferences.PREF_CHECKER_ARGS,
+                        OptionLine.optionLinesToString(options));
     }
 
-    /**
-     * Initialise the values in the table to the preference values
-     */
+    /** Initialise the values in the table to the preference values */
     private void initValues() {
         IPreferenceStore store = doGetPreferenceStore();
 
-        final List<String> selectedClasses = new ArrayList<String>(CheckerManager.getSelectedClasses());
+        final List<String> selectedClasses =
+                new ArrayList<String>(CheckerManager.getSelectedClasses());
         for (TableItem item : procTable.getItems()) {
             int index = 0;
             while (index < selectedClasses.size()) {
@@ -473,28 +476,18 @@ public class CheckerPreferencePage extends PreferencePage implements
         }
 
         /*optAutoBuild.setSelection(store
-                .getBoolean(CheckerPreferences.PREF_CHECKER_AUTO_BUILD)); */
-        optSkipUses.setText(store
-                .getString(CheckerPreferences.PREF_CHECKER_A_SKIP_CLASSES));
-        optALint.setText(store
-                .getString(CheckerPreferences.PREF_CHECKER_A_LINT));
-        optWarning.setSelection(store
-                .getBoolean(CheckerPreferences.PREF_CHECKER_A_WARNS));
-        optFilenames.setSelection(store
-                .getBoolean(CheckerPreferences.PREF_CHECKER_A_FILENAMES));
-        optNoMsgText.setSelection(store
-                .getBoolean(CheckerPreferences.PREF_CHECKER_A_NO_MSG_TEXT));
-        optShowChecks.setSelection(store
-                .getBoolean(CheckerPreferences.PREF_CHECKER_A_SHOW_CHECKS));
-        optFilter.setText(store
-                .getString(CheckerPreferences.PREF_CHECKER_ERROR_FILTER_REGEX));
-        optVerbose.setSelection(store
-                .getBoolean(CheckerPreferences.PREF_CHECKER_VERBOSE));
-        optJDKPath.setText(store
-                .getString(CheckerPreferences.PREF_CHECKER_JDK_PATH));
-        optImplicitImports.setSelection(store
-                .getBoolean(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS));
-
+        .getBoolean(CheckerPreferences.PREF_CHECKER_AUTO_BUILD)); */
+        optSkipUses.setText(store.getString(CheckerPreferences.PREF_CHECKER_A_SKIP_CLASSES));
+        optALint.setText(store.getString(CheckerPreferences.PREF_CHECKER_A_LINT));
+        optWarning.setSelection(store.getBoolean(CheckerPreferences.PREF_CHECKER_A_WARNS));
+        optFilenames.setSelection(store.getBoolean(CheckerPreferences.PREF_CHECKER_A_FILENAMES));
+        optNoMsgText.setSelection(store.getBoolean(CheckerPreferences.PREF_CHECKER_A_NO_MSG_TEXT));
+        optShowChecks.setSelection(store.getBoolean(CheckerPreferences.PREF_CHECKER_A_SHOW_CHECKS));
+        optFilter.setText(store.getString(CheckerPreferences.PREF_CHECKER_ERROR_FILTER_REGEX));
+        optVerbose.setSelection(store.getBoolean(CheckerPreferences.PREF_CHECKER_VERBOSE));
+        optJDKPath.setText(store.getString(CheckerPreferences.PREF_CHECKER_JDK_PATH));
+        optImplicitImports.setSelection(
+                store.getBoolean(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS));
     }
 
     public boolean performOk() {
@@ -511,39 +504,32 @@ public class CheckerPreferencePage extends PreferencePage implements
         writeMiscParams();
 
         final List<String> ccFromTi = customClassesFromTableItems();
-        final String [] customClasses = ccFromTi.toArray(new String[ccFromTi.size()]);
+        final String[] customClasses = ccFromTi.toArray(new String[ccFromTi.size()]);
         CheckerManager.storeCustomClasses(customClasses);
 
         store.setValue(CheckerPreferences.PREF_CHECKER_PREFS_SET, true);
         /*store.setValue(CheckerPreferences.PREF_CHECKER_AUTO_BUILD,
-                optAutoBuild.getSelection()); */
-        store.setValue(CheckerPreferences.PREF_CHECKER_A_SKIP_CLASSES,
-                optSkipUses.getText());
-        store.setValue(CheckerPreferences.PREF_CHECKER_A_LINT,
-                optALint.getText());
-        store.setValue(CheckerPreferences.PREF_CHECKER_A_WARNS,
-                optWarning.getSelection());
-        store.setValue(CheckerPreferences.PREF_CHECKER_A_FILENAMES,
-                optFilenames.getSelection());
-        store.setValue(CheckerPreferences.PREF_CHECKER_A_NO_MSG_TEXT,
-                optNoMsgText.getSelection());
-        store.setValue(CheckerPreferences.PREF_CHECKER_A_SHOW_CHECKS,
-                optShowChecks.getSelection());
-        store.setValue(CheckerPreferences.PREF_CHECKER_ERROR_FILTER_REGEX,
-                optFilter.getText());
-        store.setValue(CheckerPreferences.PREF_CHECKER_VERBOSE,
-                optVerbose.getSelection());
-        store.setValue(CheckerPreferences.PREF_CHECKER_JDK_PATH,
-                optJDKPath.getText());
-        store.setValue(CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS,
+        optAutoBuild.getSelection()); */
+        store.setValue(CheckerPreferences.PREF_CHECKER_A_SKIP_CLASSES, optSkipUses.getText());
+        store.setValue(CheckerPreferences.PREF_CHECKER_A_LINT, optALint.getText());
+        store.setValue(CheckerPreferences.PREF_CHECKER_A_WARNS, optWarning.getSelection());
+        store.setValue(CheckerPreferences.PREF_CHECKER_A_FILENAMES, optFilenames.getSelection());
+        store.setValue(CheckerPreferences.PREF_CHECKER_A_NO_MSG_TEXT, optNoMsgText.getSelection());
+        store.setValue(CheckerPreferences.PREF_CHECKER_A_SHOW_CHECKS, optShowChecks.getSelection());
+        store.setValue(CheckerPreferences.PREF_CHECKER_ERROR_FILTER_REGEX, optFilter.getText());
+        store.setValue(CheckerPreferences.PREF_CHECKER_VERBOSE, optVerbose.getSelection());
+        store.setValue(CheckerPreferences.PREF_CHECKER_JDK_PATH, optJDKPath.getText());
+        store.setValue(
+                CheckerPreferences.PREF_CHECKER_IMPLICIT_IMPORTS,
                 optImplicitImports.getSelection());
 
         return true;
     }
 
     private void searchForClass() {
-        OpenTypeSelectionDialog dialog = new OpenTypeSelectionDialog(
-                getShell(), true, null, null, IJavaSearchConstants.CLASS);
+        OpenTypeSelectionDialog dialog =
+                new OpenTypeSelectionDialog(
+                        getShell(), true, null, null, IJavaSearchConstants.CLASS);
         dialog.setTitle("Search for checker classes");
         dialog.setMessage("Select additional checkers to use.");
 
@@ -563,7 +549,8 @@ public class CheckerPreferencePage extends PreferencePage implements
             final List<String> classesInTable = classesFromTableItems();
             for (final String cn : classNames) {
                 final CheckerInfo ci = CheckerInfo.fromClassPath(cn, null);
-                if (!classesInTable.contains(cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
+                if (!classesInTable.contains(
+                        cn)) { //TODO: ADD A DIALOG TO WARN IF ALREADY CONTAINED
                     addProcTableItem(ci, false);
                 }
             }
@@ -571,11 +558,14 @@ public class CheckerPreferencePage extends PreferencePage implements
     }
 
     private void addOption() {
-        final InputDialog inputDialog = new InputDialog( getShell(), "Add Option",
-                "Please enter your option exactly as it would appear on the command line. " +
-                "Include any space that would appear between the option name and value.",
-                "",
-                null);
+        final InputDialog inputDialog =
+                new InputDialog(
+                        getShell(),
+                        "Add Option",
+                        "Please enter your option exactly as it would appear on the command line. "
+                                + "Include any space that would appear between the option name and value.",
+                        "",
+                        null);
 
         if (inputDialog.open() == SelectionDialog.OK) {
             final String result = inputDialog.getValue();
@@ -586,7 +576,7 @@ public class CheckerPreferencePage extends PreferencePage implements
     private final List<String> classesFromTableItems() {
         final List<String> classes = new ArrayList<String>(procTable.getItemCount());
         for (final TableItem ti : procTable.getItems()) {
-            classes.add(ti.getText( CLASSES.ordinal() ));
+            classes.add(ti.getText(CLASSES.ordinal()));
         }
         return classes;
     }
@@ -594,8 +584,8 @@ public class CheckerPreferencePage extends PreferencePage implements
     private final List<String> customClassesFromTableItems() {
         final List<String> classes = new ArrayList<String>(procTable.getItemCount());
         for (final TableItem ti : procTable.getItems()) {
-            if ( ti.getText(SOURCE.ordinal()).equals( CUSTOM_LABEL ) ) {
-                classes.add(ti.getText( CLASSES.ordinal() ));
+            if (ti.getText(SOURCE.ordinal()).equals(CUSTOM_LABEL)) {
+                classes.add(ti.getText(CLASSES.ordinal()));
             }
         }
         return classes;
@@ -603,9 +593,9 @@ public class CheckerPreferencePage extends PreferencePage implements
 
     private TableItem addProcTableItem(final CheckerInfo checkerInfo, boolean builtIn) {
         final TableItem item = new TableItem(procTable, SWT.None);
-        item.setText( LABEL.ordinal(),   checkerInfo.getLabel()                    );
-        item.setText( SOURCE.ordinal(),  (builtIn) ? BUILT_IN_LABEL : CUSTOM_LABEL );
-        item.setText( CLASSES.ordinal(), checkerInfo.getClassPath()                );
+        item.setText(LABEL.ordinal(), checkerInfo.getLabel());
+        item.setText(SOURCE.ordinal(), (builtIn) ? BUILT_IN_LABEL : CUSTOM_LABEL);
+        item.setText(CLASSES.ordinal(), checkerInfo.getClassPath());
         return item;
     }
 }

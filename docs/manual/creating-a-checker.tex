@@ -648,7 +648,7 @@ and assuming the variable \<myClass> is of type \<MyClass>, then the type of
 \<myClass.field> is viewpoint-adapted to \<@Anno("myClass.field")>.
 
 To use this built-in functionality, your checker implementation should override
-\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createExpressionAnnoHelper}{--}
+\refmethod{framework/type}{GenericAnnotatedTypeFactory}{createExpressionAnnotationHelper}{--}
 to return a new \<ExpressionAnnotationHelper> that has been initialized with the
 checker's expression annotations.
 

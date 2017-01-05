@@ -137,7 +137,7 @@
 
   <fileset id="formatted.java.files" dir="."
            includes="**/*.java"
-           excludes="**/checker/jdk/,**/stubparser/,**/eclipse/,**/nullness-javac-errors/,**/annotated/"/>
+           excludes="checker/jdk/,stubparser/,checker/tests/nullness-javac-errors/,framework/tests/whole-program-inference/annotated/"/>
 
   <import file="./build-styleguide.xml"/>
 

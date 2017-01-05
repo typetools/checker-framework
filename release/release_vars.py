@@ -54,7 +54,7 @@ HTTP_PATH_TO_LIVE_SITE = "http://types.cs.washington.edu"
 FILE_PATH_TO_LIVE_SITE = "/cse/www2/types"
 LIVE_HTACCESS = os.path.join(FILE_PATH_TO_LIVE_SITE, ".htaccess")
 
-PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/release-private.password"
+PGP_PASSPHRASE_FILE = "/projects/swlab1/checker-framework/hosting-info/release-private.password"
 SONATYPE_OSS_URL = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 SONATYPE_STAGING_REPO_ID = "sonatype-nexus-staging"
 SONATYPE_CLOSING_DIRECTIONS_URL = "http://central.sonatype.org/pages/releasing-the-deployment.html"
