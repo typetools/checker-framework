@@ -355,10 +355,7 @@ public class UpperBoundAnnotatedTypeFactory
          */
         @Override
         public AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
-            if (!AnnotationUtils.areSameIgnoringValues(
-                    getTopAnnotation(a1), getTopAnnotation(a2))) {
-                return null;
-            } else if (isSubtype(a1, a2)) {
+            if (isSubtype(a1, a2)) {
                 return a2;
             } else if (isSubtype(a2, a1)) {
                 return a1;
