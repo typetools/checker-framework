@@ -518,8 +518,8 @@ public class UpperBoundAnnotatedTypeFactory
         /**
          * This exists specifically for Math.min. We need to special case Math.min because it has
          * unusual semantics: it can be used to combine annotations for the UBC, so it needs to be
-         * special cased. Do not special case other methods here unless you have a compelling reason
-         * to do so.
+         * special cased. Other methods should not be special-cased here unless there is a
+         * compelling reason to do so.
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
