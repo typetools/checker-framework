@@ -184,7 +184,7 @@ def check_all_links(jsr308_website, afu_website, checker_website, suffix, test_m
     afuCheck = run_link_checker(afu_website, TMP_DIR + "/afu." + suffix + ".check")
     additional_param = ""
     if checker_version_of_broken_link_to_suppress != "":
-        additional_param = "--suppress-broken 404:http://types.cs.washington.edu/checker-framework/current/checker-framework-" + checker_version_of_broken_link_to_suppress + ".zip"
+        additional_param = "--suppress-broken 404:http://checker-framework.com/checker-framework-" + checker_version_of_broken_link_to_suppress + ".zip"
     checkerCheck = run_link_checker(checker_website, TMP_DIR + "/checker-framework." + suffix + ".check", additional_param)
 
     is_jsr308Check_empty = is_file_empty(jsr308Check)
@@ -348,7 +348,7 @@ def main(argv):
         print("Use the jars in the dist directory along with the instructions at " +
               "checker-framework/eclipse/README-developers.html to build the Eclipse plugin.\n" +
               "Please install this version in the latest version of Eclipse and follow the tutorial at:\n" +
-              "http://types.cs.washington.edu/dev/checker-framework/tutorial/")
+              "http://checker_framework.org/dev/tutorial/")
         continue_or_exit("If the tutorial doesn't work, please abort the release and contact the appropriate developer.")
 
     # The Central repository is a repository of build artifacts for build programs like Maven and Ivy.
@@ -525,14 +525,14 @@ def main(argv):
         msg = ("\n" +
                "* Download the following files to your local machine." +
                "\n" +
-               "http://types.cs.washington.edu/checker-framework/current/checker-framework-" + new_checker_version + ".zip\n" +
+               "http://checker-framework.com/checker-framework-" + new_checker_version + ".zip\n" +
                "http://types.cs.washington.edu/annotation-file-utilities/current/annotation-tools-" + new_afu_version + ".zip\n" +
                "\n" +
                "To post the Checker Framework release on GitHub:\n" +
                "\n" +
                "* Go to https://github.com/typetools/checker-framework/releases/new?tag=checker-framework-" + new_checker_version + "\n" +
                "* For the release title, enter: Checker Framework " + new_checker_version + "\n" +
-               "* For the description, insert the latest Checker Framework changelog entry (available at http://types.cs.washington.edu/checker-framework/current/changelog.txt). Please include the first line with the release version and date.\n" +
+               "* For the description, insert the latest Checker Framework changelog entry (available at http://checker-framework.com/changelog.txt). Please include the first line with the release version and date.\n" +
                "* Find the link below \"Attach binaries by dropping them here or selecting them.\" Click on \"selecting them\" and upload checker-framework-" + new_checker_version + ".zip from your machine.\n" +
                "* Click on the green \"Publish release\" button.\n" +
                "\n" +

@@ -242,7 +242,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute("make", True, False, dataflow_manual_dir)
 
         # make the checker framework tutorial
-        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
+        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
         execute("make", True, False, checker_tutorial_dir)
 
         cfZipName = "checker-framework-%s.zip" % version
@@ -269,7 +269,7 @@ def build_checker_framework_release(version, afu_version, afu_release_date, chec
         execute(ant_cmd, True, False, CHECKER_FRAMEWORK_RELEASE)
 
         # clean no longer necessary files left over from building the checker framework tutorial
-        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "tutorial")
+        checker_tutorial_dir = os.path.join(CHECKER_FRAMEWORK, "docs", "tutorial")
         execute("make clean", True, False, checker_tutorial_dir)
 
         build_and_locally_deploy_maven(version)

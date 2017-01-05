@@ -5,7 +5,7 @@
       version="2.1.7"
       provider-name="Checker Framework Development Team">
 
-   <description url="http://types.cs.washington.edu/checker-framework/eclipse">
+   <description url="http://checker-framework.com/eclipse">
       The Checker Framework plugin makes it easier to run a pluggable
       type-checker.  A pluggable type-checker finds bugs at compile time that
       would ordinarily manifest at run time.  If the pluggable type-checker
@@ -371,7 +371,7 @@ as provided by Sun in the LICENSE file that accompanied this code.&quot;
    </license>
 
    <url>
-      <update label="Checker Framework Eclipse Plugin" url="http://types.cs.washington.edu/checker-framework/eclipse"/>
+      <update label="Checker Framework Eclipse Plugin" url="http://checker-framework.com/eclipse"/>
    </url>
 
    <requires>

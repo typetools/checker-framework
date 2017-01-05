@@ -1,3 +1,11 @@
+Version 2.1.8, 1 February 2017
+
+The Checker Framework webpage has moved to https://checker-framework.org/.
+Old URLs should redirect to the new one, but please update your links.
+
+The documentation has been reorganized in the Checker Framework repository.
+The manual, tutorial, and webpages now appear under checker-framework/docs/.
+
 ---------------------------------------------------------------------------
 
 Version 2.1.7, 3 January 2017
@@ -192,7 +200,7 @@ The manual documents how to run a pluggable type-checker in IntelliJ IDEA.
 
 The instructions on how to run a type-checker in Gradle have been updated to
 use the artifacts in Maven Central. Examples using the instructions have been
-added under checker-framework/checker/examples/GradleExamples/.
+added under checker-framework/docs/examples/GradleExamples/.
 
 Renamed enum DefaultLocation to TypeUseLocation.
 
@@ -239,7 +247,7 @@ Documentation:
 For type-system developers:
  * The org.checkerframework.framework.qual.TypeQualifier{s} annotations are
    now deprecated.  To indicate which annotations a checker supports, see
-   http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#indicating-supported-annotations .
+   http://checker-framework.com/manual/#indicating-supported-annotations .
    Support for TypeQualifier{s} will be removed in the next release.
  * Renamed
    org.checkerframework.framework.qual.Default{,Qualifier}ForUnannotatedCode to
@@ -265,7 +273,7 @@ time, by placing @SuppressWarnings("initialization") on the field declaration.
 
 Updated Maven instructions to no longer require a script.
 Added an example of how to use the instructions under
-checker/examples/MavenExample.
+docs/examples/MavenExample.
 
 The javac_maven script (and batch file) are deprecated and will be
 removed as of December 2015.
@@ -555,7 +563,7 @@ Fixed issues: 312, 315, 316, 318, 319, 324, 326, 327.
 Version 1.8.1, 1 May 2014
 
 Support to directly use the Java 8 javac in addition to jsr308-langtools.
-Added checker/examples directory to checker-framework.zip.
+Added docs/examples directory to checker-framework.zip.
 New section in the manual describing the contents of checker-framework.zip.
 
 Fixed issues: 204, 304, 320.
@@ -730,7 +738,8 @@ Version 1.6.6, 01 August 2013
 
 Documentation:
   The Checker Framework manual has been improved.  Changes include:
-more troubleshooting tips to the Checker Framework manual, an improved discussion on qualifier bounds, more examples, improved formatting, and more.
+more troubleshooting tips to the Checker Framework manual, an improved
+discussion on qualifier bounds, more examples, improved formatting, and more.
   An FAQ entry has been added to discuss JSR305.
   Minor clarifications have been added to the Checker Framework tutorial.
 
@@ -831,7 +840,7 @@ Adapt to underlying jsr308-langtools changes.
   JDK 7 is now required.  The Checker Framework does not build or run on JDK 6.
 
 Documentation:
-  A new tutorial is available at http://types.cs.washington.edu/checker-framework/tutorial/
+  A new tutorial is available at http://checker-framework.com/tutorial/
 
 ----------------------------------------------------------------------
 Version 1.5.0, 14 Jan 2013
@@ -1369,7 +1378,7 @@ Eclipse support:
   different repository
   (http://code.google.com/a/eclipselabs.org/p/checker-plugin/) but a user
   obtains it from the same URL as before:
-  http://types.cs.washington.edu/checker-framework/eclipse/
+  http://checker-framework.com/eclipse/
 
 Property Key Checker:
   The property key checker allows multiple resource bundles and the
@@ -2077,7 +2086,7 @@ Manual
     8  Annotating libraries
     9  How to create a new checker plugin
   Javadoc for the Checker Framework is included in its distribution and is
-    available online at http://types.cs.washington.edu/checker-framework/current/doc/ .
+    available online at http://checker-framework.com/api/ .
 
 ----------------------------------------------------------------------
 Version 0.6.4, 9 June 2008

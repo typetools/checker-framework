@@ -110,7 +110,7 @@
         <delete failonerror="false">
             <fileset dir="${tests.build}" includes="**/*.class"/>
             <fileset dir="jdk" includes="**/*.class"/>
-            <fileset dir="${checker.loc}/examples" includes="**/*.class"/>
+            <fileset dir="${cf.docs}/examples" includes="**/*.class"/>
         </delete>
 
         <delete dir="${dist}"/>
@@ -317,8 +317,8 @@
                     path="${build}:${javacutil.loc}/${build}:${javacutil.lib}"/>
         </javadoc>
         <property name="favicon.targetfile" value="favicon-checkerframework.png"/>
-        <copy file="manual/logo/Checkmark/CFCheckmark_favicon.png" tofile="${api.doc}/${favicon.targetfile}" />
-        <exec executable="manual/logo/add-favicon" failonerror="true">
+        <copy file="../docs/logo/Checkmark/CFCheckmark_favicon.png" tofile="${api.doc}/${favicon.targetfile}" />
+        <exec executable="../docs/logo/add-favicon" failonerror="true">
             <arg value="${api.doc}"/>
             <arg value="${favicon.targetfile}"/>
         </exec>
@@ -1117,7 +1117,7 @@
 
       <exec executable="make" failonerror="${halt.on.test.failure}">
         <env key="JAVAC" value="${basedir}/bin/javac"/>
-        <arg line="-C examples/"/>
+        <arg line="-C ../docs/examples/"/>
       </exec>
     </target>
 
@@ -1356,10 +1356,10 @@ So, use our own archived version.
     <target name="check-tutorial" description="Test that the tutorial is working as expected">
     <!--The tutorial build file is written relative to its location,
         so useNativeBasedir is required. -->
-          <ant dir="${framework.loc}/../tutorial/tests/" useNativeBasedir="true">
+          <ant dir="${docs.loc}/tutorial/tests/" useNativeBasedir="true">
               <target name="check-tutorial"/>
           </ant>
-          <ant dir="${framework.loc}/../tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
+          <ant dir="${docs.loc}/tutorial/eclipse-projects/personalblog-demo" useNativeBasedir="true">
               <target name="clean"/>
           </ant>
     </target>
@@ -1484,7 +1484,7 @@ So, use our own archived version.
             description="Create the instrumented jdkX.jar using the JDK specified by JAVA_HOME">
       <property name="annotation-file-utilities.jar" value="${annotation.tools}/annotation-file-utilities/annotation-file-utilities.jar"/>
       <available property="annotation-file-utilities.exist" file="${annotation-file-utilities.jar}" />
-      <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#build-source" />
+      <fail unless="annotation-file-utilities.exist" message="Could not find annotation-file-utilities.jar: ${annotation-file-utilities.jar}.  You must build Annotation Tools; see http://checker-framework.com/manual/#build-source" />
 
       <exec executable="make" failonerror="true">
          <arg value="LANGTOOLS=${jsr308.langtools}"/>

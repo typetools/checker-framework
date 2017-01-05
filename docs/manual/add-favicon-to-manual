@@ -1,0 +1,7 @@
+# Similar to ../logo/add-favicon, but works only on a single file: manual.html
+# The reason we don't just fix ../logo/add-favicon to work on a single file instead
+# of creating this special-purpose script is that any changes we make to ../logo/add-favicon
+# would promptly be overwritten the next time it is updated from the plume-lib repository.
+# Likewise any changes made to add-favicon in the plume-lib repository would be overwritten
+# once we refreshed it from its original source.
+sed -i -e " s%<head>\$%<head><link rel=\"icon\" href=\"favicon-checkerframework.png\" type=\"image/png\"/>%" manual.html
