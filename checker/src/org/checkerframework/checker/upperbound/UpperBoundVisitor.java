@@ -68,7 +68,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
         // less than the minimum length of the array. If it could be any
         // of several values, only the max is of interest.
         Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
-        Integer minLen = atypeFactory.minLenFromExpressionTree(arrTree);
+        int minLen = atypeFactory.minLenFromExpressionTree(arrTree);
 
         // Is indexType LTL/LTOM of a set containing arrName?
         if ((indexType.hasAnnotation(LTLengthOf.class)
@@ -77,7 +77,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                         || UpperBoundUtils.hasValue(indexType, arrTree.toString(), sameLenType))) {
             // If so, this is safe - get out of here.
             return super.visitArrayAccess(tree, type);
-        } else if (valMax != null && minLen != null && valMax < minLen) {
+        } else if (valMax != null && minLen != -1 && valMax < minLen) {
             return super.visitArrayAccess(tree, type);
         } else {
             // Unsafe, since neither the Upper bound or MinLen checks succeeded.
@@ -102,7 +102,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
             // less than the minimum length of the array. If it could be any
             // of several values, only the max is of interest.
             Integer valMax = atypeFactory.valMaxFromExpressionTree(indexTree);
-            Integer minLen = atypeFactory.minLenFromExpressionTree(lstTree);
+            int minLen = atypeFactory.minLenFromExpressionTree(lstTree);
 
             AnnotatedTypeMirror sameLenType = atypeFactory.sameLenTypeFromExpressionTree(lstTree);
 
@@ -113,7 +113,7 @@ public class UpperBoundVisitor extends BaseTypeVisitor<UpperBoundAnnotatedTypeFa
                             || (UpperBoundUtils.hasValue(indexType, lstName, sameLenType)))) {
                 // If so, this is safe - get out of here.
                 return super.visitMethodInvocation(tree, type);
-            } else if (valMax != null && minLen != null && valMax < minLen) {
+            } else if (valMax != null && minLen != -1 && valMax < minLen) {
                 return super.visitMethodInvocation(tree, type);
             } else {
                 // Unsafe, since neither the Upper bound or MinLen checks succeeded.

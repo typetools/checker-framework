@@ -147,15 +147,15 @@ public class UpperBoundAnnotatedTypeFactory
 
     /**
      * Queries the MinLen Checker to determine if there is a known minimum length for the array. If
-     * not, returns null.
+     * not, returns -1.
      */
-    public Integer minLenFromExpressionTree(ExpressionTree tree) {
+    public int minLenFromExpressionTree(ExpressionTree tree) {
         AnnotatedTypeMirror minLenType = getMinLenAnnotatedTypeFactory().getAnnotatedType(tree);
         AnnotationMirror anm = minLenType.getAnnotation(MinLen.class);
         if (anm == null) {
-            return null;
+            return -1;
         }
-        Integer minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
+        int minLen = AnnotationUtils.getElementValue(anm, "value", Integer.class, true);
         return minLen;
     }
 
