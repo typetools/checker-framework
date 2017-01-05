@@ -10,8 +10,6 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
-import org.checkerframework.checker.minlen.qual.MinLen;
-import org.checkerframework.checker.minlen.qual.MinLenBottom;
 import org.checkerframework.common.value.ValueAnnotatedTypeFactory;
 import org.checkerframework.common.value.qual.ArrayLen;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
@@ -36,7 +34,6 @@ import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, MinLenTransfer> {
@@ -85,13 +82,10 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             if (node.getTarget().getReceiver().getTree() == null || rec instanceof Unknown) {
                 return result;
             }
-            AnnotatedTypeMirror ATM =
-                    atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
-            AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
-            if (anno == null || AnnotationUtils.areSameByClass(anno, MinLenBottom.class)) {
+            Integer value = atypeFactory.getMinLenValue(node.getTarget().getReceiver().getTree());
+            if (value == null) {
                 return result;
             }
-            int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
             AnnotationMirror AM = atypeFactory.createMinLen(value + 1);
             Set<AnnotationMirror> set = new HashSet<>();
             set.add(AM);
@@ -110,16 +104,16 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             if (node.getTarget().getReceiver().getTree() == null) {
                 return result;
             }
-            AnnotatedTypeMirror ATM =
-                    atypeFactory.getAnnotatedType(node.getTarget().getReceiver().getTree());
-            AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
-            int value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
+            Integer value = atypeFactory.getMinLenValue(node.getTarget().getReceiver().getTree());
+            if (value == null) {
+                return result;
+            }
             AnnotationMirror AM = atypeFactory.createMinLen(value + 1);
             result.setResultValue(analysis.createSingleAnnotationValue(AM, node.getType()));
             return result;
         } else if (TreeUtils.isMethodInvocation(node.getTree(), arrayAsList, env)) {
             Node arg = node.getArgument(0);
-            int value = 0;
+            Integer value = 0;
             if (arg instanceof ArrayCreationNode) {
                 ArrayCreationNode aNode = (ArrayCreationNode) arg;
                 List<Node> args = aNode.getInitializers();
@@ -135,9 +129,10 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                     if (args.get(0).getTree() == null) {
                         return result;
                     }
-                    AnnotatedTypeMirror ATM = atypeFactory.getAnnotatedType(args.get(0).getTree());
-                    AnnotationMirror anno = ATM.getAnnotation(MinLen.class);
-                    value = MinLenAnnotatedTypeFactory.getMinLenValue(anno);
+                    value = atypeFactory.getMinLenValue(args.get(0).getTree());
+                    if (value == null) {
+                        return result;
+                    }
                 } else {
                     value = args.size();
                 }

@@ -336,11 +336,17 @@ public class MinLenAnnotatedTypeFactory
         }
     }
 
-    protected static int getMinLenValue(AnnotationMirror annotation) {
+    protected static Integer getMinLenValue(AnnotationMirror annotation) {
         if (annotation == null || AnnotationUtils.areSameByClass(annotation, MinLenBottom.class)) {
-            return -1;
+            return null;
         }
         return AnnotationUtils.getElementValue(annotation, "value", Integer.class, true);
+    }
+
+    public Integer getMinLenValue(Tree tree) {
+        AnnotatedTypeMirror atm = getAnnotatedType(tree);
+        AnnotationMirror anm = atm.getAnnotation(MinLen.class);
+        return getMinLenValue(anm);
     }
 
     public AnnotationMirror createMinLen(int val) {
