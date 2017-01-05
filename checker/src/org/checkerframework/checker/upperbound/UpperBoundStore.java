@@ -33,12 +33,13 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
     // If a list is cleared, anything that could be an alias of this list goes to UpperBoundUnknown.
     @Override
     public void updateForMethodCall(
-            MethodInvocationNode n, AnnotatedTypeFactory atypeFactory, CFValue val) {
-        Receiver caller = FlowExpressions.internalReprOf(atypeFactory, n.getTarget().getReceiver());
-        String methodName = n.getTarget().getMethod().toString();
-        boolean remove = methodName.startsWith("remove(");
-        boolean clear = methodName.startsWith("clear(");
-        boolean add = methodName.startsWith("add(");
+            MethodInvocationNode miNode, AnnotatedTypeFactory atypeFactory, CFValue cfValue) {
+        Receiver caller =
+                FlowExpressions.internalReprOf(atypeFactory, miNode.getTarget().getReceiver());
+        UpperBoundAnnotatedTypeFactory factory = (UpperBoundAnnotatedTypeFactory) atypeFactory;
+        boolean remove = factory.isListRemove(miNode.getTarget().getMethod());
+        boolean clear = factory.isListClear(miNode.getTarget().getMethod());
+        boolean add = factory.isListAdd(miNode.getTarget().getMethod());
         Map<Receiver, CFValue> replace = new HashMap<Receiver, CFValue>();
         if (clear) {
             for (FlowExpressions.LocalVariable rec : localVariableValues.keySet()) {
@@ -68,7 +69,7 @@ public class UpperBoundStore extends CFAbstractStore<CFValue, UpperBoundStore> {
             replaceValue(rec, replace.get(rec));
         }
 
-        super.updateForMethodCall(n, atypeFactory, val);
+        super.updateForMethodCall(miNode, atypeFactory, cfValue);
     }
 
     private void applyTransfer(

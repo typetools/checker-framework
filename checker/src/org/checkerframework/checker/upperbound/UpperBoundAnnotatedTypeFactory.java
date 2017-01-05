@@ -41,6 +41,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
 import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -67,12 +68,23 @@ public class UpperBoundAnnotatedTypeFactory
     private final ExecutableElement fcnNextDouble =
             TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
 
+    final List<ExecutableElement> listRemoveMethods;
+    final List<ExecutableElement> listClearMethods;
+    final List<ExecutableElement> listAddMethods;
+
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         UNKNOWN = AnnotationUtils.fromClass(elements, UpperBoundUnknown.class);
 
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(new String[0]));
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(new String[0]));
+
+        listRemoveMethods = TreeUtils.getMethodList("java.util.List", "remove", 1, processingEnv);
+        listClearMethods = TreeUtils.getMethodList("java.util.List", "clear", 0, processingEnv);
+        listClearMethods.add(TreeUtils.getMethod("java.util.List", "removeAll", 1, processingEnv));
+        listClearMethods.add(TreeUtils.getMethod("java.util.List", "retainAll", 1, processingEnv));
+        listAddMethods = TreeUtils.getMethodList("java.util.List", "add", 1, processingEnv);
+
         this.postInit();
     }
 
@@ -208,6 +220,33 @@ public class UpperBoundAnnotatedTypeFactory
         // The annotation of the whole list is the max of the list.
         long valMax = Collections.max(possibleValues);
         return new Integer((int) valMax);
+    }
+
+    public boolean isListRemove(ExecutableElement method) {
+        for (ExecutableElement removeMethod : listRemoveMethods) {
+            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isListClear(ExecutableElement method) {
+        for (ExecutableElement removeMethod : listClearMethods) {
+            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isListAdd(ExecutableElement method) {
+        for (ExecutableElement addMethod : listAddMethods) {
+            if (ElementUtils.isMethod(method, addMethod, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

@@ -36,7 +36,7 @@ public class MinLenStore extends CFAbstractStore<CFValue, MinLenStore> {
         // Calling certain methods on a list object side-effects the list.  If the list is a local
         // variable or a final or effectively final field, then dataflow does not update the store
         // to reflect these side-effects.  This method correctly updates refined types for those
-        // variables including there aliases.;
+        // variables including their aliases.;
         boolean remove = factory.isListRemove(n.getTarget().getMethod());
         boolean clear = factory.isListClear(n.getTarget().getMethod());
         if (!(remove || clear)) {
