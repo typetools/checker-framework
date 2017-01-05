@@ -397,9 +397,6 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             }
 
             AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(type, MinLen.class);
-            if (!AnnotationUtils.hasElementValue(anno, "value")) {
-                return;
-            }
 
             Integer currentMinLen =
                     AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
@@ -460,9 +457,6 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             }
 
             AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(type, MinLen.class);
-            if (!AnnotationUtils.hasElementValue(anno, "value")) {
-                return;
-            }
 
             Integer currentMinLen =
                     AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
@@ -527,9 +521,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             }
 
             AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(type, MinLen.class);
-            if (!AnnotationUtils.hasElementValue(anno, "value")) {
-                return;
-            }
+
             Integer currentMinLen =
                     AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
             if (newMinLen > currentMinLen) {
