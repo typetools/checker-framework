@@ -277,11 +277,7 @@ public class UpperBoundAnnotatedTypeFactory
 
         newValues.addAll(a1Names);
         newValues.addAll(a2Names);
-        Object[] values = newValues.toArray();
-        String[] names = new String[values.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = values[i].toString();
-        }
+        String[] names = newValues.toArray(new String[0]);
         return names;
     }
 
@@ -297,7 +293,7 @@ public class UpperBoundAnnotatedTypeFactory
 
         List<String> a1Names = getElementValueArray(a1, "value", String.class, true);
         List<String> a2Names = getElementValueArray(a2, "value", String.class, true);
-        HashSet<String> newValues = new HashSet<String>(Math.min(a1Names.size(), a2Names.size()));
+        HashSet<String> newValues = new HashSet<>(Math.min(a1Names.size(), a2Names.size()));
 
         for (String s : a1Names) {
             if (a2Names.contains(s)) {
@@ -305,11 +301,7 @@ public class UpperBoundAnnotatedTypeFactory
             }
         }
 
-        Object[] values = newValues.toArray();
-        String[] names = new String[values.length];
-        for (int i = 0; i < names.length; i++) {
-            names[i] = values[i].toString();
-        }
+        String[] names = newValues.toArray(new String[0]);
         return names;
     }
 
