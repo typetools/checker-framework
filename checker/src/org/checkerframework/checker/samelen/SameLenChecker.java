@@ -3,6 +3,7 @@ package org.checkerframework.checker.samelen;
 import java.util.LinkedHashSet;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.value.ValueChecker;
+import org.checkerframework.framework.source.SuppressWarningsKeys;
 
 /**
  * An internal checker that collects information about the arrays that have the same length. It is
@@ -10,6 +11,7 @@ import org.checkerframework.common.value.ValueChecker;
  *
  * @checker_framework.manual #index-checker Index Checker
  */
+@SuppressWarningsKeys({"index", "samelen"})
 public class SameLenChecker extends BaseTypeChecker {
 
     @Override
