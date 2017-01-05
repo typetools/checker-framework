@@ -3,7 +3,6 @@ package org.checkerframework.checker.samelen;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.checker.samelen.qual.SameLen;
 import org.checkerframework.checker.samelen.qual.SameLenBottom;
@@ -29,8 +28,6 @@ import org.checkerframework.javacutil.AnnotationUtils;
  */
 public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    protected static ProcessingEnvironment env;
-
     public static AnnotationMirror UNKNOWN;
 
     /**
@@ -42,7 +39,6 @@ public class SameLenAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public SameLenAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         valueAnnotatedTypeFactory = getTypeFactoryOfSubchecker(ValueChecker.class);
-        env = checker.getProcessingEnvironment();
         UNKNOWN = AnnotationUtils.fromClass(elements, SameLenUnknown.class);
         this.postInit();
     }
