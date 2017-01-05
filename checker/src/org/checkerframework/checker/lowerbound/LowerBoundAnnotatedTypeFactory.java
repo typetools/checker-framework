@@ -122,6 +122,9 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * getLowerBoundAnnotationFromValueType instead of this method.
      */
     public Long getExactValueOrNullFromTree(Tree tree) {
+        if (tree == null) {
+            return null;
+        }
         AnnotatedTypeMirror valueType = valueAnnotatedTypeFactory.getAnnotatedType(tree);
         List<Long> possibleValues = possibleValuesFromValueType(valueType);
         if (possibleValues != null && possibleValues.size() == 1) {

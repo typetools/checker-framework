@@ -20,18 +20,7 @@ import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Unknown;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
-import org.checkerframework.dataflow.cfg.node.ArrayAccessNode;
-import org.checkerframework.dataflow.cfg.node.ArrayCreationNode;
-import org.checkerframework.dataflow.cfg.node.AssignmentNode;
-import org.checkerframework.dataflow.cfg.node.EqualToNode;
-import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanNode;
-import org.checkerframework.dataflow.cfg.node.GreaterThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.LessThanNode;
-import org.checkerframework.dataflow.cfg.node.LessThanOrEqualNode;
-import org.checkerframework.dataflow.cfg.node.MethodInvocationNode;
-import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.NotEqualNode;
+import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.framework.flow.CFAbstractTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -216,26 +205,38 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
      * This struct contains all of the information that the refinement functions need. It's called
      * by each node function (i.e. greater than node, less than node, etc.) and then the results are
      * passed to the refinement function in whatever order is appropriate for that node. Its
-     * constructor contains all of its logic. I originally wrote this for LowerBoundTransfer but I'm
-     * duplicating it here since I need it again...maybe it should live elsewhere and be shared? I
-     * don't know where though.
+     * constructor contains all of its logic. It is not the same as IndexRefinementInfo, but shares
+     * much of the same function (and was originally the same code, but they've diverged because
+     * MinLen uses its own version of CFStore, which makes them incompatible.
      */
-    private class RefinementInfo {
+    private class MinLenRefinementInfo {
         public Node left, right;
         public Set<AnnotationMirror> leftType, rightType;
         public MinLenStore thenStore, elseStore;
         public ConditionalTransferResult<CFValue, MinLenStore> newResult;
 
-        public RefinementInfo(
+        public MinLenRefinementInfo(
                 TransferResult<CFValue, MinLenStore> result,
                 TransferInput<CFValue, MinLenStore> in,
-                Node r,
-                Node l) {
-            right = r;
-            left = l;
+                BinaryOperationNode node) {
+            right = node.getRightOperand();
+            left = node.getLeftOperand();
 
-            rightType = in.getValueOfSubNode(right).getAnnotations();
-            leftType = in.getValueOfSubNode(left).getAnnotations();
+            CFValue rightValue = in.getValueOfSubNode(right);
+
+            if (rightValue != null) {
+                rightType = rightValue.getAnnotations();
+            } else {
+                rightType = null;
+            }
+
+            CFValue leftValue = in.getValueOfSubNode(left);
+
+            if (leftValue != null) {
+                leftType = leftValue.getAnnotations();
+            } else {
+                leftType = null;
+            }
 
             thenStore = result.getRegularStore();
             elseStore = thenStore.copy();
@@ -245,18 +246,11 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         }
     }
 
-    // So I actually just ended up copying these from Lower Bound Transfer too.
-    // The only parts that are actually different are the definitions of
-    // refineGT and refineGTE, and the handling of equals and not equals. The
-    // code for the visitGreaterThan, visitLessThan, etc., are all identical to
-    // their LBC counterparts.
-
     @Override
     public TransferResult<CFValue, MinLenStore> visitGreaterThan(
             GreaterThanNode node, TransferInput<CFValue, MinLenStore> in) {
         TransferResult<CFValue, MinLenStore> result = super.visitGreaterThan(node, in);
-        RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+        MinLenRefinementInfo rfi = new MinLenRefinementInfo(result, in, node);
 
         // Refine the then branch.
         refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -272,8 +266,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             GreaterThanOrEqualNode node, TransferInput<CFValue, MinLenStore> in) {
         TransferResult<CFValue, MinLenStore> result = super.visitGreaterThanOrEqual(node, in);
 
-        RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+        MinLenRefinementInfo rfi = new MinLenRefinementInfo(result, in, node);
 
         // Refine the then branch.
         refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -289,8 +282,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             LessThanOrEqualNode node, TransferInput<CFValue, MinLenStore> in) {
         TransferResult<CFValue, MinLenStore> result = super.visitLessThanOrEqual(node, in);
 
-        RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+        MinLenRefinementInfo rfi = new MinLenRefinementInfo(result, in, node);
 
         // Refine the then branch. A <= is just a flipped >=.
         refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
@@ -305,8 +297,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             LessThanNode node, TransferInput<CFValue, MinLenStore> in) {
         TransferResult<CFValue, MinLenStore> result = super.visitLessThan(node, in);
 
-        RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+        MinLenRefinementInfo rfi = new MinLenRefinementInfo(result, in, node);
 
         // Refine the then branch. A < is just a flipped >.
         refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
@@ -321,8 +312,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             EqualToNode node, TransferInput<CFValue, MinLenStore> in) {
         TransferResult<CFValue, MinLenStore> result = super.visitEqualTo(node, in);
 
-        RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+        MinLenRefinementInfo rfi = new MinLenRefinementInfo(result, in, node);
 
         refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
         refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
@@ -345,8 +335,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
             NotEqualNode node, TransferInput<CFValue, MinLenStore> in) {
         TransferResult<CFValue, MinLenStore> result = super.visitNotEqual(node, in);
 
-        RefinementInfo rfi =
-                new RefinementInfo(result, in, node.getRightOperand(), node.getLeftOperand());
+        MinLenRefinementInfo rfi = new MinLenRefinementInfo(result, in, node);
 
         refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
         refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);

@@ -2,19 +2,18 @@ package org.checkerframework.checker.lowerbound;
 
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import org.checkerframework.checker.index.IndexAbstractTransfer;
+import org.checkerframework.checker.index.IndexRefinementInfo;
 import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
 import org.checkerframework.checker.lowerbound.qual.LowerBoundUnknown;
 import org.checkerframework.checker.lowerbound.qual.NonNegative;
 import org.checkerframework.checker.lowerbound.qual.Positive;
-import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.FlowExpressions.Receiver;
-import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.*;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
-import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -90,7 +89,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
  *
  * </pre>
  */
-public class LowerBoundTransfer extends CFTransfer {
+public class LowerBoundTransfer extends IndexAbstractTransfer {
 
     /** The canonical {@link GTENegativeOne} annotation. */
     public final AnnotationMirror GTEN1;
@@ -104,120 +103,14 @@ public class LowerBoundTransfer extends CFTransfer {
     // The ATF (Annotated Type Factory).
     private LowerBoundAnnotatedTypeFactory aTypeFactory;
 
-    private CFAnalysis analysis;
-
     public LowerBoundTransfer(CFAnalysis analysis) {
         super(analysis);
-        this.analysis = analysis;
         aTypeFactory = (LowerBoundAnnotatedTypeFactory) analysis.getTypeFactory();
         // Initialize qualifiers.
         GTEN1 = aTypeFactory.GTEN1;
         NN = aTypeFactory.NN;
         POS = aTypeFactory.POS;
         UNKNOWN = aTypeFactory.UNKNOWN;
-    }
-
-    /**
-     * This struct contains all of the information that the refinement functions need. It's called
-     * by each node function (i.e. greater than node, less than node, etc.) and then the results are
-     * passed to the refinement function in whatever order is appropriate for that node. It's
-     * constructor contains all of its logic.
-     */
-    private class RefinementInfo {
-        public Node left, right;
-        public Set<AnnotationMirror> leftType, rightType;
-        public CFStore thenStore, elseStore;
-        public ConditionalTransferResult<CFValue, CFStore> newResult;
-
-        public RefinementInfo(
-                TransferResult<CFValue, CFStore> result, CFAnalysis analysis, Node r, Node l) {
-            right = r;
-            left = l;
-
-            if (analysis.getValue(right) == null || analysis.getValue(left) == null) {
-                leftType = null;
-                rightType = null;
-                newResult =
-                        new ConditionalTransferResult<>(
-                                result.getResultValue(), thenStore, elseStore);
-            } else {
-
-                rightType = analysis.getValue(right).getAnnotations();
-                leftType = analysis.getValue(left).getAnnotations();
-
-                thenStore = result.getRegularStore();
-                elseStore = thenStore.copy();
-
-                newResult =
-                        new ConditionalTransferResult<>(
-                                result.getResultValue(), thenStore, elseStore);
-            }
-        }
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitGreaterThan(
-            GreaterThanNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitGreaterThan(node, in);
-        RefinementInfo rfi =
-                new RefinementInfo(result, analysis, node.getRightOperand(), node.getLeftOperand());
-
-        // Refine the then branch.
-        refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
-
-        // Refine the else branch, which is the inverse of the then branch.
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
-
-        return rfi.newResult;
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitGreaterThanOrEqual(
-            GreaterThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitGreaterThanOrEqual(node, in);
-
-        RefinementInfo rfi =
-                new RefinementInfo(result, analysis, node.getRightOperand(), node.getLeftOperand());
-
-        // Refine the then branch.
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
-
-        // Refine the else branch.
-        refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
-
-        return rfi.newResult;
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitLessThanOrEqual(
-            LessThanOrEqualNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitLessThanOrEqual(node, in);
-
-        RefinementInfo rfi =
-                new RefinementInfo(result, analysis, node.getRightOperand(), node.getLeftOperand());
-
-        // Refine the then branch. A <= is just a flipped >=.
-        refineGTE(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
-
-        // Refine the else branch.
-        refineGT(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
-        return rfi.newResult;
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitLessThan(
-            LessThanNode node, TransferInput<CFValue, CFStore> in) {
-        TransferResult<CFValue, CFStore> result = super.visitLessThan(node, in);
-
-        RefinementInfo rfi =
-                new RefinementInfo(result, analysis, node.getRightOperand(), node.getLeftOperand());
-
-        // Refine the then branch. A < is just a flipped >.
-        refineGT(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
-
-        // Refine the else branch.
-        refineGTE(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
-        return rfi.newResult;
     }
 
     /**
@@ -271,7 +164,8 @@ public class LowerBoundTransfer extends CFTransfer {
         if (notEqualTo) {
             // Process != first.
 
-            RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
+            IndexRefinementInfo rfi =
+                    new IndexRefinementInfo(result, analysis, secondNode, firstNode);
 
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.thenStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.thenStore);
@@ -282,7 +176,8 @@ public class LowerBoundTransfer extends CFTransfer {
         } else {
             // Process ==.
 
-            RefinementInfo rfi = new RefinementInfo(result, analysis, secondNode, firstNode);
+            IndexRefinementInfo rfi =
+                    new IndexRefinementInfo(result, analysis, secondNode, firstNode);
 
             handleRelevantLiteralForEquals(rfi.left, rfi.right, rfi.rightType, rfi.elseStore);
             handleRelevantLiteralForEquals(rfi.right, rfi.left, rfi.leftType, rfi.elseStore);
@@ -299,7 +194,8 @@ public class LowerBoundTransfer extends CFTransfer {
      * from the ATF directly because a new expression isn't introduced here - the modifications have
      * to be made to an existing one.
      */
-    private void refineGT(
+    @Override
+    protected void refineGT(
             Node left,
             Set<AnnotationMirror> leftType,
             Node right,
@@ -331,7 +227,8 @@ public class LowerBoundTransfer extends CFTransfer {
      * an existing type in the store, but has to be careful not to overwrite a more precise existing
      * type.
      */
-    private void refineGTE(
+    @Override
+    protected void refineGTE(
             Node left,
             Set<AnnotationMirror> leftType,
             Node right,
