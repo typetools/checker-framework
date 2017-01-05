@@ -295,11 +295,8 @@ public class UpperBoundAnnotatedTypeFactory
         List<String> a2Names = getElementValueArray(a2, "value", String.class, true);
         HashSet<String> newValues = new HashSet<>(Math.min(a1Names.size(), a2Names.size()));
 
-        for (String s : a1Names) {
-            if (a2Names.contains(s)) {
-                newValues.add(s);
-            }
-        }
+        newValues.addAll(a1Names);
+        newValues.retainAll(a2Names);
 
         String[] names = newValues.toArray(new String[0]);
         return names;
@@ -336,17 +333,17 @@ public class UpperBoundAnnotatedTypeFactory
                 }
             } else {
                 /* If the two are unrelated, then the type hierarchy implies
-                   that either: 1) one is LTL and the other is LTOM, so LTL is bottom
-                   or 2) one of them is LTEL, so LTEL is bottom
+                   that either: 1) one is LTL and the other is LTOM, so LTOM is glb
+                   or 2) one of them is LTEL, so LTL is glb
                 */
                 String[] names = getCombinedNames(a1, a2);
                 if ((AnnotationUtils.areSameByClass(a1, LTLengthOf.class)
                                 && AnnotationUtils.areSameByClass(a2, LTOMLengthOf.class))
                         || (AnnotationUtils.areSameByClass(a2, LTLengthOf.class)
                                 && AnnotationUtils.areSameByClass(a1, LTOMLengthOf.class))) {
-                    return createLTLengthOfAnnotation(names);
+                    return createLTOMLengthOfAnnotation(names);
                 } else {
-                    return createLTEqLengthOfAnnotation(names);
+                    return createLTLengthOfAnnotation(names);
                 }
             }
         }
