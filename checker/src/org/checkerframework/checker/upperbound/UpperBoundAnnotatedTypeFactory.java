@@ -60,17 +60,16 @@ public class UpperBoundAnnotatedTypeFactory
     /**
      * Important functions as executable elements. Stored in instance fields to avoid recomputation.
      */
-    private final ExecutableElement fcnMin =
-            TreeUtils.getMethod("java.lang.Math", "min", 2, processingEnv);
-
     private final ExecutableElement fcnRandom =
             TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
+
     private final ExecutableElement fcnNextDouble =
             TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
 
     final List<ExecutableElement> listRemoveMethods;
     final List<ExecutableElement> listClearMethods;
     final List<ExecutableElement> listAddMethods;
+    final List<ExecutableElement> mathMinMethods;
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -84,6 +83,7 @@ public class UpperBoundAnnotatedTypeFactory
         listClearMethods.add(TreeUtils.getMethod("java.util.List", "removeAll", 1, processingEnv));
         listClearMethods.add(TreeUtils.getMethod("java.util.List", "retainAll", 1, processingEnv));
         listAddMethods = TreeUtils.getMethodList("java.util.List", "add", 1, processingEnv);
+        mathMinMethods = TreeUtils.getMethodList("java.lang.Math", "min", 2, processingEnv);
 
         this.postInit();
     }
@@ -220,6 +220,15 @@ public class UpperBoundAnnotatedTypeFactory
         // The annotation of the whole list is the max of the list.
         long valMax = Collections.max(possibleValues);
         return new Integer((int) valMax);
+    }
+
+    public boolean isMathMin(Tree methodTree) {
+        for (ExecutableElement minMethod : mathMinMethods) {
+            if (TreeUtils.isMethodInvocation(methodTree, minMethod, processingEnv)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isListRemove(ExecutableElement method) {
@@ -523,7 +532,7 @@ public class UpperBoundAnnotatedTypeFactory
          */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
-            if (TreeUtils.isMethodInvocation(tree, fcnMin, processingEnv)) {
+            if (isMathMin(tree)) {
                 AnnotatedTypeMirror leftType = getAnnotatedType(tree.getArguments().get(0));
                 AnnotatedTypeMirror rightType = getAnnotatedType(tree.getArguments().get(1));
 
