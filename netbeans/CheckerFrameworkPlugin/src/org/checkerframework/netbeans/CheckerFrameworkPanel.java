@@ -4,6 +4,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.swing.BoxLayout;
@@ -21,11 +22,10 @@ public class CheckerFrameworkPanel extends JPanel {
 
     private EditableProperties editableProperty;
     private static Set<Entry<String, String>> checkerStrings;
-    private FileObject projectProperties;
-
-    private JLabel title;
-    private JCheckBox[] checkerList;
-    private StringBuilder selection;
+    private final FileObject projectProperties;
+    private Set <String> selectedCheckers;
+    private final JLabel title;
+    private final JCheckBox[] checkerList;
     private final String checkerPath;
     private final String checkerQualPath;
 
@@ -68,19 +68,18 @@ public class CheckerFrameworkPanel extends JPanel {
                             .entrySet();
         } catch (IOException e) {
             System.out.println("Failed to load checker strings properties file.");
+            checkerStrings = new HashSet (); //create an empty hash set
         }
 
         checkerList = new JCheckBox[checkerStrings.size()];
         int i = 0;
-        selection =
-                new StringBuilder(editableProperty.get("annotation.processing.processors.list"));
+        String tmp = editableProperty.get("annotation.processing.processors.list");
         for (Entry<String, String> e : checkerStrings) {
             checkerList[i] = new JCheckBox(e.getValue());
-            if (selection.toString().contains(e.getKey())) {
+            if (tmp.toString().contains(e.getKey())) {
                 checkerList[i].setSelected(true);
             }
             this.add(checkerList[i]);
-            checkerList[i].addItemListener(new CheckBoxListener(selection));
             i++;
         }
     }
@@ -114,46 +113,34 @@ public class CheckerFrameworkPanel extends JPanel {
             ProjectManager.mutex()
                     .writeAccess(
                             new WriteCheckerFrameworkPropertiesAction(
-                                    projectProperties, checkerPath, checkerQualPath, selection));
+                                    projectProperties, checkerPath, checkerQualPath, updateSelections()));
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         }
     }
-
-    /** ItemListener that updates the checkers to run based on the check boxes that get selected. */
-    private static class CheckBoxListener implements ItemListener {
-        private StringBuilder s;
-        private String selectedChecker;
-
-        public CheckBoxListener(StringBuilder inString) {
-            s = inString;
-        }
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            JCheckBox source = (JCheckBox) e.getItemSelectable();
-
-            for (Entry<String, String> entry : checkerStrings) {
-                if (entry.getValue().equals(source.getText())) selectedChecker = entry.getKey();
-            }
-            if (e.getStateChange() == ItemEvent.SELECTED) {
+    
+    public JCheckBox[] getCheckBoxes (){
+        return checkerList;
+    }
+    
+    private String updateSelections(){
+        StringBuilder sel = new StringBuilder();
+        String selectedChecker = "";
+        for (JCheckBox checkBox : checkerList){
+            if (checkBox.isSelected()){
+                for (Entry<String, String> entry : checkerStrings) {
+                    if (entry.getValue().equals(checkBox.getText())){
+                        selectedChecker = entry.getKey();
+                    }
+                }
                 //try to add the item
-                if (s.toString().isEmpty()) {
-                    s.append(selectedChecker);
+                if (sel.toString().isEmpty()) {
+                    sel.append(selectedChecker);
                 } else {
-                    s.append("," + selectedChecker);
-                }
-            } else {
-                //try to remove the item
-                int pos = s.toString().indexOf(selectedChecker);
-                if (pos == 0) {
-                    if (s.toString().length() == selectedChecker.length())
-                        s.delete(pos, pos + selectedChecker.length());
-                    else s.delete(pos, pos + selectedChecker.length() + 1);
-                } else if (pos > 0) {
-                    s.delete(pos - 1, pos + selectedChecker.length());
+                    sel.append(",").append(selectedChecker);
                 }
             }
         }
+        return sel.toString();
     }
 }

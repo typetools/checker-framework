@@ -126,3 +126,4 @@ target/
 *.ipr
 *.iws
 *.iml
+/netbeans/CheckerFrameworkPlugin/nbproject/private/

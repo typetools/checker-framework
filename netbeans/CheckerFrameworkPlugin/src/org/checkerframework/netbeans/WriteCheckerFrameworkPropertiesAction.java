@@ -12,7 +12,7 @@ public class WriteCheckerFrameworkPropertiesAction implements ExceptionAction<Vo
     private final EditableProperties ep;
     private final FileObject projPropsFO;
     private final InputStream is;
-    private final StringBuilder selection;
+    private final String selection;
     private final String checkerPath;
     private final String checkerQualPath;
 
@@ -20,7 +20,7 @@ public class WriteCheckerFrameworkPropertiesAction implements ExceptionAction<Vo
             FileObject projectProperties,
             String inCheckerPath,
             String inCheckerQualPath,
-            StringBuilder inSelection)
+            String inSelection)
             throws FileNotFoundException {
         ep = new EditableProperties(true);
         projPropsFO = projectProperties;
@@ -47,7 +47,7 @@ public class WriteCheckerFrameworkPropertiesAction implements ExceptionAction<Vo
             }
         }
         ep.setProperty("annotation.processing.enabled", "true");
-        ep.setProperty("annotation.processing.processors.list", selection.toString());
+        ep.setProperty("annotation.processing.processors.list", selection);
 
         //@todo: make this not overwrite other libraries added to the project in question...
         ep.setProperty("file.reference.checker-qual.jar", checkerQualPath);

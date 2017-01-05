@@ -53,6 +53,7 @@ public class CheckerFrameworkPanelProvider implements ProjectCustomizer.Composit
         public ModifyPropertiesListener(CheckerFrameworkPanel inCheckerFrameworkPanel) {
             checkerFrameworkPanel = inCheckerFrameworkPanel;
         }
+        
 
         @Override
         public void actionPerformed(ActionEvent e) {
