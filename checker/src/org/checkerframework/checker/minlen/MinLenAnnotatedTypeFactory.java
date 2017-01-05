@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import org.checkerframework.checker.lowerbound.qual.NonNegative;
 import org.checkerframework.checker.minlen.qual.MinLen;
 import org.checkerframework.checker.minlen.qual.MinLenBottom;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -349,7 +350,7 @@ public class MinLenAnnotatedTypeFactory
         return getMinLenValue(anm);
     }
 
-    public AnnotationMirror createMinLen(int val) {
+    public AnnotationMirror createMinLen(@NonNegative int val) {
         if (val == 0) {
             return MIN_LEN_0;
         }
