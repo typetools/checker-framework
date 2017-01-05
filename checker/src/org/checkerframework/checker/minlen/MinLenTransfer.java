@@ -396,16 +396,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 return;
             }
 
-            AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(type, MinLen.class);
-
-            Integer currentMinLen =
-                    AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
-
-            if (1 > currentMinLen) {
-                store.insertValue(rec, atypeFactory.createMinLen(1));
-                return;
-            }
-
+            store.insertValue(rec, atypeFactory.createMinLen(1));
             return;
         }
     }
@@ -456,16 +447,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 return;
             }
 
-            AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(type, MinLen.class);
-
-            Integer currentMinLen =
-                    AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
-
-            if (newMinLen + 1 > currentMinLen) {
-                store.insertValue(rec, atypeFactory.createMinLen(newMinLen + 1));
-                return;
-            }
-
+            store.insertValue(rec, atypeFactory.createMinLen(newMinLen + 1));
             return;
         }
     }
@@ -520,13 +502,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 return;
             }
 
-            AnnotationMirror anno = AnnotationUtils.getAnnotationByClass(type, MinLen.class);
-
-            Integer currentMinLen =
-                    AnnotationUtils.getElementValue(anno, "value", Integer.class, true);
-            if (newMinLen > currentMinLen) {
-                store.insertValue(rec, atypeFactory.createMinLen(newMinLen));
-            }
+            store.insertValue(rec, atypeFactory.createMinLen(newMinLen));
         }
     }
 }
