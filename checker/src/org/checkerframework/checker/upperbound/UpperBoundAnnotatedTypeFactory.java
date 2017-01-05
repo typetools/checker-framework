@@ -11,6 +11,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.minlen.MinLenAnnotatedTypeFactory;
@@ -41,7 +42,6 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGra
 import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationHelper;
 import org.checkerframework.framework.util.expressionannotations.ExpressionAnnotationTreeAnnotator;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -57,19 +57,7 @@ public class UpperBoundAnnotatedTypeFactory
     /** Easy shorthand for UpperBoundUnknown.class, basically. */
     public final AnnotationMirror UNKNOWN;
 
-    /**
-     * Important functions as executable elements. Stored in instance fields to avoid recomputation.
-     */
-    private final ExecutableElement fcnRandom =
-            TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
-
-    private final ExecutableElement fcnNextDouble =
-            TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
-
-    final List<ExecutableElement> listRemoveMethods;
-    final List<ExecutableElement> listClearMethods;
-    final List<ExecutableElement> listAddMethods;
-    final List<ExecutableElement> mathMinMethods;
+    private final IndexMethodIdentifier imf;
 
     public UpperBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
@@ -78,12 +66,7 @@ public class UpperBoundAnnotatedTypeFactory
         addAliasedAnnotation(IndexFor.class, createLTLengthOfAnnotation(new String[0]));
         addAliasedAnnotation(IndexOrHigh.class, createLTEqLengthOfAnnotation(new String[0]));
 
-        listRemoveMethods = TreeUtils.getMethodList("java.util.List", "remove", 1, processingEnv);
-        listClearMethods = TreeUtils.getMethodList("java.util.List", "clear", 0, processingEnv);
-        listClearMethods.add(TreeUtils.getMethod("java.util.List", "removeAll", 1, processingEnv));
-        listClearMethods.add(TreeUtils.getMethod("java.util.List", "retainAll", 1, processingEnv));
-        listAddMethods = TreeUtils.getMethodList("java.util.List", "add", 1, processingEnv);
-        mathMinMethods = TreeUtils.getMethodList("java.lang.Math", "min", 2, processingEnv);
+        imf = new IndexMethodIdentifier(processingEnv);
 
         this.postInit();
     }
@@ -222,40 +205,22 @@ public class UpperBoundAnnotatedTypeFactory
         return new Integer((int) valMax);
     }
 
+    // Wrapper methods for accessing the IndexMethodIdentifier.
+
     public boolean isMathMin(Tree methodTree) {
-        for (ExecutableElement minMethod : mathMinMethods) {
-            if (TreeUtils.isMethodInvocation(methodTree, minMethod, processingEnv)) {
-                return true;
-            }
-        }
-        return false;
+        return imf.isMathMin(methodTree, processingEnv);
     }
 
     public boolean isListRemove(ExecutableElement method) {
-        for (ExecutableElement removeMethod : listRemoveMethods) {
-            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
-                return true;
-            }
-        }
-        return false;
+        return imf.isListRemove(method, processingEnv);
     }
 
     public boolean isListClear(ExecutableElement method) {
-        for (ExecutableElement removeMethod : listClearMethods) {
-            if (ElementUtils.isMethod(method, removeMethod, processingEnv)) {
-                return true;
-            }
-        }
-        return false;
+        return imf.isListClear(method, processingEnv);
     }
 
     public boolean isListAdd(ExecutableElement method) {
-        for (ExecutableElement addMethod : listAddMethods) {
-            if (ElementUtils.isMethod(method, addMethod, processingEnv)) {
-                return true;
-            }
-        }
-        return false;
+        return imf.isListAdd(method, processingEnv);
     }
 
     /**
@@ -770,14 +735,14 @@ public class UpperBoundAnnotatedTypeFactory
 
                         MethodInvocationTree mitree = (MethodInvocationTree) randTree;
 
-                        if (TreeUtils.isMethodInvocation(mitree, fcnRandom, processingEnv)) {
+                        if (imf.isMathRandom(mitree, processingEnv)) {
                             // Okay, so this is Math.random() * array.length, which must be NonNegative
                             type.addAnnotation(
                                     createLTLengthOfAnnotation(mstree.getExpression().toString()));
                             return true;
                         }
 
-                        if (TreeUtils.isMethodInvocation(mitree, fcnNextDouble, processingEnv)) {
+                        if (imf.isRandomNextDouble(mitree, processingEnv)) {
                             // Okay, so this is Random.nextDouble() * array.length, which must be NonNegative
                             type.addAnnotation(
                                     createLTLengthOfAnnotation(mstree.getExpression().toString()));

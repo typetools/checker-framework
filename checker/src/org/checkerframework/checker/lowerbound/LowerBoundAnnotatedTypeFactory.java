@@ -15,8 +15,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
+import org.checkerframework.checker.index.IndexMethodIdentifier;
 import org.checkerframework.checker.index.qual.IndexFor;
 import org.checkerframework.checker.index.qual.IndexOrHigh;
 import org.checkerframework.checker.lowerbound.qual.GTENegativeOne;
@@ -71,24 +71,16 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /** The canonical @{@link LowerBoundUnknown} annotation. */
     public final AnnotationMirror UNKNOWN =
             AnnotationUtils.fromClass(elements, LowerBoundUnknown.class);
-    /**
-     * Executable elements representing methods that are handled specially by this class. Stored as
-     * instance fields to avoid recomputation.
-     */
-    private final ExecutableElement fcnMin =
-            TreeUtils.getMethod("java.lang.Math", "min", 2, processingEnv);
 
-    private final ExecutableElement fcnMax =
-            TreeUtils.getMethod("java.lang.Math", "max", 2, processingEnv);
-    private final ExecutableElement fcnRandom =
-            TreeUtils.getMethod("java.lang.Math", "random", 0, processingEnv);
-    private final ExecutableElement fcnNextDouble =
-            TreeUtils.getMethod("java.util.Random", "nextDouble", 0, processingEnv);
+    private final IndexMethodIdentifier imf;
 
     public LowerBoundAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         addAliasedAnnotation(IndexFor.class, NN);
         addAliasedAnnotation(IndexOrHigh.class, NN);
+
+        imf = new IndexMethodIdentifier(processingEnv);
+
         this.postInit();
     }
 
@@ -238,11 +230,11 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return super.visitUnary(tree, typeDst);
         }
 
-        /** Special handling for fcnMin and fcnMax from Math. Min is LUB, fcnMax is GLB. */
+        /** Special handling for min and max from Math. Min is LUB, max is GLB. */
         @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, AnnotatedTypeMirror type) {
 
-            if (TreeUtils.isMethodInvocation(tree, fcnMin, processingEnv)) {
+            if (imf.isMathMin(tree, processingEnv)) {
                 ExpressionTree left = tree.getArguments().get(0);
                 ExpressionTree right = tree.getArguments().get(1);
                 type.replaceAnnotation(
@@ -250,7 +242,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                 getAnnotatedType(left).getAnnotationInHierarchy(POS),
                                 getAnnotatedType(right).getAnnotationInHierarchy(POS)));
             }
-            if (TreeUtils.isMethodInvocation(tree, fcnMax, processingEnv)) {
+            if (imf.isMathMax(tree, processingEnv)) {
                 ExpressionTree left = tree.getArguments().get(0);
                 ExpressionTree right = tree.getArguments().get(1);
                 type.replaceAnnotation(
@@ -270,7 +262,7 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             if (possibleValues == null || possibleValues.size() == 0) {
                 return UNKNOWN;
             }
-            // The annotation of the whole list is the fcnMin of the list.
+            // The annotation of the whole list is the min of the list.
             long lvalMin = Collections.min(possibleValues);
             // Turn it into an integer.
             int valMin = (int) Math.max(Math.min(Integer.MAX_VALUE, lvalMin), Integer.MIN_VALUE);
@@ -540,13 +532,13 @@ public class LowerBoundAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                         MethodInvocationTree miTree = (MethodInvocationTree) randTree;
 
-                        if (TreeUtils.isMethodInvocation(miTree, fcnRandom, processingEnv)) {
+                        if (imf.isMathRandom(miTree, processingEnv)) {
                             // This is Math.random() * array.length, which must be NonNegative
                             type.addAnnotation(NN);
                             return true;
                         }
 
-                        if (TreeUtils.isMethodInvocation(miTree, fcnNextDouble, processingEnv)) {
+                        if (imf.isRandomNextDouble(miTree, processingEnv)) {
                             // This is Random.nextDouble() * array.length, which must be NonNegative
                             type.addAnnotation(NN);
                             return true;
