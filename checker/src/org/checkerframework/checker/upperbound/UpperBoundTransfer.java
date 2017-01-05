@@ -118,8 +118,8 @@ public class UpperBoundTransfer
                 leftType = null;
             }
 
-            thenStore = result.getRegularStore();
-            elseStore = thenStore.copy();
+            thenStore = result.getThenStore();
+            elseStore = result.getElseStore();
 
             newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);

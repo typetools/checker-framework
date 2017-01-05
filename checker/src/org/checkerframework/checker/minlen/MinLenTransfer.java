@@ -205,8 +205,8 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
                 leftType = null;
             }
 
-            thenStore = result.getRegularStore();
-            elseStore = thenStore.copy();
+            thenStore = result.getThenStore();
+            elseStore = result.getElseStore();
 
             newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
@@ -291,8 +291,8 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         // This special case occurs because zero is a hard bound on the bottom
         // of the array (i.e. no array can be smaller than zero), so in this
         // case the MinLen of the array is one.
-        refineZeroEquality(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
-        refineZeroEquality(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
+        refineNotEqual(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.elseStore);
+        refineNotEqual(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.elseStore);
 
         return rfi.newResult;
     }
@@ -314,8 +314,8 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         // This special case occurs because zero is a hard bound on the bottom
         // of the array (i.e. no array can be smaller than zero), so in this
         // case the MinLen of the array is one.
-        refineZeroEquality(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
-        refineZeroEquality(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
+        refineNotEqual(rfi.right, rfi.rightType, rfi.left, rfi.leftType, rfi.thenStore);
+        refineNotEqual(rfi.left, rfi.leftType, rfi.right, rfi.rightType, rfi.thenStore);
 
         return rfi.newResult;
     }
@@ -345,7 +345,7 @@ public class MinLenTransfer extends CFAbstractTransfer<CFValue, MinLenStore, Min
         store.insertValue(leftRec, newType);
     }
 
-    private void refineZeroEquality(
+    private void refineNotEqual(
             Node left,
             Set<AnnotationMirror> leftType,
             Node right,

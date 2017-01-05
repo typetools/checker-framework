@@ -3,7 +3,6 @@ package org.checkerframework.checker.index;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -38,28 +37,11 @@ public class IndexRefinementInfo {
             rightType = analysis.getValue(right).getAnnotations();
             leftType = analysis.getValue(left).getAnnotations();
 
-            thenStore = result.getRegularStore();
-            elseStore = thenStore.copy();
+            thenStore = result.getThenStore();
+            elseStore = result.getElseStore();
 
             newResult =
                     new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
         }
-    }
-
-    public IndexRefinementInfo(
-            TransferResult<CFValue, CFStore> result,
-            TransferInput<CFValue, CFStore> in,
-            Node r,
-            Node l) {
-        right = r;
-        left = l;
-
-        rightType = in.getValueOfSubNode(right).getAnnotations();
-        leftType = in.getValueOfSubNode(left).getAnnotations();
-
-        thenStore = result.getRegularStore();
-        elseStore = thenStore.copy();
-
-        newResult = new ConditionalTransferResult<>(result.getResultValue(), thenStore, elseStore);
     }
 }
